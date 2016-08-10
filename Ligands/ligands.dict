@@ -12,6 +12,7 @@ bromide:bromide.smi,brode,0,build functionalize small,N
 carbonyl:carbonyl.mol,crbn,0,build small,N
 carboxyl:carboxyl.mol,crbx,1,functionalize small,N
 chloride:chloride.smi,chlde,0,build functionalize small,N
+cyclopentadienyl:cyclopentadienyl.mol,cpd,cm,build aromatic,N
 cyanide:cyanide.mol,cyan,0,build small,N
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A
 ethyl:ethyl.mol,eth,1,functionalize small,N

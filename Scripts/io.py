@@ -280,7 +280,10 @@ def lig_load(installdir,userligand,licores):
             lig.OBmol = lig.getOBmol(flig,'smif')
             # generate coordinates if not existing
             lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
-        lig.cat = [int(l) for l in dbentry[2]]
+        if 'cm' in dbentry[2] or 'CM' in dbentry[2]:
+            lig.cat = [len(lig.OBmol.atoms)]
+        else:
+            lig.cat = [int(l) for l in dbentry[2]]
         lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
         lig.charge = lig.OBmol.charge
@@ -392,5 +395,35 @@ def bind_load(installdir,userbind,bindcores):
             print emsg
             return False,False,emsg
     return bind, bsmi, emsg
+
+
+# write input file
+def getinputargs(args,fname):
+    # list with arguments
+    # write input args
+    f = open(fname+'.molinp','w')
+    f.write("# Input file generated from molSimplify at "+time.strftime('%m/%d/%Y %H:%M')+'\n')
+    for arg in vars(args):
+        if 'nbind' not in arg and 'rgen' not in arg and 'i'!=arg:
+            if getattr(args,arg):
+                f.write('-'+arg+' ')
+                if isinstance(getattr(args, arg),list):
+                    for ii,iar in enumerate(getattr(args, arg)):
+                        if isinstance(iar,list):
+                            if ii < len(getattr(args, arg))-1:
+                                f.write('/')
+                            for jj,iiar in enumerate(iar):
+                                f.write(str(iiar))
+                                if jj < len(iar)-1:
+                                    f.write(',')
+                        else:
+                            f.write(str(iar))
+                            if ii < len(getattr(args, arg))-1:
+                                f.write(',')
+                else:
+                    f.write(str(getattr(args, arg)))
+                f.write('\n')
+    f.close()
+    
 
 

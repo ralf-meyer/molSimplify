@@ -537,6 +537,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     frozenats = []  # atoms to be frozen in optimization
     freezeangles = False # custom angles imposed
     MLoptbds = []   # list of bond lengths
+    remCM = False   # remove dummy center of mass atom
     ### load bond data ###
     MLbonds = loaddata(installdir+'/Data/ML.dat')
     ### calculate occurrences, denticities etc for all ligands ###
@@ -544,7 +545,10 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
         # if not in cores -> smiles/file
         if ligname not in licores.keys():
             if args.smicat and len(args.smicat) >= i and args.smicat[i]:
-                cats0.append(args.smicat[i])
+                if 'cm' in args.smicat[i]:
+                    cats0.append(['c'])
+                else:
+                    cats0.append(args.smicat[i])
             else:
                 cats0.append([1])
             dent_i = len(cats0[-1])
@@ -552,7 +556,10 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
         else:
             cats0.append(False)
         # otherwise get denticity from ligands dictionary
-            dent_i = int(len(licores[ligname][2]))
+            if 'cm' in licores[ligname][2]:
+                dent_i = 1
+            else:
+                dent_i = int(len(licores[ligname][2]))
         # get occurrence for each ligand if specified (default 1)
         oc_i = int(ligoc[i]) if i < len(ligoc) else 1
         occs0.append(0)         # initialize occurrences list
@@ -703,7 +710,10 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                     return False,emsg
                 # if SMILES string
                 if not lig.cat and tcats[i]:
-                    lig.cat = tcats[i]
+                    if 'c' in tcats[i]:
+                        lig.cat = [len(lig.OBmol.atoms)]
+                    else:
+                        lig.cat = tcats[i]
                 # perform FF optimization if requested
                 if args.ff and 'b' in args.ffoption:
                     if 'b' in lig.ffopt.lower():
@@ -723,6 +733,11 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                             if cat > Hs[0]:
                                 lig.cat[ii] -= 1
                         lig3D.deleteatom(Hs[0])
+                # check for CM connection atom
+                if lig.cat[0] > lig3D.natoms-1 or 'cm' in lig.cat:
+                    lig3D.addAtom(atom3D('C',lig3D.centermass()))
+                    lig.cat = [lig3D.natoms-1]
+                    remCM = True
                 ### add atoms to connected atoms list
                 catoms = lig.cat # connection atoms
                 initatoms = core3D.natoms # initial number of atoms in core3D
@@ -1170,6 +1185,9 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                 core3D = core3D.combine(lig3D)
                 if args.calccharge:
                     core3D.charge += lig3D.charge
+                # remove dummy cm atom if requested
+                if remCM:
+                    core3D.deleteatom(core3D.natoms-1)
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
@@ -1662,6 +1680,8 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 thetax = random.uniform(0.0,360.0)
                 thetay = random.uniform(0.0,360.0)
                 thetaz = random.uniform(0.0,360.0)
+                args.btheta = theta
+                args.bphi = phi
                 # translate
                 an3Db = mol3D()
                 an3Db.copymol3D(an3D)
@@ -1673,6 +1693,8 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 if planar and pos:
                     # place axial
                     R = random.uniform(float(args.mind),float(args.maxd))
+                    args.mind = R
+                    args.maxd = R
                     if 'ax' in args.place:
                         newmol = setPdistanceu(an3D, refbP, core3D.getAtomCoords(0),R,uax)
                     elif 'eq' in args.place:
@@ -1717,6 +1739,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                     newmol.writemxyz(core3D,fname+str(i))
                 # append filename
                 strfiles.append(fname+str(i))
+                getinputargs(args,fname+str(i))
             else:
                 # write new xyz file
                 core3D.writexyz(fname+'R')
@@ -1726,10 +1749,13 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 an3Db.writexyz(fname+'B')
                 strfiles.append(fname+'B')
                 del an3Db
+                getinputargs(args,fname+'R')
+                getinputargs(args,fname+'B')
     else:
         fname = rootdir+'/'+core.ident[0:3]+ligname
         core3D.writexyz(fname)
         strfiles.append(fname)
+        getinputargs(args,fname)
     pfold = rootdir.split('/',1)[-1]
     if args.calccharge:
         args.charge = core3D.charge

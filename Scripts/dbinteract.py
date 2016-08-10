@@ -138,9 +138,9 @@ def getsimilar(smi,nmols,dbselect,finger):
     else:
         obab = 'obabel'
     if dbfs:
-        com = obab+" "+dbfs+" -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
+        com = obab+" '"+dbfs+"' -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
     else:
-        com = obab+" "+dbsdf+" -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
+        com = obab+" '"+dbsdf+"' -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
     ## perform search using bash commandline
     res = mybash(com)
     print res
