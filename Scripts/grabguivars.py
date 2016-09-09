@@ -71,13 +71,13 @@ def getligands(gui):
 ########## set ligands  #############
 #########################################
 def setligands(gui,ligs,ligoccs,lcats,kHs,MLb,lang,lname):
-    ligs = re.split(',|\t|&',ligs)
-    ligoccs = re.split(',|\t|&',ligoccs)
-    lcats = re.split('/|\t|&',lcats)
-    kHs = re.split(',|\t|&',kHs)
-    MLb = re.split(',|\t|&',MLb)
-    lang = re.split(',|\t|&',lang)
-    lname = re.split(',|\t|&',lname)
+    ligs = filter(None,re.split(',|\t|&',ligs))
+    ligoccs = filter(None,re.split(',|\t|&',ligoccs))
+    lcats = filter(None,re.split('/|\t|&',lcats))
+    kHs = filter(None,re.split(',|\t|&',kHs))
+    MLb = filter(None,re.split(',|\t|&',MLb))
+    lang = filter(None,re.split(',|\t|&',lang))
+    lname = filter(None,re.split(',|\t|&',lname))
     for ii in range(0,len(ligs)):
         gui.lig[ii].setCurrentText(ligs[ii])
         if len(ligoccs) > ii and ligoccs[ii]!='':

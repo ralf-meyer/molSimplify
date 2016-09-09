@@ -214,7 +214,7 @@ def parseinput(args):
                 args.suff = l[1].strip('\n')
             ### parse structure generation arguments ###
             if (l[0]=='-bind' and len(l[1:]) > 0):
-                l = filter(None,re.split(' |,|\t',line[:-1]))
+                l = filter(None,re.split(' |,|\t',line))
                 # discard comments
                 for ibind,lbind in enumerate(l):
                     if lbind=='#':
@@ -295,7 +295,10 @@ def parseinput(args):
                     lloc = []
                     l1 = filter(None,re.split(',| ',ll))
                     for lll in l1:
-                        lloc.append(int(lll)-1)
+                        if lll.lower()!='cm':
+                            lloc.append(int(lll)-1)
+                        else:
+                            lloc.append(lll.lower())
                     args.smicat.append(lloc)
             if '-pangles' in line:
                 args.pangles = []

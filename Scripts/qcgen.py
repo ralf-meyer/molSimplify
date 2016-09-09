@@ -28,6 +28,7 @@ def multitcgen(args,strfiles):
     # remove original files
     for xyzf in strfiles:
         os.remove(xyzf+'.xyz')
+        os.remove(xyzf+'.molinp')
     return jobdirs
 
 ### generate terachem input files ###
@@ -74,6 +75,7 @@ def tcgen(args,strfiles,method):
                 os.mkdir(mdir)
         jobdirs.append(mdir)
         shutil.copy2(xyzf,mdir)
+        shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
     # parse extra arguments
     # Method parsing, does not check if a garbage method is used here:
     unrestricted=False
@@ -177,6 +179,7 @@ def multigamgen(args,strfiles):
     for xyzf in strfiles:
         os.remove(xyzf+'.xyz')
         os.remove(xyzf+'.gxyz')
+        os.remove(xyzf+'.molinp')
     return jobdirs
 
 ### generate input files for gamess###
@@ -222,14 +225,15 @@ def gamgen(args,strfiles,method):
                 os.mkdir(mdir)
         jobdirs.append(mdir)
         shutil.copy2(xyzf,mdir)
+        shutil.copy2(xyzf.replace('.gxyz','.molinp'),mdir.replace('.gxyz','.molinp'))
     if method:
         if method[0]=='U' or method[0]=='u':
             method = method[1:]
     # Just carry over spin and charge keywords if they're set. Could do checks, none for now.
     if args.spin:
-       jobparams['MULT']=args.spin
+       jobparams['MULT']=str(args.spin)
     if args.charge:
-       jobparams['ICHARG']=args.charge
+       jobparams['ICHARG']=str(args.charge)
     # Check for existence of basis and sanitize name
     if args.gbasis:
           jobparams['GBASIS']=args.gbasis.upper()
@@ -253,9 +257,14 @@ def gamgen(args,strfiles,method):
         output.write(' $BASIS ')
         if args.ngauss:
             output.write(' GBASIS='+jobparams['GBASIS'])
-            output.write(' NGAUSS='+jobparams['NGAUSS']+' $END\n')
+            output.write(' NGAUSS='+jobparams['NGAUSS'])
         else:
-            output.write(' GBASIS='+jobparams['GBASIS']+' $END\n')
+            output.write(' GBASIS='+jobparams['GBASIS'])
+        if args.ndfunc:
+            output.write(' NDFUNC='+args.ndfunc)
+        if args.npfunc:
+            output.write(' NPFUNC='+args.npfunc)
+        output.write(' $END\n')
         # write $SYSTEM block
         output.write(' $SYSTEM ')
         # check if MWORDS specified by the user
@@ -344,6 +353,7 @@ def multiqgen(args,strfiles):
     # remove original files
     for xyzf in strfiles:
         os.remove(xyzf+'.xyz')
+        os.remove(xyzf+'.molinp')
     return jobdirs
 
 ### generate input files for qchem ###
@@ -387,6 +397,7 @@ def qgen(args,strfiles,method):
                 os.mkdir(mdir)
         jobdirs.append(mdir)
         shutil.copy2(xyzf,mdir)
+        shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
     # Check for existence of basis and sanitize name
     if args.basis and len(args.basis) > 1:
         jobparams['BASIS']=args.basis
