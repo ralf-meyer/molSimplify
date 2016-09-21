@@ -1,6 +1,6 @@
 # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
-import os, sys
+import os, sys, copy
 import glob, re, math, random, string, numpy, pybel
 from math import pi
 from scipy.spatial import Delaunay, ConvexHull
@@ -10,7 +10,7 @@ from Classes.atom3D import *
 from Classes.mol3D import*
 from Classes.globalvars import globalvars
 from operator import add
-
+from periodic_QE import *
 ###############################
 def cell_ffopt(ff,mol,frozenats):
     ### FORCE FIELD OPTIMIZATION ##
@@ -173,6 +173,39 @@ def shave_under_layer(super_cell):
     shaved_cell.deleteatoms(del_list)
     return shaved_cell
 ###############################
+def shave_dim_type(super_cell,dim,mode):
+    ## dim  = 0,1,2
+    ##        x,y,z 
+    #   mode = 1 for max, -1 for min
+    shaved_cell = mol3D()
+    shaved_cell.copymol3D(super_cell)
+    TOL = 1e-1
+
+    dim_ref = 1000
+
+    if (mode == -1):
+        for i,atoms in enumerate(super_cell.getAtoms()):
+            coords = atoms.coords()
+            if (coords[dim] < dim_ref):
+                    dim_ref = coords[dim]
+        del_list = list()
+        for i,atoms in enumerate(super_cell.getAtoms()):
+            coords = atoms.coords()
+            if abs(coords[dim] - dim_ref) < TOL:
+                del_list.append(i)
+    if (mode ==1):
+        extents = find_extents(super_cell)
+        dim_max = extents[dim]
+        del_list = list()
+        for i,atoms in enumerate(super_cell.getAtoms()):
+            coords = atoms.coords()
+            if abs(coords[dim] - dim_max) < TOL:
+                del_list.append(i)
+    ## return
+    shaved_cell.deleteatoms(del_list)
+    return shaved_cell
+###############################
+
 def zero_z(super_cell):
         zeroed_cell = mol3D()
         zeroed_cell.copymol3D(super_cell)
@@ -184,6 +217,55 @@ def zero_z(super_cell):
                         zmin = coords[2]
         zeroed_cell.translate([0,0,-1*zmin])
         return zeroed_cell
+def zero_x(super_cell):
+        zeroed_cell = mol3D()
+        zeroed_cell.copymol3D(super_cell)
+        TOL = 1e-1
+        xmin = 1000;
+        for i,atoms in enumerate(super_cell.getAtoms()):
+                coords = atoms.coords()
+                if (coords[0] < xmin):
+                        xmin = coords[0]
+        zeroed_cell.translate([-1*xmin,0,0])
+        return zeroed_cell
+def zero_y(super_cell):
+        zeroed_cell = mol3D()
+        zeroed_cell.copymol3D(super_cell)
+        TOL = 1e-1
+        ymin = 1000;
+        for i,atoms in enumerate(super_cell.getAtoms()):
+                coords = atoms.coords()
+                if (coords[1] < ymin):
+                        ymin = coords[1]
+        zeroed_cell.translate([0,-1*ymin,0])
+        return zeroed_cell
+def dodgy_fix(unit_cell,cell_vector):
+    fixed_cell = mol3D()
+    fixed_cell.copymol3D(unit_cell)
+    mind = 100
+    for i,atoms in enumerate(fixed_cell.getAtoms()):
+        this_distance = mdistance(atoms.coords(),[0,0,0])
+        print("min d is " + str(mind))
+        print("atom at " + str(atoms.coords()) )
+        if this_distance < mind:
+            mind = this_distance
+            minatom = atoms
+            minind = i
+            print('this was saved')
+        print("\n\n")
+    a = cell_vector[0]
+
+    b = cell_vector[1]
+    c = cell_vector[2]
+    dx = c[0]
+    dy = c[1]
+    dz = c[2]
+    trans_vect =(dx,dy,dz)
+    new_atom =atom3D(minatom.symbol(),minatom.coords())
+    new_atom.translate(trans_vect)
+    fixed_cell.addAtom(new_atom)
+    fixed_cell.deleteatoms([minind])
+    return fixed_cell
 
 ###############################
 def point_in_box(point,box):
@@ -207,16 +289,20 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
         cut_cell = mol3D()
         cut_cell.copymol3D(unit_cell)
         h,k,l = miller_index
-  #      print(str(h) + ' ' + str(k) +  ' ' +  str(l))
+        print(str(h) + ' ' + str(k) +  ' ' +  str(l))
         disc,p,q = xgcd(k,l)
- #       print(str(p) + ' ' + str(q))
+        print(str(p) + ' ' + str(q))
         cell_vector = numpy.array(cell_vector)
         k1= numpy.dot(p*(k*cell_vector[0]-h*cell_vector[1]) + q*(l*cell_vector[0] - h*cell_vector[2]),l*cell_vector[1] - k*cell_vector[2])
         k2= numpy.dot(l*(k*cell_vector[0]-h*cell_vector[1]) -k*(l*cell_vector[0] - h*cell_vector[2]),l*cell_vector[1] - k*cell_vector[2])
+        print(k1)
+        print(k2)
         tol = 1e-3
         if abs(k2)> tol:
             c = -1*int(round(k1/k2))
             p,q = p+c*l,q - c*k
+        print(p)
+        print(q)
         v1 = p*numpy.array(k*cell_vector[0]-h*cell_vector[1]) + q*numpy.array(l*cell_vector[0] + h*cell_vector[2])
         v2 = numpy.array(l*cell_vector[1]-k*cell_vector[2])
         disc,a,b = xgcd(p*k + q*l,h)
@@ -228,8 +314,8 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
         w[2] = zint
         w[1] = -w[2]/yint
         w[0] = -w[2]/xint
-#        print('w = ' + str(w))
-#        print(miller_index)
+        print('w = ' + str(w))
+        print(miller_index)
         plane_normal = normalize_vector(numpy.cross(vecdiff([xint,0,0],[0,0,zint]),vecdiff([0,yint,0],[0,0,zint])))
         angle = vecangle(plane_normal,[0,0,1])
         u =  numpy.cross(plane_normal,[0,0,1])
@@ -646,7 +732,7 @@ def align_payload_to_multi_site(payload,surface_coord_list,cand_list,bind_dist):
     #print('align symbol is ' + payload.getAtom(cand_ind).symbol())
     new_payload = mol3D()
     new_payload.copymol3D(payload)
-    #print(cand_list)
+    print(cand_list)
     payload_coord = center_of_sym([new_payload.getAtom(i).coords() for i in cand_list ])
     surface_coord = center_of_sym(surface_coord_list)
 
@@ -828,7 +914,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
              this_payload.copymol3D(final_payload)
              payload_coord = center_of_sym([this_payload.getAtom(i).coords() for i in cand_list ])
              this_payload = rotate_around_axis(this_payload,payload_coord,vec,rotate_angle)
-             this_dist = min(periodic_mindist(this_payload,combined_cell,extents),periodic_selfdist(this_payload,extents),this.payload.mindist(combined_cell))
+             this_dist = min(periodic_mindist(this_payload,combined_cell,extents),periodic_selfdist(this_payload,extents),this_payload.mindist(combined_cell))
              if (this_dist > (min_dist + 1e-3)):
                  print('current dist = ' + str(this_dist) + ', the max is ' + str(min_dist))
                  print('accepting rotate at theta  = ' + str(rotate_angle))
@@ -930,7 +1016,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
     if coverage:
         number_of_placements = int(numpy.ceil(max_sites*coverage))
         print('Coverage requested = ' + str(coverage))
-
+    print('masklengh is ' + str(masklength))
     ######## prepare and allocate
     loaded_cell = mol3D()
     loaded_cell.copymol3D(super_cell)
@@ -967,7 +1053,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
             emsg = 'unkown method of molecule placement ' + method
             print(emsg)
             return emsg
-        print('Targert for align is ' + str(align_coord))
+        print('Target for align is ' + str(align_coord))
         ########## actual placement
         payload = mol3D()
         payload.copymol3D(target_molecule)
@@ -1243,6 +1329,15 @@ def slab_module_supervisor(args,rootdir):
     if place_on_slab and align_dist and not align_distance_method:
         print("using custom align distance of " + str(align_dist))
         align_distance_method = "custom"
+    #if args.target_atom_type:
+    #    if not args.target_atom_type in elements:
+    #        masklength = len(args.target_atom_type)
+    #        print("Target masking with length  " +  str(masklength)) 
+    #    else:
+    #        masklength = 1
+    #else:
+    #    masklength = 1
+
 
     ## resolve align distance
     if align_distance_method == "chemisorption":
@@ -1268,10 +1363,18 @@ def slab_module_supervisor(args,rootdir):
                 emsg.append('unable to import cif at ' + str(cif_path))
                 return emsg
         if miller_flag:
+            ###TESTING REMOVE
+#                duplication_vector = [1,1,2]
+#                unit_cell = dodgy_fix(unit_cell,cell_vector)
+#                unit_cell = unit_to_super(unit_cell,cell_vector,duplication_vector)
+                unit_cell.writexyz(rootdir + 'slab/super_pre.xyz')
                 v1,v2,v3,angle,u = cut_cell_to_index(unit_cell,cell_vector,miller_index)
                 cell_vector = [v1,v2,v3]  # change basis of cell to reflect cut, will rotate after gen
                 print('cell vector is now ')
-                print(cell_vector)
+                print(cell_vector[0])
+                print(cell_vector[1])
+                print(cell_vector[2])
+
         if slab_size:
             max_dims = find_extents_cv(cell_vector)
             print('max dims are' + str(max_dims))
@@ -1280,16 +1383,37 @@ def slab_module_supervisor(args,rootdir):
         print('\n')
         print('duplication vector is  '+  str(duplication_vector))
         print('\n')
-        acell = duplication_vector[0]
+        acell = duplication_vector[2]
         bcell = duplication_vector[1]
         ccell = duplication_vector[2]
         if miller_flag:
-                duplication_vector[2] += 4 #enusre enough layers to get to height
+            duplication_vector[2] += 4 #enusre enough layers to get to height
+        #### perfrom duplication
         super_cell = unit_to_super(unit_cell,cell_vector,duplication_vector)
+
         if miller_flag:
+                super_cell.writexyz(rootdir + 'slab/super_pr.xyz')
+                ## this lowers the cell into the xy plane
                 super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
+                super_cell.writexyz(rootdir + 'slab/super_pr_4.xyz')
                 old_cv =  [PointRotateAxis(u,[0,0,0],list(i),angle) for i in cell_vector]
+                vx = v1
+                vx[2] = 0
+                angle = vecangle(vx,[1,0,0])
+                u =  numpy.cross(vx,[1,0,0])
+                print("\n\n\n")
+                print('rotated cv')
+                print(old_cv[0])
+                print(old_cv[1])
+                print(old_cv[2])
+                print("\n\n\n")
+                super_cell.writexyz(rootdir + 'slab/super_pr_5.xyz')
+                super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
+                super_cell.writexyz(rootdir + 'slab/super_pr_6.xyz')
+                super_cell.writexyz(rootdir + 'slab/super_pr65.xyz')
                 duplication_vector[2] -= 4
+
+
         super_cell_vector = [[i*duplication_vector[0] for i in cell_vector[0]],
                          [i*duplication_vector[1] for i in cell_vector[1]],
                          [i*duplication_vector[2] for i in cell_vector[2]]]
@@ -1302,11 +1426,21 @@ def slab_module_supervisor(args,rootdir):
         if miller_flag:
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
-                super_cell = zero_z(super_cell) 
+                super_cell = zero_z(super_cell)
+                super_cell = zero_y(super_cell)
+
+                super_cell = zero_x(super_cell)
+                super_cell.writexyz(rootdir + 'slab/super_pr_7.xyz')
+                vx = [1,-1,0]
+                angle = vecangle(vx,[1,0,0])
+                u =  numpy.cross(vx,[1,0,0])   
+                print('angle is '+str(angle) + " the vec is  " + str(u))
+                super_cell = rotate_around_axis(super_cell,super_cell.centermass(),[0,0,1],-80)
+                super_cell.writexyz(rootdir + 'slab/super_pr_8.xyz')
                 if not slab_size:
                         extents = find_extents_cv(super_cell_vector)
                         target_size = extents[2]
-                        while super_cell_dim[2] > 1.1*slab_size[2]:
+                        while super_cell_dim[2] > 1.1*target_size:
                                 print('slab is too thick, shaving...')
                                 super_cell = shave_surface_layer(super_cell)
                                 super_cell_dim = find_extents(super_cell)
@@ -1323,6 +1457,13 @@ def slab_module_supervisor(args,rootdir):
         print ('\n Created a ' + str(acell)+'x'+str(bcell)+'x' + str(ccell)+' supercell.\n')
         points = [[1,1],[2,1],[0,1],[0,0],[0.5,0.5],[0,2]]
         concave_hull(points,0.1)
+        super_duper_cell = unit_to_super(super_cell,super_cell_vector,[2,2,1])
+        super_duper_cell.writexyz(rootdir + 'slab/SD.xyz')
+        a_totally_new_variable = copy.deepcopy(super_cell_vector)
+        a_totally_new_variable[2][2] = float(super_cell_vector[2][2]) + 20  
+
+        print(slab_module_supervisor)
+        write_periodic_mol3d_to_qe(super_cell,a_totally_new_variable,rootdir + 'slab/slab.in')
     elif not slab_gen: #placement only, skip slabbing!
         super_cell = unit_cell
         super_cell_vector = cell_vector
@@ -1338,12 +1479,14 @@ def slab_module_supervisor(args,rootdir):
                                                  control_angle = control_angle, align_ind = angle_control_partner, align_axis = angle_surface_axis,
                                                  duplicate = duplicate, number_of_placements = num_placements, coverage = coverage,
                                                  weighting_method = 'linear' ,weight = 0, masklength = num_surface_atoms)
-        super_duper_cell = unit_to_super(loaded_cell,old_cell_vector,[2,2,1])
-       
         if not os.path.exists(rootdir + 'loaded_slab'):
                 os.makedirs(rootdir + 'loaded_slab')
         loaded_cell.writexyz(rootdir + 'loaded_slab/loaded.xyz')
+        print('this supercell vector is:')
+        print(super_cell_vector)
+        super_duper_cell = unit_to_super(loaded_cell,super_cell_vector,[2,2,1])
         super_duper_cell.writexyz(rootdir + 'loaded_slab/SD.xyz')
+        write_periodic_mol3d_to_qe(loaded_cell,a_totally_new_variable,rootdir + 'loaded_slab/loaded_slab.in')
 
-
+  
 

@@ -372,6 +372,10 @@ def rungen(installdir,rundir,args,chspfname,globs):
             rootdir = rootdir + '/'+chspfname
         if (args.suff):
             rootdir += args.suff
+        # check for mannual overwrite of 
+        # directory name
+        if args.jobdir:
+            rootdir = rundir + args.jobdir
         # check for top directory
         if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
             args.checkdirt = True
@@ -409,7 +413,7 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 print 'Directory '+rootcheck+' can not be created. Exiting..\n'
                 return
         # check for actual directory
-        if os.path.isdir(rootdir) and not args.checkdirb and not skip:
+        if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
             args.checkdirb = True
             if not args.gui:
                 flagdir=raw_input('\nDirectory '+rootdir +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
@@ -437,8 +441,9 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 rootdir += '_'+str(ifold)
                 os.mkdir(rootdir)
         elif not os.path.isdir(rootdir) or not args.checkdirb and not skip:
-            args.checkdirb = True
-            os.mkdir(rootdir)
+            if not os.path.isdir(rootdir):
+                args.checkdirb = True
+                os.mkdir(rootdir)
         ####################################
         ############ GENERATION ############
         ####################################

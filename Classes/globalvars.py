@@ -36,6 +36,16 @@ elementsbynum=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','
 		    'Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac','Th',
 		    'Pa','U','Np','Pu', 'Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr','Rf','Db','Sg','Bh',
 		    'Hs','Mt','Ds','Rg','Cn','Uut','Fl','Uup','Lv','Uus','Uuo']
+
+## Electronegativity (Pauling) by atom symbol
+endict =     { "H" : 2.20, "Li": 0.98, "Be": 1.57, "B" : 2.04, "C" : 2.55, "N" : 3.04, "O" : 3.44,
+     "F" : 3.98, "Na": 0.93, "Mg": 1.31, "Al": 1.61, "Si": 1.90, "P" : 2.19, "S" : 2.58,
+     "Cl": 3.16, "K" : 0.82, "Ca": 1.00, "Sc": 1.36, "Ti": 1.54, "V" : 1.63, "Cr": 1.66,
+    "Mn": 1.55, "Fe": 1.83, "Co": 1.88, "Ni": 1.91, "Cu": 1.90, "Zn": 1.65,  "Ga": 1.81,
+    "Ge": 2.01, "As": 2.18, "Se": 2.55, "Br": 2.96, "Mo": 2.16, "Tc": 2.10, "Rh": 2.28,
+    "Pd": 2.20, "Ag": 1.93,"Cd": 1.69, "In": 1.78, "Sb": 2.05, "I":  2.66, "Cs": 0.79,
+    "Os": 2.20, "Ir": 2.20, "Pt": 2.28, "Au": 2.54, "Hg": 2.00, "Pb": 2.33,}
+
 ########################################
 ### module for running bash commands ###
 ########################################
@@ -119,3 +129,5 @@ class globalvars:
         return metalslist
     def elementsbynum(self):
         return elementsbynum
+    def endict(self):
+        return endict

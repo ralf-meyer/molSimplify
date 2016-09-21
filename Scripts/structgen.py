@@ -13,6 +13,7 @@
 # import custom modules
 from geometry import *
 from io import *
+from nn_prep import *
 from Classes.globalvars import *
 # import standard modules
 import os, sys
@@ -540,6 +541,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     remCM = False   # remove dummy center of mass atom
     ### load bond data ###
     MLbonds = loaddata(installdir+'/Data/ML.dat')
+
+    #### ANN pluggin
+#    examine_inputs(args,geom,ocs,ligs)
+
+
+
+
     ### calculate occurrences, denticities etc for all ligands ###
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
@@ -1633,14 +1641,8 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
             core3D.charge += int(args.bcharge)
         elif args.calccharge:
             core3D.charge += int(an3D.charge)
-        ### check if smiles string in binding species
-        if bsmi:
-            if args.nambsmi: # if name specified use it in file
-                fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
-            else: # else use default
-                fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm' 
-        else: # else use name from binding in dictionary
-            fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+        # fetch base name
+        fname = get_name(args,rootdir,core,ligname,bind,bsmi)
         # check if planar
         conats = core3D.getBondedAtomsnotH(0)
         planar,pos = False, False
@@ -1655,7 +1657,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                     th,uax = rotation_params(r[0],r[1],r[2])
                     ueq = vecdiff(r[random.randint(0,3)],core3D.getAtomCoords(0))
                     break
-        for i in range(0,Nogeom+1):        
+        for i in range(0,Nogeom+1):
             # generate random sequence of parameters for rotate()
             totits = 0
             while True:
@@ -1667,7 +1669,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                     theta = float(args.btheta)
                 # if specific angle is requested force angle
                 if (args.place and not args.bphi and not args.btheta):
-                    if ('ax' in args.place):
+                    if ('a' in args.place):
                         theta = 90.0
                         theta1 = -90.0
                         pos = True
@@ -1752,7 +1754,9 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        fname = rootdir+'/'+core.ident[0:3]+ligname
+        print(rootdir)
+        fname = get_name(args,rootdir,core,ligname)
+        print(fname)
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)

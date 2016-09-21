@@ -1,4 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
+# modified by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ##############################################################
@@ -212,6 +213,13 @@ def parseinput(args):
                     args.rundir = args.rundir[:-1]
             if (l[0]=='-suff'):
                 args.suff = l[1].strip('\n')
+            if (l[0]=='-name'):
+                args.name =l[1]
+            if (l[0]=='-jobdir'):
+                if (len(l) > 1):
+                    args.jobdir =l[1]
+                else:
+                    args.jobdirblank = True 
             ### parse structure generation arguments ###
             if (l[0]=='-bind' and len(l[1:]) > 0):
                 l = filter(None,re.split(' |,|\t',line))
@@ -522,6 +530,8 @@ def parsecommandline(parser):
     parser.add_argument("-suff","--suff", help="suffix for jobs folder.",action="store_true")
     # structure generation options
     parser.add_argument("-ccatoms","--ccatoms", help="core connection atoms indices, indexing starting from 1",action="store_true")
+    parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
+    parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
     parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6 
     parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(installdir),action="store_true") #e.g. ferrocene
     parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(installdir),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding

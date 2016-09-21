@@ -26,9 +26,10 @@ def multitcgen(args,strfiles):
     else:
         jobdirs.append(tcgen(args,strfiles,method))
     # remove original files
-    for xyzf in strfiles:
-        os.remove(xyzf+'.xyz')
-        os.remove(xyzf+'.molinp')
+    if not args.jobdir:
+        for xyzf in strfiles:
+            os.remove(xyzf+'.xyz')
+            os.remove(xyzf+'.molinp')
     return jobdirs
 
 ### generate terachem input files ###
@@ -53,6 +54,7 @@ def tcgen(args,strfiles,method):
     # Overwrite plus add any new dictionary keys from commandline input.       
     for xyzf in strfiles:
         rdir = xyzf.rsplit('/',1)[0]
+        print("rdir is " + rdir)
         xyzft = xyzf.rsplit('/',1)[-1]
         xyzf += '.xyz'
         coordfs.append(xyzf.rsplit('/',1)[-1])
@@ -62,7 +64,7 @@ def tcgen(args,strfiles,method):
             nametrunc=coordname[0:6]+coordname[-4:]
         else:
             nametrunc=coordname
-        if not os.path.exists(rdir+'/'+nametrunc):
+        if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
             os.mkdir(rdir+'/'+nametrunc) 
         mdir = rdir+'/'+nametrunc
         if method:
@@ -73,9 +75,12 @@ def tcgen(args,strfiles,method):
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
                 os.mkdir(mdir)
-        jobdirs.append(mdir)
-        shutil.copy2(xyzf,mdir)
-        shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+        if not args.jobdir:
+            jobdirs.append(mdir)
+            shutil.copy2(xyzf,mdir)
+            shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+        elif args.jobdir:
+             jobdirs.append(rdir)
     # parse extra arguments
     # Method parsing, does not check if a garbage method is used here:
     unrestricted=False
@@ -141,14 +146,25 @@ def tcgen(args,strfiles,method):
        if not jobparams.has_key('levelshiftvalb'):
           jobparams['levelshiftvalb']='0.1'
     # Now we're ready to start building the input file
-    for i,jobd in enumerate(jobdirs):
-        output=open(jobd+'/terachem_input','w')
-        output.write('# file created with %s\n' % globs.PROGRAM)
-        jobparams['coordinates'] = coordfs[i]
-        for keys in jobparams.keys():
-            output.write('%s %s\n' %(keys,jobparams[keys]))
-        output.write('end\n')
-        output.close()
+    if not args.jobdir:
+        for i,jobd in enumerate(jobdirs):
+            output=open(jobd+'/terachem_input','w')
+            output.write('# file created with %s\n' % globs.PROGRAM)
+            jobparams['coordinates'] = coordfs[i]
+            for keys in jobparams.keys():
+                output.write('%s %s\n' %(keys,jobparams[keys]))
+            output.write('end\n')
+            output.close()
+    elif args.jobdir:
+        for i,jobd in enumerate(jobdirs):
+            print('jobd is ' + jobd)
+            output=open(jobd+ '/'+args.name + '.in','w')
+            output.write('# file created with %s\n' % globs.PROGRAM)
+            jobparams['coordinates'] = coordfs[i]
+            for keys in jobparams.keys():
+                output.write('%s %s\n' %(keys,jobparams[keys]))
+            output.write('end\n')
+            output.close()
     return jobdirs
 
 #####################################################
@@ -387,7 +403,7 @@ def qgen(args,strfiles,method):
             nametrunc=coordname[0:6]+coordname[-4:]
         else:
             nametrunc=coordname
-        if not os.path.exists(rdir+'/'+nametrunc):
+        if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
             os.mkdir(rdir+'/'+nametrunc) 
         mdir = rdir+'/'+nametrunc
         if method:
@@ -395,6 +411,7 @@ def qgen(args,strfiles,method):
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
                 os.mkdir(mdir)
+
         jobdirs.append(mdir)
         shutil.copy2(xyzf,mdir)
         shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))

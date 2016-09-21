@@ -332,7 +332,18 @@ class mol3D:
         # OUTPUT
         #   number of atoms in molecule
         return self.atoms
+    #################################    
+    ### returns # of atom types   ###
+    #################################
+    def getAtomTypes(self):
+        # OUTPUT
+        #   list of types atoms in molecule
+        unique_atoms_list = list()
+        for atoms in self.getAtoms():
+            if atoms.symbol() not in unique_atoms_list:
+                        unique_atoms_list.append(atoms.symbol())
 
+        return unique_atoms_list
     ############################################
     ### returns coordinates of atom by index ###
     ############################################
