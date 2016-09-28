@@ -206,6 +206,7 @@ def parseinput(args):
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = [int(ll)-1 for ll in l[1:]]
             if (l[0]=='-rundir'):
+                print('in inparse, rundir found',l)
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -477,6 +478,11 @@ def parseinput(args):
                  args.slab_size = [float(i.strip('(){}<>[],.')) for i in l[1:]]
             if (l[0]=='-miller_index'): #6
                 args.miller_index = [int(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0]=='-freeze'): #6
+                try:
+                    args.freeze = int(l[1].strip('(){}<>[],.'))
+                except:
+                    args.freeze = True
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -659,6 +665,9 @@ def parsecommandline(parser):
     # slab buidler: optional
     parser.add_argument("-miller_index","--miller_index",
                         help="list of 3 int, miller indicies") #6
+    parser.add_argument("-freeze","--freeze",
+                        help="bool or int, bottom layers of cell to freeze") #6
+
     # placement input: control
     parser.add_argument("-place_on_slab","--place_on_slab",
                         help = "enables  placement on slab ",action="store_true") #0

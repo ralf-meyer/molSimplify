@@ -542,11 +542,6 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     ### load bond data ###
     MLbonds = loaddata(installdir+'/Data/ML.dat')
 
-    #### ANN pluggin
-#    examine_inputs(args,geom,ocs,ligs)
-
-
-
 
     ### calculate occurrences, denticities etc for all ligands ###
     for i,ligname in enumerate(ligs):
@@ -643,6 +638,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     ### load backbone and combinations ###
     # load backbone for coordination
     corexyz = loadcoord(installdir,geom)
+
+
     # get combinations possible for specified geometry
     if geom in bbcombsdict.keys() and not args.ligloc:
         backbatoms = bbcombsdict[geom]
@@ -697,6 +694,11 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                 bats,backbatoms = getnupdateb(backbatoms,dents[i])
                 batslist.append(bats)
     #########################################################
+    #### ANN pluggin
+
+    examine_inputs(args,ligs,occs,dents,batslist,installdir,licores)
+    
+    ##############################
     ###############################
     #### loop over ligands and ####
     ### begin functionalization ###

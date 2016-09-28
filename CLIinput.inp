@@ -1,11 +1,18 @@
 # molSimplify input file generated from CLI input
--slab_gen 
--cif_path Unitcells/anatase_tio2.cif 
--slab_size [12,12,8] 
--place_on_slab 
--target_molecule /home/jp/Runs/mo5.xyz 
--align_method alignpair 
--surface_atom_type Ti 
--num_surface_atoms 4 
--object_align 2,3,4,5 
--align_dist 2.5
+-core Fe 
+-coord 6 
+-lig acac,acac,water,water 
+-ligocc 1,1,1,1 
+-rundir /home/jp/Dropbox/Main/testingANN
+ 
+-jobdir t1 
+-name feaci 
+ 
+-geometry oct 
+-distort 0 checkdirb True 
+-ligalign True 
+-keepHs False 
+-bcharge 0 
+-ligloc 1 
+-oxstate 0 
+-spin 1

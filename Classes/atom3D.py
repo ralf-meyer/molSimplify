@@ -32,6 +32,8 @@ class atom3D:
             self.mass = amass[Sym][0] # atomic mass
             self.atno = amass[Sym][1] # atomic number
             self.rad = amass[Sym][2] # atomic covalent radius
+        self.frozen =  False # should this atom be frozen in 
+                             # optimization
         self.__xyz = xyz # coords
             
     ################################
