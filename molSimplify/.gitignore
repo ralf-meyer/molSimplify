@@ -1,0 +1,10 @@
+build/
+molSimplify.egg-info/
+db1.xyz
+db2.xyz
+db3.xyz
+before_rot.xyz
+modi.xyz
+main.BKP
+*.pyc
+*.swp

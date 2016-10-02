@@ -1,18 +1,7 @@
 # molSimplify input file generated from CLI input
 -core Fe 
+-lig water,water,water,water,water,water 
+-oxstate 2 
+-spin 6 
 -coord 6 
--lig acac,acac,water,water 
--ligocc 1,1,1,1 
--rundir /home/jp/Dropbox/Main/testingANN
- 
--jobdir t1 
--name feaci 
- 
--geometry oct 
--distort 0 checkdirb True 
--ligalign True 
--keepHs False 
--bcharge 0 
--ligloc 1 
--oxstate 0 
--spin 1
+-geometry oct

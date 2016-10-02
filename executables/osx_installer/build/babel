@@ -1,2 +1,0 @@
-chown root /usr/local/bin/brew
-/usr/local/bin/brew install open-babel --with-python
