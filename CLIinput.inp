@@ -1,7 +1,1 @@
 # molSimplify input file generated from CLI input
--core Fe 
--lig water,water,water,water,water,water 
--oxstate 2 
--spin 6 
--coord 6 
--geometry oct
