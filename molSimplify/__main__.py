@@ -31,8 +31,10 @@ from Scripts.generator import *
 
 
 def main(args=None):
+    print('main_invoked')
     if args is None:
         args = sys.argv[1:]
+    print(args)
     ### run GUI by default ###
     args = sys.argv[1:]
     gui = True
@@ -40,7 +42,7 @@ def main(args=None):
     try:
         import PyQt5
         from PyQt5.QtGui import *
-        from .Classes.mGUI import *
+        from Classes.mGUI import *
     except ImportError:
         if len(args)==0:
             print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"

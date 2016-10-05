@@ -465,7 +465,8 @@ def parseinput(args):
                 args.pnbo = True
             # parse slab building arguments
             if (l[0]=='-slab_gen'): #0
-               args.slab_gen = True
+                print('slab gen')
+                args.slab_gen = True
             if (l[0]=='-unit_cell'): #1 
                 args.unit_cell = l[1]
             if (l[0]=='-cell_vector'): #2

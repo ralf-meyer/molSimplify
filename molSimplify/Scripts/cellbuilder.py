@@ -58,8 +58,6 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
         if abs(k2)> tol:
             c = -1*int(round(k1/k2))
             p,q = p+c*l,q - c*k
-     #   print(p)
-     #   print(q)
         v1 = p*numpy.array(k*cell_vector[0]-h*cell_vector[1]) + q*numpy.array(l*cell_vector[0] - h*cell_vector[2])
         v2 = numpy.array(l*cell_vector[1]-k*cell_vector[2])
         disc,a,b = xgcd(p*k + q*l,h)
@@ -823,6 +821,7 @@ def axes_angle_align(payload,cand_ind,align_ind,align_target,angle):
 ##########################################
 
 def slab_module_supervisor(args,rootdir):
+    print('******** cell builder on ********')
     ###################################
     ###################################
     ############# INPUT ###############
@@ -831,8 +830,8 @@ def slab_module_supervisor(args,rootdir):
     slab_gen = False 
     place_on_slab = False 
     ### Required Input: slab generation
-    #unit_cell = False
-    #cell_vector = False
+    unit_cell = False
+    cell_vector = False
     ## OR
     cif_path = False
     duplication_vector =False 
@@ -942,12 +941,20 @@ def slab_module_supervisor(args,rootdir):
     if (args.freeze):
         freeze = args.freeze
     ### check inputs
+    if slab_gen and not (slab_size or duplication_vector):
+        emsg="Size of slab required (-slab_size or -duplication_vector)"
+        print(emsg)
+        return emsg 
+    if slab_gen and not ((unit_cell and cell_vector) or cif_path):
+        emsg="Unit cell info required! (-cif_path or -unit_cell and cell_vector)"
+        print(emsg)
+        return emsg 
+
     if not import_success:
         print(emsg)
         return emsg
     if num_placements >1 and not multi_placement_centering_overide:
         multi_placement_centering = 1 # reccomended for multiple placments
-
     if not slab_gen and not place_on_slab:
         emsg.append('Slab builder module not enabled, placement mode not enabled - no action taken ')
         print(emsg)
@@ -1001,7 +1008,7 @@ def slab_module_supervisor(args,rootdir):
             ###TESTING REMOVE
                 unit_cell.writexyz(rootdir + 'slab/super_pre.xyz')
                 print('\n\n')
-                old_cell_vector = copy.deepcopy(cell_vector)
+#                old_cell_vector = copy.deepcopy(cell_vector)
                 print('cell vector was ')
                 print(cell_vector[0])
                 print(cell_vector[1])
@@ -1028,7 +1035,7 @@ def slab_module_supervisor(args,rootdir):
             print('max dims are' + str(max_dims))
             duplication_vector = [int(numpy.ceil(slab_size[i]/max_dims[i])) for i in [0,1,2]]
 
-        ext_duplication_vector =[[0,0,0],[0,0,0],[0,0,0]] 
+        ext_duplication_vector =[[0,0,0],[0,0,0],[0,0,0]]
         for i in [0,1,2]:
             ext_duplication_vector[i][i] = max_dims[i]
  #       print('\n cell vector is '  + str(cell_vector))
@@ -1093,29 +1100,31 @@ def slab_module_supervisor(args,rootdir):
         print(super_cell_vector[0])
         print(super_cell_vector[1])
         print(super_cell_vector[2])
+        print('curious?')
         print('\n\n')
 #        old_super_cell_vector = [[i*duplication_vector[0] for i in old_cell_vector[0]],
 #                         [i*duplication_vector[1] for i in old_cell_vector[1]],
 #                         [i*duplication_vector[2] for i in old_cell_vector[2]]]
-        old_super_cell_vector = [[i*4 for i in old_cell_vector[0]],
-                         [i*4 for i in old_cell_vector[1]],
-                         [i*2 for i in old_cell_vector[2]]]
- 
-        print('old_super_cell vector is now ')
-        print(old_super_cell_vector[0])
-        print(old_super_cell_vector[1])
-        print(old_super_cell_vector[2])
-        print('\n\n')
+#        old_super_cell_vector = [[i*4 for i in old_cell_vector[0]],
+#                         [i*4 for i in old_cell_vector[1]],
+#                         [i*2 for i in old_cell_vector[2]]]
+
+
+#        print('old_super_cell vector is now ')
+#        print(old_super_cell_vector[0])
+#        print(old_super_cell_vector[1])
+#        print(old_super_cell_vector[2])
+#        print('\n\n')
 #
         if miller_flag:
             r_cell_vector = [[i*duplication_vector[0] for i in r_cv[0]],
                              [i*duplication_vector[1] for i in r_cv[1]],
                              [i*duplication_vector[2] for i in r_cv[2]]]
-        print('r_cell vector is now ')
-        print(r_cell_vector[0])
-        print(r_cell_vector[1])
-        print(r_cell_vector[2])
-        print('\n\n')
+            print('r_cell vector is now ')
+            print(r_cell_vector[0])
+            print(r_cell_vector[1])
+            print(r_cell_vector[2])
+            print('\n\n')
 #
         super_cell_dim = find_extents(super_cell)
         if miller_flag:
@@ -1202,7 +1211,6 @@ def slab_module_supervisor(args,rootdir):
         points = [[1,1],[2,1],[0,1],[0,0],[0.5,0.5],[0,2]]
         concave_hull(points,0.1)
         super_duper_cell = unit_to_super(super_cell,ext_duplication_vector,[2,2,1])
-#        super_duper_cell = unit_to_super(super_cell,r_cell_vector,[2,2,2])
 
         super_duper_cell.writexyz(rootdir + 'slab/SD.xyz')
         a_totally_new_variable = copy.deepcopy(ext_duplication_vector)
