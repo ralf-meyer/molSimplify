@@ -160,6 +160,7 @@ def get_con_at_type(mol,connection_atoms):
 
 def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     nn_excitation = []
+    r = 0
     emsg = list()
     valid = True 
     metal = args.core
@@ -187,7 +188,6 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
 
 
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
-        
         print("\n")
         print('Here comes occs')
         print(occs)
@@ -211,7 +211,6 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             if r_emsg:
                     emsg += r_emsg
             eq_lig3D.convert2mol3D() ## mol3D representation of ligand
-    
             if ax_tcat:
                     ax_lig3D.cat = ax_tcat
                     print('custom ax tcat ',ax_tcat)
@@ -238,7 +237,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         eq_charge = eq_lig3D.OBmol.charge
         ax_charge = ax_lig3D.OBmol.charge
 
-    
+         
         ## preprocess:
         sum_delen  = (2.0/ax_dent)*ax_EN + (4.0/float(eq_dent)) 
         if abs(eq_EN) > abs(ax_EN):
@@ -304,7 +303,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             print('You have selected a high-spin state, s = ' + str(spin))
         else:
             print('You have selected a low-spin state, s = ' + str(spin))
-
+        ## engage ANN
         delta = 0 
         delta = get_splitting(nn_excitation)
         if delta[0] < 0 and not high_spin:
@@ -316,12 +315,19 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             if abs(delta[0]) > 5:
                 print('warning, ANN predicts a low spin ground state for this complex')
             else:
-                print('warning, ANN predicts a near degenerate ground state for this complex')
+                    print('warning, ANN predicts a near degenerate ground state for this complex')
         print("ANN predicts a spin splitting (HS - LS) of " + str(delta[0]) + ' kcal/mol')
+        r = 0
+        if not high_spin:
+            r = get_ls_dist(nn_excitation)
+        else:
+            r = get_hs_dist(nn_excitation)
+
+        print('ANN bond length is predicted to be: '+str(r) + ' angstrom')
         print("*******************************************************************")
 
 
-    return valid,nn_excitation
+    return valid,r
 
 
 def ax_lig_corrector(excitation,con_atom_type):
@@ -400,4 +406,15 @@ def get_splitting(excitation):
     delta = simple_splitting_ann(excitation)
     delta = delta*sfd['split_energy'][1] + sfd['split_energy'][0] 
     return delta
+def get_ls_dist(excitation):
+    sfd = get_sfd()
+    r = simple_ls_ann(excitation)
+    r = r*sfd['ls_min'][1] + sfd['ls_min'][0] 
+    return r
+
+def get_hs_dist(excitation):
+    sfd = get_sfd()
+    r = simple_hs_ann(excitation)
+    r = r*sfd['hs_min'][1] + sfd['hs_min'][0] 
+    return r
 

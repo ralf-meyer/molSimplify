@@ -13,5 +13,13 @@ strc =( "molsimplify"+" -core"+" Ni "+"-coord "+' 6 '+"-lig" +" water,water,wate
                  '-keepHs'+' False '+'-bcharge'+' 0 '+'-ligloc 1 '+
                  '-oxstate'+' 2 '+'-spin'+' 1')
 
-print(strc)
-subprocess.call(strc,shell=True)
+#print(strc)
+#subprocess.call(strc,shell=True)
+subprocess.call(["python","-m",'molSimplify.__main__'," -core"+" Fe "+"-coord "+' 6 '+"-lig " +"misc,misc,misc,misc,misc,misc "+"-ligocc"+' 1,1,1,1,1,1 '+
+                 '-rundir ' + '/home/jp/Dropbox/Main/testingANN\n ' + ' -jobdir "t1" ' + '-name niwataci '+
+                 '-geometry'+' oct '+'-distort'+' 0 ''checkdirb'+' True '+'-ligalign '+' True '+
+                 '-keepHs'+' False '+'-bcharge'+' 0 '+'-ligloc 1 '+
+                 '-oxstate'+' 2 '+'-spin'+' 1'])
+
+
+

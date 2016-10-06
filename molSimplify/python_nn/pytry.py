@@ -106,6 +106,18 @@ def simple_splitting_ann(excitation):
     n = simple_network_builder([25,4,4],globs.installdir + "python_nn/nn_simple")
     result = n.activate(excitation)
     return result
+def simple_ls_ann(excitation):
+    globs=globalvars()
+    n = simple_network_builder([25,8,6],globs.installdir + "python_nn/ls_simple")
+    result = n.activate(excitation)
+    return result
+def simple_hs_ann(excitation):
+    globs=globalvars()
+    n = simple_network_builder([25,8,6],globs.installdir + "python_nn/hs_simple")
+    result = n.activate(excitation)
+    return result
+
+
 
 #for c in [connection for connections in n.connections.values() for connection in connections]:
 #        print("{} -> {} => {}".format(c.inmod.name, c.outmod.name, c.params))

@@ -1,5 +1,4 @@
 # molSimplify input file generated from CLI input
 -slab_gen 
--cif_path molSimplify/Unitcells/anatase_tio2.cif 
--slab_size [9,9,9] 
--miller_index [1,0,1]
+-cif_path /home/jp/Dropbox/MyGit/molSimplify_src/molSimplify/Unitcells/anatase_tio2.cif 
+-slab_size [15,15,10]
