@@ -46,14 +46,14 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
         cut_cell = mol3D()
         cut_cell.copymol3D(unit_cell)
         h,k,l = miller_index
-        print('h,k,l',str(h) + ' ' + str(k) +  ' ' +  str(l))
+        #print('h,k,l',str(h) + ' ' + str(k) +  ' ' +  str(l))
         disc,p,q = xgcd(k,l)
-        print('p,q',str(p) + ' ' + str(q))
+        #print('p,q',str(p) + ' ' + str(q))
         cell_vector = numpy.array(cell_vector)
         k1= numpy.dot(p*(k*cell_vector[0]-h*cell_vector[1]) + q*(l*cell_vector[0] - h*cell_vector[2]),l*cell_vector[1] - k*cell_vector[2])
         k2= numpy.dot(l*(k*cell_vector[0]-h*cell_vector[1]) -k*(l*cell_vector[0] - h*cell_vector[2]),l*cell_vector[1] - k*cell_vector[2])
-        print('k1',k1)
-        print('k2',k2)
+        #print('k1',k1)
+        #print('k2',k2)
         tol = 1e-3
         if abs(k2)> tol:
             c = -1*int(round(k1/k2))
@@ -71,7 +71,7 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
             else:
                 zero_indices.append(i)
 
-        print('nz ind',non_zero_indices)
+        #print('nz ind',non_zero_indices)
         if len(non_zero_indices)==3:
             zint = 1/(miller_index[2]*cell_vector[2][2])
             yint = 1/(miller_index[1]*cell_vector[1][1])
@@ -91,11 +91,11 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
             vec2[non_zero_indices[1]] = cell_vector[non_zero_indices[1]][non_zero_indices[1]]
             vec3 = [0,0,0]
             vec3[zero_indices[0]] = cell_vector[zero_indices[0]][zero_indices[0]]
-            print('vec1',vec1)
-            print('vec2',vec2)
-            print('vec3',vec3)
+         #   print('vec1',vec1)
+         #   print('vec2',vec2)
+         #   print('vec3',vec3)
             plane_normal = normalize_vector(numpy.cross(vecdiff(vec1,vec2),vec3))
-            print('plane normal is ', plane_normal)
+         #   print('plane normal is ', plane_normal)
 
        # print(miller_index)
         angle = vecangle(plane_normal,[0,0,1])
@@ -109,9 +109,9 @@ def concave_hull(points,alpha):
     for i in de.simplices:
         tmp = []
         j = [points[c] for c in i]
-        print(i)
-        print(j)
-    print(de)
+    #    print(i)
+    #    print(j)
+    #print(de)
 
 points= [[1,1],[1,0],[0,1],[0,0]]
 
@@ -673,9 +673,9 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
                     align_coord = super_cell.getAtom(nn_site).coords()
                     sites_list.append(align_coord)
                     occupied_sites_dict[nn_site] = avail_sites_dict.pop(nn_site) # this transfers the site to occupied
-                print(occupied_sites_dict.keys())
-                for i in sites_list:
-                    print(i)
+       #         print(occupied_sites_dict.keys())
+        #        for i in sites_list:
+        #            print(i)
                 align_coord = center_of_sym(sites_list)
 
         else:
@@ -698,7 +698,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay = mol3D()
         temp_pay.copymol3D(payload)
         debug_cell.combine(temp_pay)
-        debug_cell.writexyz('db1.xyz')
+      #  debug_cell.writexyz('db1.xyz')
 
         ######### find matching atom in payload
         # need to determine if the target is an element or a mask
@@ -740,7 +740,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay2.copymol3D(payload)
         temp_pay2.translate([0,0,-5])
         debug_cell.combine(temp_pay2)
-        debug_cell.writexyz('db2.xyz')
+     #   debug_cell.writexyz('db2.xyz')
 
         ####### lower payload to distance, rotate to avoid conflicr
         loaded_cell = combine_multi_aligned_payload_with_cell(loaded_cell,super_cell_vector,payload,cand_list,sites_list,align_dist,duplicate,control_angle)
@@ -749,7 +749,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay3 = mol3D()
         temp_pay3.copymol3D(payload)
         debug_cell.combine(temp_pay3)
-        debug_cell.writexyz('db3.xyz')
+    #    debug_cell.writexyz('db3.xyz')
         print('number of atoms = ' + str(loaded_cell.natoms))
         print("\n")
     ###### run tests
@@ -968,6 +968,9 @@ def slab_module_supervisor(args,rootdir):
     if place_on_slab and align_dist and not align_distance_method:
         print("using custom align distance of " + str(align_dist))
         align_distance_method = "custom"
+
+
+    debug = False
     #if args.target_atom_type:
     #    if not args.target_atom_type in elements:
     #        masklength = len(args.target_atom_type)
@@ -1006,26 +1009,26 @@ def slab_module_supervisor(args,rootdir):
                 return emsg
         if miller_flag:
             ###TESTING REMOVE
-                unit_cell.writexyz(rootdir + 'slab/super_pre.xyz')
-                print('\n\n')
-#                old_cell_vector = copy.deepcopy(cell_vector)
-                print('cell vector was ')
-                print(cell_vector[0])
-                print(cell_vector[1])
-                print(cell_vector[2])
-                print('\n**********************\n')
-
+                if debug:
+                    unit_cell.writexyz(rootdir + 'slab/super_pre.xyz')
+                    print('\n\n')
+#                    old_cell_vector = copy.deepcopy(cell_vector)
+                    print('cell vector was ')
+                    print(cell_vector[0])
+                    print(cell_vector[1])
+                    print(cell_vector[2])
+                    print('\n**********************\n')
                 v1,v2,v3,angle,u = cut_cell_to_index(unit_cell,cell_vector,miller_index)
 
                 cell_vector = [v1,v2,v3]  # change basis of cell to reflect cut, will rotate after gen
-                print('cell vector is now ')
-                print(cell_vector[0])
-                print(cell_vector[1])
-                print(cell_vector[2])
-                print('\n\n')
-
+                if debug:
+                    print('cell vector is now ')
+                    print(cell_vector[0])
+                    print(cell_vector[1])
+                    print(cell_vector[2])
+                    print('\n\n')
 #                cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),-1*angle) for i in cell_vector]
-                unit_cell.writexyz(rootdir + 'slab/super_post.xyz')
+                    unit_cell.writexyz(rootdir + 'slab/super_post.xyz')
 #                unit_cell = rotate_around_axis(unit_cell,[0,0,0],u,-1*angle)
 #                unit_cell.writexyz(rootdir + 'slab/just_flat.xyz')
 
@@ -1041,8 +1044,9 @@ def slab_module_supervisor(args,rootdir):
  #       print('\n cell vector is '  + str(cell_vector))
 
 #        print('\n\n\n')
-        print('duplication vector is  '+  str(duplication_vector))
-        print('\n')
+        if debug:
+            print('duplication vector is  '+  str(duplication_vector))
+            print('\n')
         acell = duplication_vector[2]
         bcell = duplication_vector[1]
         ccell = duplication_vector[2]
@@ -1054,7 +1058,8 @@ def slab_module_supervisor(args,rootdir):
         ###########################
         #### perfrom duplication
         super_cell = unit_to_super(unit_cell,cell_vector,duplication_vector)
-        super_cell.writexyz(rootdir + 'slab/just_2.xyz')
+        if debug:
+            super_cell.writexyz(rootdir + 'slab/just_2.xyz')
         ############################
         ############################
         ext_duplication_vector = [[i*duplication_vector[0] for i in ext_duplication_vector[0]],
@@ -1062,27 +1067,28 @@ def slab_module_supervisor(args,rootdir):
                          [i*duplication_vector[2] for i in ext_duplication_vector[2]]]
  
         if miller_flag:
-           super_cell.writexyz(rootdir + 'slab/super_pr.xyz')
+           if debug:
+               super_cell.writexyz(rootdir + 'slab/super_pr.xyz')
            ## this lowers the cell into the xy plane
            super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
-           super_cell.writexyz(rootdir + 'slab/just_flat.xyz')
+           if debug:
+               super_cell.writexyz(rootdir + 'slab/just_flat.xyz')
 
 
            r_cv =  [PointRotateAxis(u,[0,0,0],list(i),angle) for i in cell_vector]
-           print("\n\n\n")
-           print('rotated cv')
-           print(r_cv[0])
-           print(r_cv[1])
-           print(r_cv[2])
-           print("\n\n\n")
-           print('ext_dup vector is now ')
-           print(ext_duplication_vector[0])
-           print(ext_duplication_vector[1])
-           print(ext_duplication_vector[2])
-           print('\n\n')
-#
-
-           super_cell.writexyz(rootdir + 'slab/super_pr_4_after1r.xyz')
+           if debug:
+               print("\n\n\n")
+               print('rotated cv')
+               print(r_cv[0])
+               print(r_cv[1])
+               print(r_cv[2])
+               print("\n\n\n")
+               print('ext_dup vector is now ')
+               print(ext_duplication_vector[0])
+               print(ext_duplication_vector[1])
+               print(ext_duplication_vector[2])
+               print('\n\n')
+               super_cell.writexyz(rootdir + 'slab/super_pr_4_after1r.xyz')
  #               super_cell.writexyz(rootdir + 'slab/super_pr_5_before2r.xyz')
 #               vx = v1
 #               vx[2] = 0
@@ -1096,12 +1102,13 @@ def slab_module_supervisor(args,rootdir):
         super_cell_vector = [[i*duplication_vector[0] for i in cell_vector[0]],
                          [i*duplication_vector[1] for i in cell_vector[1]],
                          [i*duplication_vector[2] for i in cell_vector[2]]]
-        print('super_cell vector is now ')
-        print(super_cell_vector[0])
-        print(super_cell_vector[1])
-        print(super_cell_vector[2])
-        print('curious?')
-        print('\n\n')
+        if debug:
+            print('super_cell vector is now ')
+            print(super_cell_vector[0])
+            print(super_cell_vector[1])
+            print(super_cell_vector[2])
+            print('curious?')
+            print('\n\n')
 #        old_super_cell_vector = [[i*duplication_vector[0] for i in old_cell_vector[0]],
 #                         [i*duplication_vector[1] for i in old_cell_vector[1]],
 #                         [i*duplication_vector[2] for i in old_cell_vector[2]]]
@@ -1120,15 +1127,17 @@ def slab_module_supervisor(args,rootdir):
             r_cell_vector = [[i*duplication_vector[0] for i in r_cv[0]],
                              [i*duplication_vector[1] for i in r_cv[1]],
                              [i*duplication_vector[2] for i in r_cv[2]]]
-            print('r_cell vector is now ')
-            print(r_cell_vector[0])
-            print(r_cell_vector[1])
-            print(r_cell_vector[2])
-            print('\n\n')
+            if debug:
+                print('r_cell vector is now ')
+                print(r_cell_vector[0])
+                print(r_cell_vector[1])
+                print(r_cell_vector[2])
+                print('\n\n')
 #
         super_cell_dim = find_extents(super_cell)
         if miller_flag:
-                super_cell.writexyz(rootdir + 'slab/super_pr_7_before_cut.xyz')
+                if debug:
+                    super_cell.writexyz(rootdir + 'slab/super_pr_7_before_cut.xyz')
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
@@ -1136,7 +1145,8 @@ def slab_module_supervisor(args,rootdir):
                 super_cell= shave_under_layer(super_cell)
 
                 super_cell=zero_z(super_cell)
-                super_cell.writexyz(rootdir + 'slab/just_height.xyz')
+                if debug:
+                    super_cell.writexyz(rootdir + 'slab/just_height.xyz')
 
                 stop_flag = False
                 while not stop_flag:
@@ -1162,11 +1172,13 @@ def slab_module_supervisor(args,rootdir):
                             stop_flag = True
                         else:
                             super_cell= shave_surface_layer(super_cell)
-                super_cell.writexyz(rootdir + 'slab/just_cut.xyz')
+                if debug:
+                    super_cell.writexyz(rootdir + 'slab/just_cut.xyz')
                 super_cell = zero_z(super_cell)
                 super_cell = zero_y(super_cell)
                 super_cell = zero_x(super_cell)
-                super_cell.writexyz(rootdir + 'slab/just_center.xyz')
+                if debug:
+                    super_cell.writexyz(rootdir + 'slab/just_center.xyz')
 
 #                angle = vecangle(vx,[1,0,0])
 #                u =  numpy.cross(vx,[1,0,0])   
@@ -1207,7 +1219,7 @@ def slab_module_supervisor(args,rootdir):
                 super_cell =shave_surface_layer(super_cell,TOL =1e-2)
 
         super_cell.writexyz(rootdir + 'slab/super' +''.join( [str(i) for i in duplication_vector])+'.xyz')
-        print ('\n Created a ' + str(acell)+'x'+str(bcell)+'x' + str(ccell)+' supercell.\n')
+        print ('\n Created a ' + str(acell)+'x'+str(bcell)+'x' + str(ccell)+' supercell in ' + str(rootdir) + '.\n')
         points = [[1,1],[2,1],[0,1],[0,0],[0.5,0.5],[0,2]]
         concave_hull(points,0.1)
         super_duper_cell = unit_to_super(super_cell,ext_duplication_vector,[2,2,1])
@@ -1216,7 +1228,7 @@ def slab_module_supervisor(args,rootdir):
         a_totally_new_variable = copy.deepcopy(ext_duplication_vector)
         a_totally_new_variable[2][2] = float(ext_duplication_vector[2][2]) + 20  
 
-        print(slab_module_supervisor)
+        #print(slab_module_supervisor)
         write_periodic_mol3d_to_qe(super_cell,a_totally_new_variable,rootdir + 'slab/slab.in')
     elif not slab_gen: #placement only, skip slabbing!
         super_cell = unit_cell
@@ -1246,8 +1258,8 @@ def slab_module_supervisor(args,rootdir):
 
 
         loaded_cell.writexyz(rootdir + 'loaded_slab/loaded.xyz')
-        print('this supercell vector is:')
-        print(super_cell_vector)
+#        print('this supercell vector is:')
+#        print(super_cell_vector)
         super_duper_cell = unit_to_super(loaded_cell,ext_duplication_vector,[2,2,1])
         super_duper_cell.writexyz(rootdir + 'loaded_slab/SD.xyz')
         write_periodic_mol3d_to_qe(loaded_cell,a_totally_new_variable,rootdir + 'loaded_slab/loaded_slab.in')
