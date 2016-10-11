@@ -4,8 +4,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from Classes.globalvars import *
-from Scripts.io import *
+from molSimplify.Classes.globalvars import *
+from molSimplify.Scripts.io import *
 import os, imghdr, struct
 
 ####################################################

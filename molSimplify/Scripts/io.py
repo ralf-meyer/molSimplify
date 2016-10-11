@@ -9,13 +9,16 @@
 import pybel, glob, os, re, argparse, sys, random
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.globalvars import *
+from pkg_resources import resource_filename, Requirement
 
 ##############################################
 ### function to print available geometries ###
 ##############################################
 def printgeoms():
     globs = globalvars()
-    f = open(globs.installdir+'/Data/coordinations.dict','r')
+#    f = open(globs.installdir+'/Data/coordinations.dict','r')
+    f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+    f = open(f,'r')
     s = f.read().splitlines()
     s = filter(None,s)
     f.close()
@@ -40,7 +43,9 @@ def printgeoms():
 ##############################################
 def getgeoms():
     globs = globalvars()
-    f = open(globs.installdir+'/Data/coordinations.dict','r')
+#    f = open(globs.installdir+'/Data/coordinations.dict','r')
+    f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+    f = open(f,'r')
     s = f.read().splitlines()
     s = filter(None,s)
     f.close()
@@ -90,7 +95,9 @@ def readdict(fname):
 ### get ligands dictionary ###
 ##############################
 def getligs(installdir):
-    licores = readdict(installdir+'Ligands/ligands.dict')
+#    licores = readdict(installdir+'Ligands/ligands.dict')
+    licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+    licores = readdict(licores)
     a=[]
     for key in licores:
         a.append(key)
@@ -123,7 +130,9 @@ def checkTMsmiles(smi):
 ### get ligands dictionary ###
 ##############################
 def getbinds(installdir):
-    bindcores = readdict(installdir+'Bind/bind.dict')
+#    bindcores = readdict(installdir+'Bind/bind.dict')
+    bindcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+    bindcores = readdict(bindcores) 
     a=[]
     for key in bindcores:
         a.append(key)
@@ -135,7 +144,9 @@ def getbinds(installdir):
 ### get cores dictionary ###
 ############################
 def getcores(installdir):
-    mcores = readdict(installdir+'Cores/cores.dict')
+#    mcores = readdict(installdir+'Cores/cores.dict')
+    mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
+    mcores = readdict(mcores)
     a=[]
     for key in mcores:
             a.append(key)
@@ -164,7 +175,11 @@ def loaddata(fname):
 ###    load backbone    ###
 ###########################
 def loadcoord(installdir,coord):
-    f = open(installdir+'Data/'+coord+'.dat')
+#    f = open(installdir+'Data/'+coord+'.dat')
+
+    f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/" +coord + ".dat")
+    f = open(f)
+
     txt = filter(None,f.read().splitlines())
     f.close()
     b = []
@@ -188,7 +203,9 @@ def core_load(installdir,usercore,mcores):
     if usercore.lower() in mcores.keys():
         dbentry = mcores[usercore.lower()]
         # load core mol file (with hydrogens)
-        fcore = installdir+'Cores/'+dbentry[0]
+#        fcore = installdir+'Cores/'+dbentry[0]
+        fcore = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/" +dbentry[0])
+
         # check if core xyz/mol file exists
         if not glob.glob(fcore):
             emsg ="We can't find the core structure file %s right now! Something is amiss. Exiting..\n" % fcore
@@ -266,7 +283,8 @@ def lig_load(installdir,userligand,licores):
     if userligand in licores.keys():
         dbentry = licores[userligand]
         # load lig mol file (with hydrogens)
-        flig = installdir+'Ligands/'+dbentry[0]
+        #flig = installdir+'Ligands/'+dbentry[0]
+        flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/" +dbentry[0])
         # check if ligand xyz/mol file exists
         if not glob.glob(flig):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
@@ -347,7 +365,8 @@ def bind_load(installdir,userbind,bindcores):
     ### check if binding molecule exists in dictionary
     if userbind in bindcores.keys():
         # load bind mol file (with hydrogens)
-        fbind = installdir+'Bind/'+bindcores[userbind][0]
+#        fbind = installdir+'Bind/'+bindcores[userbind][0]
+        fbind = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/" +bindcores[userbind][0])
         # check if bind xyz/mol file exists
         if not glob.glob(fbind):
             emsg = "We can't find the binding species structure file %s right now! Something is amiss. Exiting..\n" % fbind

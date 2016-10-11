@@ -192,6 +192,7 @@ def parseCLI(args):
 ###########################################
 ### parses inputfile ###
 def parseinput(args):
+    args.skipANN = False
     for line in open(args.i):
         if '-lig' not in line and '-core' not in line and '-bind' not in line:
             line = line.split('#')[0] # remove comments
@@ -216,6 +217,8 @@ def parseinput(args):
                 args.suff = l[1].strip('\n')
             if (l[0]=='-name'):
                 args.name =l[1]
+            if (l[0]=='-skipANN'):
+                args.skipANN = True
             if (l[0]=='-jobdir'):
                 if (len(l) > 1):
                     args.jobdir =l[1]
@@ -530,7 +533,7 @@ def parseinput(args):
 def parsecommandline(parser):
     globs = globalvars()
     installdir = globs.installdir+'/'
-    # first variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
+    # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
     parser.add_argument("-i","--i",help="input file")
     # top directory options
     parser.add_argument("-rundir","--rundir",help="directory for jobs",action="store_true")

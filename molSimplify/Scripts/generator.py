@@ -18,6 +18,7 @@
 '''
 
 # Written by Tim Ioannidis for HJK Group
+# Extended by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 
 ##########################################################
@@ -76,7 +77,6 @@ def startgen(argv,flag,gui):
     sys.argv = argv
     parser = argparse.ArgumentParser()
     args = parsecommandline(parser)
-    print('in generator, args.runs?',args.rundir)
     # check if input file exists
     if not glob.glob(args.i):
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
@@ -96,7 +96,6 @@ def startgen(argv,flag,gui):
         del args
         return emsg
     # check for jobs directory
-    print('args.rundir',args.rundir)
     rundir = args.rundir+'/' if (args.rundir) else rundir
     if not os.path.isdir(rundir):
         os.mkdir(rundir)

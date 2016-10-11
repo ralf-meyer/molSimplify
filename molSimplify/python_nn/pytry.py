@@ -1,6 +1,18 @@
+# Written by JP Janet for HJK Group
+# Dpt of Chemical Engineering, MIT
+
+##########################################################
+######## This script contains a neural network  ##########
+#####  trained on octahedral metal-ligand          #######
+########   bond distances and spin propensity  ###########
+##########################################################
+
+
+## import 
 from pybrain.structure import FeedForwardNetwork,TanhLayer,LinearLayer,BiasUnit,SigmoidLayer, FullConnection
 import numpy as np
 import csv
+from pkg_resources import resource_filename, Requirement
 from molSimplify.Classes.globalvars import *
 import sys,os
 def simple_network_builder(layers,partial_path):
@@ -91,7 +103,8 @@ def network_builder(layers,partial_path):
 
 
 def csv_loader(path):
-    with open(path,'r') as csvfile:
+    path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+    with open(path_to_file,'r') as csvfile:
         csv_lines = csv.reader(csvfile,delimiter= ',')
         ret_list = list()
         for lines in csv_lines:
@@ -103,17 +116,20 @@ def csv_loader(path):
 #n = network_builder([25,50,51],"nn_split")
 def simple_splitting_ann(excitation):
     globs=globalvars()
-    n = simple_network_builder([25,4,4],globs.installdir + "python_nn/nn_simple")
+    path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + "nn_simple")
+    print('path to ANN data: ',path_to_file)
+    n = simple_network_builder([25,4,4],"nn_simple")
+
     result = n.activate(excitation)
     return result
 def simple_ls_ann(excitation):
     globs=globalvars()
-    n = simple_network_builder([25,8,6],globs.installdir + "python_nn/ls_simple")
+    n = simple_network_builder([25,8,6],"ls_simple")
     result = n.activate(excitation)
     return result
 def simple_hs_ann(excitation):
     globs=globalvars()
-    n = simple_network_builder([25,8,6],globs.installdir + "python_nn/hs_simple")
+    n = simple_network_builder([25,8,6],"hs_simple")
     result = n.activate(excitation)
     return result
 

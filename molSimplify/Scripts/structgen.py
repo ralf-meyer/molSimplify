@@ -744,8 +744,19 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                 bats,backbatoms = getnupdateb(backbatoms,dents[i])
                 batslist.append(bats)
     #########################################################
-    #### ANN pluggin
-    ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
+    #### ANN module
+    if  args.skipANN:
+        print('Skipping ANN')
+        ANN_flag = False
+        ANN_bondl = 0
+    else:
+        try:
+           ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
+        except:
+            print("ANN call rejected")
+            ANN_flag = False
+            ANN_bondl = 0
+    
    ##############################
     ###############################
     #### loop over ligands and ####
@@ -1157,7 +1168,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                     # rotate around axis to match planes
                     theta = 180-theta if theta > 90 else theta
                     lig3D = rotate_around_axis(lig3D,r0l,u,theta)
-                    # rotate around secondary axis to match atoms
+                    # rotate ar?ound secondary axis to match atoms
                     r0l = lig3D.getAtom(catoms[0]).coords()
                     r1l = lig3D.getAtom(catoms[1]).coords()
                     r2l = lig3D.getAtom(catoms[2]).coords()
@@ -1181,7 +1192,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                             bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
                         else:
                             bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            if not exact_match:
+                            if not exact_match :
                                 print('Not match in DB, using ANN')
                                 bondl =  ANN_bondl
                             else:

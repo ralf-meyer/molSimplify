@@ -8,7 +8,7 @@
 # import custom modules
 from geometry import *
 from io import *
-from Classes.globalvars import *
+from molSimplify.Classes.globalvars import *
 # import std modules
 import os, sys, subprocess, re, unicodedata
 import pybel, openbabel, random, shutil

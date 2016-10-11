@@ -1,4 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
+# Modified by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ####################################################
@@ -6,13 +7,13 @@
 ####################################################
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from Classes.mWidgets import *
-from Classes.globalvars import *
-from Classes.mol3D import mol3D
-from Scripts.generator import startgen
-from Scripts.grabguivars import *
-from Scripts.io import *
-from Scripts.addtodb import *
+from molSimplify.Classes.mWidgets import *
+from molSimplify.Classes.globalvars import *
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Scripts.generator import startgen
+from molSimplify.Scripts.grabguivars import *
+from molSimplify.Scripts.io import *
+from molSimplify.Scripts.addtodb import *
 import sys, os, random, shutil, unicodedata, inspect, glob, time
 import pybel
 

@@ -166,12 +166,11 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     metal = args.core
     if not args.geometry == "oct":
         print('nn: geom  is',args.geometry)
-        emsg.append("\n [ANN] Geometry is not supported at this time")
+        emsg.append("\n [ANN] Geometry is not supported at this time, MUST give -geometry = oct")
         valid = False
     if not args.oxstate:
         emsg.append("\n [ANN] oxidation state must be given")
         valid = False
-    print('nn emsg',emsg)
     if valid:
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(metal,oxidation_state)
@@ -179,28 +178,32 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         this_metal = metal.lower()
         ox = int(oxidation_state)
         spin = args.spin
-        print('metal validity',valid)
+        #print('metal validity',valid)
+        if not valid:
+            emsg.append("\n Oxidation state not available for this metal")
 
     if valid:
         high_spin = spin_classify(this_metal,spin,ox)
-        print('spin diag: ishs ',high_spin)
-        ## check ligands
+        if not valid:
+            emsg.append("\n this spin state not available for this metal")
 
-
+    print('nn emsg',emsg)
+    if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
-        print("\n")
-        print('Here comes occs')
-        print(occs)
-        print('Ligands')
-        print(ligs)
-        print('Here comes dents')
-        print(dents)
-        print('Here comes bats')
-        print(batslist)
-        print('lig validity',valid)
-        print('ax ligs',axial_ligs)
-        print('eq ligs',equitorial_ligs)
-        print('spin is',spin)
+
+       # print("\n")
+       # print('Here comes occs')
+       # print(occs)
+       # print('Ligands')
+       # print(ligs)
+       #  print('Here comes dents')
+       # print(dents)
+       # print('Here comes bats')
+       # print(batslist)
+       # print('lig validity',valid)
+       # print('ax ligs',axial_ligs)
+       # print('eq ligs',equitorial_ligs)
+       # print('spin is',spin)
 
     if valid:
             ax_lig3D,r_emsg = lig_load(installdir,axial_ligs[0],licores) # load ligand
@@ -226,12 +229,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     if valid:
         eq_ki = get_truncated_kier(eq_lig3D,eq_lig3D.cat)
         ax_ki = get_truncated_kier(ax_lig3D,ax_lig3D.cat)
-        print('ax_ki',eq_ki)
-        print('eq_ki',ax_ki)
+#        print('ax_ki',eq_ki)
+#        print('eq_ki',ax_ki)
         eq_EN = get_lig_EN(eq_lig3D,eq_lig3D.cat)
         ax_EN = get_lig_EN(ax_lig3D,ax_lig3D.cat)
-        print('ax_EN',eq_EN)
-        print('eq_EN',ax_EN)
+ #       print('ax_EN',eq_EN)
+ #       print('eq_EN',ax_EN)
         eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol)
         ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol)
         eq_charge = eq_lig3D.OBmol.charge
@@ -245,20 +248,20 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         else:
                 max_delen = ax_EN
         alpha = 0.2 # default for B3LYP
-        print('ax_bo',ax_bo)
-        print('eq_bo',eq_bo)
-        print('ax_charge',ax_charge)
-        print('eq_charge',eq_charge)
+  #      print('ax_bo',ax_bo)
+ #       print('eq_bo',eq_bo)
+  #      print('ax_charge',ax_charge)
+  #      print('eq_charge',eq_charge)
 
-        print('sum_delen',sum_delen)
-        print('max_delen',max_delen)
-        print('ax_type',ax_type)
-        print('eq_type',eq_type)
+   #     print('sum_delen',sum_delen)
+   #     print('max_delen',max_delen)
+   #     print('ax_type',ax_type)
+   #     print('eq_type',eq_type)
 
 
     if valid:
         sfd = get_sfd()
-        print(sfd)
+    #    print(sfd)
         ### scale for ANN by normalizing all values
         alpha = (alpha - sfd['alpha'][0])/sfd['alpha'][1]
         ox = (ox - sfd['ox'][0])/sfd['ox'][1]
@@ -278,20 +281,20 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
                    sum_delen,max_delen, #mdelen, maxdelen #23-24
                    ax_bo,eq_bo, #axlig_bo, eqliq_bo #19-20
                    ax_ki,eq_ki]#axlig_ki, eqliq_kii #21-22
-    print(nn_excitation)
-    print('\n')
+   # print(nn_excitation)
+   # print('\n')
     ### discrete variable encodings
     if valid:
         valid,nn_excitation = metal_corrector(nn_excitation,this_metal)
-    print('metal_cor',valid)
+   # print('metal_cor',valid)
     #
     if valid:
         valid,nn_excitation = ax_lig_corrector(nn_excitation,ax_type)
-    print('ax_cor',valid)
+    #print('ax_cor',valid)
     #
     if valid:
         valid,nn_excitation = eq_lig_corrector(nn_excitation,eq_type)
-    print('eq_cor',valid)
+    #print('eq_cor',valid)
     #
 
     if valid:
