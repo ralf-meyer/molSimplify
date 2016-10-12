@@ -1,4 +1,20 @@
 # molSimplify input file generated from CLI input
--core Mn 
--lig water 
--ligocc 5
+- 
+-core Fe 
+-coord  6 
+-lig  acac,acac,acac 
+-rundir /home/jp/Dropbox/Main/testingANN
+  
+-jobdir t2 
+-name feacacac_MS  
+-skipANN
+-geometry oct 
+-distort 0 checkdirb True 
+-ligalign  True 
+-keepHs yes,yes,yes 
+-bcharge 0 
+-calccharge yes 
+-qccode TeraChem 
+-method UDF 
+-oxstate III 
+-spin 6

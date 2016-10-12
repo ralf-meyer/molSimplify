@@ -1857,6 +1857,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
     pfold = rootdir.split('/',1)[-1]
     if args.calccharge:
         args.charge = core3D.charge
+        print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
     del core3D
