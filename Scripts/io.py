@@ -287,6 +287,7 @@ def lig_load(installdir,userligand,licores):
         lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
         lig.charge = lig.OBmol.charge
+        print(flig,userligand,lig.charge)
         if len(dbentry) > 2:
             lig.grps = dbentry[3]
         else:
@@ -424,6 +425,38 @@ def getinputargs(args,fname):
                     f.write(str(getattr(args, arg)))
                 f.write('\n')
     f.close()
-    
+#####################################
+###   file/folder name control   ###
+####################################
+def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
+    # reads in argument namespace
+    # and chooses an appropriate name
+    # bind_ident is used to pass binding
+    # species information 
+
+    # check if smiles string in binding species
+    if args.bind:
+        if bsmi:
+            if args.nambsmi: # if name specified use it in file
+                fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
+                if args.name:
+                    fname = rootdir+'/'+args.name+args.nambsmi[0:2]
+            else: # else use default
+                fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm' 
+                if args.name:
+                   fname = rootdir+'/'+args.name+'bsm'
+        else: # else use name from binding in dictionary
+            fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+            if args.name:
+                fname = rootdir+'/'+args.name + bind.ident[0:2]
+    else:
+        print(rootdir)
+        fname = rootdir+'/'+core.ident[0:3]+ligname
+        if args.name:
+            fname = rootdir+'/'+args.name
+
+    return fname
+
+
 
 

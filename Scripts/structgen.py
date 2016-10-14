@@ -1,4 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
+# Extended by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ##########################################################
@@ -11,8 +12,9 @@
 ##########################################################
 
 # import custom modules
-from geometry import *
-from io import *
+from Scripts.geometry import *
+from Scripts.io import *
+from Scripts.nn_prep import *
 from Classes.globalvars import *
 # import standard modules
 import os, sys
@@ -259,6 +261,55 @@ def getbondlength(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
     if not found: # last resort covalent radii
         bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
     return bondl
+###########################################
+### loads M-L bond length from database ###
+### and report if the compound is in DB ###
+###########################################
+def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
+    # INPUT
+    #   - args: palceholder for input arguments
+    #   - metal: name for metallic element
+    #   - m3D: mol3D with main complex
+    #   - lig3D: mol3D with ligand
+    #   - matom: index of metal atom in m3D
+    #   - atom0: index of connecting atom in lig3D
+    #   - ligand: name of ligand
+    #   - MLbonds: data from database
+    # OUTPUT
+    #   - bondl: bond length in A
+    #   - exact_match: bool, was there an exact match?
+    ### check for roman letters in oxstate
+    romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
+    if args.oxstate: # if defined put oxstate in keys
+        if args.oxstate in romans.keys():
+            oxs = romans[args.oxstate]
+        else:
+            oxs = args.oxstate
+    else:
+        oxs = '-'
+    # check for spin multiplicity
+    spin = args.spin if args.spin else '-'
+    key = []
+    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))
+    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,'-')) # disregard exact ligand
+    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,ligand)) # disregard oxstate/spin
+    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,'-')) # else just consider bonding atom
+    found = False
+    exact_match = False
+    # search for data
+    for kk in key:
+        if (kk in MLbonds.keys()): # if exact key in dictionary
+            bondl = float(MLbonds[kk])
+            found = True
+            if (kk == ((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))): ## exact match
+               exact_match = True 
+            break
+    if not found: # last resort covalent radii
+        bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
+    #### TESTING, REMOVE  #####
+    print('ms default distance is  ' + str(bondl))
+    #### END TESTING ####
+    return bondl,exact_match
 
 ###############################
 ### FORCE FIELD OPTIMIZATION ##
@@ -540,6 +591,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     remCM = False   # remove dummy center of mass atom
     ### load bond data ###
     MLbonds = loaddata(installdir+'/Data/ML.dat')
+
+
     ### calculate occurrences, denticities etc for all ligands ###
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
@@ -635,6 +688,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     ### load backbone and combinations ###
     # load backbone for coordination
     corexyz = loadcoord(installdir,geom)
+
+
     # get combinations possible for specified geometry
     if geom in bbcombsdict.keys() and not args.ligloc:
         backbatoms = bbcombsdict[geom]
@@ -689,6 +744,20 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                 bats,backbatoms = getnupdateb(backbatoms,dents[i])
                 batslist.append(bats)
     #########################################################
+    #### ANN module
+    if  args.skipANN:
+        print('Skipping ANN')
+        ANN_flag = False
+        ANN_bondl = 0
+    else:
+        try:
+           ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
+        except:
+            print("ANN call rejected")
+            ANN_flag = False
+            ANN_bondl = 0
+    
+   ##############################
     ###############################
     #### loop over ligands and ####
     ### begin functionalization ###
@@ -852,7 +921,15 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                         else:
                             bondl = float(MLb[i]) # check for custom
                     else:
-                        bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        if not ANN_flag:
+                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        else:
+                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            if not exact_match:
+                                print('Not match in DB, using ANN')
+                                bondl =  ANN_bondl
+                            else:
+                                print('using exact match from DB')
                     MLoptbds.append(bondl)
                     # get correct distance for center of mass
                     cmdist = bondl - distance(r1,mcoords)+distance(lig3D.centermass(),mcoords)
@@ -927,7 +1004,15 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                         else:
                             bondl = float(MLb[i]) # check for custom
                     else:
-                        bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        if not ANN_flag:
+                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        else:
+                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            if not exact_match:
+                                print('Not match in DB, using ANN')
+                                bondl =  ANN_bondl
+                            else:
+                                print('using exact match from DB')
                     MLoptbds.append(bondl)
                     MLoptbds.append(bondl)
                     lig3D = setPdistance(lig3D, r1, r0, bondl)
@@ -1038,7 +1123,15 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                         else:
                             bondl = float(MLb[i]) # check for custom
                     else:
-                        bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        if not ANN_flag:
+                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        else:
+                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            if not exact_match:
+                                print('Not match in DB, using ANN')
+                                bondl =  ANN_bondl
+                            else:
+                                print('using exact match from DB')
                     for iib in range(0,3):
                         MLoptbds.append(bondl)
                     # set correct distance
@@ -1075,7 +1168,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                     # rotate around axis to match planes
                     theta = 180-theta if theta > 90 else theta
                     lig3D = rotate_around_axis(lig3D,r0l,u,theta)
-                    # rotate around secondary axis to match atoms
+                    # rotate ar?ound secondary axis to match atoms
                     r0l = lig3D.getAtom(catoms[0]).coords()
                     r1l = lig3D.getAtom(catoms[1]).coords()
                     r2l = lig3D.getAtom(catoms[2]).coords()
@@ -1095,7 +1188,15 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                         else:
                             bondl = float(MLb[i]) # check for custom
                     else:
-                        bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        if not ANN_flag:
+                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                        else:
+                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            if not exact_match :
+                                print('Not match in DB, using ANN')
+                                bondl =  ANN_bondl
+                            else:
+                                print('using exact match from DB')
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
                 elif (denticity == 5):
@@ -1193,6 +1294,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
             totlig += denticity
             ligsused += 1
+
     # perform FF optimization if requested
     if args.ff and 'a' in args.ffoption:
         core3D,enc = ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds)
@@ -1633,14 +1735,8 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
             core3D.charge += int(args.bcharge)
         elif args.calccharge:
             core3D.charge += int(an3D.charge)
-        ### check if smiles string in binding species
-        if bsmi:
-            if args.nambsmi: # if name specified use it in file
-                fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
-            else: # else use default
-                fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm' 
-        else: # else use name from binding in dictionary
-            fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+        # fetch base name
+        fname = get_name(args,rootdir,core,ligname,bind,bsmi)
         # check if planar
         conats = core3D.getBondedAtomsnotH(0)
         planar,pos = False, False
@@ -1655,7 +1751,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                     th,uax = rotation_params(r[0],r[1],r[2])
                     ueq = vecdiff(r[random.randint(0,3)],core3D.getAtomCoords(0))
                     break
-        for i in range(0,Nogeom+1):        
+        for i in range(0,Nogeom+1):
             # generate random sequence of parameters for rotate()
             totits = 0
             while True:
@@ -1667,7 +1763,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                     theta = float(args.btheta)
                 # if specific angle is requested force angle
                 if (args.place and not args.bphi and not args.btheta):
-                    if ('ax' in args.place):
+                    if ('a' in args.place):
                         theta = 90.0
                         theta1 = -90.0
                         pos = True
@@ -1752,13 +1848,16 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        fname = rootdir+'/'+core.ident[0:3]+ligname
+        print(rootdir)
+        fname = get_name(args,rootdir,core,ligname)
+        print(fname)
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)
     pfold = rootdir.split('/',1)[-1]
     if args.calccharge:
         args.charge = core3D.charge
+        print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
     del core3D

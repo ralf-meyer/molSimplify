@@ -55,6 +55,8 @@ class mol3D:
         # INPUT
         #   - atom: atom3D to be added
         self.atoms.append(atom)
+        if atom.frozen:
+            self.atoms[-1].frozen = True
         self.natoms += 1
         self.mass += atom.mass 
         self.size = self.molsize()
@@ -184,14 +186,15 @@ class mol3D:
         # INPUT
         #   - mol0: molecule (mol3D) to be copied
         # copy atoms
-        for atom0 in mol0.atoms:
+        for i,atom0 in enumerate(mol0.atoms):
             self.addAtom(atom3D(atom0.sym,atom0.coords()))
+            if atom0.frozen:
+                self.getAtom(i).frozen = True
         # copy other attributes
         self.cat = mol0.cat
         self.charge = mol0.charge
         self.denticity = mol0.denticity
         self.ident = mol0.ident
-        
     ###########################################
     ### deletes specific atom from molecule ###
     ###########################################
@@ -201,7 +204,14 @@ class mol3D:
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
         del(self.atoms[atomIdx])
-        
+
+    ###########################################
+    ### freezes specific atom from molecule ###
+    ###########################################
+    def freezeatom(self,atomIdx):
+        # INPUT
+        #   - atomIdx: index of atom to be frozen
+        self.atoms[atomIdx].frozen = True
     ##########################################    
     ### deletes listed atoms from molecule ###
     ##########################################
@@ -210,7 +220,14 @@ class mol3D:
         #   - Alist: list of atoms to be deleted
         for h in sorted(Alist,reverse=True):
             self.deleteatom(h)
-
+    ##########################################    
+    ### freezes listed atoms from molecule ###
+    ##########################################
+    def freezeatoms(self,Alist):
+        # INPUT
+        #   - Alist: list of atoms to be frozen
+        for h in sorted(Alist,reverse=True):
+            self.freezeatom(h)
     #######################################
     ### deletes hydrogens from molecule ###
     #######################################
@@ -332,7 +349,18 @@ class mol3D:
         # OUTPUT
         #   number of atoms in molecule
         return self.atoms
+    #################################    
+    ### returns # of atom types   ###
+    #################################
+    def getAtomTypes(self):
+        # OUTPUT
+        #   list of types atoms in molecule
+        unique_atoms_list = list()
+        for atoms in self.getAtoms():
+            if atoms.symbol() not in unique_atoms_list:
+                        unique_atoms_list.append(atoms.symbol())
 
+        return unique_atoms_list
     ############################################
     ### returns coordinates of atom by index ###
     ############################################

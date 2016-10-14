@@ -12,22 +12,25 @@ bromide:bromide.smi,brode,0,build functionalize small,N
 carbonyl:carbonyl.mol,crbn,0,build small,N
 carboxyl:carboxyl.mol,crbx,1,functionalize small,N
 chloride:chloride.smi,chlde,0,build functionalize small,N
-cyclopentadienyl:cyclopentadienyl.mol,cpd,cm,build aromatic,N
 cyanide:cyanide.mol,cyan,0,build small,N
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A
 ethyl:ethyl.mol,eth,1,functionalize small,N
 fluoride:fluoride.smi,fluo,0,build functionalize small,N
 hydrocyanide:hydrocyanide.mol,hydc,1,build small,N
+misc:methylisocy.mol,misc,0,small,A
+en:en.mol,en,0 1,build bidentate,N
 hydroisocyanide:hydroisocyanide.mol,hisc,0,build small,N
 hydroxyl:hydroxyl.mol,hxl,0,build functionalize small,N
 imidazole:imidazole.mol,imd,2,build small,BA
 imine:imine.mol,imi,0,functionalize small,N
+pisc:tbuphisocy.mol,pisc,0,bulkymono build,N
 isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,BA
+tbuc:tbucat.mol,tbuc,0 11,bulkybi build,BA
 methanal:methanal.mol,metha,0,functionalize small,N
 methyl:methyl.mol,meth,0,functionalize small,N
 nitro:nitro.mol,nit,1,build functionalize small,N
 nitroso:nitroso.mol,nits,0,build functionalize small,N
-oxalate:oxalate.mol,oxate,1 4,build bidentate,BA
+ox:oxalate.mol,oxate,1 4,build bidentate,BA
 oxygen:oxygen.mol,oxd,0,build small,N
 phen:phen.mol,phen,9 12,build bidentate,BA
 phenanthroline:phen.mol,bip,9 12,build bidentate,BA

@@ -1,4 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
+# modified by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ##############################################################
@@ -7,7 +8,7 @@
 
 # import std modules
 import glob, os, re, argparse, sys
-from io import *
+from Scripts.io import *
 from Classes.globalvars import *
 
 ######################################################
@@ -191,6 +192,7 @@ def parseCLI(args):
 ###########################################
 ### parses inputfile ###
 def parseinput(args):
+    args.skipANN = False
     for line in open(args.i):
         if '-lig' not in line and '-core' not in line and '-bind' not in line:
             line = line.split('#')[0] # remove comments
@@ -205,6 +207,7 @@ def parseinput(args):
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = [int(ll)-1 for ll in l[1:]]
             if (l[0]=='-rundir'):
+                print('in inparse, rundir found',l)
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -212,6 +215,15 @@ def parseinput(args):
                     args.rundir = args.rundir[:-1]
             if (l[0]=='-suff'):
                 args.suff = l[1].strip('\n')
+            if (l[0]=='-name'):
+                args.name =l[1]
+            if (l[0]=='-skipANN'):
+                args.skipANN = True
+            if (l[0]=='-jobdir'):
+                if (len(l) > 1):
+                    args.jobdir =l[1]
+                else:
+                    args.jobdirblank = True 
             ### parse structure generation arguments ###
             if (l[0]=='-bind' and len(l[1:]) > 0):
                 l = filter(None,re.split(' |,|\t',line))
@@ -456,7 +468,8 @@ def parseinput(args):
                 args.pnbo = True
             # parse slab building arguments
             if (l[0]=='-slab_gen'): #0
-               args.slab_gen = True
+                print('slab gen')
+                args.slab_gen = True
             if (l[0]=='-unit_cell'): #1 
                 args.unit_cell = l[1]
             if (l[0]=='-cell_vector'): #2
@@ -469,6 +482,18 @@ def parseinput(args):
                  args.slab_size = [float(i.strip('(){}<>[],.')) for i in l[1:]]
             if (l[0]=='-miller_index'): #6
                 args.miller_index = [int(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0]=='-freeze'): #7
+                try:
+                    args.freeze = int(l[1].strip('(){}<>[],.'))
+                except:
+                    args.freeze = True
+            if (l[0]=='-debug'):#8
+                args.debug = True
+            if (l[0]=='-expose_type'):#9
+                args.expose_type = l[1]
+            if (l[0]=='-shave_extra_layers'):#9
+                args.shave_extra_layers = int(l[1])
+
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -515,13 +540,15 @@ def parseinput(args):
 def parsecommandline(parser):
     globs = globalvars()
     installdir = globs.installdir+'/'
-    # first variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
+    # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
     parser.add_argument("-i","--i",help="input file")
     # top directory options
     parser.add_argument("-rundir","--rundir",help="directory for jobs",action="store_true")
     parser.add_argument("-suff","--suff", help="suffix for jobs folder.",action="store_true")
     # structure generation options
     parser.add_argument("-ccatoms","--ccatoms", help="core connection atoms indices, indexing starting from 1",action="store_true")
+    parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
+    parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
     parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6 
     parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(installdir),action="store_true") #e.g. ferrocene
     parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(installdir),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
@@ -649,6 +676,15 @@ def parsecommandline(parser):
     # slab buidler: optional
     parser.add_argument("-miller_index","--miller_index",
                         help="list of 3 int, miller indicies") #6
+    parser.add_argument("-freeze","--freeze",
+                        help="bool or int, bottom layers of cell to freeze") #7
+    parser.add_argument("-expose_type","--expose_type",
+                        help="str, symbol of atom type to expose (eg 'O')") #9
+    parser.add_argument("-shave_extra_layers","--shave_extra_layers",
+                        help="int, number of extra layers to shave") #10
+    parser.add_argument("-debug","--debug",
+                        help="switch, print stepwise slabs",action="store_true") #10
+    
     # placement input: control
     parser.add_argument("-place_on_slab","--place_on_slab",
                         help = "enables  placement on slab ",action="store_true") #0
