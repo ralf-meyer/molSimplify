@@ -1,20 +1,6 @@
 # molSimplify input file generated from CLI input
-- 
--core Fe 
--coord  6 
--lig  acac,acac,acac 
--rundir /home/jp/Dropbox/Main/testingANN
-  
--jobdir t2 
--name feacacac_MS  
--skipANN
--geometry oct 
--distort 0 checkdirb True 
--ligalign  True 
--keepHs yes,yes,yes 
--bcharge 0 
--calccharge yes 
--qccode TeraChem 
--method UDF 
--oxstate III 
--spin 6
+-slab_gen 
+-cif_path molSimplify/Unitcells/anatase_tio2.cif 
+-slab_size [9,9,9] 
+-miller_index [1,0,0] 
+-freeze 1

@@ -55,7 +55,7 @@ start = datetime.now()
 #                 '-object_align','C','-align_dist','2.5'])
 #
 subprocess.call(["python","-m",'molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
-                 '-slab_size','[9,9,9]','-miller_index','[1,0,1]'])
+                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]','-freeze','1'])
 
 
 

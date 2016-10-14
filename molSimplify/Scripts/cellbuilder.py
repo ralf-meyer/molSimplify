@@ -95,9 +95,14 @@ def cut_cell_to_index(unit_cell,cell_vector,miller_index):
          #   print('vec2',vec2)
          #   print('vec3',vec3)
             plane_normal = normalize_vector(numpy.cross(vecdiff(vec1,vec2),vec3))
-         #   print('plane normal is ', plane_normal)
+        elif len(non_zero_indices) == 1:
+            plane_normal = miller_index
+            v1 = cell_vector[zero_indices[0]]
+            v2 = cell_vector[zero_indices[1]]
+            v3 = cell_vector[non_zero_indices[0]]
 
-       # print(miller_index)
+        print(miller_index)
+        print('plane normal is ', plane_normal)
         angle = vecangle(plane_normal,[0,0,1])
         u =  numpy.cross(plane_normal,[0,0,1])
         return v1,v2,v3,angle,u
@@ -861,6 +866,22 @@ def slab_module_supervisor(args,rootdir):
 
     # duplication
     duplicate = False
+    
+    # debug
+    debug = False
+
+    # passivate 
+    passivate =  False
+
+    # freeze layers
+    freeze = False
+
+    # expose a certain atom type
+    expose_type  = False
+
+    # shave extra layers 
+    shave_extra_layers  = False
+
 
     ###### Now attempt input ####
     import_success = True
@@ -893,7 +914,15 @@ def slab_module_supervisor(args,rootdir):
     if (args.miller_index): #6
         miller_index = args.miller_index
         miller_flag = True
-     # ## parse slab options
+    if (args.freeze): #7
+        freeze = args.freeze
+    if (args.debug): #8
+        debug = True
+    if (args.expose_type): #9
+        expose_type = args.expose_type
+    if (args.shave_extra_layers): #10
+        shave_extra_layers = args.shave_extra_layers
+     # ## parse placement options
     if (args.place_on_slab): #0
         place_on_slab = True
     if (args.target_molecule): #1 
@@ -938,9 +967,7 @@ def slab_module_supervisor(args,rootdir):
        print('ang_surf_axis  '  +str(angle_surface_axis))
     if (args.duplicate):#14
        duplicate = True
-    if (args.freeze):
-        freeze = args.freeze
-    ### check inputs
+        ### check inputs
     if slab_gen and not (slab_size or duplication_vector):
         emsg="Size of slab required (-slab_size or -duplication_vector)"
         print(emsg)
@@ -970,7 +997,6 @@ def slab_module_supervisor(args,rootdir):
         align_distance_method = "custom"
 
 
-    debug = False
     #if args.target_atom_type:
     #    if not args.target_atom_type in elements:
     #        masklength = len(args.target_atom_type)
@@ -1000,7 +1026,6 @@ def slab_module_supervisor(args,rootdir):
         if not os.path.exists(rootdir + 'slab'):
                 os.makedirs(rootdir + 'slab')
 
-        passivate = True
         if cif_path:
             try:
                 unit_cell,cell_vector = import_from_cif(cif_path)
@@ -1010,7 +1035,7 @@ def slab_module_supervisor(args,rootdir):
         if miller_flag:
             ###TESTING REMOVE
                 if debug:
-                    unit_cell.writexyz(rootdir + 'slab/super_pre.xyz')
+                    unit_cell.writexyz(rootdir + 'slab/step_0.xyz')
                     print('\n\n')
 #                    old_cell_vector = copy.deepcopy(cell_vector)
                     print('cell vector was ')
@@ -1028,7 +1053,7 @@ def slab_module_supervisor(args,rootdir):
                     print(cell_vector[2])
                     print('\n\n')
 #                cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),-1*angle) for i in cell_vector]
-                    unit_cell.writexyz(rootdir + 'slab/super_post.xyz')
+                    unit_cell.writexyz(rootdir + 'slab/step_1.xyz')
 #                unit_cell = rotate_around_axis(unit_cell,[0,0,0],u,-1*angle)
 #                unit_cell.writexyz(rootdir + 'slab/just_flat.xyz')
 
@@ -1059,7 +1084,7 @@ def slab_module_supervisor(args,rootdir):
         #### perfrom duplication
         super_cell = unit_to_super(unit_cell,cell_vector,duplication_vector)
         if debug:
-            super_cell.writexyz(rootdir + 'slab/just_2.xyz')
+            super_cell.writexyz(rootdir + 'slab/step_2.xyz')
         ############################
         ############################
         ext_duplication_vector = [[i*duplication_vector[0] for i in ext_duplication_vector[0]],
@@ -1068,11 +1093,11 @@ def slab_module_supervisor(args,rootdir):
  
         if miller_flag:
            if debug:
-               super_cell.writexyz(rootdir + 'slab/super_pr.xyz')
+               super_cell.writexyz(rootdir + 'slab/step_3.xyz')
            ## this lowers the cell into the xy plane
            super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
            if debug:
-               super_cell.writexyz(rootdir + 'slab/just_flat.xyz')
+               super_cell.writexyz(rootdir + 'slab/step_4.xyz')
 
 
            r_cv =  [PointRotateAxis(u,[0,0,0],list(i),angle) for i in cell_vector]
@@ -1088,7 +1113,7 @@ def slab_module_supervisor(args,rootdir):
                print(ext_duplication_vector[1])
                print(ext_duplication_vector[2])
                print('\n\n')
-               super_cell.writexyz(rootdir + 'slab/super_pr_4_after1r.xyz')
+               super_cell.writexyz(rootdir + 'slab/step_5.xyz')
  #               super_cell.writexyz(rootdir + 'slab/super_pr_5_before2r.xyz')
 #               vx = v1
 #               vx[2] = 0
@@ -1135,64 +1160,77 @@ def slab_module_supervisor(args,rootdir):
                 print('\n\n')
 #
         super_cell_dim = find_extents(super_cell)
+
         if miller_flag:
-                if debug:
-                    super_cell.writexyz(rootdir + 'slab/super_pr_7_before_cut.xyz')
+            non_zero_indices  = list()
+            zero_indices  = list()
+            for i in [0,1,2]:
+                if not (miller_index[i] == 0):
+                    non_zero_indices.append(i)
+                else:
+                    zero_indices.append(i)
+
+            if debug:
+                super_cell.writexyz(rootdir + 'slab/step_6.xyz')
+            if (len(non_zero_indices) > 1):
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
                 super_cell= shave_under_layer(super_cell)
 
-                super_cell=zero_z(super_cell)
-                if debug:
-                    super_cell.writexyz(rootdir + 'slab/just_height.xyz')
-
-                stop_flag = False
-                while not stop_flag:
-                    zmin = 1000
-                    for atoms in super_cell.getAtoms():
-                        coords = atoms.coords()
-                        if (coords[2] < zmin):
-                            zmin = coords[2]
+            super_cell=zero_z(super_cell)
+            if debug:
+                super_cell.writexyz(rootdir + 'slab/step_7.xyz')
+            stop_flag = False
+            while not stop_flag:
+                zmin = 1000
+                for atoms in super_cell.getAtoms():
+                    coords = atoms.coords()
+                    if (coords[2] < zmin):
+                        zmin = coords[2]
                     if (zmin >= 0):
                         stop_flag = True
                     else:
+                        if debug:
+                            print('cutting due to zmin')
                         super_cell= shave_under_layer(super_cell)
-                stop_flag = False
-                if slab_size:
-                    while not stop_flag:
-                        print('in loop')
-                        zmax = 0 
-                        for atoms in super_cell.getAtoms():
-                            coords = atoms.coords()
-                            if (coords[2] > zmax):
-                                zmax = coords[2]
+            stop_flag = False
+            if slab_size:
+                while not stop_flag:
+                    print('in loop')
+                    zmax = 0 
+                    for atoms in super_cell.getAtoms():
+                        coords = atoms.coords()
+                        if (coords[2] > zmax):
+                            zmax = coords[2]
                         if (zmax <= 1.1*slab_size[2]):
                             stop_flag = True
                         else:
+                            if debug:
+                                print('cutting due to zmax')
                             super_cell= shave_surface_layer(super_cell)
-                if debug:
-                    super_cell.writexyz(rootdir + 'slab/just_cut.xyz')
-                super_cell = zero_z(super_cell)
-                super_cell = zero_y(super_cell)
-                super_cell = zero_x(super_cell)
-                if debug:
-                    super_cell.writexyz(rootdir + 'slab/just_center.xyz')
+            if debug:
+                super_cell.writexyz(rootdir + 'slab/step_8.xyz')
+            ## place cell at origin
+            super_cell = zero_z(super_cell)
+            super_cell = zero_y(super_cell)
+            super_cell = zero_x(super_cell)
+            if debug:
+                super_cell.writexyz(rootdir + 'slab/step_9.xyz')
 
 #                angle = vecangle(vx,[1,0,0])
 #                u =  numpy.cross(vx,[1,0,0])   
 #                print('angle is '+str(angle) + " the vec is  " + str(u))
 #                super_cell = rotate_around_axis(super_cell,super_cell.centermass(),[0,0,1],-angle)
 
-                super_cell.writexyz(rootdir + 'slab/super_pr_after_cut.xyz')
-                if not slab_size:
-                        extents = find_extents_cv(super_cell_vector)
-                        target_size = extents[2]
-                        while super_cell_dim[2] > 1.1*target_size:
-                                print('slab is too thick, shaving...')
-                                super_cell = shave_surface_layer(super_cell)
-                                super_cell_dim = find_extents(super_cell)
+        if not slab_size:
+            extents = find_extents_cv(super_cell_vector)
+            target_size = extents[2]
+            while super_cell_dim[2] > 1.1*target_size:
+                print('slab is too thick, shaving...')
+                super_cell = shave_surface_layer(super_cell)
+                super_cell_dim = find_extents(super_cell)
         if slab_size:
             while super_cell_dim[2] > 1.1*slab_size[2]:
                 print('slab is too thick, shaving...due to slab size req')
@@ -1202,7 +1240,6 @@ def slab_module_supervisor(args,rootdir):
         if passivate:
             pass
         ## check if atoms should be frozen
-        freeze  = 2
         if freeze:
             if isinstance(freeze,int):
                 print('freezing')
@@ -1210,12 +1247,11 @@ def slab_module_supervisor(args,rootdir):
             else:
                 super_cell = freeze_bottom_n_layers(super_cell,1)
         ## check if a different surface atom should be exposed:
-        expose_type  = "O"
         if expose_type:
             super_cell = check_top_layer_correct(super_cell,expose_type)
-        shave_extra_layers =4 
         if shave_extra_layers:
             for i in range(0,int(shave_extra_layers)):
+                print('shaving ' + str(shave_extra_layers) + ' layers')
                 super_cell =shave_surface_layer(super_cell,TOL =1e-2)
 
         super_cell.writexyz(rootdir + 'slab/super' +''.join( [str(i) for i in duplication_vector])+'.xyz')

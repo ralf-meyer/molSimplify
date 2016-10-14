@@ -463,7 +463,7 @@ def freeze_bottom_n_layers(super_cell,n):
 def freeze_under_layer(super_cell):
     frozen_cell = mol3D()
     frozen_cell.copymol3D(super_cell)
-    TOL = 0.5
+    TOL = 1.5
     zmin = 1000;
     for i,atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()

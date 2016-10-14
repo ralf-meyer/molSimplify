@@ -482,11 +482,18 @@ def parseinput(args):
                  args.slab_size = [float(i.strip('(){}<>[],.')) for i in l[1:]]
             if (l[0]=='-miller_index'): #6
                 args.miller_index = [int(i.strip('(){}<>[],.')) for i in l[1:]]
-            if (l[0]=='-freeze'): #6
+            if (l[0]=='-freeze'): #7
                 try:
                     args.freeze = int(l[1].strip('(){}<>[],.'))
                 except:
                     args.freeze = True
+            if (l[0]=='-debug'):#8
+                args.debug = True
+            if (l[0]=='-expose_type'):#9
+                args.expose_type = l[1]
+            if (l[0]=='-shave_extra_layers'):#9
+                args.shave_extra_layers = int(l[1])
+
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -670,7 +677,14 @@ def parsecommandline(parser):
     parser.add_argument("-miller_index","--miller_index",
                         help="list of 3 int, miller indicies") #6
     parser.add_argument("-freeze","--freeze",
-                        help="bool or int, bottom layers of cell to freeze") #6
+                        help="bool or int, bottom layers of cell to freeze") #7
+    parser.add_argument("-expose_type","--expose_type",
+                        help="str, symbol of atom type to expose (eg 'O')") #9
+    parser.add_argument("-shave_extra_layers","--shave_extra_layers",
+                        help="int, number of extra layers to shave") #10
+    parser.add_argument("-debug","--debug",
+                        help="switch, print stepwise slabs",action="store_true") #10
+
 
     # placement input: control
     parser.add_argument("-place_on_slab","--place_on_slab",
