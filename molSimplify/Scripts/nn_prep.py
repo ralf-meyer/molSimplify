@@ -242,7 +242,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
 
          
         ## preprocess:
-        sum_delen  = (2.0/ax_dent)*ax_EN + (4.0/float(eq_dent)) 
+        sum_delen  = (2.0)*ax_EN + (4.0)*eq_EN
         if abs(eq_EN) > abs(ax_EN):
                 max_delen = eq_EN
         else:

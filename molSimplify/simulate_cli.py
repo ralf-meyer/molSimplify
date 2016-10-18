@@ -49,13 +49,17 @@ start = datetime.now()
 #                 '-align_method','alignpair','-surface_atom_type','Ti','-num_surface_atoms','4',
 #                 '-object_align','2,3,4,5','-align_dist','2.5'])
 #
-#subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','Unitcells/anatase_tio2.cif',
+#subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
 #                 '-slab_size','[9,9,9]','-place_on_slab','-target_molecule','/home/jp/Runs/co.xyz',
-#                 '-align_method','alignpair','-surface_atom_type','Ti','-num_surface_atoms','1',
-#                 '-object_align','C','-align_dist','2.5'])
+#                 '-align_method','alignpair','-surface_atom_ind','39','-num_surface_atoms','1',
+#                 '-object_align','C','-align_dist','0.5','-shave_extra_layers','1'])
 #
-subprocess.call(["python","-m",'molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
-                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]','-freeze','1'])
+subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
+                 '-slab_size','[9,9,9]','-place_on_slab','-target_molecule','/home/jp/Runs/co.xyz','-object_align', '0',
+                 '-align_dist','0.5','-shave_extra_layers','1'])
+#
+#subprocess.call(["python","-m",'molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
+#                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]'])
 
 
 

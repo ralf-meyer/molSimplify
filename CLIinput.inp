@@ -2,5 +2,8 @@
 -slab_gen 
 -cif_path molSimplify/Unitcells/anatase_tio2.cif 
 -slab_size [9,9,9] 
--miller_index [1,0,0] 
--freeze 1
+-place_on_slab 
+-target_molecule /home/jp/Runs/co.xyz 
+-object_align 0 
+-align_dist 0.5 
+-shave_extra_layers 1
