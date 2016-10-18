@@ -116,7 +116,7 @@ def checkscr(args):
         if nts[1]!='':
             scr += " MW<"+nts[1]+" &"
     if scr=='"':
-        scr = False
+        scr = ''
     else:
         scr = scr[:-2]+'"'
     return scr
@@ -124,7 +124,7 @@ def checkscr(args):
 #################################
 ##### Gets similar molecules ####
 #################################
-def getsimilar(smi,nmols,dbselect,finger):
+def getsimilar(smi,nmols,dbselect,finger,squery):
     #######################################
     ##   smi: pybel reference smiles     ##
     ##   nmols: number of similar ones   ##
@@ -134,14 +134,15 @@ def getsimilar(smi,nmols,dbselect,finger):
     [dbsdf,dbfs] = setupdb(dbselect)
     globs = globalvars()
     if globs.osx:
-        obab = '/usr/local/bin/obabel'
+        obab = '/usr/local/bin/babel'
     else:
-        obab = 'obabel'
+        obab = 'babel'
     if dbfs:
-        com = obab+" '"+dbfs+"' -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
+        com = obab+' '+dbfs+' simres.smi -xf'+finger+' -s"'+smi+'" -at'+nmols+' --filter '+squery
     else:
-        com = obab+" '"+dbsdf+"' -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
+        com = obab+' '+dbsdf+' simres.smi -xf'+finger+' -s"'+smi+'" -at'+nmols+' --filter '+squery
     ## perform search using bash commandline
+    print(com)
     res = mybash(com)
     print res
     ## check output and print error if nothing was found
@@ -150,7 +151,7 @@ def getsimilar(smi,nmols,dbselect,finger):
         print ss
         return ss,True
     else:
-        return 'simres.sdf',False
+        return 'simres.smi',False
 
 ##################################
 ##### Strip salts from smiles ####
@@ -290,38 +291,19 @@ def dbsearch(rundir,args,globs):
     squery = checkscr(args)
     ### run similarity search anyway ###
     nmols = '10000' if not args.dbresults else args.dbresults
-    if squery:
-        nmols = '10000'
     finger = 'FP2' if not args.dbfinger else args.dbfinger
-    # reset nmols
-    nmols = '10000' if not args.dbresults else str(50*int(args.dbresults))
-    outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger)
     if int(nmols) > 3000 and args.gui:
         qqb = mQDialogInf('Warning',"Database search is going to take a few minutes. Please wait..OK?")
         qqb.setParent(args.gui.DBWindow)
+    outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger,squery)
     if flag:
         if args.gui:
             qqb = mQDialogWarn('Warning',"No matches found in search..")
             qqb.setParent(args.gui.DBWindow)
         print "No matches found in search.."
         return True
-    if squery:
-        # screen database
-        squery += " -at"+nmols
-        cmd = obab+" "+outputf+" --filter "+squery+" -O "+outf
-        t = mybash(cmd)
-        print t
-        os.remove(outputf)
-    else:
-        # convert to smiles and print to output
-        cmd = obab+" -isdf "+outputf+" -o"+outf[-3:]+" -O "+outf+" --unique"
-        print cmd
-        t = mybash(cmd)
-        print t
-        os.remove(outputf)
     # strip metals and clean-up, remove duplicates etc
     flag = stripsalts(outf,args.dbresults)
-    print cmd
     cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
     t = mybash(cmd)
     # check if defined connection atoms
