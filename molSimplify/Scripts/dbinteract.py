@@ -8,8 +8,8 @@
 ######################################################
 
 # import custom modules
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.io import *
+from geometry import *
+from io import *
 from molSimplify.Classes.globalvars import *
 # import std modules
 import os, sys
@@ -116,7 +116,7 @@ def checkscr(args):
         if nts[1]!='':
             scr += " MW<"+nts[1]+" &"
     if scr=='"':
-        scr = False
+        scr = ''
     else:
         scr = scr[:-2]+'"'
     return scr
@@ -124,7 +124,7 @@ def checkscr(args):
 #################################
 ##### Gets similar molecules ####
 #################################
-def getsimilar(smi,nmols,dbselect,finger):
+def getsimilar(smi,nmols,dbselect,finger,squery):
     #######################################
     ##   smi: pybel reference smiles     ##
     ##   nmols: number of similar ones   ##
@@ -134,14 +134,15 @@ def getsimilar(smi,nmols,dbselect,finger):
     [dbsdf,dbfs] = setupdb(dbselect)
     globs = globalvars()
     if globs.osx:
-        obab = '/usr/local/bin/obabel'
+        obab = '/usr/local/bin/babel'
     else:
-        obab = 'obabel'
+        obab = 'babel'
     if dbfs:
-        com = obab+" '"+dbfs+"' -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
+        com = obab+' '+dbfs+' simres.smi -xf'+finger+' -s"'+smi+'" -at'+nmols+' --filter '+squery
     else:
-        com = obab+" '"+dbsdf+"' -O simres.sdf -xf"+finger+" -s'"+smi+"' -at"+nmols
+        com = obab+' '+dbsdf+' simres.smi -xf'+finger+' -s"'+smi+'" -at'+nmols+' --filter '+squery
     ## perform search using bash commandline
+    print(com)
     res = mybash(com)
     print res
     ## check output and print error if nothing was found
@@ -150,7 +151,7 @@ def getsimilar(smi,nmols,dbselect,finger):
         print ss
         return ss,True
     else:
-        return 'simres.sdf',False
+        return 'simres.smi',False
 
 ##################################
 ##### Strip salts from smiles ####
@@ -184,6 +185,60 @@ def stripsalts(fname,nres):
     f.close()
     return 0
 
+#######################################
+##### Maximal dissimilarity search ####
+#######################################
+def dissim(outf,n):
+	globs = globalvars()
+	if globs.osx:
+		obab = '/usr/local/bin/babel'
+	else:
+		obab = 'babel'
+	# generate fs of original hit list
+	mybash(obab+' -ismi simres.smi -osdf -O tmp.sdf')
+	mybash(obab+' tmp.sdf -ofs')
+	# number of hits
+        sim=[];
+        with open('simres.smi','r') as f:
+               for lines in f:
+                   sim.append(lines.strip("\n"))
+	numcpds = len(sim)
+	# pick last element of list
+	mybash('obabel tmp.sdf -O 1.smi -f '+str(numcpds)+' -l'+str(numcpds))
+	if n > 1:
+		# find most dissimilar structure
+		for i in range(n-1):
+			# initialize list of total similarities
+			simsum = [0] * int(numcpds)
+			# compute total similarity of each dissimilar structure with hit list
+			for j in range(i+1):
+				a = mybash('obabel '+str(j+1)+'.smi tmp.sdf -ofpt')
+				a = a.splitlines()
+				a = [s.split('= ') for s in a]
+				a = [item for sublist in a for item in sublist]
+                                aa = []
+                                for k in a:
+                                    try:
+                                        aa.append(float(k))
+                                    except:
+                                        pass
+                                a = aa
+				simsum = [x + y for x,y in zip(simsum,a)]
+			# pick most dissimilar structure by greedily minimizing total similarity
+			mostdissim = simsum.index(min(simsum))
+			print('most dissimilar '+str(mostdissim))
+			mybash('obabel tmp.sdf -O '+str(i+2) +'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
+	# combine results into one file
+	f = open('dissimres.smi','w')
+	for i in range(n):
+		ff = open(str(i+1)+'.smi','r')
+		s = ff.read().splitlines()
+		ff.close()
+		f.write(s[0]+'\n')
+		os.remove(str(i+1)+'.smi')
+	f.close()
+	return 0
+
 ####################################
 #### Matches initial SMARTS and ####
 ####  defines connection atoms  ####
@@ -206,6 +261,7 @@ def matchsmarts(smarts,outf,catoms,nres):
                 cc += str(pmatch[att])+','
             if i < nres:
                 f.write(s[i]+' '+cc[:-1]+'\n')
+                #f.write(s[i]+'\n')
     f.close()
     return 0
 
@@ -218,9 +274,9 @@ def dbsearch(rundir,args,globs):
     else:
         obab = 'obabel'
     if args.gui:
-        from molSimplify.Classes.mWidgets import mQDialogErr
-        from molSimplify.Classes.mWidgets import mQDialogWarn
-        from molSimplify.Classes.mWidgets import mQDialogInf
+        from Classes.mWidgets import mQDialogErr
+        from Classes.mWidgets import mQDialogWarn
+        from Classes.mWidgets import mQDialogInf
     ### in any case do similarity search over indexed db ###
     outf = args.dboutputf if args.dboutputf else 'simres.smi' # output file
     cwd = os.getcwd()
@@ -290,40 +346,22 @@ def dbsearch(rundir,args,globs):
     squery = checkscr(args)
     ### run similarity search anyway ###
     nmols = '10000' if not args.dbresults else args.dbresults
-    if squery:
-        nmols = '10000'
     finger = 'FP2' if not args.dbfinger else args.dbfinger
-    # reset nmols
-    nmols = '10000' if not args.dbresults else str(50*int(args.dbresults))
-    outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger)
     if int(nmols) > 3000 and args.gui:
         qqb = mQDialogInf('Warning',"Database search is going to take a few minutes. Please wait..OK?")
         qqb.setParent(args.gui.DBWindow)
+    outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger,squery)
     if flag:
         if args.gui:
             qqb = mQDialogWarn('Warning',"No matches found in search..")
             qqb.setParent(args.gui.DBWindow)
         print "No matches found in search.."
         return True
-    if squery:
-        # screen database
-        squery += " -at"+nmols
-        cmd = obab+" "+outputf+" --filter "+squery+" -O "+outf
-        t = mybash(cmd)
-        print t
-        os.remove(outputf)
-    else:
-        # convert to smiles and print to output
-        cmd = obab+" -isdf "+outputf+" -o"+outf[-3:]+" -O "+outf+" --unique"
-        print cmd
-        t = mybash(cmd)
-        print t
-        os.remove(outputf)
     # strip metals and clean-up, remove duplicates etc
     flag = stripsalts(outf,args.dbresults)
-    print cmd
     cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
     t = mybash(cmd)
+    print t
     # check if defined connection atoms
     if args.dbcatoms:
         catoms = [int(a) for a in args.dbcatoms]
@@ -332,8 +370,14 @@ def dbsearch(rundir,args,globs):
     # do pattern matching
     nres = 50 if not args.dbresults else int(args.dbresults)
     flag = matchsmarts(smistr,outf,catoms,nres)
+    ### maximal dissimilarity search
+    if args.dbdissim:
+        dissim(outf,int(args.dbdissim))
+        flag = stripsalts('dissimres.smi',args.dbdissim)
+        flag = matchsmarts(smistr,'dissimres.smi',catoms,int(args.dbdissim))
+        #print(flag)
+        os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
     os.rename(outf,args.rundir+'/'+outf)
-    print t
     os.chdir(cwd)
     return False
         

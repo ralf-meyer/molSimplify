@@ -420,6 +420,8 @@ def parseinput(args):
                 args.dbsim = l[1]
             if (l[0]=='-dbresults'):
                 args.dbresults = l[1]
+            if (l[0]=='-dbdissim'):
+                args.dbdissim = l[1] 
             if (l[0]=='-dboutputf'):
                 args.dboutputf = l[1]
             if (l[0]=='-dbbase'):
@@ -635,6 +637,9 @@ def parsecommandline(parser):
     parser.add_argument("-dbarbonds","--dbarbonds", help="Number of aromatic bonds to be used in screening",action="store_true")
     parser.add_argument("-dbsbonds","--dbsbonds", help="number of single bonds to be used in screening",action="store_true")
     parser.add_argument("-dbmw","--dbmw", help="molecular weight to be used in screening",action="store_true")
+    parser.add_argument("-dbdissim","--dbdissim",help="number of dissimilar molecules to find",action="store_true")
+
+
     # post-processing arguments
     parser.add_argument("-postp","--postp",help="post process results",action="store_true")
     parser.add_argument("-postqc","--postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true") 

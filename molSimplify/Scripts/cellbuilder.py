@@ -957,33 +957,35 @@ def slab_module_supervisor(args,rootdir):
         align_distance_method = args.align_distance_method
     if (args.align_dist): #3    
         align_dist = args.align_dist
-    if (args.align_method): #4
-        align_method = args.align_method
-    if (args.object_align): #5
+    if (args.object_align): #4
        object_align = args.object_align
-    if (args.surface_atom_type):#6
+ 
+    if (args.align_method): #5
+        align_method = args.align_method
+   if (args.surface_atom_type):#6
        surface_atom_type = args.surface_atom_type
-    if (args.num_surface_atoms): #7
-       num_surface_atoms = args.num_surface_atoms
-    if (args.num_placements): #8
-       num_placements = args.num_placements
-    if (args.coverage):#9
-       coverage = args.coverage
-    if (args.multi_placement_centering):#10
-       multi_placement_centering = args.multi_placement_centering
-       multi_placement_centering_overide= True
-    if (args.control_angle):#11
-       control_angle = args.control_angle
-    if (args.angle_control_partner): #12
-       angle_control_partner = args.angle_control_partner
-    if (args.angle_surface_axis): #13
-       angle_surface_axis = args.angle_surface_axis
-       print('ang_surf_axis  '  +str(angle_surface_axis))
-    if (args.duplicate):#14
-       duplicate = True
-    if (args.surface_atom_ind):
+    if (args.surface_atom_ind):#7
         surface_atom_ind = args.surface_atom_ind
 
+
+    if (args.num_surface_atoms): #8
+       num_surface_atoms = args.num_surface_atoms
+    if (args.num_placements): #9
+       num_placements = args.num_placements
+    if (args.coverage):#10
+       coverage = args.coverage
+    if (args.multi_placement_centering):#12
+       multi_placement_centering = args.multi_placement_centering
+       multi_placement_centering_overide= True
+    if (args.control_angle):#13
+       control_angle = args.control_angle
+    if (args.angle_control_partner): #14
+       angle_control_partner = args.angle_control_partner
+    if (args.angle_surface_axis): #14
+       angle_surface_axis = args.angle_surface_axis
+       print('ang_surf_axis  '  +str(angle_surface_axis))
+    if (args.duplicate):#15
+       duplicate = True
         ### check inputs
     if slab_gen and not (slab_size or duplication_vector):
         emsg="Size of slab required (-slab_size or -duplication_vector)"

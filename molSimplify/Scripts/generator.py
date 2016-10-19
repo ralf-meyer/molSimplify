@@ -137,7 +137,7 @@ def startgen(argv,flag,gui):
                 del args
                 return emsg
     # slab/place on slab?
-    if (args.slab_gen or args.place_on_slab):
+    elif (args.slab_gen or args.place_on_slab):
         emsg = slab_module_supervisor(args,rundir)
     # normal structure generation
     else:
