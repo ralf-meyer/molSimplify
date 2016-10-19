@@ -102,7 +102,8 @@ def network_builder(layers,partial_path):
 
 
 def csv_loader(path):
-    path_to_file = (globs.homedir + "/python_nn/" + path)
+    globs=globalvars()
+    path_to_file = (globs.installdir + "/python_nn/" + path)
     with open(path_to_file,'r') as csvfile:
         csv_lines = csv.reader(csvfile,delimiter= ',')
         ret_list = list()

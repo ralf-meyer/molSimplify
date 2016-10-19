@@ -1,17 +1,17 @@
-# Written by JP Janet for HJK Group
+    # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 import os, sys, copy
 import glob, re, math, random, string, numpy, pybel
 from math import pi
 from scipy.spatial import Delaunay, ConvexHull
 #import networkx as nx
-from Scripts.geometry import *
-from Classes.atom3D import *
-from Classes.mol3D import*
-from Classes.globalvars import globalvars
+from molSimplify.Scripts.geometry import *
+from molSimplify.Classes.atom3D import *
+from molSimplify.Classes.mol3D import*
+from molSimplify.Classes.globalvars import globalvars
 from operator import add
-from Scripts.periodic_QE import *
-from Scripts.cellbuilder_tools import *
+from molSimplify.Scripts.periodic_QE import *
+from molSimplify.Scripts.cellbuilder_tools import *
 ###############################
 def dodgy_fix(unit_cell,cell_vector):
     fixed_cell = mol3D()
@@ -611,7 +611,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
     return combined_cell
 ###################################
 def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,method,target_atom_type,align_dist,surface_atom_type = False,control_angle = False,align_ind = False, align_axis = False,
-                                  duplicate = False, number_of_placements = 1, coverage = False,weighting_method = 'linear',weight = 0.5,masklength = 1):
+                                  duplicate = False, number_of_placements = 1, coverage = False,weighting_method = 'linear',weight = 0.5,masklength = 1, surface_atom_ind = False):
     ######### parse input
     if ((number_of_placements != 1) or coverage) and ((method != 'alignpair') or (control_angle)):
         if not (method == 'alignpair'):
@@ -630,25 +630,37 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
     if control_angle and not align_ind:
         print('align_ind not found, even though control_angle is on. Disabling controlled rotation')
         control_angle = false
-    if (method == 'alignpair') and not surface_atom_type:
+    if (method == 'alignpair') and not (surface_atom_type or surface_atom_ind):
        print('Must provide surface binding atom type to use alignpair')
        print(' using centered placemented instead')
        method = 'center'
     print('\n\n\n')
     print('the method is',method)
     if (method == 'alignpair'): # get all vaccancies 
-        print('surface_atom_type',surface_atom_type)
-        avail_sites_list =  find_all_surface_atoms(super_cell,tol=2,type_of_atom = surface_atom_type)
         avail_sites_dict = dict()
-        for indices in avail_sites_list:
-            avail_sites_dict[indices] = super_cell.getAtom(indices).coords()
         occupied_sites_dict = dict()
-        # calculate max number of sites that need to be filled 
-        max_sites =int(numpy.floor(float(len(avail_sites_dict.keys()))/masklength))
-    if coverage:
-        number_of_placements = int(numpy.ceil(max_sites*coverage))
-        print('Coverage requested = ' + str(coverage))
-    print('masklengh is ' + str(masklength))
+        if not surface_atom_ind:
+            print('surface_atom_type',surface_atom_type)
+            avail_sites_list =  find_all_surface_atoms(super_cell,tol=0.75,type_of_atom = surface_atom_type)
+            avail_sites_dict = dict()
+            for indices in avail_sites_list:
+                avail_sites_dict[indices] = super_cell.getAtom(indices).coords()
+            occupied_sites_dict = dict()
+            # calculate max number of sites that need to be filled 
+            max_sites =int(numpy.floor(float(len(avail_sites_dict.keys()))/masklength))
+            if coverage:
+                number_of_placements = int(numpy.ceil(max_sites*coverage))
+                print('Coverage requested = ' + str(coverage))
+        print('masklengh is ' + str(masklength))
+        if surface_atom_ind:
+            print('using surface_atom_ind')
+            for indices in surface_atom_ind:
+                avail_sites_dict[indices] = super_cell.getAtom(indices).coords()
+            avail_sites_list = [i for i in surface_atom_ind]
+            if coverage:
+                print('cannot use coverage with surface_atom_ind')
+                coverage = False
+
     ######## prepare and allocate
     loaded_cell = mol3D()
     loaded_cell.copymol3D(super_cell)
@@ -666,7 +678,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
             sites_list.append(align_coord)
 
         elif (method == 'alignpair'):
-            print('second alignpairs?')
             best_site = choose_best_site(avail_sites_dict,occupied_sites_dict,centered_align_coord(super_cell_vector),super_cell,super_cell_vector,weight,weighting_method)
             align_coord = super_cell.getAtom(best_site).coords()
             occupied_sites_dict[best_site] = avail_sites_dict.pop(best_site) # this transfers the site to occupied
@@ -881,7 +892,10 @@ def slab_module_supervisor(args,rootdir):
 
     # shave extra layers 
     shave_extra_layers  = False
+    
 
+    # overwrite surface_atom_ind
+    surface_atom_ind = False
 
     ###### Now attempt input ####
     import_success = True
@@ -967,6 +981,9 @@ def slab_module_supervisor(args,rootdir):
        print('ang_surf_axis  '  +str(angle_surface_axis))
     if (args.duplicate):#14
        duplicate = True
+    if (args.surface_atom_ind):
+        surface_atom_ind = args.surface_atom_ind
+
         ### check inputs
     if slab_gen and not (slab_size or duplication_vector):
         emsg="Size of slab required (-slab_size or -duplication_vector)"
@@ -1033,27 +1050,27 @@ def slab_module_supervisor(args,rootdir):
                 emsg.append('unable to import cif at ' + str(cif_path))
                 return emsg
         if miller_flag:
+            print('miller index on '+ str(miller_index) + ' ' + str(miller_flag))
             ###TESTING REMOVE
-                if debug:
-                    unit_cell.writexyz(rootdir + 'slab/step_0.xyz')
-                    print('\n\n')
-#                    old_cell_vector = copy.deepcopy(cell_vector)
-                    print('cell vector was ')
-                    print(cell_vector[0])
-                    print(cell_vector[1])
-                    print(cell_vector[2])
-                    print('\n**********************\n')
-                v1,v2,v3,angle,u = cut_cell_to_index(unit_cell,cell_vector,miller_index)
+            if debug:
+                unit_cell.writexyz(rootdir + 'slab/step_0.xyz')
+                print('\n\n')
+                print('cell vector was ')
+                print(cell_vector[0])
+                print(cell_vector[1])
+                print(cell_vector[2])
+                print('\n**********************\n')
+            v1,v2,v3,angle,u = cut_cell_to_index(unit_cell,cell_vector,miller_index)
 
-                cell_vector = [v1,v2,v3]  # change basis of cell to reflect cut, will rotate after gen
-                if debug:
-                    print('cell vector is now ')
-                    print(cell_vector[0])
-                    print(cell_vector[1])
-                    print(cell_vector[2])
-                    print('\n\n')
+            cell_vector = [v1,v2,v3]  # change basis of cell to reflect cut, will rotate after gen
+            if debug:
+                print('cell vector is now ')
+                print(cell_vector[0])
+                print(cell_vector[1])
+                print(cell_vector[2])
+                print('\n\n')
 #                cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),-1*angle) for i in cell_vector]
-                    unit_cell.writexyz(rootdir + 'slab/step_1.xyz')
+                unit_cell.writexyz(rootdir + 'slab/step_1.xyz')
 #                unit_cell = rotate_around_axis(unit_cell,[0,0,0],u,-1*angle)
 #                unit_cell.writexyz(rootdir + 'slab/just_flat.xyz')
 
@@ -1273,6 +1290,9 @@ def slab_module_supervisor(args,rootdir):
     if place_on_slab:
         if slab_gen:
             print('\n\n ************************ starting placement ***************** \n\n')
+        if not slab_gen:
+            print('\n\n ************************ placementon existing slab  ***************** \n\n')
+            a_totally_new_variable = cell_vector
         if control_angle:
             print('control angle on')
             print(angle_surface_axis)
@@ -1282,7 +1302,7 @@ def slab_module_supervisor(args,rootdir):
                                                  align_method,object_align,align_dist,surface_atom_type,
                                                  control_angle = control_angle, align_ind = angle_control_partner, align_axis = angle_surface_axis,
                                                  duplicate = duplicate, number_of_placements = num_placements, coverage = coverage,
-                                                 weighting_method = 'linear' ,weight = 0, masklength = num_surface_atoms)
+                                                 weighting_method = 'linear' ,weight = 0, masklength = num_surface_atoms, surface_atom_ind = surface_atom_ind)
         if not os.path.exists(rootdir + 'loaded_slab'):
                 os.makedirs(rootdir + 'loaded_slab')
         if freeze and not slab_gen: #freezing happens at gen time

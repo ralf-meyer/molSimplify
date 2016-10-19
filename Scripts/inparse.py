@@ -8,8 +8,8 @@
 
 # import std modules
 import glob, os, re, argparse, sys
-from Scripts.io import *
-from Classes.globalvars import *
+from molSimplify.Scripts.io import *
+from molSimplify.Classes.globalvars import *
 
 ######################################################
 ########## check core/ligands specified  #############
@@ -530,6 +530,8 @@ def parseinput(args):
                 args.angle_surface_axis = [float(i.strip('(){}<>[],.')) for i in l[1:]]
             if (l[0] == '-duplicate'):#14
                 args.duplicate = l[1]
+            if (l[0]=='-surface_atom_ind'): #6
+                args.surface_atom_ind = [int(i.strip('(){}<>[],.')) for i in l[1:]]
 
 
                 
@@ -684,7 +686,8 @@ def parsecommandline(parser):
                         help="int, number of extra layers to shave") #10
     parser.add_argument("-debug","--debug",
                         help="switch, print stepwise slabs",action="store_true") #10
-    
+
+
     # placement input: control
     parser.add_argument("-place_on_slab","--place_on_slab",
                         help = "enables  placement on slab ",action="store_true") #0
@@ -719,6 +722,9 @@ def parsecommandline(parser):
                         help = 'list of two floats, vector in surface plane to control angle relative to') #13
     parser.add_argument('-duplicate','--duplicate',
                         help = "boolean, duplicate asorbate above and below slab",action = "store_true") #14
+    parser.add_argument('-surface_atom_ind','--surface_atom_ind',
+                        help = "list of int, surface atoms to use by index") #15
+
 
     args=parser.parse_args()
     return args
