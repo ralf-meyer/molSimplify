@@ -8,11 +8,11 @@
 ##########################################################
 
 # import custom modules
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.io import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.python_nn.graph_analyze import *
-from molSimplify.python_nn.pytry import *
+from Scripts.geometry import *
+from Scripts.io import *
+from Classes.globalvars import *
+from python_nn.graph_analyze import *
+from python_nn.pytry import *
 # import standard modules
 import openbabel
 

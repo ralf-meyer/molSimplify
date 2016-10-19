@@ -3,15 +3,15 @@
 import os, sys, copy
 import glob, re, math, random, string, numpy, pybel
 from math import pi
-from scipy.spatial import Delaunay, ConvexHull
+#from scipy.spatial import Delaunay, ConvexHull
 #import networkx as nx
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.mol3D import*
-from molSimplify.Classes.globalvars import globalvars
+from Scripts.geometry import *
+from Classes.atom3D import *
+from Classes.mol3D import*
+from Classes.globalvars import globalvars
 from operator import add
-from molSimplify.Scripts.periodic_QE import *
-from molSimplify.Scripts.cellbuilder_tools import *
+from Scripts.periodic_QE import *
+from Scripts.cellbuilder_tools import *
 ###############################
 def dodgy_fix(unit_cell,cell_vector):
     fixed_cell = mol3D()

@@ -8,8 +8,8 @@
 
 # import std modules
 import glob, os, re, argparse, sys
-from molSimplify.Scripts.io import *
-from molSimplify.Classes.globalvars import *
+from Scripts.io import *
+from Classes.globalvars import *
 
 ######################################################
 ########## check core/ligands specified  #############

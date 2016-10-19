@@ -750,12 +750,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
         ANN_flag = False
         ANN_bondl = 0
     else:
-#        try:
+        try:
         ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
- #       except:
-  #          print("ANN call rejected")
-        ##ANN_flag = False
-        #ANN_bondl = 0
+        except:
+            print("ANN call rejected")
+        ANN_flag = False
+        ANN_bondl = 0
     
    ##############################
     ###############################

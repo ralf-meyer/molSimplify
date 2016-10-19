@@ -3,7 +3,7 @@
 import os, sys, copy
 import glob, re, math, random, string, numpy, pybel
 from math import pi
-from scipy.spatial import Delaunay, ConvexHull
+#from scipy.spatial import Delaunay, ConvexHull
 #import networkx as nx
 from Scripts.geometry import *
 from Classes.atom3D import *
