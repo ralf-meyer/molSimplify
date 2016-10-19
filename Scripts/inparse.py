@@ -1,5 +1,4 @@
 # Written by Tim Ioannidis for HJK Group
-# modified by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ##############################################################
@@ -8,7 +7,7 @@
 
 # import std modules
 import glob, os, re, argparse, sys
-from Scripts.io import *
+from io import *
 from Classes.globalvars import *
 
 ######################################################
@@ -192,7 +191,6 @@ def parseCLI(args):
 ###########################################
 ### parses inputfile ###
 def parseinput(args):
-    args.skipANN = False
     for line in open(args.i):
         if '-lig' not in line and '-core' not in line and '-bind' not in line:
             line = line.split('#')[0] # remove comments
@@ -207,7 +205,6 @@ def parseinput(args):
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = [int(ll)-1 for ll in l[1:]]
             if (l[0]=='-rundir'):
-                print('in inparse, rundir found',l)
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -215,18 +212,9 @@ def parseinput(args):
                     args.rundir = args.rundir[:-1]
             if (l[0]=='-suff'):
                 args.suff = l[1].strip('\n')
-            if (l[0]=='-name'):
-                args.name =l[1]
-            if (l[0]=='-skipANN'):
-                args.skipANN = True
-            if (l[0]=='-jobdir'):
-                if (len(l) > 1):
-                    args.jobdir =l[1]
-                else:
-                    args.jobdirblank = True 
             ### parse structure generation arguments ###
             if (l[0]=='-bind' and len(l[1:]) > 0):
-                l = filter(None,re.split(' |,|\t',line))
+                l = filter(None,re.split(' |,|\t',line[:-1]))
                 # discard comments
                 for ibind,lbind in enumerate(l):
                     if lbind=='#':
@@ -307,10 +295,7 @@ def parseinput(args):
                     lloc = []
                     l1 = filter(None,re.split(',| ',ll))
                     for lll in l1:
-                        if lll.lower()!='cm':
-                            lloc.append(int(lll)-1)
-                        else:
-                            lloc.append(lll.lower())
+                        lloc.append(int(lll)-1)
                     args.smicat.append(lloc)
             if '-pangles' in line:
                 args.pangles = []
@@ -420,6 +405,8 @@ def parseinput(args):
                 args.dbsim = l[1]
             if (l[0]=='-dbresults'):
                 args.dbresults = l[1]
+            if (l[0]=='-dbdissim'):
+                args.dbdissim = l[1]                
             if (l[0]=='-dboutputf'):
                 args.dboutputf = l[1]
             if (l[0]=='-dbbase'):
@@ -466,72 +453,6 @@ def parseinput(args):
             #    args.pdorbs = True
             if (l[0]=='-pnbo'):
                 args.pnbo = True
-            # parse slab building arguments
-            if (l[0]=='-slab_gen'): #0
-                print('slab gen')
-                args.slab_gen = True
-            if (l[0]=='-unit_cell'): #1 
-                args.unit_cell = l[1]
-            if (l[0]=='-cell_vector'): #2
-                args.cell_index = [[float(j.strip('(){}<>[],.')) for j in i]  for i in l[1:]] # list-of-lists
-            if (l[0]=='-cif_path'): #3
-                args.cif_path = l[1]
-            if (l[0]=='-duplication_vector'): #4
-                args.duplication_vector = [int(i.strip('(){}<>[],.')) for i in l[1:]]
-            if (l[0]=='-slab_size'): #5
-                 args.slab_size = [float(i.strip('(){}<>[],.')) for i in l[1:]]
-            if (l[0]=='-miller_index'): #6
-                args.miller_index = [int(i.strip('(){}<>[],.')) for i in l[1:]]
-            if (l[0]=='-freeze'): #7
-                try:
-                    args.freeze = int(l[1].strip('(){}<>[],.'))
-                except:
-                    args.freeze = True
-            if (l[0]=='-debug'):#8
-                args.debug = True
-            if (l[0]=='-expose_type'):#9
-                args.expose_type = l[1]
-            if (l[0]=='-shave_extra_layers'):#9
-                args.shave_extra_layers = int(l[1])
-
-            # parse place on slab options
-            if (l[0]=='-place_on_slab'): #0
-                args.place_on_slab = True
-            if (l[0]=='-target_molecule'): #1 
-                args.target_molecule = l[1]
-            if (l[0]=='-align_distance_method'): #2
-                args.align_distance_method = l[1]
-            if (l[0]=='-align_dist'): #3
-                args.align_dist = float(l[1].strip('(){}<>[],.'))
-            if (l[0]=='-align_method'): #4
-                args.align_method = l[1]
-            if (l[0]=='-object_align'): #5
-                globs = globalvars()
-                elements = globs.elementsbynum()
-                if l[1] in elements:
-                    args.object_align = l[1]
-                else:
-                    args.object_align = [int(i.strip('(){}<>[],.')) for i in l[1:]]
-            if (l[0]=='-surface_atom_type'):#6
-                args.surface_atom_type = l[1]
-            if (l[0] == '-num_surface_atoms'): #7
-                args.num_surface_atoms = int(l[1].strip('()[]<>.'))
-            if (l[0] == '-num_placements'): #8
-                args.num_placements = int(l[1].strip('()[]<>.'))
-            if (l[0]=='-coverage'):#9
-                args.coverage = float(l[1].strip('()[]<>.'))
-            if (l[0]=='-multi_placement_centering'):#10
-                args.multi_placement_centering = float(l[1].strip('()[]<>.'))
-            if (l[0]=='-control_angle'):#11
-                args.control_angle = float(l[1].strip('()[]<>.'))
-            if (l[0] == '-angle_control_partner'): #12
-                args.angle_control_partner = int(l[1].strip('()[]<>.'))
-            if (l[0] == '-angle_surface_axis'): #13
-                args.angle_surface_axis = [float(i.strip('(){}<>[],.')) for i in l[1:]]
-            if (l[0] == '-duplicate'):#14
-                args.duplicate = l[1]
-
-
                 
 #############################################################
 ########## mainly for help and listing options  #############
@@ -540,15 +461,13 @@ def parseinput(args):
 def parsecommandline(parser):
     globs = globalvars()
     installdir = globs.installdir+'/'
-    # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
+    # first variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
     parser.add_argument("-i","--i",help="input file")
     # top directory options
     parser.add_argument("-rundir","--rundir",help="directory for jobs",action="store_true")
     parser.add_argument("-suff","--suff", help="suffix for jobs folder.",action="store_true")
     # structure generation options
     parser.add_argument("-ccatoms","--ccatoms", help="core connection atoms indices, indexing starting from 1",action="store_true")
-    parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
-    parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
     parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6 
     parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(installdir),action="store_true") #e.g. ferrocene
     parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(installdir),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
@@ -658,67 +577,5 @@ def parsecommandline(parser):
     # wavefunction - cube files
     # deloc indices - basin analysis
     # moldparse
-    # Slab builder arguments
-    # slab builder input: controli
-    parser.add_argument("-slab_gen","--slab_gen",
-                        help = "enables slab generation/periodic extension",action="store_true") #0
-    # slab builder input: required
-    parser.add_argument("-unit_cell","--unit_cell",
-                        help = "path to xyz, or give generation instructions ") #1
-    parser.add_argument("-cell_vector","--cell_vector",
-                        help = "unit cell lattice vector, list of 3 list of float (Ang)") #2
-    parser.add_argument("-cif_path","--cif_path",
-                        help = "path to cif file") #3
-    parser.add_argument("-duplication_vector","--duplication_vector",
-                        help = "list of 3 in, lattice vector repeats") #4
-    parser.add_argument("-slab_size","--slab_size",
-                        help = "slab size, list of 3 floats (Ang)") #5
-    # slab buidler: optional
-    parser.add_argument("-miller_index","--miller_index",
-                        help="list of 3 int, miller indicies") #6
-    parser.add_argument("-freeze","--freeze",
-                        help="bool or int, bottom layers of cell to freeze") #7
-    parser.add_argument("-expose_type","--expose_type",
-                        help="str, symbol of atom type to expose (eg 'O')") #9
-    parser.add_argument("-shave_extra_layers","--shave_extra_layers",
-                        help="int, number of extra layers to shave") #10
-    parser.add_argument("-debug","--debug",
-                        help="switch, print stepwise slabs",action="store_true") #10
-    
-    # placement input: control
-    parser.add_argument("-place_on_slab","--place_on_slab",
-                        help = "enables  placement on slab ",action="store_true") #0
-    # placemnt input: required
-    parser.add_argument("-target_molecule",'--target_molecule',
-                        help = "path to target molecule") #1
-    parser.add_argument("-align_distance_method","--align_distance_method",
-                        help = "align distance method",
-                        choices = ['chemisorption','physisorption','custom']) #2
-    parser.add_argument("-align_dist","--align_dist",
-                        help = "align distance, float") #3
-    # placement input: optional
-    parser.add_argument("-align_method","--align_method",
-                        help = "align method ",choices = ['center', 'staggered','alignpair']) #4
-    parser.add_argument("-object_align","--object_align",
-                        help = "atom symbol or index for alignment partner in placed object")  #5
-    parser.add_argument("-surface_atom_type","--surface_atom_type",
-                        help = "atom symbol for surface aligment partner") #6
-    parser.add_argument("-num_surface_atoms","--num_surface_atoms",
-                        help = "number of surface sites to attach per adsorbate")#7
-    parser.add_argument("-num_placements","--num_placements",
-                        help = "number of copies of object to place.") #8
-    parser.add_argument("-coverage","--coverage",
-                        help = "coverage fraction, float between 0 and 1") #9
-    parser.add_argument("-multi_placement_centering",'--multi_placement_centering',
-                        help = "float between 0 and 1, controls centering of placment.Reccomend leaving as default") #10
-    parser.add_argument("-control_angle","--control_angle",
-                        help =  "angle in degrees to rotate object axis to surface")#11
-    parser.add_argument("-angle_control_partner","-angle_control_partner",
-                        help = 'atom index, int. Controls angle between object_align and this atom') #12
-    parser.add_argument('-angle_surface_axis','--angle_surface_axis',
-                        help = 'list of two floats, vector in surface plane to control angle relative to') #13
-    parser.add_argument('-duplicate','--duplicate',
-                        help = "boolean, duplicate asorbate above and below slab",action = "store_true") #14
-
     args=parser.parse_args()
     return args

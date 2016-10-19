@@ -185,6 +185,50 @@ def stripsalts(fname,nres):
     f.close()
     return 0
 
+#######################################
+##### Maximal dissimilarity search ####
+#######################################
+def dissim(outf,n):
+	# generate fs of original hit list
+	mybash('obabel -ismi simres.smi -osdf -Otmp.sdf')
+	mybash('babel tmp.sdf -ofs')
+	# number of hits
+	numcpds = mybash('obabel tmp.sdf -onul')
+	numcpds = numcpds.split(None)[0]
+	# pick last element of list
+	mybash('obabel tmp.sdf -O 1.smi -f '+str(numcpds)+' -l'+str(numcpds))
+	print numcpds
+	if n > 1:
+		# find most dissimilar structure
+		for i in range(n-1):
+			# initialize list of total similarities
+			simsum = [0] * int(numcpds)
+			# compute total similarity of each dissimilar structure with hit list
+			for j in range(i+1):
+				a = mybash('obabel '+str(j+1)+'.smi tmp.sdf -ofpt')
+				a = a.splitlines()
+				a = [s.split('= ') for s in a]
+				a = [item for sublist in a for item in sublist]
+				a = [s for s in a if (('1' in s or '0' in s) and 'm' not in s)]
+				a = [float(s) for s in a]
+				print a
+				simsum = [x + y for x,y in zip(simsum,a)]
+			print(simsum)
+			# pick most dissimilar structure by greedily minimizing total similarity
+			mostdissim = simsum.index(min(simsum))
+			print('most dissimilar '+str(mostdissim))
+			mybash('obabel tmp.sdf -O '+str(i+2)+'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
+	# combine results into one file
+	f = open('dissimres.smi','w')
+	for i in range(n):
+		ff = open(str(i+1)+'.smi','r')
+		s = ff.read().splitlines()
+		ff.close()
+		f.write(s[0]+'\n')
+		os.remove(str(i+1)+'.smi')
+	f.close()
+	return 0
+
 ####################################
 #### Matches initial SMARTS and ####
 ####  defines connection atoms  ####
@@ -207,6 +251,7 @@ def matchsmarts(smarts,outf,catoms,nres):
                 cc += str(pmatch[att])+','
             if i < nres:
                 f.write(s[i]+' '+cc[:-1]+'\n')
+                #f.write(s[i]+'\n')
     f.close()
     return 0
 
@@ -306,6 +351,7 @@ def dbsearch(rundir,args,globs):
     flag = stripsalts(outf,args.dbresults)
     cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
     t = mybash(cmd)
+    print t
     # check if defined connection atoms
     if args.dbcatoms:
         catoms = [int(a) for a in args.dbcatoms]
@@ -314,8 +360,14 @@ def dbsearch(rundir,args,globs):
     # do pattern matching
     nres = 50 if not args.dbresults else int(args.dbresults)
     flag = matchsmarts(smistr,outf,catoms,nres)
+    ### maximal dissimilarity search
+    if args.dbdissim:
+        dissim(outf,int(args.dbdissim))
+        flag = stripsalts('dissimres.smi',args.dbdissim)
+        flag = matchsmarts(smistr,'dissimres.smi',catoms,int(args.dbdissim))
+        #print(flag)
+        os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
     os.rename(outf,args.rundir+'/'+outf)
-    print t
     os.chdir(cwd)
     return False
         
