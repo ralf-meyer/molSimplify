@@ -189,9 +189,14 @@ def stripsalts(fname,nres):
 ##### Maximal dissimilarity search ####
 #######################################
 def dissim(outf,n):
+	globs = globalvars()
+	if globs.osx:
+		obab = '/usr/local/bin/babel'
+	else:
+		obab = 'babel'
 	# generate fs of original hit list
-	mybash('obabel -ismi simres.smi -osdf -Otmp.sdf')
-	mybash('babel tmp.sdf -ofs')
+	mybash(obab+' -ismi simres.smi -osdf -Otmp.sdf')
+	mybash(obab+' tmp.sdf -ofs')
 	# number of hits
 	numcpds = mybash('obabel tmp.sdf -onul')
 	numcpds = numcpds.split(None)[0]
