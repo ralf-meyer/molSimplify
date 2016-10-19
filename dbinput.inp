@@ -1,0 +1,9 @@
+# Input file generated from GUI options
+-dbcatoms 2
+-dbbase chembl_22
+-dbfinger FP2
+-dbresults 500
+-rundir /home/jp/Dropbox/MyGit/molSimplify_dev/molSimplify
+-dbatoms <9
+-dbsim CO
+-dbdissim 5

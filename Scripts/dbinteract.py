@@ -195,14 +195,16 @@ def dissim(outf,n):
 	else:
 		obab = 'babel'
 	# generate fs of original hit list
-	mybash(obab+' -ismi simres.smi -osdf -Otmp.sdf')
+	mybash(obab+' -ismi simres.smi -osdf -O tmp.sdf')
 	mybash(obab+' tmp.sdf -ofs')
 	# number of hits
-	numcpds = mybash('obabel tmp.sdf -onul')
-	numcpds = numcpds.split(None)[0]
+        sim=[];
+        with open('simres.smi','r') as f:
+               for lines in f:
+                   sim.append(lines.strip("\n"))
+	numcpds = len(sim)
 	# pick last element of list
 	mybash('obabel tmp.sdf -O 1.smi -f '+str(numcpds)+' -l'+str(numcpds))
-	print numcpds
 	if n > 1:
 		# find most dissimilar structure
 		for i in range(n-1):
@@ -214,15 +216,18 @@ def dissim(outf,n):
 				a = a.splitlines()
 				a = [s.split('= ') for s in a]
 				a = [item for sublist in a for item in sublist]
-				a = [s for s in a if (('1' in s or '0' in s) and 'm' not in s)]
-				a = [float(s) for s in a]
-				print a
+                                aa = []
+                                for k in a:
+                                    try:
+                                        aa.append(float(k))
+                                    except:
+                                        pass
+                                a = aa
 				simsum = [x + y for x,y in zip(simsum,a)]
-			print(simsum)
 			# pick most dissimilar structure by greedily minimizing total similarity
 			mostdissim = simsum.index(min(simsum))
 			print('most dissimilar '+str(mostdissim))
-			mybash('obabel tmp.sdf -O '+str(i+2)+'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
+			mybash('obabel tmp.sdf -O '+str(i+2) +'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
 	# combine results into one file
 	f = open('dissimres.smi','w')
 	for i in range(n):
