@@ -959,14 +959,12 @@ def slab_module_supervisor(args,rootdir):
         align_dist = args.align_dist
     if (args.object_align): #4
        object_align = args.object_align
- 
     if (args.align_method): #5
         align_method = args.align_method
-   if (args.surface_atom_type):#6
+    if (args.surface_atom_type):#6
        surface_atom_type = args.surface_atom_type
     if (args.surface_atom_ind):#7
         surface_atom_ind = args.surface_atom_ind
-
 
     if (args.num_surface_atoms): #8
        num_surface_atoms = args.num_surface_atoms

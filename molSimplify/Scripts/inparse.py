@@ -10,6 +10,8 @@
 import glob, os, re, argparse, sys
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
+from pkg_resources import resource_filename, Requirement
+
 
 ######################################################
 ########## check core/ligands specified  #############
@@ -67,7 +69,9 @@ def cleaninput(args):
     # check ligands
     if args.lig:
         ls = []
-        ligdic = readdict(globs.installdir+'/Ligands/simple_ligands.dict')
+        ligdic = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict"))
+
+#        ligdic = readdict(globs.installdir+'/Ligands/simple_ligands.dict')
         for i,s in enumerate(args.lig):
             if isinstance(s,list):
                 for ss in s:
@@ -207,7 +211,7 @@ def parseinput(args):
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = [int(ll)-1 for ll in l[1:]]
             if (l[0]=='-rundir'):
-                print('in inparse, rundir found',l)
+                print(' rundir set to ' + str(l))
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -543,7 +547,7 @@ def parseinput(args):
 ### parses commandline arguments and prints help information ###
 def parsecommandline(parser):
     globs = globalvars()
-    installdir = globs.installdir+'/'
+#    installdir = globs.installdir+'/'
     # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
     parser.add_argument("-i","--i",help="input file")
     # top directory options
@@ -554,8 +558,8 @@ def parsecommandline(parser):
     parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
     parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
     parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6 
-    parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(installdir),action="store_true") #e.g. ferrocene
-    parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(installdir),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
+    parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(),action="store_true") #e.g. ferrocene
+    parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
     parser.add_argument("-bcharge","--bcharge",default='0', help="binding species charge, default 0",action="store_true") 
     parser.add_argument("-bphi","--bphi", help="azimuthal angle phi for binding species, default random between 0 and 180",action="store_true") 
     parser.add_argument("-bref","--bref", help="reference atoms for placement of extra molecules, default COM (center of mass). e.g. 1,5 or 1-5, Fe, COM",action="store_true") 
@@ -563,7 +567,7 @@ def parsecommandline(parser):
     parser.add_argument("-btheta","--btheta", help="polar angle theta for binding species, default random between 0 and 360",action="store_true") 
     parser.add_argument("-geometry","--geometry", help="geometry such as TBP (trigonal bipyramidal)",action="store_true") # geometry
     parser.add_argument("-genall","--genall", help="Generate complex both with and without FF opt.",action="store_true") # geometry
-    parser.add_argument("-lig","--lig", help="ligand structure name or SMILES with currently available: "+getligs(installdir),action="store_true") #e.g. acetate (in smilesdict)
+    parser.add_argument("-lig","--lig", help="ligand structure name or SMILES with currently available: "+getligs(),action="store_true") #e.g. acetate (in smilesdict)
     parser.add_argument("-ligocc","--ligocc", help="number of corresponding ligands e.g. 2,2,1",action="store_true") # e.g. 1,2,1
     parser.add_argument("-lignum","--lignum", help="number of ligand types e.g. 2",action="store_true") 
     parser.add_argument("-liggrp","--liggrp", help="ligand group for random generation",action="store_true") 

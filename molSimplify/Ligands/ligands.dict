@@ -36,6 +36,8 @@ oxygen:oxygen.mol,oxd,0,build small,N,-2
 phen:phen.mol,phen,9 12,build bidentate,BA,0
 phenanthroline:phen.mol,bip,9 12,build bidentate,BA,0
 porphyrin:porphyrin.mol,prph,0 1 2 3,build tetradentate,A,-2
+phthalocyanine:phthalocyanine.mol,phthalocyanine,0 2 30 29,build tetradentate,A,-2
+cyclam:cyclam.mol,cyclam,15 17 34 36,build tetradentate,A,0
 pph3:PPh3.mol,pph,2,build bulky big,BA,0
 pyr:pyridine.mol,pyrd,3,build organic,BA,0
 pyridine:pyridine.mol,pyrd,3,build organic,BA,0

@@ -31,11 +31,13 @@ methanal:methanal.mol,metha,0,functionalize small,N,-1
 methyl:methyl.mol,meth,0,functionalize small,N,-1
 nitro:nitro.mol,nit,1,build functionalize small,N,-1
 nitroso:nitroso.mol,nits,0,build functionalize small,N,-1
-oxalate:oxalate.mol,oxate,1 4,build bidentate,BA,-2
+ox:oxalate.mol,oxate,1 4,build bidentate,BA,-2
 oxygen:oxygen.mol,oxd,0,build small,N,-2
 phen:phen.mol,phen,9 12,build bidentate,BA,0
 phenanthroline:phen.mol,bip,9 12,build bidentate,BA,0
 porphyrin:porphyrin.mol,prph,0 1 2 3,build tetradentate,A,-2
+phthalocyanine:phthalocyanine.mol,phthalocyanine,1 3 31 30,build tetradentate,A,-2
+cyclam:cyclam.mol,cyclam,16 18 35 37,build tetradentate,A,0
 pph3:PPh3.mol,pph,2,build bulky big,BA,0
 pyr:pyridine.mol,pyrd,3,build organic,BA,0
 pyridine:pyridine.mol,pyrd,3,build organic,BA,0

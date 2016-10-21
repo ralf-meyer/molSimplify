@@ -113,10 +113,10 @@ def check_ligands(ligs,batlist,dents,tcats):
                         eq_dent = this_dent
                         eq_tcat = tcats[i]
     if not (len(axial_ligs) == 1):
-        print('axial ligs mismatch: ',axial_ligs,ax_dent)
+        print('axial ligs do not match, have  ' + str(' '.join(axial_ligs)))
         valid = False
     if not (len(equitorial_ligs) == 1):
-        print('equitorial ligs mismatch: ',equitorial_ligs,eq_dent)
+        print('equitorial ligs do not match, have ' + str(' '.join(equitorial_ligs)))
         valid = False
     return valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat
 
@@ -127,9 +127,9 @@ def check_metal(metal,oxidation_state):
     if oxidation_state  in romans.keys():
         oxidation_state= romans[oxidation_state]
     outcome = False
-    print('incheck',oxidation_state)
+#    print('incheck',oxidation_state)
     if metal in supported_metal_dict.keys():
-        print('metal in',supported_metal_dict[metal])
+#        print('metal in',supported_metal_dict[metal])
         if int(oxidation_state) in supported_metal_dict[metal]:
             outcome = True
     return outcome,oxidation_state
@@ -158,14 +158,14 @@ def get_con_at_type(mol,connection_atoms):
     return valid,this_type
 
 
-def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
+def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     nn_excitation = []
     r = 0
     emsg = list()
     valid = True 
     metal = args.core
     if not args.geometry == "oct":
-        print('nn: geom  is',args.geometry)
+#        print('ANN: geom  is: ' + str(args.geometry))
         emsg.append("\n [ANN] Geometry is not supported at this time, MUST give -geometry = oct")
         valid = False
     if not args.oxstate:
@@ -180,14 +180,14 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         spin = args.spin
         #print('metal validity',valid)
         if not valid:
-            emsg.append("\n Oxidation state not available for this metal")
+            emsg.append("\n [ANN] Oxidation state not available for this metal")
 
     if valid:
         high_spin = spin_classify(this_metal,spin,ox)
         if not valid:
-            emsg.append("\n this spin state not available for this metal")
+            emsg.append("\n [ANN] this spin state not available for this metal")
 
-    print('nn emsg',emsg)
+    print('ANN status: '+ str(' '.join(emsg)))
     if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
 
@@ -206,11 +206,11 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
        # print('spin is',spin)
 
     if valid:
-            ax_lig3D,r_emsg = lig_load(installdir,axial_ligs[0],licores) # load ligand
+            ax_lig3D,r_emsg = lig_load(axial_ligs[0],licores) # load ligand
             if r_emsg:
                     emsg += r_emsg
             ax_lig3D.convert2mol3D() ## mol3D representation of ligand
-            eq_lig3D,r_emsg = lig_load(installdir,equitorial_ligs[0],licores) # load ligand
+            eq_lig3D,r_emsg = lig_load(equitorial_ligs[0],licores) # load ligand
             if r_emsg:
                     emsg += r_emsg
             eq_lig3D.convert2mol3D() ## mol3D representation of ligand
@@ -397,11 +397,10 @@ def spin_classify(metal,spin,ox):
                               'mn':{2:6,3:5},
                               'ni':{2:3}}
     high_spin = False
-    print(metal_spin_dictionary[metal],ox)
-    print('spin checking: ',str(spin),str(metal_spin_dictionary[metal][ox]))
+        #print(metal_spin_dictionary[metal],ox)
+        #print('spin checking: ',str(spin),str(metal_spin_dictionary[metal][ox]))
     if (int(spin) >= int(metal_spin_dictionary[metal][ox])):
         high_spin = True
-        print('spin up')
     return high_spin
 
 def get_splitting(excitation):

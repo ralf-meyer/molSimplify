@@ -106,10 +106,14 @@ class globalvars:
             d = dict()
             for ss in s:
                 sp = filter(None,ss.split('='))
-                d[sp[0]] = sp[1]
-            if 'INSTALLDIR' in d.keys():
-                self.installdir = d['INSTALLDIR']
-            else:
+                try:
+                    d[sp[0]] = sp[1]
+                except:
+                    pass
+#                    print('empty config')
+#            if 'INSTALLDIR' in d.keys():
+#                self.installdir = d['INSTALLDIR']
+ #           else:
                 self.installdir = cdir
             if 'CHEMDBDIR' in d.keys():
                 self.chemdbdir = d['CHEMDBDIR']
@@ -117,12 +121,34 @@ class globalvars:
                 self.multiwfn = "'"+d['MULTIWFN']+"'"
         else:
             self.installdir = cdir
+            f = open(homedir+'/.'+self.PROGRAM,'w')
+            f.write('CHEMDBDIR=')
+            f.close()
+
+        
+
+
         # global settings
         self.homedir = homedir
         self.nosmiles = 0 # number of smiles ligands
         self.rundir = homedir+'/Runs/'# Jobs directory
         self.generated = 0 
         self.debug = True # additional output for debuggin
+    def check_db(self):
+        flag = False
+        if glob.glob(homedir+'/.'+self.PROGRAM):
+            f = open(homedir+'/.'+self.PROGRAM,'r')
+            s = filter(None,f.read().splitlines())
+            for ss in s:
+                sp = filter(None,ss.split('='))
+                d[sp[0]] = sp[1]
+            if 'CHEMDBDIR' in d.keys():
+                self.chemdbdir = d['CHEMDBDIR']
+                flag = True
+            else:
+                self.chemdbdir = ""
+        return flag
+
     def amass(self):
         return amassdict
     def metals(self):

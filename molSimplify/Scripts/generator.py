@@ -44,30 +44,30 @@ def startgen(argv,flag,gui):
     emsg = False
     ### check for configuration file ##
     homedir = os.path.expanduser("~")
-    configfile = False if not glob.glob(homedir+'/.molSimplify') else True
-    if not configfile:
-        print "It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file."
-        instdir = raw_input("Please select the full path of the top installation directory for the program: ")
-        cdbdir = raw_input("Please specify the full path of the directory containing chemical databases:")
-        mwfn = raw_input("Specify the full path to the Multiwfn executable (for post-processing):")
-        f = open(homedir+'/.molSimplify','w')
-        if len(instdir) > 1: 
-            f.write("INSTALLDIR="+instdir+'\n')
-        if len(cdbdir) > 1: 
-            f.write("CHEMDBDIR="+cdbdir+'\n')
-        if len(mwfn) > 1 : 
-            f.write("MULTIWFN="+mwfn[0]+'\n')
-        f.close()
+    #configfile = False if not glob.glob(homedir+'/.molSimplify') else True
+    #if not configfile:
+    #    print "It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file."
+    #    instdir = raw_input("Please select the full path of the top installation directory for the program: ")
+    #    cdbdir = raw_input("Please specify the full path of the directory containing chemical databases:")
+    #    mwfn = raw_input("Specify the full path to the Multiwfn executable (for post-processing):")
+    #    f = open(homedir+'/.molSimplify','w')
+    #    if len(instdir) > 1: 
+    #        f.write("INSTALLDIR="+instdir+'\n')
+    #    if len(cdbdir) > 1: 
+    #        f.write("CHEMDBDIR="+cdbdir+'\n')
+    #    if len(mwfn) > 1 : 
+    #        f.write("MULTIWFN="+mwfn[0]+'\n')
+    #    f.close()
     ### end set-up configuration file ###
     ############ GLOBALS DEFINITION ############
     globs = globalvars()
-    installdir = globs.installdir
+    #installdir = globs.installdir
     rundir = globs.rundir
     PROGRAM = globs.PROGRAM
     ###### END GLOBALS DEFINITION ##############
     # correct installdir
-    if installdir[-1]!='/':
-        installdir+='/'
+    #if installdir[-1]!='/':
+    #    installdir+='/'
     # print welcome message
     ss = "\n************************************************************"
     ss += "\n******** Welcome to "+PROGRAM+"! Let's get started. ********\n"
@@ -83,7 +83,7 @@ def startgen(argv,flag,gui):
         print emsg
         return emsg
     args.gui = gui # add gui flag
-    # parse input file
+        # parse input file
     if (args.i):
         parseinput(args)
     # clean input arguments
@@ -127,7 +127,7 @@ def startgen(argv,flag,gui):
             args.gui = gui
             args.core = cc
             if (args.lig or args.coord or args.lignum or args.ligocc): # constraints given?
-                args, emsg = constrgen(installdir,rundir,args,globs)
+                args, emsg = constrgen(rundir,args,globs)
                 if emsg:
                     del args
                     return emsg
@@ -147,7 +147,7 @@ def startgen(argv,flag,gui):
         corests=args.core
         for cc in corests:
             args.core = cc
-            emsg = multigenruns(installdir,rundir,args,globs)
+            emsg = multigenruns(rundir,args,globs)
             if emsg:
                 print emsg
                 del args

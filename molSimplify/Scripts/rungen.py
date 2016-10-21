@@ -13,6 +13,8 @@ from molSimplify.Scripts.jobgen import *
 from molSimplify.Scripts.qcgen import *
 import argparse, sys, os, shutil, itertools, random
 from collections import Counter
+from pkg_resources import resource_filename, Requirement
+
 import pybel
 
 #######################################
@@ -75,10 +77,14 @@ def getconstsample(no_rgen,args,licores,coord):
 #####################################
 ### constrained random generation ###
 #####################################
-def constrgen(installdir,rundir,args,globs):
+def constrgen(rundir,args,globs):
     emsg = False
     # load global variables
-    licores = readdict(installdir+'/Ligands/ligands.dict')
+    mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
+    licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+    bindcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+
+
     # remove empty ligand
     licores.pop("x", None)
     print 'Random generation started..\n\n'
@@ -93,7 +99,7 @@ def constrgen(installdir,rundir,args,globs):
     if args.lig:
         for i,l in enumerate(args.lig):
             ligs0.append(l)
-            ligentry,emsg = lig_load(installdir,l,licores) # check ligand
+            ligentry,emsg = lig_load(l,licores) # check ligand
             # update ligand
             if ligentry:
                 args.lig[i] = ligentry.name
@@ -144,7 +150,7 @@ def constrgen(installdir,rundir,args,globs):
         if coord==0:
             args.lig = [a for a in ligs0]
             args.ligocc = [int(a) for a in ligocc0]
-            emsg = rungen(installdir,rundir,args,False,globs) # run structure generation
+            emsg = rungen(rundir,args,False,globs) # run structure generation
         else:
             if args.gui:
                 from Classes.mWidgets import mQDialogErr
@@ -172,13 +178,13 @@ def constrgen(installdir,rundir,args,globs):
                 args.keepHs.append(opt)
             else:
                 args.keepHs = [opt]
-        emsg = rungen(installdir,rundir,args,False,globs) # run structure generation
+        emsg = rungen(rundir,args,False,globs) # run structure generation
     return args, emsg
 
 ################################################################
 ### generates multiple runs for different ox and spin states ###
 ################################################################
-def multigenruns(installdir,rundir,args,globs):
+def multigenruns(rundir,args,globs):
     emsg = False
     args.jid = 0 # initilize global name identifier
     multch = False
@@ -202,7 +208,7 @@ def multigenruns(installdir,rundir,args,globs):
                     fname='N'+ch[1:]+'S'+sp
                 else:
                     fname='P'+ch+'S'+sp
-                emsg = rungen(installdir,rundir,args,fname,globs)
+                emsg = rungen(rundir,args,fname,globs)
                 if emsg:
                     return emsg
     elif (multch):
@@ -214,7 +220,7 @@ def multigenruns(installdir,rundir,args,globs):
                 fname='N'+ch[1:]
             else:
                 fname='P'+ch[1:]
-            emsg = rungen(installdir,rundir,args,fname,globs)
+            emsg = rungen(rundir,args,fname,globs)
             if emsg:
                 return emsg
     elif (multsp):
@@ -223,7 +229,7 @@ def multigenruns(installdir,rundir,args,globs):
         for sp in spins:
             args.spin = sp
             fname = 'S'+sp
-            emsg = rungen(installdir,rundir,args,fname,globs)
+            emsg = rungen(rundir,args,fname,globs)
             if emsg:
                 return emsg
     else:
@@ -231,7 +237,7 @@ def multigenruns(installdir,rundir,args,globs):
             args.charge = args.charge[0]
         if args.spin:
             args.spin = args.spin[0]
-        emsg = rungen(installdir,rundir,args,fname,globs) # default
+        emsg = rungen(rundir,args,fname,globs) # default
     return emsg
 
 #########################################################
@@ -285,7 +291,7 @@ def checkmultilig(ligs):
 ##############################################
 ### normal structure generation of complex ###
 ##############################################
-def rungen(installdir,rundir,args,chspfname,globs):
+def rungen(rundir,args,chspfname,globs):
     try:
         from Classes.mWidgets import qBoxFolder
         from Classes.mWidgets import mQDialogInf
@@ -293,10 +299,10 @@ def rungen(installdir,rundir,args,chspfname,globs):
     except ImportError:
         args.gui = False
     emsg = False
-    licores = readdict(installdir+'/Ligands/ligands.dict')
-    mcores = readdict(installdir+'/Cores/cores.dict')
-    bindcores = readdict(installdir+'/Bind/bind.dict')
-    cc, emsg = core_load(installdir,args.core,mcores)
+    mcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
+    licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
+    bindcores =readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
+    cc, emsg = core_load(args.core,mcores)
     if emsg:
         return emsg
     mname = cc.ident
@@ -336,7 +342,7 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 ligocc.append('1')
             lig = ''
             for i,l in enumerate(ligands):
-                ligentry,emsg = lig_load(installdir,l,licores)
+                ligentry,emsg = lig_load(l,licores)
                 # update ligand
                 if ligentry:
                     ligands[i] = ligentry.name
@@ -405,7 +411,7 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 rootcheck += '_'+str(ifold)
                 os.mkdir(rootcheck)
         elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
-            print rootcheck
+            #print rootcheck
             args.checkdirt = True
             try:
                 os.mkdir(rootcheck)
@@ -455,13 +461,13 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 args.ff = 'mmff94'
                 args.ffoption = 'ba'
                 args.MLbonds = False
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
                 for strf in strfiles:
                     tstrfiles.append(strf+'FFML')
                     os.rename(strf+'.xyz',strf+'FFML.xyz')
                 # generate xyz with FF and covalent
                 args.MLbonds = ['c' for i in range(0,len(args.lig))]
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
                 for strf in strfiles:
                     tstrfiles.append(strf+'FFc')
                     os.rename(strf+'.xyz',strf+'FFc.xyz')
@@ -469,20 +475,20 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 args.ffoption = False
                 args.MLbonds = False
                 # generate xyz without FF and trained ML
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
                 for strf in strfiles:
                     tstrfiles.append(strf+'ML')
                     os.rename(strf+'.xyz',strf+'ML.xyz')
                 args.MLbonds = ['c' for i in range(0,len(args.lig))]
                 # generate xyz without FF and covalent ML
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
                 for strf in strfiles:
                     tstrfiles.append(strf+'c')
                     os.rename(strf+'.xyz',strf+'c.xyz')
                 strfiles = tstrfiles
             else:
                 # generate xyz files
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
             # generate QC input files
             if args.qccode and not emsg:
                 if args.charge and (isinstance(args.charge, list)):

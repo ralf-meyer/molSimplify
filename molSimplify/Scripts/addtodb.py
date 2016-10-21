@@ -12,7 +12,7 @@ from molSimplify.Classes.globalvars import *
 # import std modules
 import os, sys, subprocess, re, unicodedata
 import pybel, openbabel, random, shutil
-
+from pkg_resources import resource_filename, Requirement
 
 ###############################
 ### adds to ligand database ###
@@ -27,7 +27,9 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
     #   - emsg: error messages
     emsg = False
     globs = globalvars()
-    licores = readdict(globs.installdir+'/Ligands/ligands.dict')
+    licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
+
+   # licores = readdict(globs.installdir+'/Ligands/ligands.dict')
     # check if ligand exists
     if sminame in licores.keys():
         emsg = 'Ligand '+sminame+' already existing in ligands database.' 
@@ -76,10 +78,15 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
             # write xyz file in Ligands directory
             lig.writexyz(globs.installdir+'/Ligands/'+sminame+'.xyz') # write xyz file
         # update dictionary
-        f = open(globs.installdir+'/Ligands/ligands.dict','r')
+        lipath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+
+
+#        f = open(globs.installdir+'/Ligands/ligands.dict','r')
+        f = open(lipath,'r')
+
         ss = f.read().splitlines()
         f.close()
-        f = open(globs.installdir+'/Ligands/ligands.dict','w')
+        f = open(lipath,'w')
         ss.append(snew)
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')

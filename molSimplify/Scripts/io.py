@@ -94,7 +94,7 @@ def readdict(fname):
 ##############################
 ### get ligands dictionary ###
 ##############################
-def getligs(installdir):
+def getligs():
 #    licores = readdict(installdir+'Ligands/ligands.dict')
     licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
     licores = readdict(licores)
@@ -129,7 +129,7 @@ def checkTMsmiles(smi):
 ##############################
 ### get ligands dictionary ###
 ##############################
-def getbinds(installdir):
+def getbinds():
 #    bindcores = readdict(installdir+'Bind/bind.dict')
     bindcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
     bindcores = readdict(bindcores) 
@@ -143,7 +143,7 @@ def getbinds(installdir):
 ############################
 ### get cores dictionary ###
 ############################
-def getcores(installdir):
+def getcores():
 #    mcores = readdict(installdir+'Cores/cores.dict')
     mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
     mcores = readdict(mcores)
@@ -157,10 +157,12 @@ def getcores(installdir):
 #######################
 ### load bonds data ###
 #######################
-def loaddata(fname):
+def loaddata(path):
     # loads ML data from ML.dat file and
     # store to dictionary
     d = dict()
+    fname = resource_filename(Requirement.parse("molSimplify"),"molSimplify"+path)
+
     f = open(fname)
     txt = f.read()
     lines = filter(None,txt.splitlines())
@@ -174,7 +176,7 @@ def loaddata(fname):
 ###########################
 ###    load backbone    ###
 ###########################
-def loadcoord(installdir,coord):
+def loadcoord(coord):
 #    f = open(installdir+'Data/'+coord+'.dat')
 
     f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/" +coord + ".dat")
@@ -193,7 +195,7 @@ def loadcoord(installdir,coord):
 ###    load core and    ###
 ### convert to molecule ###
 ###########################
-def core_load(installdir,usercore,mcores):
+def core_load(usercore,mcores):
     if '~' in usercore:
         homedir = os.path.expanduser("~")
         usercore = usercore.replace('~',homedir)
@@ -251,7 +253,7 @@ def core_load(installdir,usercore,mcores):
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
             emsg += "Furthermore, we couldn't find the core structure: '%s' in the cores dictionary. Try again!\n" % usercore
-            emsg += "\nAvailable cores are: %s\n" % getcores(installdir)
+            emsg += "\nAvailable cores are: %s\n" % getcores()
             print emsg
             return False,emsg
         core.cat = [0]
@@ -263,7 +265,7 @@ def core_load(installdir,usercore,mcores):
 ###   load ligand and   ###
 ### convert to molecule ###
 ###########################
-def lig_load(installdir,userligand,licores):
+def lig_load(userligand,licores):
     ### get groups ###
     groups = []
     for entry in licores:
@@ -343,7 +345,7 @@ def lig_load(installdir,userligand,licores):
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
             emsg += "Furthermore, we couldn't find the ligand structure: '%s' in the ligands dictionary. Try again!\n" % userligand
-            emsg += "\nAvailable ligands are: %s\n" % getligs(installdir)
+            emsg += "\nAvailable ligands are: %s\n" % getligs()
             emsg += "\nAnd available groups are: %s\n" % getligroups(licores)
             print emsg
             return False,emsg
@@ -355,7 +357,7 @@ def lig_load(installdir,userligand,licores):
 ###   load binding species and   ###
 #####   convert to molecule    #####
 ####################################
-def bind_load(installdir,userbind,bindcores):
+def bind_load(userbind,bindcores):
     if '~' in userbind:
         homedir = os.path.expanduser("~")
         userbind = userbind.replace('~',homedir)
@@ -451,7 +453,7 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
     # and chooses an appropriate name
     # bind_ident is used to pass binding
     # species information 
-    print('get_name called, rootdir',rootdir)
+    print('the root directory for this calc is '+ (rootdir))
     # check if smiles string in binding species
     if args.bind:
         if bsmi:
@@ -468,7 +470,6 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
             if args.name:
                 fname = rootdir+'/'+args.name + bind.ident[0:2]
     else:
-        print(rootdir)
         fname = rootdir+'/'+core.ident[0:3]+ligname
         if args.name:
             fname = rootdir+'/'+args.name

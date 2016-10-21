@@ -20,23 +20,30 @@ import pybel, openbabel
 ######################################################
 def setupdb(dbselect):
     globs = globalvars()
-    dbdir = os.path.relpath(globs.chemdbdir)+'/'
-    # get files in directory
-    dbfiles = os.listdir(dbdir)
-    # search for db files
-    dbmatches = [dbf for dbf in dbfiles if dbselect.lower() in dbf.lower()]
-    dbsdf = [dbm for dbm in dbmatches if '.sdf' in dbm]
-    dbfs = [dbm for dbm in dbmatches if '.fs' in dbm]
-    if len(dbsdf)==0:
-        print dbselect+' sdf database file missing from '+dbdir+'. Please make sure file '+dbselect+'.sdf is there..'
-        dbf1 = False
+    flag = False
+    flag = globs.check_db()
+    if flag:
+        dbdir = os.path.relpath(globs.chemdbdir)+'/'
+        # get files in directory
+        dbfiles = os.listdir(dbdir)
+        # search for db files
+        dbmatches = [dbf for dbf in dbfiles if dbselect.lower() in dbf.lower()]
+        dbsdf = [dbm for dbm in dbmatches if '.sdf' in dbm]
+        dbfs = [dbm for dbm in dbmatches if '.fs' in dbm]
+        if len(dbsdf)==0:
+            print dbselect+' sdf database file missing from '+dbdir+'. Please make sure file '+dbselect+'.sdf is there..'
+            dbf1 = False
+        else:
+            dbf1 = dbdir+dbsdf[0]
+        if len(dbfs)==0:
+            print dbselect+' fastsearch database file missing from '+dbdir+'. Please make sure file '+dbselect+'.fs is there, it speeds up search significantly..'
+            dbf2 = False
+        else:
+            dbf2 = dbdir+dbfs[0]
     else:
-        dbf1 = dbdir+dbsdf[0]
-    if len(dbfs)==0:
-        print dbselect+' fastsearch database file missing from '+dbdir+'. Please make sure file '+dbselect+'.fs is there, it speeds up search significantly..'
-        dbf2 = False
-    else:
-        dbf2 = dbdir+dbfs[0]
+            print globs.chemdbdir+' does not exist. Please make sure the file name is recorded in ~/.molSimplify'
+            dbf1 = False
+            dbf2 = False
     return [dbf1,dbf2]
 
 #######################

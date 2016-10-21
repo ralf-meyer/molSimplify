@@ -18,6 +18,7 @@ from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.globalvars import *
 # import standard modules
 import os, sys
+from pkg_resources import resource_filename, Requirement
 import pybel, openbabel, random, itertools
 from numpy import log, arccos, cross, dot, pi
 
@@ -149,8 +150,8 @@ def getsmident(args,indsmi):
     ### check for denticity specification in input ###
     # if denticity is specified return this
     if args.smicat and len(args.smicat) > indsmi:
-        return int(len(args.smicat[indsmi]))
-    # otherwise return default
+            return int(len(args.smicat[indsmi]))
+        # otherwise return default
     else:
         return 1
 
@@ -202,7 +203,7 @@ def smartreorderligs(args,ligs,dentl,licores):
         return indcs
     lsizes = []
     for ligand in ligs:
-        lig,emsg = lig_load(globs.installdir+'/',ligand,licores) # load ligand
+        lig,emsg = lig_load(ligand,licores) # load ligand
         lsizes.append(len(lig.OBmol.atoms))
     # group by denticities
     dents = list(set(dentl))
@@ -307,7 +308,7 @@ def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
     if not found: # last resort covalent radii
         bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
     #### TESTING, REMOVE  #####
-    print('ms default distance is  ' + str(bondl))
+#    print('ms default distance is  ' + str(bondl))
     #### END TESTING ####
     return bondl,exact_match
 
@@ -547,13 +548,12 @@ def getconnection(core,cm,catom,toconnect):
 ####### functionalizes core with ligands ########
 ############## for metal complexes ##############
 #################################################
-def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
+def mcomplex(args,core,ligs,ligoc,licores,globs):
     # INPUT
     #   - args: placeholder for input arguments
     #   - core: mol3D structure with core
     #   - ligs: list of ligands
     #   - ligoc: list of ligand occupations
-    #   - installdir: top installation directory
     #   - licores: dictionary with ligands
     #   - globs: class with global variables
     # OUTPUT
@@ -590,7 +590,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
     MLoptbds = []   # list of bond lengths
     remCM = False   # remove dummy center of mass atom
     ### load bond data ###
-    MLbonds = loaddata(installdir+'/Data/ML.dat')
+    MLbonds = loaddata('/Data/ML.dat')
 
 
     ### calculate occurrences, denticities etc for all ligands ###
@@ -687,7 +687,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
             geom = coordbasef[coord-1][0]
     ### load backbone and combinations ###
     # load backbone for coordination
-    corexyz = loadcoord(installdir,geom)
+    corexyz = loadcoord(geom)
 
 
     # get combinations possible for specified geometry
@@ -751,7 +751,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
         ANN_bondl = 0
     else:
         try:
-           ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
+           ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores)
         except:
             print("ANN call rejected")
             ANN_flag = False
@@ -770,7 +770,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
             denticity = dents[i]
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # load ligand
-                lig,emsg = lig_load(installdir,ligand,licores) # load ligand
+                lig,emsg = lig_load(ligand,licores) # load ligand
                 # check for smiles, force not removal of hydrogen
                 allremH = True
                 if ('+' in ligand or '-' in ligand):
@@ -1305,13 +1305,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 ####### functionalizes core with ligands ########
 ############## for metal complexes ##############
 #################################################
-def customcore(args,core,ligs,ligoc,installdir,licores,globs):
+def customcore(args,core,ligs,ligoc,licores,globs):
     # INPUT
     #   - args: placeholder for input arguments
     #   - core: mol3D structure with core
     #   - ligs: list of ligands
     #   - ligoc: list of ligand occupations
-    #   - installdir: top installation directory
     #   - licores: dictionary with ligands
     #   - globs: class with global variables
     # OUTPUT
@@ -1337,7 +1336,7 @@ def customcore(args,core,ligs,ligoc,installdir,licores,globs):
     connected = []  # indices in core3D of ligand atoms connected to metal
     frozenats = []  # list of frozen atoms for optimization
     ### load bond data ###
-    MLbonds = loaddata(installdir+'/Data/ML.dat')
+    MLbonds = loaddata('/Data/ML.dat')
     ### calculate occurrences, denticities etc for all ligands ###
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
@@ -1491,7 +1490,7 @@ def customcore(args,core,ligs,ligoc,installdir,licores,globs):
                 if ('+' in ligand or '-' in ligand):
                     allremH = False
                 # load ligand
-                lig,emsg = lig_load(installdir,ligand,licores) # load ligand
+                lig,emsg = lig_load(ligand,licores) # load ligand
                 if emsg:
                     return False,emsg
                 # if SMILES string
@@ -1646,9 +1645,8 @@ def customcore(args,core,ligs,ligoc,installdir,licores,globs):
 ##########################################
 ### main structure generation function ###
 ##########################################
-def structgen(installdir,args,rootdir,ligands,ligoc,globs):
+def structgen(args,rootdir,ligands,ligoc,globs):
     # INPUT
-    #   - installdir: top installation directory
     #   - args: placeholder for input arguments
     #   - rootdir: directory of current run
     #   - ligands: list of ligands
@@ -1663,14 +1661,19 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
         from Classes.mWidgets import mQDialogWarn
     # get global variables class
     ############ LOAD DICTIONARIES ############
-    mcores = readdict(installdir+'/Cores/cores.dict')
-    licores = readdict(installdir+'/Ligands/ligands.dict')
-    bindcores = readdict(installdir+'/Bind/bind.dict')
+ #   mcores = readdict(installdir+'/Cores/cores.dict')
+    mcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
+ #   licores = readdict(installdir+'/Ligands/ligands.dict')
+    licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
+
+#    bindcores = readdict(installdir+'/Bind/bind.dict')
+    bindcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
+
     ########## END LOAD DICTIONARIES ##########
     strfiles = []
     ########## START FUNCTIONALIZING ##########
     # load molecule core
-    core,emsg = core_load(installdir,args.core,mcores)
+    core,emsg = core_load(args.core,mcores)
     if emsg:
         return False,emsg
     core.convert2mol3D() # convert to mol3D
@@ -1682,10 +1685,10 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
     if (ligands):
         # check if simple coordination complex or not
         if core.natoms == 1:
-            core3D,complex3D,emsg = mcomplex(args,core,ligands,ligoc,installdir,licores,globs)
+            core3D,complex3D,emsg = mcomplex(args,core,ligands,ligoc,licores,globs)
         else:
             # functionalize custom core
-            core3D,emsg = customcore(args,core,ligands,ligoc,installdir,licores,globs)
+            core3D,emsg = customcore(args,core,ligands,ligoc,licores,globs)
         if emsg:
             return False,emsg
     else:
@@ -1717,7 +1720,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
         ligname += ''.join("%s" % l[0:2])
     if args.bind:
         # load bind, add hydrogens and convert to mol3D
-        bind,bsmi,emsg = bind_load(installdir,args.bind,bindcores)
+        bind,bsmi,emsg = bind_load(args.bind,bindcores)
         if emsg:
             return False,emsg
         bind.convert2mol3D()
@@ -1848,9 +1851,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        print(rootdir)
         fname = get_name(args,rootdir,core,ligname)
-        print(fname)
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)

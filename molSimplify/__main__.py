@@ -34,7 +34,7 @@ def main(args=None):
     print('main_invoked')
     if args is None:
         args = sys.argv[1:]
-    print(args)
+    #print(args)
     ### run GUI by default ###
     args = sys.argv[1:]
     gui = True
