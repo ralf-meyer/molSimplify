@@ -1,9 +1,17 @@
 # molSimplify input file generated from CLI input
--core Fe 
--lig porphyrin,water,water 
--oxstate II 
--geometry oct 
--ligloc 1 
--coord 6 
--ligalign false 
--ligocc 1,1,1
+-slab_gen 
+-cif_path /home/jp/Dropbox/quartz/quartz.cif 
+-slab_size [14,14,6] 
+-rundir /home/jp/Dropbox/quartz/
+ 
+-debug 
+-align_method alignpair 
+-freeze 4 
+-place_on_slab 
+-target_molecule /home/jp/Dropbox/quartz/mol.xyz 
+-object_align Mn 
+-expose_type O 
+-align_dist 1.5 
+-shave_extra_layers 0 align_distance_method custom 
+-surface_atom_type O 
+-num_surface_atoms 2

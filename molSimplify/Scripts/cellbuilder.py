@@ -1046,6 +1046,9 @@ def slab_module_supervisor(args,rootdir):
         if cif_path:
             try:
                 unit_cell,cell_vector = import_from_cif(cif_path)
+                if debug:
+                    print('cell vector from cif is')
+                    print(cell_vector)
             except:
                 emsg.append('unable to import cif at ' + str(cif_path))
                 return emsg
@@ -1074,15 +1077,20 @@ def slab_module_supervisor(args,rootdir):
 #                unit_cell = rotate_around_axis(unit_cell,[0,0,0],u,-1*angle)
 #                unit_cell.writexyz(rootdir + 'slab/just_flat.xyz')
 
-        if slab_size:
-            #max_dims = find_extents_cv(cell_vector)
-            max_dims = [numpy.linalg.norm(i) for i in cell_vector]
-            print('max dims are' + str(max_dims))
-            duplication_vector = [int(numpy.ceil(slab_size[i]/max_dims[i])) for i in [0,1,2]]
+        max_dims = [numpy.linalg.norm(i) for i in cell_vector]
+        print('max dims are' + str(max_dims))
 
         ext_duplication_vector =[[0,0,0],[0,0,0],[0,0,0]]
-        for i in [0,1,2]:
-            ext_duplication_vector[i][i] = max_dims[i]
+        if miller_flag:
+            for i in [0,1,2]:
+                ext_duplication_vector[i][i] = max_dims[i]
+        else:
+            ext_duplication_vector = cell_vector
+
+
+        if slab_size:
+            duplication_vector = [int(numpy.ceil(slab_size[i]/max_dims[i])) for i in [0,1,2]]
+
  #       print('\n cell vector is '  + str(cell_vector))
 
 #        print('\n\n\n')
@@ -1101,6 +1109,7 @@ def slab_module_supervisor(args,rootdir):
         #### perfrom duplication
         super_cell = unit_to_super(unit_cell,cell_vector,duplication_vector)
         if debug:
+            print(rootdir)
             super_cell.writexyz(rootdir + 'slab/step_2.xyz')
         ############################
         ############################
@@ -1145,6 +1154,10 @@ def slab_module_supervisor(args,rootdir):
                          [i*duplication_vector[1] for i in cell_vector[1]],
                          [i*duplication_vector[2] for i in cell_vector[2]]]
         if debug:
+            print('cell vector is now ')
+            print(cell_vector[0])
+            print(cell_vector[1])
+            print(cell_vector[2])
             print('super_cell vector is now ')
             print(super_cell_vector[0])
             print(super_cell_vector[1])

@@ -1,0 +1,152 @@
+\section{Command line options}
+
+A full list of the command line options used in the input files or directly as additional arguments is included here: \\
+
+
+\centering
+\small
+\begin{tabular}{|l|l|l|}
+\hline
+\textit{\textbf{Keyword}} & \textit{\textbf{Description}} & \textit{\textbf{Default value}} \\
+\hline
+%% ----------------------------------------------------------------------------------------------- %%
+\multicolumn{3}{|c|}{\Large \textbf{General parameters}}\\ \hline
+\texttt{-help} & show help message & - \\
+\texttt{-i} & input file & - \\
+\texttt{-rundir} & directory for jobs & /home/user/Runs \\
+\texttt{-jobdir} & directory name for this specific job (relative to -rundir)  & (based on complex) \\
+\texttt{-name} & name for this specific complex (relative to -jobdir)  & (based on complex)\footnotemark\\
+\texttt{-suff} & suffix for jobs folder & - \\
+\texttt{-genall} & generate complex both with and without FF opt. & \texttt{False} \\
+\hline
+\end{tabular}
+\footnotetext{In the general case, output will be found under rundir/jobdir/name.xyx}
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Structure generation parameters}}\\ \hline   
+\texttt{-core} & core structure  & - \\
+\texttt{-ccatoms} & custom core connection atom(s) indices & - \\
+\texttt{-replig} & flag for modify/replace feature & \texttt{False} \\
+\texttt{-geometry} & coordination geometry & \texttt{oct} (octahedral) \\
+\texttt{-coord} & coordination number & \texttt{6} \\
+\texttt{-lig} & ligand structure name, SMILES  or file path& - \\
+\texttt{-ligocc} &  frequency of corresponding ligands & \texttt{1} \\
+\texttt{-keepHs} & do not remove Hydrogens from ligand & \texttt{False} \\
+\texttt{-smicat} & custom ligand connection atom(s) indices & - \\
+\texttt{-sminame} & custom ligand name  & - \\
+\texttt{-ligloc} & force location of ligands on the template & \texttt{False} \\
+\texttt{-ligalign} & smart alignment of ligands  & \texttt{True} \\
+\texttt{-MLbonds} & custom M-L bond length for ligand (A)  & \texttt{database value} \\
+\texttt{-rgen} & number of random generated molecules & \texttt{1} \\
+\texttt{-lignum} & number of different ligands in random generation & - \\
+\texttt{-liggrp} & ligand group for random generation & \texttt{all} \\
+\texttt{-ligctg} & ligand category for random generation & \texttt{all} \\
+\texttt{-rkHs} & keep Hydrogens for random generation & \texttt{False} \\
+\texttt{-ff} & select force field for FF optimization & \texttt{MMFF94} \\
+\texttt{-ffoption} & select when to perform FF optimization & \texttt{Before \& Afte}r \\
+\texttt{-distort} & randomly distort backbone by x\% & \texttt{0\%} \\
+\texttt{-langles} & custom angles (polar, azimuthal) for ligand & \texttt{0/0} \\
+\hline
+\end{tabular}
+
+%% ----------------------------------------------------------------------------------------------- %%
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Extra molecules parameters}}\\ \hline
+\texttt{-bind} & extra molecule name, SMILES or file & \texttt{False} \\
+\texttt{-bcharge} & binding species charge & \texttt{0} \\
+\texttt{-bph} & azimuthal angle phi for binding species & \texttt{random} \\
+\texttt{-bref} & reference atoms for placement of extra molecules &  \texttt{COM}  \\
+\texttt{-bsep} & flag for separating extra molecule in input or xyz file & False \\
+\texttt{-btheta} & polar angle theta for binding species & \texttt{random} \\
+\texttt{-place} & azimuthal angle for binding species relative to core & \texttt{random} \\
+\texttt{-bindnum} & number of binding species copies for random placement & \texttt{1} \\
+\texttt{-nambsmi} & name of custom extra molecule & - \\
+\texttt{-maxd} & maximum distance for molecule placement (A) & \texttt{0.0} \\
+\texttt{-mind} & minimum distance for molecule placement (A) & \texttt{0.0} \\
+\texttt{-oxstate} &  oxidation state of the metal & \texttt{0} \\
+\hline
+\end{tabular}
+
+%%---------------------------------------------------------------------------------------------- %%
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Jobscript parameters}}\\ \hline                        
+\texttt{-jsched} & job scheduling system & \texttt{SGE} \\
+\texttt{-jname} & jobs main identifier & - \\
+\texttt{-memory} & memory reserved per thread for job file in G & \texttt{2G} \\
+\texttt{-wtime} & wall time requested in hours for queueing system  & \texttt{168h} \\
+\texttt{-queue} & queue name & \texttt{gpus} \\
+\texttt{-gpus} & number of GPUS & \texttt{1} \\
+\texttt{-cpus} & number of CPUs  & \texttt{1} \\
+\texttt{-modules} &  modules to be loaded for the calculation & - \\
+\texttt{-joption} & additional options for jobscript & - \\
+\texttt{-jcommand} & additional commands for jobscript & - \\
+\hline
+\end{tabular}
+%%
+\begin{tabular}{|l|c|c|}
+\hline
+\multicolumn{3}{|c|}{\Large\textbf{Post-processing parameters}}\\ \hline
+\texttt{-postp} & post process results & - \\
+\texttt{-postqc} & quantum chemistry code used & \texttt{TeraChem} \\
+\texttt{-postdir} & directory with results & \texttt{/home/user/Runs} \\
+\texttt{-pres} & generate calculations summary & \texttt{False} \\
+\texttt{-pdeninfo} &  calculate average properties for electron density & \texttt{False} \\
+\texttt{-pcharge} &   calculate charges & \texttt{False} \\
+\texttt{-pgencubes} & generate cubefiles & \texttt{False} \\
+\texttt{-pwfninfo} & get information about wavefunction & \texttt{False} \\
+\texttt{-pdeloc} &     get delocalization and localization indices & \texttt{False} \\
+\texttt{-porbinfo} & get information about MO & \texttt{False} \\
+\texttt{-pnbo} & post process nbo analysis & \texttt{False} \\
+\hline
+\end{tabular}
+
+
+ ----------------------------------------------------------------------------------------------- %%
+\begin{tabular}{|l|l|l|}
+\hline
+ \multicolumn{3}{|c|}{\Large \textbf{Quantum chemistry input}}\\ \hline 
+\texttt{-qccode} & quantum chemistry code & \texttt{TeraChem} \\
+\texttt{-charge} & charge for system & \texttt{0} \\
+\texttt{-calccharge} & flag to calculate charge & \texttt{False} \\
+\texttt{-spin} & spin multiplicity for system  & \texttt{1} \\
+\texttt{-runtyp} & run type  & \texttt{optimize} \\
+\texttt{-method} & electronic structure method & \texttt{ub3lyp} \\
+\texttt{-basis} & basis for terachem or qchem job  & \texttt{lacvp*} \\
+\texttt{-dispersion} & dispersion forces & \texttt{False} \\
+\texttt{-qoption} & extra arguments for TeraChem in syntax& - \\
+\texttt{-exchange} & exchange in qchem job  & \texttt{b3lyp} \\
+\texttt{-correlation} & correlation in qchem job  & \texttt{none} \\
+\texttt{-remoption} & extra arguments for qchem \$rem block& - \\
+\texttt{-unrestricted} & unrestricted calculation & True \\
+\texttt{-gbasis} & GBASIS option in GAMESS & \texttt{6} \\
+\texttt{-ngauss} & NGAUSS option in GAMESS  & \texttt{N31} \\
+\texttt{-npfunc} & NPFUNC option for diffuse functions in GAMESS  & - \\
+\texttt{-ndfunc} & NDFUNC option for diffuse functions in GAMESS  & - \\
+\texttt{-sysoption} & extra arguments for \$SYSTEM GAMESS block & - \\
+\texttt{-ctrloption} & extra arguments for \$CONTRL GAMESS block & - \\
+\texttt{-scfoption} & extra arguments for \$SCF GAMESS block & - \\
+\texttt{-statoption} & extra arguments for \$STATPT GAMESS block & - \\
+\hline
+\end{tabular}
+%% -
+%% ----------------------------------------------------------------------------------------------- %%
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Database search input}}\\ \hline                        
+\texttt{-dbsim} & SMILES/ligand/file for similarity search & - \\
+\texttt{-dbcatoms} & connection atoms for similarity search & - \\
+\texttt{-dbresults} & how many results for similary search or screening & - \\
+\texttt{-dboutputf} & output file for search results & \texttt{simres.smi} \\
+\texttt{-dbbase} & database for search & - \\
+\texttt{-dbsmarts} & SMARTS string for screening & - \\
+\texttt{-dbfinger} & fingerprint for similarity search & - \\
+\texttt{-dbatoms} & number of atoms to be used in screening & - \\
+\texttt{-dbbonds} & number of bonds to be used in screening & - \\
+\texttt{-dbarbonds} & number of aromatic bonds to be used in screening & - \\
+\texttt{-dbsbonds} & number of single bonds to be used in screening & - \\
+\texttt{-dbmw} & molecular weight to be used in screening & - \\
+\hline
+\end{tabular}
+%% ----------------------------------------------------------------------------------------------- 

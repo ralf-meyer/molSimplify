@@ -47,7 +47,7 @@
 		\thispagestyle{empty}    
 		\begin{center}
 		\vspace*{0.75cm}
-		\includegraphics[scale=0.2]{./mit_logo.png}\\
+		\includegraphics[scale=0.2]{Images/mit_logo.png}\\
 		\vspace*{4.5cm}
 		\LARGE\textmd{\textbf{User's Manual}}\\	
 		\vspace{1.25in}
@@ -57,7 +57,7 @@
 		\vspace*{0.5cm}
 %		\textbf{\large\hmwkAuthor}\\
 		\vspace*{4.0cm}
-		\includegraphics[scale=1.1]{./kulik_logo.png}\\
+		\includegraphics[scale=1.1]{Images/kulik_logo.png}\\
 		\vspace*{1.25cm}
 		\normalsize\hmwkDate\\ % Insert date here if you want it to appear below
 		\end{center}
@@ -72,7 +72,7 @@
 % Set up the header and footer
 \lhead{v1.0} % Top left header
 \chead{\texttt{molSimplify}} % Top center head
-\rhead{\includegraphics[scale=0.3]{./kulik_logo.png}} % Top right header
+\rhead{\includegraphics[scale=0.3]{Images/kulik_logo.png}} % Top right header
 \cfoot{} % Bottom center footer
 \rfoot{Page\ \thepage} % Bottom right footer
 \renewcommand\headrulewidth{0.4pt} % Size of the header rule

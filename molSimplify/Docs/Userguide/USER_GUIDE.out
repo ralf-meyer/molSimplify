@@ -1,37 +1,40 @@
-\BOOKMARK [1][-]{section.1}{General\040information}{}% 1
-\BOOKMARK [2][-]{subsection.1.1}{Obtaining\040molSimplify}{section.1}% 2
-\BOOKMARK [2][-]{subsection.1.2}{Citing\040molSimplify}{section.1}% 3
+\BOOKMARK [1][-]{section.1}{General information}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Obtaining molSimplify}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Citing molSimplify}{section.1}% 3
 \BOOKMARK [2][-]{subsection.1.3}{License}{section.1}% 4
-\BOOKMARK [2][-]{subsection.1.4}{Acknowledgments}{section.1}% 5
-\BOOKMARK [1][-]{section.2}{Installation}{}% 6
-\BOOKMARK [2][-]{subsection.2.1}{System\040requirements}{section.2}% 7
-\BOOKMARK [2][-]{subsection.2.2}{Binaries}{section.2}% 8
-\BOOKMARK [3][-]{subsubsection.2.2.1}{Linux}{subsection.2.2}% 9
-\BOOKMARK [3][-]{subsubsection.2.2.2}{Mac\040OSX}{subsection.2.2}% 10
-\BOOKMARK [2][-]{subsection.2.3}{From\040source}{section.2}% 11
+\BOOKMARK [3][-]{subsubsection.1.3.1}{molSimplify}{subsection.1.3}% 5
+\BOOKMARK [3][-]{subsubsection.1.3.2}{Pybrain}{subsection.1.3}% 6
+\BOOKMARK [2][-]{subsection.1.4}{Acknowledgments}{section.1}% 7
+\BOOKMARK [1][-]{section.2}{Installation}{}% 8
+\BOOKMARK [2][-]{subsection.2.1}{System requirements}{section.2}% 9
+\BOOKMARK [2][-]{subsection.2.2}{Conda Package}{section.2}% 10
+\BOOKMARK [2][-]{subsection.2.3}{From source}{section.2}% 11
 \BOOKMARK [3][-]{subsubsection.2.3.1}{Linux}{subsection.2.3}% 12
-\BOOKMARK [3][-]{subsubsection.2.3.2}{Mac\040OSX}{subsection.2.3}% 13
-\BOOKMARK [2][-]{subsection.2.4}{Installed\040files}{section.2}% 14
-\BOOKMARK [2][-]{subsection.2.5}{Databases\040&\040Post-processing}{section.2}% 15
-\BOOKMARK [3][-]{subsubsection.2.5.1}{Chemical\040database\040setup}{subsection.2.5}% 16
-\BOOKMARK [3][-]{subsubsection.2.5.2}{Multiwfn\040setup}{subsection.2.5}% 17
-\BOOKMARK [1][-]{section.3}{GUI\040overview}{}% 18
-\BOOKMARK [1][-]{section.4}{Structure\040generation\040module}{}% 19
-\BOOKMARK [2][-]{subsection.4.1}{Building\040simple\040structures}{section.4}% 20
-\BOOKMARK [2][-]{subsection.4.2}{Building\040more\040complicated\040structures}{section.4}% 21
-\BOOKMARK [2][-]{subsection.4.3}{Force\040field\040optimization}{section.4}% 22
-\BOOKMARK [2][-]{subsection.4.4}{Smart\040alignment\040&\040Force\040order}{section.4}% 23
-\BOOKMARK [2][-]{subsection.4.5}{Custom\040angles}{section.4}% 24
-\BOOKMARK [2][-]{subsection.4.6}{Building\040custom\040structures}{section.4}% 25
-\BOOKMARK [2][-]{subsection.4.7}{Replacing\040existing\040ligands}{section.4}% 26
-\BOOKMARK [2][-]{subsection.4.8}{Additional\040molecule\040placement}{section.4}% 27
-\BOOKMARK [1][-]{section.5}{Random\040generation\040module}{}% 28
-\BOOKMARK [1][-]{section.6}{Input\040files\040&\040jobscripts}{}% 29
-\BOOKMARK [2][-]{subsection.6.1}{Input\040file\040generation}{section.6}% 30
-\BOOKMARK [2][-]{subsection.6.2}{Jobscript\040generation}{section.6}% 31
-\BOOKMARK [1][-]{section.7}{Similarity\040search\040&\040screening}{}% 32
-\BOOKMARK [1][-]{section.8}{Post\040processing}{}% 33
-\BOOKMARK [1][-]{section.9}{Extras}{}% 34
-\BOOKMARK [2][-]{subsection.9.1}{Updating\040the\040database}{section.9}% 35
-\BOOKMARK [2][-]{subsection.9.2}{Add\040geometry}{section.9}% 36
-\BOOKMARK [1][-]{section.10}{Command\040line\040options}{}% 37
+\BOOKMARK [3][-]{subsubsection.2.3.2}{Mac OSX}{subsection.2.3}% 13
+\BOOKMARK [2][-]{subsection.2.4}{Binaries}{section.2}% 14
+\BOOKMARK [3][-]{subsubsection.2.4.1}{Linux}{subsection.2.4}% 15
+\BOOKMARK [3][-]{subsubsection.2.4.2}{Mac OSX}{subsection.2.4}% 16
+\BOOKMARK [2][-]{subsection.2.5}{Installed files}{section.2}% 17
+\BOOKMARK [2][-]{subsection.2.6}{Databases \046 Post-processing}{section.2}% 18
+\BOOKMARK [3][-]{subsubsection.2.6.1}{Chemical database setup}{subsection.2.6}% 19
+\BOOKMARK [3][-]{subsubsection.2.6.2}{Multiwfn setup}{subsection.2.6}% 20
+\BOOKMARK [1][-]{section.3}{GUI overview}{}% 21
+\BOOKMARK [1][-]{section.4}{Structure generation module}{}% 22
+\BOOKMARK [2][-]{subsection.4.1}{Building simple structures}{section.4}% 23
+\BOOKMARK [2][-]{subsection.4.2}{Building more complicated structures}{section.4}% 24
+\BOOKMARK [2][-]{subsection.4.3}{Force field optimization}{section.4}% 25
+\BOOKMARK [2][-]{subsection.4.4}{Smart alignment \046 Force order}{section.4}% 26
+\BOOKMARK [2][-]{subsection.4.5}{Custom angles}{section.4}% 27
+\BOOKMARK [2][-]{subsection.4.6}{Building custom structures}{section.4}% 28
+\BOOKMARK [2][-]{subsection.4.7}{Replacing existing ligands}{section.4}% 29
+\BOOKMARK [2][-]{subsection.4.8}{Additional molecule placement}{section.4}% 30
+\BOOKMARK [1][-]{section.5}{Random generation module}{}% 31
+\BOOKMARK [1][-]{section.6}{Input files \046 jobscripts}{}% 32
+\BOOKMARK [2][-]{subsection.6.1}{Input file generation}{section.6}% 33
+\BOOKMARK [2][-]{subsection.6.2}{Jobscript generation}{section.6}% 34
+\BOOKMARK [1][-]{section.7}{Similarity search \046 screening}{}% 35
+\BOOKMARK [1][-]{section.8}{Post processing}{}% 36
+\BOOKMARK [1][-]{section.9}{Extras}{}% 37
+\BOOKMARK [2][-]{subsection.9.1}{Updating the database}{section.9}% 38
+\BOOKMARK [2][-]{subsection.9.2}{Add geometry}{section.9}% 39
+\BOOKMARK [1][-]{section.10}{Command line options}{}% 40
