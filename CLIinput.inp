@@ -6,7 +6,7 @@
  
 -debug 
 -align_method alignpair 
--freeze 4 
+-freeze 2 
 -place_on_slab 
 -target_molecule /home/jp/Dropbox/quartz/mol.xyz 
 -object_align Mn 

@@ -15,6 +15,8 @@ from molSimplify.Scripts.grabguivars import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.addtodb import *
 import sys, os, random, shutil, unicodedata, inspect, glob, time
+from pkg_resources import resource_filename, Requirement
+
 import pybel
 
 class mGUI():
@@ -35,16 +37,16 @@ class mGUI():
         homedir = os.path.expanduser("~")
         globs = globalvars() # global variables
         #overX = True if 'localhost' in os.environ['DISPLAY'].lower() else False # detect running over X
-        configfile = False if not glob.glob(homedir+'/.molSimplify') else True
-        if not configfile:
-            self.wwindow = mQMainWindow() 
-            self.wwindow.resize(0.5,0.5)
-            QMessageBox.information(self.wwindow,'Setup',"It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file.")
-            QMessageBox.information(self.wwindow,'Installation directory',"Please select the top installation directory for the program.")
-            instdir = QFileDialog.getExistingDirectory(self.wwindow, "Select Directory")
-            f = open(homedir+'/.molSimplify','w')
-            if len(instdir) > 1: 
-                f.write("INSTALLDIR="+instdir+'\n')
+ #       configfile = False if not glob.glob(homedir+'/.molSimplify') else True
+#        if not configfile:
+#            self.wwindow = mQMainWindow() 
+#            self.wwindow.resize(0.5,0.5)
+#            QMessageBox.information(self.wwindow,'Setup',"It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file.")
+#            QMessageBox.information(self.wwindow,'Installation directory',"Please select the top installation directory for the program.")
+#            instdir = QFileDialog.getExistingDirectory(self.wwindow, "Select Directory")
+#            f = open(homedir+'/.molSimplify','w')
+#            if len(instdir) > 1: 
+#                f.write("INSTALLDIR="+instdir+'\n')
         ### end set-up configuration file ###
         ### main window widget
         self.wmwindow = mQMainWindow()
@@ -94,7 +96,8 @@ class mGUI():
         helpAction.triggered.connect(self.qshowhelp)
         menu2.addAction(helpAction)
         ### place title top ###
-        clogo = mQPixmap(globs.installdir+'/icons/logo.png')
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/logo.png")
+        clogo = mQPixmap(f)
         self.grid.addWidget(clogo,2,8,1,10)
         self.txtdev = mQLabel('Developed by Kulik group @ MIT','','c',16)
         self.grid.addWidget(self.txtdev,19,8,2,10)
@@ -112,7 +115,8 @@ class mGUI():
         f = QFont("Helvetica",14,75)
         self.rtcore.setFont(f)
         self.grid.addWidget(self.rtcore,7,2,1,1)
-        cores = list(sorted(readdict(globs.installdir+'/Cores/cores.dict')))
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
+        cores = list(sorted(readdict(f)))
         self.etcore = mQLineEditL('',ctip,'l',12,cores)
         self.grid.addWidget(self.etcore,7,3,1,3)
         ### Connection atoms for core ###
@@ -187,7 +191,9 @@ class mGUI():
         self.grid.addWidget(self.ligfalign,13,15,1,2)
         self.grid.addWidget(self.ligfloc,13,17,1,2)
         ## ligands ##
-        licores = list(sorted(readdict(globs.installdir+'/Ligands/ligands.dict')))
+
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+        licores = list(sorted(readdict(f)))
         self.lig = []
         self.ligocc = []
         self.ligconn = []
@@ -301,7 +307,8 @@ class mGUI():
         # group of different ligands
         ctip = 'For random generation: select random ligands from group.'
         self.rtliggrp = mQLabel('Ligand\ngroup:',ctip,'Cr',12)
-        qcav0 = getligroups(readdict(globs.installdir+'/Ligands/ligands.dict'))
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+        qcav0 = getligroups(readdict(f))
         qcav = filter(None,qcav0.split(' '))
         self.etliggrp = mQComboBox(qcav,ctip,12)
         self.grid.addWidget(self.rtliggrp,9,15,1,1)
@@ -414,7 +421,8 @@ class mGUI():
         # name of binding species
         ctip = 'Binding species'
         self.rtbind = mQLabel('Molecule:',ctip,'Cr',12)
-        bicores = list(sorted(readdict(globs.installdir+'/Bind/bind.dict')))
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+        bicores = list(sorted(readdict(f)))
         self.etbind = mQLineEditL('',ctip,'l',12,bicores)
         self.rtbind.setDisabled(True)
         self.etbind.setDisabled(True)
@@ -547,7 +555,9 @@ class mGUI():
         self.sgrid.addWidget(self.qctWindow) # add to stacked grid
         self.qctWindow.setPalette(p) # set background color
         self.qctWindow.setLayout(self.qctgrid) # set layout
-        c0 = mQPixmap(globs.installdir+'/icons/petachem.png')
+
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/petachem.png")
+        c0 = mQPixmap(f)
         self.qctgrid.addWidget(c0,0,2,1,1)
         # top text
         self.txtqc = mQLabel('   TeraChem Input','','C',18)
@@ -806,8 +816,10 @@ class mGUI():
         self.sgrid.addWidget(self.jWindow) # add to stacked grid
         self.jWindow.setPalette(p) # set background color
         self.jWindow.setLayout(self.jgrid) # set layout
-        c1 = mQPixmap(globs.installdir+'/icons/sge.png')
-        c2 = mQPixmap(globs.installdir+'/icons/slurm.png')
+        f1 = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/sge.png")
+        f2 = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/slurm.png")
+        c1 = mQPixmap(f1)
+        c2 = mQPixmap(f2)
         self.jgrid.addWidget(c1,1,2,1,1)
         self.jgrid.addWidget(c2,1,4,1,1)
         # top text
@@ -1106,7 +1118,8 @@ class mGUI():
         self.etcDBmw1 = mQLineEdit('',ctip,'l',14)
         self.cDBgrid.addWidget(self.etcDBmw1,11,8,1,1)
         # aspirin icon
-        c = mQPixmap(globs.installdir+'/icons/chemdb.png')
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/chemdb.png")
+        c = mQPixmap(f)
         relresize(c,c,0.4)
         self.cDBgrid.addWidget(c,7,0,4,2)
         # button for addition
@@ -1194,7 +1207,8 @@ class mGUI():
         self.butpret.clicked.connect(self.qretmain)
         self.pgrid.addWidget(self.butpret,7,3,1,2)
         #c1p = mPic(self.pWindow,globs.installdir+'/icons/wft1.png',0.04,0.7,0.2)
-        c3p = mQPixmap(globs.installdir+'/icons/wft3.png')
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/wft3.png")
+        c3p = mQPixmap(f)
         self.pgrid.addWidget(c3p,3,0,4,1)
         #c2p = mPic(self.pWindow,globs.installdir+'/icons/wft2.png',0.04,0.035,0.2)
         ##################################
@@ -1548,9 +1562,10 @@ class mGUI():
         elif not glob.glob(gfile):
             choice = QMessageBox.warning(self.geWindow,'Error','XYZ file '+gfile+' does not exist!')
         else:
-            f = open(globs.installdir+'/Data/coordinations.dict','r')
-            s = f.read().splitlines()
-            f.close()
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            fl = open(f,'r')
+            s = fl.read().splitlines()
+            fl.close()
             if gname.lower() in s:
                 choice = QMessageBox.warning(self.geWindow,'Add','Coordination '+gname+' already exists.')
                 return
@@ -1566,18 +1581,21 @@ class mGUI():
             # write new entry in coordinations.dict
             s.append(str(dent)+': '+gname+' '+gshort)
             ssort = filter(None,list(sorted(s[1:])))
-            f = open(globs.installdir+'/Data/coordinations.dict','w')
-            f.write(s[0]+'\n')
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            fl = open(f,'w')
+            fl.write(s[0]+'\n')
             for ss in ssort:
-                f.write(ss+'\n')
-            f.close()
+                fl.write(ss+'\n')
+            fl.close()
             # write new backbone file
-            f = open(globs.installdir+'/Data/'+gshort+'.dat','w')
-            f.write(xyzl)
-            f.close()
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/")
+            fl = open(f+gshort+'.dat','w')
+            fl.write(xyzl)
+            fl.close()
             # write png file
             if glob.glob(cfile):
-                shutil.copy2(cfile,globs.installdir+'/icons/geoms/'+gshort+'.png')
+                f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/geoms/")
+                shutil.copy2(cfile,f+gshort+'.png')
             choice = QMessageBox.information(self.geWindow,'Add','Successfully added to the database!')
         self.matchgeomcoord()
         
@@ -1590,9 +1608,10 @@ class mGUI():
         if gname=='' and gshort=='':
             choice = QMessageBox.warning(self.geWindow,'Error','Please specify geometry name!')
         else:
-            f = open(globs.installdir+'/Data/coordinations.dict','r')
-            s = f.read()
-            f.close()
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            fl = open(f,'r')
+            s = fl.read()
+            fl.close()
             if gname.lower() not in s and gshort.lower() not in s:
                 choice = QMessageBox.warning(self.geWindow,'Remove','Coordination '+gname+' does not exist.')
                 return
@@ -1605,9 +1624,10 @@ class mGUI():
                     snew += ss+'\n'
                 else:
                     srem = filter(None,ss.split(' ')[-1])
-            f = open(globs.installdir+'/Data/coordinations.dict','w')
-            f.write(snew)
-            f.close()
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            fl = open(f,'w')
+            fl.write(snew)
+            fl.close()
             # remove file
             if glob.glob(globs.installdir+'/Data/'+srem+'.dat'):
                 os.remove(globs.installdir+'/Data/'+srem+'.dat')
@@ -1627,20 +1647,20 @@ class mGUI():
         self.cDBWindow.setWindowModality(2)
         self.cDBWindow.show()
         writef = False
-        instdir = globs.installdir
+#        instdir = globs.installdir
         mwfn = globs.multiwfn
         cdbdir = globs.chemdbdir
         if not os.path.isdir(globs.chemdbdir):
             choice = QMessageBox.question(self.cDBWindow,'Database setup','It looks like the Chemical Database directory is not configured or does not exist. Would you like to configure it now?',
-                QMessageBox.Yes, QMessageBox.No)
+                    QMessageBox.Yes, QMessageBox.No)
             if choice == QMessageBox.Yes:
-                QMessageBox.information(self.cDBWindow,'Chem DB',"Please select the directory containing chemical databases.")
-                cdbdir = QFileDialog.getExistingDirectory(self.cDBWindow,'Select the directory containing chemical databases.')
-                if len(cdbdir) > 0:
-                    writef = True
+               QMessageBox.information(self.cDBWindow,'Chem DB',"Please select the directory containing chemical databases.")
+               cdbdir = QFileDialog.getExistingDirectory(self.cDBWindow,'Select the directory containing chemical databases.')
+               if len(cdbdir) > 0:
+                   writef = True
         if writef:
             f = open(globs.homedir+'/.molSimplify','w')
-            f.write("INSTALLDIR="+instdir+'\n')
+              #  f.write("INSTALLDIR="+instdir+'\n')
             f.write("CHEMDBDIR="+cdbdir+'\n')
             if len(mwfn) > 1 :
                 f.write("MULTIWFN="+mwfn[0]+'\n')
@@ -1652,207 +1672,214 @@ class mGUI():
             dbs1 = [d.rsplit('/',1)[-1] for d in dbs0]
             dbs = [d.split('.',1)[0] for d in dbs1]
             for d in dbs:
-                self.cDBsel.addItem(d)
-    ### callback for database search
+                    self.cDBsel.addItem(d)
+        ### callback for database search
     def qaddcDB(self):
-         ### collects all the info and passes it to molSimplify ###
-        rdir = self.etrdir.text()
-        if rdir[-1]=='/':
-            rdir = rdir[:-1]
-        # create running dir if not existing
-        if not os.path.isdir(rdir):
-            os.mkdir(rdir)
-        args = grabdbguivars(self)
-        defaultparams = ['main.py','-i',rdir+'/dbinput.inp']
-        emsg = startgen(defaultparams,True,self)
-        if not emsg:
-            choice = QMessageBox.information(self.cDBWindow,'DONE','Search is done..')
-        self.sgrid.setCurrentWidget(self.cDBWindow)
-    ### db type change
-    def cdbchange(self):
-        ci = self.DBsel.currentIndex()
-        if (ci==1):
-            self.rtDBsmident.setDisabled(False)
-            self.DBdent.setDisabled(False)
-            self.rtDBsmicat.setDisabled(False)
-            self.etDBsmicat.setDisabled(False)
-        else:
-            self.rtDBsmident.setDisabled(True)
-            self.DBdent.setDisabled(True)
-            self.rtDBsmicat.setDisabled(True)
-            self.etDBsmicat.setDisabled(True)
-    ####################
-    ### Main window ####
-    ####################
-    ### run generation
-    def runGUI(self):
-        ### collects all the info and passes it to molSimplify ###
-        rdir = self.etrdir.text()
-        if rdir[-1]=='/':
-            rdir = rdir[:-1]
-        # create running dir if not existing
-        if not os.path.isdir(rdir):
-            try:
+             ### collects all the info and passes it to molSimplify ###
+            rdir = self.etrdir.text()
+            if rdir[-1]=='/':
+                rdir = rdir[:-1]
+            # create running dir if not existing
+            if not os.path.isdir(rdir):
                 os.mkdir(rdir)
-            except:
-                emsg = 'Directory '+rdir+' could not be created. Check your input.\n'
-                QMessageBox.critical(self.wmain,'Problem',emsg)
-                return
-        # check for extra molecule
-        if self.chkM.getState() and self.etbind.currentText()=='':
-            emsg = 'You checked the extra molecule box but specified\nno extra molecule. No extra molecule will be generated.\n'
-            QMessageBox.warning(self.wmain,'Warning',emsg)
-        # get parameters
-        args = grabguivars(self)
-        defaultparams = ['main.py','-i',rdir+'/geninput.inp']
-        self.iWind.hide()
-        self.sgrid.setCurrentWidget(self.iWind)
-        self.iWind.show()
-        msgBox = QMessageBox()
-        if self.randomchk.getState():
-            msgBox.setText("Random generation initiated. This process might take some time.")
-            msgBox.setIcon(1)
-            msgBox.setInformativeText('Please be patient. OK?')
-            msgBox.setWindowTitle('Running..')
-            msgBox.exec_()
-        # do the generation
-        emsg = startgen(defaultparams,True,self)
-        if not emsg:
-            QMessageBox.information(self.wmain,'Done','Structure generation terminated successfully!')
-        else:
-            QMessageBox.warning(self.wmain,'Problem',emsg)
-    ### list molecules
+            args = grabdbguivars(self)
+            defaultparams = ['main.py','-i',rdir+'/dbinput.inp']
+            emsg = startgen(defaultparams,True,self)
+            if not emsg:
+                choice = QMessageBox.information(self.cDBWindow,'DONE','Search is done..')
+            self.sgrid.setCurrentWidget(self.cDBWindow)
+        ### db type change
+    def cdbchange(self):
+            ci = self.DBsel.currentIndex()
+            if (ci==1):
+                self.rtDBsmident.setDisabled(False)
+                self.DBdent.setDisabled(False)
+                self.rtDBsmicat.setDisabled(False)
+                self.etDBsmicat.setDisabled(False)
+            else:
+                self.rtDBsmident.setDisabled(True)
+                self.DBdent.setDisabled(True)
+                self.rtDBsmicat.setDisabled(True)
+                self.etDBsmicat.setDisabled(True)
+        ####################
+        ### Main window ####
+        ####################
+        ### run generation
+    def runGUI(self):
+            ### collects all the info and passes it to molSimplify ###
+            rdir = self.etrdir.text()
+            if rdir[-1]=='/':
+                rdir = rdir[:-1]
+            # create running dir if not existing
+            if not os.path.isdir(rdir):
+                try:
+                    os.mkdir(rdir)
+                except:
+                    emsg = 'Directory '+rdir+' could not be created. Check your input.\n'
+                    QMessageBox.critical(self.wmain,'Problem',emsg)
+                    return
+            # check for extra molecule
+            if self.chkM.getState() and self.etbind.currentText()=='':
+                emsg = 'You checked the extra molecule box but specified\nno extra molecule. No extra molecule will be generated.\n'
+                QMessageBox.warning(self.wmain,'Warning',emsg)
+            # get parameters
+            args = grabguivars(self)
+            defaultparams = ['main.py','-i',rdir+'/geninput.inp']
+            self.iWind.hide()
+            self.sgrid.setCurrentWidget(self.iWind)
+            self.iWind.show()
+            msgBox = QMessageBox()
+            if self.randomchk.getState():
+                msgBox.setText("Random generation initiated. This process might take some time.")
+                msgBox.setIcon(1)
+                msgBox.setInformativeText('Please be patient. OK?')
+                msgBox.setWindowTitle('Running..')
+                msgBox.exec_()
+            # do the generation
+            emsg = startgen(defaultparams,True,self)
+            if not emsg:
+                QMessageBox.information(self.wmain,'Done','Structure generation terminated successfully!')
+            else:
+                QMessageBox.warning(self.wmain,'Problem',emsg)
+        ### list molecules
     def listmols(self):
-        globs = globalvars()
-        coreslist = getcores(globs.installdir+'/')
-        liglist = getligs(globs.installdir+'/')
-        bindlist = getbinds(globs.installdir+'/')
-        msg = 'Available cores in the database:\n'+coreslist
-        msg += '\n\nAvailable ligands in the database:\n'+liglist
-        msg += '\n\nAvailable extra molecules in the database:\n'+bindlist+'\n'
-        QMessageBox.information(self.wmain,'List of molecules',msg)
-    ### draw ligands
-    def drawligs(self):
-        ### collects all the info and passes it to molSimplify ###
-        rdir = self.etrdir.text()
-        if rdir[-1]=='/':
-            rdir = rdir[:-1]
-        # creat running dir if not existing
-        if not os.path.isdir(rdir):
-            os.mkdir(rdir)
-        args = grabguivars(self)
-        if len(args['-lig']) < 1:
-            qm = mQDialogWarn('Warning','No ligands are specified.')
-            return False
-        else:
-            args['-lig']=args['-lig'].replace(' ','')
-            lls = args['-lig'].split(',')
-            liglist = []
-            # check if multiple ligands in .smi file
-            for l in lls:
-                if '.smi' in l:
-                    f = open(l,'r')
-                    smis = filter(None,f.read().splitlines())
-                    liglist += smis
-                else:
-                    liglist.append(l)
             globs = globalvars()
-            licores = readdict(globs.installdir+'/Ligands/ligands.dict')
-            simpleligs = readdict(globs.installdir+'/Ligands/simple_ligands.dict')
-            ligs = []
-            for l in liglist:
-                if l in simpleligs.keys():
-                    l = simpleligs[l][0]
-                if isinstance(l,unicode):
-                    ll = unicodedata.normalize('NFKD',l).encode('ascii','ignore')
-                else:
-                    ll = l
-                lig,emsg = lig_load(globs.installdir+'/',ll,licores)
-                if emsg:
-                    mQDialogWarn('Error',emsg)
-                else:
-                    ligs.append(lig.OBmol)
-            if len(ligs)==0:
-                return
-            fcount = 0
-            while glob.glob(rdir+'/ligs'+str(fcount)+'.png'):
-                fcount += 1
-            # get current dir
-            cwd = os.getcwd()
-            os.chdir(rdir) # change to working dir
-            outputf  = 'ligs.sdf'
-            locf = 'ligs'+str(fcount)
-            outbase = rdir+'/'+locf
-            outf = pybel.Outputfile("sdf",outputf,overwrite=True)
-            for mol in ligs:
-                outf.write(mol)
-            # convert to svg
-            if globs.osx:
-                cmd = "/usr/local/bin/obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
+            coreslist = getcores()
+            liglist = getligs()
+            bindlist = getbinds()
+            msg = 'Available cores in the database:\n'+coreslist
+            msg += '\n\nAvailable ligands in the database:\n'+liglist
+            msg += '\n\nAvailable extra molecules in the database:\n'+bindlist+'\n'
+            QMessageBox.information(self.wmain,'List of molecules',msg)
+        ### draw ligands
+    def drawligs(self):
+            ### collects all the info and passes it to molSimplify ###
+            rdir = self.etrdir.text()
+            if rdir[-1]=='/':
+                rdir = rdir[:-1]
+            # creat running dir if not existing
+            if not os.path.isdir(rdir):
+                os.mkdir(rdir)
+            args = grabguivars(self)
+            if len(args['-lig']) < 1:
+                qm = mQDialogWarn('Warning','No ligands are specified.')
+                return False
             else:
-                cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
-            t = mybash(cmd)
-            print t
-            if glob.glob(outputf):
-                os.remove(outputf)
-            else:
-                mQDialogErr('Error','Image could not be generated\n.')
+                args['-lig']=args['-lig'].replace(' ','')
+                lls = args['-lig'].split(',')
+                liglist = []
+                # check if multiple ligands in .smi file
+                for l in lls:
+                    if '.smi' in l:
+                        f = open(l,'r')
+                        smis = filter(None,f.read().splitlines())
+                        liglist += smis
+                    else:
+                        liglist.append(l)
+                globs = globalvars()
+                f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+                fs = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict")
+
+
+                licores = readdict(f)
+                simpleligs = readdict(f)
+                ligs = []
+                for l in liglist:
+                    if l in simpleligs.keys():
+                        l = simpleligs[l][0]
+                    if isinstance(l,unicode):
+                        ll = unicodedata.normalize('NFKD',l).encode('ascii','ignore')
+                    else:
+                        ll = l
+                    lig,emsg = lig_load(ll,licores)
+                    if emsg:
+                        mQDialogWarn('Error',emsg)
+                    else:
+                        ligs.append(lig.OBmol)
+                if len(ligs)==0:
+                    return
+                fcount = 0
+                while glob.glob(rdir+'/ligs'+str(fcount)+'.png'):
+                    fcount += 1
+                # get current dir
+                cwd = os.getcwd()
+                os.chdir(rdir) # change to working dir
+                outputf  = 'ligs.sdf'
+                locf = 'ligs'+str(fcount)
+                outbase = rdir+'/'+locf
+                outf = pybel.Outputfile("sdf",outputf,overwrite=True)
+                for mol in ligs:
+                    outf.write(mol)
+                # convert to svg
+                if globs.osx:
+                    cmd = "/usr/local/bin/obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
+                else:
+                    cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
+                t = mybash(cmd)
+                print t
+                if glob.glob(outputf):
+                    os.remove(outputf)
+                else:
+                    mQDialogErr('Error','Image could not be generated\n.')
+                    os.chdir(cwd)
+                    return
+                ####################
+                ### draw ligands ###
+                ####################
+                if globs.osx:
+                    cmd = '/usr/local/bin/convert -density 500 '+locf+'.svg '+locf+'.png'
+                else:
+                    cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
+                s = mybash(cmd)
+                print s
+                if not glob.glob(locf+'.png') :
+                    mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
+                else:
+                    os.remove(locf+".svg")
+                    shutil.move(locf+'.png',outbase+'.png')
+                    self.c1p = mQPixmap(outbase+'.png')
+                    rows = self.lgrid.rowCount()
+                    if rows > 1:
+                        for i in reversed(range(self.lgrid.count())): 
+                            self.lgrid.itemAt(i).widget().setParent(None)
+                    self.lgrid.addWidget(self.c1p,0,0)
+                    # button for closing window
+                    ctip = 'Close current window'
+                    self.lwindow.setWindowTitle('Ligands 2D')
+                    self.lwclose = mQPushButton('Close',ctip,14)
+                    self.lwclose.clicked.connect(self.qcloseligs)
+                    self.lgrid.addWidget(self.lwclose,1,0)
+                    self.lwindow.show()
+                    self.lwindow.setWindowState(Qt.WindowMaximized)
+                    center(self.lwindow)
+                # change back
                 os.chdir(cwd)
-                return
-            ####################
-            ### draw ligands ###
-            ####################
-            if globs.osx:
-                cmd = '/usr/local/bin/convert -density 500 '+locf+'.svg '+locf+'.png'
-            else:
-                cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
-            s = mybash(cmd)
-            print s
-            if not glob.glob(locf+'.png') :
-                mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
-            else:
-                os.remove(locf+".svg")
-                shutil.move(locf+'.png',outbase+'.png')
-                self.c1p = mQPixmap(outbase+'.png')
+        ### draw ligands
+    def viewgeom(self):
+            globs = globalvars()
+            # get geometry
+            geom = self.dcoordg.currentText()
+
+            #gfname = globs.installdir+'/icons/geoms/'+geom+'.png'
+
+            gfname = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/geoms/" + geom +".png")
+            if glob.glob(gfname):
                 rows = self.lgrid.rowCount()
                 if rows > 1:
                     for i in reversed(range(self.lgrid.count())): 
                         self.lgrid.itemAt(i).widget().setParent(None)
+                self.c1p = mQPixmap(gfname)
                 self.lgrid.addWidget(self.c1p,0,0)
                 # button for closing window
                 ctip = 'Close current window'
-                self.lwindow.setWindowTitle('Ligands 2D')
                 self.lwclose = mQPushButton('Close',ctip,14)
                 self.lwclose.clicked.connect(self.qcloseligs)
                 self.lgrid.addWidget(self.lwclose,1,0)
+                self.lwindow.setWindowTitle('Geometry:'+self.dcoordg.currentText())
                 self.lwindow.show()
-                self.lwindow.setWindowState(Qt.WindowMaximized)
                 center(self.lwindow)
-            # change back
-            os.chdir(cwd)
-    ### draw ligands
-    def viewgeom(self):
-        globs = globalvars()
-        # get geometry
-        geom = self.dcoordg.currentText()
-        gfname = globs.installdir+'/icons/geoms/'+geom+'.png'
-        if glob.glob(gfname):
-            rows = self.lgrid.rowCount()
-            if rows > 1:
-                for i in reversed(range(self.lgrid.count())): 
-                    self.lgrid.itemAt(i).widget().setParent(None)
-            self.c1p = mQPixmap(gfname)
-            self.lgrid.addWidget(self.c1p,0,0)
-            # button for closing window
-            ctip = 'Close current window'
-            self.lwclose = mQPushButton('Close',ctip,14)
-            self.lwclose.clicked.connect(self.qcloseligs)
-            self.lgrid.addWidget(self.lwclose,1,0)
-            self.lwindow.setWindowTitle('Geometry:'+self.dcoordg.currentText())
-            self.lwindow.show()
-            center(self.lwindow)
-        else:
-            mQDialogWarn('Warning','No file '+gfname+' exists..')
+            else:
+                mQDialogWarn('Warning','No file '+gfname+' exists..')
     ### draw results from db search
     def drawres(self):
         ### collects all the info and passes it to molSimplify ###
@@ -1879,14 +1906,17 @@ class mGUI():
                 else:
                     liglist.append(l)
             globs = globalvars()
-            licores = readdict(globs.installdir+'/Ligands/ligands.dict')
+
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+            licores = readdict(f)
             ligs = []
             for l in liglist:
                 if isinstance(l,unicode):
                     ll = unicodedata.normalize('NFKD',l).encode('ascii','ignore')
                 else:
                     ll = l
-                lig,emsg = lig_load(globs.installdir+'/',ll,licores)
+
+                lig,emsg = lig_load(ll,licores)
                 if not emsg:
                     ligs.append(lig.OBmol)
             if len(ligs)==0:
@@ -2032,7 +2062,8 @@ class mGUI():
         qc = qcav[dc]
         # add to box
         for i,t in enumerate(qc):
-            self.dcoordg.addItem(QIcon(globs.installdir+'/icons/geoms/'+t+'.png'),t)
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/geoms/" + t +".png")
+            self.dcoordg.addItem(QIcon(t),t)
         self.dcoordg.setIconSize(QSize(60,60))
         # set default geometry
         self.dcoordg.setCurrentIndex(0)
@@ -2178,7 +2209,7 @@ class mGUI():
         f.write(inputtxt)
         f.close()
         writef = False
-        instdir = globs.installdir
+#        instdir = globs.installdir
         mwfn = globs.multiwfn
         cdbdir = globs.chemdbdir
         if not os.path.isfile(globs.multiwfn[1:-1]):
@@ -2191,7 +2222,7 @@ class mGUI():
                     writef = True
         if writef:
             f = open(globs.homedir+'/.molSimplify','w')
-            f.write("INSTALLDIR="+instdir+'\n')
+            #f.write("INSTALLDIR="+instdir+'\n')
             if len(cdbdir) > 0:
                 f.write("CHEMDBDIR="+cdbdir+'\n')
             if len(mwfn) > 0 :
