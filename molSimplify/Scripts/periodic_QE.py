@@ -21,7 +21,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
         with open(path,'w') as f: 
                 f.write("&CONTROL\n")
                 f.write('calculation = "relax" \n')
-                f.write('prefix = clean')
+                f.write('prefix = clean\n')
                 f.write('pseudo_dir = "/opt/espresso-5.1/pseudo"\n')
                 f.write('outdir = "./"\n')
                 f.write('wf_collect = .true\n')
@@ -36,7 +36,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                 f.write("ntyp = " + str(len(unique_atoms)) + "\n")
                 f.write("nspin = 1\n")
                 f.write('occupations = "smearing"\n')
-                f.write('degauss = 0.01')
+                f.write('degauss = 0.01\n')
                 f.write('ecutwfc = 25.0 \n')
                 f.write('ecutrho = 250.0 \n')
                 f.write("/ \n")
@@ -77,7 +77,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                     else:
                         freeze_vect = [1,1,1]
 
-                    f.write("%s \t%f\t%f\t%f\t%f\t%f\t%f\n" % (atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
+                    f.write("%s  %f %f %f %f %f %f\n" % (atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
         with open(path,'a') as f: 
                 f.write("K_POINTS {automatic}\n")
 
