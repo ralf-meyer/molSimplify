@@ -11,7 +11,7 @@ from operator import add
 
 ###############################
 def write_periodic_mol3d_to_qe(mol,cell_vector,path):
-        psd = {"Ti":'Ti.pbe-sp-van_ak.UPF','O':'O.pbe-van_ak.UPF'}
+        psd = {"Ti":'Ti.pbe-sp-van_ak.UPF','O':'O.pbe-van_ak.UPF','Si':'Si.pbe-n-van.UPF'}
         ## set global properties
 
         unique_atoms  = mol.getAtomTypes()
@@ -69,6 +69,8 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                     else:
                         f.write(str(elements) + "    " +  str(globs.amass()[elements][0])  + "     " + ps_info + '\n')
         with open(path,'a') as f: 
+                pos_list =list()
+                write_list = list()
                 f.write("ATOMIC_POSITIONS {angstrom}\n")
                 for atom in mol.atoms:
                     xyz = atom.coords()
@@ -76,11 +78,17 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                         freeze_vect = [0,0,0]
                     else:
                         freeze_vect = [1,1,1]
+                    pos_list.append(xyz[2])
+                    write_list.append((atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
 
-                    f.write("%s  %f %f %f %f %f %f\n" % (atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
+                sorted_inds = [i[0] for i in sorted(enumerate(pos_list),key=lambda x:x[1])]
+                for inds in sorted_inds:
+                    f.write("%s   %f    %f    %f    %f    %f    %f\n" % write_list[inds])
+
+#                    f.write("%s  %f %f %f %f %f %f\n" % (atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
         with open(path,'a') as f: 
                 f.write("K_POINTS {automatic}\n")
-
+                f.write("4 4 1 0 0\n")
                
 
 
