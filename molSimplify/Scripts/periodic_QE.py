@@ -27,7 +27,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                 f.write('wf_collect = .true\n')
                 f.write('tprnfor = .true.\n')
                 f.write('restart_mode = "from_scratch"\n')
-                f.write('nstep = 1000')
+                f.write('nstep = 1000\n')
                 f.write("/ \n")
         with open(path,'a') as f: 
                 f.write("&SYSTEM\n")
