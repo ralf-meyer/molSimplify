@@ -1,4 +1,4 @@
 # molSimplify input file generated from CLI input
--core Co 
--lig water 
--ligocc 6
+-core Mn 
+-lig amine 
+-ligocc 4
