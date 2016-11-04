@@ -6,4 +6,3 @@ include molSimplify/python_nn/*
 include molSimplify/docs/*
 include molSimplify/icons/*
 include molSimplify/icons/geoms/*
-include molSimplify/icons/geoms_labels/*

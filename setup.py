@@ -5,6 +5,5 @@ setup(name='molSimplify',version="v1.1-alpha",packages=find_packages(),
       package_data={
           'molsimplify':["Data/*.dat","Data/*.dat","Bind/*.dat","Ligands/*.dict","icons/*.png"]
       },
-      data_files=[("molSimplify",["molSimplify/Data/ML.dat","molSimplify/icons/icon.png"])],
       include_package_data = True,
      )
