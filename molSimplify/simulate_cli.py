@@ -54,13 +54,17 @@ start = datetime.now()
 #                 '-align_method','alignpair','-surface_atom_ind','39','-num_surface_atoms','1',
 #                 '-object_align','C','-align_dist','0.5','-shave_extra_layers','1'])
 #
-subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','/home/jp/Dropbox/Main/icepaper/quartz/quartz.cif',
-                 '-slab_size','[14,14,6]','-rundir /home/jp/Dropbox/Main/icepaper/\n','-debug','-align_method','alignpair', '-freeze', '2',
-                 '-place_on_slab','-target_molecule','/home/jp/Dropbox/Main/icepaper/quartz/mol.xyz','-object_align', 'Mn','-expose_type','O',
-                 '-align_dist','1.5','-shave_extra_layers','0','align_distance_method','custom','-surface_atom_type','O','-num_surface_atoms','2'])
+#subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','/home/jp/Dropbox/Main/icepaper/quartz/quartz.cif',
+#                 '-slab_size','[9,9,6]','-rundir /home/jp/Dropbox/Main/icepaper/\n','-debug','-align_method','alignpair', '-freeze', '2',
+#                 '-place_on_slab','-target_molecule','/home/jp/Dropbox/Main/icepaper/quartz/mol.xyz','-object_align', 'Mn','-expose_type','O',
+#                 '-align_dist','1.5','-shave_extra_layers','0','align_distance_method','custom','-surface_atom_type','O','-num_surface_atoms','2'])
 #
-#subprocess.call(["python","-m",'molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
+#subprocess.call(["python","-m",'molSimplify.__main__','-slab_gen','-unit cif_path','molSimplify/Unitcells/anatase_tio2.cif'
 #                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]'])
+
+subprocess.call(["python","-m",'molSimplify.__main__','-place_on_slab','-unit_cell','/home/jp/Downloads/cell.xyz','-cell_vector','[[7.5,0,0],[0,7.5,0],[0,0,19]]',
+                '-target_molecule','/home/jp/Runs/mo5.xyz','align_distance_method','custom','-align_dist','1.5','-align_method','alignpair','-object_align','O',
+                '-surface_atom_type','Ti','-debug','True'])
 
 
 

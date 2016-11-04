@@ -1305,7 +1305,14 @@ def slab_module_supervisor(args,rootdir):
             print('\n\n ************************ starting placement ***************** \n\n')
         if not slab_gen:
             print('\n\n ************************ placementon existing slab  ***************** \n\n')
+            print(cell_vector)
             a_totally_new_variable = cell_vector
+            super_cell_vector = cell_vector
+            print(super_cell)
+            super_cell.printxyz()
+            print('this supercell vector is:')
+            print(super_cell_vector)
+ 
         if control_angle:
             print('control angle on')
             print(angle_surface_axis)
@@ -1329,7 +1336,7 @@ def slab_module_supervisor(args,rootdir):
         loaded_cell.writexyz(rootdir + 'loaded_slab/loaded.xyz')
 #        print('this supercell vector is:')
 #        print(super_cell_vector)
-        super_duper_cell = unit_to_super(loaded_cell,ext_duplication_vector,[2,2,1])
+        super_duper_cell = unit_to_super(loaded_cell,a_totally_new_variable,[2,2,1])
         super_duper_cell.writexyz(rootdir + 'loaded_slab/SD.xyz')
         write_periodic_mol3d_to_qe(loaded_cell,a_totally_new_variable,rootdir + 'loaded_slab/loaded_slab.in')
 

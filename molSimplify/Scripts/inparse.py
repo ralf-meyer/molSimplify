@@ -479,7 +479,10 @@ def parseinput(args):
             if (l[0]=='-unit_cell'): #1 
                 args.unit_cell = l[1]
             if (l[0]=='-cell_vector'): #2
-                args.cell_index = [[float(j.strip('(){}<>[],.')) for j in i]  for i in l[1:]] # list-of-lists
+                temp = [float(i.strip('(){}<>[],.')) for i in l[1:]] # list-of-lists
+
+                args.cell_vector = [[temp[i] for i in [0,1,2]],[temp[i] for i in [3,4,5]],[temp[i] for i in [6,7,8]]]
+
             if (l[0]=='-cif_path'): #3
                 args.cif_path = l[1]
             if (l[0]=='-duplication_vector'): #4

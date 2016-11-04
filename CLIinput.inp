@@ -1,4 +1,10 @@
 # molSimplify input file generated from CLI input
--core Mn 
--lig amine 
--ligocc 4
+-place_on_slab 
+-unit_cell /home/jp/Downloads/cell.xyz 
+-cell_vector [[7.5,0,0],[0,7.5,0],[0,0,19]] 
+-target_molecule /home/jp/Runs/mo5.xyz align_distance_method custom 
+-align_dist 1.5 
+-align_method alignpair 
+-object_align O 
+-surface_atom_type Ti 
+-debug True
