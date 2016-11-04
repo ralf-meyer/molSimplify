@@ -1,17 +1,4 @@
 # molSimplify input file generated from CLI input
--slab_gen 
--cif_path /home/jp/Dropbox/Main/icepaper/quartz/quartz.cif 
--slab_size [14,14,6] 
--rundir /home/jp/Dropbox/Main/icepaper/
- 
--debug 
--align_method alignpair 
--freeze 2 
--place_on_slab 
--target_molecule /home/jp/Dropbox/Main/icepaper/quartz/mol.xyz 
--object_align Mn 
--expose_type O 
--align_dist 1.5 
--shave_extra_layers 0 align_distance_method custom 
--surface_atom_type O 
--num_surface_atoms 2
+-core Co 
+-lig water 
+-ligocc 6
