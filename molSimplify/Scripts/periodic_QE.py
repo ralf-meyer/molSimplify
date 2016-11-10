@@ -88,7 +88,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
 #                    f.write("%s  %f %f %f %f %f %f\n" % (atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
         with open(path,'a') as f: 
                 f.write("K_POINTS {automatic}\n")
-                f.write("4 4 1 0 0\n")
+                f.write("4 4 1 0 0 0\n")
                
 
 
