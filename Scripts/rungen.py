@@ -500,6 +500,12 @@ def rungen(installdir,rundir,args,chspfname,globs):
                     print 'QChem input files generated!'
                 else:
                     print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
+            # check molpac
+            if args.molpac and not emsg:
+                    print('Generating MOLPAC input')
+                    print(strfiles)
+                    jobdirs = mlpgen(args,strfiles,rootdir)
+
             # generate jobscripts
             if args.jsched and not emsg:
                 if args.jsched in 'SBATCH SLURM slurm sbatch':

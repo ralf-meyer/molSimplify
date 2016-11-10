@@ -751,7 +751,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
         ANN_bondl = 0
     else:
         try:
-        ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
+            ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
         except:
             print("ANN call rejected")
         ANN_flag = False
@@ -1634,6 +1634,9 @@ def customcore(args,core,ligs,ligoc,installdir,licores,globs):
                 if args.calccharge:
                     core3D.charge += lig3D.charge
                 nligats = lig3D.natoms
+                if args.calccharge:
+                    args.charge = core3D.charge
+                    print('setting charge to be ' + str(args.charge))
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
                     core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)

@@ -54,14 +54,15 @@ start = datetime.now()
 #                 '-align_method','alignpair','-surface_atom_type','Ti','-num_surface_atoms','1',
 #                 '-object_align','C','-align_dist','2.5'])
 #
-subprocess.call(["python",'molSimplify/main.py','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
-                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]','-freeze','1'])
+#subprocess.call(["python",'molSimplify/main.py','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
+#                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]','-freeze','1'])
 
 
 
 #
-#subprocess.call(["python","main.py","-core","Fe","-coord",'6',"-lig","acac,water","-ligocc",'2,2',
-#                 '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False',
-#3                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/CLI',
-#                 '-oxstate','0','-spin','1'])
+mol_name = "freddy"
+subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","acac,water","-ligocc",'2,2',
+                 '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/mpc/\n','-jobdir temp',
+                 '-oxstate','II','-spin','1','-molpac','-name',mol_name+'\n','-qccode TeraChem'])
 print(datetime.now() - start)

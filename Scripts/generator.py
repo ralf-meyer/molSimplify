@@ -32,6 +32,7 @@ from Scripts.inparse import *
 from Scripts.dbinteract import *
 from Scripts.postproc import *
 from Scripts.cellbuilder import*
+from Scripts.chains import*
 from Classes.globalvars import *
 from Classes.mol3D import mol3D
 from Classes.atom3D import atom3D
@@ -76,6 +77,7 @@ def startgen(argv,flag,gui):
     sys.argv = argv
     parser = argparse.ArgumentParser()
     args = parsecommandline(parser)
+    
     # check if input file exists
     if not glob.glob(args.i):
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
@@ -87,7 +89,7 @@ def startgen(argv,flag,gui):
         parseinput(args)
     # clean input arguments
     cleaninput(args)
-    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab):
+    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not(args.chain):
         # check input arguments
         emsg = checkinput(args)
     args.gui = False # deepcopy will give error
@@ -103,6 +105,7 @@ def startgen(argv,flag,gui):
     # add gui flag
     args.gui = gui
     # postprocessing run?
+
     if (args.postp):
         postproc(rundir,args,globs)
     # database search?
@@ -138,6 +141,10 @@ def startgen(argv,flag,gui):
     # slab/place on slab?
     elif (args.slab_gen or args.place_on_slab):
         emsg = slab_module_supervisor(args,rundir)
+    # chain builder
+    elif (args.chain):
+        print('chain on')
+        emsg = chain_builder_supervisor(args,rundir)
     # normal structure generation
     else:
         args = copy.deepcopy(args0)

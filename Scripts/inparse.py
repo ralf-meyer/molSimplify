@@ -383,6 +383,9 @@ def parseinput(args):
                     args.statoption.append(l[1:])
                 else:
                     args.statoption = l[1:]
+            # parse MOLPAC generation routines
+            if (l[0] == '-molpac'):
+                    args.molpac = True
             # parse jobscript arguments
             if (l[0]=='-jsched'):
                 args.jsched = l[1]
@@ -535,6 +538,13 @@ def parseinput(args):
             if (l[0]=='-surface_atom_ind'): #6
                 args.surface_atom_ind = [int(i.strip('(){}<>[],.')) for i in l[1:]]
 
+            # parse chain-builder arguments
+            if (l[0] == '-chain'):
+                print('chain true')
+                args.chain = l[1]
+            if (l[0] == '-chain_units'):
+                args.chain_units = l[1]
+
 
                 
 #############################################################
@@ -595,6 +605,8 @@ def parsecommandline(parser):
     parser.add_argument("-spin","--spin", help="spin multiplicity for system (default: singlet) e.g. 1",action="store_true")
     parser.add_argument("-runtyp","--runtyp", help="run type. Choices: optimization, energy",action="store_true")
     parser.add_argument("-method","--method", help="electronic structure method. Specify UDFT for unrestricted calculation(default: b3lyp) e.g. ub3lyp",action="store_true")
+    # MOLPAC arguments
+    parser.add_argument("-molpac","--molpac", help="Generate MOLPAC files?",action="store_true")
     # terachem arguments
     parser.add_argument("-basis","--basis", help="basis for terachem or qchem job (default: LACVP* or lanl2dz)",action="store_true")
     parser.add_argument("-dispersion","--dispersion", help="dispersion forces. Default: no e.g. d2,d3",action="store_true")
@@ -728,6 +740,13 @@ def parsecommandline(parser):
                         help = "boolean, duplicate asorbate above and below slab",action = "store_true") #14
     parser.add_argument('-surface_atom_ind','--surface_atom_ind',
                         help = "list of int, surface atoms to use by index") #15
+
+    # chain builder:
+    parser.add_argument('-chain','--chain',
+                        help = "SMILES string of monomer",action = "store_true") #0
+    parser.add_argument('-chain_units','--chain_units',
+                        help = "int, number of monomers") #0
+
 
 
     args=parser.parse_args()

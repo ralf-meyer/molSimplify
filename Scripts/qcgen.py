@@ -1,4 +1,5 @@
-# Written by Tim Ioannidis for HJK Group
+# Written by Tim Ioannidis for HJK
+#         and JP Janeti for HJK Group
 # Dpt of Chemical Engineering, MIT
 
 #########################################################
@@ -468,5 +469,86 @@ def qgen(args,strfiles,method):
         # write $molecule block
         output.write('$molecule\n'+jobparams['CHARGE']+' '+jobparams['SPIN']+'\n')
         output.write(''.join(s)+'$end')
+        output.close()
+    return jobdirs
+
+
+
+    
+####################################################
+########## This module generates input  ############
+##########    for MOLPAC calculations   #############
+####################################################
+
+def mlpgen(args,strfiles,rootdir):
+    # get global variables
+    globs = globalvars()
+    jobdirs = []
+    coordfs = []
+    # Initialize the jobparams dictionary with mandatory/useful keywords.
+    jobparams = ['EF','PM7','XYZ','HESSIAN']
+    spin_keywords={1: 'SINGLET',
+                   2: 'DOUBLET',
+                   3: 'TRIPLET',
+                   4: 'QUARTET',
+                   5: 'QUINTET',
+                   6: 'SEXTET'}
+    # Overwrite plus add any new dictionary keys from commandline input.       
+    for xyzf in strfiles:
+        rdir = xyzf.rsplit('/',1)[0]
+        xyzft = xyzf.rsplit('/',1)[-1]
+        xyzf += '.xyz'
+        coordfs.append(xyzf.rsplit('/',1)[-1])
+        coordname = xyzft
+        # Setting jobname for files + truncated name for queue.
+        if len(coordname) > 10:
+            nametrunc=coordname[0:6]+coordname[-4:]
+        else:
+            nametrunc=coordname
+        if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
+            os.mkdir(rdir+'/'+nametrunc) 
+            mdir = rdir+'/'+nametrunc
+        if args.jobdir:
+                mdir = args.jobdir
+        jobdirs.append(mdir)
+#        shutil.copy2(xyzf,mdir)
+#        shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+    # Just carry over spin and charge keywords if they're set. Could do checks, none for now.
+    if args.spin:
+       jobparams.append(spin_keywords[int(args.spin)])
+       jobparams.append('UHF')
+
+    else:
+        jobparams.append("SINGLET")
+    if args.charge:
+       jobparams.append('CHARGE='+str(args.charge))
+    # Now we're ready to start building the input file and the job script
+    for i,jobd in enumerate(jobdirs):
+        output=open(strfiles[i] + '.mop','w')
+        f=open(strfiles[i]+'.xyz')
+        s = f.readlines()[2:] # read coordinates
+        f.close()
+        # write rem block
+        for terms in jobparams:
+            output.write(' '+ terms)
+        # write additional options
+        if (args.remoption):
+            if len(args.remoption)%2 > 0:
+                print 'WARNING: wrong number of arguments in -remoption'
+            else:
+                for elem in range(0,int(0.5*len(args.remoption))):
+                    key,val=args.remoption[2*elem],args.remoption[2*elem+1]
+                    output.write(key+'\t\t'+val+'\n')
+        output.write('\n' + nametrunc+'\n')
+        output.write('\n')
+        # write $molecule block
+        for lines in s:
+            ll = lines.split('\t')
+            for i,items in enumerate(ll):
+                output.write(' '+ items.strip('\n'))
+                if i>0:
+                    output.write(' 1')
+                if i == 3:
+                    output.write('\n')
         output.close()
     return jobdirs

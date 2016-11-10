@@ -25,7 +25,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                 f.write('pseudo_dir = "/opt/espresso-5.1/pseudo"\n')
                 f.write('outdir = "./"\n')
                 f.write('wf_collect = .true\n')
-                f.write('tprnfor = .true.\n')
+                f.write('tprnfor = .true\n')
                 f.write('restart_mode = "from_scratch"\n')
                 f.write('nstep = 1000')
                 f.write("/ \n")
@@ -80,6 +80,7 @@ def write_periodic_mol3d_to_qe(mol,cell_vector,path):
                     f.write("%s \t%f\t%f\t%f\t%f\t%f\t%f\n" % (atom.sym,xyz[0],xyz[1],xyz[2],freeze_vect[0],freeze_vect[1],freeze_vect[2]))
         with open(path,'a') as f: 
                 f.write("K_POINTS {automatic}\n")
+                f.write("4 4 1 0 0 0")
 
                
 
