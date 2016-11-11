@@ -60,9 +60,14 @@ start = datetime.now()
 
 
 #
-mol_name = "freddy"
-subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","acac,water","-ligocc",'2,2',
+mol_name = "sally"
+#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","acac,water","-ligocc",'2,2',
+#                 '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+#                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/mpc/\n','-jobdir temp',
+#                 '-oxstate','II','-spin','1','-mopac','-name',mol_name+'\n','-qccode TeraChem'])
+subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","tcnoet water","-ligocc",'1,5',
                  '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
-                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/mpc/\n','-jobdir temp',
-                 '-oxstate','II','-spin','1','-molpac','-name',mol_name+'\n','-qccode TeraChem'])
+                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-jobdir consti',
+                 '-oxstate','II','-spin','5','-name',mol_name+'\n','-qccode TeraChem'])
+
 print(datetime.now() - start)

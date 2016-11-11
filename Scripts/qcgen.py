@@ -50,6 +50,7 @@ def tcgen(args,strfiles,method):
            'spinmult': '1',
            'charge': '0',
            'gpus': '1',
+           'scrdrir':'scr'
             }
     # if multiple methods requested generate c directories
     # Overwrite plus add any new dictionary keys from commandline input.       
@@ -154,6 +155,20 @@ def tcgen(args,strfiles,method):
             jobparams['coordinates'] = coordfs[i]
             for keys in jobparams.keys():
                 output.write('%s %s\n' %(keys,jobparams[keys]))
+            if  jobparams['run'] == 'minimize':
+                output.write('new_minimizer yes\n')
+                output.write('min_coordinates cartesian\n')
+            if args.tc_fix_dihedral:
+                temp = mol3D()
+                temp.readfromxyz(strfiles[i])
+                metal_ind = temp.findMetal()
+                fixed_atoms = list()
+                fixed_atoms = temp.getBondedAtoms(metal_ind)
+                fixed_atoms = [str(int(i)+1) for i in fixed_atoms] # 1-based indices
+                string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
+                print(string_to_write)
+                output.write('$constraint_set \n')
+                output.write(string_to_write + '\n')
             output.write('end\n')
             output.close()
     elif args.jobdir:
@@ -164,6 +179,20 @@ def tcgen(args,strfiles,method):
             jobparams['coordinates'] = coordfs[i]
             for keys in jobparams.keys():
                 output.write('%s %s\n' %(keys,jobparams[keys]))
+            if  jobparams['run'] == 'minimize':
+                output.write('new_minimizer yes\n')
+                output.write('min_coordinates cartesian\n')
+            if args.tc_fix_dihedral:
+                temp = mol3D()
+                temp.readfromxyz(strfiles[i])
+                metal_ind = temp.findMetal()
+                fixed_atoms = list()
+                fixed_atoms = temp.getBondedAtoms(metal_ind)
+                fixed_atoms = [str(int(i)+1) for i in fixed_atoms] # 1-based indices
+                string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
+                print(string_to_write)
+                output.write('$constraint_set \n')
+                output.write(string_to_write + '\n')
             output.write('end\n')
             output.close()
     return jobdirs

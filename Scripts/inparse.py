@@ -342,6 +342,8 @@ def parseinput(args):
                     args.qoption.append(l[1:])
                 else:
                     args.qoption = l[1:]
+            if (l[0] == '-tc_fix_dihedral'):
+                    args.tc_fix_dihedral = True
             # parse qchem arguments
             if (l[0]=='-exchange'):
                 args.exchange = l[1]
@@ -384,8 +386,9 @@ def parseinput(args):
                 else:
                     args.statoption = l[1:]
             # parse MOLPAC generation routines
-            if (l[0] == '-molpac'):
-                    args.molpac = True
+            if (l[0] == '-mopac'):
+                    args.mopac = True
+ 
             # parse jobscript arguments
             if (l[0]=='-jsched'):
                 args.jsched = l[1]
@@ -605,8 +608,9 @@ def parsecommandline(parser):
     parser.add_argument("-spin","--spin", help="spin multiplicity for system (default: singlet) e.g. 1",action="store_true")
     parser.add_argument("-runtyp","--runtyp", help="run type. Choices: optimization, energy",action="store_true")
     parser.add_argument("-method","--method", help="electronic structure method. Specify UDFT for unrestricted calculation(default: b3lyp) e.g. ub3lyp",action="store_true")
+    parser.add_argument("-tc_fix_dihedral","--tc_fix_dihedral", help="TeraChem only: fix SQP dihedrals",action="store_true")
     # MOLPAC arguments
-    parser.add_argument("-molpac","--molpac", help="Generate MOLPAC files?",action="store_true")
+    parser.add_argument("-mopac","--mopac", help="Generate MOLPAC files?",action="store_true")
     # terachem arguments
     parser.add_argument("-basis","--basis", help="basis for terachem or qchem job (default: LACVP* or lanl2dz)",action="store_true")
     parser.add_argument("-dispersion","--dispersion", help="dispersion forces. Default: no e.g. d2,d3",action="store_true")

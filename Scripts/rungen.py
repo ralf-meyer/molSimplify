@@ -501,8 +501,8 @@ def rungen(installdir,rundir,args,chspfname,globs):
                 else:
                     print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
             # check molpac
-            if args.molpac and not emsg:
-                    print('Generating MOLPAC input')
+            if args.mopac and not emsg:
+                    print('Generating MOPAC input')
                     print(strfiles)
                     jobdirs = mlpgen(args,strfiles,rootdir)
 

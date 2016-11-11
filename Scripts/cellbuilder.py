@@ -1040,6 +1040,7 @@ def slab_module_supervisor(args,rootdir):
 
     ## Main calls
     if slab_gen:
+        print('Generating a new slab...')
         if not os.path.exists(rootdir + 'slab'):
                 os.makedirs(rootdir + 'slab')
 
@@ -1092,9 +1093,13 @@ def slab_module_supervisor(args,rootdir):
         acell = duplication_vector[2]
         bcell = duplication_vector[1]
         ccell = duplication_vector[2]
-#        if miller_flag:
-#            duplication_vector[2] +=4 #enusre enough layers to get to height
+        if debug:
+            print('AGAIN: duplication_vector is' + str(duplication_vector))
 
+        if miller_flag:
+            duplication_vector[2] +=4 #enusre enough layers to get to height
+        if debug:
+            print('duplication_vector is' + str(duplication_vector))
 
         ###########################
         ###########################
@@ -1200,7 +1205,10 @@ def slab_module_supervisor(args,rootdir):
             if debug:
                 super_cell.writexyz(rootdir + 'slab/step_7.xyz')
             stop_flag = False
+            counter = 0
             while not stop_flag:
+                print('in loop')
+                counter +=1
                 zmin = 1000
                 for atoms in super_cell.getAtoms():
                     coords = atoms.coords()
@@ -1212,10 +1220,14 @@ def slab_module_supervisor(args,rootdir):
                         if debug:
                             print('cutting due to zmin')
                         super_cell= shave_under_layer(super_cell)
+                if counter > 10:
+                    stop_flag = True
             stop_flag = False
             if slab_size:
+                counter = 0
                 while not stop_flag:
                     print('in loop')
+                    counter += 1
                     zmax = 0 
                     for atoms in super_cell.getAtoms():
                         coords = atoms.coords()
@@ -1227,6 +1239,8 @@ def slab_module_supervisor(args,rootdir):
                             if debug:
                                 print('cutting due to zmax')
                             super_cell= shave_surface_layer(super_cell)
+                    if counter > 10:
+                        stop_flag =  True
             if debug:
                 super_cell.writexyz(rootdir + 'slab/step_8.xyz')
             ## place cell at origin
