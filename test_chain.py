@@ -15,6 +15,6 @@ strc =( "molsimplify"+" -core"+" Ni "+"-coord "+' 6 '+"-lig" +" water,water,wate
 
 #print(strc)
 #subprocess.call(strc,shell=True)
-subprocess.call(["python",'molSimplify/main.py',"-chain CO","-chain_units 1"])
+subprocess.call(["python",'molSimplify/main.py',"-chain CCO","-chain_units 20"])
 
 

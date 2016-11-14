@@ -20,7 +20,7 @@ cyanide:cyanide.mol,cyan,0,build small,N,-1
 tcnoet:tcnoet.mol,tcnoet,7,build big,N,-1
 tcnoetOH:tcnoetOH.mol,tcnoet,15,build big,BA,-1
 dicyanamide:dicyanamide.mol,dicyanamide,0,build small,N,-1
-tricyanomethyl:tricyanomethyl.mol,tricyanomethyl,0,build,-1
+tricyanomethyl:tricyanomethyl.mol,tricyanomethyl,5,build,-1
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A,-4
 ethyl:ethyl.mol,eth,1,functionalize small,N,-1
 fluoride:fluoride.smi,fluo,0,build functionalize small,N,-1
@@ -48,11 +48,11 @@ noxygen:noxygen.mol,noxd,0,build small,N,0
 phen:phen.mol,phen,9 12,build bidentate,BA,0
 phenanthroline:phen.mol,bip,9 12,build bidentate,BA,0
 porphyrin:porphyrin.mol,prph,0 1 2 3,build tetradentate,A,-2
-cyanoaceticporphyrin:cyanoaceticporphyrin.mol,caprph,0 1 2 3,build tetradentate,A,-2
+cyanoaceticporphyrin:cyanoaceticporphyrin.mol,caprph,0 3 1 2,build tetradentate,N,-2
 corrolazine:corrolazine.mol,corrolazine, 21 19 16 17, build tetradentate, A,-2
 phthalocyanine:phthalocyanine.mol,phthalocyanine,0 30 2 29,build tetradentate,A,-2
 cyclam:cyclam.mol,cyclam,15 34 17 36,build tetradentate,A,0
-phenylcyc:phenylcyc.mol,phenylcyc,11 13 28 26,build tetradentate,A,0
+phenylcyc:phenylcyc.mol,phenylcyc,11 26 13 28,build tetradentate,N,0
 pentacyanopentadienide:pentacyanocyclopentadienide.mol,pcyanopent,1,build bulky,A,-1
 cyclen:cyclen.mol,cyclen,6 0 3 9,build tetradentate,A,0
 tbutylcyclen:tbutylcyclen.mol,tbutylcyclen,6 0 3 9,build tetradentate,A,0

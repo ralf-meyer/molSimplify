@@ -50,7 +50,6 @@ def tcgen(args,strfiles,method):
            'spinmult': '1',
            'charge': '0',
            'gpus': '1',
-           'scrdrir':'scr'
             }
     # if multiple methods requested generate c directories
     # Overwrite plus add any new dictionary keys from commandline input.       
