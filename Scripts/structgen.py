@@ -1151,6 +1151,10 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                     auxmol = mol3D()
                     for iiax in range(0,4):
                         auxmol.addAtom(lig3D.getAtom(catoms[iiax]))
+                    if args.debug:
+                        m3D.writexyz('m3d.xyz')
+                        auxmol.writexyz('auxmol.xyz')
+
                     lig3D.alignmol(atom3D('C',auxmol.centermass()),m3D.getAtom(0))
                     # align plane
                     r0c = m3D.getAtom(batoms[0]).coords()
@@ -1179,6 +1183,11 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
                     theta = 180*arccos(dot(r1,r2)/(norm(r1)*norm(r2)))/pi
                     lig3Db = mol3D()
                     lig3Db.copymol3D(lig3D)
+                    if args.debug:
+                        print('normal to tetradentate ligand plane: ',ul)
+                        print('lig center of mass ',rm)
+                        lig3D.writexyz('lig3d.xyz')
+                        lig3Db.writexyz('lig3db.xyz')
                     # rotate around axis and get both images
                     lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
                     # get distance from bonds table or vdw radii

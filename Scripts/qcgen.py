@@ -520,7 +520,8 @@ def mlpgen(args,strfiles,rootdir):
                    3: 'TRIPLET',
                    4: 'QUARTET',
                    5: 'QUINTET',
-                   6: 'SEXTET'}
+                   6: 'SEXTET',
+                   7: 'SEPTET'}
     # Overwrite plus add any new dictionary keys from commandline input.       
     for xyzf in strfiles:
         rdir = xyzf.rsplit('/',1)[0]
