@@ -49,10 +49,10 @@ start = datetime.now()
 #                 '-align_method','alignpair','-surface_atom_type','Ti','-num_surface_atoms','4',
 #                 '-object_align','2,3,4,5','-align_dist','2.5'])
 #
-#subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
-#                 '-slab_size','[9,9,9]','-place_on_slab','-target_molecule','/home/jp/Runs/co.xyz',
-#                 '-align_method','alignpair','-surface_atom_ind','39','-num_surface_atoms','1',
-#                 '-object_align','C','-align_dist','0.5','-shave_extra_layers','1'])
+subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
+                 '-slab_size','[9,9,9]','-target_molecule','/home/jp/Runs/co.xyz','-miller_index','[1,0,1]',
+                 '-align_method','alignpair','-surface_atom_ind','39','-num_surface_atoms','1','-debug','True',
+                 '-object_align','C','-align_dist','0.5','-shave_extra_layers','1'])
 #
 #subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','/home/jp/Dropbox/Main/icepaper/quartz/quartz.cif',
 #                 '-slab_size','[9,9,6]','-rundir /home/jp/Dropbox/Main/icepaper/\n','-debug','-align_method','alignpair', '-freeze', '2',
@@ -67,8 +67,8 @@ start = datetime.now()
 #                '-surface_atom_type','Ti','-debug','True'])
 
 
-subprocess.call(["python","-m",'molSimplify.__main__','slab_gen','-cif_path','/home/jp/Downloads/pd.cif','-slab_size','[20,20,20]','-miller_index','[1,1,1]',
-                '-freeze','2', '-surface_atom_type','Pd','-debug','True'])
+#subprocess.call(["python","-m",'molSimplify.__main__','slab_gen','-cif_path','/home/jp/Downloads/pd.cif','-slab_size','[10,10,10]','-miller_index','[1,1,1]',
+#                '-freeze','2', '-surface_atom_type','Pd','-debug','True'])
 
 #subprocess.call(["python","-m",'molSimplify.__main__','-place_on_slab','-slab_gen','-cif_path','/home/jp/Downloads/pd.cif','-slab_size','[10,10,7]',
 #                '-target_molecule','/home/jp/Runs/mo5.xyz','align_distance_method','custom','-align_dist','1.5','-align_method','alignpair','-object_align','O','-freeze','2',

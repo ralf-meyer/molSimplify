@@ -8,8 +8,8 @@
 ######################################################
 
 # import custom modules
-from geometry import *
-from io import *
+from molSimplify.Scripts.geometry import *
+from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 # import std modules
 import os, sys
@@ -281,9 +281,9 @@ def dbsearch(rundir,args,globs):
     else:
         obab = 'obabel'
     if args.gui:
-        from Classes.mWidgets import mQDialogErr
-        from Classes.mWidgets import mQDialogWarn
-        from Classes.mWidgets import mQDialogInf
+        from molSimplify.Classes.mWidgets import mQDialogErr
+        from molSimplify.Classes.mWidgets import mQDialogWarn
+        from molSimplify.Classes.mWidgets import mQDialogInf
     ### in any case do similarity search over indexed db ###
     outf = args.dboutputf if args.dboutputf else 'simres.smi' # output file
     cwd = os.getcwd()

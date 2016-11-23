@@ -1113,7 +1113,7 @@ def slab_module_supervisor(args,rootdir):
         if miller_flag:
             if (len(non_zero_indices) > 2):
                 duplication_vector[1] +=2 #enusre enough layers to get to height
-                duplication_vector[2] +=2 #enusre enough layers to get to height
+                duplication_vector[2] +=4 #enusre enough layers to get to height
 
         if debug:
             print('duplication vector is  '+  str(duplication_vector))
@@ -1137,12 +1137,7 @@ def slab_module_supervisor(args,rootdir):
         if miller_flag:
             if (len(non_zero_indices) > 2):
                 duplication_vector[1] += -2
-                duplication_vector[2] += -2
-
-#                super_cell= shave_surface_layer(super_cell)
-#                super_cell= shave_surface_layer(super_cell)
-#3                super_cell= shave_under_layer(super_cell)
-#                super_cell= shave_under_layer(super_cell)
+                duplication_vector[2] += -4
 
         if debug:
             print(rootdir)
@@ -1164,6 +1159,16 @@ def slab_module_supervisor(args,rootdir):
            #############################################################
            if debug:
                super_cell.writexyz(rootdir + 'slab/step_4.xyz')
+
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_surface_layer(super_cell)
+           super_cell= shave_surface_layer(super_cell)
+           super_cell= shave_surface_layer(super_cell)
+
+
 
 
            r_cv =  [PointRotateAxis(u,[0,0,0],list(i),angle) for i in cell_vector]
