@@ -17,7 +17,7 @@ chloride:chloride.smi,chlde,0,build functionalize small,N,-1
 cyclopentadienyl:cyclopentadienyl.mol,cpd,cm,build aromatic,N,-1
 cyanide:cyanide.mol,cyan,0,build small,N,-1
 tcnoet:tcnoet.mol,tcnoet,14,build big,A,-1
-tcnoetOH:tcnoetOH.mol,tcnoet,14,build big,A,-1
+tcnoetOH:tcnoetOH.mol,tcnoet,14,build big,N,-1
 dicyanamide:dicyanamide.mol,dicyanamide,0,build small,N,-1
 tricyanomethyl:tricyanomethyl.mol,tricyanomethyl,0,build,-1
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A,-4
