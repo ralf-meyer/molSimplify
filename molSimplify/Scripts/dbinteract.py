@@ -1,4 +1,5 @@
-# Written by Tim Ioannidis for HJK Group
+# Written by Tim Ioannidis
+#for HJK Group
 # Dpt of Chemical Engineering, MIT
 
 ######################################################
@@ -20,8 +21,8 @@ import pybel, openbabel
 ######################################################
 def setupdb(dbselect):
     globs = globalvars()
-    flag = False
-    flag = globs.check_db()
+    flag = True
+#    flag = globs.check_db()
     if flag:
         dbdir = os.path.relpath(globs.chemdbdir)+'/'
         # get files in directory
@@ -281,13 +282,14 @@ def dbsearch(rundir,args,globs):
     else:
         obab = 'obabel'
     if args.gui:
-        from molSimplify.Classes.mWidgets import mQDialogErr
-        from molSimplify.Classes.mWidgets import mQDialogWarn
-        from molSimplify.Classes.mWidgets import mQDialogInf
-    ### in any case do similarity search over indexed db ###
+            from molSimplify.Classes.mWidgets import mQDialogErr
+            from molSimplify.Classes.mWidgets import mQDialogWarn
+            from molSimplify.Classes.mWidgets import mQDialogInf
+        ### in any case do similarity search over indexed db ###
     outf = args.dboutputf if args.dboutputf else 'simres.smi' # output file
-    cwd = os.getcwd()
-    os.chdir(globs.homedir)
+    #    cwd = os.getcwd()
+    #    os.chdir(globs.homedir)
+
     ### convert to SMILES/SMARTS if file
     if not args.dbbase:
         if args.gui:
@@ -385,7 +387,7 @@ def dbsearch(rundir,args,globs):
         #print(flag)
         os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
     os.rename(outf,args.rundir+'/'+outf)
-    os.chdir(cwd)
+  #  os.chdir(cwd)
     return False
         
         
