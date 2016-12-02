@@ -1,13 +1,8 @@
 # molSimplify input file generated from CLI input
 -slab_gen 
--cif_path molSimplify/Unitcells/anatase_tio2.cif 
--slab_size [9,9,9] 
--target_molecule /home/jp/Runs/co.xyz 
--miller_index [1,0,1] 
--align_method alignpair 
--surface_atom_ind 39 
--num_surface_atoms 1 
--debug True 
--object_align C 
--align_dist 0.5 
--shave_extra_layers 1
+-cif_path /home/jp/Downloads/pd.cif 
+-slab_size [10,10,5] 
+-killer_index [1,1,1] 
+-freeze 2 
+-surface_atom_type Pd 
+-debug True

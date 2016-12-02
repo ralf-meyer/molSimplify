@@ -5,7 +5,7 @@ A full list of the command line options used in the input files or directly as a
 
 \centering
 \small
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
 \textit{\textbf{Keyword}} & \textit{\textbf{Description}} & \textit{\textbf{Default value}} \\
 \hline
@@ -21,7 +21,7 @@ A full list of the command line options used in the input files or directly as a
 \hline
 \end{tabular}
 \footnotetext{In the general case, output will be found under rundir/jobdir/name.xyx}
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
 \multicolumn{3}{|c|}{\Large \textbf{Structure generation parameters}}\\ \hline   
 \texttt{-core} & core structure  & - \\
@@ -50,7 +50,7 @@ A full list of the command line options used in the input files or directly as a
 \end{tabular}
 
 %% ----------------------------------------------------------------------------------------------- %%
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
 \multicolumn{3}{|c|}{\Large \textbf{Extra molecules parameters}}\\ \hline
 \texttt{-bind} & extra molecule name, SMILES or file & \texttt{False} \\
@@ -69,7 +69,7 @@ A full list of the command line options used in the input files or directly as a
 \end{tabular}
 
 %%---------------------------------------------------------------------------------------------- %%
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
 \multicolumn{3}{|c|}{\Large \textbf{Jobscript parameters}}\\ \hline                        
 \texttt{-jsched} & job scheduling system & \texttt{SGE} \\
@@ -85,7 +85,7 @@ A full list of the command line options used in the input files or directly as a
 \hline
 \end{tabular}
 %%
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
 \multicolumn{3}{|c|}{\Large\textbf{Post-processing parameters}}\\ \hline
 \texttt{-postp} & post process results & - \\
@@ -104,7 +104,7 @@ A full list of the command line options used in the input files or directly as a
 
 
  ----------------------------------------------------------------------------------------------- %%
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
  \multicolumn{3}{|c|}{\Large \textbf{Quantum chemistry input}}\\ \hline 
 \texttt{-qccode} & quantum chemistry code & \texttt{TeraChem} \\
@@ -132,7 +132,7 @@ A full list of the command line options used in the input files or directly as a
 \end{tabular}
 %% -
 %% ----------------------------------------------------------------------------------------------- %%
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
 \hline
 \multicolumn{3}{|c|}{\Large \textbf{Database search input}}\\ \hline                        
 \texttt{-dbsim} & SMILES/ligand/file for similarity search & - \\
@@ -150,3 +150,74 @@ A full list of the command line options used in the input files or directly as a
 \hline
 \end{tabular}
 %% ----------------------------------------------------------------------------------------------- 
+%%
+\begin{tabular}{|p{4.5cm}|p{8cm}|p{3cm}|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Slab generation}}\\ \hline                        
+\multicolumn{3}{|c|}{ \textbf{required input}}\\ \hline                        
+\texttt{-slab\_gen} & Boolean, enables slab generation search & False \\
+\texttt{-unit\_cell} & .xyz file,  containing a primitive until cell or slab for placement & - \\
+\texttt{-cell\_vector} & list of list of 3 floats,the lattice vector.7 If unit\_cell is given, this argument must be provided
+ & - \\
+\multicolumn{3}{|c|}{ {--OR--}}\\      
+\texttt{-cif\_path } & path to cif file with unit cell &  \\
+\texttt{-duplication vector } & list of 3 int, number of times to duplicate unit cell &  \\
+\multicolumn{3}{|c|}{ {--OR--}}\\    
+\texttt{-slab\_size } & list of 3 floats, approximate size of slab in  \AA &  \\
+\multicolumn{3}{|c|}{ \textbf{optional input}}\\ \hline                          
+\texttt{-freeze } & boolean -OR- int, in the input file, freeze atoms corresponding to bottom (or bottom n) layers &  \\
+\texttt{-expose\_type } & string (atom symbol), type of atom (eg in an oxide) that should be exposed on the top layer  &  \\
+\texttt{-shave\_extra\_layers } & int, number of additional vertical layers to shave &  \\
+\texttt{-miller\_index } & list of 3 int, Miller Indices for exposed surface
+ &  \\
+\hline
+\end{tabular}
+%% ----------------------------------------------------------------------------------------------- 
+%%
+\begin{tabular}{|p{5.25cm}|p{8cm}|p{2.75cm}|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Placement on slab}}\\ \hline                        
+\multicolumn{3}{|c|}{ \textbf{required input}}\\ \hline                        
+\texttt{-place\_on\_slab} & Boolean, enables placement & False \\
+\texttt{-target\_molecule} & .xyz file, object to place on the surface
+ & - \\
+\texttt{-align\_distance\_method} & one of:  “physisorption”,“chemisorption”,“custom”, controls the distance at which the object is placed from the surface. If “custom”, must provide align\_dist & - \\
+\texttt{-align\_dist  } & float, distance to place object from surface, only if align\_distance\_method is “custom” &  \\
+
+\texttt{-align\_method} & one of: center, staggered, alignpair, meaning centered in cell above symmetric center of surface, between two surface atoms, or  full custom control
+ &   “center”\\
+
+\texttt{-object\_align} & string (atom symbol) or list of int, only used with “alignpiar”, type of atom  in the object used for placement OR 1-based list of atom indicies (as they occur in geometry file) that should be aligned with surface. Not recommended to use 4+ & -\\
+\multicolumn{3}{|c|}{ \textbf{optional input}}\\ \hline                          
+
+\texttt{-surface\_atom\_type } & string, atom symbol, only used with alignpiar. The type of atom on the surface to use, e.g. O if the surface is TiO$_2$ &  \\
+\multicolumn{3}{|c|}{ {--OR--}}\\  
+\texttt{-surface\_atom\_ind } & int, only used with alignpiar, index of atom(s) on the surface to use, in order of the geometry file (not for use with simultaneous slab generation)  &  \\
+\texttt{-num\_surface\_atoms } & 
+int , only used with alignpiar, number of atoms on surface to align with items in object\_align.  Use a higher number of surface atoms (eg 2) to force attached atoms between 2 adjacent sites.   &  1\\
+\texttt{-num\_placements } & int, only used with alignpiar, number of copies of the object to place on the surface. & 1  \\
+\multicolumn{3}{|c|}{ {--OR--}}\\  
+\texttt{-coverage} & 
+float, between 0 and 1, only used with “alignpiar”,fraction of sites to occupy, as opposed to number of placements. Avoid high coverage for bulky objects! &  \\
+\texttt{-multi\_placement\_centering} & float, between 0 and 1, only used with “alignpiar”, used to control how multiple placements are spaced in the cell. 1 is maximum distance between adsorbates. 0 is biased towards the center of the surface.  &  1 if num\_placements $>$ 1, else 0.95 \\
+\hline
+\end{tabular}
+%% ----------------------------------------------------------------------------------------------- 
+\begin{tabular}{|p{5.25cm}|p{8cm}|p{2.75cm}|}
+\hline
+\multicolumn{3}{|c|}{\Large \textbf{Placement on slab}}\\ \hline                        
+\multicolumn{3}{|c|}{ \textbf{optional input, cont.}}\\ \hline  
+\texttt{-control\_angle} & float, angle in degrees, only used with “alignpiar”, only possible with a single object\_align. If specified, gives the angle between the line joining the atom in object\_align and the target in angle\_control\_partner and the axis given in angle\_surface\_axis &  \\
+ \texttt{-angle\_control\_partner } & 
+int, only used with alignpiar and control\_angle, the second atom in the object with which to draw an axis for controlling angles on the surface. &  \\
+\texttt{-angle\_surface\_axis } & list of 2 float, x-y vector, used with alignpiar and control\_angle, defines the axis in the surface plane with which the angle will be set. &  \\
+ \texttt{-shave\_extra\_layers } & int, number of additional vertical layers to shave &  \\
+\texttt{-duplicate} & boolean, if true, mirror placement on the top and bottom of the slab. & False\\
+\texttt{-freeze } & boolean -OR- int, in the input file, freeze atoms corresponding to bottom (or bottom n) layers &  \\
+\texttt{-shave\_extra\_layers } & int, number of additional vertical layers to shave &  \\
+\hline
+\end{tabular}
+
+
+
+

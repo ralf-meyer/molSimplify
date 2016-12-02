@@ -49,10 +49,10 @@ start = datetime.now()
 #                 '-align_method','alignpair','-surface_atom_type','Ti','-num_surface_atoms','4',
 #                 '-object_align','2,3,4,5','-align_dist','2.5'])
 #
-subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
-                 '-slab_size','[9,9,9]','-target_molecule','/home/jp/Runs/co.xyz','-miller_index','[1,0,1]',
-                 '-align_method','alignpair','-surface_atom_ind','39','-num_surface_atoms','1','-debug','True',
-                 '-object_align','C','-align_dist','0.5','-shave_extra_layers','1'])
+#subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','molSimplify/Unitcells/anatase_tio2.cif',
+#                 '-slab_size','[9,9,9]','-target_molecule','/home/jp/Runs/co.xyz','-miller_index','[1,0,1]',
+#                 '-align_method','alignpair','-surface_atom_ind','39','-num_surface_atoms','1','-debug','True',
+#                 '-object_align','C','-align_dist','0.5','-shave_extra_layers','1'])
 #
 #subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','/home/jp/Dropbox/Main/icepaper/quartz/quartz.cif',
 #                 '-slab_size','[9,9,6]','-rundir /home/jp/Dropbox/Main/icepaper/\n','-debug','-align_method','alignpair', '-freeze', '2',
@@ -62,13 +62,14 @@ subprocess.call(["python",'-m','molSimplify.__main__','-slab_gen','-cif_path','m
 #subprocess.call(["python","-m",'molSimplify.__main__','-slab_gen','-unit cif_path','molSimplify/Unitcells/anatase_tio2.cif'
 #                 '-slab_size','[9,9,9]','-miller_index','[1,0,0]'])
 
-#subprocess.call(["python","-m",'molSimplify.__main__','-place_on_slab','-unit_cell','/home/jp/Downloads/cell.xyz','-cell_vector','[[7.5,0,0],[0,7.5,0],[0,0,19]]',
-#                '-target_molecule','/home/jp/Runs/mo5.xyz','align_distance_method','custom','-align_dist','1.5','-align_method','alignpair','-object_align','O',
-#                '-surface_atom_type','Ti','-debug','True'])
+#subprocess.call(["python","-m",'molSimplify.__main__','-place_on_slab','-unit_cell','/home/jp/test/fakeslab.xyz','-cell_vector','[[5,0,0],[0,5,0],[0,0,5]]',
+#                '-target_molecule','/home/jp/test/o2.xyz','align_distance_method','custom','-align_dist','1.5','-align_method','alignpair','-object_align','O',
+#
+#                '-surface_atom_type','Fe','-debug','True','-rundir','/home/jp/test','-name','case'])
 
 
-#subprocess.call(["python","-m",'molSimplify.__main__','slab_gen','-cif_path','/home/jp/Downloads/pd.cif','-slab_size','[10,10,10]','-miller_index','[1,1,1]',
-#                '-freeze','2', '-surface_atom_type','Pd','-debug','True'])
+subprocess.call(["python","-m",'molSimplify.__main__','slab_gen','-cif_path','/home/jp/Downloads/pd.cif','-slab_size','[10,10,5]','-killer_index','[1,1,1]',
+                '-freeze','2', '-surface_atom_type','Pd','-debug','True'])
 
 #subprocess.call(["python","-m",'molSimplify.__main__','-place_on_slab','-slab_gen','-cif_path','/home/jp/Downloads/pd.cif','-slab_size','[10,10,7]',
 #                '-target_molecule','/home/jp/Runs/mo5.xyz','align_distance_method','custom','-align_dist','1.5','-align_method','alignpair','-object_align','O','-freeze','2',

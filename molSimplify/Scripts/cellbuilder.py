@@ -165,6 +165,8 @@ def multialign_objective_function(payload,surface_coord_list,cand_list,bind_dist
     #   - cost: float, sum of squared error, the difference between
     #           the actual distance and the target
     cost = 0
+    print('cand list is ' + str(cand_list))
+    print('surface_coord_list  ' + str(surface_coord_list))
     for indices in enumerate(cand_list):
        v1=(surface_coord_list[indices[0]])
        v2=payload.getAtom(int(indices[1])).coords()
@@ -471,7 +473,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
     this_step_accepted = True
     num_bad_steps= 0 
     break_flag = False
-    maxits = 150
+    maxits = 250
     its = 0
     while (not break_flag) and (its < maxits):
         its +=1
@@ -492,7 +494,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
         this_deltaZ =(distance(this_coord,surface_coord)-bind_dist)
 
         print('cost  = ' + str(this_cost) +'/' +str(cost)+ '  i = ' + str(its) + '  dz =  ' + str(deltaZ) + ' dist  '+ str(this_dist) + ' b step  = '+ str(num_bad_steps) + ' nxt dz = ' + str(this_deltaZ))
-        if (this_cost < (cost)) and (this_dist > 0.75) and (deltaZ > 1e-3):
+        if (this_cost < (cost)) and (this_dist > 0.75) and (deltaZ > 1e-4):
             print('accepting down shift at i  = ' + str(its))
             cost = this_cost
             del final_payload
@@ -689,9 +691,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
                     align_coord = super_cell.getAtom(nn_site).coords()
                     sites_list.append(align_coord)
                     occupied_sites_dict[nn_site] = avail_sites_dict.pop(nn_site) # this transfers the site to occupied
-       #         print(occupied_sites_dict.keys())
-        #        for i in sites_list:
-        #            print(i)
                 align_coord = center_of_sym(sites_list)
 
         else:
@@ -714,7 +713,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay = mol3D()
         temp_pay.copymol3D(payload)
         debug_cell.combine(temp_pay)
-      #  debug_cell.writexyz('db1.xyz')
 
         ######### find matching atom in payload
         # need to determine if the target is an element or a mask
@@ -756,7 +754,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay2.copymol3D(payload)
         temp_pay2.translate([0,0,-5])
         debug_cell.combine(temp_pay2)
-     #   debug_cell.writexyz('db2.xyz')
 
         ####### lower payload to distance, rotate to avoid conflicr
         loaded_cell = combine_multi_aligned_payload_with_cell(loaded_cell,super_cell_vector,payload,cand_list,sites_list,align_dist,duplicate,control_angle)
