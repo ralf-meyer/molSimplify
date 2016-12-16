@@ -1860,8 +1860,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        print(rootdir)
-        fname = get_name(args,rootdir,core,ligname)
+        fname = name_complex(rootdir,core,ligands,ligoc,args,bind= False,bsmi=False)
         print(fname)
         core3D.writexyz(fname)
         strfiles.append(fname)

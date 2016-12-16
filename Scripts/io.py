@@ -450,7 +450,7 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
             if args.name:
                 fname = rootdir+'/'+args.name + bind.ident[0:2]
     else:
-        print(rootdir)
+        #print(rootdir)
         fname = rootdir+'/'+core.ident[0:3]+ligname
         if args.name:
             fname = rootdir+'/'+args.name
@@ -458,5 +458,43 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
     return fname
 
 
+
+def name_complex(rootdir,core,ligs,ligoc,args,bind= False,bsmi=False):
+    ## neww version of the above, designed to 
+    ## produce more human and machine-readable formats
+    #print('ligoc is ' + str(ligoc))
+    #print('lig is ' + str(ligs))
+
+    romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
+    if args.name: # if set externerally
+        name = rootdir+'/'+args.name
+    else:
+        try:
+            center = core.getAtom(0).symbol().lower()
+        except:
+            center = str(core).lower()
+        name = rootdir + '/' + center
+        if args.oxstate:
+            if args.oxstate in romans.keys():
+                ox = str(romans[args.oxstate])
+            else:
+                ox = str(args.oxstate)
+        else:
+            ox = "0"
+        name += "_" + str(ox)
+        if args.spin:
+            spin = str(args.spin)
+        else:
+            spin = "0"
+        name += "_" + str(spin)
+        for i,lig in enumerate(ligs):
+
+            name += '_' + str(lig) + '_' + str(ligoc[i])
+        name += "_s_"+str(spin)
+        if args.bind:
+            if bsmi:
+                if args.nambsmi: # if name specified use it in file
+                    name += "_" + +args.nambsmi[0:2]
+    return name
 
 

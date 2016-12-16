@@ -62,7 +62,7 @@ def tcgen(args,strfiles,method):
         coordname = xyzft
         # Setting jobname for files + truncated name for queue.
         if len(coordname) > 10:
-            nametrunc=coordname[0:6]+coordname[-4:]
+            nametrunc=coordname
         else:
             nametrunc=coordname
         if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
@@ -173,7 +173,10 @@ def tcgen(args,strfiles,method):
     elif args.jobdir:
         for i,jobd in enumerate(jobdirs):
             print('jobd is ' + jobd)
-            output=open(jobd+ '/'+args.name + '.in','w')
+            if args.name:
+                output=open(jobd+ '/'+args.name + '.in','w')
+            else:
+                output=open(jobd+'/terachem_input','w')
             output.write('# file created with %s\n' % globs.PROGRAM)
             jobparams['coordinates'] = coordfs[i]
             for keys in jobparams.keys():
@@ -530,15 +533,13 @@ def mlpgen(args,strfiles,rootdir):
         coordfs.append(xyzf.rsplit('/',1)[-1])
         coordname = xyzft
         # Setting jobname for files + truncated name for queue.
-        if len(coordname) > 10:
-            nametrunc=coordname[0:6]+coordname[-4:]
-        else:
-            nametrunc=coordname
+        nametrunc=coordname
         if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
             os.mkdir(rdir+'/'+nametrunc) 
-            mdir = rdir+'/'+nametrunc
         if args.jobdir:
                 mdir = args.jobdir
+        else:
+            mdir = rdir+'/'+nametrunc
         jobdirs.append(mdir)
 #        shutil.copy2(xyzf,mdir)
 #        shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))

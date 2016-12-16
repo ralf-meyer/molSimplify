@@ -59,7 +59,7 @@ oxygen:oxygen.mol,oxd,0,build small,N,-2
 noxygen:noxygen.mol,noxd,0,build small,N,0
 phen:phen.mol,phen,9 12,build bidentate,BA,0
 phenanthroline:phen.mol,phen,9 12,build bidentate,BA,0
-phendione:phendion.mol,phendione,9 12,build bidentate,BA,0
+phendione:phendione.mol,phendione,9 12,build bidentate,BA,0
 porphyrin:porphyrin.mol,prph,0 1 2 3,build tetradentate,A,-2
 cyanoaceticporphyrin:cyanoaceticporphyrin.mol,caprph,0 3 1 2,build tetradentate,N,-2
 corrolazine:corrolazine.mol,corrolazine, 21 19 16 17, build tetradentate, A,-2

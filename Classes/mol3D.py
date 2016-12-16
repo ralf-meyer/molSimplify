@@ -10,7 +10,7 @@
 from math import sqrt 
 from Classes.atom3D import atom3D
 from Classes.globalvars import globalvars
-import pybel, time
+import pybel, time, os
 
 #########################################
 ### Euclidean distance between points ###
@@ -139,7 +139,14 @@ class mol3D:
             sym = elem[atom.atomicnum-1]
             # add atom to molecule
             self.addAtom(atom3D(sym,[pos[0],pos[1],pos[2]]))
-    
+    ############################################################ 
+    ### converts mol3D to OBmol and adds to current molecule ###
+    ############################################################
+    def convert2OBmol(self):
+        # write temp xyz
+        self.writexyz('tempr.xyz')
+        self.OBmol = self.getOBmol('tempr.xyz','xyzf')
+        os.remove('tempr.xyz')
     ###################################
     ### combines 2 molecules in one ###
     ###################################

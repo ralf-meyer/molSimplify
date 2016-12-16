@@ -17,7 +17,7 @@ from python_nn.pytry import *
 import openbabel
 
 
-def get_bond_order(OBMol):
+def get_bond_order(OBMol,connection_atoms,mol):
     ## informs the ANN
     ## of the highest bond
     ## order in ligand
@@ -25,12 +25,24 @@ def get_bond_order(OBMol):
     #   - OBMol:  OBMol class ligand
     # OUTPUT:
     #   - max_bo: int, max bond order
+
+    bond_order_pairs = []
+
     OBMol.PerceiveBondOrders()
+    for atoms in connection_atoms:
+            this_neighbourhood = mol.getBondedAtoms(atoms)
+            for items in this_neighbourhood:
+                    bond_order_pairs.append(tuple([atoms,items]))
+
     max_bo = 0
-    for bonds in openbabel.OBMolBondIter(OBMol):
-       this_BO = bonds.GetBondOrder()
-       if this_BO > max_bo:
-           max_bo = this_BO
+    for index_pairs in bond_order_pairs:
+            this_bond= OBMol.GetBond(int(index_pairs[0]+1),int(index_pairs[1]+1))
+            if this_bond.IsAromatic():
+                this_BO = int(2)
+            else:
+                this_BO = int(this_bond.GetBondOrder())
+            if this_BO > max_bo:
+               max_bo = this_BO
     return max_bo
 
 
@@ -127,9 +139,8 @@ def check_metal(metal,oxidation_state):
     if oxidation_state  in romans.keys():
         oxidation_state= romans[oxidation_state]
     outcome = False
-    print('incheck',oxidation_state)
     if metal in supported_metal_dict.keys():
-        print('metal in',supported_metal_dict[metal])
+#        print('metal in',supported_metal_dict[metal])
         if int(oxidation_state) in supported_metal_dict[metal]:
             outcome = True
     return outcome,oxidation_state
@@ -186,8 +197,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         high_spin = spin_classify(this_metal,spin,ox)
         if not valid:
             emsg.append("\n this spin state not available for this metal")
-
-    print('nn emsg',emsg)
+    if emsg:
+        print('nn emsg',emsg)
     if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
 
@@ -233,10 +244,15 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
 #        print('eq_ki',ax_ki)
         eq_EN = get_lig_EN(eq_lig3D,eq_lig3D.cat)
         ax_EN = get_lig_EN(ax_lig3D,ax_lig3D.cat)
- #       print('ax_EN',eq_EN)
- #       print('eq_EN',ax_EN)
-        eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol)
-        ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol)
+        eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol,eq_lig3D.cat,eq_lig3D)
+        ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol,ax_lig3D.cat,ax_lig3D)
+
+        #ax_bo = get_truncated_bo(ax_lig3D,ax_lig3D.cat)
+
+#        ax_bo = get_bond_order((obtain_truncation(ax_lig3D,ax_lig3D.cat,2)).OBmol.OBMol)
+        #print('ax_EN',eq_EN)
+        #print('eq_EN',ax_EN)
+
         eq_charge = eq_lig3D.OBmol.charge
         ax_charge = ax_lig3D.OBmol.charge
 
@@ -248,15 +264,15 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         else:
                 max_delen = ax_EN
         alpha = 0.2 # default for B3LYP
-  #      print('ax_bo',ax_bo)
- #       print('eq_bo',eq_bo)
-  #      print('ax_charge',ax_charge)
-  #      print('eq_charge',eq_charge)
-
-   #     print('sum_delen',sum_delen)
-   #     print('max_delen',max_delen)
-   #     print('ax_type',ax_type)
-   #     print('eq_type',eq_type)
+        if args.debug:
+            print('ax_bo',ax_bo)
+            print('eq_bo',eq_bo)
+            print('ax_charge',ax_charge)
+            print('eq_charge',eq_charge)
+            print('sum_delen',sum_delen)
+            print('max_delen',max_delen)
+            print('ax_type',ax_type)
+            print('eq_type',eq_type)
 
 
     if valid:
@@ -397,7 +413,7 @@ def spin_classify(metal,spin,ox):
                               'mn':{2:6,3:5},
                               'ni':{2:3}}
     high_spin = False
-    print(metal_spin_dictionary[metal],ox)
+    #print(metal_spin_dictionary[metal],ox)
     print('spin checking: ',str(spin),str(metal_spin_dictionary[metal][ox]))
     if (int(spin) >= int(metal_spin_dictionary[metal][ox])):
         high_spin = True

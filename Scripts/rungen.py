@@ -355,16 +355,21 @@ def rungen(installdir,rundir,args,chspfname,globs):
             ligands =[]
             lig = ''
             ligocc = ''
-        if args.bind:
+        ##### fetch smart name
+        fname = name_complex(rundir,args.core,ligands,ligocc,args,bind=args.bind,bsmi=args.nambsmi)
+        print('in rungen, fname is  ' + fname)
+        #####
+#        if args.bind:
             # create folder for runs and check if it already exists
-            if args.nambsmi:
-                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
-            elif not args.bind in bindcores.keys():
-                rootdir = rundir+mname[0:4]+lig+'bsmi'
-            else:
-                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
-        else:
-            rootdir = rundir+mname[0:4]+lig
+#            if args.nambsmi:
+#                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
+#            elif not args.bind in bindcores.keys():
+#                rootdir = rundir+mname[0:4]+lig+'bsmi'
+#            else:
+#                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
+#        else:
+#            rootdir = rundir+mname[0:4]+lig
+        rootdir = fname
         # check for charges/spin
         rootcheck = False
         if (chspfname):
