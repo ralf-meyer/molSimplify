@@ -980,9 +980,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 					# get cis conformer if possible
 					# search all bonds for rotatable bond linking connecting atoms
 					bats = list(set(lig3D.getBondedAtomsnotH(catoms[0])) | set(lig3D.getBondedAtomsnotH(catoms[1])))
-					print bats
-					rb1 = 0
-					rb2 = 0
+					rb1 = 1000
+					rb2 = 1000
 					for ii in range(lig3D.OBmol.OBMol.NumBonds()):
 						bd = lig3D.OBmol.OBMol.GetBond(ii)
 						bst = bd.GetBeginAtomIdx()
@@ -991,24 +990,18 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							rb1 = bst-1
 							rb2 = ben-1
 							break
-					if rb1 and rb2: # rotatable bond present, execute rotations
+					if (rb1 != 1000) and (rb2 != 1000): # rotatable bond present, execute rotations
 						print('rotating ligand')
 						rotfrag3D = mol3D()
 						# create submolecule containing atoms to be rotated (the one containing catoms[0] which is aligned first)
 						subm1 = lig3D.findsubMol(rb1,rb2)
-						print subm1
 						subm2 = lig3D.findsubMol(rb2,rb1)
-						print subm2
 						if catoms[1] in subm1:
 							subm = subm1
-							print 'subm1'
-							rotcoord = 0
 							anchor = lig3D.getAtomCoords(rb2)
 							refpt = lig3D.getAtomCoords(rb1)
 						elif catoms[0] in subm1:
 							subm = subm2
-							print 'subm2'
-							rotcoord = 1
 							anchor = lig3D.getAtomCoords(rb1)
 							refpt = lig3D.getAtomCoords(rb2)
 						ncoord = 0
@@ -1017,7 +1010,6 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							# find coordinating atom in submolecule
 							if ii in catoms:
 								ncoord = nii
-						rotfrag3D.writexyz('rotfrag')
 						u = vecdiff(refpt,anchor)
 						dtheta = 10
 						theta = 0
@@ -1025,11 +1017,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 						objopt = 1000
 						while theta < 360: # minimize distance between connecting atoms
 							rotfrag3D = rotate_around_axis(rotfrag3D,anchor,u,dtheta)
-							if rotcoord == 0:
-								obj = distance(lig3D.getAtomCoords(catoms[1]),rotfrag3D.getAtomCoords(ncoord))
-							elif rotcoord == 1:
-								obj = distance(lig3D.getAtomCoords(catoms[0]),rotfrag3D.getAtomCoords(ncoord))
-							print obj
+							obj = distance(lig3D.getAtomCoords(catoms[1]),rotfrag3D.getAtomCoords(ncoord))
+							obj = obj + distance(lig3D.getAtomCoords(catoms[0]),rotfrag3D.getAtomCoords(ncoord))
 							if obj < objopt:
 								thetaopt = theta
 								objopt = obj
