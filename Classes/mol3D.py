@@ -10,7 +10,7 @@
 from math import sqrt 
 from Classes.atom3D import atom3D
 from Classes.globalvars import globalvars
-import pybel, time, os
+import pybel, time, os, subprocess
 
 #########################################
 ### Euclidean distance between points ###
@@ -27,6 +27,16 @@ def distance(R1,R2):
     d = sqrt(dx**2+dy**2+dz**2)
     return d
     
+def mybash(cmd):
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = []
+    while True:
+        line = p.stdout.readline()
+        stdout.append(line)        
+        if line == '' and p.poll() != None:
+            break
+    return ''.join(stdout)    
+   
 class mol3D:
     """ Class mol3D represents a molecule with its coordinates for
     easy manipulation in 3D space """
@@ -128,6 +138,7 @@ class mol3D:
     ############################################################
     def convert2mol3D(self):
         # initialize again
+        d = self.denticity
         self.initialize()
         # get elements dictionary
         elem = globalvars().elementsbynum()
@@ -139,14 +150,17 @@ class mol3D:
             sym = elem[atom.atomicnum-1]
             # add atom to molecule
             self.addAtom(atom3D(sym,[pos[0],pos[1],pos[2]]))
+            self.denticity = d
     ############################################################ 
     ### converts mol3D to OBmol and adds to current molecule ###
     ############################################################
     def convert2OBmol(self):
         # write temp xyz
         self.writexyz('tempr.xyz')
-        self.OBmol = self.getOBmol('tempr.xyz','xyzf')
+        mybash('obabel -ixyz tempr.xyz -omol -O tempr.mol')
+        self.OBmol = self.getOBmol('tempr.mol','molf')
         os.remove('tempr.xyz')
+        os.remove('tempr.mol')
     ###################################
     ### combines 2 molecules in one ###
     ###################################
@@ -391,7 +405,7 @@ class mol3D:
         nats = []
         for i,atom in enumerate(self.atoms):
             d = distance(ratom.coords(),atom.coords())
-            if (d < 1.35*(atom.rad+ratom.rad) and i!=ind):
+            if (d < 1.1*(atom.rad+ratom.rad) and i!=ind):
                 nats.append(i)
         return nats
     
@@ -408,7 +422,7 @@ class mol3D:
         nats = []
         for i,atom in enumerate(self.atoms):
             d = distance(ratom.coords(),atom.coords())
-            if (d < 1.35*(atom.rad+ratom.rad) and i!=ind and atom.sym!='H'):
+            if (d < 1.1*(atom.rad+ratom.rad) and i!=ind and atom.sym!='H'):
                 nats.append(i)
         return nats
     
@@ -452,7 +466,7 @@ class mol3D:
         for i,atom in enumerate(self.atoms):
             if atom.sym == 'H':
                 d = distance(ratom.coords(),atom.coords())
-                if (d < 1.5*(atom.rad+ratom.rad) and d > 0.01):
+                if (d < 1.1*(atom.rad+ratom.rad) and d > 0.01):
                     nHs.append(i)
         return nHs
         
@@ -469,7 +483,7 @@ class mol3D:
         for i,atom in enumerate(self.atoms):
             if atom.sym == 'H':
                 d = distance(atom.coords(),self.getAtom(idx).coords())
-                if (d < 1.5*(atom.rad+self.getAtom(idx).rad) and d > 0.01):
+                if (d < 1.1*(atom.rad+self.getAtom(idx).rad) and d > 0.01):
                     nHs.append(i)
         return nHs
         
@@ -868,8 +882,7 @@ class mol3D:
         f=open(fname+'.xyz','w')
         f.write(ss)
         f.close()
-        
-        
+
     #####################################
     ### print methods for mol3D class ###
     #####################################
