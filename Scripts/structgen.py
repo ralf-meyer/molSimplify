@@ -327,7 +327,6 @@ def ffoptsimp(ff,mol):
 	forcefield.GetCoordinates(obmol)
 	en = forcefield.Energy()
 	mol.OBmol = pybel.Molecule(obmol)
-	mol.OBmol.write(format='xyz', filename='ligopt', overwrite=True)
 	mol.convert2mol3D()
 	return mol,en
 
@@ -810,11 +809,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 				lig3D = lig # change name
 				# convert to mol3D
 				lig3D.convert2mol3D() # convert to mol3D
-				if not keepHs or (len(keepHs) <= i or not keepHs[i]):
-					# remove one hydrogen
-					Hs = lig3D.getHsbyIndex(lig.cat[0])
-					if len(Hs) > 0 and allremH:
-						lig3D.deleteatom(Hs[0])
+				for ii in lig.cat: # remove Hs from connecting atoms if keepHs not true
+					if not keepHs or (len(keepHs) <= i or not keepHs[i]):
+						# remove one hydrogen
+						Hs = lig3D.getHsbyIndex(ii)
+						if len(Hs) > 0 and allremH:
+							lig3D.deleteatom(Hs[0])
+							lig3D.charge = lig3D.charge - 1
 				# strip Hs attached to connecting atoms (add them back at the end)
 				removedHs = False
 				if args.stripHs and denticity == 2:
@@ -1649,6 +1650,7 @@ def customcore(args,core,ligs,ligoc,installdir,licores,globs):
                     Hs = lig3D.getHsbyIndex(lig.cat[0])
                     if len(Hs) > 0 and allremH:
                         lig3D.deleteatom(Hs[0])
+                        lig3D.charge = lig3D.charge - 1
                 ### add atoms to connected atoms list
                 catoms = lig.cat # connection atoms
                 initatoms = core3D.natoms # initial number of atoms in core3D
