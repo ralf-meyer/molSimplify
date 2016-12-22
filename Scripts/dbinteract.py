@@ -12,7 +12,7 @@ from geometry import *
 from io import *
 from Classes.globalvars import *
 # import std modules
-import os, sys
+import os, sys, re, string
 import pybel, openbabel
 
 ######################################################
@@ -42,6 +42,7 @@ def setupdb(dbselect):
 #######################
 #### Print filters ####
 #######################
+
 def obfilters():
     s = " A list of available filters for Database searching is listed below.\n"
     s += """
@@ -82,109 +83,160 @@ def obfilters():
 #### Check for screening ####
 #############################
 def checkscr(args):
-    scr = '"'
-    if args.dbsmarts:
-        scr += "s'"+args.dbsmarts+"' &"
-    if args.dbatoms:
-        nts = args.dbatoms.split('<')
-        if nts[0]!='':
-            scr += " atoms>"+nts[0]+" &"
-        if nts[1]!='':
-            scr += " atoms<"+nts[1]+" &"
-    if args.dbbonds:
-        nts = args.dbbonds.split('<')
-        if nts[0]!='':
-            scr += " bonds>"+nts[0]+" &"
-        if nts[1]!='':
-            scr += " bonds<"+nts[1]+" &"
-    if args.dbarbonds:
-        nts = args.dbarbonds.split('<')
-        if nts[0]!='':
-            scr += " abonds>"+nts[0]+" &"
-        if nts[1]!='':
-            scr += " abonds<"+nts[1]+" &"
-    if args.dbsbonds:
-        nts = args.dbsbonds.split('<')
-        if nts[0]!='':
-            scr += " sbonds>"+nts[0]+" &"
-        if nts[1]!='':
-            scr += " sbonds<"+nts[1]+" &"
-    if args.dbmw:
-        nts = args.dbmw.split('<')
-        if nts[0]!='':
-            scr += " MW>"+nts[0]+" &"
-        if nts[1]!='':
-            scr += " MW<"+nts[1]+" &"
-    if scr=='"':
-        scr = ''
-    else:
-        scr = scr[:-2]+'"'
-    return scr
+	scr = '"'
+	#if args.dbsmarts:
+	#    scr += "s'"+args.dbsmarts+"' &"
+	if args.dbatoms:
+		nts = args.dbatoms.split('<')
+		if nts[0]!='':
+			scr += " atoms>"+nts[0]+" &"
+		if nts[1]!='':
+			scr += " atoms<"+nts[1]+" &"
+	if args.dbbonds:
+		nts = args.dbbonds.split('<')
+		if nts[0]!='':
+			scr += " bonds>"+nts[0]+" &"
+		if nts[1]!='':
+			scr += " bonds<"+nts[1]+" &"
+	if args.dbarbonds:
+		nts = args.dbarbonds.split('<')
+		if nts[0]!='':
+			scr += " abonds>"+nts[0]+" &"
+		if nts[1]!='':
+			scr += " abonds<"+nts[1]+" &"
+	if args.dbsbonds:
+		nts = args.dbsbonds.split('<')
+		if nts[0]!='':
+			scr += " sbonds>"+nts[0]+" &"
+		if nts[1]!='':
+			scr += " sbonds<"+nts[1]+" &"
+	if args.dbmw:
+		nts = args.dbmw.split('<')
+		if nts[0]!='':
+			scr += " MW>"+nts[0]+" &"
+		if nts[1]!='':
+			scr += " MW<"+nts[1]+" &"
+	if scr=='"':
+		scr = ''
+	else:
+		scr = scr[:-2]+'"'
+	return scr
 
 #################################
-##### Gets similar molecules ####
+##### Substructure search ####
 #################################
-def getsimilar(smi,nmols,dbselect,finger,squery):
-    #######################################
-    ##   smi: pybel reference smiles     ##
-    ##   nmols: number of similar ones   ##
-    ## dbselect: database to be searched ##
-    #######################################
-    ## get database files
-    [dbsdf,dbfs] = setupdb(dbselect)
-    globs = globalvars()
-    if globs.osx:
-        obab = '/usr/local/bin/babel'
-    else:
-        obab = 'babel'
-    if dbfs:
-        com = obab+' '+dbfs+' simres.smi -xf'+finger+' -s"'+smi+'" -at'+nmols+' --filter '+squery
-    else:
-        com = obab+' '+dbsdf+' simres.smi -xf'+finger+' -s"'+smi+'" -at'+nmols+' --filter '+squery
-    ## perform search using bash commandline
-    print(com)
-    res = mybash(com)
-    print res
-    ## check output and print error if nothing was found
-    if ('errors' in res):
-        ss = 'No matches were found in DB. Log info:\n'+res
-        print ss
-        return ss,True
-    else:
-        return 'simres.smi',False
+def getsimilar(smi,nmols,dbselect,finger,squery,args):
+	#######################################
+	##   smi: pybel reference smiles     ##
+	##   nmols: number of similar ones   ##
+	## dbselect: database to be searched ##
+	#######################################
+	## get database files
+	[dbsdf,dbfs] = setupdb(dbselect)
+	globs = globalvars()
+	if globs.osx:
+		obab = '/usr/local/bin/babel'
+	else:
+		obab = 'babel'
+	if dbfs and args.dbfs:
+		com = obab+' '+dbfs+' simres.smi -h -xf'+finger+' -s"'+smi+'" -al'+nmols+' --filter '+squery
+	else:
+		com = obab+' '+dbsdf+' simres.smi -h -xf'+finger+' -s"'+smi+'" --filter '+squery
+	## perform search using bash commandline
+	print(com)
+	res = mybash(com)
+	print res
+	if args.dbmaxsmartsmatches:
+		com2 = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
+		print com2
+		res2 = mybash(com2)
+		print res2
+	## check output and print error if nothing was found
+	if ('errors' in res):
+		ss = 'No matches were found in DB. Log info:\n'+res
+		print ss
+		return ss,True
+	else:
+		return 'simres.smi',False
 
 ##################################
 ##### Strip salts from smiles ####
 ##################################
 def stripsalts(fname,nres):
-    acc0 = ['H','B','C','N','O','F','P','S','Cl','Br','I','Si']
-    acc1 = ['O-','F-','Cl-','Br-','I-','C@@H','C@H','N+','C@']
-    accepted = acc0+acc1
-    if glob.glob(fname):
-        f = open(fname,'r')
-        s = f.read().splitlines()
-        f.close()
-    else:
-        return 0
-    f = open(fname,'w')
-    for i,ss in enumerate(s):
-        ss = ss.split('\t')[0]
-        ls = ss.split('[')
-        for l in ls:
-            if ']' in l:
-                lq = l.split(']')[0]
-                if lq not in accepted:
-                    lq0 = '.['+lq+']'
-                    lq1 = '['+lq+'].'
-                    if lq0 in ss:
-                        ss = ss.replace(lq0,'')
-                    elif lq1 in ss:
-                        ss = ss.replace(lq1,'')
-        ss = ss.split('.')[0]
-        f.write(ss+'\n')
-    f.close()
-    return 0
+	acc0 = ['H','B','C','N','O','F','P','S','Cl','Br','I','Si']
+	acc1 = ['O-','F-','Cl-','Br-','I-','C@@H','C@H','N+','C@']
+	rejected = ['@@H','@H',"/","\\"]
+	accepted = acc0+acc1
+	if glob.glob(fname):
+		f = open(fname,'r')
+		s = f.read().splitlines()
+		f.close()
+	else:
+		return 0
+	f = open(fname,'w')
+	for i,ss in enumerate(s):
+		ss = ss.split('\t')[0]
+		for r in rejected:
+			if r in ss:
+				ss = ss.replace(r,'')
+		ls = ss.split('[')
+		for l in ls:
+			if ']' in l:
+				lq = l.split(']')[0]
+				if lq not in accepted:
+					lq0 = '.['+lq+']'
+					lq1 = '['+lq+'].'
+					if lq0 in ss:
+						ss = ss.replace(lq0,'')
+					elif lq1 in ss:
+						ss = ss.replace(lq1,'')
+		ss = ss.split('.')[0]
+		f.write(ss+'\n')
+	f.close()
+	return 0
 
+##################################
+### Filter results by element ####
+##################################
+def getels(smistr):
+	els = []
+	els1 = ['H','B','C','N','O','F','K','P','S','V','Y','I']
+	els2 = ['He','Li','Be','Al','Si','Cl','Ar','Ca','Ti','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','se','Br','Kr','Rb','Sr','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','Xe']
+	for char in (string.punctuation+string.digits):
+		smistr = smistr.replace(char,'')
+	smistr = list(smistr[::-1])
+	i = 0
+	while i < len(smistr):
+		if smistr[i].upper() in els1 and smistr[i].upper() not in els:
+			els.append(smistr[i].upper())
+		elif i < len(smistr)-1:
+			if smistr[i+1]+smistr[i] in els2:
+				if smistr[i+1]+smistr[i] not in els:
+					els.append(smistr[i+1]+smistr[i])
+				smistr[i+1] = ''
+		i = i + 1
+	return els
+
+def checkels(fname,allowedels):
+	if glob.glob(fname):
+		f = open(fname,'r')
+		s = f.read().splitlines()
+		f.close()
+	else:
+		return 0
+	f = open(fname,'w')
+	for i,ss in enumerate(s):
+		ss = ss.split('\t')[0]
+		els = getels(ss)
+		flag = False
+		for el in els:
+			if el not in allowedels:
+				flag = True
+		if not flag:
+			f.write(ss+'\n')
+	f.close()
+	return 0
+	
 #######################################
 ##### Maximal dissimilarity search ####
 #######################################
@@ -195,16 +247,15 @@ def dissim(outf,n):
 	else:
 		obab = 'babel'
 	# generate fs of original hit list
-	mybash(obab+' -ismi simres.smi -osdf -O tmp.sdf')
+	mybash(obab+' -ismi simres.smi -osdf tmp.sdf')
 	mybash(obab+' tmp.sdf -ofs')
 	# number of hits
-        sim=[];
-        with open('simres.smi','r') as f:
-               for lines in f:
-                   sim.append(lines.strip("\n"))
-	numcpds = len(sim)
+	numcpds = mybash('obabel tmp.sdf -onul')
+	numcpds = numcpds.split(None)[0]
 	# pick last element of list
 	mybash('obabel tmp.sdf -O 1.smi -f '+str(numcpds)+' -l'+str(numcpds))
+	print numcpds
+	mostdissim = []
 	if n > 1:
 		# find most dissimilar structure
 		for i in range(n-1):
@@ -216,18 +267,20 @@ def dissim(outf,n):
 				a = a.splitlines()
 				a = [s.split('= ') for s in a]
 				a = [item for sublist in a for item in sublist]
-                                aa = []
-                                for k in a:
-                                    try:
-                                        aa.append(float(k))
-                                    except:
-                                        pass
-                                a = aa
+				a = [s for s in a if (('1' in s or '0' in s) and 'm' not in s and 'P' not in s and '>' not in s)]
+				a = [float(s) for s in a]
 				simsum = [x + y for x,y in zip(simsum,a)]
 			# pick most dissimilar structure by greedily minimizing total similarity
-			mostdissim = simsum.index(min(simsum))
-			print('most dissimilar '+str(mostdissim))
-			mybash('obabel tmp.sdf -O '+str(i+2) +'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
+			j = 0
+			while True:
+				a = simsum.index(sorted(simsum)[j])
+				if a not in mostdissim: # avoid duplicates
+					mostdissim.append(a)
+					print('most dissimilar '+str(mostdissim[i]))
+					break
+				else:
+					j = j + 1
+			mybash('obabel tmp.sdf -O '+str(i+2)+'.smi -f '+str(mostdissim[i]+1)+' -l'+str(mostdissim[i]+1))
 	# combine results into one file
 	f = open('dissimres.smi','w')
 	for i in range(n):
@@ -259,9 +312,11 @@ def matchsmarts(smarts,outf,catoms,nres):
             for at in catoms:
                 att = at-1 # indexing
                 cc += str(pmatch[att])+','
-            if i < nres:
-                f.write(s[i]+' '+cc[:-1]+'\n')
+            #if i < nres:
+            f.write(s[i]+' '+cc[:-1]+'\n')
                 #f.write(s[i]+'\n')
+        else:
+			pass
     f.close()
     return 0
 
@@ -280,7 +335,7 @@ def dbsearch(rundir,args,globs):
     ### in any case do similarity search over indexed db ###
     outf = args.dboutputf if args.dboutputf else 'simres.smi' # output file
     cwd = os.getcwd()
-    os.chdir(globs.homedir)
+    os.chdir(globs.installdir)
     ### convert to SMILES/SMARTS if file
     if not args.dbbase:
         if args.gui:
@@ -288,28 +343,29 @@ def dbsearch(rundir,args,globs):
             qqb.setParent(args.gui.DBWindow)
         print "No database file found within "+globs.chemdbdir+'. Search not possible.'
         return True
-    if args.dbsim:
-        if '.smi' in args.dbsim:
-            if glob.glob(args.dbsim):
-                f = open(args.dbsim,'r')
-                smistr = f.read()
-                f.close()
-            else:
-                print 'File '+args.dbsim+' not existing. Check your input.'
-                print 'Similarity search terminating..'
-                return True
-        elif ('.mol' in args.dbsim or '.xyz' in args.dbsim):
-            if glob.glob(args.dbsim):
-                ftype = args.dbsim.split('.')[-1]
-                pymol = pybel.readfile(ftype,args.dbsim).next()
-                smistr = pymol.write("smi")
-            else:
-                print 'File '+args.dbsim+' not existing. Check your input.'
-                print 'Similarity search terminating..'
-                return True
-        else:
-            smistr = args.dbsim
-    elif args.dbsmarts:
+    #if args.dbsim:
+        #if '.smi' in args.dbsim:
+            #if glob.glob(args.dbsim):
+                #f = open(args.dbsim,'r')
+                #smistr = f.read()
+                #f.close()
+            #else:
+                #print 'File '+args.dbsim+' not existing. Check your input.'
+                #print 'Similarity search terminating..'
+                #return True
+        #elif ('.mol' in args.dbsim or '.xyz' in args.dbsim):
+            #if glob.glob(args.dbsim):
+                #ftype = args.dbsim.split('.')[-1]
+                #pymol = pybel.readfile(ftype,args.dbsim).next()
+                #smistr = pymol.write("smi")
+            #else:
+                #print 'File '+args.dbsim+' not existing. Check your input.'
+                #print 'Similarity search terminating..'
+                #return True
+        #else:
+            #smistr = args.dbsim
+            #print smistr
+    if args.dbsmarts:
         if '.smi' in args.dbsmarts:
             if glob.glob(args.dbsmarts):
                 f = open(args.dbsmarts,'r')
@@ -317,7 +373,7 @@ def dbsearch(rundir,args,globs):
                 f.close()
             else:
                 print 'File '+args.dbsmarts+' not existing. Check your input.'
-                print 'Similarity search terminating..'
+                print 'Substructure search terminating..'
                 return 1
         elif ('.mol' in args.dbsmarts or '.xyz' in args.dbsmarts):
             if glob.glob(args.dbsmarts):
@@ -326,10 +382,21 @@ def dbsearch(rundir,args,globs):
                 smistr = pymol.write("smi")
             else:
                 print 'File '+args.dbsmarts+' not existing. Check your input.'
-                print 'Similarity search terminating..'
+                print 'Substructure search terminating..'
                 return True
         else:
             smistr = args.dbsmarts
+            print smistr
+    elif args.dbverbose:
+		denticity = args.dbvdent if args.dbvdent else '1'
+		coordatoms = args.dbconns if args.dbvconns else 'N'
+		nlinks = args.dbvlinks if args.dbvlinks else '0'
+		monod = ['1','mono','Mono','monodentate','Monodentate']
+		bid = ['2','bi','Bi','bidentate','Bidentate']
+		if denticity in monod:
+			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'D1,#'+str(amassdict[coordatoms[0]][1])+'D2;!+]'
+		elif denticity in bid:
+			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'D1,#'+str(amassdict[coordatoms[0]][1])+'D2;!+]'+'[#6;R0][#6;R0]'+'[#'+str(amassdict[coordatoms[1]][1])+'D1,#'+str(amassdict[coordatoms[1]][1])+'D2;!+]'
     else:
         # get database
         [dbsdf,dbfs] = setupdb(args.dbbase)
@@ -342,15 +409,18 @@ def dbsearch(rundir,args,globs):
         os.rename(outf,args.rundir+'/'+outf)
         print t
         return False
-    ### now run filtering if needed
+    ### parse filters
     squery = checkscr(args)
-    ### run similarity search anyway ###
-    nmols = '10000' if not args.dbresults else args.dbresults
+    if args.dbmaxsmartsmatches:
+		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+globs.installdir+"/plugindefines.txt"
+		mybash(cmd)
+    ### run substructure search ###
+    nmols = '1000' if not args.dbnsearch else args.dbnsearch
     finger = 'FP2' if not args.dbfinger else args.dbfinger
     if int(nmols) > 3000 and args.gui:
         qqb = mQDialogInf('Warning',"Database search is going to take a few minutes. Please wait..OK?")
         qqb.setParent(args.gui.DBWindow)
-    outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger,squery)
+    outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger,squery,args)
     if flag:
         if args.gui:
             qqb = mQDialogWarn('Warning',"No matches found in search..")
@@ -362,6 +432,17 @@ def dbsearch(rundir,args,globs):
     cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
     t = mybash(cmd)
     print t
+    # filter results containing elements that aren't allowed
+    if args.dballowedels:
+		if args.dballowedels == 'organic': # HCNO only
+			allowedels = ['H','C','N','O']
+		elif args.dballowedels == 'organohalides':
+			allowedels = ['H','C','N','O','F','Cl','Br','I']
+		elif args.dballowedels == 'common':
+			allowedels = ['H','C','N','O','F','Cl','Br','I','P','S']		
+		else:
+			allowedels = args.dballowedels.split(',')
+		checkels(outf,allowedels)
     # check if defined connection atoms
     if args.dbcatoms:
         catoms = [int(a) for a in args.dbcatoms]
