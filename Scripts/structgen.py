@@ -390,8 +390,6 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
 		print('FF setup failed')
         ### force field optimize structure
         forcefield.ConjugateGradients(9999)
-        forcefield.ConjugateGradients(9999)
-        forcefield.ConjugateGradients(9999)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -560,6 +558,27 @@ def getconnection(core,cm,catom,toconnect):
     for ii in range(0,toconnect):
         connPts.append(core.getAtom(ncore+ii).coords())
     return connPts
+ 
+def getconnection2(core,cidx,BL):
+	# finds the optimum attachment point for an atom/group to a central atom given the desired bond length
+	# objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
+	ncore = core.natoms
+	groups = core.getBondedAtoms(cidx)
+	ccoords = core.getAtom(cidx).coords()
+	# brute force search
+	cpoint = []
+	objopt = 0
+	for itheta in range(1,359,1):
+		for iphi in range(1,179,1):
+			P = PointTranslateSph(ccoords,ccoords,[BL,itheta,iphi])
+			dists = []
+			for ig in groups:
+				dists.append(distance(core.getAtomCoords(ig),P))
+			obj = min(dists)
+			if obj > objopt:
+				objopt = obj
+				cpoint = P
+	return cpoint 
     
 #################################################
 ####### functionalizes core with ligands ########
@@ -958,6 +977,68 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 					cmdist = bondl - distance(r1,mcoords)+distance(lig3D.centermass(),mcoords)
 					lig3D=setcmdistance(lig3D, mcoords, cmdist)
 				elif (denticity == 2):
+					# get cis conformer if possible
+					# search all bonds for rotatable bond linking connecting atoms
+					bats = list(set(lig3D.getBondedAtomsnotH(catoms[0])) | set(lig3D.getBondedAtomsnotH(catoms[1])))
+					print bats
+					rb1 = 0
+					rb2 = 0
+					for ii in range(lig3D.OBmol.OBMol.NumBonds()):
+						bd = lig3D.OBmol.OBMol.GetBond(ii)
+						bst = bd.GetBeginAtomIdx()
+						ben = bd.GetEndAtomIdx()
+						if bd.IsRotor() and (bst-1 in bats) and (ben-1 in bats):
+							rb1 = bst-1
+							rb2 = ben-1
+							break
+					if rb1 and rb2: # rotatable bond present, execute rotations
+						print('rotating ligand')
+						rotfrag3D = mol3D()
+						# create submolecule containing atoms to be rotated (the one containing catoms[0] which is aligned first)
+						subm1 = lig3D.findsubMol(rb1,rb2)
+						print subm1
+						subm2 = lig3D.findsubMol(rb2,rb1)
+						print subm2
+						if catoms[1] in subm1:
+							subm = subm1
+							print 'subm1'
+							rotcoord = 0
+							anchor = lig3D.getAtomCoords(rb2)
+							refpt = lig3D.getAtomCoords(rb1)
+						elif catoms[0] in subm1:
+							subm = subm2
+							print 'subm2'
+							rotcoord = 1
+							anchor = lig3D.getAtomCoords(rb1)
+							refpt = lig3D.getAtomCoords(rb2)
+						ncoord = 0
+						for nii,ii in enumerate(subm):
+							rotfrag3D.addAtom(lig3D.getAtom(ii))
+							# find coordinating atom in submolecule
+							if ii in catoms:
+								ncoord = nii
+						rotfrag3D.writexyz('rotfrag')
+						u = vecdiff(refpt,anchor)
+						dtheta = 10
+						theta = 0
+						thetaopt = 0
+						objopt = 1000
+						while theta < 360: # minimize distance between connecting atoms
+							rotfrag3D = rotate_around_axis(rotfrag3D,anchor,u,dtheta)
+							if rotcoord == 0:
+								obj = distance(lig3D.getAtomCoords(catoms[1]),rotfrag3D.getAtomCoords(ncoord))
+							elif rotcoord == 1:
+								obj = distance(lig3D.getAtomCoords(catoms[0]),rotfrag3D.getAtomCoords(ncoord))
+							print obj
+							if obj < objopt:
+								thetaopt = theta
+								objopt = obj
+							theta = theta + dtheta
+						rotfrag3D = rotate_around_axis(rotfrag3D,anchor,u,thetaopt)
+						jj = 0
+						for ii in subm: # replace coordinates
+							lig3D.getAtom(ii).setcoords(rotfrag3D.getAtomCoords(jj))
+							jj = jj + 1
 					# connection atoms in backbone
 					batoms = batslist[ligsused]
 					if len(batoms) < 1 :
@@ -1098,12 +1179,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 									j = j + 1
 						else:
 							# if two bonded atoms and 1 H, move H
-							# get normal vector to bonded atoms and coordinating atom
-							cpt1 = lig3D.getAtomCoords(lig3D.getBondedAtomsnotH(catoms[0])[0])
-							cpt2 = lig3D.getAtomCoords(lig3D.getBondedAtomsnotH(catoms[0])[1])
-							theta,u = rotation_params(cpt1,cpt2,lig3D.getAtomCoords(catoms[0]))
 							Hdist = distance(lig3D.getAtomCoords(catoms[0]),lig3D.getAtomCoords(lig3D.getHsbyIndex(catoms[0])[0]))
-							newHcoord = lig3D.getAtomCoords(catoms[0])+u*Hdist/norm(u)
+							tmp3D = mol3D()
+							tmp3D.copymol3D(lig3D)
+							tmp3D.getAtom(lig3D.getHsbyIndex(catoms[0])[0]).setcoords([1000,1000,1000])
+							tmp3D.addAtom(m3D.getAtom(0))
+							newHcoord = getconnection2(tmp3D,catoms[0],Hdist)
 							lig3D.getAtom(lig3D.getHsbyIndex(catoms[0])[0]).setcoords(newHcoord)
 					nHs2 = len(lig3D.getHsbyIndex(catoms[1]))
 					if nHs2 > 0:
@@ -1140,12 +1221,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 									j = j + 1
 						else:
 							# if two bonded atoms and 1 H, move H
-							# get normal vector to bonded atoms and coordinating atom
-							cpt1 = lig3D.getAtomCoords(lig3D.getBondedAtomsnotH(catoms[1])[0])
-							cpt2 = lig3D.getAtomCoords(lig3D.getBondedAtomsnotH(catoms[1])[1])
-							theta,u = rotation_params(cpt1,cpt2,lig3D.getAtomCoords(catoms[1]))
 							Hdist = distance(lig3D.getAtomCoords(catoms[1]),lig3D.getAtomCoords(lig3D.getHsbyIndex(catoms[1])[0]))
-							newHcoord = lig3D.getAtomCoords(catoms[1])+u*Hdist/norm(u)
+							tmp3D = mol3D()
+							tmp3D.copymol3D(lig3D)
+							tmp3D.getAtom(lig3D.getHsbyIndex(catoms[1])[0]).setcoords([1000,1000,1000])
+							tmp3D.addAtom(m3D.getAtom(0))
+							newHcoord = getconnection2(tmp3D,catoms[1],Hdist)
 							lig3D.getAtom(lig3D.getHsbyIndex(catoms[1])[0]).setcoords(newHcoord)
 					# freeze local geometry
 					lats = lig3D.getBondedAtoms(catoms[0])+lig3D.getBondedAtoms(catoms[1])

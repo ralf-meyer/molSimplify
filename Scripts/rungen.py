@@ -238,49 +238,52 @@ def multigenruns(installdir,rundir,args,globs):
 ### checks for multiple ligands specified in one file ###
 #########################################################
 def checkmultilig(ligs):
-    mligs = []
-    tcats = []
-    multidx = -1
-    # loop over ligands
-    for i,lig in enumerate(ligs):
-        connatoms = []
-        if ('.smi' in lig or '.xyz' in lig or '.mol' in lig):
-            lsuf = lig.split('.')[-1]
-            if '~' in lig:
-                lig = lig.replace('~',os.path.expanduser("~"))
-                # read molecule
-                if glob.glob(lig):
-                    moll = list(pybel.readfile(lsuf,lig))
-                    mols = [m.write('smi') for m in moll]
-                    f = open(lig,'r')
-                    s = f.read().splitlines()
-                    for ss in s:
-                        sf = filter(None,ss.split(' '))
-                        if len(sf) > 0:
-                            connatoms.append(sf[-1])
-                            multidx = i
-                        else:
-                            connatoms.append(False)
-                    f.close()
-                    if len(mols) > 1:
-                        mligs.append(mols)
-                    else:
-                        mligs.append([lig])
-                else:
-                    mligs.append([lig])
-        else:
-            mligs.append([lig])
-        tcats.append(connatoms)
-    ligandslist = list(itertools.product(*mligs))
-    # convert tuple to list
-    llist = []
-    for l0 in ligandslist:
-        loclist = []
-        if len(l0) > 0:
-            for l1 in l0:
-                loclist.append(l1)
-            llist.append(loclist)
-    return llist,tcats,multidx
+	mligs = []
+	tcats = []
+	multidx = -1
+	# loop over ligands
+	for i,lig in enumerate(ligs):
+		connatoms = []
+		if ('.smi' in lig or '.xyz' in lig or '.mol' in lig):
+			lsuf = lig.split('.')[-1]
+			if '~' in lig:
+				lig = lig.replace('~',os.path.expanduser("~"))
+			# read molecule
+			if glob.glob(lig):
+				moll = list(pybel.readfile(lsuf,lig))
+				mols = [m.write('smi') for m in moll]
+				f = open(lig,'r')
+				s = f.read().splitlines()
+				for ss in s:
+					sf = filter(None,ss.split(' '))
+					if len(sf) > 0:
+						connatoms.append(sf[-1])
+						multidx = i
+					else:
+						connatoms.append(False)
+				f.close()
+				if len(mols) > 1:
+					mligs.append(mols)
+				else:
+					mligs.append([lig])
+			else:
+				mligs.append([lig])
+		else:
+			mligs.append([lig])
+		tcats.append(connatoms)
+	ligandslist = list(itertools.product(*mligs))
+	# convert tuple to list
+	llist = []
+	for l0 in ligandslist:
+		loclist = []
+		if len(l0) > 0:
+			for l1 in l0:
+				loclist.append(l1)
+			llist.append(loclist)
+	print llist
+	print tcats
+	print multidx
+	return llist,tcats,multidx
 
 ##############################################
 ### normal structure generation of complex ###
