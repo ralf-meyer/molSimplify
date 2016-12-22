@@ -405,7 +405,7 @@ class mol3D:
         nats = []
         for i,atom in enumerate(self.atoms):
             d = distance(ratom.coords(),atom.coords())
-            if (d < 1.1*(atom.rad+ratom.rad) and i!=ind):
+            if (d < 1.2*(atom.rad+ratom.rad) and i!=ind):
                 nats.append(i)
         return nats
     
@@ -422,7 +422,7 @@ class mol3D:
         nats = []
         for i,atom in enumerate(self.atoms):
             d = distance(ratom.coords(),atom.coords())
-            if (d < 1.1*(atom.rad+ratom.rad) and i!=ind and atom.sym!='H'):
+            if (d < 1.2*(atom.rad+ratom.rad) and i!=ind and atom.sym!='H'):
                 nats.append(i)
         return nats
     
@@ -466,7 +466,7 @@ class mol3D:
         for i,atom in enumerate(self.atoms):
             if atom.sym == 'H':
                 d = distance(ratom.coords(),atom.coords())
-                if (d < 1.1*(atom.rad+ratom.rad) and d > 0.01):
+                if (d < 1.2*(atom.rad+ratom.rad) and d > 0.01):
                     nHs.append(i)
         return nHs
         
@@ -483,7 +483,7 @@ class mol3D:
         for i,atom in enumerate(self.atoms):
             if atom.sym == 'H':
                 d = distance(atom.coords(),self.getAtom(idx).coords())
-                if (d < 1.1*(atom.rad+self.getAtom(idx).rad) and d > 0.01):
+                if (d < 1.2*(atom.rad+self.getAtom(idx).rad) and d > 0.01):
                     nHs.append(i)
         return nHs
         
