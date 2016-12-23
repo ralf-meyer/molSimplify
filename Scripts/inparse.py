@@ -458,7 +458,18 @@ def parseinput(args):
             if (l[0]=='-dbmaxsmartsmatches'):
                 args.dbmaxsmartsmatches = l[1]
             if (l[0]=='-dbverbose'):
+                args.dbsearch = True
                 args.dbverbose = True
+            if (l[0]=='-dbvdent'):
+                args.dbvdent = l[1]
+            if (l[0]=='-dbvconns'):
+                ll = filter(None,re.split(' |,|\t',l[1]))
+                args.dbvconns = ll
+            if (l[0]=='-dbvhyb'):
+                ll = filter(None,re.split(' |,|\t',l[1]))
+                args.dbvhyb = ll
+            if (l[0]=='-dbvlinks'):
+                args.dbvlinks = l[1]                                               
             if (l[0]=='-dbfs'):
                 args.dbfs = True                             
             # parse postprocessing arguments
@@ -673,6 +684,7 @@ def parsecommandline(parser):
     parser.add_argument("-dbverbose","--dbverbose", help="verbose alternative to SMARTS/SMILES strings",action="store_true")
     parser.add_argument("-dbvdent","--dbvdent", help="ligand denticity (requires dbverbose)",action="store_true")
     parser.add_argument("-dbvconns","--dbvconns", help="ligand coordinating elements (requires dbverbose)",action="store_true") 
+    parser.add_argument("-dbvhyb","--dbvhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbverbose)",action="store_true")     
     parser.add_argument("-dbvlinks","--dbvlinks", help="number of linking atoms (requires dbverbose)",action="store_true")          
     parser.add_argument("-dbfs","--dbfs", help="use fastsearch database if present",action="store_true")     
     # post-processing arguments

@@ -143,12 +143,13 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	else:
 		com = obab+' '+dbsdf+' simres.smi -h -xf'+finger+' -s"'+smi+'" --filter '+squery
 	## perform search using bash commandline
-	print(com)
+	#print(com)
+	print('Performing substructure search:')
 	res = mybash(com)
 	print res
 	if args.dbmaxsmartsmatches:
+		print('Filtering by SMARTS matches:')
 		com2 = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
-		print com2
 		res2 = mybash(com2)
 		print res2
 	## check output and print error if nothing was found
@@ -218,6 +219,7 @@ def getels(smistr):
 	return els
 
 def checkels(fname,allowedels):
+	print('Filtering by allowed elements:')
 	if glob.glob(fname):
 		f = open(fname,'r')
 		s = f.read().splitlines()
@@ -225,6 +227,7 @@ def checkels(fname,allowedels):
 	else:
 		return 0
 	f = open(fname,'w')
+	nf = 0
 	for i,ss in enumerate(s):
 		ss = ss.split('\t')[0]
 		els = getels(ss)
@@ -234,7 +237,9 @@ def checkels(fname,allowedels):
 				flag = True
 		if not flag:
 			f.write(ss+'\n')
+			nf = nf + 1
 	f.close()
+	print 'Element filter returns',str(nf),'results'
 	return 0
 	
 #######################################
@@ -254,7 +259,7 @@ def dissim(outf,n):
 	numcpds = numcpds.split(None)[0]
 	# pick last element of list
 	mybash('obabel tmp.sdf -O 1.smi -f '+str(numcpds)+' -l'+str(numcpds))
-	print numcpds
+	print 'Performing dissimilarity search:'
 	mostdissim = []
 	if n > 1:
 		# find most dissimilar structure
@@ -389,14 +394,19 @@ def dbsearch(rundir,args,globs):
             print smistr
     elif args.dbverbose:
 		denticity = args.dbvdent if args.dbvdent else '1'
-		coordatoms = args.dbconns if args.dbvconns else 'N'
-		nlinks = args.dbvlinks if args.dbvlinks else '0'
+		print args.dbvconns
+		coordatoms = args.dbvconns if args.dbvconns else 'N'
+		hyb = args.dbvhyb if args.dbvhyb else '3'
+		nlinks = args.dbvlinks if args.dbvlinks else '2'
 		monod = ['1','mono','Mono','monodentate','Monodentate']
 		bid = ['2','bi','Bi','bidentate','Bidentate']
 		if denticity in monod:
-			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'D1,#'+str(amassdict[coordatoms[0]][1])+'D2;!+]'
+			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'^'+hyb[0]+';!+]'
 		elif denticity in bid:
-			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'D1,#'+str(amassdict[coordatoms[0]][1])+'D2;!+]'+'[#6;R0][#6;R0]'+'[#'+str(amassdict[coordatoms[1]][1])+'D1,#'+str(amassdict[coordatoms[1]][1])+'D2;!+]'
+			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'^'+hyb[0]+';!+]'
+			for i in range(int(nlinks)):
+				smistr = smistr +'[#6;R0]'
+			smistr = smistr +'[#'+str(amassdict[coordatoms[1]][1])+'^'+hyb[1]+';!+]'
     else:
         # get database
         [dbsdf,dbfs] = setupdb(args.dbbase)
@@ -428,6 +438,7 @@ def dbsearch(rundir,args,globs):
         print "No matches found in search.."
         return True
     # strip metals and clean-up, remove duplicates etc
+    print('Stripping salts and removing duplicates')
     flag = stripsalts(outf,args.dbresults)
     cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
     t = mybash(cmd)
