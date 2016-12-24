@@ -247,6 +247,7 @@ def core_load(installdir,usercore,mcores):
 ### convert to molecule ###
 ###########################
 def lig_load(installdir,userligand,licores):
+    globs = globalvars()
     ### get groups ###
     groups = []
     for entry in licores:
@@ -287,6 +288,8 @@ def lig_load(installdir,userligand,licores):
         lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
         lig.charge = lig.OBmol.charge
+        if globs.debug:
+            print(flig,userligand,lig.charge)
         if len(dbentry) > 2:
             lig.grps = dbentry[3]
         else:
@@ -316,11 +319,16 @@ def lig_load(installdir,userligand,licores):
     ### if not, try converting from SMILES
     else:
         # check for transition metals
-        userligand = checkTMsmiles(userligand)
+        #userligand = checkTMsmiles(userligand)
         # try and catch error if conversion doesn't work
         try:
+            if globs.debug:
+                print userligand
             lig.OBmol = lig.getOBmol(userligand,'smi') # convert from smiles
             lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
+            #lig.OBmol.write(format='mol', filename='smilig.mol', overwrite=True)
+            #lig.OBmol = lig.getOBmol('smilig.mol','molf')
+            #os.remove('smilig.mol')
             lig.charge = lig.OBmol.charge
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
@@ -424,6 +432,77 @@ def getinputargs(args,fname):
                     f.write(str(getattr(args, arg)))
                 f.write('\n')
     f.close()
-    
+#####################################
+###   file/folder name control   ###
+####################################
+def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
+    # reads in argument namespace
+    # and chooses an appropriate name
+    # bind_ident is used to pass binding
+    # species information 
+
+    # check if smiles string in binding species
+    if args.bind:
+        if bsmi:
+            if args.nambsmi: # if name specified use it in file
+                fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
+                if args.name:
+                    fname = rootdir+'/'+args.name+args.nambsmi[0:2]
+            else: # else use default
+                fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm' 
+                if args.name:
+                   fname = rootdir+'/'+args.name+'bsm'
+        else: # else use name from binding in dictionary
+            fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+            if args.name:
+                fname = rootdir+'/'+args.name + bind.ident[0:2]
+    else:
+        if globs.debug:
+            print(rootdir)
+        fname = rootdir+'/'+core.ident[0:3]+ligname
+        if args.name:
+            fname = rootdir+'/'+args.name
+
+    return fname
+
+
+
+def name_complex(rootdir,core,ligs,ligoc,args,bind= False,bsmi=False):
+    ## neww version of the above, designed to 
+    ## produce more human and machine-readable formats
+    #print('ligoc is ' + str(ligoc))
+    #print('lig is ' + str(ligs))
+
+    romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
+    if args.name: # if set externerally
+        name = rootdir+'/'+args.name
+    else:
+        try:
+            center = core.getAtom(0).symbol().lower()
+        except:
+            center = str(core).lower()
+        name = rootdir + '/' + center
+        if args.oxstate:
+            if args.oxstate in romans.keys():
+                ox = str(romans[args.oxstate])
+            else:
+                ox = str(args.oxstate)
+        else:
+            ox = "0"
+        name += "_" + str(ox)
+        if args.spin:
+            spin = str(args.spin)
+        else:
+            spin = "0"
+        name += "_" + str(spin)
+        for i,lig in enumerate(ligs):
+            lig = lig.split('\t')[0]
+            name += '_' + str(lig) + '_' + str(ligoc[i])
+        name += "_s_"+str(spin)
+        if args.bind:
+            if bsmi:
+                if args.nambsmi: # if name specified use it in file
+                    name += "_" + +args.nambsmi[0:2]
+    return name
 
 

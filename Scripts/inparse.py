@@ -1,4 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
+# modified by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ##############################################################
@@ -7,7 +8,7 @@
 
 # import std modules
 import glob, os, re, argparse, sys
-from io import *
+from Scripts.io import *
 from Classes.globalvars import *
 
 ######################################################
@@ -191,20 +192,22 @@ def parseCLI(args):
 ###########################################
 ### parses inputfile ###
 def parseinput(args):
+    args.skipANN = False
     for line in open(args.i):
-        if '-lig' not in line and '-core' not in line and '-bind' not in line:
+        if '-lig' not in line and '-core' not in line and '-bind' not in line and '-db' not in line:
             line = line.split('#')[0] # remove comments
         li = line.strip()
         li = li.replace('\n','')
         line = line.replace('\n','')
         if not li.startswith("#") and len(li)>0: # remove comments/empty lines
-            l = filter(None,re.split(' |,|\t|&',li))
+            l = filter(None,re.split(' ||\t|&',li))
             # parse general arguments
             if (l[0]=='-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = [int(ll)-1 for ll in l[1:]]
             if (l[0]=='-rundir'):
+                print('in inparse, rundir found',l)
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -212,6 +215,15 @@ def parseinput(args):
                     args.rundir = args.rundir[:-1]
             if (l[0]=='-suff'):
                 args.suff = l[1].strip('\n')
+            if (l[0]=='-name'):
+                args.name =l[1]
+            if (l[0]=='-skipANN'):
+                args.skipANN = True
+            if (l[0]=='-jobdir'):
+                if (len(l) > 1):
+                    args.jobdir =l[1]
+                else:
+                    args.jobdirblank = True 
             ### parse structure generation arguments ###
             if (l[0]=='-bind' and len(l[1:]) > 0):
                 l = filter(None,re.split(' |,|\t',line))
@@ -259,6 +271,8 @@ def parseinput(args):
                 args.ligocc = l[1:]
             if (l[0]=='-rkHs'):
                 args.rkHs = checkTrue(l[1])
+            if (l[0]=='-stripHs'):
+                args.stripHs = True                
             if (l[0]=='-ligloc'):
                 args.ligloc = checkTrue(l[1])
             if (l[0]=='-ligalign'):
@@ -330,6 +344,8 @@ def parseinput(args):
                     args.qoption.append(l[1:])
                 else:
                     args.qoption = l[1:]
+            if (l[0] == '-tc_fix_dihedral'):
+                    args.tc_fix_dihedral = True
             # parse qchem arguments
             if (l[0]=='-exchange'):
                 args.exchange = l[1]
@@ -371,6 +387,10 @@ def parseinput(args):
                     args.statoption.append(l[1:])
                 else:
                     args.statoption = l[1:]
+            # parse MOLPAC generation routines
+            if (l[0] == '-mopac'):
+                    args.mopac = True
+ 
             # parse jobscript arguments
             if (l[0]=='-jsched'):
                 args.jsched = l[1]
@@ -408,6 +428,9 @@ def parseinput(args):
                 args.dbsim = l[1]
             if (l[0]=='-dbresults'):
                 args.dbresults = l[1]
+            if (l[0]=='-dbdissim'):
+                args.dbsearch = True
+                args.dbdissim = l[1]                
             if (l[0]=='-dboutputf'):
                 args.dboutputf = l[1]
             if (l[0]=='-dbbase'):
@@ -429,6 +452,27 @@ def parseinput(args):
                 args.dbsbonds = l[1]
             if (l[0]=='-dbmw'):
                 args.dbmw = l[1]
+            if (l[0]=='-dbnsearch'):
+                args.dbnsearch = l[1]
+            if (l[0]=='-dballowedels'):
+                args.dballowedels = l[1]    
+            if (l[0]=='-dbmaxsmartsmatches'):
+                args.dbmaxsmartsmatches = l[1]
+            if (l[0]=='-dbverbose'):
+                args.dbsearch = True
+                args.dbverbose = True
+            if (l[0]=='-dbvdent'):
+                args.dbvdent = l[1]
+            if (l[0]=='-dbvconns'):
+                ll = filter(None,re.split(' |,|\t',l[1]))
+                args.dbvconns = ll
+            if (l[0]=='-dbvhyb'):
+                ll = filter(None,re.split(' |,|\t',l[1]))
+                args.dbvhyb = ll
+            if (l[0]=='-dbvlinks'):
+                args.dbvlinks = l[1]                                               
+            if (l[0]=='-dbfs'):
+                args.dbfs = True                             
             # parse postprocessing arguments
             if (l[0]=='-postp'):
                 args.postp = True
@@ -454,6 +498,81 @@ def parseinput(args):
             #    args.pdorbs = True
             if (l[0]=='-pnbo'):
                 args.pnbo = True
+            # parse slab building arguments
+            if (l[0]=='-slab_gen'): #0
+                print('slab gen')
+                args.slab_gen = True
+            if (l[0]=='-unit_cell'): #1 
+                args.unit_cell = l[1]
+            if (l[0]=='-cell_vector'): #2
+                args.cell_index = [[float(j.strip('(){}<>[],.')) for j in i]  for i in l[1:]] # list-of-lists
+            if (l[0]=='-cif_path'): #3
+                args.cif_path = l[1]
+            if (l[0]=='-duplication_vector'): #4
+                args.duplication_vector = [int(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0]=='-slab_size'): #5
+                 args.slab_size = [float(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0]=='-miller_index'): #6
+                args.miller_index = [int(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0]=='-freeze'): #7
+                try:
+                    args.freeze = int(l[1].strip('(){}<>[],.'))
+                except:
+                    args.freeze = True
+            if (l[0]=='-debug'):#8
+                args.debug = True
+            if (l[0]=='-expose_type'):#9
+                args.expose_type = l[1]
+            if (l[0]=='-shave_extra_layers'):#9
+                args.shave_extra_layers = int(l[1])
+
+            # parse place on slab options
+            if (l[0]=='-place_on_slab'): #0
+                args.place_on_slab = True
+            if (l[0]=='-target_molecule'): #1 
+                args.target_molecule = l[1]
+            if (l[0]=='-align_distance_method'): #2
+                args.align_distance_method = l[1]
+            if (l[0]=='-align_dist'): #3
+                args.align_dist = float(l[1].strip('(){}<>[],.'))
+            if (l[0]=='-align_method'): #4
+                args.align_method = l[1]
+            if (l[0]=='-object_align'): #5
+                globs = globalvars()
+                elements = globs.elementsbynum()
+                if l[1] in elements:
+                    args.object_align = l[1]
+                else:
+                    args.object_align = [int(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0]=='-surface_atom_type'):#6
+                args.surface_atom_type = l[1]
+            if (l[0] == '-num_surface_atoms'): #7
+                args.num_surface_atoms = int(l[1].strip('()[]<>.'))
+            if (l[0] == '-num_placements'): #8
+                args.num_placements = int(l[1].strip('()[]<>.'))
+            if (l[0]=='-coverage'):#9
+                args.coverage = float(l[1].strip('()[]<>.'))
+            if (l[0]=='-multi_placement_centering'):#10
+                args.multi_placement_centering = float(l[1].strip('()[]<>.'))
+            if (l[0]=='-control_angle'):#11
+                args.control_angle = float(l[1].strip('()[]<>.'))
+            if (l[0] == '-angle_control_partner'): #12
+                args.angle_control_partner = int(l[1].strip('()[]<>.'))
+            if (l[0] == '-angle_surface_axis'): #13
+                args.angle_surface_axis = [float(i.strip('(){}<>[],.')) for i in l[1:]]
+            if (l[0] == '-duplicate'):#14
+                args.duplicate = l[1]
+            if (l[0]=='-surface_atom_ind'): #6
+                args.surface_atom_ind = [int(i.strip('(){}<>[],.')) for i in l[1:]]
+
+            # parse chain-builder arguments
+            if (l[0] == '-chain'):
+                print('chain true')
+                args.chain = l[1]
+            if (l[0] == '-chain_units'):
+                args.chain_units = l[1]
+
+
                 
 #############################################################
 ########## mainly for help and listing options  #############
@@ -462,13 +581,15 @@ def parseinput(args):
 def parsecommandline(parser):
     globs = globalvars()
     installdir = globs.installdir+'/'
-    # first variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
+    # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
     parser.add_argument("-i","--i",help="input file")
     # top directory options
     parser.add_argument("-rundir","--rundir",help="directory for jobs",action="store_true")
     parser.add_argument("-suff","--suff", help="suffix for jobs folder.",action="store_true")
     # structure generation options
     parser.add_argument("-ccatoms","--ccatoms", help="core connection atoms indices, indexing starting from 1",action="store_true")
+    parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
+    parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
     parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6 
     parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(installdir),action="store_true") #e.g. ferrocene
     parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(installdir),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
@@ -496,7 +617,7 @@ def parsecommandline(parser):
     parser.add_argument("-replig","--replig", help="flag for replacing ligand at specified connection point",action="store_true")
     parser.add_argument("-ff","--ff",help="select force field for FF optimization. Available: MMFF94, UFF, GAFF, Ghemical",action="store_true")
     parser.add_argument("-ffoption","--ffoption",help="select when to perform FF optimization. Options: B(Before),A(After),BA",action="store_true")
-    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens. By default ligands are stripped one hydrogen in order to connect to the core",action="store_true") 
+    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens",action="store_true") 
     parser.add_argument("-smicat","--smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well",action="store_true")
     parser.add_argument("-sminame","--sminame", help="name for smiles species used in the folder naming. e.g. amm",action="store_true") 
     parser.add_argument("-nambsmi","--nambsmi", help="name of SMILES string for binding species e.g. carbonmonoxide",action="store_true")
@@ -504,6 +625,7 @@ def parsecommandline(parser):
     parser.add_argument("-mind","--mind", help="minimum distance above cluster size for molecules placement mindist=size1+size2+mind", action="store_true")
     parser.add_argument("-place","--place", help="place binding species relative to core. Takes either angle (0-360) or ax/s for axial side",action="store_true")
     parser.add_argument("-oxstate","--oxstate", help="oxidation state of the metal, used for bond lengths",action="store_true")
+    parser.add_argument("-stripHs","--stripHs", help="experimental feature",action="store_true")
     # quantum chemistry options
     parser.add_argument("-qccode","--qccode", help="quantum chemistry code. Choices: TeraChem or GAMESS or QChem",action="store_true") 
     parser.add_argument("-charge","--charge", help="charge for system (default: neutral).",action="store_true")
@@ -511,6 +633,9 @@ def parsecommandline(parser):
     parser.add_argument("-spin","--spin", help="spin multiplicity for system (default: singlet) e.g. 1",action="store_true")
     parser.add_argument("-runtyp","--runtyp", help="run type. Choices: optimization, energy",action="store_true")
     parser.add_argument("-method","--method", help="electronic structure method. Specify UDFT for unrestricted calculation(default: b3lyp) e.g. ub3lyp",action="store_true")
+    parser.add_argument("-tc_fix_dihedral","--tc_fix_dihedral", help="TeraChem only: fix SQP dihedrals",action="store_true")
+    # MOLPAC arguments
+    parser.add_argument("-mopac","--mopac", help="Generate MOLPAC files?",action="store_true")
     # terachem arguments
     parser.add_argument("-basis","--basis", help="basis for terachem or qchem job (default: LACVP* or lanl2dz)",action="store_true")
     parser.add_argument("-dispersion","--dispersion", help="dispersion forces. Default: no e.g. d2,d3",action="store_true")
@@ -541,18 +666,28 @@ def parsecommandline(parser):
     parser.add_argument("-joption","--joption", help="additional options for jobscript",action="store_true")
     parser.add_argument("-jcommand","--jcommand", help="additional commands for jobscript",action="store_true")
     # database search arguments
-    parser.add_argument("-dbsim","--dbsim", help="SMILES/ligand/file for similarity search",action="store_true")
+    parser.add_argument("-dbsim","--dbsim", help="deprecated, please use dbsmarts instead",action="store_true")
     parser.add_argument("-dbcatoms","--dbcatoms", help="connection atoms for similarity search",action="store_true")
     parser.add_argument("-dbresults","--dbresults", help="how many results for similary search or screening",action="store_true")
     parser.add_argument("-dboutputf","--dboutputf", help="output file for search results",action="store_true")
     parser.add_argument("-dbbase","--dbbase", help="database for search",action="store_true")
-    parser.add_argument("-dbsmarts","--dbsmarts", help="SMARTS string for screening",action="store_true")
+    parser.add_argument("-dbsmarts","--dbsmarts", help="SMARTS string for substructure search",action="store_true")
     parser.add_argument("-dbfinger","--dbfinger", help="fingerprint for similarity search",action="store_true")
     parser.add_argument("-dbatoms","--dbatoms", help="number of atoms to be used in screening",action="store_true")
     parser.add_argument("-dbbonds","--dbbonds", help="number of bonds to be used in screening",action="store_true")
     parser.add_argument("-dbarbonds","--dbarbonds", help="Number of aromatic bonds to be used in screening",action="store_true")
     parser.add_argument("-dbsbonds","--dbsbonds", help="number of single bonds to be used in screening",action="store_true")
     parser.add_argument("-dbmw","--dbmw", help="molecular weight to be used in screening",action="store_true")
+    parser.add_argument("-dbdissim","--dbdissim", help="number of dissimilar results",action="store_true")
+    parser.add_argument("-dbnsearch","--dbnsearch", help="number of database entries to be searched, only for fastsearch",action="store_true")
+    parser.add_argument("-dballowedels","--dballowedels", help="elements allowed in search, default all",action="store_true")
+    parser.add_argument("-dbmaxsmartsmatches","--dbmaxsmartsmatches", help="maximum instances of SMARTS pattern permitted, default unlimited",action="store_true")  
+    parser.add_argument("-dbverbose","--dbverbose", help="verbose alternative to SMARTS/SMILES strings",action="store_true")
+    parser.add_argument("-dbvdent","--dbvdent", help="ligand denticity (requires dbverbose)",action="store_true")
+    parser.add_argument("-dbvconns","--dbvconns", help="ligand coordinating elements (requires dbverbose)",action="store_true") 
+    parser.add_argument("-dbvhyb","--dbvhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbverbose)",action="store_true")     
+    parser.add_argument("-dbvlinks","--dbvlinks", help="number of linking atoms (requires dbverbose)",action="store_true")          
+    parser.add_argument("-dbfs","--dbfs", help="use fastsearch database if present",action="store_true")     
     # post-processing arguments
     parser.add_argument("-postp","--postp",help="post process results",action="store_true")
     parser.add_argument("-postqc","--postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true") 
@@ -578,5 +713,78 @@ def parsecommandline(parser):
     # wavefunction - cube files
     # deloc indices - basin analysis
     # moldparse
+    # Slab builder arguments
+    # slab builder input: controli
+    parser.add_argument("-slab_gen","--slab_gen",
+                        help = "enables slab generation/periodic extension",action="store_true") #0
+    # slab builder input: required
+    parser.add_argument("-unit_cell","--unit_cell",
+                        help = "path to xyz, or give generation instructions ") #1
+    parser.add_argument("-cell_vector","--cell_vector",
+                        help = "unit cell lattice vector, list of 3 list of float (Ang)") #2
+    parser.add_argument("-cif_path","--cif_path",
+                        help = "path to cif file") #3
+    parser.add_argument("-duplication_vector","--duplication_vector",
+                        help = "list of 3 in, lattice vector repeats") #4
+    parser.add_argument("-slab_size","--slab_size",
+                        help = "slab size, list of 3 floats (Ang)") #5
+    # slab buidler: optional
+    parser.add_argument("-miller_index","--miller_index",
+                        help="list of 3 int, miller indicies") #6
+    parser.add_argument("-freeze","--freeze",
+                        help="bool or int, bottom layers of cell to freeze") #7
+    parser.add_argument("-expose_type","--expose_type",
+                        help="str, symbol of atom type to expose (eg 'O')") #9
+    parser.add_argument("-shave_extra_layers","--shave_extra_layers",
+                        help="int, number of extra layers to shave") #10
+    parser.add_argument("-debug","--debug",
+                        help="switch, print stepwise slabs",action="store_true") #10
+
+
+    # placement input: control
+    parser.add_argument("-place_on_slab","--place_on_slab",
+                        help = "enables  placement on slab ",action="store_true") #0
+    # placemnt input: required
+    parser.add_argument("-target_molecule",'--target_molecule',
+                        help = "path to target molecule") #1
+    parser.add_argument("-align_distance_method","--align_distance_method",
+                        help = "align distance method",
+                        choices = ['chemisorption','physisorption','custom']) #2
+    parser.add_argument("-align_dist","--align_dist",
+                        help = "align distance, float") #3
+    # placement input: optional
+    parser.add_argument("-align_method","--align_method",
+                        help = "align method ",choices = ['center', 'staggered','alignpair']) #4
+    parser.add_argument("-object_align","--object_align",
+                        help = "atom symbol or index for alignment partner in placed object")  #5
+    parser.add_argument("-surface_atom_type","--surface_atom_type",
+                        help = "atom symbol for surface aligment partner") #6
+    parser.add_argument("-num_surface_atoms","--num_surface_atoms",
+                        help = "number of surface sites to attach per adsorbate")#7
+    parser.add_argument("-num_placements","--num_placements",
+                        help = "number of copies of object to place.") #8
+    parser.add_argument("-coverage","--coverage",
+                        help = "coverage fraction, float between 0 and 1") #9
+    parser.add_argument("-multi_placement_centering",'--multi_placement_centering',
+                        help = "float between 0 and 1, controls centering of placment.Reccomend leaving as default") #10
+    parser.add_argument("-control_angle","--control_angle",
+                        help =  "angle in degrees to rotate object axis to surface")#11
+    parser.add_argument("-angle_control_partner","-angle_control_partner",
+                        help = 'atom index, int. Controls angle between object_align and this atom') #12
+    parser.add_argument('-angle_surface_axis','--angle_surface_axis',
+                        help = 'list of two floats, vector in surface plane to control angle relative to') #13
+    parser.add_argument('-duplicate','--duplicate',
+                        help = "boolean, duplicate asorbate above and below slab",action = "store_true") #14
+    parser.add_argument('-surface_atom_ind','--surface_atom_ind',
+                        help = "list of int, surface atoms to use by index") #15
+
+    # chain builder:
+    parser.add_argument('-chain','--chain',
+                        help = "SMILES string of monomer",action = "store_true") #0
+    parser.add_argument('-chain_units','--chain_units',
+                        help = "int, number of monomers") #0
+
+
+
     args=parser.parse_args()
     return args
