@@ -429,9 +429,10 @@ def parseinput(args):
             if (l[0]=='-dbresults'):
                 args.dbresults = l[1]
             if (l[0]=='-dbdissim'):
+                args.dbsearch = True
                 args.dbdissim = l[1]                
-            if (l[0]=='-dboutputf'):
-                args.dboutputf = l[1]
+            if (l[0]=='-dbfname'):
+                args.dbfname = l[1]
             if (l[0]=='-dbbase'):
                 args.dbbase = l[1]
             if (l[0]=='-dbsmarts'):
@@ -668,7 +669,7 @@ def parsecommandline(parser):
     parser.add_argument("-dbsim","--dbsim", help="deprecated, please use dbsmarts instead",action="store_true")
     parser.add_argument("-dbcatoms","--dbcatoms", help="connection atoms for similarity search",action="store_true")
     parser.add_argument("-dbresults","--dbresults", help="how many results for similary search or screening",action="store_true")
-    parser.add_argument("-dboutputf","--dboutputf", help="output file for search results",action="store_true")
+    parser.add_argument("-dbfname","--dbfname", help="filename for database search, default is simres.smi",action="store_true")
     parser.add_argument("-dbbase","--dbbase", help="database for search",action="store_true")
     parser.add_argument("-dbsmarts","--dbsmarts", help="SMARTS string for substructure search",action="store_true")
     parser.add_argument("-dbfinger","--dbfinger", help="fingerprint for similarity search",action="store_true")

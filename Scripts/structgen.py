@@ -1,5 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
-# Extended by JP Janet
+# Extended by JP Janet and Terry Gani
 # Dpt of Chemical Engineering, MIT
 
 ##########################################################
@@ -782,7 +782,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 				batslist.append(bats)
 	#########################################################
 	#### ANN module
-	if  args.skipANN:
+	if args.skipANN:
 		print('Skipping ANN')
 		ANN_flag = False
 		ANN_bondl = 0
@@ -991,7 +991,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							rb2 = ben-1
 							break
 					if (rb1 != 1000) and (rb2 != 1000): # rotatable bond present, execute rotations
-						print('rotating ligand')
+						if globs.debug:
+							print('rotating ligand')
 						rotfrag3D = mol3D()
 						# create submolecule containing atoms to be rotated (the one containing catoms[0] which is aligned first)
 						subm1 = lig3D.findsubMol(rb1,rb2)
@@ -1484,7 +1485,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 						core3D.OBmol.OBMol.AddBond(core3D.findMetal()+1,a+1,1) # OB indexing starts from 1
 						core3D.OBmol.OBMol.GetBond(core3D.findMetal()+1,a+1).SetBondOrder(1)
 					ii = 0
-					print metalbonded
+					if globs.debug:
+						print metalbonded
 					while ii < 2: # coordinating atom
 						for idx in range(core3D.natoms):
 							if idx in metalbonded and len(core3D.getHsbyIndex(idx)) == 0:
@@ -2063,14 +2065,13 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'B')
     else:
         fname = name_complex(rootdir,core,ligands,ligoc,args,bind= False,bsmi=False)
-        print(fname)
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)
     pfold = rootdir.split('/',1)[-1]
     if args.calccharge:
         args.charge = core3D.charge
-        print('setting charge to be ' + str(args.charge))
+        #print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
     del core3D
@@ -2084,7 +2085,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
         args.gui.iWtxt.setText('In folder '+pfold+' generated '+str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structures!'
-    return strfiles, emsg
+    return strfiles, emsg, sanity
 
 
 

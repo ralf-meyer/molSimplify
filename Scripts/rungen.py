@@ -289,243 +289,255 @@ def checkmultilig(ligs):
 ### normal structure generation of complex ###
 ##############################################
 def rungen(installdir,rundir,args,chspfname,globs):
-    try:
-        from Classes.mWidgets import qBoxFolder
-        from Classes.mWidgets import mQDialogInf
-        from Classes.mWidgets import mQDialogErr
-    except ImportError:
-        args.gui = False
-    emsg = False
-    licores = readdict(installdir+'/Ligands/ligands.dict')
-    mcores = readdict(installdir+'/Cores/cores.dict')
-    bindcores = readdict(installdir+'/Bind/bind.dict')
-    cc, emsg = core_load(installdir,args.core,mcores)
-    if emsg:
-        return emsg
-    mname = cc.ident
-    globs.nosmiles = 0 # reset smiles ligands for each run
-    # check for specified ligands/functionalization
-    ligocc = []
-    # check for files specified for multiple ligands
-    mligs,catoms = [False],[False]
-    if args.lig:
-        mligs,catoms,multidx = checkmultilig(args.lig)
-    # save initial
-    smicat0 = [ss for ss in args.smicat] if args.smicat else False    
-    # loop over ligands
-    for mcount, mlig in enumerate(mligs):
-        args.smicat = [ss for ss in smicat0] if smicat0 else False
-        args.checkdir, skip = False, False # initialize flags
-        if len(mligs) > 0 and mligs[0]:
-            args.lig = mlig # get combination
-            if multidx!=-1:
-                if catoms[multidx][mcount]:
-                    ssatoms = catoms[multidx][mcount].split(',')
-                    lloc = [int(scat)-1 for scat in ssatoms]
-                    # append connection atoms if specified in smiles
-                    if args.smicat and len(args.smicat) > 0:
-                        for i in range(len(args.smicat),multidx):
-                            args.smicat.append([])
-                    else:
-                        args.smicat = [lloc]
-                    args.smicat[multidx] = lloc
-        if (args.lig):
-            ligands = args.lig
-            if (args.ligocc):
-                ligocc = args.ligocc
-            else:
-                ligocc = ['1']
-            for i in range(len(ligocc),len(ligands)):
-                ligocc.append('1')
-            lig = ''
-            for i,l in enumerate(ligands):
-                ligentry,emsg = lig_load(installdir,l,licores)
-                # update ligand
-                if ligentry:
-                    ligands[i] = ligentry.name
-                    args.lig[i] = ligentry.name
-                if emsg:
-                    skip = True
-                    break
-                if ligentry.ident == 'smi':
-                    ligentry.ident += str(globs.nosmiles)
-                    globs.nosmiles += 1
-                    if args.sminame:
-                        if len(args.sminame) > int(ligentry.ident[-1]):
-                            ligentry.ident = args.sminame[globs.nosmiles-1][0:3]
-                lig += ''.join("%s%s" % (ligentry.ident,ligocc[i]))
-        else:
-            ligands =[]
-            lig = ''
-            ligocc = ''
-        ##### fetch smart name
-        fname = name_complex(rundir,args.core,ligands,ligocc,args,bind=args.bind,bsmi=args.nambsmi)
-        print('in rungen, fname is  ' + fname)
-        #####
-#        if args.bind:
-            # create folder for runs and check if it already exists
-#            if args.nambsmi:
-#                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
-#            elif not args.bind in bindcores.keys():
-#                rootdir = rundir+mname[0:4]+lig+'bsmi'
-#            else:
-#                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
-#        else:
-#            rootdir = rundir+mname[0:4]+lig
-        rootdir = fname
-        # check for charges/spin
-        rootcheck = False
-        if (chspfname):
-            rootcheck = rootdir
-            rootdir = rootdir + '/'+chspfname
-        if (args.suff):
-            rootdir += args.suff
-        # check for mannual overwrite of 
-        # directory name
-        if args.jobdir:
-            rootdir = rundir + args.jobdir
-        # check for top directory
-        if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
-            args.checkdirt = True
-            if not args.gui:
-                flagdir=raw_input('\nDirectory '+rootcheck +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
-                if 'k' in flagdir.lower():
-                    flagdir = 'keep'
-                elif 's' in flagdir.lower():
-                    flagdir = 'skip'
-                else:
-                    flagdir = 'replace'
-            else:
-                qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
-                flagdir = qqb.getaction()
-            # replace existing directory
-            if (flagdir=='replace'):
-                shutil.rmtree(rootcheck)
-                os.mkdir(rootcheck)
-            # skip existing directory
-            elif flagdir=='skip':
-                skip = True
-            # keep both (default)
-            else:
-                ifold = 1
-                while glob.glob(rootdir+'_'+str(ifold)):
-                    ifold += 1
-                rootcheck += '_'+str(ifold)
-                os.mkdir(rootcheck)
-        elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
-            print rootcheck
-            args.checkdirt = True
-            try:
-                os.mkdir(rootcheck)
-            except:
-                print 'Directory '+rootcheck+' can not be created. Exiting..\n'
-                return
-        # check for actual directory
-        if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
-            args.checkdirb = True
-            if not args.gui:
-                flagdir=raw_input('\nDirectory '+rootdir +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
-                if 'k' in flagdir.lower():
-                    flagdir = 'keep'
-                elif 's' in flagdir.lower():
-                    flagdir = 'skip'
-                else:
-                    flagdir = 'replace'
-            else:
-                qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
-                flagdir = qqb.getaction()
-            # replace existing directory
-            if (flagdir=='replace'):
-                shutil.rmtree(rootdir)
-                os.mkdir(rootdir)
-            # skip existing directory
-            elif flagdir=='skip':
-                skip = True
-            # keep both (default)
-            else:
-                ifold = 1
-                while glob.glob(rootdir+'_'+str(ifold)):
-                    ifold += 1
-                rootdir += '_'+str(ifold)
-                os.mkdir(rootdir)
-        elif not os.path.isdir(rootdir) or not args.checkdirb and not skip:
-            if not os.path.isdir(rootdir):
-                args.checkdirb = True
-                os.mkdir(rootdir)
-        ####################################
-        ############ GENERATION ############
-        ####################################
-        if not skip:
-            # check for generate all
-            if args.genall:
-                tstrfiles = []
-                # generate xyz with FF and trained ML
-                args.ff = 'mmff94'
-                args.ffoption = 'ba'
-                args.MLbonds = False
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
-                for strf in strfiles:
-                    tstrfiles.append(strf+'FFML')
-                    os.rename(strf+'.xyz',strf+'FFML.xyz')
-                # generate xyz with FF and covalent
-                args.MLbonds = ['c' for i in range(0,len(args.lig))]
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
-                for strf in strfiles:
-                    tstrfiles.append(strf+'FFc')
-                    os.rename(strf+'.xyz',strf+'FFc.xyz')
-                args.ff = False
-                args.ffoption = False
-                args.MLbonds = False
-                # generate xyz without FF and trained ML
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
-                for strf in strfiles:
-                    tstrfiles.append(strf+'ML')
-                    os.rename(strf+'.xyz',strf+'ML.xyz')
-                args.MLbonds = ['c' for i in range(0,len(args.lig))]
-                # generate xyz without FF and covalent ML
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
-                for strf in strfiles:
-                    tstrfiles.append(strf+'c')
-                    os.rename(strf+'.xyz',strf+'c.xyz')
-                strfiles = tstrfiles
-            else:
-                # generate xyz files
-                strfiles,emsg = structgen(installdir,args,rootdir,ligands,ligocc,globs)
-            # generate QC input files
-            if args.qccode and not emsg:
-                if args.charge and (isinstance(args.charge, list)):
-                    args.charge = args.charge[0]
-                if args.spin and (isinstance(args.spin, list)):
-                    args.spin = args.spin[0]
-                if args.qccode.lower() in 'terachem tc Terachem TeraChem TERACHEM TC':
-                    jobdirs = multitcgen(args,strfiles)
-                    print 'TeraChem input files generated!'
-                elif 'gam' in args.qccode.lower():
-                    jobdirs = multigamgen(args,strfiles)
-                    print 'GAMESS input files generated!'
-                elif 'qch' in args.qccode.lower():
-                    jobdirs = multiqgen(args,strfiles)
-                    print 'QChem input files generated!'
-                else:
-                    print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
-            # check molpac
-            if args.mopac and not emsg:
-                    print('Generating MOPAC input')
-                    print(strfiles)
-                    jobdirs = mlpgen(args,strfiles,rootdir)
-
-            # generate jobscripts
-            if args.jsched and not emsg:
-                if args.jsched in 'SBATCH SLURM slurm sbatch':
-                    slurmjobgen(args,jobdirs)
-                    print 'SLURM jobscripts generated!'
-                elif args.jsched in 'SGE Sungrid sge':
-                    sgejobgen(args,jobdirs)
-                    print 'SGE jobscripts generated!'
-        elif not emsg:
-            if args.gui:
-                qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
-                qq.setParent(args.gui.wmain)
-            else:
-                print 'Folder '+rootdir+' was skipped..\n'
-    return emsg    
+	try:
+		from Classes.mWidgets import qBoxFolder
+		from Classes.mWidgets import mQDialogInf
+		from Classes.mWidgets import mQDialogErr
+	except ImportError:
+		args.gui = False
+	emsg = False
+	licores = readdict(installdir+'/Ligands/ligands.dict')
+	mcores = readdict(installdir+'/Cores/cores.dict')
+	bindcores = readdict(installdir+'/Bind/bind.dict')
+	cc, emsg = core_load(installdir,args.core,mcores)
+	if emsg:
+		return emsg
+	mname = cc.ident
+	globs.nosmiles = 0 # reset smiles ligands for each run
+	# check for specified ligands/functionalization
+	ligocc = []
+	# check for files specified for multiple ligands
+	mligs,catoms = [False],[False]
+	if '.smi' in args.lig[0]:
+		ligfilename = args.lig[0].split('.')[0]
+	if args.lig:
+		mligs,catoms,multidx = checkmultilig(args.lig)
+	# save initial
+	smicat0 = [ss for ss in args.smicat] if args.smicat else False    
+	# loop over ligands
+	for mcount, mlig in enumerate(mligs):
+		args.smicat = [ss for ss in smicat0] if smicat0 else False
+		args.checkdir, skip = False, False # initialize flags
+		if len(mligs) > 0 and mligs[0]:
+			args.lig = mlig # get combination
+			if multidx!=-1:
+				if catoms[multidx][mcount]:
+					ssatoms = catoms[multidx][mcount].split(',')
+					lloc = [int(scat)-1 for scat in ssatoms]
+					# append connection atoms if specified in smiles
+					if args.smicat and len(args.smicat) > 0:
+						for i in range(len(args.smicat),multidx):
+							args.smicat.append([])
+					else:
+						args.smicat = [lloc]
+					args.smicat[multidx] = lloc
+		if (args.lig):
+			ligands = args.lig
+			if (args.ligocc):
+				ligocc = args.ligocc
+			else:
+				ligocc = ['1']
+			for i in range(len(ligocc),len(ligands)):
+				ligocc.append('1')
+			lig = ''
+			for i,l in enumerate(ligands):
+				ligentry,emsg = lig_load(installdir,l,licores)
+				# update ligand
+				if ligentry:
+					ligands[i] = ligentry.name
+					args.lig[i] = ligentry.name
+				if emsg:
+					skip = True
+					break
+				if ligentry.ident == 'smi':
+					ligentry.ident += str(globs.nosmiles)
+					globs.nosmiles += 1
+					if args.sminame:
+						if len(args.sminame) > int(ligentry.ident[-1]):
+							ligentry.ident = args.sminame[globs.nosmiles-1][0:3]
+				lig += ''.join("%s%s" % (ligentry.ident,ligocc[i]))
+		else:
+			ligands =[]
+			lig = ''
+			ligocc = ''
+		##### fetch smart name
+		fname = name_complex(rundir,args.core,ligands,ligocc,args,bind=args.bind,bsmi=args.nambsmi)
+		if globs.debug:
+			print('in rungen, fname is  ' + fname)
+		#####
+	#        if args.bind:
+			# create folder for runs and check if it already exists
+	#            if args.nambsmi:
+	#                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
+	#            elif not args.bind in bindcores.keys():
+	#                rootdir = rundir+mname[0:4]+lig+'bsmi'
+	#            else:
+	#                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
+	#        else:
+	#            rootdir = rundir+mname[0:4]+lig
+		rootdir = fname
+		# check for charges/spin
+		rootcheck = False
+		if (chspfname):
+			rootcheck = rootdir
+			rootdir = rootdir + '/'+chspfname
+		if (args.suff):
+			rootdir += args.suff
+		# check for mannual overwrite of 
+		# directory name
+		if args.jobdir:
+			rootdir = rundir + args.jobdir
+		# check for top directory
+		if rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
+			args.checkdirt = True
+			if not args.gui:
+				flagdir=raw_input('\nDirectory '+rootcheck +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
+				if 'k' in flagdir.lower():
+					flagdir = 'keep'
+				elif 's' in flagdir.lower():
+					flagdir = 'skip'
+				else:
+					flagdir = 'replace'
+			else:
+				qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
+				flagdir = qqb.getaction()
+			# replace existing directory
+			if (flagdir=='replace'):
+				shutil.rmtree(rootcheck)
+				os.mkdir(rootcheck)
+			# skip existing directory
+			elif flagdir=='skip':
+				skip = True
+			# keep both (default)
+			else:
+				ifold = 1
+				while glob.glob(rootdir+'_'+str(ifold)):
+					ifold += 1
+				rootcheck += '_'+str(ifold)
+				os.mkdir(rootcheck)
+		elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
+			if globs.debug:
+				print rootcheck
+			args.checkdirt = True
+			try:
+				os.mkdir(rootcheck)
+			except:
+				print 'Directory '+rootcheck+' can not be created. Exiting..\n'
+				return
+		# check for actual directory
+		if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
+			args.checkdirb = True
+			if not args.gui:
+				flagdir=raw_input('\nDirectory '+rootdir +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
+				if 'k' in flagdir.lower():
+					flagdir = 'keep'
+				elif 's' in flagdir.lower():
+					flagdir = 'skip'
+				else:
+					flagdir = 'replace'
+			else:
+				qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
+				flagdir = qqb.getaction()
+			# replace existing directory
+			if (flagdir=='replace'):
+				shutil.rmtree(rootdir)
+				os.mkdir(rootdir)
+			# skip existing directory
+			elif flagdir=='skip':
+				skip = True
+			# keep both (default)
+			else:
+				ifold = 1
+				while glob.glob(rootdir+'_'+str(ifold)):
+					ifold += 1
+				rootdir += '_'+str(ifold)
+				os.mkdir(rootdir)
+		elif not os.path.isdir(rootdir) or not args.checkdirb and not skip:
+			if not os.path.isdir(rootdir):
+				args.checkdirb = True
+				os.mkdir(rootdir)
+		####################################
+		############ GENERATION ############
+		####################################
+		if not skip:
+			# check for generate all
+			if args.genall:
+				tstrfiles = []
+				# generate xyz with FF and trained ML
+				args.ff = 'mmff94'
+				args.ffoption = 'ba'
+				args.MLbonds = False
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				for strf in strfiles:
+					tstrfiles.append(strf+'FFML')
+					os.rename(strf+'.xyz',strf+'FFML.xyz')
+				# generate xyz with FF and covalent
+				args.MLbonds = ['c' for i in range(0,len(args.lig))]
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				for strf in strfiles:
+					tstrfiles.append(strf+'FFc')
+					os.rename(strf+'.xyz',strf+'FFc.xyz')
+				args.ff = False
+				args.ffoption = False
+				args.MLbonds = False
+				# generate xyz without FF and trained ML
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				for strf in strfiles:
+					tstrfiles.append(strf+'ML')
+					os.rename(strf+'.xyz',strf+'ML.xyz')
+				args.MLbonds = ['c' for i in range(0,len(args.lig))]
+				# generate xyz without FF and covalent ML
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				for strf in strfiles:
+					tstrfiles.append(strf+'c')
+					os.rename(strf+'.xyz',strf+'c.xyz')
+				strfiles = tstrfiles
+			else:
+				# generate xyz files
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+			# generate QC input files
+			if args.qccode and not emsg:
+				if args.charge and (isinstance(args.charge, list)):
+					args.charge = args.charge[0]
+				if args.spin and (isinstance(args.spin, list)):
+					args.spin = args.spin[0]
+				if args.qccode.lower() in 'terachem tc Terachem TeraChem TERACHEM TC':
+					jobdirs = multitcgen(args,strfiles)
+					print 'TeraChem input files generated!'
+				elif 'gam' in args.qccode.lower():
+					jobdirs = multigamgen(args,strfiles)
+					print 'GAMESS input files generated!'
+				elif 'qch' in args.qccode.lower():
+					jobdirs = multiqgen(args,strfiles)
+					print 'QChem input files generated!'
+				else:
+					print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
+			# check molpac
+			if args.mopac and not emsg:
+				print('Generating MOPAC input')
+				if globs.debug:
+					print(strfiles)
+				jobdirs = mlpgen(args,strfiles,rootdir)
+			# generate jobscripts
+			if args.jsched and not emsg:
+				if args.jsched in 'SBATCH SLURM slurm sbatch':
+					slurmjobgen(args,jobdirs)
+					print 'SLURM jobscripts generated!'
+				elif args.jsched in 'SGE Sungrid sge':
+					sgejobgen(args,jobdirs)
+					print 'SGE jobscripts generated!'
+			if sanity: # move to separate subdirectory if generated structure was bad
+				fname = rootdir.rsplit('/',1)[-1]
+				shutil.move(rootdir,rundir+'/badjobs/'+fname)
+			elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
+				f = open(ligfilename+'-good.smi','a')
+				f.write(args.lig[0])
+				f.close()  
+		elif not emsg:
+			if args.gui:
+				qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
+				qq.setParent(args.gui.wmain)
+			else:
+				print 'Folder '+rootdir+' was skipped..\n'
+	return emsg    
+	

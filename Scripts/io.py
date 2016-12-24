@@ -247,6 +247,7 @@ def core_load(installdir,usercore,mcores):
 ### convert to molecule ###
 ###########################
 def lig_load(installdir,userligand,licores):
+    globs = globalvars()
     ### get groups ###
     groups = []
     for entry in licores:
@@ -287,7 +288,8 @@ def lig_load(installdir,userligand,licores):
         lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
         lig.charge = lig.OBmol.charge
-        print(flig,userligand,lig.charge)
+        if globs.debug:
+            print(flig,userligand,lig.charge)
         if len(dbentry) > 2:
             lig.grps = dbentry[3]
         else:
@@ -320,7 +322,8 @@ def lig_load(installdir,userligand,licores):
         #userligand = checkTMsmiles(userligand)
         # try and catch error if conversion doesn't work
         try:
-            print userligand
+            if globs.debug:
+                print userligand
             lig.OBmol = lig.getOBmol(userligand,'smi') # convert from smiles
             lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
             #lig.OBmol.write(format='mol', filename='smilig.mol', overwrite=True)
@@ -454,7 +457,8 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
             if args.name:
                 fname = rootdir+'/'+args.name + bind.ident[0:2]
     else:
-        #print(rootdir)
+        if globs.debug:
+            print(rootdir)
         fname = rootdir+'/'+core.ident[0:3]+ligname
         if args.name:
             fname = rootdir+'/'+args.name
@@ -492,7 +496,7 @@ def name_complex(rootdir,core,ligs,ligoc,args,bind= False,bsmi=False):
             spin = "0"
         name += "_" + str(spin)
         for i,lig in enumerate(ligs):
-
+            lig = lig.split('\t')[0]
             name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
         if args.bind:
