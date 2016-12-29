@@ -786,7 +786,7 @@ class mol3D:
         mind = 1000
         for ii,atom1 in enumerate(self.atoms):
             for jj,atom0 in enumerate(self.atoms):
-                if ii!=jj and (distance(atom1.coords(),atom0.coords()) < 0.6*(atom1.rad + atom0.rad)):
+                if ii!=jj and (distance(atom1.coords(),atom0.coords()) < 0.7*(atom1.rad + atom0.rad)):
                     overlap = True
                     if distance(atom1.coords(),atom0.coords()) < mind:
                         mind = distance(atom1.coords(),atom0.coords())
