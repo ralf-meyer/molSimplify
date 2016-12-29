@@ -255,6 +255,7 @@ def checkmultilig(ligs):
 				f = open(lig,'r')
 				s = f.read().splitlines()
 				for ss in s:
+					ss = ss.replace('\t',' ')
 					sf = filter(None,ss.split(' '))
 					if len(sf) > 0:
 						connatoms.append(sf[-1])
@@ -361,7 +362,7 @@ def rungen(installdir,rundir,args,chspfname,globs):
 			lig = ''
 			ligocc = ''
 		##### fetch smart name
-		fname = name_complex(rundir,args.core,ligands,ligocc,args,bind=args.bind,bsmi=args.nambsmi)
+		fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,bind=args.bind,bsmi=args.nambsmi)
 		if globs.debug:
 			print('in rungen, fname is  ' + fname)
 		#####
@@ -467,13 +468,13 @@ def rungen(installdir,rundir,args,chspfname,globs):
 				args.ff = 'mmff94'
 				args.ffoption = 'ba'
 				args.MLbonds = False
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'FFML')
 					os.rename(strf+'.xyz',strf+'FFML.xyz')
 				# generate xyz with FF and covalent
 				args.MLbonds = ['c' for i in range(0,len(args.lig))]
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'FFc')
 					os.rename(strf+'.xyz',strf+'FFc.xyz')
@@ -481,20 +482,20 @@ def rungen(installdir,rundir,args,chspfname,globs):
 				args.ffoption = False
 				args.MLbonds = False
 				# generate xyz without FF and trained ML
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'ML')
 					os.rename(strf+'.xyz',strf+'ML.xyz')
 				args.MLbonds = ['c' for i in range(0,len(args.lig))]
 				# generate xyz without FF and covalent ML
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'c')
 					os.rename(strf+'.xyz',strf+'c.xyz')
 				strfiles = tstrfiles
 			else:
 				# generate xyz files
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs)
+				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 			# generate QC input files
 			if args.qccode and not emsg:
 				if args.charge and (isinstance(args.charge, list)):

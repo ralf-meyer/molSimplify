@@ -257,7 +257,7 @@ def dissim(outf,n):
 	else:
 		obab = 'babel'
 	# generate fs of original hit list
-	mybash(obab+' -ismi simres.smi -osdf tmp.sdf')
+	mybash(obab+' -ismi '+outf+' -osdf tmp.sdf')
 	mybash(obab+' tmp.sdf -ofs')
 	# number of hits
 	numcpds = mybash('obabel tmp.sdf -onul')
@@ -334,7 +334,7 @@ def matchsmarts(smarts,outf,catoms,nres):
 ##### Main driver for db search ####
 ####################################
 def dbsearch(rundir,args,globs):
-    print time.time()
+    #print time.time()
     flag = False
     if globs.osx:
         obab = '/usr/local/bin/obabel'
@@ -483,7 +483,7 @@ def dbsearch(rundir,args,globs):
         os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
     os.rename(outf,args.rundir+'/'+outf)
     os.chdir(cwd)
-    print time.time()
+    #print time.time()
     return False
         
         

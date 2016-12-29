@@ -36,7 +36,9 @@ def checkinput(args):
 ########## check true or false  ###########
 ###########################################
 def checkTrue(arg):
-    if 'y' in arg.lower() or '1' in arg.lower() or 't' in arg.lower() or arg==1:
+    if 'auto' in arg.lower():
+        return 'auto'
+    elif 'y' in arg.lower() or '1' in arg.lower() or 't' in arg.lower() or arg==1:
         return True
     else:
         return False
@@ -194,7 +196,7 @@ def parseCLI(args):
 def parseinput(args):
     args.skipANN = False
     for line in open(args.i):
-        if '-lig' not in line and '-core' not in line and '-bind' not in line and '-db' not in line:
+        if '-lig' not in line and '-core' not in line and '-bind' not in line and '-dbsmarts' not in line:
             line = line.split('#')[0] # remove comments
         li = line.strip()
         li = li.replace('\n','')

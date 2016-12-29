@@ -467,7 +467,7 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
 
 
 
-def name_complex(rootdir,core,ligs,ligoc,args,bind= False,bsmi=False):
+def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
     ## neww version of the above, designed to 
     ## produce more human and machine-readable formats
     #print('ligoc is ' + str(ligoc))
@@ -496,8 +496,11 @@ def name_complex(rootdir,core,ligs,ligoc,args,bind= False,bsmi=False):
             spin = "0"
         name += "_" + str(spin)
         for i,lig in enumerate(ligs):
-            lig = lig.split('\t')[0]
-            name += '_' + str(lig) + '_' + str(ligoc[i])
+            if '\t' in lig:
+                lig = lig.split('\t')[0]
+                name += '_smi' + str(sernum+1) + '_' + str(ligoc[i])
+            else:
+                name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
         if args.bind:
             if bsmi:

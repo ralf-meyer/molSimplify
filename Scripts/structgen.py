@@ -579,7 +579,26 @@ def getconnection2(core,cidx,BL):
 				objopt = obj
 				cpoint = P
 	return cpoint 
-    
+
+def findsmarts(lig3D,smarts,catom):
+	# returns true if connecting atom of lig3D is part of SMARTS pattern
+	# lig3D: OBmol of mol3D
+	# smarts: list of SMARTS patterns
+	# catom: connecting atom of lig3D (zero based numbering)
+	mall = []
+	for sm in smarts:
+		sm = pybel.Smarts(sm)
+		matches = sm.findall(lig3D)
+		matches = [i for sub in matches for i in sub]
+		for m in matches:
+			if m not in mall:
+				mall.append(m)
+	if catom+1 in mall:
+		return True
+	else:
+		return False
+
+
 #################################################
 ####### functionalizes core with ligands ########
 ############## for metal complexes ##############
@@ -670,7 +689,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	if args.keepHs:
 		keepHs = [k for k in args.keepHs]
 		for j in range(len(args.keepHs),len(ligs)):
-			keepHs.append(False)
+			keepHs.append('auto') # fill out unspecified keepHs with default
 		keepHs = [keepHs[i] for i in indcs] # sort keepHs list
 	### sort M-L bond list ###
 	MLb = False
@@ -810,8 +829,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 				lig,emsg = lig_load(installdir,ligand,licores) # load ligand
 				# check for smiles, force not removal of hydrogen
 				allremH = True
-				if ('+' in ligand or '-' in ligand):
-				    allremH = False
+				#if ('+' in ligand or '-' in ligand):
+				#    allremH = False
 				if emsg:
 					return False,emsg
 				# if SMILES string
@@ -829,7 +848,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 				# convert to mol3D
 				lig3D.convert2mol3D() # convert to mol3D
 				for ii in lig.cat: # remove Hs from connecting atoms if keepHs not true
-					if not keepHs or (len(keepHs) <= i or not keepHs[i]):
+					if (not keepHs) or (len(keepHs) <= i) or (not keepHs[i]) or (keepHs[i] == 'auto' and findsmarts(lig3D.OBmol,globs.remHsmarts,ii)):
 						# remove one hydrogen
 						Hs = lig3D.getHsbyIndex(ii)
 						if len(Hs) > 0 and allremH:
@@ -1862,7 +1881,7 @@ def customcore(args,core,ligs,ligoc,installdir,licores,globs):
 ##########################################
 ### main structure generation function ###
 ##########################################
-def structgen(installdir,args,rootdir,ligands,ligoc,globs):
+def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
     # INPUT
     #   - installdir: top installation directory
     #   - args: placeholder for input arguments
@@ -2064,7 +2083,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        fname = name_complex(rootdir,core,ligands,ligoc,args,bind= False,bsmi=False)
+        fname = name_complex(rootdir,core,ligands,ligoc,sernum,args,bind= False,bsmi=False)
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)

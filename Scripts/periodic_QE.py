@@ -3,10 +3,10 @@
 import os, sys
 import glob, re, math, random, string, numpy, pybel
 from math import pi
-#from molSimplify.Scripts.geometry import *
-#from molSimplify.Classes.atom3D import *
-#from molSimplify.Classes.mol3D import*
-#from molSimplify.Classes.globalvars import globalvars
+from Scripts.geometry import *
+from Classes.atom3D import *
+from Classes.mol3D import*
+from Classes.globalvars import globalvars
 #from operator import add
 
 ###############################
