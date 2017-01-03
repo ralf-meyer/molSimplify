@@ -116,9 +116,13 @@ def csv_loader(path):
 #n = network_builder([25,50,51],"nn_split")
 def simple_splitting_ann(excitation):
     globs=globalvars()
-    path_to_file = ("molSimplify/python_nn/" + "nn_simple")
+#    path_to_file = ("molSimplify/python_nn/" + "nn_simple")
+#    print('path to ANN data: ',path_to_file)
+#    n = simple_network_builder([25,4,4],"nn_simple")
+    path_to_file = ("molSimplify/python_nn/" + "final_split")
     print('path to ANN data: ',path_to_file)
-    n = simple_network_builder([25,4,4],"nn_simple")
+    n = simple_network_builder([25,50,50],"final_split")
+
 
     result = n.activate(excitation)
     return result
