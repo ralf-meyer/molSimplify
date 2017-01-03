@@ -1,7 +1,7 @@
 # simple ligands dictionary
 Br-:[Br-]
 Cl-:[Cl-]
-CN:cyanide
+CN-:cyanide
 CO:carbonyl
 CO3:C(=O)([O-])[O-]
 F-:[F-]

@@ -39,10 +39,9 @@ def tcgen(args,strfiles,method):
     globs = globalvars()
     jobdirs = []
     coordfs = []
-    # Initialize the jobparams dictionary with mandatory/useful keywords.
+    # Initialize the jobparams dictionary with mandatory/useful keywords. TG: removed min_coordinates cartesian
     jobparams={'run': 'minimize',
            'timings': 'yes',
-           'min_coordinates':'cartesian',
            'maxit': '500',
            'scrdir': './scr',
            'method': 'b3lyp',
@@ -156,7 +155,7 @@ def tcgen(args,strfiles,method):
                 output.write('%s %s\n' %(keys,jobparams[keys]))
             if  jobparams['run'] == 'minimize':
                 output.write('new_minimizer yes\n')
-                output.write('min_coordinates cartesian\n')
+                #output.write('min_coordinates cartesian\n')
             if args.tc_fix_dihedral:
                 temp = mol3D()
                 temp.readfromxyz(strfiles[i])
@@ -183,7 +182,7 @@ def tcgen(args,strfiles,method):
                 output.write('%s %s\n' %(keys,jobparams[keys]))
             if  jobparams['run'] == 'minimize':
                 output.write('new_minimizer yes\n')
-                output.write('min_coordinates cartesian\n')
+                #output.write('min_coordinates cartesian\n')
             if args.tc_fix_dihedral:
                 temp = mol3D()
                 temp.readfromxyz(strfiles[i])

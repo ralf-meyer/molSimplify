@@ -21,10 +21,10 @@ phosacidbipyridine:phosacidbipy.mol,phosacidbip,0 1,build bidentate,BA,0
 sulfacidbipyridine:sulfacidbipy.mol,sulfacidbip,0 1,build bidentate,BA,0
 dppe:dppe.mol,dppe,21 25, build bidentate,A,0
 bpabipy:BPAbipy.mol,bpabp,0 13 26 48 30,build core,BA,0
-bromide:bromide.smi,brode,0,build functionalize small,N,-1
+bromide:bromide.mol,brode,0,build functionalize small,N,-1
 carbonyl:carbonyl.mol,crbn,0,build small,N,0
 carboxyl:carboxyl.mol,crbx,1,functionalize small,N,0
-chloride:chloride.smi,chlde,0,build functionalize small,N,-1
+chloride:chloride.mol,chlde,0,build functionalize small,N,-1
 cyclopentadienyl:cyclopentadienyl.mol,cpd,cm,build aromatic,N,-1
 cyanide:cyanide.mol,cyan,0,build small,N,-1
 tcnoet:tcnoet.mol,tcnoet,7,build big,N,-1
@@ -33,7 +33,7 @@ dicyanamide:dicyanamide.mol,dicyanamide,0,build small,N,-1
 tricyanomethyl:tricyanomethyl.mol,tricyanomethyl,5,build,-1
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A,-4
 ethyl:ethyl.mol,eth,1,functionalize small,N,-1
-fluoride:fluoride.smi,fluo,0,build functionalize small,N,-1
+fluoride:fluoride.mol,fluo,0,build functionalize small,N,-1
 hydrocyanide:hydrocyanide.mol,hydc,1,build small,N,0
 misc:methylisocy.mol,misc,0,small,A,0
 tbisc:tbutylisocy.mol,tbisc,0,build bulkymono,A,0

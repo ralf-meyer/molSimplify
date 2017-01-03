@@ -122,7 +122,8 @@ class globalvars:
         self.nosmiles = 0 # number of smiles ligands
         self.rundir = homedir+'/Runs/'# Jobs directory
         self.generated = 0 
-        self.debug = True # additional output for debuggin
+        self.debug = False # additional output for debuggin
+        self.remHsmarts = ["O=CN","O=CO","n","N=CN","nN"] # remove Hs from connecting atoms within these SMARTS patterns
     def amass(self):
         return amassdict
     def metals(self):
