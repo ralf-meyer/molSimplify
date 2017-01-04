@@ -71,15 +71,15 @@ start = datetime.now()
 #                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-jobdir consti','-debug True',
 #                 '-oxstate','II','-spin','5','-name',mol_name+'\n','-qccode TeraChem'])
 #mol_name = "frank"
-subprocess.call(["python","molSimplify/main.py","-core","Mn","-coord",'6',"-lig","porphyrin water","-ligocc",'1,2',
+subprocess.call(["python","molSimplify/main.py","-core","Mn","-coord",'6',"-lig","porphyrin water","-ligocc",'1 2',
                 '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
                  '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-debug True',
                  '-oxstate','II','-spin','1'])
 print('**********************************************')
-subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","porphyrin water","-ligocc",'1,2',
+subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","porphyrin water","-ligocc",'1 2',
                 '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
                  '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n',
-                 '-oxstate','II','-spin','1','-qccode TeraChem'])
+                 '-oxstate','III','-spin','6','-qccode TeraChem'])
 #subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'4',"-lig","cyclam, water","-ligocc",'1',
 #                 '-geometry','sqp','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
 #                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-jobdir consti','-debug True',

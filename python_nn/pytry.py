@@ -128,12 +128,12 @@ def simple_splitting_ann(excitation):
     return result
 def simple_ls_ann(excitation):
     globs=globalvars()
-    n = simple_network_builder([25,8,6],"ls_simple")
+    n = simple_network_builder([25,50,50],"final_ls")
     result = n.activate(excitation)
     return result
 def simple_hs_ann(excitation):
     globs=globalvars()
-    n = simple_network_builder([25,8,6],"hs_simple")
+    n = simple_network_builder([25,50,50],"final_hs")
     result = n.activate(excitation)
     return result
 
