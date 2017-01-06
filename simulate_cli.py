@@ -71,15 +71,20 @@ start = datetime.now()
 #                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-jobdir consti','-debug True',
 #                 '-oxstate','II','-spin','5','-name',mol_name+'\n','-qccode TeraChem'])
 #mol_name = "frank"
-subprocess.call(["python","molSimplify/main.py","-core","Mn","-coord",'6',"-lig","porphyrin water","-ligocc",'1 2',
-                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
-                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-debug True',
-                 '-oxstate','II','-spin','1'])
+#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","n1c(noc1N)c1ncccc1","-ligocc",'3','-smicat','8,1',
+#                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+#                 '-keepHs','Auto','-bcharge','0','-rundir','/home/jp/Runs/\n',
+#                '-oxstate','II','-spin','5'])
 print('**********************************************')
-subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","porphyrin water","-ligocc",'1 2',
+#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","water","-ligocc",'6',
+#                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+#                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n',
+#                 '-oxstate','III','-spin','6','-qccode TeraChem'])
+subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","smitest.smi","-ligocc",'3','-smicat','8,1',
                 '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
-                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n',
-                 '-oxstate','III','-spin','6','-qccode TeraChem'])
+                 '-keepHs','Auto','-bcharge','0','-rundir','/home/jp/Runs/\n',
+                '-oxstate','II','-spin','1 5'])
+
 #subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'4',"-lig","cyclam, water","-ligocc",'1',
 #                 '-geometry','sqp','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
 #                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n','-jobdir consti','-debug True',

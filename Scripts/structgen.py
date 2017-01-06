@@ -805,14 +805,16 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 		print('Skipping ANN')
 		ANN_flag = False
 		ANN_bondl = 0
+                ANN_trust = False
 	else:
 		try:
-			ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores)
+    		    ANN_flag,ANN_bondl,ANN_trust = ANN_preproc(args,ligands,occs,dents,batslist,tcats,installdir,licores)
 		except:
-			print("ANN call rejected")
-		ANN_flag = False
-		ANN_bondl = 0
-	
+        		print("ANN call rejected")
+        		ANN_flag = False
+	                ANN_bondl = 0
+	                ANN_trust = False
+
 	##############################
 	###############################
 	#### loop over ligands and ####
@@ -821,7 +823,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	# loop over ligands
 	totlig = 0  # total number of ligands added
 	ligsused = 0
+        if args.debug:
+            print('ligands is  ' + str(ligands))
 	for i,ligand in enumerate(ligands):
+                if args.debug:
+                    print('placing lig  ' + str(i))
+                    print('denticity is ' + str(dents[i]))
 		for j in range(0,occs[i]):
 			denticity = dents[i]
 			if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
@@ -1530,7 +1537,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	if args.ff and 'a' in args.ffoption:
 		core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
 	###############################
-	return core3D,complex3D,emsg
+	return core3D,complex3D,emsg,ANN_trust
 
 #################################################
 ####### functionalizes core with ligands ########
@@ -1917,7 +1924,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
     if (ligands):
         # check if simple coordination complex or not
         if core.natoms == 1:
-            core3D,complex3D,emsg = mcomplex(args,core,ligands,ligoc,installdir,licores,globs)
+            core3D,complex3D,emsg,ANN_trust = mcomplex(args,core,ligands,ligoc,installdir,licores,globs)
         else:
             # functionalize custom core
             core3D,emsg = customcore(args,core,ligands,ligoc,installdir,licores,globs)
@@ -2104,7 +2111,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
         args.gui.iWtxt.setText('In folder '+pfold+' generated '+str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structures!'
-    return strfiles, emsg, sanity
+    return strfiles, emsg, sanity,ANN_trust
 
 
 

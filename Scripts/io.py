@@ -494,7 +494,6 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
             spin = str(args.spin)
         else:
             spin = "0"
-        name += "_" + str(spin)
         for i,lig in enumerate(ligs):
             if '\t' in lig:
                 lig = lig.split('\t')[0]

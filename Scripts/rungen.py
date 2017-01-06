@@ -281,9 +281,9 @@ def checkmultilig(ligs):
 			for l1 in l0:
 				loclist.append(l1)
 			llist.append(loclist)
-	print llist
-	print tcats
-	print multidx
+	#print llist
+	#print tcats
+	#print multidx
 	return llist,tcats,multidx
 
 ##############################################
@@ -495,7 +495,7 @@ def rungen(installdir,rundir,args,chspfname,globs):
 				strfiles = tstrfiles
 			else:
 				# generate xyz files
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
+                                strfiles,emsg,sanity,ANN_trust = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 			# generate QC input files
 			if args.qccode and not emsg:
 				if args.charge and (isinstance(args.charge, list)):

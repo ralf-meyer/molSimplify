@@ -111,6 +111,13 @@ def csv_loader(path):
             this_line = [float(a) for a in lines]
             ret_list += this_line
     return ret_list
+def matrix_loader(path):
+    globs=globalvars()
+    path_to_file = (globs.installdir + "/python_nn/" + path)
+    with open(path_to_file,'r') as csvfile:
+        csv_lines = csv.reader(csvfile,delimiter= ',')
+        mat = [a for a in csv_lines]
+    return mat
 
 
 #n = network_builder([25,50,51],"nn_split")
@@ -136,6 +143,60 @@ def simple_hs_ann(excitation):
     n = simple_network_builder([25,50,50],"final_hs")
     result = n.activate(excitation)
     return result
+
+def find_eu_dist(excitation):
+    big_mat = np.array(matrix_loader('bigmat.csv'),dtype='float64')
+    min_dist = 1000
+
+    alb = (np.array(excitation))
+    ext_st = [str(i) for i in alb]
+#    print(ext_st)
+#    print('shape of exct ' + str(np.array(excitation).shape))
+#    print('size of exct ' + str(np.array(excitation).size))
+#    print('type of exct ' + str(np.array(excitation).dtype))
+
+    for rows in big_mat:
+        #print(rows)
+        #print('****')
+        #print('****')
+        #print('****')
+        #print('shape of data row ' + str(rows.shape))
+        #print('len of data row is ' + str(rows.size))
+        #print('type of row ' + str(rows.dtype))
+        #print('****')
+        #print(np.subtract(rows,np.array(excitation)))
+        np.subtract(rows,np.array(excitation))
+        this_dist = np.linalg.norm(np.subtract(rows,np.array(excitation)))
+        #print('this_dist is ' + str(this_dist) )
+        if this_dist < min_dist:
+            min_dist = this_dist
+            best_row = rows
+        ll = ['co','cr','fe','mn','ni',
+              'ox','alpha','eq_charge','ax_charge', #ox/alpha/eqlig charge/axlig charge #6-9
+              'ax_dent','eq_dent',# ax_dent/eq_dent/ #10-11
+              'ax_Cl','N','O','S', #12 -15
+              'eq_Cl','N','O','S', #16-19
+              'm_delen','maxdelen', #mdelen, maxdelen #20-21
+              'ax_bo','eq_bo', #axlig_bo, eqliq_bo #22-23
+              'ax_ki','eq_ki']#axlig_ki, eqliq_kii #24-25
+
+    #with open('/home/jp/Dropbox/MyGit/molSimplify_dev/excit.csv','w') as f:
+    #        for items in ll:
+    #                f.write(str(items))
+    #                f.write(',')
+    #        f.write('\n')
+
+    #       for items in alb:
+    #                f.write(str(items))
+    #                f.write(',')
+    #        f.write('\n')
+    #       for items in best_row:
+    #                f.write(str(items))
+    #                f.write(',')
+
+    return min_dist
+    # returns euclidean distance to nearest trainning 
+    # vector in desciptor space
 
 
 
