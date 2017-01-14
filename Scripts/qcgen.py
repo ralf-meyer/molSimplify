@@ -101,7 +101,7 @@ def tcgen(args,strfiles,method):
                 jobparams['method'] = 'u'+method
                 unrestricted=True
     else:
-        if args.spin and int(args.spin) > 1:
+        if args.spin and int(args.spin) >= 1:
                 jobparams['method'] = 'ub3lyp'
                 unrestricted=True
         else:

@@ -440,7 +440,7 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
     # and chooses an appropriate name
     # bind_ident is used to pass binding
     # species information 
-
+    print('the root directory for this calc is '+ (rootdir))
     # check if smiles string in binding species
     if args.bind:
         if bsmi:

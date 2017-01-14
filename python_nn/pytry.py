@@ -80,9 +80,13 @@ def network_builder(layers,partial_path):
     ### load weights and biases
     in_to_one._setParameters(np.array((csv_loader(partial_path + '_w1.csv'))))
     one_to_two._setParameters(np.array(csv_loader(partial_path + '_w2.csv')))
+
     two_to_out._setParameters(np.array(csv_loader(partial_path + '_w3.csv')))
+
     b1_to_one._setParameters(np.array(csv_loader(partial_path + '_b1.csv')))
+
     b2_to_two._setParameters(np.array(csv_loader(partial_path + '_b2.csv')))
+
     b3_to_output._setParameters(np.array(csv_loader(partial_path + '_b3.csv')))
 
     ### connect the network topology
@@ -126,11 +130,10 @@ def simple_splitting_ann(excitation):
 #    path_to_file = ("molSimplify/python_nn/" + "nn_simple")
 #    print('path to ANN data: ',path_to_file)
 #    n = simple_network_builder([25,4,4],"nn_simple")
-    path_to_file = ("molSimplify/python_nn/" + "final_split")
-    print('path to ANN data: ',path_to_file)
+    n = simple_network_builder([25,50,50],"scale_split")
     n = simple_network_builder([25,50,50],"final_split")
 
-
+#    excitation = excitation_standardizer(excitation)
     result = n.activate(excitation)
     return result
 def simple_ls_ann(excitation):
@@ -144,6 +147,24 @@ def simple_hs_ann(excitation):
     result = n.activate(excitation)
     return result
 
+def excitation_standardizer(excitation):
+    excitation = np.array(excitation)
+    mean = np.mean(excitation)
+    sd = np.std(excitation,ddof=0)
+
+    print(excitation)
+    excitation = (excitation - mean)
+    print(excitation)
+    excitation = excitation/sd
+    print('mean/sd',mean,sd)
+    print(excitation)
+
+    print(excitation)
+    mean = np.mean(excitation)
+    sd = np.std(excitation,ddof=0)
+
+    print('mean/sd',mean,sd)
+    return(excitation)
 def find_eu_dist(excitation):
     big_mat = np.array(matrix_loader('bigmat.csv'),dtype='float64')
     min_dist = 1000

@@ -13,6 +13,7 @@ from Scripts.io import *
 from Classes.globalvars import *
 from python_nn.graph_analyze import *
 from python_nn.pytry import *
+import numpy
 # import standard modules
 import openbabel
 
@@ -199,8 +200,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     dents = newdents
     tcats = newcats
     if not args.geometry == "oct":
-        print('nn: geom  is',args.geometry)
-        emsg.append("\n [ANN] Geometry is not supported at this time, MUST give -geometry = oct")
+#        print('nn: geom  is',args.geometry)
+#        emsg.append("[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
         valid = False 
         ANN_reason = 'geometry not oct'
     if not args.oxstate:
@@ -230,20 +231,20 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
         if args.debug:
             print("\n")
-            print('Here comes occs')
+            print('Occs')
             print(occs)
             print('Ligands')
             print(ligs)
-            print('Here comes dents')
+            print('Dents')
             print(dents)
-            print('Here comes bats')
+            print('Bats (backbone atoms)')
             print(batslist)
             print('lig validity',valid)
             print('ax ligs',axial_ligs)
             print('eq ligs',equitorial_ligs)
             print('spin is',spin)
-    if not valid:
-            ANN_reason  = 'find incorrect lig symmetry'
+        if not valid:
+                ANN_reason  = 'find incorrect lig symmetry'
 
     if valid:
             ax_lig3D,r_emsg = lig_load(installdir,axial_ligs[0],licores) # load ligand
@@ -358,7 +359,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     if valid:
         print("*******************************************************************")
         print("************** ANN is engaged and advising on spin ****************")
-        print("************** and metal-ligand bond distancess    ****************")
+        print("************** and metal-ligand bond distances    ****************")
         print("*******************************************************************")
         if high_spin:
             print('You have selected a high-spin state, s = ' + str(spin))
@@ -369,7 +370,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         ANN_trust = max(0.01,1.0-train_dist)
 
         ANN_attributes.update({'ANN_dist_to_train':train_dist})
-        print('distance to trainning data is ' + str(train_dist) + ' ANN trust: ' +str(ANN_trust))
+        print('distance to training data is ' + str(train_dist) + ' ANN trust: ' +str(ANN_trust))
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
@@ -378,10 +379,10 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             print('ANN results are probably useful for this complex ')
             ANN_trust  = 'medium'
         elif float(train_dist)< 1.0:
-            print('ANN results are fairly far from trainnig data, be cautious ')
+            print('ANN results are fairly far from trainig data, be cautious ')
             ANN_trust = 'low'
         elif float(train_dist)> 1.0:
-            print('ANN results are too far from trainnig data, be cautious ')
+            print('ANN results are too far from trainig data, be cautious ')
             ANN_trust = 'very low'
         ANN_attributes.update({'ANN_trust':ANN_trust})
         ## engage ANN

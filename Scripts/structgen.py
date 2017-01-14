@@ -1,4 +1,4 @@
-# Written by Tim Ioannidis for HJK Group
+    # Written by Tim Ioannidis for HJK Group
 # Extended by JP Janet and Terry Gani
 # Dpt of Chemical Engineering, MIT
 
@@ -307,9 +307,8 @@ def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
             break
     if not found: # last resort covalent radii
         bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
-    #### TESTING, REMOVE  #####
-    print('ms default distance is  ' + str(bondl))
-    #### END TESTING ####
+    if args.debug:
+        print('ms default distance is  ' + str(bondl))
     return bondl,exact_match
 
 ###############################
@@ -621,6 +620,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
         ### create a diagnostic object to pass information 
         ### to the other parts of the code
         this_diag = run_diag()
+        db_overwrite = False
         ###
 
 	if globs.debug:
@@ -814,14 +814,19 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 		ANN_bondl = 0
                 ANN_reason = 'ANN skipped by user'
 	else:
-#		try:
+		try:
     		    ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,installdir,licores)
-                    ANN_bondl = ANN_attributes['ANN_bondl']
-#		except:
-#        		print("ANN call rejected")
-#                        ANN_reason = 'uncaught exception'
-#        		ANN_flag = False
-#	                ANN_bondl = 0
+                    if ANN_flag:
+                        ANN_bondl = ANN_attributes['ANN_bondl']
+		    else:
+                        ANN_bondl = 0 
+                        if args.debug:
+                            print("ANN called failed with reason: " + ANN_reason)
+		except:
+           		print("ANN call rejected")
+                        ANN_reason = 'uncaught exception'
+        		ANN_flag = False
+	                ANN_bondl = 0
         this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
 	##############################
 	###############################
@@ -829,6 +834,8 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	### begin functionalization ###
 	###############################
 	# loop over ligands
+        if args.debug:
+            print('begin loop')
 	totlig = 0  # total number of ligands added
 	ligsused = 0
         if args.debug:
@@ -1005,10 +1012,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
                                                         this_diag.set_dict_bl(bondl)
 							if not exact_match:
-								print('No match in DB, using ANN')
+                                                                if args.debug:
+           								print('No match in DB, using ANN')
 								bondl =  ANN_bondl
 							else:
-								print('using exact match from DB')
+                                                                if args.debug:
+        								print('using exact match from DB')
+                                                                db_overwrite = True
 					MLoptbds.append(bondl)
 					# get correct distance for center of mass
 					cmdist = bondl - distance(r1,mcoords)+distance(lig3D.centermass(),mcoords)
@@ -1142,10 +1152,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
                                                         this_diag.set_dict_bl(bondl)
 							if not exact_match:
-								print('No match in DB, using ANN')
+                                                                if args.debug:
+         								print('No match in DB, using ANN')
 								bondl =  ANN_bondl
 							else:
-								print('using exact match from DB')
+                                                                if args.debug:
+           								print('using exact match from DB')
+                                                                db_overwrite = True
 					MLoptbds.append(bondl)
 					MLoptbds.append(bondl)
 					lig3D = setPdistance(lig3D, r1, r0, bondl)
@@ -1348,10 +1361,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
                                                         this_diag.set_dict_bl(bondl)
 							if not exact_match:
-								print('Not match in DB, using ANN')
-								bondl =  ANN_bondl
+                                                            if args.debug: 
+        						        print('Not match in DB, using ANN')
+							    bondl =  ANN_bondl
 							else:
-								print('using exact match from DB')
+                                                            if args.debug: 
+							        print('using exact match from DB')
+                                                            db_overwrite = True 
 					for iib in range(0,3):
 						MLoptbds.append(bondl)
 					# set correct distance
@@ -1424,10 +1440,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
                                                         this_diag.set_dict_bl(bondl)
 							if not exact_match :
-								print('No match in DB, using ANN')
+                                                                if args.debug:
+           								print('No match in DB, using ANN')
 								bondl =  ANN_bondl
 							else:
-								print('using exact match from DB')
+                                                                if args.debug:
+								    print('using exact match from DB at  ' + num2str(bondl))
+                                                                db_overwrite = True
 					for iib in range(0,4):
 						MLoptbds.append(bondl)
 				elif (denticity == 5):
@@ -1554,6 +1573,9 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	if args.ff and 'a' in args.ffoption:
 		core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
 	###############################
+        if db_overwrite:
+            print('bond distance from ANN overwritten by database value (exact match)')
+
 	return core3D,complex3D,emsg,this_diag
 
 #################################################
@@ -2115,7 +2137,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
     pfold = rootdir.split('/',1)[-1]
     if args.calccharge:
         args.charge = core3D.charge
-        #print('setting charge to be ' + str(args.charge))
+        print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
     print('setting sanity diag')

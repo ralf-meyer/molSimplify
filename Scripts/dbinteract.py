@@ -271,6 +271,7 @@ def dissim(outf,n):
 		for i in range(n-1):
 			# initialize list of total similarities
 			simsum = [0] * int(numcpds)
+                        print(simsum)
 			# compute total similarity of each dissimilar structure with hit list
 			for j in range(i+1):
 				a = mybash('obabel '+str(j+1)+'.smi tmp.sdf -ofpt')
@@ -347,6 +348,7 @@ def dbsearch(rundir,args,globs):
     ### in any case do similarity search over indexed db ###
     outf = args.dbfname if args.dbfname else 'simres.smi' # output file
     cwd = os.getcwd()
+    print(globs.installdir)
     os.chdir(globs.installdir)
     ### convert to SMILES/SMARTS if file
     if not args.dbbase:

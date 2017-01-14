@@ -1,4 +1,5 @@
 *.pyc
 *.swp
 *.py~
+IECR_input.py
 db*.xyz

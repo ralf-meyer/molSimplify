@@ -165,6 +165,8 @@ def multialign_objective_function(payload,surface_coord_list,cand_list,bind_dist
     #   - cost: float, sum of squared error, the difference between
     #           the actual distance and the target
     cost = 0
+    print('cand list is ' + str(cand_list))
+    print('surface_coord_list  ' + str(surface_coord_list))
     for indices in enumerate(cand_list):
        v1=(surface_coord_list[indices[0]])
        v2=payload.getAtom(int(indices[1])).coords()
@@ -471,7 +473,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
     this_step_accepted = True
     num_bad_steps= 0 
     break_flag = False
-    maxits = 150
+    maxits = 250
     its = 0
     while (not break_flag) and (its < maxits):
         its +=1
@@ -492,7 +494,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
         this_deltaZ =(distance(this_coord,surface_coord)-bind_dist)
 
         print('cost  = ' + str(this_cost) +'/' +str(cost)+ '  i = ' + str(its) + '  dz =  ' + str(deltaZ) + ' dist  '+ str(this_dist) + ' b step  = '+ str(num_bad_steps) + ' nxt dz = ' + str(this_deltaZ))
-        if (this_cost < (cost)) and (this_dist > 0.75) and (deltaZ > 1e-3):
+        if (this_cost < (cost)) and (this_dist > 0.75) and (deltaZ > 1e-4):
             print('accepting down shift at i  = ' + str(its))
             cost = this_cost
             del final_payload
@@ -689,9 +691,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
                     align_coord = super_cell.getAtom(nn_site).coords()
                     sites_list.append(align_coord)
                     occupied_sites_dict[nn_site] = avail_sites_dict.pop(nn_site) # this transfers the site to occupied
-       #         print(occupied_sites_dict.keys())
-        #        for i in sites_list:
-        #            print(i)
                 align_coord = center_of_sym(sites_list)
 
         else:
@@ -714,7 +713,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay = mol3D()
         temp_pay.copymol3D(payload)
         debug_cell.combine(temp_pay)
-      #  debug_cell.writexyz('db1.xyz')
 
         ######### find matching atom in payload
         # need to determine if the target is an element or a mask
@@ -756,7 +754,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         temp_pay2.copymol3D(payload)
         temp_pay2.translate([0,0,-5])
         debug_cell.combine(temp_pay2)
-     #   debug_cell.writexyz('db2.xyz')
 
         ####### lower payload to distance, rotate to avoid conflicr
         loaded_cell = combine_multi_aligned_payload_with_cell(loaded_cell,super_cell_vector,payload,cand_list,sites_list,align_dist,duplicate,control_angle)
@@ -957,33 +954,33 @@ def slab_module_supervisor(args,rootdir):
         align_distance_method = args.align_distance_method
     if (args.align_dist): #3    
         align_dist = args.align_dist
-    if (args.align_method): #4
-        align_method = args.align_method
-    if (args.object_align): #5
+    if (args.object_align): #4
        object_align = args.object_align
+    if (args.align_method): #5
+        align_method = args.align_method
     if (args.surface_atom_type):#6
        surface_atom_type = args.surface_atom_type
-    if (args.num_surface_atoms): #7
-       num_surface_atoms = args.num_surface_atoms
-    if (args.num_placements): #8
-       num_placements = args.num_placements
-    if (args.coverage):#9
-       coverage = args.coverage
-    if (args.multi_placement_centering):#10
-       multi_placement_centering = args.multi_placement_centering
-       multi_placement_centering_overide= True
-    if (args.control_angle):#11
-       control_angle = args.control_angle
-    if (args.angle_control_partner): #12
-       angle_control_partner = args.angle_control_partner
-    if (args.angle_surface_axis): #13
-       angle_surface_axis = args.angle_surface_axis
-       print('ang_surf_axis  '  +str(angle_surface_axis))
-    if (args.duplicate):#14
-       duplicate = True
-    if (args.surface_atom_ind):
+    if (args.surface_atom_ind):#7
         surface_atom_ind = args.surface_atom_ind
 
+    if (args.num_surface_atoms): #8
+       num_surface_atoms = args.num_surface_atoms
+    if (args.num_placements): #9
+       num_placements = args.num_placements
+    if (args.coverage):#10
+       coverage = args.coverage
+    if (args.multi_placement_centering):#12
+       multi_placement_centering = args.multi_placement_centering
+       multi_placement_centering_overide= True
+    if (args.control_angle):#13
+       control_angle = args.control_angle
+    if (args.angle_control_partner): #14
+       angle_control_partner = args.angle_control_partner
+    if (args.angle_surface_axis): #14
+       angle_surface_axis = args.angle_surface_axis
+       print('ang_surf_axis  '  +str(angle_surface_axis))
+    if (args.duplicate):#15
+       duplicate = True
         ### check inputs
     if slab_gen and not (slab_size or duplication_vector):
         emsg="Size of slab required (-slab_size or -duplication_vector)"
@@ -1036,6 +1033,15 @@ def slab_module_supervisor(args,rootdir):
                 obj_rad = globs.amass()[globs.elementsbynum()[object_align[0]]]
         align_dist = obj_rad + surf_rad
         print('Chemisorption align distance set to  ' + str(align_dist))
+    if miller_flag:
+        non_zero_indices  = list()
+        zero_indices  = list()
+        for i in [0,1,2]:
+            if not (miller_index[i] == 0):
+                non_zero_indices.append(i)
+            else:
+                zero_indices.append(i)
+
 
 
     ## Main calls
@@ -1047,12 +1053,15 @@ def slab_module_supervisor(args,rootdir):
         if cif_path:
             try:
                 unit_cell,cell_vector = import_from_cif(cif_path)
+                if debug:
+                    print('cell vector from cif is')
+                    print(cell_vector)
             except:
                 emsg.append('unable to import cif at ' + str(cif_path))
                 return emsg
         if miller_flag:
             print('miller index on '+ str(miller_index) + ' ' + str(miller_flag))
-            ###TESTING REMOVE
+            ###TESTING
             if debug:
                 unit_cell.writexyz(rootdir + 'slab/step_0.xyz')
                 print('\n\n')
@@ -1062,7 +1071,7 @@ def slab_module_supervisor(args,rootdir):
                 print(cell_vector[2])
                 print('\n**********************\n')
             v1,v2,v3,angle,u = cut_cell_to_index(unit_cell,cell_vector,miller_index)
-
+            old_cv = cell_vector
             cell_vector = [v1,v2,v3]  # change basis of cell to reflect cut, will rotate after gen
             if debug:
                 print('cell vector is now ')
@@ -1075,15 +1084,21 @@ def slab_module_supervisor(args,rootdir):
 #                unit_cell = rotate_around_axis(unit_cell,[0,0,0],u,-1*angle)
 #                unit_cell.writexyz(rootdir + 'slab/just_flat.xyz')
 
-        if slab_size:
-            #max_dims = find_extents_cv(cell_vector)
-            max_dims = [numpy.linalg.norm(i) for i in cell_vector]
-            print('max dims are' + str(max_dims))
-            duplication_vector = [int(numpy.ceil(slab_size[i]/max_dims[i])) for i in [0,1,2]]
+        max_dims = [numpy.linalg.norm(i) for i in cell_vector]
+        print('max dims are' + str(max_dims))
 
         ext_duplication_vector =[[0,0,0],[0,0,0],[0,0,0]]
-        for i in [0,1,2]:
-            ext_duplication_vector[i][i] = max_dims[i]
+        if miller_flag:
+            for i in [0,1,2]:
+                ext_duplication_vector[i][i] = max_dims[i]
+        else:
+            ext_duplication_vector = cell_vector
+       # ext_duplication_vector = old_cv
+
+
+        if slab_size:
+            duplication_vector = [int(numpy.ceil(slab_size[i]/max_dims[i])) for i in [0,1,2]]
+
  #       print('\n cell vector is '  + str(cell_vector))
 
 #        print('\n\n\n')
@@ -1093,19 +1108,37 @@ def slab_module_supervisor(args,rootdir):
         acell = duplication_vector[2]
         bcell = duplication_vector[1]
         ccell = duplication_vector[2]
-        if debug:
-            print('AGAIN: duplication_vector is' + str(duplication_vector))
-
         if miller_flag:
-            duplication_vector[2] +=4 #enusre enough layers to get to height
+            if (len(non_zero_indices) > 2):
+                duplication_vector[1] +=2 #enusre enough layers to get to height
+                duplication_vector[2] +=4 #enusre enough layers to get to height
+
         if debug:
-            print('duplication_vector is' + str(duplication_vector))
+            print('duplication vector is  '+  str(duplication_vector))
+            print('\n')
 
         ###########################
         ###########################
-        #### perfrom duplication
-        super_cell = unit_to_super(unit_cell,cell_vector,duplication_vector)
+        ###########################
+        ###########################
+        #### perfrom duplication ######################################################
+        super_cell = unit_to_super(unit_cell,cell_vector,duplication_vector) ##########
+        ###############################################################################
+        ###########################
+        ###########################
+        ###########################
+
         if debug:
+            print(rootdir)
+            super_cell.writexyz(rootdir + 'slab/step_2b.xyz')
+ 
+        if miller_flag:
+            if (len(non_zero_indices) > 2):
+                duplication_vector[1] += -2
+                duplication_vector[2] += -4
+
+        if debug:
+            print(rootdir)
             super_cell.writexyz(rootdir + 'slab/step_2.xyz')
         ############################
         ############################
@@ -1117,9 +1150,23 @@ def slab_module_supervisor(args,rootdir):
            if debug:
                super_cell.writexyz(rootdir + 'slab/step_3.xyz')
            ## this lowers the cell into the xy plane
-           super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
+           #############################################################
+           #############################################################
+           super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)##
+           #############################################################
+           #############################################################
            if debug:
                super_cell.writexyz(rootdir + 'slab/step_4.xyz')
+
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_under_layer(super_cell)
+           super_cell= shave_surface_layer(super_cell)
+           super_cell= shave_surface_layer(super_cell)
+           super_cell= shave_surface_layer(super_cell)
+
+
 
 
            r_cv =  [PointRotateAxis(u,[0,0,0],list(i),angle) for i in cell_vector]
@@ -1150,6 +1197,10 @@ def slab_module_supervisor(args,rootdir):
                          [i*duplication_vector[1] for i in cell_vector[1]],
                          [i*duplication_vector[2] for i in cell_vector[2]]]
         if debug:
+            print('cell vector is now ')
+            print(cell_vector[0])
+            print(cell_vector[1])
+            print(cell_vector[2])
             print('super_cell vector is now ')
             print(super_cell_vector[0])
             print(super_cell_vector[1])
@@ -1171,9 +1222,7 @@ def slab_module_supervisor(args,rootdir):
 #        print('\n\n')
 #
         if miller_flag:
-            r_cell_vector = [[i*duplication_vector[0] for i in r_cv[0]],
-                             [i*duplication_vector[1] for i in r_cv[1]],
-                             [i*duplication_vector[2] for i in r_cv[2]]]
+            r_cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),-1*angle) for i in super_cell_vector]
             if debug:
                 print('r_cell vector is now ')
                 print(r_cell_vector[0])
@@ -1233,14 +1282,15 @@ def slab_module_supervisor(args,rootdir):
                         coords = atoms.coords()
                         if (coords[2] > zmax):
                             zmax = coords[2]
-                        if (zmax <= 1.1*slab_size[2]):
+                    if (zmax <= 1.1*slab_size[2]):
                             stop_flag = True
-                        else:
-                            if debug:
-                                print('cutting due to zmax')
-                            super_cell= shave_surface_layer(super_cell)
+                    else:
+                        if debug:
+                            print('cutting due to zmax')
+                        super_cell= shave_surface_layer(super_cell)
                     if counter > 10:
-                        stop_flag =  True
+                            stop_flag = True
+
             if debug:
                 super_cell.writexyz(rootdir + 'slab/step_8.xyz')
             ## place cell at origin
@@ -1330,7 +1380,7 @@ def slab_module_supervisor(args,rootdir):
         loaded_cell.writexyz(rootdir + 'loaded_slab/loaded.xyz')
 #        print('this supercell vector is:')
 #        print(super_cell_vector)
-        super_duper_cell = unit_to_super(loaded_cell,ext_duplication_vector,[2,2,1])
+        super_duper_cell = unit_to_super(loaded_cell,a_totally_new_variable,[2,2,1])
         super_duper_cell.writexyz(rootdir + 'loaded_slab/SD.xyz')
         write_periodic_mol3d_to_qe(loaded_cell,a_totally_new_variable,rootdir + 'loaded_slab/loaded_slab.in')
 

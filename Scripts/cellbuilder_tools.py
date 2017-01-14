@@ -122,6 +122,8 @@ def import_from_cif(fst):
                 if linesplit[0] == "_cell_angle_gamma":
                     gamma = float(''.join(c for c in linesplit[1] if c not in '()').rstrip('.'))
     # create cell vectors
+    print('alpha , beta , gama = ' + str(alpha) + ', '+  str(beta) +' ,'+ str(gamma))
+ 
     try:
         cell_vector.append([A,0,0])
         cell_vector.append([B*numpy.cos((gamma*pi)/180),B*numpy.sin((gamma*pi)/180),0])
@@ -135,7 +137,7 @@ def import_from_cif(fst):
     for i,rows in enumerate(cell_vector):
         print(rows)
         for j,elements in enumerate(rows):
-            if elements <= 1e-8:
+            if abs(elements) <= 1e-8:
                 cell_vector[i][j] = 0
     if exit_status != 0:
         return emsg

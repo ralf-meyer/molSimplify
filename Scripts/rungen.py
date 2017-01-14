@@ -282,9 +282,6 @@ def checkmultilig(ligs):
 			for l1 in l0:
 				loclist.append(l1)
 			llist.append(loclist)
-	#print llist
-	#print tcats
-	#print multidx
 	return llist,tcats,multidx
 
 ##############################################

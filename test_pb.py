@@ -1,0 +1,1 @@
+from pybrain.structures import *
