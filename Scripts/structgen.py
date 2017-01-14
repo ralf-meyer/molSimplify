@@ -16,6 +16,7 @@ from Scripts.geometry import *
 from Scripts.io import *
 from Scripts.nn_prep import *
 from Classes.globalvars import *
+from Classes.rundiag import *
 # import standard modules
 import os, sys
 import pybel, openbabel, random, itertools
@@ -616,6 +617,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	#   - core3D: built complex
 	#   - complex3D: list of all mol3D ligands and core
 	#   - emsg: error messages
+        
+        ### create a diagnostic object to pass information 
+        ### to the other parts of the code
+        this_diag = run_diag()
+        ###
+
 	if globs.debug:
 		print '\nGenerating complex with ligands and occupations:',ligs,ligoc
 	if args.gui:
@@ -744,8 +751,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	### load backbone and combinations ###
 	# load backbone for coordination
 	corexyz = loadcoord(installdir,geom)
-	
-	
+
 	# get combinations possible for specified geometry
 	if geom in bbcombsdict.keys() and not args.ligloc:
 		backbatoms = bbcombsdict[geom]
@@ -801,20 +807,22 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 				batslist.append(bats)
 	#########################################################
 	#### ANN module
+        ANN_attributes = dict()
 	if args.skipANN:
 		print('Skipping ANN')
 		ANN_flag = False
 		ANN_bondl = 0
-                ANN_trust = False
+                ANN_reason = 'ANN skipped by user'
 	else:
-		try:
-    		    ANN_flag,ANN_bondl,ANN_trust = ANN_preproc(args,ligands,occs,dents,batslist,tcats,installdir,licores)
-		except:
-        		print("ANN call rejected")
-        		ANN_flag = False
-	                ANN_bondl = 0
-	                ANN_trust = False
-
+#		try:
+    		    ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,installdir,licores)
+                    ANN_bondl = ANN_attributes['ANN_bondl']
+#		except:
+#        		print("ANN call rejected")
+#                        ANN_reason = 'uncaught exception'
+#        		ANN_flag = False
+#	                ANN_bondl = 0
+        this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
 	##############################
 	###############################
 	#### loop over ligands and ####
@@ -991,10 +999,13 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 					else:
 						if not ANN_flag:
 							bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
+
 						else:
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 							if not exact_match:
-								print('Not match in DB, using ANN')
+								print('No match in DB, using ANN')
 								bondl =  ANN_bondl
 							else:
 								print('using exact match from DB')
@@ -1126,10 +1137,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 					else:
 						if not ANN_flag:
 							bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 						else:
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 							if not exact_match:
-								print('Not match in DB, using ANN')
+								print('No match in DB, using ANN')
 								bondl =  ANN_bondl
 							else:
 								print('using exact match from DB')
@@ -1330,8 +1343,10 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 					else:
 						if not ANN_flag:
 							bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 						else:
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 							if not exact_match:
 								print('Not match in DB, using ANN')
 								bondl =  ANN_bondl
@@ -1404,10 +1419,12 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 					else:
 						if not ANN_flag:
 							bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 						else:
 							bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                                                        this_diag.set_dict_bl(bondl)
 							if not exact_match :
-								print('Not match in DB, using ANN')
+								print('No match in DB, using ANN')
 								bondl =  ANN_bondl
 							else:
 								print('using exact match from DB')
@@ -1537,7 +1554,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	if args.ff and 'a' in args.ffoption:
 		core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
 	###############################
-	return core3D,complex3D,emsg,ANN_trust
+	return core3D,complex3D,emsg,this_diag
 
 #################################################
 ####### functionalizes core with ligands ########
@@ -1924,9 +1941,10 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
     if (ligands):
         # check if simple coordination complex or not
         if core.natoms == 1:
-            core3D,complex3D,emsg,ANN_trust = mcomplex(args,core,ligands,ligoc,installdir,licores,globs)
+            core3D,complex3D,emsg,this_diag = mcomplex(args,core,ligands,ligoc,installdir,licores,globs)
         else:
             # functionalize custom core
+            this_diag = run_diag()
             core3D,emsg = customcore(args,core,ligands,ligoc,installdir,licores,globs)
         if emsg:
             return False,emsg
@@ -2100,6 +2118,10 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
         #print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
+    print('setting sanity diag')
+    this_diag.set_sanity(sanity,d0)
+    this_diag.set_mol(core3D)
+    this_diag.write_report(fname+'.report')
     del core3D
     if sanity:
         print 'WARNING: Generated complex is not good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
@@ -2111,7 +2133,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
         args.gui.iWtxt.setText('In folder '+pfold+' generated '+str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structures!'
-    return strfiles, emsg, sanity,ANN_trust
+    return strfiles, emsg, this_diag
 
 
 

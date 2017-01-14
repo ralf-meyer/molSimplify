@@ -31,6 +31,7 @@ def multitcgen(args,strfiles):
         for xyzf in strfiles:
             os.remove(xyzf+'.xyz')
             os.remove(xyzf+'.molinp')
+            os.remove(xyzf+'.report')
     return jobdirs
 
 ### generate terachem input files ###
@@ -79,6 +80,10 @@ def tcgen(args,strfiles,method):
             jobdirs.append(mdir)
             shutil.copy2(xyzf,mdir)
             shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+            try:
+                shutil.copy2(xyzf.replace('.xyz','.report'),mdir.replace('.xyz','.report'))
+            except:
+                pass
         elif args.jobdir:
              jobdirs.append(rdir)
     # parse extra arguments
@@ -273,6 +278,11 @@ def gamgen(args,strfiles,method):
         jobdirs.append(mdir)
         shutil.copy2(xyzf,mdir)
         shutil.copy2(xyzf.replace('.gxyz','.molinp'),mdir.replace('.gxyz','.molinp'))
+        try:
+            shutil.copy2(xyzf.replace('.xyz','.report'),mdir.replace('.xyz','.report'))
+        except:
+            pass
+
     if method:
         if method[0]=='U' or method[0]=='u':
             method = method[1:]
@@ -401,6 +411,7 @@ def multiqgen(args,strfiles):
     for xyzf in strfiles:
         os.remove(xyzf+'.xyz')
         os.remove(xyzf+'.molinp')
+        os.remove(xyzf + '.report')
     return jobdirs
 
 ### generate input files for qchem ###
@@ -446,6 +457,12 @@ def qgen(args,strfiles,method):
         jobdirs.append(mdir)
         shutil.copy2(xyzf,mdir)
         shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+        try:
+            shutil.copy2(xyzf.replace('.xyz','.report'),mdir.replace('.xyz','.report'))
+        except:
+            pass
+
+
     # Check for existence of basis and sanitize name
     if args.basis and len(args.basis) > 1:
         jobparams['BASIS']=args.basis

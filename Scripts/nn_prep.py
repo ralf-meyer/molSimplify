@@ -171,6 +171,14 @@ def get_con_at_type(mol,connection_atoms):
 
 
 def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
+
+    ### prepares and runs ANN calculation
+
+    ######################
+    ANN_reason = False # holder for reason to reject ANN call
+    ANN_attributes = dict()
+    ######################
+
     nn_excitation = []
     r = 0
     emsg = list()
@@ -193,10 +201,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     if not args.geometry == "oct":
         print('nn: geom  is',args.geometry)
         emsg.append("\n [ANN] Geometry is not supported at this time, MUST give -geometry = oct")
-        valid = False
+        valid = False 
+        ANN_reason = 'geometry not oct'
     if not args.oxstate:
         emsg.append("\n [ANN] oxidation state must be given")
         valid = False
+        ANN_reason = 'oxstate not given'
     if valid:
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(metal,oxidation_state)
@@ -208,11 +218,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             print('metal validity',valid)
         if not valid:
             emsg.append("\n Oxidation state not available for this metal")
-
+            ANN_reason = 'ox state not avail for metal'
     if valid:
-        high_spin = spin_classify(this_metal,spin,ox)
+        high_spin,spin_ops = spin_classify(this_metal,spin,ox)
         if not valid:
             emsg.append("\n this spin state not available for this metal")
+            ANN_reason = 'spin state not availble for metal'
     if emsg:
         print('nn emsg',emsg)
     if valid:
@@ -231,6 +242,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             print('ax ligs',axial_ligs)
             print('eq ligs',equitorial_ligs)
             print('spin is',spin)
+    if not valid:
+            ANN_reason  = 'find incorrect lig symmetry'
 
     if valid:
             ax_lig3D,r_emsg = lig_load(installdir,axial_ligs[0],licores) # load ligand
@@ -256,18 +269,11 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     if valid:
         eq_ki = get_truncated_kier(eq_lig3D,eq_lig3D.cat)
         ax_ki = get_truncated_kier(ax_lig3D,ax_lig3D.cat)
-#        print('ax_ki',eq_ki)
-#        print('eq_ki',ax_ki)
         eq_EN = get_lig_EN(eq_lig3D,eq_lig3D.cat)
         ax_EN = get_lig_EN(ax_lig3D,ax_lig3D.cat)
         eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol,eq_lig3D.cat,eq_lig3D)
         ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol,ax_lig3D.cat,ax_lig3D)
 
-        #ax_bo = get_truncated_bo(ax_lig3D,ax_lig3D.cat)
-
-#        ax_bo = get_bond_order((obtain_truncation(ax_lig3D,ax_lig3D.cat,2)).OBmol.OBMol)
-        #print('ax_EN',eq_EN)
-        #print('eq_EN',ax_EN)
 
         eq_charge = eq_lig3D.OBmol.charge
         ax_charge = ax_lig3D.OBmol.charge
@@ -362,19 +368,26 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         train_dist = find_eu_dist(nn_excitation)
         ANN_trust = max(0.01,1.0-train_dist)
 
+        ANN_attributes.update({'ANN_dist_to_train':train_dist})
         print('distance to trainning data is ' + str(train_dist) + ' ANN trust: ' +str(ANN_trust))
+        ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
+            ANN_trust = 'high'
         elif float(train_dist)< 0.75:
             print('ANN results are probably useful for this complex ')
+            ANN_trust  = 'medium'
         elif float(train_dist)< 1.0:
             print('ANN results are fairly far from trainnig data, be cautious ')
+            ANN_trust = 'low'
         elif float(train_dist)> 1.0:
             print('ANN results are too far from trainnig data, be cautious ')
-
+            ANN_trust = 'very low'
+        ANN_attributes.update({'ANN_trust':ANN_trust})
         ## engage ANN
         delta = 0 
         delta = get_splitting(nn_excitation)
+        ## report to stdout
         if delta[0] < 0 and not high_spin:
             if abs(delta[0]) > 5:
                 print('warning, ANN predicts a high spin ground state for this complex')
@@ -386,6 +399,16 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             else:
                     print('warning, ANN predicts a near degenerate ground state for this complex')
         print("ANN predicts a spin splitting (HS - LS) of " + str(delta[0]) + ' kcal/mol')
+        ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
+        ## reparse to save attributes
+        ANN_attributes.update({'This spin':spin})
+        if delta[0] < 0 and (abs(delta[0]) > 5):
+                ANN_attributes.update({'ANN_ground_state':spin_ops[1]})
+        elif delta[0] > 0 and (abs(delta[0]) > 5):
+                ANN_attributes.update({'ANN_ground_state':spin_ops[0]})
+        else:
+                ANN_attributes.update({'ANN_gound_state':'dgen ' + str(spin_ops)})
+
         r = 0
         if not high_spin:
             r = get_ls_dist(nn_excitation)
@@ -393,10 +416,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
             r = get_hs_dist(nn_excitation)
 
         print('ANN bond length is predicted to be: '+str(r) + ' angstrom')
+        ANN_attributes.update({'ANN_bondl':r[0]})
         print("*******************************************************************")
 
-
-    return valid,r,ANN_trust
+        if not valid and not ANN_reason:
+                ANN_reason = ' uncaught rejection (see sdout)'
+    return valid,ANN_reason,ANN_attributes
 
 
 def ax_lig_corrector(excitation,con_atom_type):
@@ -462,13 +487,19 @@ def spin_classify(metal,spin,ox):
                               'fe':{2:5,3:6},
                               'mn':{2:6,3:5},
                               'ni':{2:3}}
+
+    suggest_spin_dictionary = {'co':{2:[2,4],3:[1,5]},
+                              'cr':{2:[1,5],3:[2,4]},
+                              'fe':{2:[1,5],3:[2,6]},
+                              'mn':{2:[2,6],3:[1,5]},
+                              'ni':{2:[1,3]}}
+
+
     high_spin = False
-    #print(metal_spin_dictionary[metal],ox)
-#    print('spin checking: ',str(spin),str(metal_spin_dictionary[metal][ox]))
     if (int(spin) >= int(metal_spin_dictionary[metal][ox])):
         high_spin = True
-        #print('spin up')
-    return high_spin
+    spin_ops = suggest_spin_dictionary[metal][ox]
+    return high_spin,spin_ops
 
 def get_splitting(excitation):
     sfd = get_sfd()

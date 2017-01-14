@@ -79,11 +79,46 @@ print('**********************************************')
 #subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","water","-ligocc",'6',
 #                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
 #                 '-keepHs','False','-bcharge','0','-rundir','/home/jp/Runs/\n',
-#                 '-oxstate','III','-spin','6','-qccode TeraChem'])
-subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","smitest.smi","-ligocc",'3','-smicat','8,1',
-                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
-                 '-keepHs','Auto','-bcharge','0','-rundir','/home/jp/Runs/\n',
-                '-oxstate','II','-spin','1 5'])
+#                 '-oxstate','III','-spin','6','-qccode TeraChem'se])
+ #                   subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","smitest.smi","-ligocc",'3',
+#                    '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+ #                    '-keepHs','Auto','-bcharge','0','-rundir',this_path,
+ #                   '-oxstate','II','-spin','1'])
+
+
+############## ICER generation
+
+base_call =["python","molSimplify/main.py","-core","Fe","-coord",'6', '-geometry','oct','-ligalign','False','-calccharge','yes',
+                     '-keepHs','Auto']
+list_of_runs = ['bidentate1','bidentate2','monodentate']
+#list_of_runs = ['monodentate']
+list_of_smis = {'bidentate1':'screenresults.smi','bidentate2':'dissimres.smi','monodentate':"mono.smi"}
+spin_dictionary = {'Fe':{'II':[1,5],'III':[2,6]}}
+for ANN_tags in ['ANN','Database']:
+    for runs in list_of_runs:
+        this_lig_tag = list_of_smis[runs]
+        if runs == 'monodentate':
+            this_occ = 6;
+        else:
+            this_occ = 3;
+        for ox in ['II','III']:
+            for spin in spin_dictionary['Fe'][ox]:
+                this_path = '/home/jp/Runs/'+ANN_tags+'/'+runs + '/'+'ox'+ ox + '_spin' + str(spin)
+                if not os.path.exists(this_path):
+                    os.makedirs(this_path)
+                this_call = list(base_call)
+                this_call += ['-lig',this_lig_tag,'-ligocc',str(this_occ),'-spin',str(spin),'-oxstate',ox,'-rundir',this_path]
+                if ANN_tags == 'Database':
+                    this_call += ['-skipANN']
+                subprocess.call(this_call)
+#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","smitest.smi","-ligocc",'3',
+#                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+#                 '-keepHs','Auto','-bcharge','0','-rundir','/home/jp/Runs/ICER/ANN/o2s1',
+#                '-oxstate','II','-spin','1'])
+#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","smitest.smi","-ligocc",'3',
+#                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',
+#                 '-keepHs','Auto','-bcharge','0','-rundir','/home/jp/Runs/ICER/ANN/o2s5',
+#                '-oxstate','II','-spin','5'])
 
 #subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'4',"-lig","cyclam, water","-ligocc",'1',
 #                 '-geometry','sqp','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',

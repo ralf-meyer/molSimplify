@@ -11,6 +11,7 @@ from structgen import *
 from io import *
 from jobgen import *
 from qcgen import *
+from Classes.rundiag import *
 import argparse, sys, os, shutil, itertools, random
 from collections import Counter
 import pybel
@@ -468,13 +469,13 @@ def rungen(installdir,rundir,args,chspfname,globs):
 				args.ff = 'mmff94'
 				args.ffoption = 'ba'
 				args.MLbonds = False
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
+				strfiles,emsg,this_diag = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'FFML')
 					os.rename(strf+'.xyz',strf+'FFML.xyz')
 				# generate xyz with FF and covalent
 				args.MLbonds = ['c' for i in range(0,len(args.lig))]
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
+				strfiles,emsg,this_diag = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'FFc')
 					os.rename(strf+'.xyz',strf+'FFc.xyz')
@@ -482,20 +483,20 @@ def rungen(installdir,rundir,args,chspfname,globs):
 				args.ffoption = False
 				args.MLbonds = False
 				# generate xyz without FF and trained ML
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
+				strfiles,emsg,this_diag = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'ML')
 					os.rename(strf+'.xyz',strf+'ML.xyz')
 				args.MLbonds = ['c' for i in range(0,len(args.lig))]
 				# generate xyz without FF and covalent ML
-				strfiles,emsg,sanity = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
+				strfiles,emsg,this_diag = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 				for strf in strfiles:
 					tstrfiles.append(strf+'c')
 					os.rename(strf+'.xyz',strf+'c.xyz')
 				strfiles = tstrfiles
 			else:
 				# generate xyz files
-                                strfiles,emsg,sanity,ANN_trust = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
+                                strfiles,emsg,this_diag = structgen(installdir,args,rootdir,ligands,ligocc,globs,mcount)
 			# generate QC input files
 			if args.qccode and not emsg:
 				if args.charge and (isinstance(args.charge, list)):
@@ -527,7 +528,7 @@ def rungen(installdir,rundir,args,chspfname,globs):
 				elif args.jsched in 'SGE Sungrid sge':
 					sgejobgen(args,jobdirs)
 					print 'SGE jobscripts generated!'
-			if sanity: # move to separate subdirectory if generated structure was bad
+			if this_diag.sanity: # move to separate subdirectory if generated structure was bad
 				fname = rootdir.rsplit('/',1)[-1]
 				shutil.move(rootdir,rundir+'/badjobs/'+fname)
 			elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
