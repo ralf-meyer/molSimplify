@@ -135,8 +135,8 @@ def check_ligands(ligs,batlist,dents,tcats):
     return valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat
 
 def check_metal(metal,oxidation_state):
-    supported_metal_dict = {"Fe":[2,3],"Mn":[2,3],"Cr":[2,3],
-                            "Co":[2,3],"Ni":[2]}
+    supported_metal_dict = {"fe":[2,3],"mn":[2,3],"cr":[2,3],
+                            "co":[2,3],"ni":[2]}
     romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
     if oxidation_state  in romans.keys():
         oxidation_state= romans[oxidation_state]
@@ -185,6 +185,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
     emsg = list()
     valid = True 
     metal = args.core
+    this_metal = metal.lower()
     newligs = []
     newcats = []
     newdents = []
@@ -210,9 +211,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         ANN_reason = 'oxstate not given'
     if valid:
         oxidation_state = args.oxstate
-        valid, oxidation_state = check_metal(metal,oxidation_state)
+        valid, oxidation_state = check_metal(this_metal,oxidation_state)
         ## generate key in descriptor space
-        this_metal = metal.lower()
         ox = int(oxidation_state)
         spin = args.spin
         if args.debug:
@@ -287,6 +287,15 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,installdir,licores):
         else:
                 max_delen = ax_EN
         alpha = 0.2 # default for B3LYP
+	if args.exchange:
+		try:
+			if float(args.exchange) > 1:
+				alpha = float(args.exchange)/100 # if given as %
+			elif float(args.exchange) <= 1:
+				alpha = float(args.exchange)
+		except:
+			print('cannot case exchange argument as a float, using 20%')
+ 
         if args.debug:
             print('ax_bo',ax_bo)
             print('eq_bo',eq_bo)

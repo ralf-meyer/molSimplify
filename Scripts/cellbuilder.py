@@ -1105,7 +1105,7 @@ def slab_module_supervisor(args,rootdir):
         if debug:
             print('duplication vector is  '+  str(duplication_vector))
             print('\n')
-        acell = duplication_vector[2]
+        acell = duplication_vector[0]
         bcell = duplication_vector[1]
         ccell = duplication_vector[2]
         if miller_flag:
