@@ -28,7 +28,7 @@ def sgejobgen(args,jobdirs):
         # form jobscript identifier
         if args.jname:
             jobname = args.jname+str(args.jid)
-            jobname = jobname[:8]
+            #jobname = jobname[:8]
         else:
             jobname = 'job'+str(args.jid)
         args.jid += 1
@@ -36,6 +36,7 @@ def sgejobgen(args,jobdirs):
         output.write('#$ -S /bin/bash\n')
         output.write('#$ -N %s\n' %(jobname))
         output.write('#$ -R y\n')
+        output.write('#$ -cwd\n')
         if not args.wtime:
             output.write('#$ -l h_rt=168:00:00\n')
         else:
@@ -100,7 +101,7 @@ def sgejobgen(args,jobdirs):
                     if 'terachem' in jc:
                         tc = True
             if not tc:
-                output.write('terachem terachem_input > tc.out')
+                output.write('terachem terachem_input > $SGE_O_WORKDIR/opttest.out')
         elif args.qccode and ('gam' in args.qccode.lower() or 'qch' in args.qccode.lower()):
             gm = False
             qch = False

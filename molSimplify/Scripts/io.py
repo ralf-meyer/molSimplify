@@ -266,6 +266,7 @@ def core_load(usercore,mcores):
 ### convert to molecule ###
 ###########################
 def lig_load(userligand,licores):
+    globs = globalvars()
     ### get groups ###
     groups = []
     for entry in licores:
@@ -307,6 +308,8 @@ def lig_load(userligand,licores):
         lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
         lig.charge = lig.OBmol.charge
+        if globs.debug:
+            print(flig,userligand,lig.charge)
         if len(dbentry) > 2:
             lig.grps = dbentry[3]
         else:
@@ -336,9 +339,11 @@ def lig_load(userligand,licores):
     ### if not, try converting from SMILES
     else:
         # check for transition metals
-        userligand = checkTMsmiles(userligand)
+        #userligand = checkTMsmiles(userligand)
         # try and catch error if conversion doesn't work
         try:
+            if globs.debug:
+                print userligand
             lig.OBmol = lig.getOBmol(userligand,'smi') # convert from smiles
             lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
             lig.charge = lig.OBmol.charge
@@ -470,9 +475,54 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
             if args.name:
                 fname = rootdir+'/'+args.name + bind.ident[0:2]
     else:
+        if globs.debug:
+            print(rootdir)
         fname = rootdir+'/'+core.ident[0:3]+ligname
         if args.name:
             fname = rootdir+'/'+args.name
 
     return fname
+
+
+
+def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
+    ## neww version of the above, designed to 
+    ## produce more human and machine-readable formats
+    #print('ligoc is ' + str(ligoc))
+    #print('lig is ' + str(ligs))
+
+    romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
+    if args.name: # if set externerally
+        name = rootdir+'/'+args.name
+    else:
+        try:
+            center = core.getAtom(0).symbol().lower()
+        except:
+            center = str(core).lower()
+        name = rootdir + '/' + center
+        if args.oxstate:
+            if args.oxstate in romans.keys():
+                ox = str(romans[args.oxstate])
+            else:
+                ox = str(args.oxstate)
+        else:
+            ox = "0"
+        name += "_" + str(ox)
+        if args.spin:
+            spin = str(args.spin)
+        else:
+            spin = "0"
+        for i,lig in enumerate(ligs):
+            if '\t' in lig:
+                lig = lig.split('\t')[0]
+                name += '_smi' + str(sernum+1) + '_' + str(ligoc[i])
+            else:
+                name += '_' + str(lig) + '_' + str(ligoc[i])
+        name += "_s_"+str(spin)
+        if args.bind:
+            if bsmi:
+                if args.nambsmi: # if name specified use it in file
+                    name += "_" + +args.nambsmi[0:2]
+    return name
+
 

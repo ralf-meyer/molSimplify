@@ -1,8 +1,1 @@
 # molSimplify input file generated from CLI input
--slab_gen 
--cif_path /home/jp/Downloads/pd.cif 
--slab_size [10,10,5] 
--killer_index [1,1,1] 
--freeze 2 
--surface_atom_type Pd 
--debug True

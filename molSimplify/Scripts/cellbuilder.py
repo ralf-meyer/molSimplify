@@ -1046,6 +1046,7 @@ def slab_module_supervisor(args,rootdir):
 
     ## Main calls
     if slab_gen:
+        print('Generating a new slab...')
         if not os.path.exists(rootdir + 'slab'):
                 os.makedirs(rootdir + 'slab')
 
@@ -1104,7 +1105,7 @@ def slab_module_supervisor(args,rootdir):
         if debug:
             print('duplication vector is  '+  str(duplication_vector))
             print('\n')
-        acell = duplication_vector[2]
+        acell = duplication_vector[0]
         bcell = duplication_vector[1]
         ccell = duplication_vector[2]
         if miller_flag:
@@ -1264,10 +1265,10 @@ def slab_module_supervisor(args,rootdir):
                     stop_flag = True
             stop_flag = False
             if slab_size:
-                counter = 0 
+                counter = 0
                 while not stop_flag:
                     print('in loop')
-                    counter = counter + 1
+                    counter += 1
                     zmax = 0 
                     for atoms in super_cell.getAtoms():
                         coords = atoms.coords()
@@ -1346,19 +1347,15 @@ def slab_module_supervisor(args,rootdir):
             print('\n\n ************************ starting placement ***************** \n\n')
         if not slab_gen:
             print('\n\n ************************ placementon existing slab  ***************** \n\n')
-            print(cell_vector)
             a_totally_new_variable = cell_vector
             super_cell_vector = cell_vector
-            print(super_cell)
             super_cell.printxyz()
             print('this supercell vector is:')
             print(super_cell_vector)
  
         if control_angle:
             print('control angle on')
-            print(angle_surface_axis)
             angle_surface_axis.append(0)
-            print(angle_surface_axis)
         loaded_cell =  molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,
                                                  align_method,object_align,align_dist,surface_atom_type,
                                                  control_angle = control_angle, align_ind = angle_control_partner, align_axis = angle_surface_axis,

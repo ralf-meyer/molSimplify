@@ -28,7 +28,8 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
     emsg = False
     globs = globalvars()
     licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
-
+    ligands_folder = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands")
+    print("ligands_folder is : " + str(ligands_folder))
    # licores = readdict(globs.installdir+'/Ligands/ligands.dict')
     # check if ligand exists
     if sminame in licores.keys():
@@ -54,7 +55,7 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
         if '~' in smimol:
             smimol = smimol.replace('~',os.expanduser('~'))
         # convert ligand from smiles/file
-        lig,emsg = lig_load(globs.installdir+'/',smimol,licores)
+        lig,emsg = lig_load(smimol,licores)
         if emsg:
             return emsg
         lig.convert2mol3D() # convert to mol3D
@@ -65,18 +66,18 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
             shortname = sminame
         # new entry for dictionary
         if '.mol' in smimol:
-            shutil.copy2(smimol,globs.installdir+'/Ligands/'+sminame+'.mol')
+            shutil.copy2(smimol,ligands_folder + sminame+'.mol')
             snew = sminame+':'+sminame+'.mol,'+shortname+','+css+','+grp+','+ffopt
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,globs.installdir+'/Ligands/'+sminame+'.xyz')
+            shutil.copy2(smimol,ligans_folder + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
-        elif lig.OBmol:
+        elif lig.OBmol: 
             # write smiles file in Ligands directory
-            lig.OBmol.write('smi',globs.installdir+'/Ligands/'+sminame+'.smi')
+            lig.OBmol.write('smi',ligands_folder + sminame+'.smi')
             snew = sminame+':'+sminame+'.smi,'+shortname+','+css+','+grp+','+ffopt
         else:
             # write xyz file in Ligands directory
-            lig.writexyz(globs.installdir+'/Ligands/'+sminame+'.xyz') # write xyz file
+            lig.writexyz(ligands_folder+sminame+'.xyz') # write xyz file
         # update dictionary
         lipath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
 
@@ -105,7 +106,8 @@ def addtocdb(smimol,sminame,smicat):
     #   - smicat: connection atoms
     emsg = False
     globs = globalvars()
-    mcores = readdict(globs.installdir+'/Cores/cores.dict')
+    mcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
+    core_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores")
     # check if core exists
     if sminame in mcores.keys():
         emsg = 'Core '+sminame+' already existing in core database.'
@@ -123,27 +125,28 @@ def addtocdb(smimol,sminame,smicat):
         if '~' in smimol:
             smimol = smimol.replace('~',os.expanduser('~'))
         # convert ligand from smiles/file
-        core,emsg = core_load(globs.installdir+'/',smimol,mcores)
+        core,emsg = core_load(smimol,mcores)
         if emsg:
             return emsg
         core.convert2mol3D() # convert to mol3D
         # write xyz file in Cores directory
         # new entry for dictionary
         if '.mol' in smimol:
-            shutil.copy2(smimol,globs.installdir+'/Cores/'+sminame+'.mol')
+            shutil.copy2(smimol,core_dir+sminame+'.mol')
             snew = sminame+':'+sminame+'.mol,'+css+','+'1'
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,globs.installdir+'/Cores/'+sminame+'.xyz')
+            shutil.copy2(smimol,core_dir + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         else:
-            core.writexyz(globs.installdir+'/Cores/'+sminame+'.xyz') # write xyz file
+            core.writexyz(core_dir +sminame+'.xyz') # write xyz file
             # new entry for dictionary
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         # update dictionary
-        f = open(globs.installdir+'/Cores/cores.dict','r')
+        cpath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
+        f = open(cpath,'r')
         ss = f.read().splitlines()
         f.close()
-        f = open(globs.installdir+'/Cores/cores.dict','w')
+        f = open(cpath,'w')
         ss.append(snew)
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')
@@ -160,7 +163,10 @@ def addtobdb(smimol,sminame):
     #   - smimol: SMILES string or molecule file to be added
     #   - sminame: name of binding species for key in dictionary
     globs = globalvars()
-    bindcores = readdict(globs.installdir+'/Bind/bind.dict')
+    bindcores = readdicct(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
+    bind_dir = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+    print(bind_dir)
+
     # check if binding species exists
     if sminame in bindcores.keys():
         emsg = 'Molecule '+sminame+' already existing in binding species database.'
@@ -172,7 +178,7 @@ def addtobdb(smimol,sminame):
         if '~' in smimol:
             smimol = smimol.replace('~',os.expanduser('~'))
         # convert ligand from smiles/file
-        bind,bsmi,emsg = bind_load(globs.installdir+'/',smimol,bindcores)
+        bind,bsmi,emsg = bind_load(smimol,bindcores)
         if emsg:
             return emsg
         bind.convert2mol3D() # convert to mol3D
@@ -183,24 +189,25 @@ def addtobdb(smimol,sminame):
         else:
             shortname = sminame
         if '.mol' in smimol:
-            shutil.copy2(smimol,globs.installdir+'/Bind/'+sminame+'.mol')
+            shutil.copy2(smimol,bind_dir+sminame+'.mol')
             snew = sminame+':'+sminame+'.mol,'+shortname+','+css
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,globs.installdir+'/Bind/'+sminame+'.xyz')
+            shutil.copy2(smimol,bind_dir +sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+shortname+','+css
         elif bind.OBmol:
             # write smiles file in Bind species directory
-            bind.OBmol.write('smi',globs.installdir+'/Bind/'+sminame+'.smi')
+            bind.OBmol.write('smi',bind_dir +sminame+'.smi')
             snew = sminame+':'+sminame+'.smi,'+shortname+','+css
         else:
             # write xyz file in Bind species directory
-            bind.writexyz(globs.installdir+'/Bind/'+sminame+'.xyz') # write xyz file
+            bind.writexyz(bind_dir +sminame+'.xyz') # write xyz file
             snew = sminame+':'+sminame+'.xyz,'+shortname+','+css
         # update dictionary
-        f = open(globs.installdir+'/Bind/bind.dict','r')
+        bpath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+        f = open(bpath,'r')
         ss = f.read().splitlines()
         f.close()
-        f = open(globs.installdir+'/Bind/bind.dict','w')
+        f = open(bpath,'w')
         ss.append(snew)
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')
@@ -221,12 +228,20 @@ def removefromDB(sminame,ropt):
     globs = globalvars()
     # convert to unicode
     sminame = unicodedata.normalize('NFKD',sminame).encode('ascii','ignore')
+    lipath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+    li_dir = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands")
+    core_path = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
+    core_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores")
+    bind_path = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
+    bind_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind")
+
+
     if ropt==1:
         # update dictionary
-        f = open(globs.installdir+'/Ligands/ligands.dict','r')
+        f = open(lipath,'r')
         ss = f.read().splitlines()
         f.close()
-        f = open(globs.installdir+'/Ligands/ligands.dict','w')
+        f = open(lipath,'w')
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')
         for s in ssort:
@@ -234,15 +249,15 @@ def removefromDB(sminame,ropt):
             if sminame!=sss[0]:
                 f.write(s+'\n')
             else:
-                os.remove(globs.installdir+'/Ligands/'+sss[1].split(',')[0])
+                os.remove(li_dir + sss[1].split(',')[0])
         f.close()
     elif ropt==0:
-        mcores = readdict(globs.installdir+'/Cores/cores.dict')
+        mcores = readdict(core_path)
         # update dictionary
-        f = open(globs.installdir+'/Cores/cores.dict','r')
+        f = open(core_path,'r')
         ss = f.read().splitlines()
         f.close()
-        f = open(globs.installdir+'/Cores/cores.dict','w')
+        f = open(core_path,'w')
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')
         for s in ssort:
@@ -250,15 +265,15 @@ def removefromDB(sminame,ropt):
             if sminame!=sss[0]:
                 f.write(s+'\n')
             else:
-                os.remove(globs.installdir+'/Cores/'+sss[1].split(',')[0])
+                os.remove(core_dir+sss[1].split(',')[0])
         f.close()
     elif ropt==2:
-        bindcores = readdict(globs.installdir+'/Bind/bind.dict')
+        bindcores = readdict(bind_path)
         # update dictionary
-        f = open(globs.installdir+'/Bind/bind.dict','r')
+        f = open(bind_path,'r')
         ss = f.read().splitlines()
         f.close()
-        f = open(globs.installdir+'/Bind/bind.dict','w')
+        f = open(bind_path,'w')
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')
         for s in ssort:
@@ -266,6 +281,6 @@ def removefromDB(sminame,ropt):
             if sminame!=sss[0]:
                 f.write(s+'\n')
             else:
-                os.remove(globs.installdir+'/Bind/'+sss[1].split(',')[0])
+                os.remove(bind_dir+sss[1].split(',')[0])
         f.close()
     return emsg

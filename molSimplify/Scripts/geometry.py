@@ -72,6 +72,19 @@ def vecdiff(r1,r2):
     dr = [a-b for a,b in zip(r1,r2)]
     return dr
     
+##########################################
+### calculates midpoint between r1-r2  ###
+##########################################
+def midpt(r1,r2):
+    # INPUT
+    #   - r1: list representing vector r1
+    #   - r2: list representing vector r2
+    #   - Rp: reference point through axis
+    # OUTPUT
+    #   - dr: list with element-wise difference r1-r2
+    m = [0.5*(a+b) for a,b in zip(r1,r2)]
+    return m   
+    
 #########################################
 ### Checks if 3 points are collinear ###
 #########################################

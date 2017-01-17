@@ -38,7 +38,9 @@ def checkinput(args):
 ########## check true or false  ###########
 ###########################################
 def checkTrue(arg):
-    if 'y' in arg.lower() or '1' in arg.lower() or 't' in arg.lower() or arg==1:
+    if 'auto' in arg.lower():
+        return 'auto'
+    elif 'y' in arg.lower() or '1' in arg.lower() or 't' in arg.lower() or arg==1:
         return True
     else:
         return False
@@ -198,7 +200,7 @@ def parseCLI(args):
 def parseinput(args):
     args.skipANN = False
     for line in open(args.i):
-        if '-lig' not in line and '-core' not in line and '-bind' not in line:
+        if '-lig' not in line and '-core' not in line and '-bind' not in line and '-dbsmarts' not in line:
             line = line.split('#')[0] # remove comments
         li = line.strip()
         li = li.replace('\n','')
@@ -211,7 +213,7 @@ def parseinput(args):
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = [int(ll)-1 for ll in l[1:]]
             if (l[0]=='-rundir'):
-                print(' rundir set to ' + str(l))
+                print('in inparse, rundir found',l)
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -425,9 +427,10 @@ def parseinput(args):
             if (l[0]=='-dbresults'):
                 args.dbresults = l[1]
             if (l[0]=='-dbdissim'):
-                args.dbdissim = l[1] 
-            if (l[0]=='-dboutputf'):
-                args.dboutputf = l[1]
+                args.dbsearch = True
+                args.dbdissim = l[1]                
+            if (l[0]=='-dbfname'):
+                args.dbfname = l[1]
             if (l[0]=='-dbbase'):
                 args.dbbase = l[1]
             if (l[0]=='-dbsmarts'):
@@ -447,6 +450,27 @@ def parseinput(args):
                 args.dbsbonds = l[1]
             if (l[0]=='-dbmw'):
                 args.dbmw = l[1]
+            if (l[0]=='-dbnsearch'):
+                args.dbnsearch = l[1]
+            if (l[0]=='-dballowedels'):
+                args.dballowedels = l[1]    
+            if (l[0]=='-dbmaxsmartsmatches'):
+                args.dbmaxsmartsmatches = l[1]
+            if (l[0]=='-dbverbose'):
+                args.dbsearch = True
+                args.dbverbose = True
+            if (l[0]=='-dbvdent'):
+                args.dbvdent = l[1]
+            if (l[0]=='-dbvconns'):
+                ll = filter(None,re.split(' |,|\t',l[1]))
+                args.dbvconns = ll
+            if (l[0]=='-dbvhyb'):
+                ll = filter(None,re.split(' |,|\t',l[1]))
+                args.dbvhyb = ll
+            if (l[0]=='-dbvlinks'):
+                args.dbvlinks = l[1]                                               
+            if (l[0]=='-dbfs'):
+                args.dbfs = True                             
             # parse postprocessing arguments
             if (l[0]=='-postp'):
                 args.postp = True
@@ -542,6 +566,13 @@ def parseinput(args):
             if (l[0]=='-surface_atom_ind'): #6
                 args.surface_atom_ind = [int(i.strip('(){}<>[],.')) for i in l[1:]]
 
+            # parse chain-builder arguments
+            if (l[0] == '-chain'):
+                print('chain true')
+                args.chain = l[1]
+            if (l[0] == '-chain_units'):
+                args.chain_units = l[1]
+
 
                 
 #############################################################
@@ -587,7 +618,7 @@ def parsecommandline(parser):
     parser.add_argument("-replig","--replig", help="flag for replacing ligand at specified connection point",action="store_true")
     parser.add_argument("-ff","--ff",help="select force field for FF optimization. Available: MMFF94, UFF, GAFF, Ghemical",action="store_true")
     parser.add_argument("-ffoption","--ffoption",help="select when to perform FF optimization. Options: B(Before),A(After),BA",action="store_true")
-    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens. By default ligands are stripped one hydrogen in order to connect to the core",action="store_true") 
+    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens",action="store_true") 
     parser.add_argument("-smicat","--smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well",action="store_true")
     parser.add_argument("-sminame","--sminame", help="name for smiles species used in the folder naming. e.g. amm",action="store_true") 
     parser.add_argument("-nambsmi","--nambsmi", help="name of SMILES string for binding species e.g. carbonmonoxide",action="store_true")
@@ -595,6 +626,7 @@ def parsecommandline(parser):
     parser.add_argument("-mind","--mind", help="minimum distance above cluster size for molecules placement mindist=size1+size2+mind", action="store_true")
     parser.add_argument("-place","--place", help="place binding species relative to core. Takes either angle (0-360) or ax/s for axial side",action="store_true")
     parser.add_argument("-oxstate","--oxstate", help="oxidation state of the metal, used for bond lengths",action="store_true")
+    parser.add_argument("-stripHs","--stripHs", help="experimental feature",action="store_true")
     # quantum chemistry options
     parser.add_argument("-qccode","--qccode", help="quantum chemistry code. Choices: TeraChem or GAMESS or QChem",action="store_true") 
     parser.add_argument("-charge","--charge", help="charge for system (default: neutral).",action="store_true")
@@ -602,6 +634,9 @@ def parsecommandline(parser):
     parser.add_argument("-spin","--spin", help="spin multiplicity for system (default: singlet) e.g. 1",action="store_true")
     parser.add_argument("-runtyp","--runtyp", help="run type. Choices: optimization, energy",action="store_true")
     parser.add_argument("-method","--method", help="electronic structure method. Specify UDFT for unrestricted calculation(default: b3lyp) e.g. ub3lyp",action="store_true")
+    parser.add_argument("-tc_fix_dihedral","--tc_fix_dihedral", help="TeraChem only: fix SQP dihedrals",action="store_true")
+    # MOLPAC arguments
+    parser.add_argument("-mopac","--mopac", help="Generate MOLPAC files?",action="store_true")
     # terachem arguments
     parser.add_argument("-basis","--basis", help="basis for terachem or qchem job (default: LACVP* or lanl2dz)",action="store_true")
     parser.add_argument("-dispersion","--dispersion", help="dispersion forces. Default: no e.g. d2,d3",action="store_true")
@@ -632,21 +667,28 @@ def parsecommandline(parser):
     parser.add_argument("-joption","--joption", help="additional options for jobscript",action="store_true")
     parser.add_argument("-jcommand","--jcommand", help="additional commands for jobscript",action="store_true")
     # database search arguments
-    parser.add_argument("-dbsim","--dbsim", help="SMILES/ligand/file for similarity search",action="store_true")
+    parser.add_argument("-dbsim","--dbsim", help="deprecated, please use dbsmarts instead",action="store_true")
     parser.add_argument("-dbcatoms","--dbcatoms", help="connection atoms for similarity search",action="store_true")
     parser.add_argument("-dbresults","--dbresults", help="how many results for similary search or screening",action="store_true")
-    parser.add_argument("-dboutputf","--dboutputf", help="output file for search results",action="store_true")
+    parser.add_argument("-dbfname","--dbfname", help="filename for database search, default is simres.smi",action="store_true")
     parser.add_argument("-dbbase","--dbbase", help="database for search",action="store_true")
-    parser.add_argument("-dbsmarts","--dbsmarts", help="SMARTS string for screening",action="store_true")
+    parser.add_argument("-dbsmarts","--dbsmarts", help="SMARTS string for substructure search",action="store_true")
     parser.add_argument("-dbfinger","--dbfinger", help="fingerprint for similarity search",action="store_true")
     parser.add_argument("-dbatoms","--dbatoms", help="number of atoms to be used in screening",action="store_true")
     parser.add_argument("-dbbonds","--dbbonds", help="number of bonds to be used in screening",action="store_true")
     parser.add_argument("-dbarbonds","--dbarbonds", help="Number of aromatic bonds to be used in screening",action="store_true")
     parser.add_argument("-dbsbonds","--dbsbonds", help="number of single bonds to be used in screening",action="store_true")
     parser.add_argument("-dbmw","--dbmw", help="molecular weight to be used in screening",action="store_true")
-    parser.add_argument("-dbdissim","--dbdissim",help="number of dissimilar molecules to find",action="store_true")
-
-
+    parser.add_argument("-dbdissim","--dbdissim", help="number of dissimilar results",action="store_true")
+    parser.add_argument("-dbnsearch","--dbnsearch", help="number of database entries to be searched, only for fastsearch",action="store_true")
+    parser.add_argument("-dballowedels","--dballowedels", help="elements allowed in search, default all",action="store_true")
+    parser.add_argument("-dbmaxsmartsmatches","--dbmaxsmartsmatches", help="maximum instances of SMARTS pattern permitted, default unlimited",action="store_true")  
+    parser.add_argument("-dbverbose","--dbverbose", help="verbose alternative to SMARTS/SMILES strings",action="store_true")
+    parser.add_argument("-dbvdent","--dbvdent", help="ligand denticity (requires dbverbose)",action="store_true")
+    parser.add_argument("-dbvconns","--dbvconns", help="ligand coordinating elements (requires dbverbose)",action="store_true") 
+    parser.add_argument("-dbvhyb","--dbvhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbverbose)",action="store_true")     
+    parser.add_argument("-dbvlinks","--dbvlinks", help="number of linking atoms (requires dbverbose)",action="store_true")          
+    parser.add_argument("-dbfs","--dbfs", help="use fastsearch database if present",action="store_true")     
     # post-processing arguments
     parser.add_argument("-postp","--postp",help="post process results",action="store_true")
     parser.add_argument("-postqc","--postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true") 
@@ -736,6 +778,13 @@ def parsecommandline(parser):
                         help = "boolean, duplicate asorbate above and below slab",action = "store_true") #14
     parser.add_argument('-surface_atom_ind','--surface_atom_ind',
                         help = "list of int, surface atoms to use by index") #15
+
+    # chain builder:
+    parser.add_argument('-chain','--chain',
+                        help = "SMILES string of monomer",action = "store_true") #0
+    parser.add_argument('-chain_units','--chain_units',
+                        help = "int, number of monomers") #0
+
 
 
     args=parser.parse_args()

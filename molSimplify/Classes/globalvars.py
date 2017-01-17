@@ -133,25 +133,8 @@ class globalvars:
         self.nosmiles = 0 # number of smiles ligands
         self.rundir = homedir+'/Runs/'# Jobs directory
         self.generated = 0 
-        self.debug = True # additional output for debuggin
-    #def check_db(self):
-    #    homedir = os.path.expanduser("~")
-    #    flag = False
-    #        d = dict()
-#
-#        if glob.glob(homedir+'/.'+self.PROGRAM):
-#            f = open(homedir+'/.'+self.PROGRAM,'r')
-#            s = filter(None,f.read().splitlines())
-#            for ss in s:
-#                sp = filter(None,ss.split('='))
-#                d[sp[0]] = sp[1]
- #           if 'CHEMDBDIR' in d.keys():
- #               self.chemdbdir = d['CHEMDBDIR']
- #               flag = True
- #           else:
- #               self.chemdbdir = ""
-  #      return flag
-
+        self.debug = False # additional output for debuggin
+        self.remHsmarts = ["O=CN","O=CO","n","N=CN","nN"] # remove Hs from connecting atoms within these SMARTS patterns
     def amass(self):
         return amassdict
     def metals(self):

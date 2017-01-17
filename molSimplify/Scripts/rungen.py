@@ -11,6 +11,7 @@ from structgen import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.jobgen import *
 from molSimplify.Scripts.qcgen import *
+from molSimplify.Classes.rundiag import *
 import argparse, sys, os, shutil, itertools, random
 from collections import Counter
 from pkg_resources import resource_filename, Requirement
@@ -261,6 +262,7 @@ def checkmultilig(ligs):
                     f = open(lig,'r')
                     s = f.read().splitlines()
                     for ss in s:
+			ss = ss.replace('\t',' ')
                         sf = filter(None,ss.split(' '))
                         if len(sf) > 0:
                             connatoms.append(sf[-1])
@@ -311,6 +313,8 @@ def rungen(rundir,args,chspfname,globs):
     ligocc = []
     # check for files specified for multiple ligands
     mligs,catoms = [False],[False]
+    if '.smi' in args.lig[0]:
+        ligfilename = args.lig[0].split('.')[0]
     if args.lig:
         mligs,catoms,multidx = checkmultilig(args.lig)
     # save initial
@@ -361,16 +365,24 @@ def rungen(rundir,args,chspfname,globs):
             ligands =[]
             lig = ''
             ligocc = ''
-        if args.bind:
-            # create folder for runs and check if it already exists
-            if args.nambsmi:
-                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
-            elif not args.bind in bindcores.keys():
-                rootdir = rundir+mname[0:4]+lig+'bsmi'
-            else:
-                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
-        else:
-            rootdir = rundir+mname[0:4]+lig
+	 ##### fetch smart name
+        fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,bind=args.bind,bsmi=args.nambsmi)
+	if globs.debug:
+	    print('in rungen, fname is  ' + fname)
+		#####
+	print('in rungen, fname is  ' + fname)
+
+	#        if args.bind:
+			# create folder for runs and check if it already exists
+	#            if args.nambsmi:
+	#                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
+	#            elif not args.bind in bindcores.keys():
+	#                rootdir = rundir+mname[0:4]+lig+'bsmi'
+	#            else:
+	#                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
+	#        else:
+	#            rootdir = rundir+mname[0:4]+lig
+	rootdir = fname
         # check for charges/spin
         rootcheck = False
         if (chspfname):
@@ -383,6 +395,8 @@ def rungen(rundir,args,chspfname,globs):
         if args.jobdir:
             rootdir = rundir + args.jobdir
         # check for top directory
+	print('rootcheck is  ' + str(rootcheck))
+
         if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
             args.checkdirt = True
             if not args.gui:
@@ -411,13 +425,15 @@ def rungen(rundir,args,chspfname,globs):
                 rootcheck += '_'+str(ifold)
                 os.mkdir(rootcheck)
         elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
-            #print rootcheck
-            args.checkdirt = True
-            try:
-                os.mkdir(rootcheck)
-            except:
-                print 'Directory '+rootcheck+' can not be created. Exiting..\n'
-                return
+		if globs.debug:
+                    print(rootcheck)
+        	args.checkdirt = True
+		print('rootcheck is  ' + str(rootcheck))
+        	try:
+            	    os.mkdir(rootcheck)
+        	except:
+            	    print 'Directory '+rootcheck+' can not be created. Exiting..\n'
+            	    return
         # check for actual directory
         if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
             args.checkdirb = True
@@ -461,13 +477,13 @@ def rungen(rundir,args,chspfname,globs):
                 args.ff = 'mmff94'
                 args.ffoption = 'ba'
                 args.MLbonds = False
-                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg,this_diag = structgen(args,rootdir,ligands,ligocc,globs,mcount)
                 for strf in strfiles:
                     tstrfiles.append(strf+'FFML')
                     os.rename(strf+'.xyz',strf+'FFML.xyz')
                 # generate xyz with FF and covalent
                 args.MLbonds = ['c' for i in range(0,len(args.lig))]
-                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg,this_diag = structgen(args,rootdir,ligands,ligocc,globs,mcount)
                 for strf in strfiles:
                     tstrfiles.append(strf+'FFc')
                     os.rename(strf+'.xyz',strf+'FFc.xyz')
@@ -475,20 +491,20 @@ def rungen(rundir,args,chspfname,globs):
                 args.ffoption = False
                 args.MLbonds = False
                 # generate xyz without FF and trained ML
-                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg,this_diag = structgen(args,rootdir,ligands,ligocc,globs,mcount)
                 for strf in strfiles:
                     tstrfiles.append(strf+'ML')
                     os.rename(strf+'.xyz',strf+'ML.xyz')
                 args.MLbonds = ['c' for i in range(0,len(args.lig))]
                 # generate xyz without FF and covalent ML
-                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg,this_diag  = structgen(args,rootdir,ligands,ligocc,globs,mcount)
                 for strf in strfiles:
                     tstrfiles.append(strf+'c')
                     os.rename(strf+'.xyz',strf+'c.xyz')
                 strfiles = tstrfiles
             else:
                 # generate xyz files
-                strfiles,emsg = structgen(args,rootdir,ligands,ligocc,globs)
+                strfiles,emsg,this_diag = structgen(args,rootdir,ligands,ligocc,globs,mcount)
             # generate QC input files
             if args.qccode and not emsg:
                 if args.charge and (isinstance(args.charge, list)):
@@ -506,18 +522,32 @@ def rungen(rundir,args,chspfname,globs):
                     print 'QChem input files generated!'
                 else:
                     print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
-            # generate jobscripts
-            if args.jsched and not emsg:
-                if args.jsched in 'SBATCH SLURM slurm sbatch':
-                    slurmjobgen(args,jobdirs)
-                    print 'SLURM jobscripts generated!'
-                elif args.jsched in 'SGE Sungrid sge':
-                    sgejobgen(args,jobdirs)
-                    print 'SGE jobscripts generated!'
-        elif not emsg:
-            if args.gui:
-                qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
-                qq.setParent(args.gui.wmain)
-            else:
-                print 'Folder '+rootdir+' was skipped..\n'
-    return emsg    
+			# check molpac
+	        if args.mopac and not emsg:
+		    print('Generating MOPAC input')
+		    if globs.debug:
+		        print(strfiles)
+			jobdirs = mlpgen(args,strfiles,rootdir)
+			# generate jobscripts
+	        if args.jsched and not emsg:
+		    if args.jsched in 'SBATCH SLURM slurm sbatch':
+		        slurmjobgen(args,jobdirs)
+			print 'SLURM jobscripts generated!'
+		    elif args.jsched in 'SGE Sungrid sge':
+			sgejobgen(args,jobdirs)
+			print 'SGE jobscripts generated!'
+                if this_diag.sanity: # move to separate subdirectory if generated structure was bad
+		    fname = rootdir.rsplit('/',1)[-1]
+		    shutil.move(rootdir,rundir+'/badjobs/'+fname)
+		elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
+		    f = open(ligfilename+'-good.smi','a')
+		    f.write(args.lig[0])
+		    f.close()  
+		elif not emsg:
+			if args.gui:
+				qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
+				qq.setParent(args.gui.wmain)
+			else:
+				print 'Folder '+rootdir+' was skipped..\n'
+	return emsg    
+	

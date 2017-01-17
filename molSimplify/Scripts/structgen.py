@@ -16,6 +16,8 @@ from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.globalvars import *
+from molSimplify.Classes.rundiag import *
+
 # import standard modules
 import os, sys
 from pkg_resources import resource_filename, Requirement
@@ -150,8 +152,8 @@ def getsmident(args,indsmi):
     ### check for denticity specification in input ###
     # if denticity is specified return this
     if args.smicat and len(args.smicat) > indsmi:
-            return int(len(args.smicat[indsmi]))
-        # otherwise return default
+        return int(len(args.smicat[indsmi]))
+    # otherwise return default
     else:
         return 1
 
@@ -307,16 +309,31 @@ def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
             break
     if not found: # last resort covalent radii
         bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
-    #### TESTING, REMOVE  #####
-#    print('ms default distance is  ' + str(bondl))
-    #### END TESTING ####
+    if args.debug:
+        print('ms default distance is  ' + str(bondl))
     return bondl,exact_match
 
 ###############################
 ### FORCE FIELD OPTIMIZATION ##
 ###############################
+
+def ffoptsimp(ff,mol):
+	# simple FF opt
+	forcefield = openbabel.OBForceField.FindForceField('MMFF94')
+	obmol = mol.OBmol.OBMol
+	s = forcefield.Setup(obmol)
+	if s == 'False':
+		print('FF setup failed')
+	### force field optimize structure
+	forcefield.ConjugateGradients(9999)
+	forcefield.GetCoordinates(obmol)
+	en = forcefield.Energy()
+	mol.OBmol = pybel.Molecule(obmol)
+	mol.convert2mol3D()
+	return mol,en
+
 def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
-    # INPUT
+    # INPUT ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds) 
     #   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
     #   - mol: mol3D to be ff optimized
     #   - connected: indices of connection atoms to metal
@@ -340,9 +357,10 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         ### get metal
         midx = mol.findMetal()
         ### convert mol3D to OBmol via xyz file, because AFTER/END option have coordinates
-        mol.writexyz(globs.homedir+'/tmp.xyz')
-        mol.OBmol = mol.getOBmol(globs.homedir+'/tmp.xyz','xyzf')
-        os.remove(globs.homedir+'/tmp.xyz')
+        mol.convert2OBmol()
+        #mol.writexyz(globs.homedir+'/tmp.xyz')
+        #mol.OBmol = mol.getOBmol(globs.homedir+'/tmp.xyz','xyzf')
+        #os.remove(globs.homedir+'/tmp.xyz')
         ### initialize constraints
         constr = openbabel.OBFFConstraints()
         ### openbabel indexing starts at 1 ### !!!
@@ -354,7 +372,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
                 indmtls.append(iiat)
                 mtlsnums.append(atom.atomicnum)
                 atom.OBAtom.SetAtomicNum(6)
-        ### add distance constraints
+        ## add distance constraints
         for ii,catom in enumerate(connected):
             if constopt==1 or frozenangles:
                 constr.AddAtomConstraint(catom+1) # indexing babel
@@ -369,12 +387,11 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         ### set up forcefield
         forcefield = openbabel.OBForceField.FindForceField(ff)
         obmol = mol.OBmol.OBMol
-        forcefield.Setup(obmol,constr)
+        s = forcefield.Setup(obmol,constr)
+        if s == 'False':
+		print('FF setup failed')
         ### force field optimize structure
-        if obmol.NumHvyAtoms() > 10:
-            forcefield.ConjugateGradients(3000)
-        else:
-            forcefield.ConjugateGradients(2000)
+        forcefield.ConjugateGradients(9999)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -397,9 +414,9 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         forcefield.Setup(obmol,constr)
         ### force field optimize structure
         if obmol.NumHvyAtoms() > 10:
-            forcefield.ConjugateGradients(3000)
+            forcefield.ConjugateGradients(9999)
         else:
-            forcefield.ConjugateGradients(2000)
+            forcefield.ConjugateGradients(9999)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -543,7 +560,47 @@ def getconnection(core,cm,catom,toconnect):
     for ii in range(0,toconnect):
         connPts.append(core.getAtom(ncore+ii).coords())
     return connPts
-    
+ 
+def getconnection2(core,cidx,BL):
+	# finds the optimum attachment point for an atom/group to a central atom given the desired bond length
+	# objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
+	ncore = core.natoms
+	groups = core.getBondedAtoms(cidx)
+	ccoords = core.getAtom(cidx).coords()
+	# brute force search
+	cpoint = []
+	objopt = 0
+	for itheta in range(1,359,1):
+		for iphi in range(1,179,1):
+			P = PointTranslateSph(ccoords,ccoords,[BL,itheta,iphi])
+			dists = []
+			for ig in groups:
+				dists.append(distance(core.getAtomCoords(ig),P))
+			obj = min(dists)
+			if obj > objopt:
+				objopt = obj
+				cpoint = P
+	return cpoint 
+
+def findsmarts(lig3D,smarts,catom):
+	# returns true if connecting atom of lig3D is part of SMARTS pattern
+	# lig3D: OBmol of mol3D
+	# smarts: list of SMARTS patterns
+	# catom: connecting atom of lig3D (zero based numbering)
+	mall = []
+	for sm in smarts:
+		sm = pybel.Smarts(sm)
+		matches = sm.findall(lig3D)
+		matches = [i for sub in matches for i in sub]
+		for m in matches:
+			if m not in mall:
+				mall.append(m)
+	if catom+1 in mall:
+		return True
+	else:
+		return False
+
+
 #################################################
 ####### functionalizes core with ligands ########
 ############## for metal complexes ##############
@@ -560,6 +617,12 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     #   - core3D: built complex
     #   - complex3D: list of all mol3D ligands and core
     #   - emsg: error messages
+        ### create a diagnostic object to pass information 
+        ### to the other parts of the code
+    this_diag = run_diag()
+    db_overwrite = False
+        ###
+
     if globs.debug:
         print '\nGenerating complex with ligands and occupations:',ligs,ligoc
     if args.gui:
@@ -743,22 +806,33 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 # get correct atoms
                 bats,backbatoms = getnupdateb(backbatoms,dents[i])
                 batslist.append(bats)
-    #########################################################
-    #### ANN module
-    if  args.skipANN:
-        print('Skipping ANN')
-        ANN_flag = False
-        ANN_bondl = 0
+   #########################################################
+   #### ANN module
+    ANN_attributes = dict()
+    if args.skipANN:
+         print('Skipping ANN')
+         ANN_flag = False
+         ANN_bondl = 0
+         ANN_reason = 'ANN skipped by user'
     else:
-        try:
-           ANN_flag,ANN_bondl = ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores)
-        except:
-            print("ANN call rejected")
-            ANN_flag = False
-            ANN_bondl = 0
-    
-   ##############################
-    ###############################
+#         try:
+             ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
+             if ANN_flag:
+                 ANN_bondl = ANN_attributes['ANN_bondl']
+             else:
+                 ANN_bondl = 0 
+                 if args.debug:
+                     print("ANN called failed with reason: " + ANN_reason)
+
+#         except:
+#             print("ANN call rejected")
+#             ANN_reason = 'uncaught exception'
+
+#             ANN_flag = False
+#             ANN_bondl = 0
+    this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
+	##############################
+	###############################
     #### loop over ligands and ####
     ### begin functionalization ###
     ###############################
@@ -1284,11 +1358,11 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         frozenats.append(latdix+core3D.natoms)
                 # combine molecules
                 core3D = core3D.combine(lig3D)
-                if args.calccharge:
-                    core3D.charge += lig3D.charge
                 # remove dummy cm atom if requested
                 if remCM:
                     core3D.deleteatom(core3D.natoms-1)
+                if args.calccharge:
+                    core3D.charge += lig3D.charge
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
@@ -1299,7 +1373,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     if args.ff and 'a' in args.ffoption:
         core3D,enc = ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds)
     ###############################
-    return core3D,complex3D,emsg
+    return core3D,complex3D,emsg,this_diag
 
 #################################################
 ####### functionalizes core with ligands ########
@@ -1509,6 +1583,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     Hs = lig3D.getHsbyIndex(lig.cat[0])
                     if len(Hs) > 0 and allremH:
                         lig3D.deleteatom(Hs[0])
+                        lig3D.charge = lig3D.charge - 1
                 ### add atoms to connected atoms list
                 catoms = lig.cat # connection atoms
                 initatoms = core3D.natoms # initial number of atoms in core3D
@@ -1633,6 +1708,9 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                 if args.calccharge:
                     core3D.charge += lig3D.charge
                 nligats = lig3D.natoms
+                if args.calccharge:
+                    args.charge = core3D.charge
+                    print('setting charge to be ' + str(args.charge))
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
                     core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
@@ -1645,7 +1723,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
 ##########################################
 ### main structure generation function ###
 ##########################################
-def structgen(args,rootdir,ligands,ligoc,globs):
+def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     # INPUT
     #   - args: placeholder for input arguments
     #   - rootdir: directory of current run
@@ -1685,9 +1763,10 @@ def structgen(args,rootdir,ligands,ligoc,globs):
     if (ligands):
         # check if simple coordination complex or not
         if core.natoms == 1:
-            core3D,complex3D,emsg = mcomplex(args,core,ligands,ligoc,licores,globs)
+            core3D,complex3D,emsg,this_diag = mcomplex(args,core,ligands,ligoc,licores,globs)
         else:
             # functionalize custom core
+            this_diag = run_diag()
             core3D,emsg = customcore(args,core,ligands,ligoc,licores,globs)
         if emsg:
             return False,emsg
@@ -1851,7 +1930,7 @@ def structgen(args,rootdir,ligands,ligoc,globs):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        fname = get_name(args,rootdir,core,ligname)
+        fname = name_complex(rootdir,core,ligands,ligoc,sernum,args,bind= False,bsmi=False)
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)
@@ -1861,6 +1940,10 @@ def structgen(args,rootdir,ligands,ligoc,globs):
         print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
+    print('setting sanity diag')
+    this_diag.set_sanity(sanity,d0)
+    this_diag.set_mol(core3D)
+    this_diag.write_report(fname+'.report')
     del core3D
     if sanity:
         print 'WARNING: Generated complex is not good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
@@ -1872,7 +1955,7 @@ def structgen(args,rootdir,ligands,ligoc,globs):
         args.gui.iWtxt.setText('In folder '+pfold+' generated '+str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structures!'
-    return strfiles, emsg
+    return strfiles, emsg, this_diag
 
 
 

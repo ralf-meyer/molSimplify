@@ -13,11 +13,12 @@ from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.python_nn.graph_analyze import *
 from molSimplify.python_nn.pytry import *
+import numpy
 # import standard modules
 import openbabel
 
 
-def get_bond_order(OBMol):
+def get_bond_order(OBMol,connection_atoms,mol):
     ## informs the ANN
     ## of the highest bond
     ## order in ligand
@@ -25,12 +26,24 @@ def get_bond_order(OBMol):
     #   - OBMol:  OBMol class ligand
     # OUTPUT:
     #   - max_bo: int, max bond order
+
+    bond_order_pairs = []
+
     OBMol.PerceiveBondOrders()
+    for atoms in connection_atoms:
+            this_neighbourhood = mol.getBondedAtoms(atoms)
+            for items in this_neighbourhood:
+                    bond_order_pairs.append(tuple([atoms,items]))
+
     max_bo = 0
-    for bonds in openbabel.OBMolBondIter(OBMol):
-       this_BO = bonds.GetBondOrder()
-       if this_BO > max_bo:
-           max_bo = this_BO
+    for index_pairs in bond_order_pairs:
+            this_bond= OBMol.GetBond(int(index_pairs[0]+1),int(index_pairs[1]+1))
+            if this_bond.IsAromatic():
+                this_BO = int(2)
+            else:
+                this_BO = int(this_bond.GetBondOrder())
+            if this_BO > max_bo:
+               max_bo = this_BO
     return max_bo
 
 
@@ -71,7 +84,7 @@ def check_ligands(ligs,batlist,dents,tcats):
             this_dent = dents[i]
             ## mulitple points
             if not (this_lig in unique_ligs):
-                    print('adding unique ligs',this_lig)
+#                    print('adding unique ligs',this_lig)
                     unique_ligs.append(this_lig)
                     ucats.append(this_dent)
             elif (this_lig in unique_ligs) and (not this_lig in equitorial_ligs) :
@@ -95,6 +108,7 @@ def check_ligands(ligs,batlist,dents,tcats):
             this_bat = batlist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
+#            print(this_bat,this_lig,this_dent)
             ## mulitple points
             if len(this_bat) == 1:
                 if (5 in this_bat) or (6 in this_bat):
@@ -113,21 +127,20 @@ def check_ligands(ligs,batlist,dents,tcats):
                         eq_dent = this_dent
                         eq_tcat = tcats[i]
     if not (len(axial_ligs) == 1):
-        print('axial ligs do not match, have  ' + str(' '.join(axial_ligs)))
+        print('axial ligs mismatch: ',axial_ligs,ax_dent)
         valid = False
     if not (len(equitorial_ligs) == 1):
-        print('equitorial ligs do not match, have ' + str(' '.join(equitorial_ligs)))
+        print('equitorial ligs mismatch: ',equitorial_ligs,eq_dent)
         valid = False
     return valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat
 
 def check_metal(metal,oxidation_state):
-    supported_metal_dict = {"Fe":[2,3],"Mn":[2,3],"Cr":[2,3],
-                            "Co":[2,3],"Ni":[2]}
+    supported_metal_dict = {"fe":[2,3],"mn":[2,3],"cr":[2,3],
+                            "co":[2,3],"ni":[2]}
     romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
     if oxidation_state  in romans.keys():
         oxidation_state= romans[oxidation_state]
     outcome = False
-#    print('incheck',oxidation_state)
     if metal in supported_metal_dict.keys():
 #        print('metal in',supported_metal_dict[metal])
         if int(oxidation_state) in supported_metal_dict[metal]:
@@ -150,7 +163,7 @@ def get_con_at_type(mol,connection_atoms):
             if not been_set:
                 this_type = this_symbol
             else:
-                print('different connects')
+                print('different connection atoms in one ligand')
                 valid = False
     if not this_type in ['C','O','Cl','N','F']:
         valid = False
@@ -159,51 +172,80 @@ def get_con_at_type(mol,connection_atoms):
 
 
 def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
+
+    ### prepares and runs ANN calculation
+
+    ######################
+    ANN_reason = False # holder for reason to reject ANN call
+    ANN_attributes = dict()
+    ######################
+
     nn_excitation = []
     r = 0
     emsg = list()
     valid = True 
     metal = args.core
+    this_metal = metal.lower()
+    newligs = []
+    newcats = []
+    newdents = []
+    ANN_trust = False
+    for i,lig in enumerate(ligs):
+        this_occ = occs[i]
+        for j in range(0,int(this_occ)):
+            newligs.append(lig)
+            newdents.append(dents[i])
+            newcats.append(tcats[i])
+
+    ligs = newligs  
+    dents = newdents
+    tcats = newcats
     if not args.geometry == "oct":
-#        print('ANN: geom  is: ' + str(args.geometry))
-        emsg.append("\n [ANN] Geometry is not supported at this time, MUST give -geometry = oct")
-        valid = False
+#        print('nn: geom  is',args.geometry)
+#        emsg.append("[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
+        valid = False 
+        ANN_reason = 'geometry not oct'
     if not args.oxstate:
         emsg.append("\n [ANN] oxidation state must be given")
         valid = False
+        ANN_reason = 'oxstate not given'
     if valid:
         oxidation_state = args.oxstate
-        valid, oxidation_state = check_metal(metal,oxidation_state)
+        valid, oxidation_state = check_metal(this_metal,oxidation_state)
         ## generate key in descriptor space
-        this_metal = metal.lower()
         ox = int(oxidation_state)
         spin = args.spin
-        #print('metal validity',valid)
+        if args.debug:
+	    print('metal is '+ str(this_metal))
+            print('metal validity',valid)
         if not valid:
-            emsg.append("\n [ANN] Oxidation state not available for this metal")
-
+            emsg.append("\n Oxidation state not available for this metal")
+            ANN_reason = 'ox state not avail for metal'
     if valid:
-        high_spin = spin_classify(this_metal,spin,ox)
+        high_spin,spin_ops = spin_classify(this_metal,spin,ox)
         if not valid:
-            emsg.append("\n [ANN] this spin state not available for this metal")
-
-    print('ANN status: '+ str(' '.join(emsg)))
+            emsg.append("\n this spin state not available for this metal")
+            ANN_reason = 'spin state not availble for metal'
+    if emsg:
+        print('nn emsg',emsg)
     if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
-
-       # print("\n")
-       # print('Here comes occs')
-       # print(occs)
-       # print('Ligands')
-       # print(ligs)
-       #  print('Here comes dents')
-       # print(dents)
-       # print('Here comes bats')
-       # print(batslist)
-       # print('lig validity',valid)
-       # print('ax ligs',axial_ligs)
-       # print('eq ligs',equitorial_ligs)
-       # print('spin is',spin)
+        if args.debug:
+            print("\n")
+            print('Occs')
+            print(occs)
+            print('Ligands')
+            print(ligs)
+            print('Dents')
+            print(dents)
+            print('Bats (backbone atoms)')
+            print(batslist)
+            print('lig validity',valid)
+            print('ax ligs',axial_ligs)
+            print('eq ligs',equitorial_ligs)
+            print('spin is',spin)
+        if not valid:
+                ANN_reason  = 'find incorrect lig symmetry'
 
     if valid:
             ax_lig3D,r_emsg = lig_load(axial_ligs[0],licores) # load ligand
@@ -218,7 +260,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                     ax_lig3D.cat = ax_tcat
                     print('custom ax tcat ',ax_tcat)
             if eq_tcat:
-                    ax_lig3D.cat = ax_tcat
+                    eq_lig3D.cat = eq_tcat
                     print('custom eq tcat ',eq_tcat)
 
     if valid:
@@ -229,14 +271,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if valid:
         eq_ki = get_truncated_kier(eq_lig3D,eq_lig3D.cat)
         ax_ki = get_truncated_kier(ax_lig3D,ax_lig3D.cat)
-#        print('ax_ki',eq_ki)
-#        print('eq_ki',ax_ki)
         eq_EN = get_lig_EN(eq_lig3D,eq_lig3D.cat)
         ax_EN = get_lig_EN(ax_lig3D,ax_lig3D.cat)
- #       print('ax_EN',eq_EN)
- #       print('eq_EN',ax_EN)
-        eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol)
-        ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol)
+        eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol,eq_lig3D.cat,eq_lig3D)
+        ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol,ax_lig3D.cat,ax_lig3D)
+
+
         eq_charge = eq_lig3D.OBmol.charge
         ax_charge = ax_lig3D.OBmol.charge
 
@@ -248,15 +288,25 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         else:
                 max_delen = ax_EN
         alpha = 0.2 # default for B3LYP
-  #      print('ax_bo',ax_bo)
- #       print('eq_bo',eq_bo)
-  #      print('ax_charge',ax_charge)
-  #      print('eq_charge',eq_charge)
-
-   #     print('sum_delen',sum_delen)
-   #     print('max_delen',max_delen)
-   #     print('ax_type',ax_type)
-   #     print('eq_type',eq_type)
+	if args.exchange:
+		try:
+			if float(args.exchange) > 1:
+				alpha = float(args.exchange)/100 # if given as %
+			elif float(args.exchange) <= 1:
+				alpha = float(args.exchange)
+		except:
+			print('cannot case exchange argument as a float, using 20%')
+        if args.debug:
+            print('ax_bo',ax_bo)
+            print('eq_bo',eq_bo)
+            print('ax_dent',ax_dent)
+            print('eq_dent',eq_dent)
+            print('ax_charge',ax_charge)
+            print('eq_charge',eq_charge)
+            print('sum_delen',sum_delen)
+            print('max_delen',max_delen)
+            print('ax_type',ax_type)
+            print('eq_type',eq_type)
 
 
     if valid:
@@ -266,21 +316,40 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         alpha = (alpha - sfd['alpha'][0])/sfd['alpha'][1]
         ox = (ox - sfd['ox'][0])/sfd['ox'][1]
         eq_dent = (eq_dent - sfd['eq_dent'][0])/sfd['eq_dent'][1]
-        ax_dent = (eq_dent - sfd['ax_dent'][0])/sfd['ax_dent'][1]
+        ax_dent = (ax_dent - sfd['ax_dent'][0])/sfd['ax_dent'][1]
+        eq_charge = (eq_charge - sfd['eq_charge'][0])/sfd['eq_charge'][1]
+        ax_charge = (ax_charge - sfd['ax_charge'][0])/sfd['ax_charge'][1]
+
         sum_delen = (sum_delen - sfd['sum_delen'][0])/sfd['sum_delen'][1]
         max_delen = (max_delen - sfd['max_delen'][0])/sfd['max_delen'][1]
         eq_bo = (eq_bo - sfd['eq_bo'][0])/sfd['eq_bo'][1]
         ax_bo = (ax_bo - sfd['ax_bo'][0])/sfd['ax_bo'][1]
         eq_ki = (eq_ki - sfd['eq_ki'][0])/sfd['eq_ki'][1]
         ax_ki = (ax_ki - sfd['ax_ki'][0])/sfd['ax_ki'][1]
-        nn_excitation = [0,0,0,0,0, # metals co/cr/fe/mn/ni                 #1-4
-                   ox,alpha,eq_charge,ax_charge, #ox/alpha/eqlig charge/axlig charge #5-8
-                   eq_dent,ax_dent,# eq_dent/ax_dent/ #9-10
-                   0,0,0,0, # axlig_connect: Cl,N,O,S #10 -14
-                   0,0,0,0, # eqliq_connect: Cl,N,O,S #14-18
-                   sum_delen,max_delen, #mdelen, maxdelen #23-24
-                   ax_bo,eq_bo, #axlig_bo, eqliq_bo #19-20
-                   ax_ki,eq_ki]#axlig_ki, eqliq_kii #21-22
+        if args.debug:
+            print('after normalization ')
+            print('ax_bo',ax_bo)
+            print('eq_bo',eq_bo)
+            print('ax_dent',ax_dent)
+            print('eq_dent',eq_dent)
+            print('ax_charge',ax_charge)
+            print('eq_charge',eq_charge)
+            print('sum_delen',sum_delen)
+            print('max_delen',max_delen)
+            print('ax_type',ax_type)
+            print('eq_type',eq_type)
+            print('ax_ki',ax_ki)
+            print('eq_ki',eq_ki)
+
+
+        nn_excitation = [0,0,0,0,0, # metals co/cr/fe/mn/ni                 #1-5
+                   ox,alpha,eq_charge,ax_charge, #ox/alpha/eqlig charge/axlig charge #6-9
+                   ax_dent,eq_dent,# ax_dent/eq_dent/ #10-11
+                   0,0,0,0, # axlig_connect: Cl,N,O,S #12 -15
+                   0,0,0,0, # eqliq_connect: Cl,N,O,S #16-19
+                   sum_delen,max_delen, #mdelen, maxdelen #20-21
+                   ax_bo,eq_bo, #axlig_bo, eqliq_bo #22-23
+                   ax_ki,eq_ki]#axlig_ki, eqliq_kii #24-25
    # print(nn_excitation)
    # print('\n')
     ### discrete variable encodings
@@ -300,15 +369,36 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if valid:
         print("*******************************************************************")
         print("************** ANN is engaged and advising on spin ****************")
-        print("************** and metal-ligand bond distancess    ****************")
+        print("************** and metal-ligand bond distances    ****************")
         print("*******************************************************************")
         if high_spin:
             print('You have selected a high-spin state, s = ' + str(spin))
         else:
             print('You have selected a low-spin state, s = ' + str(spin))
+        ## test Euclidean norm to training data distance
+        train_dist = find_eu_dist(nn_excitation)
+        ANN_trust = max(0.01,1.0-train_dist)
+
+        ANN_attributes.update({'ANN_dist_to_train':train_dist})
+        print('distance to training data is ' + str(train_dist) + ' ANN trust: ' +str(ANN_trust))
+        ANN_trust = 'not set'
+        if float(train_dist)< 0.25:
+            print('ANN results should be trustworthy for this complex ')
+            ANN_trust = 'high'
+        elif float(train_dist)< 0.75:
+            print('ANN results are probably useful for this complex ')
+            ANN_trust  = 'medium'
+        elif float(train_dist)< 1.0:
+            print('ANN results are fairly far from trainig data, be cautious ')
+            ANN_trust = 'low'
+        elif float(train_dist)> 1.0:
+            print('ANN results are too far from trainig data, be cautious ')
+            ANN_trust = 'very low'
+        ANN_attributes.update({'ANN_trust':ANN_trust})
         ## engage ANN
         delta = 0 
         delta = get_splitting(nn_excitation)
+        ## report to stdout
         if delta[0] < 0 and not high_spin:
             if abs(delta[0]) > 5:
                 print('warning, ANN predicts a high spin ground state for this complex')
@@ -320,6 +410,16 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             else:
                     print('warning, ANN predicts a near degenerate ground state for this complex')
         print("ANN predicts a spin splitting (HS - LS) of " + str(delta[0]) + ' kcal/mol')
+        ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
+        ## reparse to save attributes
+        ANN_attributes.update({'This spin':spin})
+        if delta[0] < 0 and (abs(delta[0]) > 5):
+                ANN_attributes.update({'ANN_ground_state':spin_ops[1]})
+        elif delta[0] > 0 and (abs(delta[0]) > 5):
+                ANN_attributes.update({'ANN_ground_state':spin_ops[0]})
+        else:
+                ANN_attributes.update({'ANN_gound_state':'dgen ' + str(spin_ops)})
+
         r = 0
         if not high_spin:
             r = get_ls_dist(nn_excitation)
@@ -327,10 +427,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             r = get_hs_dist(nn_excitation)
 
         print('ANN bond length is predicted to be: '+str(r) + ' angstrom')
+        ANN_attributes.update({'ANN_bondl':r[0]})
         print("*******************************************************************")
 
-
-    return valid,r
+        if not valid and not ANN_reason:
+                ANN_reason = ' uncaught rejection (see sdout)'
+    return valid,ANN_reason,ANN_attributes
 
 
 def ax_lig_corrector(excitation,con_atom_type):
@@ -382,9 +484,9 @@ def get_sfd():
            "eq_charge":[-2,2],
            "ax_dent":[1,1],
            "eq_dent":[1,3],
-           "sum_delen":[-5.34,12.54],
-           "max_delen":[-0.89, 2.09],
-           "ax_bo":[0,3],
+           "sum_delen":[-5.34,12.78],
+           "max_delen":[-0.89, 2.13],
+           "ax_bo":[0.00,3],
            "eq_bo":[0.00,3],
            "ax_ki":[0.00, 4.29],
            "eq_ki":[0.00,6.96]}
@@ -396,12 +498,19 @@ def spin_classify(metal,spin,ox):
                               'fe':{2:5,3:6},
                               'mn':{2:6,3:5},
                               'ni':{2:3}}
+
+    suggest_spin_dictionary = {'co':{2:[2,4],3:[1,5]},
+                              'cr':{2:[1,5],3:[2,4]},
+                              'fe':{2:[1,5],3:[2,6]},
+                              'mn':{2:[2,6],3:[1,5]},
+                              'ni':{2:[1,3]}}
+
+
     high_spin = False
-        #print(metal_spin_dictionary[metal],ox)
-        #print('spin checking: ',str(spin),str(metal_spin_dictionary[metal][ox]))
     if (int(spin) >= int(metal_spin_dictionary[metal][ox])):
         high_spin = True
-    return high_spin
+    spin_ops = suggest_spin_dictionary[metal][ox]
+    return high_spin,spin_ops
 
 def get_splitting(excitation):
     sfd = get_sfd()
