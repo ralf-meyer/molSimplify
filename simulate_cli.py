@@ -76,14 +76,14 @@ start = datetime.now()
 #                 '-keepHs','Auto','-bcharge','0','-rundir','/home/jp/Runs/\n',
 #                '-oxstate','II','-spin','5'])
 print('**********************************************')
-#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","water","-ligocc",'6','-keepHs','yes',
-#               '-geometry','oct','/home/jp/Runs/','-oxstate','II','-spin','5','-debug'])
+subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","water","-ligocc",'6','-keepHs','yes',
+               '-geometry','oct','/home/jp/Runs/','-oxstate','II','-spin','5'])
  
 #subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'4',"-lig","water","-ligocc",'4','-keepHs','yes',
 #                '/home/jp/Runs/','-oxstate','II','-spin','1'])
 
-subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","c12c(c(cc3c1nccc3)Cl)cccn2","-ligocc",'3','-keepHs','yes','-debug',
-                '-geometry','oct','-rundir','/home/jp/Runs/\n','-oxstate','II','-spin','1','-smicat',"7,15","-skipANN",'-name','long','-MLbonds','2.4'])
+#subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","c12c(c(cc3c1nccc3)Cl)cccn2","-ligocc",'3','-keepHs','yes','-debug',
+#                '-geometry','oct','-rundir','/home/jp/Runs/\n','-oxstate','II','-spin','1','-smicat',"7,15",'-name','long','-MLbonds','2.4'])
                 
 #subprocess.call(["python","molSimplify/main.py","-core","Fe","-coord",'6',"-lig","water","-ligocc",'6',
 #                '-geometry','oct','-distort','0','checkdirb','True','-ligalign','False','-calccharge','yes',

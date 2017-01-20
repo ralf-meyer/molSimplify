@@ -112,6 +112,7 @@ def csv_loader(path):
         csv_lines = csv.reader(csvfile,delimiter= ',')
         ret_list = list()
         for lines in csv_lines:
+            #print(lines)
             this_line = [float(a) for a in lines]
             ret_list += this_line
     return ret_list
@@ -131,10 +132,11 @@ def simple_splitting_ann(excitation):
 #    print('path to ANN data: ',path_to_file)
 #    n = simple_network_builder([25,4,4],"nn_simple")
     n = simple_network_builder([25,50,50],"scale_split")
-    n = simple_network_builder([25,50,50],"final_split")
+#    n = simple_network_builder([25,50,50],"final_split")
 
-#    excitation = excitation_standardizer(excitation)
+    excitation,sp_center,sp_shift = excitation_standardizer(excitation)
     result = n.activate(excitation)
+    result = result*sp_shift + sp_center
     return result
 def simple_ls_ann(excitation):
     globs=globalvars()
@@ -148,23 +150,29 @@ def simple_hs_ann(excitation):
     return result
 
 def excitation_standardizer(excitation):
+    ## this function implements 
+    ## a scale-and-center
+    ## type of normalization
+    ## that may help predictions 
+    ## currently testing for
+    ## splitting only 
+    centers = csv_loader("centers.csv")
+    shifts = csv_loader("scales.csv")
+    descriptor_centers = np.array(centers[1:])
+    descriptor_shifts = np.array(shifts[1:])
+    sp_center =  centers[0]
+    sp_shift =  shifts[0]   
     excitation = np.array(excitation)
-    mean = np.mean(excitation)
-    sd = np.std(excitation,ddof=0)
-
-    print(excitation)
-    excitation = (excitation - mean)
-    print(excitation)
-    excitation = excitation/sd
-    print('mean/sd',mean,sd)
-    print(excitation)
-
-    print(excitation)
-    mean = np.mean(excitation)
-    sd = np.std(excitation,ddof=0)
-
-    print('mean/sd',mean,sd)
-    return(excitation)
+#    mean = np.mean(excitation)
+#    sd = np.std(excitation,ddof=0)
+#    print('mean/sd',mean,sd) 
+    excitation = (excitation - descriptor_centers)
+    excitation = np.divide(excitation,descriptor_shifts)
+#    mean = np.mean(excitation)
+#    sd = np.std(excitation,ddof=0)
+#    print('mean/sd',mean,sd)
+   
+    return(excitation,sp_center,sp_shift )
 def find_eu_dist(excitation):
     big_mat = np.array(matrix_loader('bigmat.csv'),dtype='float64')
     min_dist = 1000
@@ -178,14 +186,6 @@ def find_eu_dist(excitation):
 
     for rows in big_mat:
         #print(rows)
-        #print('****')
-        #print('****')
-        #print('****')
-        #print('shape of data row ' + str(rows.shape))
-        #print('len of data row is ' + str(rows.size))
-        #print('type of row ' + str(rows.dtype))
-        #print('****')
-        #print(np.subtract(rows,np.array(excitation)))
         np.subtract(rows,np.array(excitation))
         this_dist = np.linalg.norm(np.subtract(rows,np.array(excitation)))
         #print('this_dist is ' + str(this_dist) )

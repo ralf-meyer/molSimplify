@@ -1,4 +1,4 @@
-    # Written by Tim Ioannidis for HJK Group
+# Written by Tim Ioannidis for HJK Group
 # Extended by JP Janet and Terry Gani
 # Dpt of Chemical Engineering, MIT
 
@@ -412,7 +412,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         forcefield.Setup(obmol,constr)
         ### force field optimize structure
         if obmol.NumHvyAtoms() > 10:
-            forcefield.ConjugateGradients(9999)
+            forcefield.ConjugateGradients(2000)
         else:
             forcefield.ConjugateGradients(9999)
         forcefield.GetCoordinates(obmol)
