@@ -2140,7 +2140,7 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
         print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
-    print('setting sanity diag')
+    print('setting sanity diag, min dist at ' +str(d0))
     this_diag.set_sanity(sanity,d0)
     this_diag.set_mol(core3D)
     this_diag.write_report(fname+'.report')
