@@ -3,3 +3,7 @@
 *.py~
 IECR_input.py
 db*.xyz
+/python_nn/*.pyc
+/Classes/*.pyc
+/Classes/*.py~
+*.smi
