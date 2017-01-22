@@ -7,3 +7,7 @@ db*.xyz
 /Classes/*.pyc
 /Classes/*.py~
 *.smi
+/db2.xyz
+/db1.xyz
+/db3.xyz
+/*.smi
