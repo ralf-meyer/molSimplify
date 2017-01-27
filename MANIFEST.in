@@ -3,7 +3,7 @@ include molSimplify/Ligands/*
 include molSimplify/Bind/*
 include molSimplify/Cores/*
 include molSimplify/python_nn/*
-include molSimplify/docs/*
+include molSimplify/Docs/*
 include molSimplify/icons/*
 include molSimplify/icons/geoms/*
 include molSimplify/icons/geoms_labels/*

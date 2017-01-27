@@ -81,9 +81,13 @@ def network_builder(layers,partial_path):
     ### load weights and biases
     in_to_one._setParameters(np.array((csv_loader(partial_path + '_w1.csv'))))
     one_to_two._setParameters(np.array(csv_loader(partial_path + '_w2.csv')))
+
     two_to_out._setParameters(np.array(csv_loader(partial_path + '_w3.csv')))
+
     b1_to_one._setParameters(np.array(csv_loader(partial_path + '_b1.csv')))
+
     b2_to_two._setParameters(np.array(csv_loader(partial_path + '_b2.csv')))
+
     b3_to_output._setParameters(np.array(csv_loader(partial_path + '_b3.csv')))
 
     ### connect the network topology
@@ -124,10 +128,12 @@ def simple_splitting_ann(excitation):
     globs=globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + "final_split")
     print('path to ANN data: ',path_to_file)
-    n = simple_network_builder([25,50,50],"final_split")
+    n = simple_network_builder([25,50,50],"scale_split")
+#    n = simple_network_builder([25,50,50],"final_split")
 
-#    excitation = excitation_standardizer(excitation)
+    excitation,sp_center,sp_shift = excitation_standardizer(excitation)
     result = n.activate(excitation)
+    result = result*sp_shift + sp_center
     return result
 def simple_ls_ann(excitation):
     globs=globalvars()
@@ -141,23 +147,29 @@ def simple_hs_ann(excitation):
     return result
 
 def excitation_standardizer(excitation):
+    ## this function implements 
+    ## a scale-and-center
+    ## type of normalization
+    ## that may help predictions 
+    ## currently testing for
+    ## splitting only 
+    centers = csv_loader("centers.csv")
+    shifts = csv_loader("scales.csv")
+    descriptor_centers = np.array(centers[1:])
+    descriptor_shifts = np.array(shifts[1:])
+    sp_center =  centers[0]
+    sp_shift =  shifts[0]   
     excitation = np.array(excitation)
-    mean = np.mean(excitation)
-    sd = np.std(excitation,ddof=0)
-
-    print(excitation)
-    excitation = (excitation - mean)
-    print(excitation)
-    excitation = excitation/sd
-    print('mean/sd',mean,sd)
-    print(excitation)
-
-    print(excitation)
-    mean = np.mean(excitation)
-    sd = np.std(excitation,ddof=0)
-
-    print('mean/sd',mean,sd)
-    return(excitation)
+#    mean = np.mean(excitation)
+#    sd = np.std(excitation,ddof=0)
+#    print('mean/sd',mean,sd) 
+    excitation = (excitation - descriptor_centers)
+    excitation = np.divide(excitation,descriptor_shifts)
+#    mean = np.mean(excitation)
+#    sd = np.std(excitation,ddof=0)
+#    print('mean/sd',mean,sd)
+   
+    return(excitation,sp_center,sp_shift )
 def find_eu_dist(excitation):
     big_mat = np.array(matrix_loader('bigmat.csv'),dtype='float64')
     min_dist = 1000

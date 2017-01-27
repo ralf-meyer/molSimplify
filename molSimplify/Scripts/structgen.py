@@ -414,7 +414,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         forcefield.Setup(obmol,constr)
         ### force field optimize structure
         if obmol.NumHvyAtoms() > 10:
-            forcefield.ConjugateGradients(9999)
+            forcefield.ConjugateGradients(2000)
         else:
             forcefield.ConjugateGradients(9999)
         forcefield.GetCoordinates(obmol)
@@ -839,7 +839,13 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     # loop over ligands
     totlig = 0  # total number of ligands added
     ligsused = 0
+
+    if args.debug:
+    	print('ligands is  ' + str(ligands))
     for i,ligand in enumerate(ligands):
+        if args.debug:
+        	print('placing lig  ' + str(i))
+                rint('denticity is ' + str(dents[i]))
         for j in range(0,occs[i]):
             denticity = dents[i]
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
@@ -1940,7 +1946,8 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
         print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
-    print('setting sanity diag')
+    if args.debug:
+        print('setting sanity diag, min dist at ' +str(d0))
     this_diag.set_sanity(sanity,d0)
     this_diag.set_mol(core3D)
     this_diag.write_report(fname+'.report')

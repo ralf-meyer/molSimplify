@@ -1,8 +1,0 @@
-# Input file generated from GUI options
--ndfunc 1
--gbasis N31
--runtyp minimize
--charge 0
--spin 1
--method ub3lyp
--ngauss 6

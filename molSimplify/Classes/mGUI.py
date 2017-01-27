@@ -1753,6 +1753,7 @@ class mGUI():
             QMessageBox.information(self.wmain,'List of molecules',msg)
         ### draw ligands
     def drawligs(self):
+	    print('draw_ligs called')
             ### collects all the info and passes it to molSimplify ###
             rdir = self.etrdir.text()
             if rdir[-1]=='/':
@@ -1777,12 +1778,11 @@ class mGUI():
                     else:
                         liglist.append(l)
                 globs = globalvars()
+		print(('lig list is ', liglist))
                 f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
                 fs = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict")
-
-
                 licores = readdict(f)
-                simpleligs = readdict(f)
+                simpleligs = readdict(fs)
                 ligs = []
                 for l in liglist:
                     if l in simpleligs.keys():

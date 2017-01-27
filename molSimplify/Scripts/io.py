@@ -346,6 +346,9 @@ def lig_load(userligand,licores):
                 print userligand
             lig.OBmol = lig.getOBmol(userligand,'smi') # convert from smiles
             lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
+            #lig.OBmol.write(format='mol', filename='smilig.mol', overwrite=True)
+            #lig.OBmol = lig.getOBmol('smilig.mol','molf')
+            #os.remove('smilig.mol')
             lig.charge = lig.OBmol.charge
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand

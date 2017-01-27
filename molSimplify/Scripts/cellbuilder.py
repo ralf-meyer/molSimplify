@@ -1183,13 +1183,14 @@ def slab_module_supervisor(args,rootdir):
                print(ext_duplication_vector[2])
                print('\n\n')
                super_cell.writexyz(rootdir + 'slab/step_5.xyz')
-#               super_cell.writexyz(rootdir + 'slab/super_pr_5_before2r.xyz')
-#           vx = v1
-#              vx[2] = 0
-#           angle = vecangle(vx,[1,0,0])
-#           u =  numpy.cross(vx,[1,0,0])
-#           super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
-#           super_cell.writexyz(rootdir + 'slab/super_pr6_after2r.xyz')
+ #               super_cell.writexyz(rootdir + 'slab/super_pr_5_before2r.xyz')
+#               vx = v1
+#               vx[2] = 0
+#               angle = vecangle(vx,[1,0,0])
+#               u =  numpy.cross(vx,[1,0,0])
+#               super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)
+#                super_cell.writexyz(rootdir + 'slab/super_pr6_after2r.xyz')
+#                duplication_vector[2] += -4
 
 
         super_cell_vector = [[i*duplication_vector[0] for i in cell_vector[0]],
@@ -1242,6 +1243,12 @@ def slab_module_supervisor(args,rootdir):
 
             if debug:
                 super_cell.writexyz(rootdir + 'slab/step_6.xyz')
+            if (len(non_zero_indices) > 1):
+                super_cell= shave_under_layer(super_cell)
+                super_cell= shave_under_layer(super_cell)
+                super_cell= shave_under_layer(super_cell)
+                super_cell= shave_under_layer(super_cell)
+                super_cell= shave_under_layer(super_cell)
 
             super_cell=zero_z(super_cell)
             if debug:
@@ -1249,18 +1256,19 @@ def slab_module_supervisor(args,rootdir):
             stop_flag = False
             counter = 0
             while not stop_flag:
-                counter += 1
+                print('in loop')
+                counter +=1
                 zmin = 1000
                 for atoms in super_cell.getAtoms():
                     coords = atoms.coords()
                     if (coords[2] < zmin):
                         zmin = coords[2]
-                if (zmin >= 0):
-                    stop_flag = True
-                else:
-                    if debug:
-                        print('cutting due to zmin')
-                    super_cell= shave_under_layer(super_cell)
+                    if (zmin >= 0):
+                        stop_flag = True
+                    else:
+                        if debug:
+                            print('cutting due to zmin')
+                        super_cell= shave_under_layer(super_cell)
                 if counter > 10:
                     stop_flag = True
             stop_flag = False
@@ -1291,8 +1299,9 @@ def slab_module_supervisor(args,rootdir):
             super_cell = zero_x(super_cell)
             if debug:
                 super_cell.writexyz(rootdir + 'slab/step_9.xyz')
-#                angle = vecangle(v1,[1,0,0])
-#                u =  numpy.cross(v1,[1,0,0])   
+
+#                angle = vecangle(vx,[1,0,0])
+#                u =  numpy.cross(vx,[1,0,0])   
 #                print('angle is '+str(angle) + " the vec is  " + str(u))
 #                super_cell = rotate_around_axis(super_cell,super_cell.centermass(),[0,0,1],-angle)
 
@@ -1355,7 +1364,9 @@ def slab_module_supervisor(args,rootdir):
  
         if control_angle:
             print('control angle on')
+            print(angle_surface_axis)
             angle_surface_axis.append(0)
+            print(angle_surface_axis)
         loaded_cell =  molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,
                                                  align_method,object_align,align_dist,surface_atom_type,
                                                  control_angle = control_angle, align_ind = angle_control_partner, align_axis = angle_surface_axis,

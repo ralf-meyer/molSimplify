@@ -86,7 +86,7 @@ def check_ligands(ligs,batlist,dents,tcats):
             if not (this_lig in unique_ligs):
 #                    print('adding unique ligs',this_lig)
                     unique_ligs.append(this_lig)
-                    ucats.append(this_dent)
+                    ucats.append(tcats[i])
             elif (this_lig in unique_ligs) and (not this_lig in equitorial_ligs) :
                    equitorial_ligs.append(this_lig)
                    eq_dent = this_dent
@@ -165,7 +165,7 @@ def get_con_at_type(mol,connection_atoms):
             else:
                 print('different connection atoms in one ligand')
                 valid = False
-    if not this_type in ['C','O','Cl','N','F']:
+    if not this_type in ['C','O','Cl','N','S']:
         valid = False
         print('untrained atom type: ',this_type)
     return valid,this_type
@@ -200,6 +200,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     ligs = newligs  
     dents = newdents
     tcats = newcats
+
     if not args.geometry == "oct":
 #        print('nn: geom  is',args.geometry)
 #        emsg.append("[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
@@ -262,11 +263,14 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             if eq_tcat:
                     eq_lig3D.cat = eq_tcat
                     print('custom eq tcat ',eq_tcat)
-
+    if args.debug:
+        print('finished checking ligands, valid is '+str(valid))
     if valid:
         valid,ax_type = get_con_at_type(ax_lig3D,ax_lig3D.cat)
     if valid:
         valid,eq_type = get_con_at_type(eq_lig3D,eq_lig3D.cat)
+        if args.debug:
+            print('finished con atom types '+ str(ax_type) + ' and ' + str(eq_type))
 
     if valid:
         eq_ki = get_truncated_kier(eq_lig3D,eq_lig3D.cat)
@@ -296,6 +300,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 				alpha = float(args.exchange)
 		except:
 			print('cannot case exchange argument as a float, using 20%')
+ 
         if args.debug:
             print('ax_bo',ax_bo)
             print('eq_bo',eq_bo)
@@ -430,8 +435,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ANN_attributes.update({'ANN_bondl':r[0]})
         print("*******************************************************************")
 
-        if not valid and not ANN_reason:
-                ANN_reason = ' uncaught rejection (see sdout)'
+    if not valid and not ANN_reason:
+        ANN_reason = ' uncaught rejection (see sdout)'
     return valid,ANN_reason,ANN_attributes
 
 

@@ -10,7 +10,7 @@
 from math import sqrt 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import pybel, time
+import pybel, time, os, subprocess
 
 #########################################
 ### Euclidean distance between points ###
