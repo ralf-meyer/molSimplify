@@ -691,6 +691,7 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 	occs = [occs0[i] for i in indcs]    # sort occurrences list
 	dents = [dentl[i] for i in indcs]   # sort denticities list
 	tcats = [cats0[i] for i in indcs]# sort connections list
+        print('here, tcats is ' + str(tcats))
 	# sort keepHs list ###
 	keepHs = False
 	if args.keepHs:
@@ -807,6 +808,11 @@ def mcomplex(args,core,ligs,ligoc,installdir,licores,globs):
 				batslist.append(bats)
 	#########################################################
 	#### ANN module
+        try:
+            if args.debug:
+                print('tcats before ANN is :' +  str(tcats))
+        except:
+            pass
         ANN_attributes = dict()
 	if args.skipANN:
 		print('Skipping ANN')
@@ -2140,7 +2146,8 @@ def structgen(installdir,args,rootdir,ligands,ligoc,globs,sernum):
         print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
-    print('setting sanity diag, min dist at ' +str(d0))
+    if args.debug:
+        print('setting sanity diag, min dist at ' +str(d0))
     this_diag.set_sanity(sanity,d0)
     this_diag.set_mol(core3D)
     this_diag.write_report(fname+'.report')

@@ -1,13 +1,10 @@
 *.pyc
 *.swp
 *.py~
-IECR_input.py
-db*.xyz
+*.xyz
 /python_nn/*.pyc
 /Classes/*.pyc
 /Classes/*.py~
 *.smi
-/db2.xyz
-/db1.xyz
-/db3.xyz
+
 /*.smi

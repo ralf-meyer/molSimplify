@@ -42,7 +42,7 @@ if __name__ == '__main__':
         if len(args)==0:
             print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
             gui = False
-    gui = False
+    #gui = False
     ####################################
     ### print help ###
     if '-h' in args or '-H' in args:
