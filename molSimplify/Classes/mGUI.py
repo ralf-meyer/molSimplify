@@ -115,8 +115,7 @@ class mGUI():
         f = QFont("Helvetica",14,75)
         self.rtcore.setFont(f)
         self.grid.addWidget(self.rtcore,7,2,1,1)
-        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
-        cores = list(sorted(readdict(f)))
+        cores = list(sorted(getmcores()))
         self.etcore = mQLineEditL('',ctip,'l',12,cores)
         self.grid.addWidget(self.etcore,7,3,1,3)
         ### Connection atoms for core ###
@@ -190,10 +189,8 @@ class mGUI():
         self.grid.addWidget(self.nameligh,9,10,1,1)
         self.grid.addWidget(self.ligfalign,13,15,1,2)
         self.grid.addWidget(self.ligfloc,13,17,1,2)
-        ## ligands ##
-
-        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
-        licores = list(sorted(readdict(f)))
+        ## ligands ##       
+        licores = list(sorted(getlicores()))
         self.lig = []
         self.ligocc = []
         self.ligconn = []
@@ -307,7 +304,11 @@ class mGUI():
         # group of different ligands
         ctip = 'For random generation: select random ligands from group.'
         self.rtliggrp = mQLabel('Ligand\ngroup:',ctip,'Cr',12)
-        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+        globs = globalvars()
+        if globs.custom_path:
+            f = globs.custom_path + "/Ligands/ligands.dict"
+        else:
+            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
         qcav0 = getligroups(readdict(f))
         qcav = filter(None,qcav0.split(' '))
         self.etliggrp = mQComboBox(qcav,ctip,12)
@@ -421,8 +422,7 @@ class mGUI():
         # name of binding species
         ctip = 'Binding species'
         self.rtbind = mQLabel('Molecule:',ctip,'Cr',12)
-        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
-        bicores = list(sorted(readdict(f)))
+        bicores = list(sorted(getbcores()))
         self.etbind = mQLineEditL('',ctip,'l',12,bicores)
         self.rtbind.setDisabled(True)
         self.etbind.setDisabled(True)
@@ -623,8 +623,8 @@ class mGUI():
         self.butqctRet.clicked.connect(self.qretmain)
         self.qctgrid.addWidget(self.butqctRet,5,4,2,1)
         # load defaults if existing
-        if glob.glob(globs.installdir+'/Data/.tcdefinput.inp'):
-                loadfrominputtc(self,globs.installdir+'/Data/.tcdefinput.inp')
+        if glob.glob(str(globs.custom_path)+'/Data/.tcdefinput.inp'):
+                loadfrominputtc(self,str(globs.custom_path)+'/Data/.tcdefinput.inp')
         #####################################
         ### create gamess-qc input window ###
         #######################################
@@ -727,8 +727,8 @@ class mGUI():
         self.qcggrid.addWidget(self.butqcgRet,7,3,1,1)
         self.qcggrid.setRowMinimumHeight(7,30)
         # load defaults if existing
-        if glob.glob(globs.installdir+'/Data/.gamdefinput.inp'):
-                loadfrominputgam(self,globs.installdir+'/Data/.gamdefinput.inp')
+        if glob.glob(str(globs.custom_path)+'/Data/.gamdefinput.inp'):
+                loadfrominputgam(self,str(globs.custom_path))
         #######################################
         #### create Qchem-qc input window #####
         #######################################
@@ -805,8 +805,8 @@ class mGUI():
         self.butqcQRet.clicked.connect(self.qretmain)
         self.qcQgrid.addWidget(self.butqcQRet,5,4,1,1)
         # load defaults if existing
-        if glob.glob(globs.installdir+'/Data/.qchdefinput.inp'):
-            loadfrominputqch(self,globs.installdir+'/Data/.qchdefinput.inp')
+        if glob.glob(str(globs.custom_path)+'/Data/.qchdefinput.inp'):
+            loadfrominputqch(self,str(globs.custom_path)+'/Data/.qchdefinput.inp')
         #####################################
         ### create jobscript input window ###
         #####################################
@@ -895,8 +895,8 @@ class mGUI():
         self.butqcgRet.clicked.connect(self.qretmain)
         self.jgrid.addWidget(self.butqcgRet,7,4,1,1)
         # load defaults if existing
-        if glob.glob(globs.installdir+'/Data/.jobdefinput.inp'):
-            loadfrominputjob(self,globs.installdir+'/Data/.jobdefinput.inp')
+        if glob.glob(str(globs.custom_path)+'/Data/.jobdefinput.inp'):
+            loadfrominputjob(str(globs.custom_path)+'/Data/.jobdefinput.inp')
         ##########################################
         ### create local DB interaction window ###
         ##########################################
@@ -1295,14 +1295,41 @@ class mGUI():
         # resize other windows
         relresize(self.iWind,self.wmwindow,0.7)
         relresize(self.iWtxt,self.iWind,1.0)
-    '''
-    #############################
-    ### Callbacks for buttons ###
-    #############################
-    '''
-    ###################################
-    ###### Add new ligands input ######
-    ###################################
+        
+    def update_ligands_binds(self):
+        # this function updates the list
+        # of ligand and binding species
+        ctip0 = 'Ligand(s) to be used' 
+        self.rtligh = mQLabel('Ligand',ctip0,'c',12) # ligand header
+        f = QFont("Helvetica",12,75)
+        self.rtligh.setFont(f)
+        # add to layout
+        self.grid.addWidget(self.rtligh,9,0,1,2)
+        ## ligands ##       
+        licores = list(sorted(getlicores()))
+        self.lig = []
+        self.ligocc = []
+        self.ligconn = []
+        self.ligH = []
+        self.ligML = []
+        self.ligan = []
+        self.lignam = []
+        self.ligadd = []
+        for ii in range(0,8):
+            ## ligands ##
+            self.lig.append(mQLineEditL('',ctip0,'l',12,licores))
+            self.grid.addWidget(self.lig[ii],10+ii,0,1,2) # add to layout
+            ## ligand buttons ##
+        #############################################
+        
+        '''
+        #############################
+        ### Callbacks for buttons ###
+        #############################
+        '''
+        ###################################
+        ###### Add new ligands input ######
+        ###################################
     def addlig0(self):
         idx = 0 
         txt0 = self.lig[idx].currentText().replace(' ','')
@@ -1431,20 +1458,20 @@ class mGUI():
         else:
             self.etplacephi.setDisabled(False)
             self.etplacetheta.setDisabled(False)
-    ##############################
-    ### Local Database window ####
-    ##############################
-    ### load molecule from file
+        ##############################
+        ### Local Database window ####
+        ##############################
+        ### load molecule from file
     def qDBload(self):
         name = QFileDialog.getOpenFileName(self.DBWindow,'Open File','.',"Molecule files *.xyz, *.mol (*.xyz *.mol)")
         if name[0] != '':
             self.etDBsmi.setText(os.path.relpath(name[0]))
-    ### enable add to database interface
+        ### enable add to database interface
     def enableDB(self):
         self.DBWindow.setWindowModality(2)
         self.DBWindow.show()
         self.sgrid.setCurrentWidget(self.DBWindow)
-    ### callback for addition button, adds to database
+        ### callback for addition button, adds to database
     def qaddDB(self):
         coption = self.DBsel.currentText()
         smimol = self.etDBsmi.text()
@@ -1453,6 +1480,17 @@ class mGUI():
         smicat = self.etDBsmicat.text()
         smigrps = self.etDBgrps.text()
         smictg = self.etDBctg.currentText()
+        globs = globalvars()
+        if not globs.custom_path: # this will be false unless set
+            choice = QMessageBox.question(self.cDBWindow,'Custom path needed','In order to add to the database, you need to select a local path for molSimplify to store data files. Would you like to configure it now?',
+                    QMessageBox.Yes, QMessageBox.No)
+            if choice == QMessageBox.Yes:
+                QMessageBox.information(self.cDBWindow,'Custom path needed',"Please select a local, user-writable location.")
+                new_path = QFileDialog.getExistingDirectory(self.cDBWindow,'Select a writable directory.')
+                if len(new_path) > 0:
+                    globs.add_custom_path(new_path)
+                    copy_to_custom_path() #this funciton lives in scripts/io.py
+#        instdir = globs.installdir
         if self.lFFb.getState() and self.lFFa.getState():
             ffopt = 'BA'
         elif self.lFFb.getState() and not self.lFFa.getState():
@@ -1477,8 +1515,20 @@ class mGUI():
                 choice = QMessageBox.warning(self.DBWindow,'Error',emsg)
             else:
                 choice = QMessageBox.information(self.DBWindow,'Add','Successfully added to the database!')
-    ### callback for removal button, removes from db
+        self.update_ligands_binds()
+        ### callback for removal button, removes from db
     def qdelDB(self):
+	globs = globalvars()
+        if not globs.custom_path: # this will be false unless set
+            choice = QMessageBox.question(self.cDBWindow,'Custom path needed','In order to add to the database, you need to select a local path for molSimplify to store data files. Would you like to configure it now?',
+                    QMessageBox.Yes, QMessageBox.No)
+            if choice == QMessageBox.Yes:
+               QMessageBox.information(self.cDBWindow,'Custom path needed',"Please select a local, user-writable location.")
+               new_path = QFileDialog.getExistingDirectory(self.cDBWindow,'Select a writable directory.')
+               if len(new_path) > 0:
+                   globs.add_custom_path(new_path)
+		   copy_to_custom_path() #this funciton lives in scripts/io.py
+
         coption = self.DBsel.currentIndex()
         sminame = self.etDBname.text()
         if sminame=='':
@@ -1490,7 +1540,7 @@ class mGUI():
                 choice = QMessageBox.warning(self.DBWindow,'Error',emsg)
             else:
                 choice = QMessageBox.information(self.DBWindow,'Remove','Removed from the database!')
-    ### db type change
+        ### db type change
     def dbchange(self):
         ci = self.DBsel.currentIndex()
         if (ci==1):
@@ -1520,7 +1570,7 @@ class mGUI():
             self.etDBgrps.setDisabled(True)
             self.lFFb.setDisabled(True)
             self.lFFa.setDisabled(True)
-    ### perform post-processing
+        ### perform post-processing
     def postprocGUI(self):
         rdir = self.etpdir.text()
         if rdir[-1]=='/':
@@ -1532,26 +1582,35 @@ class mGUI():
         emsg = startgen(defaultparams,True,self)
         if not emsg:
             choice = QMessageBox.information(self.pWindow,'DONE','Your results are ready..')
-    #############################
-    #### Add geometry window ####
-    #############################
-    ### load molecule from file
+        #############################
+        #### Add geometry window ####
+        #############################
+        ### load molecule from file
     def qgeomload(self):
         name = QFileDialog.getOpenFileName(self.DBWindow,'Open File','.',"Molecule files *.xyz (*.xyz)")
         if name[0] != '':
             self.etgf.setText(os.path.relpath(name[0]))
-    ### load png from file
+        ### load png from file
     def qgeomload2(self):
         name = QFileDialog.getOpenFileName(self.DBWindow,'Open File','.',"Geometry image files *.png (*.png)")
         if name[0] != '':
             self.etgfc.setText(os.path.relpath(name[0]))
-    ### enable add new geometry
+        ### enable add new geometry
     def addgeom(self):
         self.geWindow.setWindowModality(2)
         self.geWindow.show()
         ### callback for addition button, adds to database
     def qaddg(self):
-        globs = globalvars()
+	globs = globalvars()
+        if not globs.custom_path: # this will be false unless set
+            choice = QMessageBox.question(self.cDBWindow,'Custom path needed','In order to add to the database, you need to select a local path for molSimplify to store data files. Would you like to configure it now?',
+                    QMessageBox.Yes, QMessageBox.No)
+            if choice == QMessageBox.Yes:
+               QMessageBox.information(self.cDBWindow,'Custom path needed',"Please select a local, user-writable location.")
+               new_path = QFileDialog.getExistingDirectory(self.cDBWindow,'Select a writable directory.')
+               if len(new_path) > 0:
+                   globs.add_custom_path(new_path)
+		   copy_to_custom_path() #this funciton lives in scripts/io.py
         gname = self.etgname.text().lower()
         gname = gname.replace(' ','_')
         gshort = self.etgshort.text()
@@ -1562,13 +1621,17 @@ class mGUI():
         elif not glob.glob(gfile):
             choice = QMessageBox.warning(self.geWindow,'Error','XYZ file '+gfile+' does not exist!')
         else:
-            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            globs = globalvars()
+            if globs.custom_path:
+                f = globs.custom_path +"/Data/coordinations.dict"
+            else:
+                f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
             fl = open(f,'r')
             s = fl.read().splitlines()
             fl.close()
             if gname.lower() in s:
                 choice = QMessageBox.warning(self.geWindow,'Add','Coordination '+gname+' already exists.')
-                return
+            return
             # get geometry from xyz file
             f = open(gfile,'r')
             snew = f.read().splitlines()
@@ -1581,14 +1644,23 @@ class mGUI():
             # write new entry in coordinations.dict
             s.append(str(dent)+': '+gname+' '+gshort)
             ssort = filter(None,list(sorted(s[1:])))
-            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            globs = globalvars()
+            if globs.custom_path:
+                f = globs.custom_path +"/Data/coordinations.dict"
+            else:
+                print('Error, please set custom file path')
+                QMessageBox.warning(self.wmain,'Error, please set custom file path (dd to database)')
             fl = open(f,'w')
             fl.write(s[0]+'\n')
             for ss in ssort:
                 fl.write(ss+'\n')
             fl.close()
             # write new backbone file
-            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/")
+            if globs.custom_path:
+                f = globs.custom_path +"/Data/"
+            else:
+                print('Error, please set custom file path')
+                QMessageBox.warning(self.wmain,'Error, please set custom file path (dd to database)')
             fl = open(f+gshort+'.dat','w')
             fl.write(xyzl)
             fl.close()
@@ -1599,8 +1671,19 @@ class mGUI():
             choice = QMessageBox.information(self.geWindow,'Add','Successfully added to the database!')
         self.matchgeomcoord()
         
-    ### callback for removal button, removes from db
+        ### callback for removal button, removes from db
     def qdelg(self):
+	globs = globalvars()
+        if not globs.custom_path: # this will be false unless set
+            choice = QMessageBox.question(self.cDBWindow,'Custom path needed','In order to add to the database, you need to select a local path for molSimplify to store data files. Would you like to configure it now?',
+                    QMessageBox.Yes, QMessageBox.No)
+            if choice == QMessageBox.Yes:
+               QMessageBox.information(self.cDBWindow,'Custom path needed',"Please select a local, user-writable location.")
+               new_path = QFileDialog.getExistingDirectory(self.cDBWindow,'Select a writable directory.')
+               if len(new_path) > 0:
+                   globs.add_custom_path(new_path)
+		   copy_to_custom_path() #this funciton lives in scripts/io.py
+
         globs = globalvars()
         gname = self.etgname.text().lower()
         gname = gname.replace(' ','_')
@@ -1608,7 +1691,11 @@ class mGUI():
         if gname=='' and gshort=='':
             choice = QMessageBox.warning(self.geWindow,'Error','Please specify geometry name!')
         else:
-            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            globs = globalvars()
+            if globs.custom_path:
+                f = globs.custom_path +"/Data/coordinations.dict"
+            else:
+                f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
             fl = open(f,'r')
             s = fl.read()
             fl.close()
@@ -1624,13 +1711,17 @@ class mGUI():
                     snew += ss+'\n'
                 else:
                     srem = filter(None,ss.split(' ')[-1])
-            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+            globs = globalvars()
+            if globs.custom_path:
+                f = globs.custom_path +"/Data/coordinations.dict"
+            else:
+                f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
             fl = open(f,'w')
             fl.write(snew)
             fl.close()
             # remove file
-            if glob.glob(globs.installdir+'/Data/'+srem+'.dat'):
-                os.remove(globs.installdir+'/Data/'+srem+'.dat')
+            if glob.glob(str(globs.custom_path)+'/Data/'+srem+'.dat'):
+                os.remove(str(globs.custom_path)+'/Data/'+srem+'.dat')
             choice = QMessageBox.information(self.geWindow,'Remove','Successfully removed from the database!')
         self.matchgeomcoord()
     #############################
@@ -1753,7 +1844,6 @@ class mGUI():
             QMessageBox.information(self.wmain,'List of molecules',msg)
         ### draw ligands
     def drawligs(self):
-	    print('draw_ligs called')
             ### collects all the info and passes it to molSimplify ###
             rdir = self.etrdir.text()
             if rdir[-1]=='/':
@@ -1777,12 +1867,9 @@ class mGUI():
                         liglist += smis
                     else:
                         liglist.append(l)
-                globs = globalvars()
-		print(('lig list is ', liglist))
-                f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
-                fs = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict")
-                licores = readdict(f)
-                simpleligs = readdict(fs)
+                
+                licores = getlicores()
+                simpleligs = getslicores()
                 ligs = []
                 for l in liglist:
                     if l in simpleligs.keys():
@@ -1811,6 +1898,7 @@ class mGUI():
                 for mol in ligs:
                     outf.write(mol)
                 # convert to svg
+                globs= globalvars()
                 if globs.osx:
                     cmd = "/usr/local/bin/obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
                 else:
@@ -1906,9 +1994,7 @@ class mGUI():
                 else:
                     liglist.append(l)
             globs = globalvars()
-
-            f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
-            licores = readdict(f)
+            licores = getlicores()
             ligs = []
             for l in liglist:
                 if isinstance(l,unicode):
@@ -2209,7 +2295,6 @@ class mGUI():
         f.write(inputtxt)
         f.close()
         writef = False
-#        instdir = globs.installdir
         mwfn = globs.multiwfn
         cdbdir = globs.chemdbdir
         if not os.path.isfile(globs.multiwfn[1:-1]):

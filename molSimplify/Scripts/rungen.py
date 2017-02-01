@@ -81,9 +81,9 @@ def getconstsample(no_rgen,args,licores,coord):
 def constrgen(rundir,args,globs):
     emsg = False
     # load global variables
-    mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
-    licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
-    bindcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+    mcores = getmcores()
+    licores = getlicores()
+    bindcores = getbcores()
 
 
     # remove empty ligand
@@ -301,9 +301,9 @@ def rungen(rundir,args,chspfname,globs):
     except ImportError:
         args.gui = False
     emsg = False
-    mcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
-    licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
-    bindcores =readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
+    mcores = getmcores()
+    licores = getlicores()
+    bindcores = getbcores()
     cc, emsg = core_load(args.core,mcores)
     if emsg:
         return emsg

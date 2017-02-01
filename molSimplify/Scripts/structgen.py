@@ -1745,13 +1745,9 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
         from Classes.mWidgets import mQDialogWarn
     # get global variables class
     ############ LOAD DICTIONARIES ############
- #   mcores = readdict(installdir+'/Cores/cores.dict')
-    mcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
- #   licores = readdict(installdir+'/Ligands/ligands.dict')
-    licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
-
-#    bindcores = readdict(installdir+'/Bind/bind.dict')
-    bindcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
+    mcores = getmcores()
+    licores = getlicores()
+    bindcores = getbcores()
 
     ########## END LOAD DICTIONARIES ##########
     strfiles = []

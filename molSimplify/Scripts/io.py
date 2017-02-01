@@ -1,4 +1,5 @@
 # Written by Tim Ioannidis for HJK Group
+# modified by JP Janet
 # Dpt of Chemical Engineering, MIT
 
 ##########################################################
@@ -6,7 +7,7 @@
 ##########################################################
 
 # import std modules
-import pybel, glob, os, re, argparse, sys, random
+import pybel, glob, os,shutil, re, argparse, sys, random
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
@@ -16,8 +17,10 @@ from pkg_resources import resource_filename, Requirement
 ##############################################
 def printgeoms():
     globs = globalvars()
-#    f = open(globs.installdir+'/Data/coordinations.dict','r')
-    f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+    if globs.custom_path:
+        f = globs.custom_path + "/Data/coordinations.dict"
+    else:
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
     f = open(f,'r')
     s = f.read().splitlines()
     s = filter(None,s)
@@ -43,8 +46,11 @@ def printgeoms():
 ##############################################
 def getgeoms():
     globs = globalvars()
-#    f = open(globs.installdir+'/Data/coordinations.dict','r')
-    f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
+#   f = open(globs.installdir+'/Data/coordinations.dict','r')
+    if globs.custom_path:
+        f = globs.custom_path + "/Data/coordinations.dict"
+    else:
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/coordinations.dict")
     f = open(f,'r')
     s = f.read().splitlines()
     s = filter(None,s)
@@ -95,16 +101,50 @@ def readdict(fname):
 ### get ligands dictionary ###
 ##############################
 def getligs():
-#    licores = readdict(installdir+'Ligands/ligands.dict')
-    licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
-    licores = readdict(licores)
+    licores = getlicores()
     a=[]
     for key in licores:
         a.append(key)
     a = sorted(a)
     a = ' '.join(a)
     return a
-
+##############################
+### get ligands cores      ###
+##############################
+def getlicores():
+    ## this form of the functionn
+    ## is used extensively in the GUI
+    ## so it got it's own call. This
+    ## is basically the same as getligs but
+    ## returns the full dictionary
+    globs = globalvars()
+    if globs.custom_path: # test if a custom path is used:
+         licores = str(globs.custom_path).rstrip('/') + "/Ligands/ligands.dict"
+    else:
+        licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
+    licores = readdict(licores)
+    return licores
+##############################
+### get simple ligands dict###
+##############################
+def getsimpleligs():
+    slicores = getslicores()
+    for key in slicores:
+        a.append(key)
+    a = sorted(a)
+    a = ' '.join(a)
+    return a
+##############################
+### get simple ligands core###
+##############################
+def getslicores():
+    globs = globalvars()
+    if globs.custom_path: # test if a custom path is used:
+         slicores = str(globs.custom_path).rstrip('/') + "/Ligands/simple_ligands.dict"
+    else:
+        slicores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict")
+    slicores = readdict(slicores)
+    return slicores
 #########################
 ### get ligand groups ###
 #########################
@@ -127,41 +167,71 @@ def checkTMsmiles(smi):
     return smi
 
 ##############################
-### get ligands dictionary ###
+### get bind dictionary ###
 ##############################
 def getbinds():
-#    bindcores = readdict(installdir+'Bind/bind.dict')
-    bindcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
-    bindcores = readdict(bindcores) 
+    bindcores = getbcores() 
     a=[]
     for key in bindcores:
         a.append(key)
     a = sorted(a)
     a = ' '.join(a)
     return a
-
+#############################
+### get bind cores      ###
+##############################
+def getbcores():
+    ## this form of the functionn
+    ## is used extensively in the GUI
+    ## so it got it's own call. This
+    ## is basically the same as getbinds() but
+    ## returns the full dictionary
+    globs = globalvars()
+    if globs.custom_path: # test if a custom path is used:
+        bcores = str(globs.custom_path).rstrip('/') + "/Bind/bind.dict"
+    else:
+        bcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
+    bcores = readdict(bcores)
+    return bcores
 ############################
 ### get cores dictionary ###
 ############################
 def getcores():
-#    mcores = readdict(installdir+'Cores/cores.dict')
-    mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
-    mcores = readdict(mcores)
+    mcores = getmcores()
     a=[]
     for key in mcores:
-            a.append(key)
+        a.append(key)
     a = sorted(a)
     a = ' '.join(a)
     return a
-
+#############################
+### get mcores            ###
+##############################
+def getmcores():
+    ## this form of the functionn
+    ## is used extensively in the GUI
+    ## so it got it's own call. This
+    ## is basically the same as getcores() but
+    ## returns the full dictionary
+    globs = globalvars()
+    if globs.custom_path: # test if a custom path is used:
+         mcores = str(globs.custom_path).rstrip('/') + "/Cores/cores.dict"
+    else:
+        mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
+    mcores = readdict(mcores)
+    return mcores
 #######################
 ### load bonds data ###
 #######################
 def loaddata(path):
-    # loads ML data from ML.dat file and
-    # store to dictionary
+    globs = globalvars()
+        # loads ML data from ML.dat file and
+        # store to dictionary
+    if globs.custom_path: # test if a custom path is used:
+        fname = str(globs.custom_path).rstrip('/')  + path
+    else:
+        fname = resource_filename(Requirement.parse("molSimplify"),"molSimplify"+path)
     d = dict()
-    fname = resource_filename(Requirement.parse("molSimplify"),"molSimplify"+path)
 
     f = open(fname)
     txt = f.read()
@@ -177,9 +247,12 @@ def loaddata(path):
 ###    load backbone    ###
 ###########################
 def loadcoord(coord):
+    globs = globalvars()
 #    f = open(installdir+'Data/'+coord+'.dat')
-
-    f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/" +coord + ".dat")
+    if globs.custom_path:
+        f = globs.custom_path + "/Data/" +coord + ".dat"
+    else:
+        f = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data/" +coord + ".dat")
     f = open(f)
 
     txt = filter(None,f.read().splitlines())
@@ -196,6 +269,7 @@ def loadcoord(coord):
 ### convert to molecule ###
 ###########################
 def core_load(usercore,mcores):
+    globs = globalvars()
     if '~' in usercore:
         homedir = os.path.expanduser("~")
         usercore = usercore.replace('~',homedir)
@@ -204,9 +278,11 @@ def core_load(usercore,mcores):
     ### check if core exists in dictionary
     if usercore.lower() in mcores.keys():
         dbentry = mcores[usercore.lower()]
-        # load core mol file (with hydrogens)
-#        fcore = installdir+'Cores/'+dbentry[0]
-        fcore = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/" +dbentry[0])
+        # load core mol file (with hydrogens
+        if globs.custom_path:
+            fcore = globs.custom_path + "/Cores/" +dbentry[0]
+        else:
+            fcore = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/" +dbentry[0])
 
         # check if core xyz/mol file exists
         if not glob.glob(fcore):
@@ -287,7 +363,10 @@ def lig_load(userligand,licores):
         dbentry = licores[userligand]
         # load lig mol file (with hydrogens)
         #flig = installdir+'Ligands/'+dbentry[0]
-        flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/" +dbentry[0])
+        if globs.custom_path:
+            flig = globs.custom_path + "/Ligands/" + dbentry[0]
+        else:
+            flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/" +dbentry[0])
         # check if ligand xyz/mol file exists
         if not glob.glob(flig):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
@@ -366,6 +445,7 @@ def lig_load(userligand,licores):
 #####   convert to molecule    #####
 ####################################
 def bind_load(userbind,bindcores):
+    globs = globalvars()
     if '~' in userbind:
         homedir = os.path.expanduser("~")
         userbind = userbind.replace('~',homedir)
@@ -376,7 +456,10 @@ def bind_load(userbind,bindcores):
     if userbind in bindcores.keys():
         # load bind mol file (with hydrogens)
 #        fbind = installdir+'Bind/'+bindcores[userbind][0]
-        fbind = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/" +bindcores[userbind][0])
+        if globs.custom_path:
+            fbind = globs.custom_path + "/Bind/" + bindcores[userbind][0]
+        else:
+            fbind = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/" +bindcores[userbind][0])
         # check if bind xyz/mol file exists
         if not glob.glob(fbind):
             emsg = "We can't find the binding species structure file %s right now! Something is amiss. Exiting..\n" % fbind
@@ -387,7 +470,7 @@ def bind_load(userbind,bindcores):
         elif ('.mol' in fbind):
             bind.OBmol = bind.getOBmol(fbind,'molf')
         elif ('.smi' in fbind):
-            bind.OBmol = core.getOBmol(fcore,'smif')
+            bind.OBmol = bind.getOBmol(fbind,'smif')
         bind.charge = bind.OBmol.charge
     ### load from file
     elif ('.mol' in userbind or '.xyz' in userbind or '.smi' in userbind):
@@ -528,4 +611,39 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
                     name += "_" + +args.nambsmi[0:2]
     return name
 
+##############################################
+### function to copy ligands, bind and     ###
+### cores to user-specified path       ###
+##############################################
+def copy_to_custom_path():
+    globs = globalvars()
+    if not globs.custom_path:
+        print('Error, custom path not set!')
+        raise('')
+    ## create folder
+    if not os.path.exists(globs.custom_path):
+         os.makedirs(globs.custom_path)
+    ### copytree cannot overwrite, need to enusre directory does not exist already
+    core_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores")
+    li_dir = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands")
+    bind_dir = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind"))
+    data_dir = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data"))
+    if os.path.exists(str(globs.custom_path).rstrip("/")+"/Cores"):
+        print('Note: removing old molSimplify data')
+        shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Cores")
+    if os.path.exists(str(globs.custom_path).rstrip("/")+"/Ligands"):
+        print('Note: removing old molSimplify data')
+        shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Ligands")
+    if os.path.exists(str(globs.custom_path).rstrip("/")+"/Bind"):
+        print('Note: removing old molSimplify data')
+        shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Bind")
+    if os.path.exists(str(globs.custom_path).rstrip("/")+"/Data"):
+        print('Note: removing old molSimplify data')
+        shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Data")
+
+    shutil.copytree(core_dir,str(globs.custom_path).rstrip("/")+"/Cores")
+    shutil.copytree(li_dir,str(globs.custom_path).rstrip("/")+"/Ligands")
+    shutil.copytree(bind_dir,str(globs.custom_path).rstrip("/")+"/Bind")
+    shutil.copytree(data_dir,str(globs.custom_path).rstrip("/")+"/Data")
+    
 

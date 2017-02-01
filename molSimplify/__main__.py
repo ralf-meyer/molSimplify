@@ -17,7 +17,7 @@
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 
-# Written by Tim Ioannidis for HJK Group
+# Written by the HJK Group
 # Dpt of Chemical Engineering, MIT
 
 ##########################################################

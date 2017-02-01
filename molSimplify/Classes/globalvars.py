@@ -99,6 +99,7 @@ class globalvars:
             f.close()
         self.chemdbdir = ''
         self.multiwfn = ''
+	self.custom_path = False
         ###### check for ~/.molSimplify ######
         if glob.glob(homedir+'/.'+self.PROGRAM):
             f = open(homedir+'/.'+self.PROGRAM,'r')
@@ -110,19 +111,17 @@ class globalvars:
                     d[sp[0]] = sp[1]
                 except:
                     pass
-#                    print('empty config')
-#            if 'INSTALLDIR' in d.keys():
-#                self.installdir = d['INSTALLDIR']
- #           else:
-                self.installdir = cdir
+                #self.installdir = cdir  ## this is should be unused
             if 'CHEMDBDIR' in d.keys():
                 self.chemdbdir = d['CHEMDBDIR']
             if 'MULTIWFN' in d.keys():
                 self.multiwfn = "'"+d['MULTIWFN']+"'"
+	    if 'CUSTOM_DATA_PATH' in d.keys():
+		self.custom_path = d['CUSTOM_DATA_PATH']
         else:
             self.installdir = cdir
             f = open(homedir+'/.'+self.PROGRAM,'w')
-            f.write('CHEMDBDIR=')
+            f.write('CHEMDBDIR=\n')
             f.close()
 
         
@@ -143,3 +142,13 @@ class globalvars:
         return elementsbynum
     def endict(self):
         return endict
+    def add_custom_path(self,path):
+    	# this function  is used to
+    	# record the cutsom path in 
+    	# the ~./molsimplify fil
+        homedir = os.path.expanduser("~")
+     	f = open(homedir+'/.'+self.PROGRAM,'a')
+        f.write('CUSTOM_DATA_PATH='+str(path)+"\n")
+        f.close()
+
+

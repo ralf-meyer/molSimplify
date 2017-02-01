@@ -10,6 +10,8 @@ from geometry import *
 from io import *
 from molSimplify.Classes.globalvars import *
 # import std modules
+from molSimplify.Classes.mWidgets import *
+
 import os, sys, subprocess, re, unicodedata
 import pybel, openbabel, random, shutil
 from pkg_resources import resource_filename, Requirement
@@ -27,10 +29,26 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
     #   - emsg: error messages
     emsg = False
     globs = globalvars()
-    licores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict"))
-    ligands_folder = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands")
+    if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
+	## here, we need to give a path, try and
+	## get one from cmd line:
+#        if args.gui:
+	    ## the GUI is handled in the GUI script,
+	    ## this should not reached during normal
+#	    ## operation (it's n
+#            qqb = mQDialogWarn('Warning','No custom user-writable directory found, addition not  not possible.')
+#            qqb.setParent(args.gui.DBWindow)
+#            raise Exception('Custom path not set!')
+#	else: 
+	print('To database, you need to set a custom path. Please enter a writeable file path:')
+	new_path = input('path=')
+	globs.add_custom_path(new_path)
+       	copy_to_custom_path()
+
+    lipath = globs.custom_path + "/Ligands/ligands.dict"
+    licores = readdict(lipath)
+    ligands_folder = globs.custom_path + "/Ligands/"
     print("ligands_folder is : " + str(ligands_folder))
-   # licores = readdict(globs.installdir+'/Ligands/ligands.dict')
     # check if ligand exists
     if sminame in licores.keys():
         emsg = 'Ligand '+sminame+' already existing in ligands database.' 
@@ -69,7 +87,7 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
             shutil.copy2(smimol,ligands_folder + sminame+'.mol')
             snew = sminame+':'+sminame+'.mol,'+shortname+','+css+','+grp+','+ffopt
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,ligans_folder + sminame+'.xyz')
+            shutil.copy2(smimol,ligands_folder + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
         elif lig.OBmol: 
             # write smiles file in Ligands directory
@@ -79,10 +97,8 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
             # write xyz file in Ligands directory
             lig.writexyz(ligands_folder+sminame+'.xyz') # write xyz file
         # update dictionary
-        lipath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
 
 
-#        f = open(globs.installdir+'/Ligands/ligands.dict','r')
         f = open(lipath,'r')
 
         ss = f.read().splitlines()
@@ -106,8 +122,20 @@ def addtocdb(smimol,sminame,smicat):
     #   - smicat: connection atoms
     emsg = False
     globs = globalvars()
-    mcores = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
-    core_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores")
+    if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
+    	## here, we need to give a path, try and
+    	## get one from cmd line:
+    	## the GUI is handled in the GUI script,
+    	## this should not reached during normal
+    	## operation 
+    	print('To database, you need to set a custom path. Please enter a writeable file path:')
+    	new_path = input('path=')
+    	globs.add_custom_path(new_path)
+    	copy_to_custom_path()
+
+    cpath = globs.custom_path + "/Cores/cores.dict"
+    mcores = readdict(cpath)
+    cores_folder = globs.custom_path + "/Cores/"
     # check if core exists
     if sminame in mcores.keys():
         emsg = 'Core '+sminame+' already existing in core database.'
@@ -132,17 +160,16 @@ def addtocdb(smimol,sminame,smicat):
         # write xyz file in Cores directory
         # new entry for dictionary
         if '.mol' in smimol:
-            shutil.copy2(smimol,core_dir+sminame+'.mol')
+            shutil.copy2(smimol,core_folder+sminame+'.mol')
             snew = sminame+':'+sminame+'.mol,'+css+','+'1'
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,core_dir + sminame+'.xyz')
+            shutil.copy2(smimol,core_folder + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         else:
-            core.writexyz(core_dir +sminame+'.xyz') # write xyz file
+            core.writexyz(core_folder +sminame+'.xyz') # write xyz file
             # new entry for dictionary
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         # update dictionary
-        cpath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
         f = open(cpath,'r')
         ss = f.read().splitlines()
         f.close()
@@ -163,9 +190,21 @@ def addtobdb(smimol,sminame):
     #   - smimol: SMILES string or molecule file to be added
     #   - sminame: name of binding species for key in dictionary
     globs = globalvars()
-    bindcores = readdicct(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
-    bind_dir = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
-    print(bind_dir)
+    if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
+    	## here, we need to give a path, try and
+    	## get one from cmd line:
+    	## the GUI is handled in the GUI script,
+    	## this should not reached during normal
+    	## operation 
+    	print('To database, you need to set a custom path. Please enter a writeable file path:')
+    	new_path = input('path=')
+    	globs.add_custom_path(new_path)
+    	copy_to_custom_path()
+
+    bpath = globs.custom_path + "/Bind/bind.dict"
+    bindcores = readdict(bpath)
+    bind_folder = globs.custom_path + "/Bind/"
+
 
     # check if binding species exists
     if sminame in bindcores.keys():
@@ -189,21 +228,20 @@ def addtobdb(smimol,sminame):
         else:
             shortname = sminame
         if '.mol' in smimol:
-            shutil.copy2(smimol,bind_dir+sminame+'.mol')
-            snew = sminame+':'+sminame+'.mol,'+shortname+','+css
+            shutil.copy2(smimol,bind_folder+sminame+'.mol')
+            snew = sminame+':'+sminame+'.mol,'+shortname+','
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,bind_dir +sminame+'.xyz')
-            snew = sminame+':'+sminame+'.xyz,'+shortname+','+css
+            shutil.copy2(smimol,bind_folder +sminame+'.xyz')
+            snew = sminame+':'+sminame+'.xyz,'+shortname+','
         elif bind.OBmol:
             # write smiles file in Bind species directory
-            bind.OBmol.write('smi',bind_dir +sminame+'.smi')
-            snew = sminame+':'+sminame+'.smi,'+shortname+','+css
+            bind.OBmol.write('smi',bind_folder +sminame+'.smi')
+            snew = sminame+':'+sminame+'.smi,'+shortname+','
         else:
             # write xyz file in Bind species directory
-            bind.writexyz(bind_dir +sminame+'.xyz') # write xyz file
-            snew = sminame+':'+sminame+'.xyz,'+shortname+','+css
+            bind.writexyz(bind_folder +sminame+'.xyz') # write xyz file
+            snew = sminame+':'+sminame+'.xyz,'+shortname+','
         # update dictionary
-        bpath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
         f = open(bpath,'r')
         ss = f.read().splitlines()
         f.close()
@@ -226,22 +264,32 @@ def removefromDB(sminame,ropt):
     #   - emsg: error messages
     emsg = False
     globs = globalvars()
+    if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
+    	## here, we need to give a path, try and
+    	## get one from cmd line:
+    	## the GUI is handled in the GUI script,
+    	## this should not reached during normal
+    	## operation 
+    	print('To database, you need to set a custom path. Please enter a writeable file path:')
+    	new_path = input('path=')
+    	globs.add_custom_path(new_path)
+    	copy_to_custom_path()
+    li_path =  globs.custom_path + "/Ligands/ligands.dict"
+    li_folder =  globs.custom_path +  "/Ligands/"
+    core_path =  globs.custom_path +  "/Cores/cores.dict"
+    core_dir  =  globs.custom_path +  "/Cores/"
+    bind_path =  globs.custom_path + "/Bind/bind.dict"
+    bind_folder  = globs.custom_path +"/Bind/"
+
     # convert to unicode
     sminame = unicodedata.normalize('NFKD',sminame).encode('ascii','ignore')
-    lipath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
-    li_dir = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands")
-    core_path = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict"))
-    core_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores")
-    bind_path = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict"))
-    bind_dir  = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind")
-
 
     if ropt==1:
         # update dictionary
-        f = open(lipath,'r')
+        f = open(li_path,'r')
         ss = f.read().splitlines()
         f.close()
-        f = open(lipath,'w')
+        f = open(li_path,'w')
         ssort = sorted(ss[1:])
         f.write(ss[0]+'\n')
         for s in ssort:
@@ -249,7 +297,7 @@ def removefromDB(sminame,ropt):
             if sminame!=sss[0]:
                 f.write(s+'\n')
             else:
-                os.remove(li_dir + sss[1].split(',')[0])
+                os.remove(li_folder + sss[1].split(',')[0])
         f.close()
     elif ropt==0:
         mcores = readdict(core_path)
@@ -265,7 +313,7 @@ def removefromDB(sminame,ropt):
             if sminame!=sss[0]:
                 f.write(s+'\n')
             else:
-                os.remove(core_dir+sss[1].split(',')[0])
+                os.remove(core_folder+sss[1].split(',')[0])
         f.close()
     elif ropt==2:
         bindcores = readdict(bind_path)
@@ -281,6 +329,6 @@ def removefromDB(sminame,ropt):
             if sminame!=sss[0]:
                 f.write(s+'\n')
             else:
-                os.remove(bind_dir+sss[1].split(',')[0])
+                os.remove(bind_folder+sss[1].split(',')[0])
         f.close()
     return emsg
