@@ -29,6 +29,14 @@ import sys, argparse, os, platform, shutil
 from Scripts.inparse import *
 from Scripts.generator import *
 
+try:
+    import PyQt5
+    from PyQt5.QtGui import *
+    from molSimplify.Classes.mGUI import *
+    qtflag = True
+except:
+    qtflag = False
+    pass
 
 def main(args=None):
     print('main_invoked')
@@ -39,17 +47,12 @@ def main(args=None):
     args = sys.argv[1:]
     gui = True
     cmd = False
-    try:
-        import PyQt5
-        from PyQt5.QtGui import *
-        from molSimplify.Classes.mGUI import *
-    except ImportError:
-        if len(args)==0:
-            print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
-            gui = False
+    if len(args)==0 and not qtflag:
+        print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
+        exit()
     ####################################
     ### print help ###
-    if '-h' in args or '-H' in args:
+    elif '-h' in args or '-H' in args:
         # print help
         parser = argparse.ArgumentParser()
         args = parsecommandline(parser)
