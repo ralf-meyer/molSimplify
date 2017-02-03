@@ -3,17 +3,17 @@
     Copyright 2016 Kulik Lab @ MIT
 
     This file is part of molSimplify.
-    molSimplify is free software: you can redistribute it and/or modify 
-    it under the terms of the GNU General Public License as published 
+    molSimplify is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published
     by the Free Software Foundation, either version 3 of the License,
     or (at your option) any later version.
 
-    molSimplify is distributed in the hope that it will be useful, 
+    molSimplify is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     See the GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License 
+    You should have received a copy of the GNU General Public License
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 
@@ -36,7 +36,6 @@ try:
     qtflag = True
 except ImportError:
     qtflag = False
-    print ImportError
     pass
 
 def main(args=None):
@@ -49,7 +48,6 @@ def main(args=None):
     gui = True
     cmd = False
     if len(args)==0 and not qtflag:
-        print qtflag
         print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
         exit()
     ####################################

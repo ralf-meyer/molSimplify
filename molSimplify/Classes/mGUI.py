@@ -1978,7 +1978,6 @@ class mGUI():
                 else:
                     cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
                 t = mybash(cmd)
-                print t
                 if glob.glob(outputf):
                     os.remove(outputf)
                 else:
@@ -1993,7 +1992,6 @@ class mGUI():
                 else:
                     cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
                 s = mybash(cmd)
-                print s
                 if not glob.glob(locf+'.png') :
                     mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
                 else:
