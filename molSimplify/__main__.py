@@ -34,8 +34,9 @@ try:
     from PyQt5.QtGui import *
     from molSimplify.Classes.mGUI import *
     qtflag = True
-except:
+except ImportError:
     qtflag = False
+    print ImportError
     pass
 
 def main(args=None):
@@ -48,6 +49,7 @@ def main(args=None):
     gui = True
     cmd = False
     if len(args)==0 and not qtflag:
+        print qtflag
         print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
         exit()
     ####################################
