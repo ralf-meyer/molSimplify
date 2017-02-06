@@ -4,6 +4,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtSvg import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Scripts.io import *
 import os, imghdr, struct
@@ -16,7 +17,7 @@ import os, imghdr, struct
 def getscreensize():
     screenShape = QDesktopWidget().screenGeometry()
     return [screenShape.width(),screenShape.height()]
-    
+
 ######################################
 #### Center main widget on screen ####
 ######################################
@@ -26,7 +27,7 @@ def center(self):
     centerPoint = QApplication.desktop().screenGeometry(screen).center()
     frameGm.moveCenter(centerPoint)
     self.move(frameGm.topLeft())
-    
+
 #########################
 #### Relative resize ####
 #########################
@@ -69,7 +70,7 @@ class mQPushButton(QPushButton):
 #### Checkbox class ####
 ########################
 class mQCheckBox(QCheckBox):
-    # margins and scale are fractional 
+    # margins and scale are fractional
     def __init__(self,txt,ctip,fontsize):
         super(mQCheckBox,self).__init__()
         self.state = False
@@ -89,12 +90,12 @@ class mQCheckBox(QCheckBox):
             return 1
         else:
             return 0
-            
+
 ############################
 #### Dropdown box class ####
 ############################
 class mQComboBox(QComboBox):
-    # margins and scale are fractional 
+    # margins and scale are fractional
     def __init__(self,txt,ctip,fontsize):
         super(mQComboBox,self).__init__()
         self.state = 0
@@ -113,7 +114,7 @@ class mQComboBox(QComboBox):
 #### Slider class ####
 ######################
 class mQSlider(QSlider):
-    # margins and scale are fractional 
+    # margins and scale are fractional
     def __init__(self,ctip):
         super(mQSlider,self).__init__()
         self.setOrientation(Qt.Horizontal)
@@ -123,7 +124,7 @@ class mQSlider(QSlider):
 
 class qBoxFolder(QDialog):
     # constructor needs window, marginW, marginH and Font size
-    # margins and scale are fractional 
+    # margins and scale are fractional
     def __init__(self,window,toptxt,txt):
         super(qBoxFolder,self).__init__()
         self.setParent(window)
@@ -144,7 +145,7 @@ class qBoxFolder(QDialog):
             return 'keep'
         else:
             return False
-        
+
 ############################
 #### Pop up boxes class ####
 ############################
@@ -196,7 +197,7 @@ class mQMessageBox(QMessageBox):
     def showEvent(self,event):
         if self.autoclose:
             self.hide()
-            
+
 ######################
 #### Editor class ####
 ######################
@@ -213,7 +214,7 @@ class mQTextEdit(QTextEdit):
         f = QFont("Helvetica",fontsize)
         self.setFont(f)
         self.show()
-        
+
 ############################
 #### Static texts class ####
 ############################
@@ -246,7 +247,7 @@ class mQLabel(QLabel):
         #--- iterate to find the font size that fits the contentsRect ---
         dw = event.size().width() - event.oldSize().width()   # width change
         dh = event.size().height() - event.oldSize().height() # height change
-        fs = max(f.pixelSize(), 1)        
+        fs = max(f.pixelSize(), 1)
         while True:
             f.setPixelSize(fs)
             br = QFontMetrics(f).boundingRect(self.text())
@@ -255,16 +256,16 @@ class mQLabel(QLabel):
                     fs += 1
                 else:
                     f.setPixelSize(max(fs - 1, 1)) # backtrack
-                    break                    
+                    break
             else: # label is shrinking
                 if br.height() > cr.height() or br.width() > cr.width():
                     fs -= 1
                 else:
                     break
             if fs < 1: break
-        #--- update font size ---          
-        self.setFont(f) 
-        
+        #--- update font size ---
+        self.setFont(f)
+
 ##########################
 #### Edit texts class ####
 ##########################
@@ -385,3 +386,16 @@ class mQPixmap(QLabel):
         w = self.width()
         h = self.height()
         self.setPixmap(self.pixmap.scaled(w,h,Qt.KeepAspectRatio,Qt.SmoothTransformation))
+
+#######################
+### SvgWidget class ###
+#######################
+class mSvgWidget(QSvgWidget):
+    def __init__(self,svgpath):
+        super(mSvgWidget,self).__init__()
+        self.load(svgpath)
+        ### minimum useful size of molecule svgs
+        self.setMinimumSize(200,200)
+        policy = QSizePolicy(QSizePolicy.MinimumExpanding,
+                                QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(policy)

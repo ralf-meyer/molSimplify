@@ -1,6 +1,0 @@
-# molSimplify input file generated from CLI input
--core fe 
--oxstate II 
--lig bipy 
--ligocc 3 
--qccode Qchem
