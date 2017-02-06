@@ -1,9 +1,6 @@
 # molSimplify input file generated from CLI input
--core Fe 
--coord 6 
--lig water 
--ligocc 6 
--keepHs yes 
--geometry oct /home/jp/Runs/ 
+-core fe 
 -oxstate II 
--spin 5
+-lig bipy 
+-ligocc 3 
+-qccode Qchem

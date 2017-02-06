@@ -351,14 +351,12 @@ def dbsearch(rundir,args,globs):
     else:
         obab = 'obabel'
     if args.gui:
-        from Classes.mWidgets import mQDialogErr
-        from Classes.mWidgets import mQDialogWarn
-        from Classes.mWidgets import mQDialogInf
+        from molSimplify.Classes.mWidgets import mQDialogErr
+        from molSimplify.Classes.mWidgets import mQDialogWarn
+        from molSimplify.Classes.mWidgets import mQDialogInf
     ### in any case do similarity search over indexed db ###
     outf = args.dbfname if args.dbfname else 'simres.smi' # output file
     cwd = os.getcwd()
-    print(globs.installdir)
-    os.chdir(globs.installdir)
     ### convert to SMILES/SMARTS if file
     if not args.dbbase:
         if args.gui:
@@ -439,8 +437,9 @@ def dbsearch(rundir,args,globs):
         #return False
     ### parse filters
     squery = checkscr(args)
+    plugin_path = plugin_defs()
     if args.dbmaxsmartsmatches:
-		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+globs.installdir+"/plugindefines.txt"
+		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+plugin_path
 		mybash(cmd)
     ### run substructure search ###
     nmols = '1000' if not args.dbnsearch else args.dbnsearch

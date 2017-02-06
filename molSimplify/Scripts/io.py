@@ -362,7 +362,6 @@ def lig_load(userligand,licores):
     if userligand in licores.keys():
         dbentry = licores[userligand]
         # load lig mol file (with hydrogens)
-        #flig = installdir+'Ligands/'+dbentry[0]
         if globs.custom_path:
             flig = globs.custom_path + "/Ligands/" + dbentry[0]
         else:
@@ -537,6 +536,14 @@ def getinputargs(args,fname):
                 f.write('\n')
     f.close()
 #####################################
+###    load plugin definitions    ###
+#####################################
+def plugin_defs():
+    globs = globalvars()
+    plugin_path = resource_filename(Requirement.parse("molSimplify"),"molSimplify/plugindefines.txt")
+    return plugin_path
+
+#####################################
 ###   file/folder name control   ###
 ####################################
 def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
@@ -562,7 +569,7 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
                 fname = rootdir+'/'+args.name + bind.ident[0:2]
     else:
         if globs.debug:
-            print(rootdir)
+            print('the root calculation directory is' + str(rootdir))
         fname = rootdir+'/'+core.ident[0:3]+ligname
         if args.name:
             fname = rootdir+'/'+args.name
