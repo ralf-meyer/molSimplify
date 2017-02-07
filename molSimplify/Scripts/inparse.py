@@ -44,7 +44,7 @@ def checkTrue(arg):
         return True
     else:
         return False
-                
+
 ########################################
 ########## check for number  ###########
 ########################################
@@ -192,7 +192,7 @@ def parseCLI(args):
        f.write('-'+line+'\n')
     f.close()
     return fname
-    
+
 ###########################################
 ##########  parse input file  #############
 ###########################################
@@ -206,7 +206,7 @@ def parseinput(args):
         li = li.replace('\n','')
         line = line.replace('\n','')
         if not li.startswith("#") and len(li)>0: # remove comments/empty lines
-            l = filter(None,re.split(' |,|\t|&',li))
+            l = filter(None,re.split(' |\t|&',li)) #Breaks smarts? removed comma
             # parse general arguments
             if (l[0]=='-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
@@ -229,7 +229,7 @@ def parseinput(args):
                 if (len(l) > 1):
                     args.jobdir =l[1]
                 else:
-                    args.jobdirblank = True 
+                    args.jobdirblank = True
             ### parse structure generation arguments ###
             if (l[0]=='-bind' and len(l[1:]) > 0):
                 l = filter(None,re.split(' |,|\t',line))
@@ -428,7 +428,7 @@ def parseinput(args):
                 args.dbresults = l[1]
             if (l[0]=='-dbdissim'):
                 args.dbsearch = True
-                args.dbdissim = l[1]                
+                args.dbdissim = l[1]
             if (l[0]=='-dboutputf'):
                 args.dboutputf = l[1]
             if (l[0]=='-dbbase'):
@@ -453,7 +453,7 @@ def parseinput(args):
             if (l[0]=='-dbnsearch'):
                 args.dbnsearch = l[1]
             if (l[0]=='-dballowedels'):
-                args.dballowedels = l[1]    
+                args.dballowedels = l[1]
             if (l[0]=='-dbmaxsmartsmatches'):
                 args.dbmaxsmartsmatches = l[1]
             if (l[0]=='-dbhuman'):
@@ -468,9 +468,9 @@ def parseinput(args):
                 ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvhyb = ll
             if (l[0]=='-dblinks'):
-                args.dbvlinks = l[1]                                               
+                args.dbvlinks = l[1]
             if (l[0]=='-dbfs'):
-                args.dbfs = True                             
+                args.dbfs = True
             # parse postprocessing arguments
             if (l[0]=='-postp'):
                 args.postp = True
@@ -500,7 +500,7 @@ def parseinput(args):
             if (l[0]=='-slab_gen'): #0
                 print('slab gen')
                 args.slab_gen = True
-            if (l[0]=='-unit_cell'): #1 
+            if (l[0]=='-unit_cell'): #1
                 args.unit_cell = l[1]
             if (l[0]=='-cell_vector'): #2
                 temp = [float(i.strip('(){}<>[],.')) for i in l[1:]] # list-of-lists
@@ -530,7 +530,7 @@ def parseinput(args):
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
-            if (l[0]=='-target_molecule'): #1 
+            if (l[0]=='-target_molecule'): #1
                 args.target_molecule = l[1]
             if (l[0]=='-align_distance_method'): #2
                 args.align_distance_method = l[1]
@@ -574,7 +574,7 @@ def parseinput(args):
                 args.chain_units = l[1]
 
 
-                
+
 #############################################################
 ########## mainly for help and listing options  #############
 #############################################################
@@ -591,36 +591,36 @@ def parsecommandline(parser):
     parser.add_argument("-ccatoms","--ccatoms", help="core connection atoms indices, indexing starting from 1",action="store_true")
     parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
     parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
-    parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6 
+    parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6
     parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(),action="store_true") #e.g. ferrocene
     parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
-    parser.add_argument("-bcharge","--bcharge",default='0', help="binding species charge, default 0",action="store_true") 
-    parser.add_argument("-bphi","--bphi", help="azimuthal angle phi for binding species, default random between 0 and 180",action="store_true") 
-    parser.add_argument("-bref","--bref", help="reference atoms for placement of extra molecules, default COM (center of mass). e.g. 1,5 or 1-5, Fe, COM",action="store_true") 
+    parser.add_argument("-bcharge","--bcharge",default='0', help="binding species charge, default 0",action="store_true")
+    parser.add_argument("-bphi","--bphi", help="azimuthal angle phi for binding species, default random between 0 and 180",action="store_true")
+    parser.add_argument("-bref","--bref", help="reference atoms for placement of extra molecules, default COM (center of mass). e.g. 1,5 or 1-5, Fe, COM",action="store_true")
     parser.add_argument("-bsep","--bsep", help="flag for separating extra molecule in input or xyz file",action="store_true")
-    parser.add_argument("-btheta","--btheta", help="polar angle theta for binding species, default random between 0 and 360",action="store_true") 
+    parser.add_argument("-btheta","--btheta", help="polar angle theta for binding species, default random between 0 and 360",action="store_true")
     parser.add_argument("-geometry","--geometry", help="geometry such as TBP (trigonal bipyramidal)",action="store_true") # geometry
     parser.add_argument("-genall","--genall", help="Generate complex both with and without FF opt.",action="store_true") # geometry
     parser.add_argument("-lig","--lig", help="ligand structure name or SMILES with currently available: "+getligs(),action="store_true") #e.g. acetate (in smilesdict)
     parser.add_argument("-ligocc","--ligocc", help="number of corresponding ligands e.g. 2,2,1",action="store_true") # e.g. 1,2,1
-    parser.add_argument("-lignum","--lignum", help="number of ligand types e.g. 2",action="store_true") 
-    parser.add_argument("-liggrp","--liggrp", help="ligand group for random generation",action="store_true") 
-    parser.add_argument("-ligctg","--ligctg", help="ligand category for random generation",action="store_true") 
-    parser.add_argument("-rkHs","--rkHs", help="keep Hydrogens for random generation",action="store_true") 
-    parser.add_argument("-ligloc","--ligloc", help="force location of ligands in the structure generation yes/True/1 or no/False/0",action="store_true") 
-    parser.add_argument("-ligalign","--ligalign", help="smart alignment of ligands in the structure generation yes/True/1 or no/False/0",action="store_true") 
-    parser.add_argument("-MLbonds","--MLbonds", help="custom M-L bond length for corresponding ligand in A e.g. 1.4",action="store_true") 
-    parser.add_argument("-distort","--distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",action="store_true") 
-    parser.add_argument("-langles","--langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true") 
-    parser.add_argument("-pangles","--pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true") 
+    parser.add_argument("-lignum","--lignum", help="number of ligand types e.g. 2",action="store_true")
+    parser.add_argument("-liggrp","--liggrp", help="ligand group for random generation",action="store_true")
+    parser.add_argument("-ligctg","--ligctg", help="ligand category for random generation",action="store_true")
+    parser.add_argument("-rkHs","--rkHs", help="keep Hydrogens for random generation",action="store_true")
+    parser.add_argument("-ligloc","--ligloc", help="force location of ligands in the structure generation yes/True/1 or no/False/0",action="store_true")
+    parser.add_argument("-ligalign","--ligalign", help="smart alignment of ligands in the structure generation yes/True/1 or no/False/0",action="store_true")
+    parser.add_argument("-MLbonds","--MLbonds", help="custom M-L bond length for corresponding ligand in A e.g. 1.4",action="store_true")
+    parser.add_argument("-distort","--distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",action="store_true")
+    parser.add_argument("-langles","--langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
+    parser.add_argument("-pangles","--pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
     parser.add_argument("-nbind","--bindnum", help="number of binding species copies for random placement",action="store_true") #different geometric arrangements for calculating binding energy
     parser.add_argument("-rgen","--rgen", help="number of random generated molecules",action="store_true")
     parser.add_argument("-replig","--replig", help="flag for replacing ligand at specified connection point",action="store_true")
     parser.add_argument("-ff","--ff",help="select force field for FF optimization. Available: MMFF94, UFF, GAFF, Ghemical",action="store_true")
     parser.add_argument("-ffoption","--ffoption",help="select when to perform FF optimization. Options: B(Before),A(After),BA",action="store_true")
-    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens",action="store_true") 
+    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens",action="store_true")
     parser.add_argument("-smicat","--smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well",action="store_true")
-    parser.add_argument("-sminame","--sminame", help="name for smiles species used in the folder naming. e.g. amm",action="store_true") 
+    parser.add_argument("-sminame","--sminame", help="name for smiles species used in the folder naming. e.g. amm",action="store_true")
     parser.add_argument("-nambsmi","--nambsmi", help="name of SMILES string for binding species e.g. carbonmonoxide",action="store_true")
     parser.add_argument("-maxd","--maxd", help="maximum distance above cluster size for molecules placement maxdist=size1+size2+maxd", action="store_true")
     parser.add_argument("-mind","--mind", help="minimum distance above cluster size for molecules placement mindist=size1+size2+mind", action="store_true")
@@ -628,7 +628,7 @@ def parsecommandline(parser):
     parser.add_argument("-oxstate","--oxstate", help="oxidation state of the metal, used for bond lengths",action="store_true")
     parser.add_argument("-stripHs","--stripHs", help="experimental feature",action="store_true")
     # quantum chemistry options
-    parser.add_argument("-qccode","--qccode", help="quantum chemistry code. Choices: TeraChem or GAMESS or QChem",action="store_true") 
+    parser.add_argument("-qccode","--qccode", help="quantum chemistry code. Choices: TeraChem or GAMESS or QChem",action="store_true")
     parser.add_argument("-charge","--charge", help="charge for system (default: neutral).",action="store_true")
     parser.add_argument("-calccharge","--calccharge", help="Flag to calculate charge.",action="store_true")
     parser.add_argument("-spin","--spin", help="spin multiplicity for system (default: singlet) e.g. 1",action="store_true")
@@ -682,17 +682,17 @@ def parsecommandline(parser):
     parser.add_argument("-dbdissim","--dbdissim", help="number of dissimilar results",action="store_true")
     parser.add_argument("-dbnsearch","--dbnsearch", help="number of database entries to be searched, only for fastsearch",action="store_true")
     parser.add_argument("-dballowedels","--dballowedels", help="elements allowed in search, default all",action="store_true")
-    parser.add_argument("-dbmaxsmartsmatches","--dbmaxsmartsmatches", help="maximum instances of SMARTS pattern permitted, default unlimited",action="store_true")  
+    parser.add_argument("-dbmaxsmartsmatches","--dbmaxsmartsmatches", help="maximum instances of SMARTS pattern permitted, default unlimited",action="store_true")
     parser.add_argument("-dbhuman","--dbhuman", help="human-readable alternative to SMARTS/SMILES strings",action="store_true")
     parser.add_argument("-dbdent","--dbdent", help="ligand denticity (requires -dbhuman)",action="store_true")
-    parser.add_argument("-dbconns","--dbconns", help="ligand coordinating elements (requires dbhuman)",action="store_true") 
-    parser.add_argument("-dbhyb","--dbhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbhuman)",action="store_true")     
-    parser.add_argument("-dblinks","--dblinks", help="number of linking atoms (requires dbhuman)",action="store_true")          
-    parser.add_argument("-dbfs","--dbfs", help="use fastsearch database if present",action="store_true")     
+    parser.add_argument("-dbconns","--dbconns", help="ligand coordinating elements (requires dbhuman)",action="store_true")
+    parser.add_argument("-dbhyb","--dbhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbhuman)",action="store_true")
+    parser.add_argument("-dblinks","--dblinks", help="number of linking atoms (requires dbhuman)",action="store_true")
+    parser.add_argument("-dbfs","--dbfs", help="use fastsearch database if present",action="store_true")
     # post-processing arguments
     parser.add_argument("-postp","--postp",help="post process results",action="store_true")
-    parser.add_argument("-postqc","--postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true") 
-    parser.add_argument("-postdir","--postdir", help="directory with results",action="store_true") 
+    parser.add_argument("-postqc","--postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true")
+    parser.add_argument("-postdir","--postdir", help="directory with results",action="store_true")
     parser.add_argument("-pres","--pres",help="generate calculations summary",action="store_true")
     parser.add_argument("-pdeninfo","--pdeninfo",help="calculate average properties for electron density",action="store_true")
     parser.add_argument("-pcharge","--pcharge",help="calculate charges",action="store_true")
