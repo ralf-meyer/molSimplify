@@ -79,7 +79,7 @@ def obfilters():
     -smarts    SMARTS filter
     -tbonds    Number of triple bonds
     -title    For comparing a molecule's title
-    -TPSA    topological polar surface area 
+    -TPSA    topological polar surface area
     """
     s += "\n Similarity search can be performed using 4 fingerprints. Available fingerprints are:\n"
     s += """
@@ -145,17 +145,15 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	## get database files
 	[dbsdf,dbfs] = setupdb(dbselect)
 	globs = globalvars()
-	if globs.osx:
-		obab = '/usr/local/bin/babel'
-	else:
-		obab = 'babel'
+
+	obab = 'babel'
 	if dbfs and args.dbfs:
 		com = obab+' '+dbfs+' simres.smi -d -xf'+finger+' -s"'+smi+'" -al'+nmols
-	else:              
+	else:
 		mybash(obab+' -isdf '+dbsdf+' -osdf -O tmp.sdf -d')
 		com = obab+' tmp.sdf simres.smi -xf'+finger+' -s"'+smi+'"'
 	## perform search using bash commandline
-	print('Performing substructure search:') 
+	print('Performing substructure search:')
  	res = mybash(com)
 	print res
 	os.remove('tmp.sdf')
@@ -257,16 +255,14 @@ def checkels(fname,allowedels):
 	f.close()
 	print 'Element filter returns',str(nf),'results'
 	return 0
-	
+
 #######################################
 ##### Maximal dissimilarity search ####
 #######################################
 def dissim(outf,n):
 	globs = globalvars()
-	if globs.osx:
-		obab = '/usr/local/bin/babel'
-	else:
-		obab = 'babel'
+
+	obab = 'babel'
 	# generate fs of original hit list
 	mybash(obab+' -ismi '+outf+' -osdf tmp.sdf')
 	mybash(obab+' tmp.sdf -ofs')
@@ -346,10 +342,8 @@ def matchsmarts(smarts,outf,catoms,nres):
 def dbsearch(rundir,args,globs):
     #print time.time()
     flag = False
-    if globs.osx:
-        obab = '/usr/local/bin/obabel'
-    else:
-        obab = 'obabel'
+
+    obab = 'obabel'
     if args.gui:
         from molSimplify.Classes.mWidgets import mQDialogErr
         from molSimplify.Classes.mWidgets import mQDialogWarn
@@ -470,7 +464,7 @@ def dbsearch(rundir,args,globs):
         elif args.dballowedels == 'organohalides':
             allowedels = ['H','C','N','O','F','Cl','Br','I']
         elif args.dballowedels == 'common':
-            allowedels = ['H','C','N','O','F','Cl','Br','I','P','S']		
+            allowedels = ['H','C','N','O','F','Cl','Br','I','P','S']
         else:
             allowedels = args.dballowedels.split(',')
         checkels(outf,allowedels)
@@ -495,5 +489,3 @@ def dbsearch(rundir,args,globs):
     os.chdir(cwd)
     #print time.time()
     return False
-        
-        
