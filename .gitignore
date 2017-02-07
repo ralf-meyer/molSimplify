@@ -1,5 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
 build/
 dist/
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
 CLIinput.inp
 files.txt
 molSimplify.egg-info

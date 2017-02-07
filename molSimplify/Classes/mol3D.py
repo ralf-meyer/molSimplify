@@ -7,7 +7,7 @@
 ########   coordinates and other properties  #############
 ##########################################################
 
-from math import sqrt 
+from math import sqrt
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
 import pybel, time, os, subprocess
@@ -21,22 +21,22 @@ def distance(R1,R2):
     #   - R2: 3-element list representing point 2
     # OUTPUT
     #   - d: Euclidean distance
-    dx = R1[0] - R2[0] 
-    dy = R1[1] - R2[1] 
-    dz = R1[2] - R2[2] 
+    dx = R1[0] - R2[0]
+    dy = R1[1] - R2[1]
+    dz = R1[2] - R2[2]
     d = sqrt(dx**2+dy**2+dz**2)
     return d
-    
+
 def mybash(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = []
     while True:
         line = p.stdout.readline()
-        stdout.append(line)        
+        stdout.append(line)
         if line == '' and p.poll() != None:
             break
-    return ''.join(stdout)    
-   
+    return ''.join(stdout)
+
 class mol3D:
     """ Class mol3D represents a molecule with its coordinates for
     easy manipulation in 3D space """
@@ -46,8 +46,8 @@ class mol3D:
     def __init__(self):
         """ Create a new molecule object """
         self.atoms = []
-        self.natoms = 0 
-        self.mass = 0 
+        self.natoms = 0
+        self.mass = 0
         self.size = 0
         self.charge = 0
         self.ffopt = 'BA'
@@ -57,7 +57,7 @@ class mol3D:
         self.denticity = 0   # denticity
         self.ident = ''      # identifier
         self.globs = globalvars() # holder for global variables
-    
+
     #######################################
     ### adds a new atom to the molecule ###
     #######################################
@@ -68,15 +68,15 @@ class mol3D:
         if atom.frozen:
             self.atoms[-1].frozen = True
         self.natoms += 1
-        self.mass += atom.mass 
+        self.mass += atom.mass
         self.size = self.molsize()
-    
+
     #############################################
     ### aligns 2 molecules based on atoms 1,2 ###
     #############################################
     def alignmol(self,atom1,atom2):
         # INPUT
-        #   - atom1: atom3D in first molecule 
+        #   - atom1: atom3D in first molecule
         #   - atom2: atom3D in second molecule
         # OUTPUT
         #   - self: aligned molecule
@@ -84,7 +84,7 @@ class mol3D:
         dv = atom2.distancev(atom1)
         # align molecule
         self.translate(dv)
-    
+
     #############################################
     ### calculates center of mass of molecule ###
     #############################################
@@ -92,7 +92,7 @@ class mol3D:
         # OUTPUT
         #   - pcm: vector representing center of mass
         # initialize center of mass and mol mass
-        pmc = [0, 0, 0]  
+        pmc = [0, 0, 0]
         mmass = 0
         # loop over atoms in molecule
         if self.natoms > 0:
@@ -119,7 +119,7 @@ class mol3D:
         # OUTPUT
         #   - pcm: vector representing center of mass
         # initialize center of mass and mol mass
-        pmc = [0, 0, 0]  
+        pmc = [0, 0, 0]
         # loop over atoms in molecule
         for atom in self.atoms:
         # calculate center of mass (relative weight according to atomic mass)
@@ -132,8 +132,8 @@ class mol3D:
         pmc[1] /= self.natoms
         pmc[2] /= self.natoms
         return pmc
-    
-    ############################################################ 
+
+    ############################################################
     ### converts OBMol to mol3D and adds to current molecule ###
     ############################################################
     def convert2mol3D(self):
@@ -151,16 +151,17 @@ class mol3D:
             # add atom to molecule
             self.addAtom(atom3D(sym,[pos[0],pos[1],pos[2]]))
             self.denticity = d
-    ############################################################ 
+    ############################################################
     ### converts mol3D to OBmol and adds to current molecule ###
     ############################################################
     def convert2OBmol(self):
         # write temp xyz
         self.writexyz('tempr.xyz')
-        mybash('obabel -ixyz tempr.xyz -omol -O tempr.mol')
-        self.OBmol = self.getOBmol('tempr.mol','molf')
+        self.OBmol = pybel.readfile("xyz","tempr.xyz").next()
+        #mybash('obabel -ixyz tempr.xyz -omol -O tempr.mol')
+        #self.OBmol = self.getOBmol('tempr.mol','molf')
         os.remove('tempr.xyz')
-        os.remove('tempr.mol')
+        #os.remove('tempr.mol')
     ###################################
     ### combines 2 molecules in one ###
     ###################################
@@ -169,12 +170,12 @@ class mol3D:
         #   - mol: second molecule to be "adsorbed"
         # OUTPUT
         #   - cmol: combined mol3D
-        cmol = self 
+        cmol = self
         '''combines 2 molecules in self'''
         for atom in mol.atoms:
             cmol.addAtom(atom)
         return cmol
-        
+
     ############################################################
     ### returns the coordinates of all atoms in the molecule ###
     ############################################################
@@ -187,7 +188,7 @@ class mol3D:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym,xyz[0],xyz[1],xyz[2])
         return ss
-    
+
     ############################################################
     ### returns the coordinates of all atoms in the molecule ###
     ############################################################
@@ -199,7 +200,7 @@ class mol3D:
             xyz = atom.coords()
             ss.append(xyz)
         return ss
-        
+
     #####################################
     ### copy molecule to new molecule ###
     #####################################
@@ -233,7 +234,7 @@ class mol3D:
         # INPUT
         #   - atomIdx: index of atom to be frozen
         self.atoms[atomIdx].frozen = True
-    ##########################################    
+    ##########################################
     ### deletes listed atoms from molecule ###
     ##########################################
     def deleteatoms(self,Alist):
@@ -241,7 +242,7 @@ class mol3D:
         #   - Alist: list of atoms to be deleted
         for h in sorted(Alist,reverse=True):
             self.deleteatom(h)
-    ##########################################    
+    ##########################################
     ### freezes listed atoms from molecule ###
     ##########################################
     def freezeatoms(self,Alist):
@@ -258,7 +259,7 @@ class mol3D:
             if self.getAtom(i).sym=='H':
                 hlist.append(i)
         self.deleteatoms(hlist)
-        
+
     ###########################################################
     ### gets distance between 2 molecules (centers of mass) ###
     ###########################################################
@@ -271,7 +272,7 @@ class mol3D:
         cm1 = mol.centermass()
         pmc = distance(cm0,cm1)
         return pmc
-        
+
     #######################################
     ### finds closest metal in molecule ###
     #######################################
@@ -292,7 +293,7 @@ class mol3D:
                 if atom.atno > maxaw:
                     mm = i
         return mm
-    
+
     ###############################
     ### finds metal in molecule ###
     ###############################
@@ -308,7 +309,7 @@ class mol3D:
                     mindist = distance(atom.coords(),cm)
                     mm = i
         return mm
-        
+
     #########################################
     ### finds atoms by symbol in molecule ###
     #########################################
@@ -322,7 +323,7 @@ class mol3D:
             if atom.sym==sym:
                 mm.append(i)
         return mm
-        
+
     ##############################################
     ### finds submolecule based on connections ###
     ##############################################
@@ -341,7 +342,7 @@ class mol3D:
         while len(conatoms) > 0: # while list of atoms to check loop
             for atidx in subm: # loop over initial connected atoms
                 if atidx != atomN: # check for separation atom
-                    newcon = self.getBondedAtoms(atidx) 
+                    newcon = self.getBondedAtoms(atidx)
                     if atomN in newcon:
                         newcon.remove(atomN)
                     for newat in newcon:
@@ -352,7 +353,7 @@ class mol3D:
                     conatoms.remove(atidx) # remove from list to check
         subm.sort()
         return subm
-        
+
     ########################################
     ### returns a specific atom by index ###
     ########################################
@@ -362,15 +363,15 @@ class mol3D:
         # OUTPUT
         #   atom3D of atom with index idx
         return self.atoms[idx]
-        
-    #################################    
+
+    #################################
     ### returns atoms in molecule ###
     #################################
     def getAtoms(self):
         # OUTPUT
         #   number of atoms in molecule
         return self.atoms
-    #################################    
+    #################################
     ### returns # of atom types   ###
     #################################
     def getAtomTypes(self):
@@ -391,7 +392,7 @@ class mol3D:
         # OUTPUT
         #   coordinates
         return self.atoms[idx].coords()
-        
+
     #######################################################
     ### returns list of bonded atoms to a specific atom ###
     #######################################################
@@ -408,7 +409,7 @@ class mol3D:
             if (d < 1.2*(atom.rad+ratom.rad) and i!=ind):
                 nats.append(i)
         return nats
-    
+
     #######################################################
     ### returns list of bonded atoms to a specific atom ###
     #######################################################
@@ -425,7 +426,7 @@ class mol3D:
             if (d < 1.2*(atom.rad+ratom.rad) and i!=ind and atom.sym!='H'):
                 nats.append(i)
         return nats
-    
+
     ###########################################################
     ### returns distance of atom that's the furthest away #####
     ########### from COM in a specific direction ##############
@@ -443,7 +444,7 @@ class mol3D:
                 dd = d0
                 atomc = atom.coords()
         return distance(self.centermass(),atomc)
-        
+
     ####################################
     ### gets hydrogens from molecule ###
     ####################################
@@ -453,7 +454,7 @@ class mol3D:
             if self.getAtom(i).sym=='H':
                 hlist.append(i)
         return hlist
-    
+
     ###########################################################
     ### returns list of hydrogens bonded to a specific atom ###
     ###########################################################
@@ -469,7 +470,7 @@ class mol3D:
                 if (d < 1.2*(atom.rad+ratom.rad) and d > 0.01):
                     nHs.append(i)
         return nHs
-        
+
     ###########################################################
     ### returns list of hydrogens bonded to a specific atom ###
     ###########################################################
@@ -486,7 +487,7 @@ class mol3D:
                 if (d < 1.2*(atom.rad+self.getAtom(idx).rad) and d > 0.01):
                     nHs.append(i)
         return nHs
-        
+
     #######################################################
     ### gets closest atom from molecule to another atom ###
     #######################################################
@@ -495,7 +496,7 @@ class mol3D:
         #   - atom0: reference atom3D
         # OUTPUT
         #   - idx: index of closest atom to atom0 from molecule
-        idx = 0 
+        idx = 0
         cdist = 1000
         for iat,atom in enumerate(self.atoms):
             ds = atom.distance(atom0)
@@ -503,7 +504,7 @@ class mol3D:
                 idx = iat
                 cdist = ds
         return idx
-        
+
     ###########################################
     ### gets point that corresponds to mask ###
     ###########################################
@@ -543,7 +544,7 @@ class mol3D:
             return self.centermass()
         else:
             return maux.centermass()
-        
+
     #######################################################
     ### gets closest atom from molecule to another atom ###
     #######################################################
@@ -552,7 +553,7 @@ class mol3D:
         #   - atom0: reference atom3D
         # OUTPUT
         #   - idx: index of closest atom to atom0 from molecule
-        idx = 0 
+        idx = 0
         cdist = 1000
         for iat,atom in enumerate(self.atoms):
             ds = atom.distance(atom0)
@@ -560,7 +561,7 @@ class mol3D:
                 idx = iat
                 cdist = ds
         return idx
-        
+
     #######################################################################
     ### gets closest atom from molecule to an atom in the same molecule ###
     #######################################################################
@@ -569,7 +570,7 @@ class mol3D:
         #   - atom0: reference atom3D
         # OUTPUT
         #   - idx: index of closest atom to atom0 from molecule
-        idx = 0 
+        idx = 0
         cdist = 1000
         for iat,atom in enumerate(self.atoms):
             ds = atom.distance(self.getAtom(atidx))
@@ -577,7 +578,7 @@ class mol3D:
                 idx = iat
                 cdist = ds
         return idx
-        
+
     ###############################################################
     ### assigns openbabel molecule from smiles or xyz/mol files ###
     ###############################################################
@@ -598,17 +599,17 @@ class mol3D:
         elif convtype=='molf':
             mol = pybel.readfile("mol",fst).next()
         return mol
-        
+
     ############################################
     ### initialize for conversion from OBMol ###
     ############################################
     def initialize(self):
         """ Remove attributes """
         self.atoms = []
-        self.natoms = 0 
-        self.mass = 0 
+        self.natoms = 0
+        self.mass = 0
         self.size = 0
-        
+
     ################################################################
     ### calculates maximum distance between atoms in 2 molecules ###
     ################################################################
@@ -623,7 +624,7 @@ class mol3D:
                 if (distance(atom1.coords(),atom0.coords()) > maxd):
                     maxd = distance(atom1.coords(),atom0.coords())
         return maxd
-        
+
     ################################################################
     ### calculates minimum distance between atoms in 2 molecules ###
     ################################################################
@@ -654,7 +655,7 @@ class mol3D:
                 if  (d < mind) and ii!=jj:
                     mind = distance(atom1.coords(),atom0.coords())
         return mind
-        
+
     #############################################################################
     ### calculates minimum distance between non-hydrogen atoms in 2 molecules ###
     #############################################################################
@@ -670,7 +671,7 @@ class mol3D:
                     if (atom1.sym!='H' and atom0.sym!='H'):
                         mind = distance(atom1.coords(),atom0.coords())
         return mind
-        
+
     ###########################################
     ### calculates the size of the molecule ###
     ###########################################
@@ -683,7 +684,7 @@ class mol3D:
             if distance(cm,atom.coords()) > maxd:
                 maxd = distance(cm,atom.coords())
         return maxd
-        
+
     ################################################
     ### checks for overlap with another molecule ###
     ################################################
@@ -733,13 +734,13 @@ class mol3D:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym,xyz[0],xyz[1],xyz[2])
             print ss
-            
+
     ###################################
     ### read molecule from xyz file ###
     ###################################
     def readfromxyz(self,filename):
         # INPUT
-        #   - filename: xyz file 
+        #   - filename: xyz file
         ''' reads molecule from xyz file'''
         fname = filename.split('.xyz')[0]
         f = open(fname+'.xyz','r')
@@ -750,7 +751,7 @@ class mol3D:
             if len(l) > 3:
                 atom = atom3D(l[0],[float(l[1]),float(l[2]),float(l[3])])
                 self.addAtom(atom)
-            
+
     ################################################
     ### calculate the RMSD between two molecules ###
     ################################################
@@ -796,7 +797,7 @@ class mol3D:
                         print "#############################################################"
                     break
         return overlap,mind
-        
+
     ##########################################
     ### translates molecule by vector dxyz ###
     ##########################################
@@ -805,7 +806,7 @@ class mol3D:
         #   - dxyz: translation vector
         for atom in self.atoms:
             atom.translate(dxyz)
-            
+
     #################################
     ### write xyz file for gamess ###
     #################################
@@ -822,7 +823,7 @@ class mol3D:
         f=open(fname+'.gxyz','w')
         f.write(ss)
         f.close()
-        
+
     ######################
     ### write xyz file ###
     ######################
@@ -839,7 +840,7 @@ class mol3D:
         f=open(fname+'.xyz','w')
         f.write(ss)
         f.close()
-        
+
     ###############################################
     ### write xyz file for 2 molecules combined ###
     ###############################################
@@ -860,7 +861,7 @@ class mol3D:
         f=open(fname+'.xyz','w')
         f.write(ss)
         f.close()
-        
+
     ################################################
     ### write xyz file for 2 molecules separated ###
     ################################################
@@ -896,4 +897,3 @@ class mol3D:
             if callable(getattr(self, method)):
                 ss += method +'\n'
         return ss
-
