@@ -318,19 +318,19 @@ def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
 ###############################
 
 def ffoptsimp(ff,mol):
-	# simple FF opt
-	forcefield = openbabel.OBForceField.FindForceField('MMFF94')
-	obmol = mol.OBmol.OBMol
-	s = forcefield.Setup(obmol)
-	if s == 'False':
-		print('FF setup failed')
-	### force field optimize structure
-	forcefield.ConjugateGradients(9999)
-	forcefield.GetCoordinates(obmol)
-	en = forcefield.Energy()
-	mol.OBmol = pybel.Molecule(obmol)
-	mol.convert2mol3D()
-	return mol,en
+    # simple FF opt
+    forcefield = openbabel.OBForceField.FindForceField('MMFF94')
+    obmol = mol.OBmol.OBMol
+    s = forcefield.Setup(obmol)
+    if s == 'False':
+        print('FF setup failed')
+    ### force field optimize structure
+    forcefield.ConjugateGradients(9999)
+    forcefield.GetCoordinates(obmol)
+    en = forcefield.Energy()
+    mol.OBmol = pybel.Molecule(obmol)
+    mol.convert2mol3D()
+    return mol,en
 
 def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
     # INPUT ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds) 
@@ -389,7 +389,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         obmol = mol.OBmol.OBMol
         s = forcefield.Setup(obmol,constr)
         if s == 'False':
-		print('FF setup failed')
+            print('FF setup failed')
         ### force field optimize structure
         forcefield.ConjugateGradients(9999)
         forcefield.GetCoordinates(obmol)
@@ -562,43 +562,43 @@ def getconnection(core,cm,catom,toconnect):
     return connPts
  
 def getconnection2(core,cidx,BL):
-	# finds the optimum attachment point for an atom/group to a central atom given the desired bond length
-	# objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
-	ncore = core.natoms
-	groups = core.getBondedAtoms(cidx)
-	ccoords = core.getAtom(cidx).coords()
-	# brute force search
-	cpoint = []
-	objopt = 0
-	for itheta in range(1,359,1):
-		for iphi in range(1,179,1):
-			P = PointTranslateSph(ccoords,ccoords,[BL,itheta,iphi])
-			dists = []
-			for ig in groups:
-				dists.append(distance(core.getAtomCoords(ig),P))
-			obj = min(dists)
-			if obj > objopt:
-				objopt = obj
-				cpoint = P
-	return cpoint 
+    # finds the optimum attachment point for an atom/group to a central atom given the desired bond length
+    # objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
+    ncore = core.natoms
+    groups = core.getBondedAtoms(cidx)
+    ccoords = core.getAtom(cidx).coords()
+    # brute force search
+    cpoint = []
+    objopt = 0
+    for itheta in range(1,359,1):
+        for iphi in range(1,179,1):
+            P = PointTranslateSph(ccoords,ccoords,[BL,itheta,iphi])
+            dists = []
+            for ig in groups:
+                dists.append(distance(core.getAtomCoords(ig),P))
+            obj = min(dists)
+            if obj > objopt:
+                objopt = obj
+                cpoint = P
+    return cpoint 
 
 def findsmarts(lig3D,smarts,catom):
-	# returns true if connecting atom of lig3D is part of SMARTS pattern
-	# lig3D: OBmol of mol3D
-	# smarts: list of SMARTS patterns
-	# catom: connecting atom of lig3D (zero based numbering)
-	mall = []
-	for sm in smarts:
-		sm = pybel.Smarts(sm)
-		matches = sm.findall(lig3D)
-		matches = [i for sub in matches for i in sub]
-		for m in matches:
-			if m not in mall:
-				mall.append(m)
-	if catom+1 in mall:
-		return True
-	else:
-		return False
+    # returns true if connecting atom of lig3D is part of SMARTS pattern
+    # lig3D: OBmol of mol3D
+    # smarts: list of SMARTS patterns
+    # catom: connecting atom of lig3D (zero based numbering)
+    mall = []
+    for sm in smarts:
+        sm = pybel.Smarts(sm)
+        matches = sm.findall(lig3D)
+        matches = [i for sub in matches for i in sub]
+        for m in matches:
+            if m not in mall:
+                mall.append(m)
+    if catom+1 in mall:
+        return True
+    else:
+        return False
 
 
 #################################################
@@ -654,8 +654,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     remCM = False   # remove dummy center of mass atom
     ### load bond data ###
     MLbonds = loaddata('/Data/ML.dat')
-
-
     ### calculate occurrences, denticities etc for all ligands ###
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
@@ -692,12 +690,13 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     dents = [dentl[i] for i in indcs]   # sort denticities list
     tcats = [cats0[i] for i in indcs]# sort connections list
     # sort keepHs list ###
+    # sort keepHs list ###
     keepHs = False
     if args.keepHs:
         keepHs = [k for k in args.keepHs]
         for j in range(len(args.keepHs),len(ligs)):
-            keepHs.append(False)
-        keepHs = [keepHs[i] for i in indcs] # sort keepHs list
+            keepHs.append('auto') # fill out unspecified keepHs with default
+            keepHs = [keepHs[i] for i in indcs] # sort keepHs list
     ### sort M-L bond list ###
     MLb = False
     if args.MLbonds:
@@ -751,8 +750,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     ### load backbone and combinations ###
     # load backbone for coordination
     corexyz = loadcoord(geom)
-
-
     # get combinations possible for specified geometry
     if geom in bbcombsdict.keys() and not args.ligloc:
         backbatoms = bbcombsdict[geom]
@@ -815,7 +812,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
          ANN_bondl = 0
          ANN_reason = 'ANN skipped by user'
     else:
-#         try:
+         try:
              ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
              if ANN_flag:
                  ANN_bondl = ANN_attributes['ANN_bondl']
@@ -823,16 +820,14 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                  ANN_bondl = 0 
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
-
-#         except:
-#             print("ANN call rejected")
-#             ANN_reason = 'uncaught exception'
-
-#             ANN_flag = False
-#             ANN_bondl = 0
+         except:
+             print("ANN call rejected")
+             ANN_reason = 'uncaught exception'
+             ANN_flag = False
+             ANN_bondl = 0
     this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
-	##############################
-	###############################
+    ##############################
+    ###############################
     #### loop over ligands and ####
     ### begin functionalization ###
     ###############################
@@ -841,11 +836,11 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     ligsused = 0
 
     if args.debug:
-    	print('ligands is  ' + str(ligands))
+        print('ligands is  ' + str(ligands))
     for i,ligand in enumerate(ligands):
         if args.debug:
-        	print('placing lig  ' + str(i))
-                rint('denticity is ' + str(dents[i]))
+                print('placing lig  ' + str(i))
+                print('denticity is ' + str(dents[i]))
         for j in range(0,occs[i]):
             denticity = dents[i]
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
@@ -882,6 +877,16 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             if cat > Hs[0]:
                                 lig.cat[ii] -= 1
                         lig3D.deleteatom(Hs[0])
+                        lig3D.charge = lig3D.charge - 1
+                # strip Hs attached to connecting atoms (add them back at the end)
+                removedHs = False
+                if args.stripHs and denticity == 2:
+                    for cat in lig3D.cat:
+                        Hs = lig3D.getHsbyIndex(cat)
+                        if len(Hs) > 0:
+                            removedHs = True
+                            lig3D.getAtom(cat).strippedHs = len(Hs)
+                            lig3D.deleteatoms(Hs)
                 # check for CM connection atom
                 if lig.cat[0] > lig3D.natoms-1 or 'cm' in lig.cat:
                     lig3D.addAtom(atom3D('C',lig3D.centermass()))
@@ -1003,18 +1008,76 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     else:
                         if not ANN_flag:
                             bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
+
                         else:
                             bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                             if not exact_match:
-                                print('Not match in DB, using ANN')
+                                if args.debug:
+                                        print('No match in DB, using ANN')
                                 bondl =  ANN_bondl
                             else:
-                                print('using exact match from DB')
+                                if args.debug:
+                                    print('using exact match from DB')
+                                db_overwrite = True
                     MLoptbds.append(bondl)
                     # get correct distance for center of mass
                     cmdist = bondl - distance(r1,mcoords)+distance(lig3D.centermass(),mcoords)
                     lig3D=setcmdistance(lig3D, mcoords, cmdist)
                 elif (denticity == 2):
+                    # get cis conformer if possible
+                    # search all bonds for rotatable bond linking connecting atoms
+                    bats = list(set(lig3D.getBondedAtomsnotH(catoms[0])) | set(lig3D.getBondedAtomsnotH(catoms[1])))
+                    rb1 = 1000
+                    rb2 = 1000
+                    for ii in range(lig3D.OBmol.OBMol.NumBonds()):
+                        bd = lig3D.OBmol.OBMol.GetBond(ii)
+                        bst = bd.GetBeginAtomIdx()
+                        ben = bd.GetEndAtomIdx()
+                        if bd.IsRotor() and (bst-1 in bats) and (ben-1 in bats):
+                            rb1 = bst-1
+                            rb2 = ben-1
+                            break
+                    if (rb1 != 1000) and (rb2 != 1000): # rotatable bond present, execute rotations
+                        if globs.debug:
+                            print('rotating ligand')
+                        rotfrag3D = mol3D()
+                        # create submolecule containing atoms to be rotated (the one containing catoms[0] which is aligned first)
+                        subm1 = lig3D.findsubMol(rb1,rb2)
+                        subm2 = lig3D.findsubMol(rb2,rb1)
+                        if catoms[1] in subm1:
+                            subm = subm1
+                            anchor = lig3D.getAtomCoords(rb2)
+                            refpt = lig3D.getAtomCoords(rb1)
+                        elif catoms[0] in subm1:
+                            subm = subm2
+                            anchor = lig3D.getAtomCoords(rb1)
+                            refpt = lig3D.getAtomCoords(rb2)
+                        ncoord = 0
+                        for nii,ii in enumerate(subm):
+                            rotfrag3D.addAtom(lig3D.getAtom(ii))
+                            # find coordinating atom in submolecule
+                            if ii in catoms:
+                                ncoord = nii
+                        u = vecdiff(refpt,anchor)
+                        dtheta = 10
+                        theta = 0
+                        thetaopt = 0
+                        objopt = 1000
+                        while theta < 360: # minimize distance between connecting atoms
+                            rotfrag3D = rotate_around_axis(rotfrag3D,anchor,u,dtheta)
+                            obj = distance(lig3D.getAtomCoords(catoms[1]),rotfrag3D.getAtomCoords(ncoord))
+                            obj = obj + distance(lig3D.getAtomCoords(catoms[0]),rotfrag3D.getAtomCoords(ncoord))
+                            if obj < objopt:
+                                thetaopt = theta
+                                objopt = obj
+                            theta = theta + dtheta
+                        rotfrag3D = rotate_around_axis(rotfrag3D,anchor,u,thetaopt)
+                        jj = 0
+                        for ii in subm: # replace coordinates
+                            lig3D.getAtom(ii).setcoords(rotfrag3D.getAtomCoords(jj))
+                            jj = jj + 1
                     # connection atoms in backbone
                     batoms = batslist[ligsused]
                     if len(batoms) < 1 :
@@ -1086,13 +1149,18 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     else:
                         if not ANN_flag:
                             bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                         else:
                             bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                             if not exact_match:
-                                print('Not match in DB, using ANN')
+                                if args.debug:
+                                    print('No match in DB, using ANN')
                                 bondl =  ANN_bondl
                             else:
-                                print('using exact match from DB')
+                                if args.debug:
+                                    print('using exact match from DB')
+                                db_overwrite = True
                     MLoptbds.append(bondl)
                     MLoptbds.append(bondl)
                     lig3D = setPdistance(lig3D, r1, r0, bondl)
@@ -1119,6 +1187,91 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             theta,urot = rotation_params(mcoords,r0,r1)
                             lig3D = rotate_around_axis(lig3D,r0,urot,-dtheta) # rotate so that it matches bond
                             break
+                    # prevent H clashes by rotating connecting atom
+                    nHs1 = len(lig3D.getHsbyIndex(catoms[0]))
+                    if nHs1 > 0:
+                        # isolate fragment
+                        confrag3D = mol3D()
+                        confrag3D.addAtom(lig3D.getAtom(catoms[0]))
+                        for ii in lig3D.getHsbyIndex(catoms[0]):
+                            confrag3D.addAtom(lig3D.getAtom(ii))
+                        if len(lig3D.getBondedAtomsnotH(catoms[0])) == 1:
+                            # if one bonded atom, rotate connecting atom
+                            anchor = lig3D.getAtomCoords(lig3D.getBondedAtomsnotH(catoms[0])[0])
+                            if not checkcolinear(anchor,confrag3D.getAtomCoords(0),confrag3D.getAtomCoords(1)):
+                                refpt = confrag3D.getAtomCoords(0)
+                                u = vecdiff(refpt,anchor)
+                                dtheta = 5
+                                theta = 0
+                                thetaopt = 0
+                                objopt = 0
+                                while theta < 360:
+                                    confrag3D = rotate_around_axis(confrag3D,refpt,u,dtheta)
+                                    obj = distance(m3D.getAtomCoords(0),confrag3D.getAtomCoords(1))
+                                    if confrag3D.natoms == 3:
+                                        obj = obj + distance(m3D.getAtomCoords(0),confrag3D.getAtomCoords(2))
+                                    else:
+                                        obj = obj + distance(anchor,confrag3D.getAtomCoords(1))
+                                    if obj > objopt:
+                                        thetaopt = theta
+                                        objopt = obj
+                                    theta = theta + dtheta
+                                confrag3D = rotate_around_axis(confrag3D,refpt,u,thetaopt)
+                                j = 1
+                                for ii in lig3D.getHsbyIndex(catoms[0]): # replace H coordinates
+                                    lig3D.getAtom(ii).setcoords(confrag3D.getAtomCoords(j))
+                                    j = j + 1
+                        else:
+                            # if two bonded atoms and 1 H, move H
+                            Hdist = distance(lig3D.getAtomCoords(catoms[0]),lig3D.getAtomCoords(lig3D.getHsbyIndex(catoms[0])[0]))
+                            tmp3D = mol3D()
+                            tmp3D.copymol3D(lig3D)
+                            tmp3D.getAtom(lig3D.getHsbyIndex(catoms[0])[0]).setcoords([1000,1000,1000])
+                            tmp3D.addAtom(m3D.getAtom(0))
+                            newHcoord = getconnection2(tmp3D,catoms[0],Hdist)
+                            lig3D.getAtom(lig3D.getHsbyIndex(catoms[0])[0]).setcoords(newHcoord)
+                    nHs2 = len(lig3D.getHsbyIndex(catoms[1]))
+                    if nHs2 > 0:
+                        # isolate fragment
+                        confrag3D = mol3D()
+                        confrag3D.addAtom(lig3D.getAtom(catoms[1]))
+                        for ii in lig3D.getHsbyIndex(catoms[1]):
+                            confrag3D.addAtom(lig3D.getAtom(ii))
+                        if len(lig3D.getBondedAtomsnotH(catoms[1])) == 1:
+                            # if one bonded atom, rotate connecting atom
+                            anchor = lig3D.getAtomCoords(lig3D.getBondedAtomsnotH(catoms[1])[0])
+                            if not checkcolinear(anchor,confrag3D.getAtomCoords(0),confrag3D.getAtomCoords(1)):
+                                refpt = confrag3D.getAtomCoords(0)
+                                u = vecdiff(refpt,anchor)
+                                dtheta = 5
+                                theta = 0
+                                thetaopt = 0
+                                objopt = 0
+                                while theta < 360:
+                                    confrag3D = rotate_around_axis(confrag3D,refpt,u,dtheta)
+                                    obj = distance(m3D.getAtomCoords(0),confrag3D.getAtomCoords(1))
+                                    if confrag3D.natoms == 3:
+                                        obj = obj + distance(m3D.getAtomCoords(0),confrag3D.getAtomCoords(2))
+                                    else:
+                                        obj = obj + distance(anchor,confrag3D.getAtomCoords(1))
+                                    if obj > objopt:
+                                        thetaopt = theta
+                                        objopt = obj
+                                    theta = theta + dtheta
+                                confrag3D = rotate_around_axis(confrag3D,refpt,u,thetaopt)
+                                j = 1
+                                for ii in lig3D.getHsbyIndex(catoms[1]): # replace H coordinates
+                                    lig3D.getAtom(ii).setcoords(confrag3D.getAtomCoords(j))
+                                    j = j + 1
+                        else:
+                            # if two bonded atoms and 1 H, move H
+                            Hdist = distance(lig3D.getAtomCoords(catoms[1]),lig3D.getAtomCoords(lig3D.getHsbyIndex(catoms[1])[0]))
+                            tmp3D = mol3D()
+                            tmp3D.copymol3D(lig3D)
+                            tmp3D.getAtom(lig3D.getHsbyIndex(catoms[1])[0]).setcoords([1000,1000,1000])
+                            tmp3D.addAtom(m3D.getAtom(0))
+                            newHcoord = getconnection2(tmp3D,catoms[1],Hdist)
+                            lig3D.getAtom(lig3D.getHsbyIndex(catoms[1])[0]).setcoords(newHcoord)
                     # freeze local geometry
                     lats = lig3D.getBondedAtoms(catoms[0])+lig3D.getBondedAtoms(catoms[1])
                     for lat in list(set(lats)):
@@ -1205,13 +1358,18 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     else:
                         if not ANN_flag:
                             bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                         else:
                             bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                             if not exact_match:
-                                print('Not match in DB, using ANN')
+                                if args.debug: 
+                                        print('Not match in DB, using ANN')
                                 bondl =  ANN_bondl
                             else:
-                                print('using exact match from DB')
+                                if args.debug: 
+                                    print('using exact match from DB')
+                                db_overwrite = True 
                     for iib in range(0,3):
                         MLoptbds.append(bondl)
                     # set correct distance
@@ -1231,6 +1389,10 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     auxmol = mol3D()
                     for iiax in range(0,4):
                         auxmol.addAtom(lig3D.getAtom(catoms[iiax]))
+                    if args.debug:
+                        m3D.writexyz('m3d.xyz')
+                        auxmol.writexyz('auxmol.xyz')
+    
                     lig3D.alignmol(atom3D('C',auxmol.centermass()),m3D.getAtom(0))
                     # align plane
                     r0c = m3D.getAtom(batoms[0]).coords()
@@ -1259,6 +1421,11 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     theta = 180*arccos(dot(r1,r2)/(norm(r1)*norm(r2)))/pi
                     lig3Db = mol3D()
                     lig3Db.copymol3D(lig3D)
+                    if args.debug:
+                        print('normal to tetradentate ligand plane: ',ul)
+                        print('lig center of mass ',rm)
+                        lig3D.writexyz('lig3d.xyz')
+                        lig3Db.writexyz('lig3db.xyz')
                     # rotate around axis and get both images
                     lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
                     # get distance from bonds table or vdw radii
@@ -1270,13 +1437,18 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     else:
                         if not ANN_flag:
                             bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                         else:
                             bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            this_diag.set_dict_bl(bondl)
                             if not exact_match :
-                                print('Not match in DB, using ANN')
+                                if args.debug:
+                                        print('No match in DB, using ANN')
                                 bondl =  ANN_bondl
                             else:
-                                print('using exact match from DB')
+                                if args.debug:
+                                    print('using exact match from DB at  ' + num2str(bondl))
+                                db_overwrite = True
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
                 elif (denticity == 5):
@@ -1369,16 +1541,43 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     core3D.deleteatom(core3D.natoms-1)
                 if args.calccharge:
                     core3D.charge += lig3D.charge
+                # add back Hs stripped from connecting atoms
+                if args.stripHs and removedHs:
+                    core3D.convert2OBmol()
+                    metalbonded = core3D.getBondedAtoms(core3D.findMetal())
+                    for a in metalbonded:
+                        core3D.OBmol.OBMol.AddBond(core3D.findMetal()+1,a+1,1) # OB indexing starts from 1
+                        core3D.OBmol.OBMol.GetBond(core3D.findMetal()+1,a+1).SetBondOrder(1)
+                    ii = 0
+                    if globs.debug:
+                        print metalbonded
+                    while ii < 2: # coordinating atom
+                        for idx in range(core3D.natoms):
+                            if idx in metalbonded and len(core3D.getHsbyIndex(idx)) == 0:
+                                jj = 0
+                                while jj < nHstripped[ii]: # number of Hs stripped
+                                    ac = core3D.OBmol.OBMol.GetAtom(idx+1).GetFormalCharge()
+                                    core3D.OBmol.OBMol.GetAtom(idx+1).SetFormalCharge(ac+1)
+                                    core3D.OBmol.OBMol.GetAtom(idx+1).IncrementImplicitValence()
+                                    core3D.OBmol.OBMol.AddHydrogens(core3D.OBmol.OBMol.GetAtom(idx+1))
+                                    print('H added')
+                                    jj = jj + 1
+                                ii = ii + 1
+                            if ii == 2:
+                                break
+                    core3D.convert2mol3D()
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
             totlig += denticity
             ligsused += 1
-
-    # perform FF optimization if requested
+    # perform FF optimization if requested  
     if args.ff and 'a' in args.ffoption:
-        core3D,enc = ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds)
+        core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
     ###############################
+        if db_overwrite:
+            print('bond distance from ANN overwritten by database value (exact match)')
+
     return core3D,complex3D,emsg,this_diag
 
 #################################################

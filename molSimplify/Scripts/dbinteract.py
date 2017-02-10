@@ -21,26 +21,18 @@ import pybel, openbabel
 ######################################################
 def setupdb(dbselect):
     globs = globalvars()
-    flag = True
-#    flag = globs.check_db()
-    if flag:
-        dbdir = os.path.relpath(globs.chemdbdir)+'/'
-        # get files in directory
-        dbfiles = os.listdir(dbdir)
-        # search for db files
-        dbmatches = [dbf for dbf in dbfiles if dbselect.lower() in dbf.lower()]
-        dbsdf = [dbm for dbm in dbmatches if '.sdf' in dbm]
-        dbfs = [dbm for dbm in dbmatches if '.fs' in dbm]
-        if len(dbsdf)==0:
-            print dbselect+' sdf database file missing from '+dbdir+'. Please make sure file '+dbselect+'.sdf is there..'
-            dbf1 = False
-        else:
-            dbf1 = dbdir+dbsdf[0]
-        if len(dbfs)==0:
-            print dbselect+' fastsearch database file missing from '+dbdir+'. Please make sure file '+dbselect+'.fs is there, it speeds up search significantly..'
-            dbf2 = False
-        else:
-            dbf2 = dbdir+dbfs[0]
+    dbdir = os.path.relpath(globs.chemdbdir)+'/'
+    print('the rel path is' + str(dbdir))
+    # get files in directory
+    dbfiles = os.listdir(dbdir)
+    # search for db files
+    dbmatches = [dbf for dbf in dbfiles if dbselect.lower() in dbf.lower()]
+    dbsdf = [dbm for dbm in dbmatches if '.sdf' in dbm]
+    dbfs = [dbm for dbm in dbmatches if '.fs' in dbm]
+    #print('thefile list' + str(dbfiles))
+    if len(dbsdf)==0:
+        print dbselect+' sdf database file missing from '+dbdir+'. Please make sure file '+dbselect+'.sdf is there..'
+        dbf1 = False
     else:
         dbf1 = dbdir+dbsdf[0]
     if len(dbfs)==0:
@@ -79,7 +71,7 @@ def obfilters():
     -smarts    SMARTS filter
     -tbonds    Number of triple bonds
     -title    For comparing a molecule's title
-    -TPSA    topological polar surface area 
+    -TPSA    topological polar surface area
     """
     s += "\n Similarity search can be performed using 4 fingerprints. Available fingerprints are:\n"
     s += """
@@ -145,27 +137,47 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	## get database files
 	[dbsdf,dbfs] = setupdb(dbselect)
 	globs = globalvars()
+	print(' in get similar, comparing to ' + smi)
+        print('dbsdf is ' + str(dbsdf))
+	print('dbfs is ' + str(dbfs))
+
 	if globs.osx:
 		obab = '/usr/local/bin/babel'
 	else:
 		obab = 'babel'
 	if dbfs and args.dbfs:
 		com = obab+' '+dbfs+' simres.smi -d -xf'+finger+' -s"'+smi+'" -al'+nmols
-	else:              
-		mybash(obab+' -isdf '+dbsdf+' -osdf -O tmp.sdf -d')
+	else:
+		com = obab +' -isdf '+dbsdf+' -osdf -O tmp.sdf -d'
+		#print('about to execute '+ com)
+		mybash(com)
+
+		#print('number of lines in tmp.sdf: '+str(mybash('cat tmp.sdf | wc -l')))
 		com = obab+' tmp.sdf simres.smi -xf'+finger+' -s"'+smi+'"'
 	## perform search using bash commandline
-	print('Performing substructure search:') 
+	print('Performing substructure search:')
+	print('running:  '+ str(com))
  	res = mybash(com)
-	print res
-	os.remove('tmp.sdf')
+	#print ('res = ' + str(res))
+	print('number of lines in .sdf: '+str(mybash('cat tmp.sdf | wc -l')))
+	print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
+
+        if os.path.isfile('tmp.sdf'):
+	        os.remove('tmp.sdf')
         shutil.copy('simres.smi','initial.smi')
 	if args.dbmaxsmartsmatches:
 		print('Applying filters:')
 		com = obab+" -ismi simres.smi -osmi -O simres.smi -h --filter "+squery
+		#print('running:  '+ str(com))
 		mybash(com)
+		print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
+
 		com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
-		res = mybash(com)
+		print('running:  '+ str(com))
+
+#		res = mybash(com)
+		print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
+
 		print res
         shutil.copy('simres.smi','afterfilteringsmarts.smi')
 	## check output and print error if nothing was found
@@ -184,11 +196,15 @@ def stripsalts(fname,nres):
 	acc1 = ['O-','F-','Cl-','Br-','I-','C@@H','C@H','N+','C@']
 	rejected = ['@@H','@H',"/","\\"]
 	accepted = acc0+acc1
+	print('number of smiles strings BEFORE salt stripping: ' + mybash("cat " + fname+ '| wc -l'))
 	if glob.glob(fname):
+		print('found fname ' + str(fname))
 		f = open(fname,'r')
 		s = f.read().splitlines()
 		f.close()
 	else:
+		print('not found fname ' + str(fname))
+
 		return 0
 	f = open(fname,'w')
 	for i,ss in enumerate(s):
@@ -210,6 +226,8 @@ def stripsalts(fname,nres):
 		ss = ss.split('.')[0]
 		f.write(ss+'\n')
 	f.close()
+	print('number of smiles strings AFTER salt stripping: ' + mybash("cat " + fname+ '| wc -l'))
+
 	return 0
 
 ##################################
@@ -257,16 +275,14 @@ def checkels(fname,allowedels):
 	f.close()
 	print 'Element filter returns',str(nf),'results'
 	return 0
-	
+
 #######################################
 ##### Maximal dissimilarity search ####
 #######################################
 def dissim(outf,n):
 	globs = globalvars()
-	if globs.osx:
-		obab = '/usr/local/bin/babel'
-	else:
-		obab = 'babel'
+
+	obab = 'babel'
 	# generate fs of original hit list
 	mybash(obab+' -ismi '+outf+' -osdf tmp.sdf')
 	mybash(obab+' tmp.sdf -ofs')
@@ -282,7 +298,6 @@ def dissim(outf,n):
 		for i in range(n-1):
 			# initialize list of total similarities
 			simsum = [0] * int(numcpds)
-                        print(simsum)
 			# compute total similarity of each dissimilar structure with hit list
 			for j in range(i+1):
 				a = mybash('obabel '+str(j+1)+'.smi tmp.sdf -ofpt')
@@ -345,18 +360,17 @@ def matchsmarts(smarts,outf,catoms,nres):
 ####################################
 def dbsearch(rundir,args,globs):
     #print time.time()
+
+    cwd = os.getcwd()
     flag = False
-    if globs.osx:
-        obab = '/usr/local/bin/obabel'
-    else:
-        obab = 'obabel'
+
+    obab = 'obabel'
     if args.gui:
         from molSimplify.Classes.mWidgets import mQDialogErr
         from molSimplify.Classes.mWidgets import mQDialogWarn
         from molSimplify.Classes.mWidgets import mQDialogInf
     ### in any case do similarity search over indexed db ###
     outf = args.dbfname if args.dbfname else 'simres.smi' # output file
-    cwd = os.getcwd()
     ### convert to SMILES/SMARTS if file
     if not args.dbbase:
         if args.gui:
@@ -387,13 +401,14 @@ def dbsearch(rundir,args,globs):
             #smistr = args.dbsim
             #print smistr
     if args.dbsmarts:
+	print('args.dbsmarts on')
         if '.smi' in args.dbsmarts:
             if glob.glob(args.dbsmarts):
                 f = open(args.dbsmarts,'r')
                 smistr = f.read()
                 f.close()
             else:
-                print 'File '+args.dbsmarts+' not existing. Check your input.'
+                print 'File '+args.dbsmarts+' does not exist. Check your input.'
                 print 'Substructure search terminating..'
                 return 1
         elif ('.mol' in args.dbsmarts or '.xyz' in args.dbsmarts):
@@ -402,13 +417,13 @@ def dbsearch(rundir,args,globs):
                 pymol = pybel.readfile(ftype,args.dbsmarts).next()
                 smistr = pymol.write("smi")
             else:
-                print 'File '+args.dbsmarts+' not existing. Check your input.'
+                print 'File '+args.dbsmarts+' does not exist. Check your input.'
                 print 'Substructure search terminating..'
                 return True
         else:
             smistr = args.dbsmarts
-            print smistr
-    elif args.dbverbose:
+            print 'smistr is ' + str(smistr)
+    elif args.dbhuman:
 		denticity = args.dbvdent if args.dbvdent else '1'
 		print args.dbvconns
 		coordatoms = args.dbvconns if args.dbvconns else 'N'
@@ -437,17 +452,22 @@ def dbsearch(rundir,args,globs):
         #return False
     ### parse filters
     squery = checkscr(args)
-    plugin_path = plugin_defs()
+    print('squrery is '+ str(squery))
+    
     if args.dbmaxsmartsmatches:
-		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+plugin_path
+
+                plugin_path = plugin_defs() 
+		shutil.copy(plugin_path,'plugindefines.txt')
+		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+'plugindefines.txt'
+		print('mysterious command '+ cmd)
 		mybash(cmd)
     ### run substructure search ###
-    nmols = '1000' if not args.dbnsearch else args.dbnsearch
+    nmols = '5000' if not args.dbnsearch else args.dbnsearch
     finger = 'FP2' if not args.dbfinger else args.dbfinger
     if int(nmols) > 3000 and args.gui:
         qqb = mQDialogInf('Warning',"Database search is going to take a few minutes. Please wait..OK?")
         qqb.setParent(args.gui.DBWindow)
-    if args.dbsmarts or args.dbverbose:
+    if args.dbsmarts or args.dbhuman:
         outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger,squery,args)
     if flag:
         if args.gui:
@@ -456,13 +476,20 @@ def dbsearch(rundir,args,globs):
         print "No matches found in search.."
         return True
     # strip metals and clean-up, remove duplicates etc
-    if args.dbsmarts or args.dbverbose:
+    #print('mb ' +  str(mybash('cat '+outf)))
+    if args.dbsmarts or args.dbhuman:
         print('Stripping salts and removing duplicates')
         flag = stripsalts(outf,args.dbresults)
+	print('flag from salt stripping: ' + str(flag))
+	print('number of smiles strings BEFORE unique: ' + mybash("cat " + outf+ '| wc -l'))
         cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
+	print('running:' + str(cmd))
         shutil.copy(outf,'afterstrippingsalts.smi')
         t = mybash(cmd)
-        print t
+	print('number of smiles strings AFTER unique: ' + mybash("cat " + outf+ '| wc -l'))
+
+
+        #print 't (ret from bash) is  '+ str(t)
     # filter results containing elements that aren't allowed
     if args.dballowedels:
         if args.dballowedels == 'organic': # HCNO only
@@ -470,7 +497,7 @@ def dbsearch(rundir,args,globs):
         elif args.dballowedels == 'organohalides':
             allowedels = ['H','C','N','O','F','Cl','Br','I']
         elif args.dballowedels == 'common':
-            allowedels = ['H','C','N','O','F','Cl','Br','I','P','S']		
+            allowedels = ['H','C','N','O','F','Cl','Br','I','P','S']
         else:
             allowedels = args.dballowedels.split(',')
         checkels(outf,allowedels)
@@ -482,7 +509,7 @@ def dbsearch(rundir,args,globs):
         catoms = [1]
     # do pattern matching
     nres = 50 if not args.dbresults else int(args.dbresults)
-    if args.dbsmarts or args.dbverbose:
+    if args.dbsmarts or args.dbhuman:
         flag = matchsmarts(smistr,outf,catoms,nres)
     ### maximal dissimilarity search
     if args.dbdissim:

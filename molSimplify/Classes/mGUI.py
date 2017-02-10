@@ -7,7 +7,7 @@
 ####################################################
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtSvg import *
+#from PyQt5.QtSvg import *
 from molSimplify.Classes.mWidgets import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D

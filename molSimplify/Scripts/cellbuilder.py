@@ -1,10 +1,9 @@
-    # Written by JP Janet for HJK Group
+# Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 import os, sys, copy
 import glob, re, math, random, string, numpy, pybel
 from math import pi
 from scipy.spatial import Delaunay, ConvexHull
-#import networkx as nx
 from molSimplify.Scripts.geometry import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.mol3D import*

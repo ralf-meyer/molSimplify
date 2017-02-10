@@ -71,9 +71,7 @@ def cleaninput(args):
     # check ligands
     if args.lig:
         ls = []
-        ligdic = readdict(resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict"))
-
-#        ligdic = readdict(globs.installdir+'/Ligands/simple_ligands.dict')
+        ligdic = getslicores() 
         for i,s in enumerate(args.lig):
             if isinstance(s,list):
                 for ss in s:
@@ -206,7 +204,7 @@ def parseinput(args):
         li = li.replace('\n','')
         line = line.replace('\n','')
         if not li.startswith("#") and len(li)>0: # remove comments/empty lines
-            l = filter(None,re.split(' |,|\t|&',li))
+            l = filter(None,re.split(' ||\t|&',li))
             # parse general arguments
             if (l[0]=='-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
@@ -277,6 +275,8 @@ def parseinput(args):
                 args.ligocc = l[1:]
             if (l[0]=='-rkHs'):
                 args.rkHs = checkTrue(l[1])
+            if (l[0]=='-stripHs'):
+                args.stripHs = True                
             if (l[0]=='-ligloc'):
                 args.ligloc = checkTrue(l[1])
             if (l[0]=='-ligalign'):
@@ -389,6 +389,10 @@ def parseinput(args):
                     args.statoption.append(l[1:])
                 else:
                     args.statoption = l[1:]
+            # parse MOLPAC generation routines
+            if (l[0] == '-mopac'):
+                    args.mopac = True
+ 
             # parse jobscript arguments
             if (l[0]=='-jsched'):
                 args.jsched = l[1]
@@ -458,7 +462,7 @@ def parseinput(args):
                 args.dbmaxsmartsmatches = l[1]
             if (l[0]=='-dbhuman'):
                 args.dbsearch = True
-                args.dbverbose = True
+                args.dbhuman = True
             if (l[0]=='-dbdent'):
                 args.dbvdent = l[1]
             if (l[0]=='-dbconns'):
@@ -572,6 +576,16 @@ def parseinput(args):
                 args.chain = l[1]
             if (l[0] == '-chain_units'):
                 args.chain_units = l[1]
+	    # parse analysis arguments
+            if (l[0] == '-correlate'):
+		args.correlate = True
+	    if (l[0] == '-descriptors'):
+		args.descriptors = [str(i) for i in l[1:]]
+	    if (l[0] == '-autocorrelation_depth'):
+		args.ac_depth  = int(l[1])
+	    if (l[0] == '-autocorrelation_props'):
+		args.ac_depth  = [str(i) for i in l[1:]]
+
 
 
                 
@@ -784,8 +798,17 @@ def parsecommandline(parser):
                         help = "SMILES string of monomer",action = "store_true") #0
     parser.add_argument('-chain_units','--chain_units',
                         help = "int, number of monomers") #0
+    # analysis arguments
+    parser.add_argument('-correlate','--correlate',
+                        help = "path to file for analysis, should contain value,path to .xyz file on each line ") #0
+    parser.add_argument('-descriptors','--descriptors',
+                        help = "list of descriptors to use, default = all, with the correlate function") #0
 
+    parser.add_argument('-autocorrelation_depth','--autocorrelation_depth',
+                        help = "int, max number of hops from TM center to calculate autocorrelations, default is all hops") #0
 
+    parser.add_argument('-autocorrelation_props','--autocorrelation_props',
+                        help = "list of atomic properties to use in autocorrelations, default is all available") #0
 
     args=parser.parse_args()
     return args

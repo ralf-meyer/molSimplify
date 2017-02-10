@@ -255,27 +255,27 @@ def checkmultilig(ligs):
             lsuf = lig.split('.')[-1]
             if '~' in lig:
                 lig = lig.replace('~',os.path.expanduser("~"))
-                # read molecule
-                if glob.glob(lig):
-                    moll = list(pybel.readfile(lsuf,lig))
-                    mols = [m.write('smi') for m in moll]
-                    f = open(lig,'r')
-                    s = f.read().splitlines()
-                    for ss in s:
+            # read molecule
+            if glob.glob(lig):
+            	moll = list(pybel.readfile(lsuf,lig))
+                mols = [m.write('smi') for m in moll]
+                f = open(lig,'r')
+                s = f.read().splitlines()
+                for ss in s:
 			ss = ss.replace('\t',' ')
-                        sf = filter(None,ss.split(' '))
+                	sf = filter(None,ss.split(' '))
                         if len(sf) > 0:
                             connatoms.append(sf[-1])
                             multidx = i
                         else:
                             connatoms.append(False)
-                    f.close()
-                    if len(mols) > 1:
+                f.close()
+                if len(mols) > 1:
                         mligs.append(mols)
-                    else:
-                        mligs.append([lig])
                 else:
-                    mligs.append([lig])
+                        mligs.append([lig])
+            else:
+            	mligs.append([lig])
         else:
             mligs.append([lig])
         tcats.append(connatoms)
@@ -288,6 +288,7 @@ def checkmultilig(ligs):
             for l1 in l0:
                 loclist.append(l1)
             llist.append(loclist)
+
     return llist,tcats,multidx
 
 ##############################################
@@ -317,10 +318,13 @@ def rungen(rundir,args,chspfname,globs):
         ligfilename = args.lig[0].split('.')[0]
     if args.lig:
         mligs,catoms,multidx = checkmultilig(args.lig)
+    if args.debug:
+        print('after checking for mulitple ligs, we found  ' + str(multidx) + ' ligands' )
     # save initial
     smicat0 = [ss for ss in args.smicat] if args.smicat else False    
     # loop over ligands
     for mcount, mlig in enumerate(mligs):
+        print('in rungen, ligand is' + str(mlig) + ' of  ' + str(len(mligs)))
         args.smicat = [ss for ss in smicat0] if smicat0 else False
         args.checkdir, skip = False, False # initialize flags
         if len(mligs) > 0 and mligs[0]:
@@ -365,24 +369,21 @@ def rungen(rundir,args,chspfname,globs):
             ligands =[]
             lig = ''
             ligocc = ''
-	 ##### fetch smart name
+    ##### fetch smart name
         fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,bind=args.bind,bsmi=args.nambsmi)
-	if globs.debug:
-	    print('in rungen, fname is  ' + fname)
-		#####
-	print('in rungen, fname is  ' + fname)
-
-	#        if args.bind:
-			# create folder for runs and check if it already exists
-	#            if args.nambsmi:
-	#                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
-	#            elif not args.bind in bindcores.keys():
-	#                rootdir = rundir+mname[0:4]+lig+'bsmi'
-	#            else:
-	#                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
-	#        else:
-	#            rootdir = rundir+mname[0:4]+lig
-	rootdir = fname
+        if globs.debug:
+		print('name is  '+fname)
+        #        if args.bind:
+                # create folder for runs and check if it already exists
+        #            if args.nambsmi:
+        #                rootdir = rundir+mname[0:4]+lig+args.nambsmi[0:3]
+        #            elif not args.bind in bindcores.keys():
+        #                rootdir = rundir+mname[0:4]+lig+'bsmi'
+        #            else:
+        #                rootdir = rundir+mname[0:4]+lig+args.bind[0:4]
+        #        else:
+        #            rootdir = rundir+mname[0:4]+lig
+        rootdir = fname
         # check for charges/spin
         rootcheck = False
         if (chspfname):
@@ -394,8 +395,8 @@ def rungen(rundir,args,chspfname,globs):
         # directory name
         if args.jobdir:
             rootdir = rundir + args.jobdir
-        # check for top directory
-	print('rootcheck is  ' + str(rootcheck))
+            # check for top directory
+        print('rootcheck is  ' + str(rootcheck))
 
         if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
             args.checkdirt = True
@@ -404,13 +405,13 @@ def rungen(rundir,args,chspfname,globs):
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'
                 elif 's' in flagdir.lower():
-                    flagdir = 'skip'
+                        flagdir = 'skip'
                 else:
                     flagdir = 'replace'
             else:
                 qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
                 flagdir = qqb.getaction()
-            # replace existing directory
+                # replace existing directory
             if (flagdir=='replace'):
                 shutil.rmtree(rootcheck)
                 os.mkdir(rootcheck)
@@ -422,19 +423,18 @@ def rungen(rundir,args,chspfname,globs):
                 ifold = 1
                 while glob.glob(rootdir+'_'+str(ifold)):
                     ifold += 1
-                rootcheck += '_'+str(ifold)
-                os.mkdir(rootcheck)
+                    rootcheck += '_'+str(ifold)
+                    os.mkdir(rootcheck)
         elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
-		if globs.debug:
-                    print(rootcheck)
-        	args.checkdirt = True
-		print('rootcheck is  ' + str(rootcheck))
-        	try:
-            	    os.mkdir(rootcheck)
-        	except:
-            	    print 'Directory '+rootcheck+' can not be created. Exiting..\n'
-            	    return
-        # check for actual directory
+            if globs.debug:
+                print('rootcheck is  ' + str(rootcheck))
+            args.checkdirt = True
+            try:
+                os.mkdir(rootcheck)
+            except:
+                print 'Directory '+rootcheck+' can not be created. Exiting..\n'
+                return
+            # check for actual directory
         if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
             args.checkdirb = True
             if not args.gui:
@@ -442,7 +442,7 @@ def rungen(rundir,args,chspfname,globs):
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'
                 elif 's' in flagdir.lower():
-                    flagdir = 'skip'
+                        flagdir = 'skip'
                 else:
                     flagdir = 'replace'
             else:
@@ -466,9 +466,9 @@ def rungen(rundir,args,chspfname,globs):
             if not os.path.isdir(rootdir):
                 args.checkdirb = True
                 os.mkdir(rootdir)
-        ####################################
-        ############ GENERATION ############
-        ####################################
+            ####################################
+            ############ GENERATION ############
+            ####################################
         if not skip:
             # check for generate all
             if args.genall:
@@ -522,32 +522,32 @@ def rungen(rundir,args,chspfname,globs):
                     print 'QChem input files generated!'
                 else:
                     print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
-			# check molpac
-	        if args.mopac and not emsg:
-		    print('Generating MOPAC input')
-		    if globs.debug:
-		        print(strfiles)
-			jobdirs = mlpgen(args,strfiles,rootdir)
-			# generate jobscripts
-	        if args.jsched and not emsg:
-		    if args.jsched in 'SBATCH SLURM slurm sbatch':
-		        slurmjobgen(args,jobdirs)
-			print 'SLURM jobscripts generated!'
-		    elif args.jsched in 'SGE Sungrid sge':
-			sgejobgen(args,jobdirs)
-			print 'SGE jobscripts generated!'
-                if this_diag.sanity: # move to separate subdirectory if generated structure was bad
-		    fname = rootdir.rsplit('/',1)[-1]
-		    shutil.move(rootdir,rundir+'/badjobs/'+fname)
-		elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
-		    f = open(ligfilename+'-good.smi','a')
-		    f.write(args.lig[0])
-		    f.close()  
-		elif not emsg:
-			if args.gui:
-				qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
-				qq.setParent(args.gui.wmain)
-			else:
-				print 'Folder '+rootdir+' was skipped..\n'
-	return emsg    
-	
+            # check molpac
+            if args.mopac and not emsg:
+                print('Generating MOPAC input')
+                if globs.debug:
+                    print(strfiles)
+                jobdirs = mlpgen(args,strfiles,rootdir)
+            # generate jobscripts
+            if args.jsched and not emsg:
+                if args.jsched in 'SBATCH SLURM slurm sbatch':
+                    slurmjobgen(args,jobdirs)
+                    print 'SLURM jobscripts generated!'
+                elif args.jsched in 'SGE Sungrid sge':
+                    sgejobgen(args,jobdirs)
+                    print 'SGE jobscripts generated!'
+            if this_diag.sanity: # move to separate subdirectory if generated structure was bad
+                fname = rootdir.rsplit('/',1)[-1]
+                shutil.move(rootdir,rundir+'/badjobs/'+fname)
+            elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
+                f = open(ligfilename+'-good.smi','a')
+                f.write(args.lig[0])
+                f.close()  
+        elif not emsg:
+            if args.gui:
+                qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
+                qq.setParent(args.gui.wmain)
+            else:
+                print 'Folder '+rootdir+' was skipped..\n'
+    return emsg    
+

@@ -11,8 +11,8 @@
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
-from molSimplify.python_nn.graph_analyze import *
-from molSimplify.python_nn.pytry import *
+from molSimplify.Informatics.graph_analyze import *
+from molSimplify.python_nn.ANN import *
 import numpy
 # import standard modules
 import openbabel
@@ -355,21 +355,35 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                    sum_delen,max_delen, #mdelen, maxdelen #20-21
                    ax_bo,eq_bo, #axlig_bo, eqliq_bo #22-23
                    ax_ki,eq_ki]#axlig_ki, eqliq_kii #24-25
-   # print(nn_excitation)
-   # print('\n')
+	slope_excitation = [0,0,0,0,0, # metals co/cr/fe/mn/ni                 #1-5
+                   ox,eq_charge,ax_charge, #ox/eqlig charge/axlig charge #6-8
+                   ax_dent,eq_dent,# ax_dent/eq_dent/ #9-10
+                   0,0,0,0, # axlig_connect: Cl,N,O,S #11 -14
+                   0,0,0,0, # eqliq_connect: Cl,N,O,S #15-18
+                   ax_bo,eq_bo, #axlig_bo, eqliq_bo #19-20
+		   ax_ki,eq_ki,#axlig_ki, eqliq_kii #21-22
+                   sum_delen,max_delen] #mdelen, maxdelen #23-24
+    #print(slope_excitation)
+    #print('\n')
     ### discrete variable encodings
     if valid:
         valid,nn_excitation = metal_corrector(nn_excitation,this_metal)
+        valid,slope_excitation = metal_corrector(slope_excitation,this_metal)
    # print('metal_cor',valid)
     #
     if valid:
         valid,nn_excitation = ax_lig_corrector(nn_excitation,ax_type)
+        valid,slope_excitation = ax_lig_corrector(slope_excitation,ax_type)
+
     #print('ax_cor',valid)
     #
     if valid:
         valid,nn_excitation = eq_lig_corrector(nn_excitation,eq_type)
+        valid,slope_excitation = eq_lig_corrector(slope_excitation,eq_type)
+
     #print('eq_cor',valid)
     #
+    #print(slope_excitation)
 
     if valid:
         print("*******************************************************************")
@@ -433,10 +447,16 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         print('ANN bond length is predicted to be: '+str(r) + ' angstrom')
         ANN_attributes.update({'ANN_bondl':r[0]})
+
+	### use ANN to predict fucntional sensitivty
+        HFX_slope = 0 
+        HFX_slope = get_slope(slope_excitation)
+        print('Predicted HFX exchange sensitivity is : '+str(HFX_slope) + ' kcal/HFX')
+	ANN_attributes.update({'ANN_slope':HFX_slope})
         print("*******************************************************************")
 
     if not valid and not ANN_reason:
-        ANN_reason = ' uncaught rejection (see sdout)'
+        ANN_reason = ' uncaught rejection (see sdout/stderr)'
     return valid,ANN_reason,ANN_attributes
 
 
@@ -522,6 +542,12 @@ def get_splitting(excitation):
     delta = simple_splitting_ann(excitation)
     delta = delta*sfd['split_energy'][1] + sfd['split_energy'][0] 
     return delta
+def get_slope(slope_excitation):
+    sfd = get_sfd()
+    HFX = simple_slope_ann(slope_excitation)
+    HFX = HFX*sfd['slope'][1] + sfd['slope'][0] 
+    return HFX
+
 def get_ls_dist(excitation):
     sfd = get_sfd()
     r = simple_ls_ann(excitation)

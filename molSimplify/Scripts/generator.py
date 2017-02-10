@@ -34,6 +34,7 @@ from molSimplify.Scripts.dbinteract import *
 from molSimplify.Scripts.postproc import *
 from molSimplify.Scripts.cellbuilder import*
 from molSimplify.Scripts.chains import*
+from molSimplify.Scripts.findcorrelations import*
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
@@ -90,7 +91,7 @@ def startgen(argv,flag,gui):
         parseinput(args)
     # clean input arguments
     cleaninput(args)
-    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not(args.chain):
+    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate):        # check input arguments
         # check input arguments
         emsg = checkinput(args)
     args.gui = False # deepcopy will give error
@@ -146,6 +147,11 @@ def startgen(argv,flag,gui):
     elif (args.chain):
         print('chain on')
         emsg = chain_builder_supervisor(args,rundir)
+    # correlation analysis
+    elif (args.correlate):
+        print('analysis is looking for correlations')
+        analysis_supervisor(args)
+
     # normal structure generation
     else:
         args = copy.deepcopy(args0)
