@@ -148,11 +148,7 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	if dbfs and args.dbfs:
 		com = obab+' '+dbfs+' simres.smi -d -xf'+finger+' -s"'+smi+'" -al'+nmols
 	else:
-		com = obab +' -isdf '+dbsdf+' -osdf -O tmp.sdf -d'
-		#print('about to execute '+ com)
-		mybash(com)
-
-		#print('number of lines in tmp.sdf: '+str(mybash('cat tmp.sdf | wc -l')))
+		mybash(obab+' -isdf '+dbsdf+' -osdf -O tmp.sdf -d')
 		com = obab+' tmp.sdf simres.smi -xf'+finger+' -s"'+smi+'"'
 	## perform search using bash commandline
 	print('Performing substructure search:')
@@ -522,5 +518,3 @@ def dbsearch(rundir,args,globs):
     os.chdir(cwd)
     #print time.time()
     return False
-        
-        

@@ -3,17 +3,17 @@
     Copyright 2016 Kulik Lab @ MIT
 
     This file is part of molSimplify.
-    molSimplify is free software: you can redistribute it and/or modify 
-    it under the terms of the GNU General Public License as published 
+    molSimplify is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published
     by the Free Software Foundation, either version 3 of the License,
     or (at your option) any later version.
 
-    molSimplify is distributed in the hope that it will be useful, 
+    molSimplify is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     See the GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License 
+    You should have received a copy of the GNU General Public License
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 
@@ -53,11 +53,11 @@ def startgen(argv,flag,gui):
     #    cdbdir = raw_input("Please specify the full path of the directory containing chemical databases:")
     #    mwfn = raw_input("Specify the full path to the Multiwfn executable (for post-processing):")
     #    f = open(homedir+'/.molSimplify','w')
-    #    if len(instdir) > 1: 
+    #    if len(instdir) > 1:
     #        f.write("INSTALLDIR="+instdir+'\n')
-    #    if len(cdbdir) > 1: 
+    #    if len(cdbdir) > 1:
     #        f.write("CHEMDBDIR="+cdbdir+'\n')
-    #    if len(mwfn) > 1 : 
+    #    if len(mwfn) > 1 :
     #        f.write("MULTIWFN="+mwfn[0]+'\n')
     #    f.close()
     ### end set-up configuration file ###
@@ -79,7 +79,6 @@ def startgen(argv,flag,gui):
     sys.argv = argv
     parser = argparse.ArgumentParser()
     args = parsecommandline(parser)
-    
     # check if input file exists
     if not glob.glob(args.i):
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
@@ -176,7 +175,3 @@ def startgen(argv,flag,gui):
 
 if __name__ == "__main__":
     startgen()
-
-
-    
-

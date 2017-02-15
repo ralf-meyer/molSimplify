@@ -12,12 +12,19 @@
 ##########################################################
 
 # import custom modules
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.rundiag import *
 
+=======
+from geometry import *
+from io import *
+#from nn_prep import *
+from Classes.globalvars import *
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
 # import standard modules
 import os, sys
 from pkg_resources import resource_filename, Requirement
@@ -391,7 +398,14 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         if s == 'False':
             print('FF setup failed')
         ### force field optimize structure
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
         forcefield.ConjugateGradients(9999)
+=======
+        if obmol.NumHvyAtoms() > 10:
+            forcefield.ConjugateGradients(300)
+        else:
+            forcefield.ConjugateGradients(200)
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -414,9 +428,15 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         forcefield.Setup(obmol,constr)
         ### force field optimize structure
         if obmol.NumHvyAtoms() > 10:
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
             forcefield.ConjugateGradients(2000)
         else:
             forcefield.ConjugateGradients(9999)
+=======
+            forcefield.ConjugateGradients(300)
+        else:
+            forcefield.ConjugateGradients(200)
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -617,12 +637,19 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     #   - core3D: built complex
     #   - complex3D: list of all mol3D ligands and core
     #   - emsg: error messages
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
         ### create a diagnostic object to pass information 
         ### to the other parts of the code
     this_diag = run_diag()
     db_overwrite = False
         ###
 
+=======
+    print(args.__dict__)
+    with open('/home/jp/Runs/args.txt','w') as f:
+        for keys in args.__dict__.keys():
+            f.write(str(keys) + ' : ' + str(args.__dict__[keys]) + "\n")
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
     if globs.debug:
         print '\nGenerating complex with ligands and occupations:',ligs,ligoc
     if args.gui:
@@ -653,7 +680,15 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     MLoptbds = []   # list of bond lengths
     remCM = False   # remove dummy center of mass atom
     ### load bond data ###
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
     MLbonds = loaddata('/Data/ML.dat')
+=======
+    MLbonds = loaddata(installdir+'/Data/ML.dat')
+
+
+
+
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
     ### calculate occurrences, denticities etc for all ligands ###
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
@@ -689,6 +724,10 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     occs = [occs0[i] for i in indcs]    # sort occurrences list
     dents = [dentl[i] for i in indcs]   # sort denticities list
     tcats = [cats0[i] for i in indcs]# sort connections list
+    #### ANN pluggin
+#    examine_inputs(args,occs,ligs)
+
+
     # sort keepHs list ###
     # sort keepHs list ###
     keepHs = False
@@ -898,7 +937,9 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 for at in catoms:
                     connected.append(initatoms+at)
                 ### initialize variables
+
                 atom0, r0, r1, r2, r3 = 0, mcoords, 0, 0, 0 # initialize variables
+                print("\n After intialization, before dent check")
                 ####################################################
                 ##    attach ligand depending on the denticity    ##
                 ## optimize geometry by minimizing steric effects ##
@@ -1026,6 +1067,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     cmdist = bondl - distance(r1,mcoords)+distance(lig3D.centermass(),mcoords)
                     lig3D=setcmdistance(lig3D, mcoords, cmdist)
                 elif (denticity == 2):
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
                     # get cis conformer if possible
                     # search all bonds for rotatable bond linking connecting atoms
                     bats = list(set(lig3D.getBondedAtomsnotH(catoms[0])) | set(lig3D.getBondedAtomsnotH(catoms[1])))
@@ -1078,6 +1120,9 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         for ii in subm: # replace coordinates
                             lig3D.getAtom(ii).setcoords(rotfrag3D.getAtomCoords(jj))
                             jj = jj + 1
+=======
+                    print("\n dent 2 case")
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
                     # connection atoms in backbone
                     batoms = batslist[ligsused]
                     if len(batoms) < 1 :
@@ -1172,6 +1217,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     ddr = [di/nsteps for di in dr]
                     ens =[]
                     cutoff = 5.0 # kcal/mol
+                    print("\n dent 2 before FF loop")
                     for ii in range(0,nsteps):
                         lig3D,enl = ffopt('mmff94',lig3D,[],1,[catoms[0],catoms[1]],False,[])
                         ens.append(enl)
@@ -1276,6 +1322,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     lats = lig3D.getBondedAtoms(catoms[0])+lig3D.getBondedAtoms(catoms[1])
                     for lat in list(set(lats)):
                         frozenats.append(lat+core3D.natoms)
+                    print("\n end of dent 2 case")
                 elif (denticity == 3):
                     # connection atoms in backbone
                     batoms = batslist[ligsused]
@@ -1571,7 +1618,14 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
             totlig += denticity
             ligsused += 1
+<<<<<<< HEAD:molSimplify/Scripts/structgen.py
     # perform FF optimization if requested  
+=======
+    # perform FF optimization if requested
+
+
+    print('\n before ff..')
+>>>>>>> 8e882a9016038fd6d33ecd417aa7509ed2d518e3:executables/Distribute_source/Scripts/structgen.py
     if args.ff and 'a' in args.ffoption:
         core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
     ###############################

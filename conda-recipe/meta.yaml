@@ -1,0 +1,51 @@
+package:
+  name: molsimplify
+  version: "latest"
+
+source:
+    path: ../
+
+build:
+  entry_points:
+
+    - molsimplify = molSimplify.__main__:main
+
+  number: 1
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - setuptools
+    - openbabel
+    - numpy
+    - scipy
+    
+
+test:
+  # Python imports
+  imports:
+    - openbabel
+  commands:
+    # You can put test commands to be run here.  Use this to test that the
+    # entry points work.
+
+    - molsimplify -h
+
+  # You can also put a file called run_test.py in the recipe that will be run
+  # at test time.
+
+  # requires:
+    # Put any additional test requirements here.  For example
+    # - nose
+
+about:
+  home: https://github.com/hjkgrp/molSimplify
+  summary: "An open source toolkit for discovery of inorganic complexes"
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
