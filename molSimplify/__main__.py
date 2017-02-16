@@ -29,14 +29,14 @@ import sys, argparse, os, platform, shutil
 from Scripts.inparse import *
 from Scripts.generator import *
 
-#try:
-import PyQt5
-from PyQt5.QtGui import *
-from molSimplify.Classes.mGUI import *
-qtflag = True
-#except ImportError:
-#   qtflag = False
-#   pass
+try:
+    import PyQt5
+    from PyQt5.QtGui import *
+    from molSimplify.Classes.mGUI import *
+    qtflag = True
+except ImportError:
+   qtflag = False
+   pass
 
 def main(args=None):
     print('main_invoked')
