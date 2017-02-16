@@ -195,8 +195,17 @@ def parseCLI(args):
 ##########  parse input file  #############
 ###########################################
 ### parses inputfile ###
-def parseinput(args):
-    args.skipANN = False
+def parseinput(args): 
+    #### arguments that don't match with  inparse name and 
+    ### are not automatically initialized go here:
+    args.skipANN = False 
+    args.dbvdent = False
+    args.dbvconns = False
+    args.dbvhyb = False
+    args.dbvlinks = False
+
+    ##(we should remove these where posible)
+	
     for line in open(args.i):
         if '-lig' not in line and '-core' not in line and '-bind' not in line and '-dbsmarts' not in line:
             line = line.split('#')[0] # remove comments
@@ -457,7 +466,7 @@ def parseinput(args):
             if (l[0]=='-dbnsearch'):
                 args.dbnsearch = l[1]
             if (l[0]=='-dballowedels'):
-                args.dballowedels = l[1]
+                args.dballowedels = l[1:]
             if (l[0]=='-dbmaxsmartsmatches'):
                 args.dbmaxsmartsmatches = l[1]
             if (l[0]=='-dbhuman'):

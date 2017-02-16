@@ -22,7 +22,6 @@ import pybel, openbabel
 def setupdb(dbselect):
     globs = globalvars()
     dbdir = os.path.relpath(globs.chemdbdir)+'/'
-    print('the rel path is' + str(dbdir))
     # get files in directory
     dbfiles = os.listdir(dbdir)
     # search for db files
@@ -137,9 +136,7 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	## get database files
 	[dbsdf,dbfs] = setupdb(dbselect)
 	globs = globalvars()
-	print(' in get similar, comparing to ' + smi)
-        print('dbsdf is ' + str(dbsdf))
-	print('dbfs is ' + str(dbfs))
+	print('Finding results similar, comparing to ' + smi)
 
 	if globs.osx:
 		obab = '/usr/local/bin/babel'
@@ -152,11 +149,10 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 		com = obab+' tmp.sdf simres.smi -xf'+finger+' -s"'+smi+'"'
 	## perform search using bash commandline
 	print('Performing substructure search:')
-	print('running:  '+ str(com))
+	#print('running:  '+ str(com))
  	res = mybash(com)
 	#print ('res = ' + str(res))
-	print('number of lines in .sdf: '+str(mybash('cat tmp.sdf | wc -l')))
-	print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
+	print('number of SMILES returned : '+str(mybash('cat simres.smi | wc -l')))
 
         if os.path.isfile('tmp.sdf'):
 	        os.remove('tmp.sdf')
@@ -169,10 +165,10 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 		print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
 
 		com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
-		print('running:  '+ str(com))
+#		print('running:  '+ str(com))
 
 #		res = mybash(com)
-		print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
+		print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
 
 		print res
         shutil.copy('simres.smi','afterfilteringsmarts.smi')
@@ -192,9 +188,7 @@ def stripsalts(fname,nres):
 	acc1 = ['O-','F-','Cl-','Br-','I-','C@@H','C@H','N+','C@']
 	rejected = ['@@H','@H',"/","\\"]
 	accepted = acc0+acc1
-	print('number of smiles strings BEFORE salt stripping: ' + mybash("cat " + fname+ '| wc -l'))
 	if glob.glob(fname):
-		print('found fname ' + str(fname))
 		f = open(fname,'r')
 		s = f.read().splitlines()
 		f.close()
@@ -222,8 +216,6 @@ def stripsalts(fname,nres):
 		ss = ss.split('.')[0]
 		f.write(ss+'\n')
 	f.close()
-	print('number of smiles strings AFTER salt stripping: ' + mybash("cat " + fname+ '| wc -l'))
-
 	return 0
 
 ##################################
@@ -249,7 +241,7 @@ def getels(smistr):
 	return els
 
 def checkels(fname,allowedels):
-	print('Filtering by allowed elements:')
+	print('Filtering by allowed elements:' +str(allowedels))
 	if glob.glob(fname):
 		f = open(fname,'r')
 		s = f.read().splitlines()
@@ -265,6 +257,7 @@ def checkels(fname,allowedels):
 		for el in els:
 			if el not in allowedels:
 				flag = True
+				#print(el)
 		if not flag:
 			f.write(ss+'\n')
 			nf = nf + 1
@@ -310,7 +303,6 @@ def dissim(outf,n):
 				simsum = [x + y for x,y in zip(simsum,a)]
 			# pick most dissimilar structure by greedily minimizing total similarity
 			mostdissim = simsum.index(min(simsum))
-			print('most dissimilar '+str(mostdissim))
 			mybash('obabel tmp.sdf -O '+str(i+2) +'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
 	# combine results into one file
 	f = open('dissimres.smi','w')
@@ -397,7 +389,6 @@ def dbsearch(rundir,args,globs):
             #smistr = args.dbsim
             #print smistr
     if args.dbsmarts:
-	print('args.dbsmarts on')
         if '.smi' in args.dbsmarts:
             if glob.glob(args.dbsmarts):
                 f = open(args.dbsmarts,'r')
@@ -418,15 +409,19 @@ def dbsearch(rundir,args,globs):
                 return True
         else:
             smistr = args.dbsmarts
-            print 'smistr is ' + str(smistr)
     elif args.dbhuman:
+		smistr = []
 		denticity = args.dbvdent if args.dbvdent else '1'
-		print args.dbvconns
 		coordatoms = args.dbvconns if args.dbvconns else 'N'
 		hyb = args.dbvhyb if args.dbvhyb else '3'
 		nlinks = args.dbvlinks if args.dbvlinks else '2'
 		monod = ['1','mono','Mono','monodentate','Monodentate']
 		bid = ['2','bi','Bi','bidentate','Bidentate']
+		if args.debug:
+			print('dbhuman conversion')
+			print('dbhuman coordatoms '+ str(coordatoms))
+			print('dbhuman nlinks ' + str(nlinks))
+			print('dbhuman hyb ' + str(hyb))
 		if denticity in monod:
 			smistr = '[#'+str(amassdict[coordatoms[0]][1])+'^'+hyb[0]+';!+]'
 		elif denticity in bid:
@@ -434,6 +429,7 @@ def dbsearch(rundir,args,globs):
 			for i in range(int(nlinks)):
 				smistr = smistr +'[#6;R0]'
 			smistr = smistr +'[#'+str(amassdict[coordatoms[1]][1])+'^'+hyb[1]+';!+]'
+		print('setting smistr from dbhuman '+ smistr)
     #else:
         ## get database
         #[dbsdf,dbfs] = setupdb(args.dbbase)
@@ -448,17 +444,15 @@ def dbsearch(rundir,args,globs):
         #return False
     ### parse filters
     squery = checkscr(args)
-    print('squrery is '+ str(squery))
     
     if args.dbmaxsmartsmatches:
 
                 plugin_path = plugin_defs() 
 		shutil.copy(plugin_path,'plugindefines.txt')
 		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+'plugindefines.txt'
-		print('mysterious command '+ cmd)
 		mybash(cmd)
     ### run substructure search ###
-    nmols = '5000' if not args.dbnsearch else args.dbnsearch
+    nmols = '1000000' if not args.dbnsearch else args.dbnsearch
     finger = 'FP2' if not args.dbfinger else args.dbfinger
     if int(nmols) > 3000 and args.gui:
         qqb = mQDialogInf('Warning',"Database search is going to take a few minutes. Please wait..OK?")
@@ -475,11 +469,14 @@ def dbsearch(rundir,args,globs):
     #print('mb ' +  str(mybash('cat '+outf)))
     if args.dbsmarts or args.dbhuman:
         print('Stripping salts and removing duplicates')
+
+	print('number of smiles strings BEFORE salt stripping: ' + mybash("cat " + outf+ '| wc -l'))
         flag = stripsalts(outf,args.dbresults)
-	print('flag from salt stripping: ' + str(flag))
+	print('number of smiles strings AFTER salt stripping: ' + mybash("cat " + outf+ '| wc -l'))
+	#print('flag from salt stripping: ' + str(flag))
 	print('number of smiles strings BEFORE unique: ' + mybash("cat " + outf+ '| wc -l'))
         cmd = obab+" -ismi "+outf+" -osmi -O "+outf+" --unique"
-	print('running:' + str(cmd))
+	#print('running:' + str(cmd))
         shutil.copy(outf,'afterstrippingsalts.smi')
         t = mybash(cmd)
 	print('number of smiles strings AFTER unique: ' + mybash("cat " + outf+ '| wc -l'))
@@ -495,8 +492,11 @@ def dbsearch(rundir,args,globs):
         elif args.dballowedels == 'common':
             allowedels = ['H','C','N','O','F','Cl','Br','I','P','S']
         else:
-            allowedels = args.dballowedels.split(',')
+            allowedels = args.dballowedels
+	print('number of smiles strings BEFORE element filter: ' + mybash("cat " + outf+ '| wc -l'))
         checkels(outf,allowedels)
+	print('number of smiles strings AFTER element filter unique: ' + mybash("cat " + outf+ '| wc -l'))
+
         shutil.copy(outf,'afterfilteringels.smi')
     # check if defined connection atoms
     if args.dbcatoms:
@@ -506,15 +506,32 @@ def dbsearch(rundir,args,globs):
     # do pattern matching
     nres = 50 if not args.dbresults else int(args.dbresults)
     if args.dbsmarts or args.dbhuman:
+	print('number of smiles strings BEFORE SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
         flag = matchsmarts(smistr,outf,catoms,nres)
+	print('number of smiles strings AFTER SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
+    if args.debug:
+	print('outf is '+str(outf))
     ### maximal dissimilarity search
     if args.dbdissim:
         dissim(outf,int(args.dbdissim))
+	if args.debug:
+		print('outf is '+str(outf))
+
         #flag = stripsalts('dissimres.smi',args.dbdissim)
         #flag = matchsmarts(smistr,'dissimres.smi',catoms,int(args.dbdissim))
         #print(flag)
-        os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
-    os.rename(outf,args.rundir+'/'+outf)
+    	if args.rundir:
+        	os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
+		print('writing max dissimilar list to ' + str(args.rundir) + '/' + str(outf)  )
+	else:
+		print('writing max dissimilar list to ' + str(cwd) + '/' + str(outf)  )
+
+    if args.rundir:
+		print('writing output to ' + str(args.rundir) + '/' + str(outf)  )
+		os.rename(outf,args.rundir+'/'+outf)
+    else:
+    		print('writing output to ' + str(cwd) + '/' + str(outf)  )
+
     os.chdir(cwd)
     #print time.time()
     return False
