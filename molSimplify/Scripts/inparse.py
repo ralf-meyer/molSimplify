@@ -71,7 +71,7 @@ def cleaninput(args):
     # check ligands
     if args.lig:
         ls = []
-        ligdic = getslicores() 
+        ligdic = getslicores()
         for i,s in enumerate(args.lig):
             if isinstance(s,list):
                 for ss in s:
@@ -195,25 +195,27 @@ def parseCLI(args):
 ##########  parse input file  #############
 ###########################################
 ### parses inputfile ###
-def parseinput(args): 
-    #### arguments that don't match with  inparse name and 
+def parseinput(args):
+    #### arguments that don't match with  inparse name and
     ### are not automatically initialized go here:
-    args.skipANN = False 
+    args.skipANN = False
     args.dbvdent = False
     args.dbvconns = False
     args.dbvhyb = False
     args.dbvlinks = False
 
     ##(we should remove these where posible)
-	
+
     for line in open(args.i):
+        # For arguments that cannot accept smiles as args, split possible comments
         if '-lig' not in line and '-core' not in line and '-bind' not in line and '-dbsmarts' not in line:
             line = line.split('#')[0] # remove comments
         li = line.strip()
         li = li.replace('\n','')
         line = line.replace('\n','')
-        if not li.startswith("#") and len(li)>0: # remove comments/empty lines
-            l = filter(None,re.split(' |\t|&',li)) #Breaks smarts? removed comma
+        if not li.startswith("#") and len(li)>0: # ignore comments/empty lines
+            # split arguments on whitespace, commas (this breaks smarts)
+            l = filter(None,re.split(' |\t|,|&',li))
             # parse general arguments
             if (l[0]=='-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
@@ -271,9 +273,8 @@ def parseinput(args):
             if (l[0]=='-geometry' and len(l[1:]) > 0):
                 args.geometry = l[1].lower()
             # parse ligands
-            if (l[0]=='-lig'):
-                ll = line.split('-lig')[-1]
-                args.lig = filter(None,re.split(' |,|\t',ll))
+            if (l[0]=='-lig') and len(l[1:]):
+                args.lig = l[1:]
             if (l[0]=='-lignum' and len(l[1:]) > 0):
                 args.lignum = l[1]
             if (l[0]=='-liggrp' and len(l[1:]) > 0):
@@ -285,7 +286,7 @@ def parseinput(args):
             if (l[0]=='-rkHs'):
                 args.rkHs = checkTrue(l[1])
             if (l[0]=='-stripHs'):
-                args.stripHs = True                
+                args.stripHs = True
             if (l[0]=='-ligloc'):
                 args.ligloc = checkTrue(l[1])
             if (l[0]=='-ligalign'):
@@ -401,7 +402,7 @@ def parseinput(args):
             # parse MOLPAC generation routines
             if (l[0] == '-mopac'):
                     args.mopac = True
- 
+
             # parse jobscript arguments
             if (l[0]=='-jsched'):
                 args.jsched = l[1]
@@ -447,6 +448,7 @@ def parseinput(args):
             if (l[0]=='-dbbase'):
                 args.dbbase = l[1]
             if (l[0]=='-dbsmarts'):
+                # Needs to not have been split on commas
                 args.dbsearch = True
                 args.dbsmarts = l[1]
             if (l[0]=='-dbcatoms'):
@@ -597,7 +599,7 @@ def parseinput(args):
 
 
 
-                
+
 #############################################################
 ########## mainly for help and listing options  #############
 #############################################################

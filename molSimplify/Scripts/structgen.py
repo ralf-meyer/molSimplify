@@ -37,7 +37,7 @@ def norm(u):
         d += (u0*u0)
     d = sqrt(d)
     return d
-    
+
 ################################################
 ### gets the elements in a that are not in b ###
 ################################################
@@ -66,7 +66,7 @@ def getbackbcombs():
                      [2,5,4],[2,6,4],[5,4,6],[5,1,6],[5,2,6],[5,3,6], # 3-dentate
                      [1,2],[1,4],[1,5],[1,6],[2,3],[2,5], # 2-dentate
                      [2,6],[3,5],[3,6],[4,5],[4,6],[3,4], # 2-dentate
-                     [1],[2],[3],[4],[5],[6]] # 1-dentate 
+                     [1],[2],[3],[4],[5],[6]] # 1-dentate
     bbcombs['pbp'] = [[1,2,3,4,5,6],[1,2,3,4,6], # 6/5-dentate
                       [1,2,3,5], # 4-dentate
                       [1,2,3],[1,2,4],[2,1,5],[3,1,6],[5,6,3],[2,6,5], # 3-dentate
@@ -187,7 +187,7 @@ def distortbackbone(backb, distort):
             phi = random.uniform(0.0,0.01*int(distort)*0.5) # *0.5
             backb[i] = PointTranslateSph(backb[0],backb[i],[distance(backb[0],backb[i]),theta,phi])
     return backb
-    
+
 #######################
 ### reorder ligands ###
 #######################
@@ -222,7 +222,7 @@ def smartreorderligs(args,ligs,dentl,licores):
         for l in locind:
             indcs.append(ligdentsidcs[ii][l])
     return indcs
-    
+
 ###########################################
 ### loads M-L bond length from database ###
 ###########################################
@@ -305,7 +305,7 @@ def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
             bondl = float(MLbonds[kk])
             found = True
             if (kk == ((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))): ## exact match
-               exact_match = True 
+               exact_match = True
             break
     if not found: # last resort covalent radii
         bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
@@ -333,7 +333,7 @@ def ffoptsimp(ff,mol):
     return mol,en
 
 def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
-    # INPUT ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds) 
+    # INPUT ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds)
     #   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
     #   - mol: mol3D to be ff optimized
     #   - connected: indices of connection atoms to metal
@@ -423,7 +423,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         mol.convert2mol3D()
         del forcefield, constr, obmol
     return mol,en
-    
+
 ################################################
 ### FORCE FIELD OPTIMIZATION for custom cores ##
 ################################################
@@ -509,7 +509,7 @@ def getconnection(core,cm,catom,toconnect):
             for iphi in range(0,180,2):
                 P = PointTranslateSph(coords,backbcoords,[1.5,itheta,iphi])
                 am.atoms[ii].setcoords(P)
-                dd = 0 
+                dd = 0
                 for idx in range(0,toconnect):
                     dd += distance(cm,am.atoms[idx].coords())
                 if (am.mindistmol() > 0.0):
@@ -525,7 +525,7 @@ def getconnection(core,cm,catom,toconnect):
         core.writexyz('tmp.xyz')
         core.OBmol = core.getOBmol('tmp.xyz','xyzf')
         os.remove('tmp.xyz')
-        ### openbabel indexing starts at 1 ### 
+        ### openbabel indexing starts at 1 ###
         # convert metals to carbons for FF
         [indmtls,mtlsnums] = [[],[]]
         for iiat,atom in enumerate(core.OBmol.atoms):
@@ -560,7 +560,7 @@ def getconnection(core,cm,catom,toconnect):
     for ii in range(0,toconnect):
         connPts.append(core.getAtom(ncore+ii).coords())
     return connPts
- 
+
 def getconnection2(core,cidx,BL):
     # finds the optimum attachment point for an atom/group to a central atom given the desired bond length
     # objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
@@ -580,7 +580,7 @@ def getconnection2(core,cidx,BL):
             if obj > objopt:
                 objopt = obj
                 cpoint = P
-    return cpoint 
+    return cpoint
 
 def findsmarts(lig3D,smarts,catom):
     # returns true if connecting atom of lig3D is part of SMARTS pattern
@@ -617,7 +617,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     #   - core3D: built complex
     #   - complex3D: list of all mol3D ligands and core
     #   - emsg: error messages
-        ### create a diagnostic object to pass information 
+        ### create a diagnostic object to pass information
         ### to the other parts of the code
     this_diag = run_diag()
     db_overwrite = False
@@ -763,7 +763,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     coord = len(corexyz)-1 # get coordination
     ### initialize molecules ###
     # create molecule and add metal and base
-    m3D = mol3D() 
+    m3D = mol3D()
     m3D.addAtom(atom3D(metal,corexyz[0])) # add metal
     core3D = mol3D() # create backup
     core3D.addAtom(atom3D(metal,corexyz[0])) # add metal
@@ -817,7 +817,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
              if ANN_flag:
                  ANN_bondl = ANN_attributes['ANN_bondl']
              else:
-                 ANN_bondl = 0 
+                 ANN_bondl = 0
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
          except:
@@ -1126,7 +1126,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         theta = 180*arccos(dot(ub,ul)/(norm(ub)*norm(ul)))/pi-180.0
                     else:
                         theta = 0.0
-                    # rotate around axis 
+                    # rotate around axis
                     lig3Db = mol3D()
                     lig3Db.copymol3D(lig3D)
                     lig3D = rotate_around_axis(lig3D,r1,urot,theta)
@@ -1168,7 +1168,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     rtarget = getPointu(mcoords, bondl, vecdiff(r1b,mcoords)) # get second point target
                     dr = vecdiff(rtarget,lig3D.getAtom(catoms[1]).coords())
                     # distort ligand in nsteps steps
-                    nsteps = 15 
+                    nsteps = 15
                     ddr = [di/nsteps for di in dr]
                     ens =[]
                     cutoff = 5.0 # kcal/mol
@@ -1363,13 +1363,13 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
                             this_diag.set_dict_bl(bondl)
                             if not exact_match:
-                                if args.debug: 
+                                if args.debug:
                                         print('Not match in DB, using ANN')
                                 bondl =  ANN_bondl
                             else:
-                                if args.debug: 
+                                if args.debug:
                                     print('using exact match from DB')
-                                db_overwrite = True 
+                                db_overwrite = True
                     for iib in range(0,3):
                         MLoptbds.append(bondl)
                     # set correct distance
@@ -1392,7 +1392,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     if args.debug:
                         m3D.writexyz('m3d.xyz')
                         auxmol.writexyz('auxmol.xyz')
-    
+
                     lig3D.alignmol(atom3D('C',auxmol.centermass()),m3D.getAtom(0))
                     # align plane
                     r0c = m3D.getAtom(batoms[0]).coords()
@@ -1460,7 +1460,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             qqb.setParent(args.gui.wmain)
                         emsg = 'Connecting all ligands is not possible. Check your input!'
                         break
-                    # get center of mass 
+                    # get center of mass
                     ligc = mol3D()
                     for i in range(0,4): #5 is the non-planar atom
                         ligc.addAtom(lig3D.getAtom(catoms[i]))
@@ -1519,7 +1519,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             qqb.setParent(args.gui.wmain)
                         emsg = 'Connecting all ligands is not possible. Check your input!'
                         break
-                    # get center of mass 
+                    # get center of mass
                     ligc = mol3D()
                     for i in range(0,6):
                         ligc.addAtom(lig3D.getAtom(catoms[i]))
@@ -1571,7 +1571,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
             totlig += denticity
             ligsused += 1
-    # perform FF optimization if requested  
+    # perform FF optimization if requested
     if args.ff and 'a' in args.ffoption:
         core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
     ###############################
@@ -1701,7 +1701,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
     # flags of connection points already calculated
     setccatoms = list(set(ccatoms)) # set of connection points
     conflags = [False for ii in enumerate(setccatoms)]
-    confcount = 0 
+    confcount = 0
     # loop over ligands
     totlig = 0  # total number of ligands added
     for i,ligand in enumerate(ligands):
@@ -1725,7 +1725,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                         alconn = ccatoms[:totlig].count(ccatoms[totlig]) # already connected
                         cpoints = getconnection(core,cmcore,ccatoms[totlig],totconn)
                         conflags[cidxconn] = True
-                        confcount = 0 
+                        confcount = 0
                     else:
                         confcount += 1
                     cpoint = cpoints[confcount]
@@ -1742,7 +1742,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     # loop over different connected atoms
                     for cat in conatoms:
                         # find submolecule
-                        delatoms = core3D.findsubMol(ccatoms[totlig],cat) 
+                        delatoms = core3D.findsubMol(ccatoms[totlig],cat)
                         if len(delatoms) < minmol: # check for smallest
                             mindelats = delatoms
                             minmol = len(delatoms) # size
@@ -1908,7 +1908,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     # combine molecules
                     core3D = core3D.combine(lig3D)
                 else:
-                    emsg = 'Multidentate ligands not supported for custom cores. Skipping.\n' 
+                    emsg = 'Multidentate ligands not supported for custom cores. Skipping.\n'
                     print emsg
                 if args.calccharge:
                     core3D.charge += lig3D.charge
@@ -1977,7 +1977,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     # generate multiple geometric arrangements
     Nogeom = int(args.bindnum) if args.bindnum and args.bind else 1 # number of different combinations
     ligname = '' # name of file
-    nosmiles = 0 
+    nosmiles = 0
     # generate name of the file
     for l in ligands:
         if l not in licores.keys():
@@ -1989,7 +1989,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                     if globs.nosmiles > 1:
                         ismidx = nosmiles
                     else:
-                        ismidx = 0 
+                        ismidx = 0
                     if len(args.sminame) > ismidx:
                         l = args.sminame[ismidx][0:2]
                     else:
@@ -2086,7 +2086,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                     cmcore = core3D.centermass()
                     uP = getPointu(cmcore,100,vecdiff(Pp0,cmcore)) # get far away point in space
                     mindist = core3D.getfarAtomdir(uP)
-                    maxdist = mindist+float(args.maxd) # Angstrom, distance of non-interaction    
+                    maxdist = mindist+float(args.maxd) # Angstrom, distance of non-interaction
                     mindist = mindist+float(args.mind) # Angstrom, distance of non-interaction
                     R = random.uniform(mindist,maxdist) # get random distance, separated for i=0
                     # rotate and place according to distance
@@ -2107,7 +2107,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                     break
                 if totits > 200:
                     print "WARNING: Overlapping in molecules for file "+fname+str(i)
-                    break 
+                    break
                 totits += 1
             if (i > 0):
                 # write separate xyz file
@@ -2158,6 +2158,3 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structures!'
     return strfiles, emsg, this_diag
-
-
-
