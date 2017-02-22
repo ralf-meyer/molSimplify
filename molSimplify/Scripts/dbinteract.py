@@ -138,10 +138,7 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	globs = globalvars()
 	print('Finding results similar, comparing to ' + smi)
 
-	if globs.osx:
-		obab = '/usr/local/bin/babel'
-	else:
-		obab = 'babel'
+	obab = 'babel'
 	if dbfs and args.dbfs:
 		com = obab+' '+dbfs+' simres.smi -d -xf'+finger+' -s"'+smi+'" -al'+nmols
 	else:
@@ -444,13 +441,13 @@ def dbsearch(rundir,args,globs):
         #return False
     ### parse filters
     squery = checkscr(args)
-    
-    if args.dbmaxsmartsmatches:
 
-                plugin_path = plugin_defs() 
-		shutil.copy(plugin_path,'plugindefines.txt')
-		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+'plugindefines.txt'
-		mybash(cmd)
+    if args.dbmaxsmartsmatches:
+        plugin_path = plugin_defs()
+        print plugin_path
+        shutil.copy(plugin_path,'plugindefines.txt')
+        cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+'plugindefines.txt'
+        mybash(cmd)
     ### run substructure search ###
     nmols = '1000000' if not args.dbnsearch else args.dbnsearch
     finger = 'FP2' if not args.dbfinger else args.dbfinger

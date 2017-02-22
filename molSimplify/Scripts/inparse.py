@@ -450,7 +450,7 @@ def parseinput(args):
             if (l[0]=='-dbsmarts'):
                 # Needs to not have been split on commas
                 args.dbsearch = True
-                args.dbsmarts = l[1]
+                args.dbsmarts = li.split()[1]
             if (l[0]=='-dbcatoms'):
                 args.dbcatoms = l[1:]
             if (l[0]=='-dbfinger'):
