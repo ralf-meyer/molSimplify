@@ -259,10 +259,10 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             eq_lig3D.convert2mol3D() ## mol3D representation of ligand
             if ax_tcat:
                     ax_lig3D.cat = ax_tcat
-                    print('custom ax tcat ',ax_tcat)
+                    print('custom ax connect atom given (0-ind) '+str(ax_tcat))
             if eq_tcat:
                     eq_lig3D.cat = eq_tcat
-                    print('custom eq tcat ',eq_tcat)
+                    print('custom eq connect atom given (0-ind) '+str(eq_tcat))
     if args.debug:
         print('finished checking ligands, valid is '+str(valid))
     if valid:

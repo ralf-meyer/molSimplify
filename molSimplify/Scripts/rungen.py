@@ -324,7 +324,8 @@ def rungen(rundir,args,chspfname,globs):
     smicat0 = [ss for ss in args.smicat] if args.smicat else False    
     # loop over ligands
     for mcount, mlig in enumerate(mligs):
-        print('in rungen, ligand is' + str(mlig) + ' of  ' + str(len(mligs)))
+	if args.debug:
+        	print('in rungen, ligand is' + str(mlig) + ' of  ' + str(len(mligs)))
         args.smicat = [ss for ss in smicat0] if smicat0 else False
         args.checkdir, skip = False, False # initialize flags
         if len(mligs) > 0 and mligs[0]:

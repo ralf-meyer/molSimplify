@@ -90,6 +90,7 @@ def checkscr(args):
 	#    scr += "s'"+args.dbsmarts+"' &"
 	if args.dbatoms:
 		nts = args.dbatoms.split('<')
+		print('adding atom constraints')
 		if nts[0]!='':
 			scr += " atoms>"+nts[0]+" &"
 		if nts[1]!='':
@@ -135,39 +136,43 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	#######################################
 	## get database files
 	[dbsdf,dbfs] = setupdb(dbselect)
+	print('database set up :' + str(dbsdf) + ' || ' + str(dbfs))
 	globs = globalvars()
 	print('Finding results similar, comparing to ' + smi)
 
-	obab = 'babel'
+	if globs.osx:
+		obab = '/usr/local/bin/babel'
+	else:
+		obab = 'babel'
 	if dbfs and args.dbfs:
-		com = obab+' '+dbfs+' simres.smi -d -xf'+finger+' -s"'+smi+'" -al'+nmols
+		com = obab+' '+dbfs+' '+'simres.smi -d -xf'+finger+' -s"'+smi+'" -al'+nmols
 	else:
 		mybash(obab+' -isdf '+dbsdf+' -osdf -O tmp.sdf -d')
 		com = obab+' tmp.sdf simres.smi -xf'+finger+' -s"'+smi+'"'
 	## perform search using bash commandline
 	print('Performing substructure search:')
-	#print('running:  '+ str(com))
+	print('running:  '+ str(com))
  	res = mybash(com)
-	#print ('res = ' + str(res))
+	print ('res = ' + str(res))
 	print('number of SMILES returned : '+str(mybash('cat simres.smi | wc -l')))
 
         if os.path.isfile('tmp.sdf'):
 	        os.remove('tmp.sdf')
         shutil.copy('simres.smi','initial.smi')
 	if args.dbmaxsmartsmatches:
-		print('Applying filters:')
+		print('Applying filters: inside get similar')
 		com = obab+" -ismi simres.smi -osmi -O simres.smi -h --filter "+squery
-		#print('running:  '+ str(com))
+		print('running:  '+ str(com))
 		mybash(com)
 		print('number of lines in simres.smi: '+str(mybash('cat simres.smi | wc -l')))
 
-		com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
-#		print('running:  '+ str(com))
+#		com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
+#		rint('running:  '+ str(com))
 
 #		res = mybash(com)
-		print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
+#		print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
 
-		print res
+#		print res
         shutil.copy('simres.smi','afterfilteringsmarts.smi')
 	## check output and print error if nothing was found
 	if ('errors' in res):
@@ -302,6 +307,7 @@ def dissim(outf,n):
 			mostdissim = simsum.index(min(simsum))
 			mybash('obabel tmp.sdf -O '+str(i+2) +'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
 	# combine results into one file
+	print('preparing dism file: ' + str(outf)+'\n')
 	f = open('dissimres.smi','w')
 	for i in range(n):
 		ff = open(str(i+1)+'.smi','r')
@@ -363,28 +369,29 @@ def dbsearch(rundir,args,globs):
             qqb.setParent(args.gui.DBWindow)
         print "No database file found within "+globs.chemdbdir+'. Search not possible.'
         return True
-    #if args.dbsim:
-        #if '.smi' in args.dbsim:
-            #if glob.glob(args.dbsim):
-                #f = open(args.dbsim,'r')
-                #smistr = f.read()
-                #f.close()
-            #else:
-                #print 'File '+args.dbsim+' not existing. Check your input.'
-                #print 'Similarity search terminating..'
-                #return True
-        #elif ('.mol' in args.dbsim or '.xyz' in args.dbsim):
-            #if glob.glob(args.dbsim):
-                #ftype = args.dbsim.split('.')[-1]
-                #pymol = pybel.readfile(ftype,args.dbsim).next()
-                #smistr = pymol.write("smi")
-            #else:
-                #print 'File '+args.dbsim+' not existing. Check your input.'
-                #print 'Similarity search terminating..'
-                #return True
-        #else:
-            #smistr = args.dbsim
-            #print smistr
+    if args.dbsim:
+	print('similarity searching')
+        if '.smi' in args.dbsim:
+            if glob.glob(args.dbsim):
+                f = open(args.dbsim,'r')
+                smistr = f.read()
+                f.close()
+            else:
+                print 'File '+args.dbsim+' not existing. Check your input.'
+                print 'Similarity search terminating..'
+                return True
+        elif ('.mol' in args.dbsim or '.xyz' in args.dbsim):
+            if glob.glob(args.dbsim):
+                ftype = args.dbsim.split('.')[-1]
+                pymol = pybel.readfile(ftype,args.dbsim).next()
+                smistr = pymol.write("smi")
+            else:
+                print 'File '+args.dbsim+' not existing. Check your input.'
+                print 'Similarity search terminating..'
+                return True
+        else:
+            smistr = args.dbsim
+            print smistr
     if args.dbsmarts:
         if '.smi' in args.dbsmarts:
             if glob.glob(args.dbsmarts):
@@ -441,21 +448,30 @@ def dbsearch(rundir,args,globs):
         #return False
     ### parse filters
     squery = checkscr(args)
-
+    if args.debug:
+	print("squery is " + str(squery))
+    
     if args.dbmaxsmartsmatches:
-        plugin_path = plugin_defs()
-        print plugin_path
-        shutil.copy(plugin_path,'plugindefines.txt')
-        cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+'plugindefines.txt'
-        mybash(cmd)
+
+                plugin_path = plugin_defs() 
+		shutil.copy(plugin_path,'plugindefines.txt')
+		cmd = "sed -i '/nsmartsmatches/!b;n;c"+smistr+"' "+'plugindefines.txt'
+		mybash(cmd)
     ### run substructure search ###
-    nmols = '1000000' if not args.dbnsearch else args.dbnsearch
+    nmols = '10000' if not args.dbnsearch else args.dbnsearch
     finger = 'FP2' if not args.dbfinger else args.dbfinger
     if int(nmols) > 3000 and args.gui:
         qqb = mQDialogInf('Warning',"Database search is going to take a few minutes. Please wait..OK?")
         qqb.setParent(args.gui.DBWindow)
-    if args.dbsmarts or args.dbhuman:
+    if args.dbsmarts or args.dbhuman or args.dbsim:
         outputf,flag = getsimilar(smistr,nmols,args.dbbase,finger,squery,args)
+	try:
+		shutil.copy('simres.smi',outf)
+	except:
+		pass
+
+    if args.debug:
+	print('after similarity search, outf is ' +  str(outputf))
     if flag:
         if args.gui:
             qqb = mQDialogWarn('Warning',"No matches found in search..")
@@ -512,23 +528,27 @@ def dbsearch(rundir,args,globs):
     if args.dbdissim:
         dissim(outf,int(args.dbdissim))
 	if args.debug:
-		print('outf is '+str(outf))
+		print('outf is '+str(outf)+'\n')
 
         #flag = stripsalts('dissimres.smi',args.dbdissim)
         #flag = matchsmarts(smistr,'dissimres.smi',catoms,int(args.dbdissim))
         #print(flag)
     	if args.rundir:
         	os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
-		print('writing max dissimilar list to ' + str(args.rundir) + '/' + str(outf)  )
+		print('rundir is ' + str(args.rundir))
+		print('\n\n********************\n\n\n')
+		print('writing max dissimilar list to   + str(args.rundir) +  /' + str(outf) +'\n' )
+		print('\n\n********************\n\n\n')
+
 	else:
-		print('writing max dissimilar list to ' + str(cwd) + '/' + str(outf)  )
+		print('*****************writing max dissimilar list to ' + str(cwd) + '/' + str(outf)+'\n'  )
 
     if args.rundir:
-		print('writing output to ' + str(args.rundir) + '/' + str(outf)  )
+		print('writing output to ' + str(args.rundir) + '/' + str(outf)+'\n' )
 		os.rename(outf,args.rundir+'/'+outf)
     else:
-    		print('writing output to ' + str(cwd) + '/' + str(outf)  )
+    		print('writing output to ' + str(cwd) + '/' + str(outf) +'\n' )
 
-    os.chdir(cwd)
+    #os.chdir(cwd)
     #print time.time()
     return False

@@ -469,6 +469,8 @@ def parseinput(args):
                 args.dbnsearch = l[1]
             if (l[0]=='-dballowedels'):
                 args.dballowedels = l[1:]
+            if (l[0]=='-dbfname'):
+                args.dbfname = l[1]
             if (l[0]=='-dbmaxsmartsmatches'):
                 args.dbmaxsmartsmatches = l[1]
             if (l[0]=='-dbhuman'):
