@@ -1973,10 +1973,7 @@ class mGUI():
                     outf.write(mol)
                 # convert to svg
                 globs= globalvars()
-                if globs.osx:
-                    cmd = "/usr/local/bin/obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
-                else:
-                    cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
+                cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
                 t = mybash(cmd)
                 if glob.glob(outputf):
                     os.remove(outputf)
@@ -1987,10 +1984,7 @@ class mGUI():
                 ####################
                 ### draw ligands ###
                 ####################
-                if globs.osx:
-                    cmd = '/usr/local/bin/convert -density 500 '+locf+'.svg '+locf+'.png'
-                else:
-                    cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
+                cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
                 s = mybash(cmd)
                 if not glob.glob(locf+'.png') :
                     mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
@@ -2092,10 +2086,7 @@ class mGUI():
             for mol in ligs:
                 outf.write(mol)
             # convert to svg
-            if globs.osx:
-                cmd = "/usr/local/bin/obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
-            else:
-                cmd = "obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
+            cmd = "obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
             t = mybash(cmd)
             print t
             if glob.glob(outputf):
@@ -2107,10 +2098,7 @@ class mGUI():
             ####################
             ### draw ligands ###
             ####################
-            if globs.osx:
-                cmd = '/usr/local/bin/convert -density 1200 '+locf+'.svg '+locf+'.png'
-            else:
-                cmd = 'convert -density 1200 '+locf+'.svg '+locf+'.png'
+            cmd = 'convert -density 1200 '+locf+'.svg '+locf+'.png'
             s = mybash(cmd)
             print s
             if not glob.glob(locf+'.png') :
