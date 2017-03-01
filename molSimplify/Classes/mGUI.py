@@ -1855,6 +1855,12 @@ class mGUI():
             qm = mQDialogWarn('Warning','No ligands are specified.')
             return False
         else:
+            rows = self.lgrid.rowCount()
+            ### Clear existing widgets in layout
+            if rows > 1:
+                for i in reversed(range(self.lgrid.count())):
+                    self.lgrid.itemAt(i).widget().setParent(None)
+                    
             args['-lig']=args['-lig'].replace(' ','')
             lls = args['-lig'].split(',')
             liglist = []
@@ -2019,6 +2025,7 @@ class mGUI():
             gfname = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/geoms/" + geom +".png")
             if glob.glob(gfname):
                 rows = self.lgrid.rowCount()
+                ### Clear existing widgets in layout
                 if rows > 1:
                     for i in reversed(range(self.lgrid.count())):
                         self.lgrid.itemAt(i).widget().setParent(None)
