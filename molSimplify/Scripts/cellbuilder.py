@@ -1341,11 +1341,10 @@ def slab_module_supervisor(args,rootdir):
         super_duper_cell = unit_to_super(super_cell,ext_duplication_vector,[2,2,1])
 
         super_duper_cell.writexyz(rootdir + 'slab/SD.xyz')
-        a_totally_new_variable = copy.deepcopy(ext_duplication_vector)
-        a_totally_new_variable[2][2] = float(ext_duplication_vector[2][2]) + 20  
+        new_dup_vector = copy.deepcopy(ext_duplication_vector)
+        new_dup_vector[2][2] = float(ext_duplication_vector[2][2]) + 20  
 
-        #print(slab_module_supervisor)
-        write_periodic_mol3d_to_qe(super_cell,a_totally_new_variable,rootdir + 'slab/slab.in')
+        write_periodic_mol3d_to_qe(super_cell,new_dup_vector,rootdir + 'slab/slab.in')
     elif not slab_gen: #placement only, skip slabbing!
         super_cell = unit_cell
         super_cell_vector = cell_vector
@@ -1355,7 +1354,7 @@ def slab_module_supervisor(args,rootdir):
             print('\n\n ************************ starting placement ***************** \n\n')
         if not slab_gen:
             print('\n\n ************************ placementon existing slab  ***************** \n\n')
-            a_totally_new_variable = cell_vector
+            new_dup_vector = cell_vector
             super_cell_vector = cell_vector
             super_cell.printxyz()
             print('this supercell vector is:')
@@ -1384,9 +1383,9 @@ def slab_module_supervisor(args,rootdir):
         loaded_cell.writexyz(rootdir + 'loaded_slab/loaded.xyz')
 #        print('this supercell vector is:')
 #        print(super_cell_vector)
-        super_duper_cell = unit_to_super(loaded_cell,a_totally_new_variable,[2,2,1])
+        super_duper_cell = unit_to_super(loaded_cell,new_dup_vector,[2,2,1])
         super_duper_cell.writexyz(rootdir + 'loaded_slab/SD.xyz')
-        write_periodic_mol3d_to_qe(loaded_cell,a_totally_new_variable,rootdir + 'loaded_slab/loaded_slab.in')
+        write_periodic_mol3d_to_qe(loaded_cell,new_dup_vector,rootdir + 'loaded_slab/loaded_slab.in')
 
   
 

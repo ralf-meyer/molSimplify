@@ -592,12 +592,8 @@ def parseinput(args):
 	    # parse analysis arguments
             if (l[0] == '-correlate'):
 		args.correlate = True
-	    if (l[0] == '-descriptors'):
-		args.descriptors = [str(i) for i in l[1:]]
-	    if (l[0] == '-autocorrelation_depth'):
-		args.ac_depth  = int(l[1])
-	    if (l[0] == '-autocorrelation_props'):
-		args.ac_depth  = [str(i) for i in l[1:]]
+	    if (l[0] == '-max_descriptors'):
+		args.max_descriptors = [str(i) for i in l[1:]]
 
 
 
@@ -813,15 +809,8 @@ def parsecommandline(parser):
                         help = "int, number of monomers") #0
     # analysis arguments
     parser.add_argument('-correlate','--correlate',
-                        help = "path to file for analysis, should contain value,path to .xyz file on each line ") #0
-    parser.add_argument('-descriptors','--descriptors',
-                        help = "list of descriptors to use, default = all, with the correlate function") #0
-
-    parser.add_argument('-autocorrelation_depth','--autocorrelation_depth',
-                        help = "int, max number of hops from TM center to calculate autocorrelations, default is all hops") #0
-
-    parser.add_argument('-autocorrelation_props','--autocorrelation_props',
-                        help = "list of atomic properties to use in autocorrelations, default is all available") #0
+                        help = "path to file for analysis, should contain nam,value,folder where name.xyz geo is located on each line ") #0
+    parser.add_argument('-max_descriptors','--max_descriptors', help = "maxium number of descriptors to to use, not reccomended. The algorithm chooses the most representative set and removing some of these can degrade the model") #0
 
     args=parser.parse_args()
     return args
