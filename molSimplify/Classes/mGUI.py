@@ -1855,6 +1855,12 @@ class mGUI():
             qm = mQDialogWarn('Warning','No ligands are specified.')
             return False
         else:
+            rows = self.lgrid.rowCount()
+            ### Clear existing widgets in layout
+            if rows > 1:
+                for i in reversed(range(self.lgrid.count())):
+                    self.lgrid.itemAt(i).widget().setParent(None)
+                    
             args['-lig']=args['-lig'].replace(' ','')
             lls = args['-lig'].split(',')
             liglist = []
@@ -1973,10 +1979,7 @@ class mGUI():
                     outf.write(mol)
                 # convert to svg
                 globs= globalvars()
-                if globs.osx:
-                    cmd = "/usr/local/bin/obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
-                else:
-                    cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
+                cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
                 t = mybash(cmd)
                 if glob.glob(outputf):
                     os.remove(outputf)
@@ -1987,10 +1990,7 @@ class mGUI():
                 ####################
                 ### draw ligands ###
                 ####################
-                if globs.osx:
-                    cmd = '/usr/local/bin/convert -density 500 '+locf+'.svg '+locf+'.png'
-                else:
-                    cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
+                cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
                 s = mybash(cmd)
                 if not glob.glob(locf+'.png') :
                     mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
@@ -2025,6 +2025,7 @@ class mGUI():
             gfname = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/geoms/" + geom +".png")
             if glob.glob(gfname):
                 rows = self.lgrid.rowCount()
+                ### Clear existing widgets in layout
                 if rows > 1:
                     for i in reversed(range(self.lgrid.count())):
                         self.lgrid.itemAt(i).widget().setParent(None)
@@ -2092,10 +2093,7 @@ class mGUI():
             for mol in ligs:
                 outf.write(mol)
             # convert to svg
-            if globs.osx:
-                cmd = "/usr/local/bin/obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
-            else:
-                cmd = "obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
+            cmd = "obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
             t = mybash(cmd)
             print t
             if glob.glob(outputf):
@@ -2107,10 +2105,7 @@ class mGUI():
             ####################
             ### draw ligands ###
             ####################
-            if globs.osx:
-                cmd = '/usr/local/bin/convert -density 1200 '+locf+'.svg '+locf+'.png'
-            else:
-                cmd = 'convert -density 1200 '+locf+'.svg '+locf+'.png'
+            cmd = 'convert -density 1200 '+locf+'.svg '+locf+'.png'
             s = mybash(cmd)
             print s
             if not glob.glob(locf+'.png') :

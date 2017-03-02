@@ -39,7 +39,7 @@ except ImportError:
    pass
 
 def main(args=None):
-    print('main_invoked')
+    print('molSimplify is starting!')
     if args is None:
         args = sys.argv[1:]
     #print(args)
@@ -52,7 +52,7 @@ def main(args=None):
         exit()
     ####################################
     ### print help ###
-    elif '-h' in args or '-H' in args:
+    elif '-h' in args or '-H' in args or '--help' in args:
         # print help
         parser = argparse.ArgumentParser()
         args = parsecommandline(parser)
