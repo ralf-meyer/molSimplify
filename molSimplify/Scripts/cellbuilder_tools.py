@@ -243,6 +243,27 @@ def distance_2d_torus(R1,R2,dim):
               + numpy.power(dz,2))
     d = min(d1,d2,d3,d4)
     return d
+###################################
+def distance_2d_torus_next_only(R1,R2,dim):
+    ### distance between points in Euclidean torus 
+    dx =abs( R1[0] - R2[0])
+    dy = abs(R1[1] - R2[1] )
+    dz =abs(( R1[2] - R2[2]))
+  #  print('dx,dy,dz'+str([dx,dy,dz]))
+    d1 = sqrt(  numpy.power(dim[0] - dx,2)
+              + numpy.power(dim[1] - dy,2)
+              + numpy.power(dz,2))
+    d2 = sqrt(  numpy.power(dim[0] - dx,2)
+                     + numpy.power(dy,2)
+                     + numpy.power(dz,2))
+    d3 = sqrt(  numpy.power(dx,2)
+              + numpy.power(dim[1] - dy,2)
+              + numpy.power(dz,2))
+ #   print('d1,d2,d3'+str([dx,dy,dz]))
+
+    d = min(d1,d2,d3)
+    return d
+#
 ################################################################
 def periodic_2d_distance(R1,R2,cell_vector):
     ### distance between points in Euclidean torus 
@@ -303,7 +324,7 @@ def closest_torus_point(mol,dim):
         R1 = atom1.coords()
         for atom2 in mol.getAtoms():
             R2 = atom2.coords()
-            d = distance_2d_torus(R1,R2,dim)
+            d = distance_2d_torus_next_only(R1,R2,dim)
             if (d<min_dist):
                 min_dist = d
     return min_dist

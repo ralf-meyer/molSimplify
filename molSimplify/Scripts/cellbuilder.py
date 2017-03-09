@@ -633,7 +633,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
         second_payload.translate([0,0,surface_coord[2]])
         final_payload.combine(second_payload)
     min_intercell_d = closest_torus_point(final_payload,extents)
-    print('minimum inter-cell adsorbate atom distance is ' + str(min_intercell_d))
+    print('minimum inter-cell adsorbate self-atom distance is ' + str(min_intercell_d))
     combined_cell.combine(final_payload)
     return combined_cell
 ###################################
@@ -805,7 +805,6 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         print('giving effectvie coverage of ' + str(effectvie_coverage) + '\n')
     print('Is there overalp? ' + str(overlap_flag))
     min_intercell_d = closest_torus_point(payload,extents)
-    print('minimum inter-cell adsorbate atom distance is ' + str(min_intercell_d))
 
     return  loaded_cell
 
