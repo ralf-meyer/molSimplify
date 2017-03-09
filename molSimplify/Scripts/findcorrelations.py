@@ -47,7 +47,7 @@ def analysis_supervisor(args):
 	print('more to come!')
 
 
-from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
+#from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
 
 
 def get_misc_ligand_descriptors(mol):

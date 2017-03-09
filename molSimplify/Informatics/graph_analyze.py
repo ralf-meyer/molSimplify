@@ -64,7 +64,7 @@ def get_lig_EN(mol,connection_atoms):
                 for bound_atoms in this_atoms_neighbors:
                         this_EN = float(globs.endict()[mol.getAtom(atoms).symbol()]) -  float(globs.endict()[mol.getAtom(bound_atoms).symbol()])
                         if (abs(this_EN) >= max_EN):
-#                                print('max between' + mol.getAtom(atoms).symbol() +' and '+ mol.getAtom(bound_atoms).symbol())
+ 
                                max_EN = this_EN
         return max_EN
 def remove_diagonals(matrix):
@@ -88,7 +88,12 @@ def kier(mol):
     else:
         two_kappa = 0 
     return(two_kappa)
-
+def get_truncated_kier(ligand,connection_atoms):
+        ### three hop truncation
+        trunc_mol = obtain_truncation(ligand,connection_atoms,3)
+        trunc_mol.writexyz('trunc.xyz')
+        this_kier = kier(trunc_mol) 
+        return this_kier
 
 
 
