@@ -238,7 +238,10 @@ def distance_2d_torus(R1,R2,dim):
     d3 = sqrt(  numpy.power(dx,2)
               + numpy.power(dim[1] - dy,2)
               + numpy.power(dz,2))
-    d = min(d1,d2,d3)
+    d4 = sqrt(  numpy.power(dx,2)
+              + numpy.power(dy,2)
+              + numpy.power(dz,2))
+    d = min(d1,d2,d3,d4)
     return d
 ################################################################
 def periodic_2d_distance(R1,R2,cell_vector):
