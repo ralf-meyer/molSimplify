@@ -36,7 +36,7 @@ class dft_observation:
 	def get_descriptor_vector(self,loud):
 		
 		results_dictionary = generate_all_ligand_misc(self.mol,loud)
-		self.append_descriptors(results_dictionary['colnames']],results_dictionary['result_ax'],'misc','ax')
+		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
 		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
 		results_dictionary = generate_all_ligand_autocorrelations(self.mol,depth=3,loud=loud,name=name)
 		
