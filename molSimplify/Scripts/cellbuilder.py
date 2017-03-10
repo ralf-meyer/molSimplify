@@ -391,7 +391,7 @@ def align_payload_to_multi_site(payload,surface_coord_list,cand_list,bind_dist,d
         print('new u is ' + str(new_u))
 
     if collinear_flag or coplanar_flag:
-        print('starting rotation')
+        print('starting rotation for coplanar case')
         for rotate_angle in range(-100,100):
             this_payload = mol3D()
             this_payload.copymol3D(final_payload)
@@ -462,7 +462,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
         print('\n\n Target distance was  ' + str(bind_dist)+', achieved ' + str(distances_list))
 
     if not control_angle:
-        print('starting rotation')
+        print('starting align rotation')
         for rotate_angle in range(0,360):
             this_payload = mol3D()
             this_payload.copymol3D(new_payload)
@@ -576,7 +576,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
                  final_payload = this_payload
     if len(cand_list) > 1:
     # now, distort molecule based on FF to optimize bond length
-        print('\n \n begining distortion ')
+        print('\n begining distortion ')
         nsteps = 20 
         dfactor =float(1)/nsteps
         trans_vec_list = list()
@@ -620,7 +620,7 @@ def combine_multi_aligned_payload_with_cell(super_cell,super_cell_vector,payload
         v2=final_payload.getAtom(int(indices[1])).coords()
         distances_list.append((distance(v1,v2)))
 
-    print('\n\n Target distance was  ' + str(bind_dist)+', achieved ' + str(distances_list))
+    print('Target distance was  ' + str(bind_dist)+', achieved ' + str(distances_list))
 
 
     if duplicate:
@@ -661,7 +661,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
        print('Must provide surface binding atom type to use alignpair')
        print(' using centered placemented instead')
        method = 'center'
-    print('\n\n\n')
+    print('\n')
     print('the method is',method)
     if (method == 'alignpair'): # get all vaccancies 
         avail_sites_dict = dict()
@@ -766,13 +766,15 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
                     emsg = ('Error: no align of type' + target_atom_type+ ' is possible. Not found in target. Using atom 0 align')
                     cand_ind = 0
                     print(emsg)
-            print('cand _ind = ' + str(cand_ind))
+	    if debug:
+            	print('cand _ind = ' + str(cand_ind))
             cand_list = [cand_ind]
         else:
-            print('target molecule mask on ' + str(target_atom_type))
             cand_ind = target_atom_type 
             cand_list = [(int(i)-1) for i in cand_ind]
-            print('candidate list is ' +str(cand_list))
+	    if debug:
+            	print('target molecule mask on ' + str(target_atom_type))
+            	print('candidate list is ' +str(cand_list))
         ######## rotate for optimal approach
         payload = align_payload_to_multi_site(payload,sites_list,cand_list,align_dist,debug) # align
         if control_angle:
@@ -795,7 +797,7 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         debug_cell.combine(temp_pay3)
     #    debug_cell.writexyz('db3.xyz')
         print('number of atoms = ' + str(loaded_cell.natoms))
-        print("\n")
+        #print("\n")
     ###### run tests
     overlap_flag = loaded_cell.sanitycheck(0)
     min_dist = loaded_cell.mindistmol()
@@ -900,7 +902,7 @@ def slab_module_supervisor(args,rootdir):
     # for surface rotation:
     control_angle = False
     angle_control_partner = False
-    angle_surface_axis = [1,1]
+    angle_surface_axis = False
 
     # duplication
     duplicate = False
@@ -1393,7 +1395,7 @@ def slab_module_supervisor(args,rootdir):
         if slab_gen:
             print('\n\n ************************ starting placement ***************** \n\n')
         if not slab_gen:
-            print('\n\n ************************ placementon existing slab  ***************** \n\n')
+            print('\n\n ************************ placement on existing slab  ***************** \n\n')
             new_dup_vector = cell_vector
             super_cell_vector = cell_vector
             print('this supercell vector is:')
@@ -1421,6 +1423,7 @@ def slab_module_supervisor(args,rootdir):
 
         loaded_cell.writexyz(rootdir + 'loaded_slab/loaded.xyz')
         super_duper_cell = unit_to_super(loaded_cell,new_dup_vector,[2,2,1])
+
         super_duper_cell.writexyz(rootdir + 'loaded_slab/SD.xyz')
         write_periodic_mol3d_to_qe(loaded_cell,new_dup_vector,rootdir + 'loaded_slab/loaded_slab.in')
 
