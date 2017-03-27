@@ -68,12 +68,4 @@ def pad_mol(mol,target_atoms):
     return mol
 
 
-this_mol = mol3D()
-this_mol.readfromxyz('test/big.xyz')
-print(this_mol.coords())
-this_mol = pad_mol(this_mol,20)
-print(this_mol.coords())
-this_col = create_columb_matrix(this_mol)
-print(this_col)
-numpy.save('camt.npy',this_col)
 

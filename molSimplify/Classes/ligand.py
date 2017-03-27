@@ -77,7 +77,7 @@ def ligand_breakdown(mol):
 		else:
 			ligdents[matched] += 1
 	return liglist,ligdents,ligcons
-def ligand_assign(mol,liglist,ligdents,ligcons,loud=True,name=False):
+def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 	metal_index = mol.findMetal()
 	built_ligand_list  = list()
 	lig_natoms_list = list()
@@ -107,7 +107,6 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=True,name=False):
 		this_ligand.obtain_mol3d()
 		built_ligand_list.append(this_ligand)
 		lig_natoms_list.append(this_ligand.mol.natoms)
-	print(built_ligand_list)
 	for j,built_ligs in enumerate(built_ligand_list):
 		### test if ligand is unique
 		sl =  [ atom.symbol() for atom in built_ligs.mol.getAtoms()]
@@ -123,7 +122,6 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=True,name=False):
 			unique_ligands.append(sl)
 			ligand_counts.append(1)
 			ligand_records.append(j)
-	print('*****************')
 	### loop to bin ligands:
 	for j,built_ligs in enumerate(built_ligand_list):
 	### test if ligand is unique
@@ -207,21 +205,25 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=True,name=False):
 		eq_con_list = [ligcons[i] for i in allowed]
 		ax_lig_list = [top_lig,bot_lig] 
 		ax_con_list = [top_con,bot_con]
-		print('geometric eq_list ' + str(eq_lig_list))
-		print('geometric ax_list ' + str(eq_lig_list))
+		if loud:
+			print('geometric eq_list ' + str(eq_lig_list))
+			print('geometric ax_list ' + str(eq_lig_list))
 		if (max(ligand_counts) != 4) or (min(ligand_counts) != 2):
 			if loud:
-				print('not a 4-6 case?')
+				print('not a 4-6 case')
 			if (max(ligand_counts) == 6):
-				print('6-homoleptic, using geo values')
+				if loud:
+					print('6-homoleptic, using geo values')
 				#ax=ligand_records[ligand_counts.index(6)]
 				#eq_lig=ligand_records[ligand_counts.index(6)]
 			else:
-				print('critical error, monodentates not the same')
-				print(ligand_counts)
-				print(unique_ligands)
+				if loud:
+					print('monodentates not the same, using geo values ')
+					print(ligand_counts)
+					print(unique_ligands)
 		elif n_unique_ligs == 2:
-			print('this is a  4-6 case')
+			if loud:
+				print('this is a  4-6 case')
 			allowed = range(0,6)
 			ax_lig_list = [i for i in allowed if (all_ligand_counts[i] == 2)]
 			eq_lig_list = [i for i in allowed if (all_ligand_counts[i] == 4)]
@@ -236,6 +238,7 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=True,name=False):
 		print('eq_liq is ind ',eq_lig_list)
 		print('ax_liq is ind ',ax_lig_list)
 		print('ax built lig [0] ext ind :' + str(built_ligand_list[ax_lig_list[0]].ext_int_dict.keys())) 
+		print('ax built lig [1] ext ind :' + str(built_ligand_list[ax_lig_list[1]].ext_int_dict.keys())) 
 		print('eq built lig [0] ext ind: '+str(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys())) 
 		print('eq_con is '+str((eq_con_list)))
 		print('ax_con is '+str((ax_con_list)))
@@ -244,13 +247,14 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=True,name=False):
 			ax_ligand.mol.writexyz('ligands/'+ name+'_'+str(i)+'_ax.xyz')
 		for i,eq_ligand in enumerate(eq_ligand_list):
 			eq_ligand.mol.writexyz('ligands/'+ name+'_'+str(i)+'_eq.xyz')
-	print('**********************************************')
 	for j,ax_con in enumerate(ax_con_list):
 		ax_con_int_list.append([built_ligand_list[ax_lig_list[j]].ext_int_dict[i] for i in ax_con]) # convert to interal index
 	for j,eq_con in enumerate(eq_con_list):
 		eq_con_int_list.append([built_ligand_list[eq_lig_list[j]].ext_int_dict[i] for i in eq_con])# convert to interal index
-	print('int eq ' +str(eq_con_int_list))
-	print('ext eq ' +str(eq_con_list))
+	if loud:
+		print('int eq ' +str(eq_con_int_list))
+		print('ext eq ' +str(eq_con_list))
+		print('**********************************************')
 	for ax_lig in ax_lig_list:
 		ax_natoms_list.append(lig_natoms_list[ax_lig])
 	for eq_lig in eq_lig_list:

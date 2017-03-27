@@ -149,7 +149,7 @@ def startgen(argv,flag,gui):
     # correlation analysis
     elif (args.correlate):
         print('analysis is looking for correlations')
-        analysis_supervisor(args)
+        analysis_supervisor(args,rundir)
 
     # normal structure generation
     else:

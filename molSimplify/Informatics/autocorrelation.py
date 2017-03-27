@@ -38,9 +38,9 @@ def metal_only_autocorrelation(mol,prop,d):
 
 	autocorrelation_vector = numpy.zeros(d)
 	try:
-		metal_ind = mol.findmetal()
+		metal_ind = mol.findMetal()
 		w = construct_property_vector(mol,prop)
-		autocorrelation_vector += autocorrelation(mol,w,metal_ind,d)
+		autocorrelation_vector = autocorrelation(mol,w,metal_ind,d)
 	except:	
 		print('Error, no metal found in mol object!')
 		return False
@@ -198,19 +198,30 @@ def generate_all_ligand_autocorrelations(mol,loud,depth=4,name=False):
 def generate_metal_autocorrelations(mol,loud,depth=4):
 	result = list()
 	colnames = []
-	allowed_strings = ['electronegativity','nuclear_charge','ident','topology']
-	for properties in allowed_strings:
-		ax_ligand_ac_full,eq_ligand_ac_full,ax_ligand_ac_con,eq_ligand_ac_con = find_ligand_autocorrelations(mol,properties,loud,depth)
+	allowed_strings = ['electronegativity','nuclear_charge','ident','topology','size']
+	labels_strings = ['chi','Z','I','T','S']
+	for ii,properties in enumerate(allowed_strings):
+		metal_ac = metal_only_autocorrelation(mol,properties,depth)
 		this_colnames = []
 		for i in range(0,depth+1):
-			this_colnames.append(properties + '_' + str(i))
+			this_colnames.append(labels_strings[ii] + '-' + str(i))
 		colnames.append(this_colnames)
-		result_ax_full.append(ax_ligand_ac_full)
-		result_eq_full.append(eq_ligand_ac_full)
-		result_ax_con.append(ax_ligand_ac_con)
-		result_eq_con.append(eq_ligand_ac_con)
-	results_dictionary={'colnames':colnames,'result_ax_full':result_ax_full,'result_eq_full':result_eq_full,
-                        'result_ax_con':result_ax_con,'result_eq_con':result_eq_con}
+		result.append(metal_ac)
+	results_dictionary={'colnames':colnames,'results':result}
+	return  results_dictionary
+def generate_full_complex_autocorrelations(mol,loud,depth=4):
+	result = list()
+	colnames = []
+	allowed_strings = ['electronegativity','nuclear_charge','ident','topology','size']
+	labels_strings = ['chi','Z','I','T','S']
+	for ii,properties in enumerate(allowed_strings):
+		metal_ac = full_autocorrelation(mol,properties,depth)
+		this_colnames = []
+		for i in range(0,depth+1):
+			this_colnames.append(labels_strings[ii] + '-' + str(i))
+		colnames.append(this_colnames)
+		result.append(metal_ac)
+	results_dictionary={'colnames':colnames,'results':result}
 	return  results_dictionary
 
 
