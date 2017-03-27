@@ -36,6 +36,7 @@ dd:dd.smi,dd,0,all  build functionalize,BA
 diaminomethyl:diaminomethyl.mol,damthyl,0 1,build bidentate,N,-1
 dicyanamide:dicyanamide.mol,dicyanamide,0,build small,N,-1
 dppe:dppe.mol,dppe,21 25, build bidentate,A,0
+dmpe:dmpe.mol,dmpe,1 3, build bidentate,A,0
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A,-4
 en:en.mol,en,0 1,build bidentate,N,0
 ethOHbipyridine:ethOHbipy.mol,ethOHbip,0 1,build bidentate,BA,0
@@ -88,7 +89,7 @@ phenalalanineB:phenalalanine.mol,Phe,3 21,build functionalize aminoacid,BA,0
 phenanthroline:phen.mol,phen,9 12,build bidentate,BA,0
 phendione:phendione.mol,phendione,9 12,build bidentate,BA,0
 phenisc:phenylisocy.mol,phenisc,0,build mono,A,0
-phenylcyc:phenylcyc.mol,phenylcyc,28 13 26 11 ,build tetradentate,A,0
+phenylcyc:phenylcyc.mol,phenylcyc,27 13 26 11,build tetradentate,B,0
 phosacidbipyridine:phosacidbipy.mol,phosacidbip,0 1,build bidentate,BA,0
 phosphine:phosphine.mol,phosphine,0,build small,N,0
 phthalocyanine:phthalocyanine.mol,phthalocyanine,0 30 2 29,build tetradentate,A,-2

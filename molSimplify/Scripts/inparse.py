@@ -226,6 +226,8 @@ def parseinput(args):
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
+		args.rundir = args.rundir.rstrip(' ')
+
                 if (args.rundir[-1]=='/'):
                     args.rundir = args.rundir[:-1]
             if (l[0]=='-suff'):
@@ -591,7 +593,11 @@ def parseinput(args):
                 args.chain_units = l[1]
 	    # parse analysis arguments
             if (l[0] == '-correlate'):
-		args.correlate = True
+		args.correlate = l[1]
+            if (l[0] == '-lig_only'):
+		args.lig_only =True
+            if (l[0] == '-simple'):
+		args.simple =True
 	    if (l[0] == '-max_descriptors'):
 		args.max_descriptors = [str(i) for i in l[1:]]
 
@@ -809,7 +815,11 @@ def parsecommandline(parser):
                         help = "int, number of monomers") #0
     # analysis arguments
     parser.add_argument('-correlate','--correlate',
-                        help = "path to file for analysis, should contain nam,value,folder where name.xyz geo is located on each line ") #0
+                        help = "path to file for analysis, should contain name,value,folder where name.xyz geo is located on each line ") #0
+    parser.add_argument('-lig_only','--lig_only',
+                        help = "set to true to force only whole ligand descriptors (if metal is constant etc)",action="store_true") #1
+    parser.add_argument('-simple','--simple',
+                        help = "set to true to force only simple default autocorrelations",action="store_true") #1
     parser.add_argument('-max_descriptors','--max_descriptors', help = "maxium number of descriptors to to use, not reccomended. The algorithm chooses the most representative set and removing some of these can degrade the model") #0
 
     args=parser.parse_args()

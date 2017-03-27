@@ -6,65 +6,36 @@ from math import pi
 from molSimplify.Scripts.geometry import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.mol3D import*
+from molSimplify.Classes.ligand import*
+from molSimplify.Classes.dft_obs import*
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.autocorrelation import *
 from molSimplify.Informatics.misc_descriptors import *
-def get_descriptors():
-	# returns allowed descriptors
-	avail_descriptors  = ['kier','truncated_kier','randic','truncated_randic',
-				'con_atom_type','con_atom_en','max_con_atom_delta_en',
-				'autocorrelation']
-	return(avail_descriptors)
-def check_descriptors(args):
-	clean_descriptors = list()
-	allowed_descriptors = get_descriptors()
-	if args.descriptors: ## check
-#		 if the descriptors are 
-			     ## correctly given
-		if args.debug:	
-			print('descriptors are' + str(args.descriptors))
-		for descriptors in args.descriptors:
-			if descriptors in allowed_descriptors:
-				clean_descriptors.append(descriptors)
-			else:
-				print('ignoring invalid descriptor ' + str(descriptors))
-				print('allowed values are  '+ str(allowed_descriptors))
-	else:
-		clean_descriptors = allowed_descriptors
-	n_desc = len(clean_descriptors)
-	if args.debug:
-		print('using ' + str(n_desc) + ' descriptors: ' + str(clean_descriptors) )
-	if n_desc > 0:
-		return clean_descriptors
-	else:
-		print('Error, no valid descriptors! using default instead')
-		return(allowed_descriptors)
-def analysis_supervisor(args):
-	## main routine to control
-	## analysis process
-	descriptors = check_descriptors(args)
-	print('more to come!')
+from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
 
-
-#from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
-
-
-def get_misc_ligand_descriptors(mol):
-	results_ax =  list()	
-	result_eq = list()
-	colnames = []
-	liglist,ligdents,ligcons = ligand_breakdown(this_mol)
-	ax_ligand,eq_ligand,ax_natoms,eq_natoms,ax_con,eq_con,built_ligand_list=ligand_assign(this_mol,liglist,ligdents,ligcons)
-	ax_en = get_lig_EN(ax_ligand.mol,ax_con) 
-	eq_en = get_lig_EN(ax_ligand.mol,eq_con)
-	ax_kier = kier(ax_ligand.mol,ax_con) 
-	eq_kier = kier(eq_ligand.mol,eq_con)
-	ax_t_kier = kier(ax_ligand.mol,ax_con) 
-	eq_t_kier = kier(eq_ligand.mol,eq_con)
-
-	## get full ligand AC
+def analysis_supervisor(args,rootdir):
+	status = True
+	print('looking for file at '+str(args.correlate))
+	if not args.correlate:
+		print("Error, correlation path not given")
+		status=False
+	if not os.path.exists(args.correlate) and status:
+		print("Error, correlation file not found at" + str(args.correlate))
+		status=False
+	if not status:
+		print('correlation cannot begin! Exiting...')
+		sys.exit()
+	if args.lig_only:
+		print('using ligand-only descriptors (assuming all metals are the same)')
+	if args.simple:
+		print('using simple autocorrelation descriptors only')
+	if args.max_descriptors:
+		print('using a maxx of '+str(max_descriptors)+' only')
+	res = correlation_supervisor(args.correlate,rootdir,args.simple,args.lig_only,args.max_descriptors)
 def accquire_file(path):
+	## set display options
+	np.set_printoptions(precision=3)
 	### this function reads in values from a correctly formated path
 	### [name],[y],[folder_name]
 	file_dict = dict()
@@ -72,187 +43,201 @@ def accquire_file(path):
 	counter = 0 # number of added paths
 	ncounter = 0 # number of skipped paths 	
 	if os.path.exists(path):
+		print('found file, opening...')
 		with open(path,'r') as f:
 			### expects csv fomart,
 			### value | path
 			for lines in f:
-				ll = lines.split(",")
+				ll = lines.strip('\n\r').split(",")
+				#print(ll)
 				name = ll[0]
-				y_value = ll[0]
-				this_path =ll[1].strip() ## check if path exists:
-				
-				#print(this_path)
-				this_run = dft_observation(counter,this_path)
-				this_run.sety(y_value)
+				y_value = ll[1]
+				this_path =ll[2].strip('/') + '/'+name+'.xyz'  ## check if path exists:
+				#print('name = '+str(name))
+				this_obs = dft_observation(name,this_path + name + '.xyz')
+				this_obs.sety(y_value)
 				if os.path.isfile(this_path):
 					#print('path exists')
-					this_run.obtain_mol3d()
-					if this_run.health:
+					this_obs.obtain_mol3d()
+					if this_obs.health:
 						counter += 1
-						file_dict.update({counter:this_run})
+						file_dict.update({counter:this_obs})
+						#print('\n\n')
 					else: ### bad geo
-						this_run.comments(' geo is not healthy, culling ' +  str(this_path))
+						this_obs.comments.append(' geo is not healthy, culling ' +  str(this_path))
 						ncounter +=1 
-						fail_dict.update({counter:this_run})
+						fail_dict.update({counter:this_obs})
 				else: ### no geo file found
-					this_run.comments(' geo could not be found: ' +  str(this_path))
+					this_obs.comments.append(' geo could not be found: ' +  str(this_path))
 					ncounter +=1 
-					fail_dict.update({counter:this_run})
+					fail_dict.update({counter:this_obs})
 	if counter >0:
 		print('file import successful, ' + str(counter) + ' geos loaded')
+	len_fail = len(fail_dict.keys())
+	if len_fail >0:
+		print(str(len_fail)  +' unsuccessful imports :')
+		for keys in fail_dict.keys():
+			print('failed at line ' + str(keys) +' for job ' + str(fail_dict[keys].name))
 	return(file_dict,fail_dict)
 
 
-def correlation_supervisor():
-	file_dict, fail_dict = accquire_file(this_file)
- 
-## loop over sucessful imports to get descriptors:
-#big_mat = list()
+def correlation_supervisor(path,rootdir,simple=False,lig_only=False,max_descriptors=False):
+	# load the files from the given input file
+	file_dict, fail_dict = accquire_file(path)
+	#loop over sucessful imports to get descriptors:
+	big_mat = list()
+	col_names = list()
+	for i,keyv in enumerate(file_dict.keys()):
+		file_dict[keyv].get_descriptor_vector(lig_only,simple,name=False,loud=False)
+		#print('i = ',str(i))
+		if i == 0:
+			col_names = file_dict[keyv].descriptor_names
+		# reorganize the data
+		this_row = list()
+		this_row.append(float(file_dict[keyv].yvalue))
+		this_row.extend(file_dict[keyv].descriptors)
+		big_mat.append(this_row)
+	big_mat = np.array(big_mat)
+	##### let's do some regression
+	### standardize model:
+	col_array = np.array(col_names)
+	print('length of col array is  '+ str(len(col_array)))
+	n_tot = len(col_array)
+	X = big_mat[:,1:]
+	print('dimension of data matrix is ' + str(big_mat.shape))
+	n_obs = len(X[:,1])
+	Scaler = preprocessing.StandardScaler().fit(X)
+	Xs = Scaler.transform(X)
+	Y =  big_mat[:,0]
+	## find baseline model (all descriptors)
+	Reg = linear_model.LinearRegression()
+	Reg.fit(Xs,Y)
+	Ypred_all_all = Reg.predict(Xs)
+	rs_all_all = metrics.r2_score(Y,Ypred_all_all)
+	loo = model_selection.LeaveOneOut()
+	r_reduce = list()
+	mse_reduce = list()
+	### stepwise reduce the feature set until only one is left
+	for n in range(0,n_tot):
+		reductor = feature_selection.RFE(Reg,n_tot-n,step=1,verbose=0)
+		reductor.fit(Xs,Y)
+		Ypred_all = reductor.predict(Xs)
+		rs_all = metrics.r2_score(Y,Ypred_all)
+		mse_all = metrics.mean_squared_error(Y,Ypred_all)
+	r_reduce.append(rs_all)
+	mse_reduce.append(mse_all)
+	### reduce to one feature
 
-#for i,keyv in enumerate(file_dict.keys()):
-	
-	
-	#file_dict[keyv].get_descriptor_vector(loud=False)
-	#if i == 0:
-		#col_names = file_dict[keyv].descriptor_names
-	##print('*******************')
-	#this_row = list()
-	#this_row.append(float(file_dict[keyv].yvalue))
-	#this_row.extend(file_dict[keyv].descriptors)
-	##print(this_row)
-	#big_mat.append(this_row)
+	reductor_features = list()
+	for i,ranks in enumerate(reductor.ranking_):
+		reductor_features.append([col_array[i], ranks])
+	reductor_features =  sorted(reductor_features,key=lambda x: x[1] )
+	#print(reductor_features)
+	print('****************************************')
+	### select best number using cv
+	selector = feature_selection.RFECV(Reg,step=1,cv=loo,verbose=0,scoring='neg_mean_squared_error')
+	selector.fit(Xs,Y)
+	select_mse = selector.grid_scores_ 
+	Ypred = selector.predict(Xs)
+	rs = metrics.r2_score(Y,Ypred)
+	n_opt = selector.n_features_
+	opt_features = col_array[selector.support_]
+	ranked_features = list()
+	for i,ranks in enumerate(selector.ranking_):
+		ranked_features.append([col_array[i], ranks])
+	ranked_features =  sorted(ranked_features,key=lambda x: x[1] )
+	print(ranked_features)
+	if max_descriptors: ## check if we need to reduce further
+		print('a max of ' + str(max_descriptors) + ' were requested')
+		n_max = int(max_descriptors)
+		if n_opt>n_max:
+			print('the RFE process selected ' + str(n_opt) + ' varibles as optimal')
+			print('discarding an additional ' + str(n_max-n_opt) + ' variables')
+			new_variables = list()
+			new_mask = np.zeros(n_tot)
+			for i in range(0,n_max):
+				new_variables.append(ranked_features[i])
+	## report results to user
+	print('analzyed ' +  str(n_obs) +  ' molecules')
+	print('the full-space R2 is  '+str("%0.2f" %  rs_all_all)+ ' with ' + str(n_tot) + ' features' )
+	print('optimal number of features is ' + str(n_opt) + ' of total ' + str(n_tot))
+	print('the opt R2 is  '+str("%0.2f" % rs))
 
-#big_mat = np.array(big_mat)
-
-
-
-##### let's do some regression
-### standardize model:
-#col_array = np.array(col_names)
-#n_tot = len(col_array)
-
-#X = big_mat[:,1:]
-#n_obs = len(X[:,1])
-#Scaler = preprocessing.StandardScaler().fit(X)
-#Xs = Scaler.transform(X)
-
-#Y = big_mat[:,0]
-#Reg = linear_model.LinearRegression()
-#Reg.fit(Xs,Y)
-#Ypred_all_all = Reg.predict(Xs)
-#rs_all_all = metrics.r2_score(Y,Ypred_all_all)
-##print('the full R2 is  '+str(rs_all))
-
-#loo = model_selection.LeaveOneOut()
-#r_reduce = list()
-#mse_reduce = list()
-### stepwise reduce the feature set until only one is left
-#for n in range(0,n_tot):
-	#reductor = feature_selection.RFE(Reg,n_tot-n,step=1,verbose=0)
-	#reductor.fit(Xs,Y)
-	#Ypred_all = reductor.predict(Xs)
-	#rs_all = metrics.r2_score(Y,Ypred_all)
-	#mse_all = metrics.mean_squared_error(Y,Ypred_all)
-	#r_reduce.append(rs_all)
-	#mse_reduce.append(mse_all)
-### reduce to one feature
-
-#reductor_features = list()
-#for i,ranks in enumerate(reductor.ranking_):
-	#reductor_features.append([col_array[i], ranks])
-#reductor_features =  sorted(reductor_features,key=lambda x: x[1] )
-##print(reductor_features)
-
-#print('****************************************')
-
-### select best number using cv
-#selector = feature_selection.RFECV(Reg,step=1,cv=loo,verbose=0,scoring='neg_mean_squared_error')
-#selector.fit(Xs,Y)
-#select_mse = selector.grid_scores_ 
-#Ypred = selector.predict(Xs)
-
-#rs = metrics.r2_score(Y,Ypred)
-#n_opt = selector.n_features_
-#print('analzyed ' +  str(n_obs) +  ' molecules')
-#print('optimal number of features is ' + str(n_opt) + ' of total ' + str(n_tot))
-#print('the full-space R2 is  '+str(rs_all_all))
-#print('the opt R2 is  '+str(rs))
-
-#opt_features = col_array[selector.support_]
-
-#ranked_features = list()
-#for i,ranks in enumerate(selector.ranking_):
-	#ranked_features.append([col_array[i], ranks])
-#ranked_features =  sorted(ranked_features,key=lambda x: x[1] )
-##print(ranked_features)
-
-
-#X_r = selector.transform(Xs)
-
-#reg_red = linear_model.LinearRegression()
-#reg_red.fit(X_r,Y)
-#Ypred_r = reg_red.predict(X_r)
-#errors = [ Y[i] - Ypred_r[i] for i in range(0,n_obs) ]
-#coefs = reg_red.coef_
-#intercept = reg_red.intercept_
-#mse_all = metrics.mean_squared_error(Y,Ypred_all_all)
-#mse_r = metrics.mean_squared_error(Y,Ypred_r)
-#print('the optimal variables are: ' + str(opt_features))
-#print('the coefficients are' + str(coefs))
-#print('the intercept is '+ str(intercept))
-#print('tthe MSE is '+ str(mse_r))
-#print('the MSE (ALL) is '+ str(mse_all))
-
-### train
-#with open('rankings.csv','w') as f:
-	#f.write('RFE_rank,RFE_col,RFECV_rank,RFECV_col, \n')
-	#for i,items in enumerate(reductor_features):
-		#f.write(str(items[0])  + ',' + str(items[1])+ ',' +
-			#str(ranked_features[i][0])  + ','+ str(ranked_features[i][1])+ '\n')
-
-
-
-#with open('y_data.csv','w') as f:
-	#for items in Y:
-		#f.write(str(items) + '\n')
-#with open('y_pred_r.csv','w') as f:
-	#for items in Ypred_r:
-		#f.write(str(items) + '\n')
+	#print(ranked_features)
+	X_r = selector.transform(Xs)
+	reg_red = linear_model.LinearRegression()
+	reg_red.fit(X_r,Y)
+	Ypred_r = reg_red.predict(X_r)
+	errors = [ Y[i] - Ypred_r[i] for i in range(0,n_obs) ]
+	coefs = reg_red.coef_
+	intercept = reg_red.intercept_
+	mse_all = metrics.mean_squared_error(Y,Ypred_all_all)
+	mse_r = metrics.mean_squared_error(Y,Ypred_r)
+	if n_opt < 30:
+		print('the optimal variables are: ' + str(opt_features))
+		print('the coefficients are' + str(coefs))
+	else:	
+		print('the (first 30) optimal variables are: ' + str(opt_features[0:29]))
+		print('the (first 30) coefficients are' + str(coefs[0:29]))
+	print('the intercept is '+ str("%0.2f" %  intercept))
+	print('the  training MSE with the best feature set is '+ str("%0.2f" %  mse_r))
+	print('the MSE  with all features  is '+ str("%0.2f" %  mse_all))
+	print('by eliminating ' + str(n_tot - n_opt) +' features,' +
+	' CV-prediction MSE decreased from ' + str("%0.0f" % abs(select_mse[0])) + ' to ' +str("%00f" %  abs(select_mse[n_tot - n_opt]))) 
+	with open(rootdir+'RFECV_rankings.csv','w') as f:
+		f.write('RFE_rank,RFE_col,RFECV_rank,RFECV_col, \n')
+		for i,items in enumerate(reductor_features):
+			f.write(str(items[0])  + ',' + str(items[1])+ ',' +
+				str(ranked_features[i][0])  + ','+ str(ranked_features[i][1])+ '\n')
+	with open('y_data.csv','w') as f:
+		for items in Y:
+			f.write(str(items) + '\n')
+	with open('y_pred_r.csv','w') as f:
+		for items in Ypred_r:
+			f.write(str(items) + '\n')
+	with open(rootdir+'optimal_decriptor_space.csv','w') as f:
+		for i in range(0,n_obs):
+			for j in range(0,n_opt):
+				if j == (n_opt-1):
+					f.write(str(X_r[i][j])+'\n')
+				else:
+					f.write(str(X_r[i][j])+',')
+	with open(rootdir+'full_descriptor_space.csv','w') as f:
+		for names in col_names:
+			f.write(names+',')
+		f.write('\n')
+		for i in range(0,n_obs):
+			for j in range(0,n_tot):
+				if j == (n_tot-1):
+					f.write(str(Xs[i][j])+'\n')
+				else:
+					f.write(str(Xs[i][j])+',')
+	with open(rootdir+'scaling.csv','w') as f:
+		means = Scaler.mean_
+		var = Scaler.var_
+		f.write('name, mean,variance \n')
+		for i in range(0,n_tot):
+			f.write(str(col_names[i])+','+str(means[i]) +','+str(var[i])+','+str(selector.ranking_[i])+'\n')
+	with open(rootdir+'coeficients.csv','w') as f:
+		f.write('intercept,'+str(intercept) + '\n')
+		for i in range(0,n_opt):
+			f.write(str(opt_features[i])+','+str(coefs[i])+'\n')
+	with open('rfe_mse.csv','w') as f:
+		f.write('features removed,mean CV error,'+str(intercept) + '\n')
+		count =0
+		for items in mse_reduce:
+			f.write(str(count)+','+str(items) + '\n')
+			count +=1
 #with open('y_full_all.csv','w') as f:
 	#for items in Ypred_all_all:
 		#f.write(str(items) + '\n')
 #with open('rfe_r.csv','w') as f:
 	#for items in r_reduce:
 		#f.write(str(items) + '\n')
-#with open('rfe_mse.csv','w') as f:
-	#for items in mse_reduce:
-		#f.write(str(items) + '\n')
+
 #with open('select_mse.csv','w') as f:
 	#for items in select_mse:
 		#f.write(str(items) + '\n')
 #with open('errors.csv','w') as f:
 	#for items in errors:
 		#f.write(str(items) + '\n')
-#with open('transformed_space.csv','w') as f:
-	#for i in range(0,n_obs):
-		#for j in range(0,n_opt):
-			#if j == (n_opt-1):
-				#f.write(str(X_r[i][j])+'\n')
-			#else:
-				#f.write(str(X_r[i][j])+',')
-#with open('full_space.csv','w') as f:
-	#for names in col_names:
-		#f.write(names+',')
-	#f.write('\n')
-	#for i in range(0,n_obs):
-		#for j in range(0,n_tot):
-			#if j == (n_tot-1):
-				#f.write(str(Xs[i][j])+'\n')
-			#else:
-				#f.write(str(Xs[i][j])+',')
-#with open('scaling.csv','w') as f:
-	#means = Scaler.mean_
-	#var = Scaler.var_
-	#f.write('name, mean,variance \n')
-	#for i in range(0,n_tot):
-		#f.write(str(col_names[i])+','+str(means[i]) +','+str(var[i])+','+str(selector.ranking_[i])+'\n')

@@ -1,4 +1,4 @@
-x# Written by JP Janet for HJK Group
+# Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 
 ##########################################################
@@ -12,13 +12,15 @@ from molSimplify.Classes.ligand import *
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Informatics.autocorrelation import *
+from molSimplify.Informatics.misc_descriptors import *
 class dft_observation:
 	def __init__(self,name,geopath):
 		self.name = name
-		self.descriptor = dict()
+		self.descriptors = list()
+		self.descriptor_names = list()
 		self.mol = False
 		self.health = False
-		self.commnets = list()
+		self.comments = list()
 		self.geopath = geopath
 	def sety(self,y_value):
 		self.yvalue = y_value
@@ -33,29 +35,55 @@ class dft_observation:
 		else:
 			self.comments.append('geo file appears empty')
 			self.health = False
-	def get_descriptor_vector(self,loud):
-		
-		results_dictionary = generate_all_ligand_misc(self.mol,loud)
-		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
-		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
+	def get_descriptor_vector(self,lig_only,simple,name=False,loud=False):
+		if not lig_only:
+				results_dictionary = generate_all_ligand_misc(self.mol,loud)
+				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
+				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
+		#print('after adding misc descriptors... ' + str(len(self.descriptor_names)))
 		results_dictionary = generate_all_ligand_autocorrelations(self.mol,depth=3,loud=loud,name=name)
-		
 		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
 		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
-		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_con'],'c','ax')
-		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_con'],'c','eq')
-	def append_descriptors(self,list_of_names,list_of_props,prefix,suffix):
-		for names in list_of_names:
-			if hasattr(names, '__iter__'):
-				names = ["-".join([prefix,str(i),suffix]) for i in names]
-				self.descriptor_names += names
+		#print('after adding full ax/eq descriptors... ' + str(len(self.descriptor_names)))
+		if not simple and not lig_only:
+				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
+				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
+		#print('after adding lc ax/eq descriptors... ' + str(len(self.descriptor_names)))
+		if not lig_only:
+				if not simple:
+					results_dictionary = generate_metal_autocorrelations(self.mol,depth=3,loud=loud)
+					self.append_descriptors(results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+				results_dictionary = generate_full_complex_autocorrelations(self.mol,depth=3,loud=loud)
+				self.append_descriptors(results_dictionary['colnames'],results_dictionary['results'],'f','all')
+		#print('after adding full complex descriptors... ' + str(len(self.descriptor_names)))
+    	def append_descriptors(self,list_of_names,list_of_props,prefix,suffix):
+        	for names in list_of_names:
+        	    if hasattr(names, '__iter__'):
+        	        names = ["-".join([prefix,str(i),suffix]) for i in names]
+        	        self.descriptor_names += names
+        	    else:
+                	names = "-".join([prefix,str(names),suffix])
+                	self.descriptor_names.append(names)
+        	for values in list_of_props:
+            		if hasattr(values, '__iter__'):
+                		self.descriptors.extend(values)
+            		else:
+                		self.descriptors.append(values)
+def write_descriptor_csv(list_of_runs):
+	with open('descriptor_file.csv','w') as f:
+		f.write('runs,')
+		n_cols = len(list_of_runs[0].descriptor_names)
+		for i,names in enumerate(list_of_runs[0].descriptor_names):
+			if i<(n_cols-1):
+				f.write(names+',')
 			else:
-				names = "-".join([prefix,str(names),suffix])
-				self.descriptor_names.append(names)
-			
-			
- 		for values in list_of_props:
-			if hasattr(values, '__iter__'):
-				self.descriptors.extend(values)
-			else:
-				self.descriptors.append(values)
+				f.write(names+'\n')
+		for runs in list_of_runs:
+			try:
+				f.write(runs.name)
+				for properties in runs.descriptors:
+						f.write(','+str(properties))
+				f.write('\n')
+			except:
+				pass
+	
