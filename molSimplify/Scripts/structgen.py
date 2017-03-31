@@ -673,7 +673,10 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
             if 'cm' in licores[ligname][2]:
                 dent_i = 1
             else:
-                dent_i = int(len(licores[ligname][2]))
+                if isinstance(licores[ligname][2], (str, unicode)):
+                    dent_i = 1
+                else:
+                    dent_i = int(len(licores[ligname][2]))
         # get occurrence for each ligand if specified (default 1)
         oc_i = int(ligoc[i]) if i < len(ligoc) else 1
         occs0.append(0)         # initialize occurrences list
@@ -872,12 +875,15 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     for cat in lig.cat:
                         Hs += lig3D.getHsbyIndex(cat)
                     if len(Hs) > 0 and allremH:
+                        if args.debug:
+                            print('modifying charge down from ' + str(lig3D.charge)) 
                         # check for cats indices
                         for ii,cat in enumerate(lig.cat):
                             if cat > Hs[0]:
                                 lig.cat[ii] -= 1
                         lig3D.deleteatom(Hs[0])
                         lig3D.charge = lig3D.charge - 1
+
                 # strip Hs attached to connecting atoms (add them back at the end)
                 removedHs = False
                 if args.stripHs and denticity == 2:
@@ -1541,6 +1547,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     core3D.deleteatom(core3D.natoms-1)
                 if args.calccharge:
                     core3D.charge += lig3D.charge
+		    if args.debug:
+			print('adding ligand charge ' + str(lig3D.charge))
                 # add back Hs stripped from connecting atoms
                 if args.stripHs and removedHs:
                     core3D.convert2OBmol()

@@ -379,22 +379,30 @@ def lig_load(userligand,licores):
             lig.OBmol = lig.getOBmol(flig,'smif')
             # generate coordinates if not existing
             lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
+        ### modified the check for length,
+        ### as it parsing string length instead of
+        ### list length!
+        if isinstance(dbentry[2], (str, unicode)):
+           lig.denticity = 1
+        else:
+           lig.denticity = len(dbentry[2])
+        lig.ident = dbentry[1]
+        lig.charge = lig.OBmol.charge
         if 'cm' in dbentry[2] or 'CM' in dbentry[2]:
             lig.cat = [len(lig.OBmol.atoms)]
         else:
-            lig.cat = [int(l) for l in dbentry[2]]
-        lig.denticity = len(dbentry[2])
-        lig.ident = dbentry[1]
-        lig.charge = lig.OBmol.charge
-        if globs.debug:
-            print(flig,userligand,lig.charge)
-        if len(dbentry) > 2:
+            if lig.denticity == 1:
+                lig.cat = [int(dbentry[2])]
+            else:
+                lig.cat = [int(l) for l in dbentry[2]]
+        if lig.denticity > 1:
             lig.grps = dbentry[3]
         else:
             lig.grps = []
         if len(dbentry) > 3:
             lig.ffopt = dbentry[4][0]
         ### load from file
+        #print('dent is ' + str(lig.denticity))
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
         if glob.glob(userligand):
             ftype = userligand.split('.')[-1]
