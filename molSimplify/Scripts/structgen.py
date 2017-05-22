@@ -693,13 +693,12 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     dents = [dentl[i] for i in indcs]   # sort denticities list
     tcats = [cats0[i] for i in indcs]# sort connections list
     # sort keepHs list ###
-    # sort keepHs list ###
     keepHs = False
     if args.keepHs:
         keepHs = [k for k in args.keepHs]
         for j in range(len(args.keepHs),len(ligs)):
             keepHs.append('auto') # fill out unspecified keepHs with default
-            keepHs = [keepHs[i] for i in indcs] # sort keepHs list
+        keepHs = [keepHs[i] for i in indcs] # sort keepHs list
     ### sort M-L bond list ###
     MLb = False
     if args.MLbonds:
@@ -870,6 +869,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 # convert to mol3D
                 lig3D.convert2mol3D() # convert to mol3D
                 if not keepHs or (len(keepHs) <= i or not keepHs[i]):
+                    print('in keepHs, removing? ' + str(keepHs) + ' i = ' +str(i)+ ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) + ' len kph '+ str(len(keepHs)))
                     # remove one hydrogen
                     Hs = []
                     for cat in lig.cat:
@@ -1661,6 +1661,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
     ligands = [ligs[i] for i in indcs]  # sort ligands list
     occs = [occs0[i] for i in indcs]    # sort occurrences list
     tcats = [cats0[i] for i in indcs]# sort issmiles list
+
     # sort keepHs list ###
     keepHs = False
     if args.keepHs:
