@@ -207,7 +207,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         valid = False 
         ANN_reason = 'geometry not oct'
     if not args.oxstate:
-        emsg.append("\n [ANN] oxidation state must be given")
+        emsg.append("\n oxidation state must be given")
         valid = False
         ANN_reason = 'oxstate not given'
     if valid:
@@ -228,11 +228,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             emsg.append("\n this spin state not available for this metal")
             ANN_reason = 'spin state not availble for metal'
     if emsg:
-        print('nn emsg',emsg)
+        print(str(" ".join( ["ANN messages:"] +   [str(i) for i in emsg] )))
     if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
         if args.debug:
             print("\n")
+            print("ligand validity is  "+str(valid))
             print('Occs')
             print(occs)
             print('Ligands')
@@ -246,7 +247,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('eq ligs',equitorial_ligs)
             print('spin is',spin)
         if not valid:
-                ANN_reason  = 'find incorrect lig symmetry'
+                ANN_reason  = 'found incorrect ligand symmetry'
 
     if valid:
             ax_lig3D,r_emsg = lig_load(axial_ligs[0],licores) # load ligand

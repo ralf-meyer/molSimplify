@@ -397,11 +397,9 @@ def rungen(rundir,args,chspfname,globs):
         if args.jobdir:
             rootdir = rundir + args.jobdir
             # check for top directory
-        print('rootcheck is  ' + str(rootcheck))
-
         if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
             args.checkdirt = True
-            if not args.gui:
+            if not args.rprompt:
                 flagdir=raw_input('\nDirectory '+rootcheck +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'
@@ -410,8 +408,9 @@ def rungen(rundir,args,chspfname,globs):
                 else:
                     flagdir = 'replace'
             else:
-                qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
-                flagdir = qqb.getaction()
+                #qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
+                #flagdir = qqb.getaction()
+                flagdir = 'replace'
                 # replace existing directory
             if (flagdir=='replace'):
                 shutil.rmtree(rootcheck)
@@ -438,7 +437,7 @@ def rungen(rundir,args,chspfname,globs):
             # check for actual directory
         if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
             args.checkdirb = True
-            if not args.gui:
+            if not args.rprompt:
                 flagdir=raw_input('\nDirectory '+rootdir +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'
@@ -447,8 +446,9 @@ def rungen(rundir,args,chspfname,globs):
                 else:
                     flagdir = 'replace'
             else:
-                qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
-                flagdir = qqb.getaction()
+                #qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
+                #flagdir = qqb.getaction()
+                flagdir = 'replace'
             # replace existing directory
             if (flagdir=='replace'):
                 shutil.rmtree(rootdir)

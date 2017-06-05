@@ -203,6 +203,7 @@ def parseinput(args):
     args.dbvconns = False
     args.dbvhyb = False
     args.dbvlinks = False
+    args.rprompt = False
 
     ##(we should remove these where posible)
 
@@ -220,13 +221,17 @@ def parseinput(args):
             if (l[0]=='-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
             if (l[0]=='-ccatoms' and len(l[1:]) > 0):
-                args.ccatoms = [int(ll)-1 for ll in l[1:]]
+                args.ccatoms = []
+                l = line.split('ccatoms',1)[1]
+                l=l.strip(' ')
+                l=l.split(',')
+                args.ccatoms = [int(ll)-1 for ll in l]
             if (l[0]=='-rundir'):
-                print('in inparse, rundir found',l)
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
-		args.rundir = args.rundir.rstrip(' ')
+                args.rundir = args.rundir.rstrip(' ')
+                print('The directory for  this calculation is: '+str(args.rundir))
 
                 if (args.rundir[-1]=='/'):
                     args.rundir = args.rundir[:-1]
@@ -584,7 +589,9 @@ def parseinput(args):
                 args.duplicate = l[1]
             if (l[0]=='-surface_atom_ind'): #6
                 args.surface_atom_ind = [int(i.strip('(){}<>[],.')) for i in l[1:]]
-
+        # control GUI prompt
+            if (l[0]=='-rprompt'):
+                args.rprompt = True
             # parse chain-builder arguments
             if (l[0] == '-chain'):
                 print('chain true')
@@ -604,13 +611,15 @@ def parseinput(args):
 
 
 
+
 #############################################################
 ########## mainly for help and listing options  #############
 #############################################################
 ### parses commandline arguments and prints help information ###
 def parsecommandline(parser):
     globs = globalvars()
-#    installdir = globs.installdir+'/'
+    # hidden (non-user) arguments for GUI 
+    parser.add_argument("-rprompt","--rprompt",help=argparse.SUPPRESS,action="store_true")
     # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
     parser.add_argument("-i","--i",help="input file")
     # top directory options

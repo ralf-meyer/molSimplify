@@ -189,10 +189,10 @@ def correlation_supervisor(path,rootdir,simple=False,lig_only=False,max_descript
 		for i,items in enumerate(reductor_features):
 			f.write(str(items[0])  + ',' + str(items[1])+ ',' +
 				str(ranked_features[i][0])  + ','+ str(ranked_features[i][1])+ '\n')
-	with open('y_data.csv','w') as f:
+	with open(rootdir + 'y_data.csv','w') as f:
 		for items in Y:
 			f.write(str(items) + '\n')
-	with open('y_pred_r.csv','w') as f:
+	with open(rootdir + 'y_pred_r.csv','w') as f:
 		for items in Ypred_r:
 			f.write(str(items) + '\n')
 	with open(rootdir+'optimal_decriptor_space.csv','w') as f:
@@ -222,7 +222,7 @@ def correlation_supervisor(path,rootdir,simple=False,lig_only=False,max_descript
 		f.write('intercept,'+str(intercept) + '\n')
 		for i in range(0,n_opt):
 			f.write(str(opt_features[i])+','+str(coefs[i])+'\n')
-	with open('rfe_mse.csv','w') as f:
+	with open(rootdir + 'rfe_mse.csv','w') as f:
 		f.write('features removed,mean CV error,'+str(intercept) + '\n')
 		count =0
 		for items in mse_reduce:

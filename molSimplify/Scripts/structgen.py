@@ -838,7 +838,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     ligsused = 0
 
     if args.debug:
-        print('ligands is  ' + str(ligands))
+        print('ligands are  ' + str(ligands))
     for i,ligand in enumerate(ligands):
         if args.debug:
                 print('placing lig  ' + str(i))
@@ -869,7 +869,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 # convert to mol3D
                 lig3D.convert2mol3D() # convert to mol3D
                 if not keepHs or (len(keepHs) <= i or not keepHs[i]):
-                    print('in keepHs, removing? ' + str(keepHs) + ' i = ' +str(i)+ ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) + ' len kph '+ str(len(keepHs)))
+                    if args.debug:
+                        print('in keepHs, removing? ' + str(keepHs) + ' i = ' +str(i)+ ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) + ' length of keepHs list  '+ str(len(keepHs)))
                     # remove one hydrogen
                     Hs = []
                     for cat in lig.cat:
@@ -1629,6 +1630,8 @@ def customcore(args,core,ligs,ligoc,licores,globs):
         # if not in cores -> smiles/file
         if ligname not in licores.keys():
             if args.smicat and len(args.smicat) >= i and args.smicat[i]:
+                if args.debug:
+                    print('reading from smicat' + str(args.smicat))
                 cats0.append(args.smicat[i])
             else:
                 cats0.append([1])
@@ -1649,19 +1652,25 @@ def customcore(args,core,ligs,ligoc,licores,globs):
             toccs += dent_i
     # remove ligands with denticity > 1
     todel = []
-    for ii,ddent in enumerate(dentl):
-        if ddent > 1:
-            todel.append(ii)
-    for ii in sorted(todel,reverse=True):
-        del dentl[ii]
-        del ligands[ii]
-        del occs[ii]
+#    for ii,ddent in enumerate(dentl):
+#        if ddent > 1:
+#            todel.append(ii)
+#    for ii in sorted(todel,reverse=True):
+#        del dentl[ii]
+#        del ligands[ii]
+#        del occs[ii]
     ### sort by descending denticity (needed for adjacent connection atoms) ###
     indcs = smartreorderligs(args,ligs,dentl,licores)
     ligands = [ligs[i] for i in indcs]  # sort ligands list
     occs = [occs0[i] for i in indcs]    # sort occurrences list
     tcats = [cats0[i] for i in indcs]# sort issmiles list
-
+    dents = [dentl[i] for i in indcs]# sort issmiles list
+    if args.debug:
+        print('in custom core code, lists are :')
+        print('dents '  + str(dents))
+        print(' tcats are  ' + str(tcats))
+        print(' occs are '+ str(occs))
+        print('ligs are  '+ str(ligands))
     # sort keepHs list ###
     keepHs = False
     if args.keepHs:
@@ -1683,6 +1692,8 @@ def customcore(args,core,ligs,ligoc,licores,globs):
             qqb = mQDialogWarn('Warning',emsg)
             qqb.setParent(args.gui.wmain)
     ccatoms = args.ccatoms if args.ccatoms else [0]
+    if args.debug:
+        print('setting ccatoms ' + str(ccatoms))
     core3D = mol3D()
     core3D.copymol3D(core)
     cmcore = core3D.centermass()
@@ -1697,6 +1708,8 @@ def customcore(args,core,ligs,ligoc,licores,globs):
             Hs += core3D.getHsbyAtom(core3D.getAtom(ccat))
     # remove hydrogens and shift ccatoms
     if len(Hs) > 0:
+        if args.debug:
+            print('removing Hs from core!')
         for H in sorted(Hs,reverse=True):
             core3D.deleteatom(H)
             # fix indexing
@@ -1717,6 +1730,9 @@ def customcore(args,core,ligs,ligoc,licores,globs):
         if len(ccatoms) < i:
             ccatoms.append(0)
         for j in range(0,occs[i]):
+            denticity = dents[i]
+            if args.debug:
+                print(' in assembly loop, dent is  ' + str(denticity)+ ' the ligand is ' + str(ligand))
             if not(ligand=='x' or ligand =='X'):
                 if totlig >= len(ccatoms):
                     emsg = 'Number of ligands greater than connection points. Please specify enough connection atoms in custom core.\n'
@@ -1807,7 +1823,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                 ##    attach ligand depending on the denticity    ##
                 ## optimize geometry by minimizing steric effects ##
                 ####################################################
-                denticity = 1
+#                denticity = 1
                 if (denticity == 1):
                     # connection atom in lig3D
                     atom0 = catoms[0]
@@ -1815,6 +1831,118 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     lig3D.alignmol(lig3D.getAtom(atom0),atom3D('C',cpoint))
                     r1 = lig3D.getAtom(atom0).coords()
                     r2 = lig3D.centermass() # center of mass
+                    if not r2:
+                        emsg = 'Center of mass calculation for ligand failed. Check input.'
+                        print emsg
+                        if args.gui:
+                            qqb = mQDialogWarn('Warning',emsg)
+                            qqb.setParent(args.gui.wmain)
+                        break
+                    rrot = r1
+                    theta,u = rotation_params(r0,r1,r2)
+                    # for most ligands align center of mass of local environment
+                    if (lig3D.natoms > 1):
+                        lig3Db = mol3D()
+                        lig3Db.copymol3D(lig3D)
+                        ####################################
+                        # center of mass of local environment (to avoid bad placement of bulky ligands)
+                        auxmol = mol3D()
+                        for at in lig3D.getBondedAtoms(atom0):
+                            auxmol.addAtom(lig3D.getAtom(at))
+                        r2 = auxmol.centermass() # overwrite global with local centermass
+                        theta,u = rotation_params(r0,r1,r2)
+                        ####################################
+                        # rotate around axis and get both images
+                        lig3D = rotate_around_axis(lig3D,rrot,u,theta)
+                        lig3Db = rotate_around_axis(lig3Db,rrot,u,theta-180)
+                        d2 = distance(mcoords,lig3D.centermass())
+                        d1 = distance(mcoords,lig3Db.centermass())
+                        lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+                    if lig3D.natoms > 2:
+                        #####################################
+                        # check for linear molecule
+                        auxm = mol3D()
+                        for at in lig3D.getBondedAtoms(atom0):
+                            auxm.addAtom(lig3D.getAtom(at))
+                        if auxm.natoms > 1:
+                            r0 = lig3D.getAtom(atom0).coords()
+                            r1 = auxm.getAtom(0).coords()
+                            r2 = auxm.getAtom(1).coords()
+                            if checkcolinear(r1,r0,r2):
+                                # we will rotate so that angle is right
+                                theta,urot = rotation_params(r1,mcoords,r2)
+                                theta = vecangle(vecdiff(r0,mcoords),urot)
+                                lig3D = rotate_around_axis(lig3D,r0,urot,theta)
+                        #####################################
+                        # check for symmetric molecule
+                        if distance(lig3D.getAtom(atom0).coords(),lig3D.centersym()) < 8.0e-2:
+                            atsc = lig3D.getBondedAtoms(atom0)
+                            r0a = lig3D.getAtom(atom0).coords()
+                            r1a = lig3D.getAtom(atsc[0]).coords()
+                            r2a = lig3D.getAtom(atsc[1]).coords()
+                            theta,u = rotation_params(r0a,r1a,r2a)
+                            theta = vecangle(u,vecdiff(r0a,mcoords))
+                            urot = cross(u,vecdiff(r0a,mcoords))
+                            ####################################
+                            # rotate around axis and get both images
+                            lig3Db = mol3D()
+                            lig3Db.copymol3D(lig3D)
+                            lig3D = rotate_around_axis(lig3D,r0a,urot,theta)
+                            lig3Db = rotate_around_axis(lig3Db,r0a,urot,-theta)
+                            d2 = lig3D.mindist(core3D)
+                            d1 = lig3Db.mindist(core3D)
+                            lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+                        # rotate around axis of symmetry and get best orientation
+                        r1 = lig3D.getAtom(atom0).coords()
+                        u = vecdiff(r1,mcoords)
+                        dtheta = 2
+                        optmax = -9999
+                        totiters = 0
+                        lig3Db = mol3D()
+                        lig3Db.copymol3D(lig3D)
+                        # check for minimum distance between atoms and center of mass distance
+                        while totiters < 180:
+                            lig3D = rotate_around_axis(lig3D,r1,u,dtheta)
+                            d0 = lig3D.mindist(core3D) # try to maximize minimum atoms distance
+                            d0cm = lig3D.distance(core3D) # try to maximize center of mass distance
+                            iteropt = d0cm+10*log(d0) # optimization function
+                            if (iteropt > optmax): # if better conformation, keep
+                                lig3Db = mol3D()
+                                lig3Db.copymol3D(lig3D)
+                                optmax = iteropt
+                            totiters += 1
+                        lig3D = lig3Db
+                    # get distance from bonds table or vdw radii
+                    if MLb and MLb[i]:
+                        if 'c' in MLb[i].lower():
+                            bondl = conatom3D.rad + lig3D.getAtom(atom0).rad
+                        else:
+                            bondl = float(MLb[i]) # check for custom
+                    else:
+                        mm3D = mol3D()
+                        mm3D.addAtom(conatom3D)
+                        bondl = getbondlength(args,conatom3D.sym,mm3D,lig3D,0,atom0,ligand,MLbonds)
+                    # get correct distance for center of mass
+                    u = vecdiff(cpoint,mcoords)
+                    lig3D = aligntoaxis2(lig3D, cpoint, mcoords, u, bondl)
+                    connected.append(core3D.natoms+atom0)
+                    # list of frozen atoms (small ligands)
+                    if 'A' not in lig.ffopt:
+                        for latdix in range(0,lig3D.natoms):
+                            frozenats.append(latdix+core3D.natoms)
+                    # combine molecules
+                    core3D = core3D.combine(lig3D)
+ 
+                if (denticity == 2):
+                    # connection atom in lig3D
+                    atom0 = catoms[0]
+                    if args.debug:
+                        print('atom0 is ' + str(atom0))
+                    # align molecule according to connection atom and shadow atom
+                    lig3D.alignmol(lig3D.getAtom(atom0),atom3D('C',cpoint))
+                    r1 = lig3D.getAtom(atom0).coords()
+                    r2 = lig3D.centermass() # center of mass
+                    jk
                     if not r2:
                         emsg = 'Center of mass calculation for ligand failed. Check input.'
                         print emsg

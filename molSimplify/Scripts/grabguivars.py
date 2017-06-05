@@ -268,6 +268,8 @@ def grabguivars(gui):
         args['-modules'] = gui.etjmod.text()
         args['-joption'] = gui.etjopt.toPlainText()
         args['-jcommand'] = gui.jcomm.toPlainText()
+    # extra flag to control duplication prompt
+    args['-rprompt'] = 'True'
     writeinputf(args)
     return args
 
@@ -285,6 +287,8 @@ def grabguivarstc(gui):
     args['-basis'] = gui.etqctbasis.text()
     args['-dispersion'] = gui.qctsel.currentText()
     args['-qoption'] = gui.qceditor.toPlainText()
+    # extra flag to control duplication prompt
+    args['-rprompt'] = 'True'
     ### write input file ###
     writeinputc(args,globs.installdir+'/Data/.tcdefinput.inp')
     return args
@@ -308,6 +312,8 @@ def grabguivarsgam(gui):
     args['-ctrloption'] = gui.qcgedctrl.toPlainText()
     args['-scfoption'] = gui.qcgedscf.toPlainText()
     args['-statoption'] = gui.qcgedstat.toPlainText()
+    # extra flag to control duplication prompt
+    args['-rprompt'] = 'True'
     ### write input file ###
     writeinputc(args,globs.installdir+'/Data/.gamdefinput.inp')
     return args
@@ -329,6 +335,8 @@ def grabguivarsqch(gui):
     if gui.chQun:
         args['-unrestricted'] = '1'
     ### write input file ###
+    # extra flag to control duplication prompt
+    args['-rprompt'] = 'True'
     writeinputc(args,globs.installdir+'/Data/.qchdefinput.inp')
     return args
 
@@ -348,6 +356,8 @@ def grabguivarsjob(gui):
     args['-modules'] = gui.etjmod.text()
     args['-joption'] = gui.etjopt.toPlainText()
     args['-jcommand'] = gui.jcomm.toPlainText()
+    ## set prompt option
+    args['-rprompt'] = 'True'
     ### write input file ###
     writeinputc(args,globs.installdir+'/Data/.jobdefinput.inp')
     return args
@@ -387,6 +397,8 @@ def grabdbguivars(gui):
     if rdir[-1]=='/':
         rdir = rdir[:-1]
     args['-rundir'] = rdir
+    ## extra flag to control duplication prompt
+    args['-rprompt'] = 'True'
     ### write input file ###
     writeinputc(args,rdir+'/dbinput.inp')
     return args
@@ -418,6 +430,8 @@ def grabguivarsP(gui):
         args['-pdeloc'] = ''
     if gui.pnbo.getState()==1:
         args['-pnbo'] = ''
+    # extra flag to control duplication prompt
+    args['-rprompt'] = 'True'
     ### write input file ###
     writeinputp(args,rdir+'/postproc.inp')
 #################################################
