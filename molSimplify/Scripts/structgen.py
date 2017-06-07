@@ -870,7 +870,12 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 lig3D.convert2mol3D() # convert to mol3D
                 if not keepHs or (len(keepHs) <= i or not keepHs[i]):
                     if args.debug:
-                        print('in keepHs, removing? ' + str(keepHs) + ' i = ' +str(i)+ ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) + ' length of keepHs list  '+ str(len(keepHs)))
+                        try:
+                            print('debug keepHs check, removing? ' + str(keepHs) + ' i = ' +str(i)+ 
+                            ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) +
+                             ' length of keepHs list  '+ str(len(keepHs)))
+                        except:
+                            pass
                     # remove one hydrogen
                     Hs = []
                     for cat in lig.cat:
@@ -1652,13 +1657,13 @@ def customcore(args,core,ligs,ligoc,licores,globs):
             toccs += dent_i
     # remove ligands with denticity > 1
     todel = []
-#    for ii,ddent in enumerate(dentl):
-#        if ddent > 1:
-#            todel.append(ii)
-#    for ii in sorted(todel,reverse=True):
-#        del dentl[ii]
-#        del ligands[ii]
-#        del occs[ii]
+    for ii,ddent in enumerate(dentl):
+        if ddent > 1:
+            todel.append(ii)
+    for ii in sorted(todel,reverse=True):
+        del dentl[ii]
+        del ligands[ii]
+        del occs[ii]
     ### sort by descending denticity (needed for adjacent connection atoms) ###
     indcs = smartreorderligs(args,ligs,dentl,licores)
     ligands = [ligs[i] for i in indcs]  # sort ligands list
@@ -1823,7 +1828,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                 ##    attach ligand depending on the denticity    ##
                 ## optimize geometry by minimizing steric effects ##
                 ####################################################
-#                denticity = 1
+                denticity = 1
                 if (denticity == 1):
                     # connection atom in lig3D
                     atom0 = catoms[0]

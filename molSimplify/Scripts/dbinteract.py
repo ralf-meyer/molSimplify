@@ -271,21 +271,39 @@ def dissim(outf,n):
 	globs = globalvars()
 
 	obab = 'babel'
+
+        # clone hitlist file
+        hit_list_path  = "hitlist.smi"
+
+        with open(outf) as f:
+            smiles_list = f.readlines()
+        with open(hit_list_path,'w') as f:
+            f.writelines(smiles_list)
+
 	# generate fs of original hit list
-	mybash(obab+' -ismi '+outf+' -osdf tmp.sdf')
+	mybash(obab+' -ismi '+hit_list_path+' -osdf tmp.sdf')
 	mybash(obab+' tmp.sdf -ofs')
 	# number of hits
 	numcpds = mybash('obabel tmp.sdf -onul')
-	numcpds = numcpds.split(None)[0]
-	# pick last element of list
-	mybash('obabel tmp.sdf -O 1.smi -f '+str(numcpds)+' -l'+str(numcpds))
+	numcpds = int(numcpds.split(None)[0])
+	# pick first element of list
+	mybash('obabel tmp.sdf -O 1.smi -f 1  -l 1')
+        del smiles_list[0]
+        with open(hit_list_path,'w') as f:
+            f.writelines(smiles_list)
+        # recompute the fs and number of hits parameters
+        numcpds +=-1 # decrease number of hits
+        mybash(obab+' -ismi '+hit_list_path+' -osdf tmp.sdf')
+        mybash(obab+' tmp.sdf -ofs')
+
 	print 'Performing dissimilarity search:'
 	mostdissim = []
 	if n > 1:
 		# find most dissimilar structure
 		for i in range(n-1):
+
 			# initialize list of total similarities
-			simsum = [0] * int(numcpds)
+			simsum = [0] * numcpds
 			# compute total similarity of each dissimilar structure with hit list
 			for j in range(i+1):
 				a = mybash('obabel '+str(j+1)+'.smi tmp.sdf -ofpt')
@@ -303,8 +321,19 @@ def dissim(outf,n):
 			# pick most dissimilar structure by greedily minimizing total similarity
 			mostdissim = simsum.index(min(simsum))
 			mybash('obabel tmp.sdf -O '+str(i+2) +'.smi -f '+str(mostdissim+1)+' -l'+str(mostdissim+1))
+
+                        # remove most dissimilar from the list and re-write the smi file
+                        del smiles_list[mostdissim]
+                        with open(hit_list_path,'w') as f:
+                            f.writelines(smiles_list)
+
+                        # recompute the fs and number of hits parameters
+                        numcpds +=-1 # decrease number of hits
+                        mybash(obab+' -ismi '+hit_list_path+' -osdf tmp.sdf')
+                        mybash(obab+' tmp.sdf -ofs')
+
+
 	# combine results into one file
-	print('preparing dism file: ' + str(outf)+'\n')
 	f = open('dissimres.smi','w')
 	for i in range(n):
 		ff = open(str(i+1)+'.smi','r')
@@ -533,12 +562,14 @@ def dbsearch(rundir,args,globs):
     	if args.rundir:
         	os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
 		print('rundir is ' + str(args.rundir))
-		print('\n\n********************\n\n\n')
+		print('\n\n********************\n')
 		print('writing max dissimilar list to   + str(args.rundir) +  /' + str(outf) +'\n' )
-		print('\n\n********************\n\n\n')
+		print('********************\n\n')
 
 	else:
-		print('*****************writing max dissimilar list to ' + str(cwd) + '/' + str(outf)+'\n'  )
+		print('\n\n********************\n')
+		print('writing max dissimilar list to ' + str(cwd) + '/' + str(outf)+'\n'  )
+		print('********************\n\n')
 
     if args.rundir:
 		print('writing output to ' + str(args.rundir) + '/' + str(outf)+'\n' )
