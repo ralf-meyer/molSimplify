@@ -29,7 +29,6 @@ carboxyl:carboxyl.mol,crbx,1,functionalize small,N,0
 cat:cat.mol,cat,0 7,bulkybi build,BA,-2
 chloride:chloride.mol,chlde,0,build functionalize small,N,-1
 chloropyridine:chloropyridine.mol,chloropyrdine,3,build organic,BA,0
-chloropyridine:chloropyridine.mol,chloropyrdine,3,build organic,BA,0
 corrolazine:corrolazine.mol,corrolazine,21 17 19 16, build tetradentate, A,-2
 cyanide:cyanide.mol,cyan,0,build small,N,-1
 cyanoaceticporphyrin:cyanoaceticporphyrin.mol,caprph,0 3 1 2,build tetradentate,N,-2

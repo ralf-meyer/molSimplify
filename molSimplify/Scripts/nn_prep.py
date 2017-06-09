@@ -186,6 +186,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     valid = True 
     metal = args.core
     this_metal = metal.lower()
+    if len(this_metal) >2 :
+        this_metal = this_metal[0:2]
     newligs = []
     newcats = []
     newdents = []

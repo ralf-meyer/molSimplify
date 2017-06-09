@@ -40,7 +40,7 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
 #            qqb.setParent(args.gui.DBWindow)
 #            raise Exception('Custom path not set!')
 #	else: 
-	print('To database, you need to set a custom path. Please enter a writeable file path:')
+	print('To add to database, you need to set a custom path. Please enter a writeable file path:')
 	new_path = input('path=')
 	globs.add_custom_path(new_path)
        	copy_to_custom_path()
@@ -128,7 +128,7 @@ def addtocdb(smimol,sminame,smicat):
     	## the GUI is handled in the GUI script,
     	## this should not reached during normal
     	## operation 
-    	print('To database, you need to set a custom path. Please enter a writeable file path:')
+    	print('To add to database, you need to set a custom path. Please enter a writeable file path:')
     	new_path = input('path=')
     	globs.add_custom_path(new_path)
     	copy_to_custom_path()
@@ -160,13 +160,13 @@ def addtocdb(smimol,sminame,smicat):
         # write xyz file in Cores directory
         # new entry for dictionary
         if '.mol' in smimol:
-            shutil.copy2(smimol,core_folder+sminame+'.mol')
+            shutil.copy2(smimol,cores_folder+sminame+'.mol')
             snew = sminame+':'+sminame+'.mol,'+css+','+'1'
         elif '.xyz' in smimol:
-            shutil.copy2(smimol,core_folder + sminame+'.xyz')
+            shutil.copy2(smimol,cores_folder + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         else:
-            core.writexyz(core_folder +sminame+'.xyz') # write xyz file
+            core.writexyz(cores_folder +sminame+'.xyz') # write xyz file
             # new entry for dictionary
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         # update dictionary
@@ -196,7 +196,7 @@ def addtobdb(smimol,sminame):
     	## the GUI is handled in the GUI script,
     	## this should not reached during normal
     	## operation 
-    	print('To database, you need to set a custom path. Please enter a writeable file path:')
+    	print('To add to database, you need to set a custom path. Please enter a writeable file path:')
     	new_path = input('path=')
     	globs.add_custom_path(new_path)
     	copy_to_custom_path()
