@@ -416,7 +416,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         if obmol.NumHvyAtoms() > 10:
             forcefield.ConjugateGradients(2000)
         else:
-            forcefield.ConjugateGradients(9999)
+            forcefield.ConjugateGradients(5000)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -467,9 +467,9 @@ def ffoptd(ff,mol,connected,ccatoms,frozenats,nligats):
     forcefield.Setup(obmol,constr)
     ### force field optimize structure
     if obmol.NumHvyAtoms() > 10:
-        forcefield.ConjugateGradients(4000)
-    else:
         forcefield.ConjugateGradients(2000)
+    else:
+        forcefield.ConjugateGradients(5000)
     forcefield.GetCoordinates(obmol)
     en = forcefield.Energy()
     mol.OBmol = pybel.Molecule(obmol)
@@ -1938,7 +1938,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     # combine molecules
                     core3D = core3D.combine(lig3D)
  
-                if (denticity == 2):
+                elif (denticity == 2):
                     # connection atom in lig3D
                     atom0 = catoms[0]
                     if args.debug:

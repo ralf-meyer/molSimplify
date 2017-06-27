@@ -84,10 +84,9 @@ def check_ligands(ligs,batlist,dents,tcats):
             this_dent = dents[i]
             ## mulitple points
             if not (this_lig in unique_ligs):
-#                    print('adding unique ligs',this_lig)
                     unique_ligs.append(this_lig)
                     ucats.append(tcats[i])
-            elif (this_lig in unique_ligs) and (not this_lig in equitorial_ligs) :
+            elif (this_lig in unique_ligs) and not (this_lig in equitorial_ligs) :
                    equitorial_ligs.append(this_lig)
                    eq_dent = this_dent
                    eq_tcat = tcats[i]
@@ -98,7 +97,7 @@ def check_ligands(ligs,batlist,dents,tcats):
         elif len(unique_ligs) == 2:
             for i,uligs in enumerate(unique_ligs):
                 if not (uligs in equitorial_ligs): #only occured once
-                    axial_ligs.append(this_lig)
+                    axial_ligs.append(uligs)
                     ax_dent = 2
                     ax_tcat = ucats[i]
         else:
