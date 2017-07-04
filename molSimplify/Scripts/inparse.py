@@ -707,7 +707,6 @@ def parseinputs_advanced(*p):
     parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
     parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA", default='BA')
     parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
-    parser.add_argument("-lignum", help="number of ligand types",action="store_true") # what does this actually do?
     parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default='False')
     parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default='True')
     parser.add_argument("-MLbonds", help="custom M-L bond length (Ang) for corresponding ligand",action="store_true")
@@ -894,6 +893,7 @@ def parseinputs_random(*p):
     parser.add_argument("-ligctg","--ligctg", help="ligand category for random generation",action="store_true")
     parser.add_argument("-rkHs","--rkHs", help="keep Hydrogens for random generation",action="store_true")
     parser.add_argument("-rgen","--rgen", help="number of random generated molecules",action="store_true")
+    parser.add_argument("-lignum", help="number of ligands for random generation",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
