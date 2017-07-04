@@ -78,7 +78,7 @@ def startgen(argv,flag,gui):
         print ss
     sys.argv = argv
     parser = argparse.ArgumentParser()
-    args = parsecommandline(parser)
+    args = parseall(parser)
     # check if input file exists
     if not glob.glob(args.i):
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
@@ -86,8 +86,9 @@ def startgen(argv,flag,gui):
         return emsg
     args.gui = gui # add gui flag
         # parse input file
-    if (args.i):
-        parseinput(args)
+    if args.i:
+        print('input file detected, reading arguments from input file')
+        parseinputfile(args)
     # clean input arguments
     cleaninput(args)
     if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate):        # check input arguments
