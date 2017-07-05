@@ -132,7 +132,7 @@ class globalvars:
         self.debug = False # additional output for debuggin
         self.remHsmarts = ["O=CN","O=CO","n","N=CN","nN"] # remove Hs from connecting atoms within these SMARTS patterns
         # default geometries for each coordination number if none specified
-        self.defaultgeometry = {6:('oct','octahedral'),5:('tbp','trigonal bipyramidal'),4:('sqp','square planar'),3:('trigonal planar','tpl'),2:('linear','li'),1:('none','no')}
+        self.defaultgeometry = {6:('oct','octahedral'),5:('tbp','trigonal bipyramidal'),4:('sqp','square planar'),3:('trigonal planar','tpl'),2:('linear','li'),1:('one','one')}
         self.defaultoxstate = {'au':'I','gold':'I','scandium':'III','sc':'III','ti':'IV','titanium':'IV'}
     def amass(self):
         return amassdict

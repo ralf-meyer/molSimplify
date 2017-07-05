@@ -1,4 +1,5 @@
-# ligand name, ligand structure file, abbreviation (unique), cponnection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), formal charge
+# ligand name, ligand structure file, abbreviation (unique), connection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), formal charge
+# if connecting atoms 
 acac:acac.mol,acac,0 5,build functionalize bidentate,BA,-1
 antipyrine:Antipyrine.mol,antipyrine,4,build bulky,BA,0
 acetonitrile:acetonitrile.mol,actnt,1,build small,N,0
@@ -18,6 +19,7 @@ asparagine:asparagine.mol,Asn,6,build functionalize aminoacid,BA,0
 aspartic:aspartic_acid.mol,Asp,6,build functionalize aminoacid,BA,-1
 asparticB:aspartic_acid.mol,Asp,6 7,build functionalize aminoacid,BA,-1
 benzene:benzene.mol,bnz,4,build small organic,BA,-1
+benzene_pi:benzene_pi.mol,bnp,0 1 2 3 4 5 pi,build small organometallic,N,0
 benzenedithiol:benzenedithiol.mol,benzenedithiol,0 11,build functionalize bidentate,BA,-1
 benzenethiol:benzenethiol.mol,bthil,0,build functionalize small,N,-1
 bipy:bipy.mol,bip,0 1,build bidentate,BA,0
@@ -35,7 +37,7 @@ cyanoaceticporphyrin:cyanoaceticporphyrin.mol,caprph,0 3 1 2,build tetradentate,
 cyanopyridine:cyanopyridine.mol,cyanopyrd,3,build organic,BA,0
 cyclam:cyclam.mol,cyclam,15 34 17 36,build tetradentate,A,0
 cyclen:cyclen.mol,cyclen,6 0 3 9,build tetradentate,A,0
-cyclopentadienyl:cyclopentadienyl.mol,cpd,cm,build aromatic,N,-1
+cyclopentadienyl:cyclopentadienyl.mol,Cp,0 1 2 3 4 pi,build aromatic organometallic,BA,-1
 cysteine:cysteine.mol,Cys,5,build functionalize aminoacid,BA,0
 dd:dd.smi,dd,0,all  build functionalize,BA
 diaminomethyl:diaminomethyl.mol,damthyl,0 1,build bidentate,N,-1
@@ -51,7 +53,8 @@ en:en.mol,en,0 1,build bidentate,N,0
 ethOHbipyridine:ethOHbipy.mol,ethOHbip,0 1,build bidentate,BA,0
 ethanethiol:ethanethiol.mol,ethil,0,build functionalize small,N,-1
 ethbipyridine:ethbipy.mol,ethbip,0 1,build bidentate,BA,0
-ethyl:ethyl.mol,eth,1,functionalize small,N,-1
+ethyl:ethyl.mol,eth,1,functionalize organometallic small,N,-1
+ethylene:ethylene.mol,ethylene,0 1 pi,organometallic small,N,0
 fluoride:fluoride.mol,fluo,0,build functionalize small,N,-1
 furan:furan.mol,furan,0,build bulkymono,A,0
 glutamic:glutamic_acid.mol,Glu,3,build functionalize aminoacid,BA,-1
@@ -79,7 +82,7 @@ mebipyridine:mebipy.mol,mebip,0 1,build bidentate,BA,0
 methanal:methanal.mol,metha,0,functionalize small,N,-1
 methanethiol:methanethiol.mol,mthil,0,build functionalize small,N,-1
 methionine:methionine.mol,Met,6,build functionalize aminoacid,BA,0
-methyl:methyl.mol,meth,0,functionalize small,N,-1
+methyl:methyl.mol,meth,0,functionalize small organometallic,N,-1
 misc:methylisocy.mol,misc,0,small,A,0
 nitro:nitro.mol,nit,1,build functionalize small,N,-1
 nitrobipyridine:nitrobipy.mol,nitrobip,0 1,build bidentate,BA,0
@@ -90,6 +93,7 @@ ome2:ome2.mol,ome2,0,build small,N,0
 ox:oxalate.mol,oxate,1 4,build bidentate,BA,-2
 oxygen:oxygen.mol,oxd,0,build small,N,-2
 pcy3:PCy3.mol,pcy3,0,build bulky big,BA,0
+propylene:propylene.mol,propylene,pi,build organometallic,N,0
 propyphenazone:Propyphenazone.mol,propyphenazone,0,build bulky,BA,0
 pentacyanopentadienide:pentacyanocyclopentadienide.mol,pcyanopent,1,build bulky,A,-1
 phen:phen.mol,phen,9 12,build bidentate,BA,0
@@ -105,6 +109,7 @@ phosphine:phosphine.mol,phosphine,0,build small,N,0
 phenylbenzoxazole:phenylbenzoxazole.mol,phenylbenzoxazole,8 14,build bidentate,BA,0
 phthalocyanine:phthalocyanine.mol,phthalocyanine,0 30 2 29,build tetradentate,A,-2
 pisc:tbuphisocy.mol,pisc,0,bulkymono build,N,0
+propylene:propylene.mol,propylene,0 1 pi, organometallic,N,0
 benzisc:benzylisocy.mol,benzisc,0,bulkymono build,N,0
 pme3:PMe3.mol,pme3,0,build big,BA,0
 opme3:pme3o.mol,opme3,13,build big,BA,0
