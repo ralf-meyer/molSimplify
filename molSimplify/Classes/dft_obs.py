@@ -22,6 +22,7 @@ class dft_observation:
 		self.health = False
 		self.comments = list()
 		self.geopath = geopath
+                self.coord = 'undef'
 	def sety(self,y_value):
 		self.yvalue = y_value
 	def obtain_mol3d(self):
@@ -35,27 +36,43 @@ class dft_observation:
 		else:
 			self.comments.append('geo file appears empty')
 			self.health = False
+        def get_coord(self):
+                self.coord = len(self.mol.getBondedAtoms(self.mol.findMetal()))
 	def get_descriptor_vector(self,lig_only,simple,name=False,loud=False):
-		if not lig_only:
+
+                self.get_coord()
+		if not lig_only and (self.coord==6):
 				results_dictionary = generate_all_ligand_misc(self.mol,loud)
 				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
 				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
-		#print('after adding misc descriptors... ' + str(len(self.descriptor_names)))
-		results_dictionary = generate_all_ligand_autocorrelations(self.mol,depth=3,loud=loud,name=name)
-		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
-		self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
-		#print('after adding full ax/eq descriptors... ' + str(len(self.descriptor_names)))
-		if not simple and not lig_only:
+		print('after adding misc descriptors... ' + str(len(self.descriptor_names)))
+                if self.coor == 6: #oct only
+        		results_dictionary = generate_all_ligand_autocorrelations(self.mol,depth=3,loud=loud,name=name)
+	           	self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
+        	    	self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
+			print('after adding full ax/eq descriptors... ' + str(len(self.descriptor_names)))
+			if not simple and not lig_only:
 				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
 				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
-		#print('after adding lc ax/eq descriptors... ' + str(len(self.descriptor_names)))
+        			results_dictionary = generate_all_ligand_deltametrics(self.mol,depth=3,loud=True,name=name)
+				self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_full'],'D_f','ax')
+			        self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_full'],'D_f','eq')
+			        self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
+			        self.append_descriptors(results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
+
+				print('after adding lc ax/eq descriptors... ' + str(len(self.descriptor_names)))
 		if not lig_only:
 				if not simple:
 					results_dictionary = generate_metal_autocorrelations(self.mol,depth=3,loud=loud)
 					self.append_descriptors(results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+				        results_dictionary = generate_metal_deltametrics(self.mol,depth=3,loud=loud)
+				        self.append_descriptors(results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 				results_dictionary = generate_full_complex_autocorrelations(self.mol,depth=3,loud=loud)
 				self.append_descriptors(results_dictionary['colnames'],results_dictionary['results'],'f','all')
-		#print('after adding full complex descriptors... ' + str(len(self.descriptor_names)))
+				if not simple:
+			        	results_dictionary = generate_full_complex_deltametrics(self.mol,depth=3,loud=loud)
+	        			self.append_descriptors(results_dictionary['colnames'],results_dictionary['results'],'D_f','all')
+		print('after adding full complex descriptors... ' + str(len(self.descriptor_names)))
     	def append_descriptors(self,list_of_names,list_of_props,prefix,suffix):
         	for names in list_of_names:
         	    if hasattr(names, '__iter__'):

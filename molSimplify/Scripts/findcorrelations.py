@@ -31,7 +31,7 @@ def analysis_supervisor(args,rootdir):
 	if args.simple:
 		print('using simple autocorrelation descriptors only')
 	if args.max_descriptors:
-		print('using a maxx of '+str(max_descriptors)+' only')
+		print('using a max of '+str(max_descriptors)+' only')
 	res = correlation_supervisor(args.correlate,rootdir,args.simple,args.lig_only,args.max_descriptors)
 def accquire_file(path):
 	## set display options
@@ -47,7 +47,19 @@ def accquire_file(path):
 		with open(path,'r') as f:
 			### expects csv fomart,
 			### value | path
-			for lines in f:
+			for i,lines in enumerate(f):
+                            print('read line: ' +str(i))
+                            if i == 0:
+                                # this is the first line
+                            	ll = lines.strip('\n\r').split(",")
+				name = ll[0]
+				y_value_name = ll[1]
+				paths_name =ll[2].strip('/') + '/'+name+'.xyz'  ## check if path exists:
+                                if len(ll) >  3:
+                                    print('custom descriptors found!')
+                                    custom_names = [ll[i] for i in range(4,len(ll))]
+
+                            else:
 				ll = lines.strip('\n\r').split(",")
 				#print(ll)
 				name = ll[0]
@@ -62,7 +74,10 @@ def accquire_file(path):
 					if this_obs.health:
 						counter += 1
 						file_dict.update({counter:this_obs})
-						#print('\n\n')
+                                                if len(ll) >  3:
+                                                    print('custom descriptors found for job ' + str(name))
+                                                    custom_descriptors = float([ll[i] for i in range(4,len(ll))])
+                                                    this_obs.append_descriptors(custom_names,custom_descriptors,'','')
 					else: ### bad geo
 						this_obs.comments.append(' geo is not healthy, culling ' +  str(this_path))
 						ncounter +=1 
