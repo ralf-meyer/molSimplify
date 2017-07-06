@@ -388,8 +388,9 @@ def lig_load(userligand,licores):
            lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
         lig.charge = lig.OBmol.charge
-        if 'cm' in dbentry[2] or 'CM' in dbentry[2]:
-            lig.cat = [len(lig.OBmol.atoms)]
+        if 'pi' in dbentry[2]:
+            lig.cat = [int(l) for l in dbentry[2][:-1]]
+            lig.cat.append('pi')
         else:
             if lig.denticity == 1:
                 lig.cat = [int(dbentry[2])]

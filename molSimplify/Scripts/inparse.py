@@ -1,6 +1,7 @@
-# Written by Tim Ioannidis for HJK Group
-# modified by JP Janet
+# Written by HJK Group
 # Dpt of Chemical Engineering, MIT
+
+# Note to developers: when adding new keywords, update both parseinputfile as well as parseinputs_CAT.
 
 ##############################################################
 ########## This script processes the input file  #############
@@ -12,27 +13,64 @@ from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
 
-
 ######################################################
 ########## check core/ligands specified  #############
 ######################################################
-### checks input for correctness ###
+### checks input for correctness and uses defaults otherwise ### -> How do we do this for the GUI? Also make sure this doesn't break for other features e.g. slab builder
 def checkinput(args):
+    globs = globalvars()
     emsg = False
-    # check if core is specified
-    if not (args.core):
-            emsg = 'You need to specify at least the core of the structures.\n'
-            print emsg
-            return emsg
-    # check if ligands are specified
+    # check core
+    if not args.core:
+        print 'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()
+        args.core = ['fe']
+    # check oxidation state
+    if not args.oxstate:
+		try:
+			print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
+			args.oxstate = globs.defaultoxstate[args.core[0].lower()]
+		except:
+			print 'WARNING: No oxidation state specified. Defaulting to II'
+			args.oxstate = 'II'
+    # check ligands
     if not args.lig and not args.rgen:
         if args.gui:
             from Classes.mWidgets import mQDialogWarn
-            qqb = mQDialogWarn('Warning','You specified no ligands. Please use the -lig flag. Core only generation..')
+            qqb = mQDialogWarn('Warning','You specified no ligands.\n')
             qqb.setParent(args.gui.wmain)
         else:
-            print 'WARNING: You specified no ligands. Please use the -lig flag. Forced generation..\n'
-    return emsg
+            print 'WARNING: No ligands specified. Defaulting to water.\n'
+        args.lig = ['water']
+    # check coordination number and geometry
+    if not args.coord and not args.geometry:
+        if not args.gui:
+            print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).\n'
+            args.coord = 6
+            args.geometry = 'oct'
+    coords,geomnames,geomshorts,geomgroups = getgeoms()
+    if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
+        print 'WARNING: No or unknown coordination geometry specified. Defaulting to '+globs.defaultgeometry[int(args.coord)][1]
+        args.geometry = globs.defaultgeometry[int(args.coord)][0]
+    if args.geometry and not args.coord:
+        if args.geometry not in geomnames and args.geometry not in geomshorts:
+            print 'You have specified an invalid geometry. Available geometries are:'
+            printgeoms()
+            print 'Defaulting to octahedral (6)'
+            args.geometry = 'oct'
+            args.coord = 6
+        else:
+            try:
+                args.coord = coords[geomnames.index(args.geometry)]
+            except:
+                args.coord = coords[geomshorts.index(args.geometry)]
+            print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
+    # check number of ligands
+    if args.coord and not args.ligocc:
+        print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.\n')
+        args.ligocc = [args.coord]
+        for lig in args.lig[1:]:
+            args.ligocc.append(0)
+
 
 ###########################################
 ########## check true or false  ###########
@@ -153,10 +191,16 @@ def cleaninput(args):
             else:
                 ls.append(s)
         args.remoption = ls
-    # convert keepHs to boolean
+    # convert keepHs to boolean and fill in missing values with default
+    keepHs_default = 'auto'
+    if not args.keepHs:
+        args.keepHs = [keepHs_default]
     if args.keepHs:
+        while len(args.keepHs) < len(args.lig):
+            args.keepHs.append(keepHs_default)
         for i,s in enumerate(args.keepHs):
-            args.keepHs[i]=checkTrue(s)
+            if args.keepHs[i].lower() != 'auto':
+                args.keepHs[i]=checkTrue(s)
     # convert ff option to abe code
     if args.ff and args.ffoption:
         b = False
@@ -195,7 +239,7 @@ def parseCLI(args):
 ##########  parse input file  #############
 ###########################################
 ### parses inputfile ###
-def parseinput(args):
+def parseinputfile(args):
     #### arguments that don't match with  inparse name and
     ### are not automatically initialized go here:
     args.skipANN = False
@@ -206,6 +250,7 @@ def parseinput(args):
     args.rprompt = False
 
     ##(we should remove these where posible)
+    ####### THIS NEEDS CLEANING UP TO MINIMIZE DUPLICATION WITH parsecommandline
 
     for line in open(args.i):
         # For arguments that cannot accept smiles as args, split possible comments
@@ -608,228 +653,298 @@ def parseinput(args):
 	    if (l[0] == '-max_descriptors'):
 		args.max_descriptors = [str(i) for i in l[1:]]
 
-
-
-
-
 #############################################################
 ########## mainly for help and listing options  #############
 #############################################################
 ### parses commandline arguments and prints help information ###
-def parsecommandline(parser):
+def parseall(parser):
     globs = globalvars()
+    parser.add_argument("-i", help="input file")
     # hidden (non-user) arguments for GUI 
-    parser.add_argument("-rprompt","--rprompt",help=argparse.SUPPRESS,action="store_true")
-    # first :variable is the flag, second is the variable in the structure. e.g -i, --infile assigns something to args.infile
-    parser.add_argument("-i","--i",help="input file")
-    # top directory options
-    parser.add_argument("-rundir","--rundir",help="directory for jobs",action="store_true")
-    parser.add_argument("-suff","--suff", help="suffix for jobs folder.",action="store_true")
-    # structure generation options
-    parser.add_argument("-ccatoms","--ccatoms", help="core connection atoms indices, indexing starting from 1",action="store_true")
-    parser.add_argument("-name","--name", help="custom name for complex",action="store_true")
-    parser.add_argument("-jobdir","--jobdir", help="custom directory name for this job",action="store_true")
-    parser.add_argument("-coord","--coord", help="coordination such as 4,5,6",action="store_true") # coordination e.g. 6
-    parser.add_argument("-core","--core", help="core structure with currently available: "+getcores(),action="store_true") #e.g. ferrocene
-    parser.add_argument("-bind","--bind", help="binding species with currently available: "+getbinds(),action="store_true") #e.g. bisulfate, nitrate, perchlorate -> For binding
+    parser.add_argument("-rprompt", help=argparse.SUPPRESS,action="store_true")
+    parser.add_argument("-gui", help=argparse.SUPPRESS,action="store_true")           # gui placeholder
+    parser.add_argument("-checkdirb", help="CLI only: automatically ignore warning to replace existing folder", action="store_true")
+    parser.add_argument("-checkdirt", action="store_true") # directory removal check flag (what does this actually do?)
+    args=parser.parse_args()
+    parseinputs_basic(parser,args)
+    parseinputs_advanced(parser,args)
+    parseinputs_slabgen(parser,args)
+    parseinputs_autocorr(parser,args)
+    parseinputs_chainb(parser,args)
+    parseinputs_db(parser,args)
+    parseinputs_inputgen(parser,args)
+    parseinputs_postproc(parser,args)
+    parseinputs_random(parser,args)
+    parseinputs_binding(parser,args)
+    parseinputs_customcore(parser,args)
+    parseinputs_naming(parser,args)
+    return args
+
+def parseinputs_basic(*p):
+    parser = p[0]
+    parser.add_argument("-oxstate", help="oxidation state of the metal") # specified in cleaninput
+    parser.add_argument("-coord", help="coordination such as 4,5,6",action="store_true")
+    parser.add_argument("-geometry", help="geometry",action="store_true")
+    parser.add_argument("-lig", help="ligands to be included in complex, available: "+getligs())
+    parser.add_argument("-ligocc", help="number of corresponding ligands",action="store_true") # e.g. 1,2,1
+    parser.add_argument("-spin", help="Net spin, default 1 (closed-shell)", default=[1])
+    parser.add_argument("-keepHs", help="force keep hydrogens, default auto for each ligand") # specified in cleaninput
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+        return 0
+
+def parseinputs_advanced(*p):
+    parser = p[0]
+    # advanced structure generation options
+    parser.add_argument("-rundir", help="directory for jobs, default ~/Runs",action="store_true")
+    parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well",action="store_true")
+    parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
+    parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default='True')
+    parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
+    parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA", default='BA')
+    parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
+    parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default='False')
+    parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default='True')
+    parser.add_argument("-MLbonds", help="custom M-L bond length (Ang) for corresponding ligand",action="store_true")
+    parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
+    parser.add_argument("-langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
+    parser.add_argument("-pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+        return 0
+
+def parseinputs_slabgen(*p):
+    parser = p[0]
+    # slab builder input: controli
+    parser.add_argument("-slab_gen", help = "enables slab generation/periodic extension", action="store_true") #0
+    # slab builder input: required
+    parser.add_argument("-unit_cell", help = "unit cell: path to xyz or instructions, see manual for details") #1
+    parser.add_argument("-cell_vector", help = "unit cell lattice vector, list of 3 list of float (Ang)") #2
+    parser.add_argument("-cif_path", help = "path to cif file") #3
+    parser.add_argument("-duplication_vector", help = "lattice vector repeats, list of 3 ints") #4
+    parser.add_argument("-slab_size", help = "slab size, list of 3 floats (Ang)") #5
+    # slab builder: optional
+    parser.add_argument("-miller_index", help="list of 3 int, miller indices") #6
+    parser.add_argument("-freeze", help="bool or int, bottom layers of cell to freeze") #7
+    parser.add_argument("-expose_type", help="str, symbol of atom type to expose (eg 'O')") #9
+    parser.add_argument("-shave_extra_layers", help="int, number of extra layers to shave") #10
+    parser.add_argument("-debug", help="debug feature to print stepwise slabs", action="store_true") #10
+    # placement input: control
+    parser.add_argument("-place_on_slab", help = "enables placement on slab", action="store_true") #0
+    # placemnt input: required
+    parser.add_argument("-target_molecule", help = "path to target molecule") #1
+    parser.add_argument("-align_distance_method", help = "align distance method", choices = ['chemisorption','physisorption','custom']) #2
+    parser.add_argument("-align_dist", help = "align distance, float") #3
+    # placement input: optional
+    parser.add_argument("-align_method", help = "align method ",choices = ['center', 'staggered','alignpair']) #4
+    parser.add_argument("-object_align", help = "atom symbol or index for alignment partner in placed object")  #5
+    parser.add_argument("-surface_atom_type", help = "atom symbol for surface aligment partner") #6
+    parser.add_argument("-num_surface_atoms", help = "number of surface sites to attach per adsorbate")#7
+    parser.add_argument("-num_placements", help = "number of copies of object to place.") #8
+    parser.add_argument("-coverage", help = "coverage fraction, float between 0 and 1") #9
+    parser.add_argument("-multi_placement_centering", help = "float between 0 and 1, controls centering of placement. Recommend leaving as default") #10
+    parser.add_argument("-control_angle", help =  "angle in degrees to rotate object axis to surface")#11
+    parser.add_argument("-angle_control_partner", help = 'atom index, int. Controls angle between object_align and this atom') #12
+    parser.add_argument('-angle_surface_axis', help = 'list of two floats, vector in surface plane to control angle relative to') #13
+    parser.add_argument('-duplicate', help = "bool, duplicate asorbate above and below slab", action = "store_true") #14
+    parser.add_argument('-surface_atom_ind', help = "list of int, surface atoms to use by index") #15
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+        return 0
+
+def parseinputs_autocorr(*p):
+    parser = p[0]
+    parser.add_argument('-correlate', help = "path to file for analysis, should contain name,value,folder where name.xyz geo is located on each line") #0
+    parser.add_argument('-lig_only', help = "set to true to force only whole ligand descriptors (if metal is constant etc)", action="store_true") #1
+    parser.add_argument('-simple', help = "set to true to force only simple default autocorrelations") #1
+    parser.add_argument('-max_descriptors', help = "maxium number of descriptors to to use, not reccomended. The algorithm chooses the most representative set and removing some of these can degrade the model") #0
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0
+
+def parseinputs_chainb(*p):
+    parser = p[0]
+    parser.add_argument('-chain', help = "SMILES string of monomer", action = "store_true") #0
+    parser.add_argument('-chain_units', help = "int, number of monomers") #0    
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0
+
+def parseinputs_db(*p):
+    parser = p[0]
+    parser.add_argument("-dbsearch", help="flag enabling db search",action="store_true") 
+    parser.add_argument("-dbsim", help="deprecated, please use dbsmarts instead",action="store_true")
+    parser.add_argument("-dbcatoms", help="connection atoms for similarity search",action="store_true")
+    parser.add_argument("-dbresults", help="how many results for similary search or screening",action="store_true")
+    parser.add_argument("-dbfname", help="filename for database search, default is simres.smi",action="store_true")
+    parser.add_argument("-dbbase", help="database for search",action="store_true")
+    parser.add_argument("-dbsmarts", help="SMARTS string for substructure search",action="store_true")
+    parser.add_argument("-dbfinger", help="fingerprint for similarity search",action="store_true")
+    parser.add_argument("-dbatoms", help="number of atoms to be used in screening",action="store_true")
+    parser.add_argument("-dbbonds", help="number of bonds to be used in screening",action="store_true")
+    parser.add_argument("-dbarbonds", help="Number of aromatic bonds to be used in screening",action="store_true")
+    parser.add_argument("-dbsbonds", help="number of single bonds to be used in screening",action="store_true")
+    parser.add_argument("-dbmw", help="molecular weight to be used in screening",action="store_true")
+    parser.add_argument("-dbdissim", help="number of dissimilar results",action="store_true")
+    parser.add_argument("-dbnsearch", help="number of database entries to be searched, only for fastsearch",action="store_true")
+    parser.add_argument("-dballowedels", help="elements allowed in search, default all",action="store_true")
+    parser.add_argument("-dbmaxsmartsmatches", help="maximum instances of SMARTS pattern permitted, default unlimited",action="store_true")
+    parser.add_argument("-dbhuman", help="human-readable alternative to SMARTS/SMILES strings",action="store_true")
+    parser.add_argument("-dbdent", help="ligand denticity (requires -dbhuman)",action="store_true")
+    parser.add_argument("-dbconns", help="ligand coordinating elements (requires dbhuman)",action="store_true")
+    parser.add_argument("-dbhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbhuman)",action="store_true")
+    parser.add_argument("-dblinks", help="number of linking atoms (requires dbhuman)",action="store_true")
+    parser.add_argument("-dbfs", help="use fastsearch database if present",action="store_true") 
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0
+
+def parseinputs_inputgen(*p):
+    parser = p[0]
+    parser.add_argument("-qccode", help="Code to use, only terachem (default), GAMESS and qchem are currently supported", default='terachem')
+    parser.add_argument("-runtyp", help="Run type (energy - default, minimize)", default='energy')
+    parser.add_argument("-method", help="Terachem method (e.g. b3lyp - default)", default=['b3lyp'])
+    parser.add_argument("-tc_fix_dihedral", help="Constrain sqp dihedrals (terachem only)?",action="store_true")
+    parser.add_argument("-mopac", help="Generate MOPAC (semiempirical) files?",action="store_true")
+    parser.add_argument("-basis", help="basis set for terachem or qchem job (default: LACVP*)", default='lacvps_ecp')
+    parser.add_argument("-dispersion", help="dispersion forces. Default: no e.g. d2,d3",action="store_true")
+    parser.add_argument("-qoption", help="extra arguments for TeraChem in syntax keyword value, e.g. maxit 100",action="store_true")
+    parser.add_argument("-exchange", help="exchange in qchem job (default b3lyp)",action="store_true")
+    parser.add_argument("-correlation", help="correlation in qchem job (default none)",action="store_true")
+    parser.add_argument("-remoption", help="extra arguments for qchem $rem block in syntax keyword value, e.g. INCFOCK 0",action="store_true")
+    parser.add_argument("-unrestricted", help="unrestricted calculation, default true",action="store_true")
+    parser.add_argument("-gbasis", help="GBASIS option in GAMESS e.g. CCT",action="store_true")
+    parser.add_argument("-ngauss", help="NGAUSS option in GAMESS e.g. N31",action="store_true")
+    parser.add_argument("-npfunc", help="NPFUNC option for diffuse functions in GAMESS e.g. 2",action="store_true")
+    parser.add_argument("-ndfunc", help="NDFUNC option for diffuse functions in GAMESS e.g. 1",action="store_true")
+    parser.add_argument("-sysoption", help="extra arguments for $SYSTEM GAMESS block in syntax keyword value, e.g. MWORDS 20",action="store_true")
+    parser.add_argument("-ctrloption", help="extra arguments for $CONTRL GAMESS block in syntax keyword value, e.g. ISPHER 1",action="store_true")
+    parser.add_argument("-scfoption", help="extra arguments for $SCF GAMESS block in syntax keyword value, e.g. DIIS .TRUE.",action="store_true")
+    parser.add_argument("-statoption", help="extra arguments for $STATPT GAMESS block in syntax keyword value, e.g. NSTEP 100",action="store_true")
+    parser.add_argument("-jsched", help="job scheduling system. Choices: SLURM or SGE",default='sge')
+    parser.add_argument("-jname", help="jobs main identifier",action="store_true")
+    parser.add_argument("-memory", help="memory reserved per thread for job file in G(default: 2G)e.g.2",action="store_true")
+    parser.add_argument("-wtime", help="wall time requested in hours for queueing system (default: 168hrs) e.g. 8",action="store_true")
+    parser.add_argument("-queue", help="queue name e.g gpus",action="store_true")
+    parser.add_argument("-gpus", help="number of GPUS (default: 1)",action="store_true")
+    parser.add_argument("-cpus", help="number of CPUs (default: 1)",action="store_true")
+    parser.add_argument("-modules", help="modules to be loaded for the calculation",action="store_true")
+    parser.add_argument("-joption", help="additional options for jobscript",action="store_true")
+    parser.add_argument("-jcommand", help="additional commands for jobscript",action="store_true")
+    parser.add_argument("-jobdir", help="custom directory name for this job",action="store_true")
+    parser.add_argument("-jid", help="job ID",action="store_true") # does this still do anything?
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0
+
+def parseinputs_postproc(*p):
+    parser = p[0]
+    parser.add_argument("-postp", help="post process results",action="store_true")
+    parser.add_argument("-postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true")
+    parser.add_argument("-postdir", help="directory with results",action="store_true")
+    parser.add_argument("-pres", help="generate calculations summary",action="store_true")
+    parser.add_argument("-pdeninfo", help="calculate average properties for electron density",action="store_true")
+    parser.add_argument("-pcharge", help="calculate charges",action="store_true")
+    parser.add_argument("-pgencubes", help="generate cubefiles",action="store_true")
+    parser.add_argument("-pwfninfo" ,help="get information about wavefunction",action="store_true")
+    parser.add_argument("-pdeloc", help="get delocalization and localization indices",action="store_true")
+    parser.add_argument("-porbinfo", help="get information about MO",action="store_true")
+    parser.add_argument("-pnbo", help="post process nbo analysis",action="store_true")
+    parser.add_argument("-pdorbs", help="get information on metal d orbitals",action="store_true")
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0
+
+def parseinputs_random(*p):
+    parser = p[0]
+    parser.add_argument("-liggrp","--liggrp", help="ligand group for random generation ",action="store_true")
+    parser.add_argument("-ligctg","--ligctg", help="ligand category for random generation",action="store_true")
+    parser.add_argument("-rkHs","--rkHs", help="keep Hydrogens for random generation",action="store_true")
+    parser.add_argument("-rgen","--rgen", help="number of random generated molecules",action="store_true")
+    parser.add_argument("-lignum", help="number of ligands for random generation",action="store_true")
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0 
+
+def parseinputs_binding(*p):
+    parser = p[0]
+    parser.add_argument("-bind", help="binding species, currently available: "+getbinds(),action="store_true")
+    parser.add_argument("-bindnum", help="number of binding species copies for random placement",action="store_true") #different geometric arrangements for calculating binding energy
+    parser.add_argument("-nambsmi", help="name of SMILES string for binding species e.g. carbonmonoxide",action="store_true")
+    parser.add_argument("-maxd", help="maximum distance above cluster size for molecules placement maxdist=size1+size2+maxd", action="store_true")
+    parser.add_argument("-mind", help="minimum distance above cluster size for molecules placement mindist=size1+size2+mind", action="store_true")
+    parser.add_argument("-place", help="place binding species relative to core. Takes either angle (0-360) or ax/s for axial side",action="store_true")
     parser.add_argument("-bcharge","--bcharge",default='0', help="binding species charge, default 0",action="store_true")
     parser.add_argument("-bphi","--bphi", help="azimuthal angle phi for binding species, default random between 0 and 180",action="store_true")
     parser.add_argument("-bref","--bref", help="reference atoms for placement of extra molecules, default COM (center of mass). e.g. 1,5 or 1-5, Fe, COM",action="store_true")
     parser.add_argument("-bsep","--bsep", help="flag for separating extra molecule in input or xyz file",action="store_true")
     parser.add_argument("-btheta","--btheta", help="polar angle theta for binding species, default random between 0 and 360",action="store_true")
-    parser.add_argument("-geometry","--geometry", help="geometry such as TBP (trigonal bipyramidal)",action="store_true") # geometry
-    parser.add_argument("-genall","--genall", help="Generate complex both with and without FF opt.",action="store_true") # geometry
-    parser.add_argument("-lig","--lig", help="ligand structure name or SMILES with currently available: "+getligs(),action="store_true") #e.g. acetate (in smilesdict)
-    parser.add_argument("-ligocc","--ligocc", help="number of corresponding ligands e.g. 2,2,1",action="store_true") # e.g. 1,2,1
-    parser.add_argument("-lignum","--lignum", help="number of ligand types e.g. 2",action="store_true")
-    parser.add_argument("-liggrp","--liggrp", help="ligand group for random generation",action="store_true")
-    parser.add_argument("-ligctg","--ligctg", help="ligand category for random generation",action="store_true")
-    parser.add_argument("-rkHs","--rkHs", help="keep Hydrogens for random generation",action="store_true")
-    parser.add_argument("-ligloc","--ligloc", help="force location of ligands in the structure generation yes/True/1 or no/False/0",action="store_true")
-    parser.add_argument("-ligalign","--ligalign", help="smart alignment of ligands in the structure generation yes/True/1 or no/False/0",action="store_true")
-    parser.add_argument("-MLbonds","--MLbonds", help="custom M-L bond length for corresponding ligand in A e.g. 1.4",action="store_true")
-    parser.add_argument("-distort","--distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",action="store_true")
-    parser.add_argument("-langles","--langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
-    parser.add_argument("-pangles","--pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
-    parser.add_argument("-nbind","--bindnum", help="number of binding species copies for random placement",action="store_true") #different geometric arrangements for calculating binding energy
-    parser.add_argument("-rgen","--rgen", help="number of random generated molecules",action="store_true")
-    parser.add_argument("-replig","--replig", help="flag for replacing ligand at specified connection point",action="store_true")
-    parser.add_argument("-ff","--ff",help="select force field for FF optimization. Available: MMFF94, UFF, GAFF, Ghemical",action="store_true")
-    parser.add_argument("-ffoption","--ffoption",help="select when to perform FF optimization. Options: B(Before),A(After),BA",action="store_true")
-    parser.add_argument("-keepHs","--keepHs", help="force keep hydrogens",action="store_true")
-    parser.add_argument("-smicat","--smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well",action="store_true")
-    parser.add_argument("-sminame","--sminame", help="name for smiles species used in the folder naming. e.g. amm",action="store_true")
-    parser.add_argument("-nambsmi","--nambsmi", help="name of SMILES string for binding species e.g. carbonmonoxide",action="store_true")
-    parser.add_argument("-maxd","--maxd", help="maximum distance above cluster size for molecules placement maxdist=size1+size2+maxd", action="store_true")
-    parser.add_argument("-mind","--mind", help="minimum distance above cluster size for molecules placement mindist=size1+size2+mind", action="store_true")
-    parser.add_argument("-place","--place", help="place binding species relative to core. Takes either angle (0-360) or ax/s for axial side",action="store_true")
-    parser.add_argument("-oxstate","--oxstate", help="oxidation state of the metal, used for bond lengths",action="store_true")
-    parser.add_argument("-stripHs","--stripHs", help="experimental feature",action="store_true")
-    # quantum chemistry options
-    parser.add_argument("-qccode","--qccode", help="quantum chemistry code. Choices: TeraChem or GAMESS or QChem",action="store_true")
-    parser.add_argument("-charge","--charge", help="charge for system (default: neutral).",action="store_true")
-    parser.add_argument("-calccharge","--calccharge", help="Flag to calculate charge.",action="store_true")
-    parser.add_argument("-spin","--spin", help="spin multiplicity for system (default: singlet) e.g. 1",action="store_true")
-    parser.add_argument("-runtyp","--runtyp", help="run type. Choices: optimization, energy",action="store_true")
-    parser.add_argument("-method","--method", help="electronic structure method. Specify UDFT for unrestricted calculation(default: b3lyp) e.g. ub3lyp",action="store_true")
-    parser.add_argument("-tc_fix_dihedral","--tc_fix_dihedral", help="TeraChem only: fix SQP dihedrals",action="store_true")
-    # MOLPAC arguments
-    parser.add_argument("-mopac","--mopac", help="Generate MOLPAC files?",action="store_true")
-    # terachem arguments
-    parser.add_argument("-basis","--basis", help="basis for terachem or qchem job (default: LACVP* or lanl2dz)",action="store_true")
-    parser.add_argument("-dispersion","--dispersion", help="dispersion forces. Default: no e.g. d2,d3",action="store_true")
-    parser.add_argument("-qoption","--qoption", help="extra arguments for TeraChem in syntax keyword value, e.g. maxit 100",action="store_true")
-    # qchem arguments
-    parser.add_argument("-exchange","--exchange",help="exchange in qchem job (default b3lyp)",action="store_true")
-    parser.add_argument("-correlation","--correlation",help="correlation in qchem job (default none)",action="store_true")
-    parser.add_argument("-remoption","--remoption", help="extra arguments for qchem $rem block in syntax keyword value, e.g. INCFOCK 0",action="store_true")
-    parser.add_argument("-unrestricted","--unrestricted", help="unrestricted calculation, values: 0/1 False/True",action="store_true")
-    # gamess arguments
-    parser.add_argument("-gbasis","--gbasis", help="GBASIS option in GAMESS e.g. CCT",action="store_true")
-    parser.add_argument("-ngauss","--ngauss", help="NGAUSS option in GAMESS e.g. N31",action="store_true")
-    parser.add_argument("-npfunc","--npfunc", help="NPFUNC option for diffuse functions in GAMESS e.g. 2",action="store_true")
-    parser.add_argument("-ndfunc","--ndfunc", help="NDFUNC option for diffuse functions in GAMESS e.g. 1",action="store_true")
-    parser.add_argument("-sysoption","--sysoption", help="extra arguments for $SYSTEM GAMESS block in syntax keyword value, e.g. MWORDS 20",action="store_true")
-    parser.add_argument("-ctrloption","--ctrloption", help="extra arguments for $CONTRL GAMESS block in syntax keyword value, e.g. ISPHER 1",action="store_true")
-    parser.add_argument("-scfoption","--scfoption", help="extra arguments for $SCF GAMESS block in syntax keyword value, e.g. DIIS .TRUE.",action="store_true")
-    parser.add_argument("-statoption","--statoption", help="extra arguments for $STATPT GAMESS block in syntax keyword value, e.g. NSTEP 100",action="store_true")
-    # jobscript arguments
-    parser.add_argument("-jsched","--jsched", help="job scheduling system. Choices: SLURM or SGE",action="store_true")
-    parser.add_argument("-jname","--jname", help="jobs main identifier",action="store_true")
-    parser.add_argument("-memory","--memory", help="memory reserved per thread for job file in G(default: 2G)e.g.2",action="store_true")
-    parser.add_argument("-wtime","--wtime", help="wall time requested in hours for queueing system (default: 168hrs) e.g. 8",action="store_true")
-    parser.add_argument("-queue","--queue", help="queue name e.g gpus",action="store_true")
-    parser.add_argument("-gpus","--gpus", help="number of GPUS (default: 1)",action="store_true")
-    parser.add_argument("-cpus","--cpus", help="number of CPUs (default: 1)",action="store_true")
-    parser.add_argument("-modules","--modules", help="modules to be loaded for the calculation",action="store_true")
-    parser.add_argument("-joption","--joption", help="additional options for jobscript",action="store_true")
-    parser.add_argument("-jcommand","--jcommand", help="additional commands for jobscript",action="store_true")
-    # database search arguments
-    parser.add_argument("-dbsim","--dbsim", help="deprecated, please use dbsmarts instead",action="store_true")
-    parser.add_argument("-dbcatoms","--dbcatoms", help="connection atoms for similarity search",action="store_true")
-    parser.add_argument("-dbresults","--dbresults", help="how many results for similary search or screening",action="store_true")
-    parser.add_argument("-dbfname","--dbfname", help="filename for database search, default is simres.smi",action="store_true")
-    parser.add_argument("-dbbase","--dbbase", help="database for search",action="store_true")
-    parser.add_argument("-dbsmarts","--dbsmarts", help="SMARTS string for substructure search",action="store_true")
-    parser.add_argument("-dbfinger","--dbfinger", help="fingerprint for similarity search",action="store_true")
-    parser.add_argument("-dbatoms","--dbatoms", help="number of atoms to be used in screening",action="store_true")
-    parser.add_argument("-dbbonds","--dbbonds", help="number of bonds to be used in screening",action="store_true")
-    parser.add_argument("-dbarbonds","--dbarbonds", help="Number of aromatic bonds to be used in screening",action="store_true")
-    parser.add_argument("-dbsbonds","--dbsbonds", help="number of single bonds to be used in screening",action="store_true")
-    parser.add_argument("-dbmw","--dbmw", help="molecular weight to be used in screening",action="store_true")
-    parser.add_argument("-dbdissim","--dbdissim", help="number of dissimilar results",action="store_true")
-    parser.add_argument("-dbnsearch","--dbnsearch", help="number of database entries to be searched, only for fastsearch",action="store_true")
-    parser.add_argument("-dballowedels","--dballowedels", help="elements allowed in search, default all",action="store_true")
-    parser.add_argument("-dbmaxsmartsmatches","--dbmaxsmartsmatches", help="maximum instances of SMARTS pattern permitted, default unlimited",action="store_true")
-    parser.add_argument("-dbhuman","--dbhuman", help="human-readable alternative to SMARTS/SMILES strings",action="store_true")
-    parser.add_argument("-dbdent","--dbdent", help="ligand denticity (requires -dbhuman)",action="store_true")
-    parser.add_argument("-dbconns","--dbconns", help="ligand coordinating elements (requires dbhuman)",action="store_true")
-    parser.add_argument("-dbhyb","--dbhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbhuman)",action="store_true")
-    parser.add_argument("-dblinks","--dblinks", help="number of linking atoms (requires dbhuman)",action="store_true")
-    parser.add_argument("-dbfs","--dbfs", help="use fastsearch database if present",action="store_true")
-    # post-processing arguments
-    parser.add_argument("-postp","--postp",help="post process results",action="store_true")
-    parser.add_argument("-postqc","--postqc", help="quantum chemistry code used. Choices: TeraChem or GAMESS",action="store_true")
-    parser.add_argument("-postdir","--postdir", help="directory with results",action="store_true")
-    parser.add_argument("-pres","--pres",help="generate calculations summary",action="store_true")
-    parser.add_argument("-pdeninfo","--pdeninfo",help="calculate average properties for electron density",action="store_true")
-    parser.add_argument("-pcharge","--pcharge",help="calculate charges",action="store_true")
-    parser.add_argument("-pgencubes","--pgencubes",help="generate cubefiles",action="store_true")
-    parser.add_argument("-pwfninfo","--pwfninfo",help="get information about wavefunction",action="store_true")
-    parser.add_argument("-pdeloc","--pdeloc",help="get delocalization and localization indices",action="store_true")
-    parser.add_argument("-porbinfo","--porbinfo",help="get information about MO",action="store_true")
-    parser.add_argument("-pnbo","--pnbo",help="post process nbo analysis",action="store_true")
-    #parser.add_argument("-pdorbs","--pdorbs",help="get information on metal d orbitals",action="store_true")
-    # auxiliary
-    parser.add_argument("-dbsearch","--dbsearch",action="store_true") # flag for db search
-    parser.add_argument("-checkdirt","--checkdirt",action="store_true") # directory removal check flag
-    parser.add_argument("-checkdirb","--checkdirb",action="store_true") # directory removal check flag 2
-    parser.add_argument("-jid","--jid",action="store_true")           # job id for folders
-    parser.add_argument("-gui","--gui",action="store_true")           # gui placeholder
-    # calculations summary (terapostp gampost)
-    # nbo
-    # charges
-    # wavefunction - cube files
-    # deloc indices - basin analysis
-    # moldparse
-    # Slab builder arguments
-    # slab builder input: controli
-    parser.add_argument("-slab_gen","--slab_gen",
-                        help = "enables slab generation/periodic extension",action="store_true") #0
-    # slab builder input: required
-    parser.add_argument("-unit_cell","--unit_cell",
-                        help = "path to xyz, or give generation instructions ") #1
-    parser.add_argument("-cell_vector","--cell_vector",
-                        help = "unit cell lattice vector, list of 3 list of float (Ang)") #2
-    parser.add_argument("-cif_path","--cif_path",
-                        help = "path to cif file") #3
-    parser.add_argument("-duplication_vector","--duplication_vector",
-                        help = "list of 3 in, lattice vector repeats") #4
-    parser.add_argument("-slab_size","--slab_size",
-                        help = "slab size, list of 3 floats (Ang)") #5
-    # slab buidler: optional
-    parser.add_argument("-miller_index","--miller_index",
-                        help="list of 3 int, miller indicies") #6
-    parser.add_argument("-freeze","--freeze",
-                        help="bool or int, bottom layers of cell to freeze") #7
-    parser.add_argument("-expose_type","--expose_type",
-                        help="str, symbol of atom type to expose (eg 'O')") #9
-    parser.add_argument("-shave_extra_layers","--shave_extra_layers",
-                        help="int, number of extra layers to shave") #10
-    parser.add_argument("-debug","--debug",
-                        help="switch, print stepwise slabs",action="store_true") #10
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0 
 
+def parseinputs_customcore(*p):
+    parser = p[0]
+    parser.add_argument("-core", help="core structure with currently available: "+getcores())
+    parser.add_argument("-replig", help="flag for replacing ligand at specified connection point",action="store_true")
+    parser.add_argument("-ccatoms", help="core connection atoms indices, indexing starting from 1")
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0 
 
-    # placement input: control
-    parser.add_argument("-place_on_slab","--place_on_slab",
-                        help = "enables  placement on slab ",action="store_true") #0
-    # placemnt input: required
-    parser.add_argument("-target_molecule",'--target_molecule',
-                        help = "path to target molecule") #1
-    parser.add_argument("-align_distance_method","--align_distance_method",
-                        help = "align distance method",
-                        choices = ['chemisorption','physisorption','custom']) #2
-    parser.add_argument("-align_dist","--align_dist",
-                        help = "align distance, float") #3
-    # placement input: optional
-    parser.add_argument("-align_method","--align_method",
-                        help = "align method ",choices = ['center', 'staggered','alignpair']) #4
-    parser.add_argument("-object_align","--object_align",
-                        help = "atom symbol or index for alignment partner in placed object")  #5
-    parser.add_argument("-surface_atom_type","--surface_atom_type",
-                        help = "atom symbol for surface aligment partner") #6
-    parser.add_argument("-num_surface_atoms","--num_surface_atoms",
-                        help = "number of surface sites to attach per adsorbate")#7
-    parser.add_argument("-num_placements","--num_placements",
-                        help = "number of copies of object to place.") #8
-    parser.add_argument("-coverage","--coverage",
-                        help = "coverage fraction, float between 0 and 1") #9
-    parser.add_argument("-multi_placement_centering",'--multi_placement_centering',
-                        help = "float between 0 and 1, controls centering of placment.Reccomend leaving as default") #10
-    parser.add_argument("-control_angle","--control_angle",
-                        help =  "angle in degrees to rotate object axis to surface")#11
-    parser.add_argument("-angle_control_partner","-angle_control_partner",
-                        help = 'atom index, int. Controls angle between object_align and this atom') #12
-    parser.add_argument('-angle_surface_axis','--angle_surface_axis',
-                        help = 'list of two floats, vector in surface plane to control angle relative to') #13
-    parser.add_argument('-duplicate','--duplicate',
-                        help = "boolean, duplicate asorbate above and below slab",action = "store_true") #14
-    parser.add_argument('-surface_atom_ind','--surface_atom_ind',
-                        help = "list of int, surface atoms to use by index") #15
-
-    # chain builder:
-    parser.add_argument('-chain','--chain',
-                        help = "SMILES string of monomer",action = "store_true") #0
-    parser.add_argument('-chain_units','--chain_units',
-                        help = "int, number of monomers") #0
-    # analysis arguments
-    parser.add_argument('-correlate','--correlate',
-                        help = "path to file for analysis, should contain name,value,folder where name.xyz geo is located on each line ") #0
-    parser.add_argument('-lig_only','--lig_only',
-                        help = "set to true to force only whole ligand descriptors (if metal is constant etc)",action="store_true") #1
-    parser.add_argument('-simple','--simple',
-                        help = "set to true to force only simple default autocorrelations",action="store_true") #1
-    parser.add_argument('-max_descriptors','--max_descriptors', help = "maxium number of descriptors to to use, not reccomended. The algorithm chooses the most representative set and removing some of these can degrade the model") #0
-
-    args=parser.parse_args()
-    return args
+def parseinputs_naming(*p):
+    parser = p[0]
+    parser.add_argument("-name", help="custom name for complex",action="store_true")
+    parser.add_argument("-suff", help="additional suffix for jobs folder names",action="store_true")
+    parser.add_argument("-sminame", help="name for smiles species used in the folder naming. e.g. amm",action="store_true")
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0 
