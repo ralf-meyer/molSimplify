@@ -129,16 +129,20 @@ def main(args=None):
         app.exec_()
     ### if input file is specified run without GUI ###
     elif '-i' in args:
+        print('Input file detected, reading arguments from input file')
         print('molSimplify is starting!')
         gui = False
         # run from commandline
         emsg = startgen(sys.argv,False,gui)
     ### grab from commandline arguments ###
     else:
+        print('No input file detected, reading arguments from commandline')
         print('molSimplify is starting!')
         gui = False
+        # create input file from commandline
         infile = parseCLI(filter(None,args))
         args = ['main.py','-i',infile]
+        print args
         emsg = startgen(args,False,gui)
 if __name__ == '__main__':
     main()

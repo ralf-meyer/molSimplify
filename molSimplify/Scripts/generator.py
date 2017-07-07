@@ -87,13 +87,13 @@ def startgen(argv,flag,gui):
     args.gui = gui # add gui flag
         # parse input file
     if args.i:
-        print('input file detected, reading arguments from input file')
         parseinputfile(args)
-    # clean input arguments
-    cleaninput(args)
     if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate):        # check input arguments
         # check input arguments
+        print 'Checking input...'
         emsg = checkinput(args)
+     # check before cleaning input arguments
+    cleaninput(args)
     args.gui = False # deepcopy will give error
     if emsg:
         del args
