@@ -1834,7 +1834,6 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                 ##    attach ligand depending on the denticity    ##
                 ## optimize geometry by minimizing steric effects ##
                 ####################################################
-                denticity = 1
                 if (denticity == 1):
                     # connection atom in lig3D
                     atom0 = catoms[0]
@@ -1944,7 +1943,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     # combine molecules
                     core3D = core3D.combine(lig3D)
  
-                if (denticity == 2):
+                elif (denticity == 2):
                     # connection atom in lig3D
                     atom0 = catoms[0]
                     if args.debug:
@@ -2101,6 +2100,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     ########## START FUNCTIONALIZING ##########
     # load molecule core
     core,emsg = core_load(args.core,mcores)
+
     if emsg:
         return False,emsg
     core.convert2mol3D() # convert to mol3D
@@ -2113,14 +2113,17 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
         # check if simple coordination complex or not
         if core.natoms == 1:
             core3D,complex3D,emsg,this_diag = mcomplex(args,core,ligands,ligoc,licores,globs)
+            name_core = core3D
         else:
             # functionalize custom core
             this_diag = run_diag()
             core3D,emsg = customcore(args,core,ligands,ligoc,licores,globs)
+            name_core =  args.core
         if emsg:
             return False,emsg
     else:
         core3D = initcore3D
+        name_core = initcore3D
     ############ END FUNCTIONALIZING ###########
     # generate multiple geometric arrangements
     Nogeom = int(args.bindnum) if args.bindnum and args.bind else 1 # number of different combinations
@@ -2146,6 +2149,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                     l = 'smi'+str(nosmiles)
                 nosmiles += 1
         ligname += ''.join("%s" % l[0:2])
+    print(ligname)
     if args.bind:
         # load bind, add hydrogens and convert to mol3D
         bind,bsmi,emsg = bind_load(args.bind,bindcores)
@@ -2279,7 +2283,8 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
     else:
-        fname = name_complex(rootdir,core,ligands,ligoc,sernum,args,bind= False,bsmi=False)
+        fname = name_complex(rootdir,name_core,ligands,ligoc,sernum,args,bind= False,bsmi=False)
+        print('fname' +str(fname))
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)
