@@ -92,8 +92,8 @@ def startgen(argv,flag,gui):
         # check input arguments
         print 'Checking input...'
         emsg = checkinput(args)
-     # check before cleaning input arguments
-    cleaninput(args)
+        # check before cleaning input arguments and clean only if checked
+        cleaninput(args)
     args.gui = False # deepcopy will give error
     if emsg:
         del args
