@@ -401,7 +401,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ANN_trust = max(0.01,1.0-train_dist)
 
         ANN_attributes.update({'ANN_dist_to_train':train_dist})
-        print('distance to training data is ' + str(train_dist) + ' ANN trust: ' +str(ANN_trust))
+        print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +str(ANN_trust))
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
@@ -430,7 +430,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                 print('warning, ANN predicts a low spin ground state for this complex')
             else:
                     print('warning, ANN predicts a near degenerate ground state for this complex')
-        print("ANN predicts a spin splitting (HS - LS) of " + str(delta[0]) + ' kcal/mol')
+        print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol')
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
         ## reparse to save attributes
         ANN_attributes.update({'This spin':spin})
@@ -447,13 +447,13 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         else:
             r = get_hs_dist(nn_excitation)
 
-        print('ANN bond length is predicted to be: '+str(r) + ' angstrom')
+        print('ANN bond length is predicted to be: '+"{0:.2f}".format(float(r)) + ' angstrom')
         ANN_attributes.update({'ANN_bondl':r[0]})
 
 	### use ANN to predict fucntional sensitivty
         HFX_slope = 0 
         HFX_slope = get_slope(slope_excitation)
-        print('Predicted HFX exchange sensitivity is : '+str(HFX_slope) + ' kcal/HFX')
+        print('Predicted HFX exchange sensitivity is : '+"{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX')
 	ANN_attributes.update({'ANN_slope':HFX_slope})
         print("*******************************************************************")
 
