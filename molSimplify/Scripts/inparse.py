@@ -685,7 +685,7 @@ def parseinputs_basic(*p):
     parser.add_argument("-oxstate", help="oxidation state of the metal") # specified in cleaninput
     parser.add_argument("-coord", help="coordination such as 4,5,6",action="store_true")
     parser.add_argument("-geometry", help="geometry",action="store_true")
-    parser.add_argument("-lig", help="ligands to be included in complex, available: "+getligs())
+    parser.add_argument("-lig", help="ligands to be included in complex")
     parser.add_argument("-ligocc", help="number of corresponding ligands",action="store_true") # e.g. 1,2,1
     parser.add_argument("-spin", help="Net spin, default 1 (closed-shell)", default=[1])
     parser.add_argument("-keepHs", help="force keep hydrogens, default auto for each ligand") # specified in cleaninput

@@ -128,9 +128,12 @@ def simple_splitting_ann(excitation):
     globs=globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + "final_split")
     #print('path to ANN data: ',path_to_file)
-    n = simple_network_builder([25,50,50],"scale_split")
+    n = simple_network_builder([25,50,50],"final_split")
     excitation,sp_center,sp_shift = excitation_standardizer(excitation)
     result = n.activate(excitation)
+    #print('center is ' + str(sp_center))
+    #print('scale is '+ str(sp_shift))
+    #print(excitation)
     result = result*sp_shift + sp_center
     return result
 def simple_slope_ann(slope_excitation):

@@ -64,12 +64,15 @@ class globalvars:
         ###### PROGRAM NAME ######
         self.PROGRAM = 'molSimplify'
         ###### About message #####
-        s = 'molSimplify v1.0\n\nFreely distributed under the GNU GPL license.\n\n'
-        s += 'Copyright 2016 Kulik Lab @ MIT\n\n'
-        s += 'Developed by: Efthymios Ioannidis (timis@mit.edu)\n\n'
+        s = '\nmolSimplify v1.3.3x\nFreely distributed under the GNU GPL license.\n'
+        s += 'Copyright 2017 Kulik Lab @ MIT\n'
+        s += 'Developed by: Efthymios Ioannidis (timis@mit.edu)\n'
         s += 'Contributions by:\n\tHeather J. Kulik (hjkulik@mit.edu)\n'
-        s += '\tTerry Gani (terryg@mit.edu)\n'
-        s += '\n slab builder extension by JP Janet (jpjanet@mit.edu)\n'
+        s += '\t Terry Gani (terryg@mit.edu)\n'
+        s += '\t JP Janet (jpjanet@mit.edu)\n'
+        s += 'E. I. Ioannidis, T. Z. H. Gani, H. J. Kulik. J. Comput. Chem. 2016, 37, 2106-2117.\n'
+        s += 'J.P. Janet, Q. Zhao, E.I. Ioannidis, H.J. Kulik. Mol. Sci. 2017,43(5-6), 327-345.\n'
+        s += 'J.P. Janet, T. Z. H. Gani, A. H. Steeves, E. I. Ioannidis, H. J. Kulik.  Ind.  & Eng. Chem. Res. 2017, 56(17), 4898-4910.\n'
         self.about = s
         ###### GET INFORMATION ######
         runfromcmd, Linux, OSX = False, False, False
@@ -132,7 +135,7 @@ class globalvars:
         self.debug = False # additional output for debuggin
         self.remHsmarts = ["O=CN","O=CO","n","N=CN","nN"] # remove Hs from connecting atoms within these SMARTS patterns
         # default geometries for each coordination number if none specified
-        self.defaultgeometry = {6:('oct','octahedral'),5:('tbp','trigonal bipyramidal'),4:('sqp','square planar'),3:('trigonal planar','tpl'),2:('linear','li'),1:('one','one')}
+        self.defaultgeometry = {6:('oct','octahedral'),5:('tbp','trigonal bipyramidal'),4:('thd','tetrahedral'),3:('trigonal planar','tpl'),2:('linear','li'),1:('one','one')}
         self.defaultoxstate = {'au':'I','gold':'I','scandium':'III','sc':'III','ti':'IV','titanium':'IV'}
     def amass(self):
         return amassdict

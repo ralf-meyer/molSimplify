@@ -314,6 +314,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('max_delen',max_delen)
             print('ax_type',ax_type)
             print('eq_type',eq_type)
+            print('ax_ki',ax_ki)
+            print('eq_ki',eq_ki)
 
 
     if valid:
@@ -501,7 +503,7 @@ def metal_corrector(excitation,metal):
 #n = network_builder([25,50,51],"nn_split")
 
 def get_sfd():
-    sfd = {"split_energy":[-54.19,142.71],
+    sfd = {"split_energy":[-54.19,144.8982826576],
            "slope":[-174.20,161.58],
            "ls_min":[1.8146,0.6910],
            "hs_min":[1.8882,0.6956],
@@ -513,8 +515,8 @@ def get_sfd():
            "eq_dent":[1,3],
            "sum_delen":[-5.34,12.78],
            "max_delen":[-0.89, 2.13],
-           "ax_bo":[0.00,3],
-           "eq_bo":[0.00,3],
+           "ax_bo":[0.00,3.00],
+           "eq_bo":[0.00,3.00],
            "ax_ki":[0.00, 4.29],
            "eq_ki":[0.00,6.96]}
     return sfd

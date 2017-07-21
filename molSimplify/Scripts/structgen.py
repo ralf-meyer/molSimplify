@@ -391,7 +391,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         if s == 'False':
             print('FF setup failed')
         ### force field optimize structure
-        forcefield.ConjugateGradients(9999)
+        forcefield.ConjugateGradients(2000)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -416,7 +416,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         if obmol.NumHvyAtoms() > 10:
             forcefield.ConjugateGradients(2000)
         else:
-            forcefield.ConjugateGradients(9999)
+            forcefield.ConjugateGradients(500)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -974,24 +974,24 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                                     lig3D = rotate_around_axis(lig3D,r0,urot,theta)
                         #####################################
                         # check for symmetric molecule
-                        if distance(lig3D.getAtom(atom0).coords(),lig3D.centersym()) < 8.0e-2:
-                            atsc = lig3D.getBondedAtoms(atom0)
-                            r0a = lig3D.getAtom(atom0).coords()
-                            r1a = lig3D.getAtom(atsc[0]).coords()
-                            r2a = lig3D.getAtom(atsc[1]).coords()
-                            theta,u = rotation_params(r0a,r1a,r2a)
-                            theta = vecangle(u,vecdiff(r0a,mcoords))
-                            urot = cross(u,vecdiff(r0a,mcoords))
-                            ####################################
-                            # rotate around axis and get both images
-                            lig3Db = mol3D()
-                            lig3Db.copymol3D(lig3D)
-                            lig3D = rotate_around_axis(lig3D,r0a,urot,theta)
-                            lig3Db = rotate_around_axis(lig3Db,r0a,urot,-theta)
-                            d2 = lig3D.mindist(core3D)
-                            d1 = lig3Db.mindist(core3D)
-                            lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
-                        # rotate around axis of symmetry and get best orientation
+                            if distance(lig3D.getAtom(atom0).coords(),lig3D.centersym()) < 8.0e-2:
+                                atsc = lig3D.getBondedAtoms(atom0)
+                                r0a = lig3D.getAtom(atom0).coords()
+                                r1a = lig3D.getAtom(atsc[0]).coords()
+                                r2a = lig3D.getAtom(atsc[1]).coords()
+                                theta,u = rotation_params(r0a,r1a,r2a)
+                                theta = vecangle(u,vecdiff(r0a,mcoords))
+                                urot = cross(u,vecdiff(r0a,mcoords))
+                                ####################################
+                                # rotate around axis and get both images
+                                lig3Db = mol3D()
+                                lig3Db.copymol3D(lig3D)
+                                lig3D = rotate_around_axis(lig3D,r0a,urot,theta)
+                                lig3Db = rotate_around_axis(lig3Db,r0a,urot,-theta)
+                                d2 = lig3D.mindist(core3D)
+                                d1 = lig3Db.mindist(core3D)
+                                lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+                            # rotate around axis of symmetry and get best orientation
                         r1 = lig3D.getAtom(atom0).coords()
                         u = vecdiff(r1,mcoords)
                         dtheta = 2

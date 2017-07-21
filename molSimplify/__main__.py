@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-    Copyright 2016 Kulik Lab @ MIT
+    Copyright 2017 Kulik Lab @ MIT
 
     This file is part of molSimplify.
     molSimplify is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ DescString_basic = 'Welcome to molSimplify. Only basic usage is described here.\
 DescString_basic += 'For help on advanced modules, please refer to our documentation at WEBLINK or provide additional commands to -h, as below:\n'
 DescString_basic += '-h advanced: advanced structure generation help\n'
 DescString_basic += '-h slabgen: slab builder help\n'
-DescString_basic += '-h chainb: chain builder help\n'
+#DescString_basic += '-h chainb: chain builder help\n'
 DescString_basic += '-h autocorr: automated correlation analysis help\n'
 DescString_basic += '-h db: database search help\n'
 DescString_basic += '-h inputgen: quantum chemistry code input file generation help\n'
@@ -56,7 +56,6 @@ DescString_random = 'Printing random generation help.'
 DescString_binding = 'Printing binding species (second molecule) generation help.'
 DescString_customcore = 'Printing custom core functionalization help.'
 DescString_naming = 'Printing custom filename help.'
-
 
 try:
     import PyQt5
@@ -87,9 +86,9 @@ def main(args=None):
         if 'slabgen' in args:
             parser = argparse.ArgumentParser(description=DescString_slabgen)
             parseinputs_slabgen(parser)
-        elif 'chainb' in args:
-            parser = argparse.ArgumentParser(description=DescString_chainb)
-            parseinputs_chainb(parser)            
+    #    elif 'chainb' in args:
+    #        parser = argparse.ArgumentParser(description=DescString_chainb)
+    #        parseinputs_chainb(parser)            
         elif 'autocorr' in args:
             parser = argparse.ArgumentParser(description=DescString_autocorr)
             parseinputs_autocorr(parser)           

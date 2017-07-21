@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-    Copyright 2016 Kulik Lab @ MIT
+    Copyright 2017 Kulik Lab @ MIT
 
     This file is part of molSimplify.
     molSimplify is free software: you can redistribute it and/or modify
@@ -168,6 +168,7 @@ def startgen(argv,flag,gui):
     ss =  "\n**************************************************************"
     ss += "\n***** Thank you for using "+PROGRAM+". Have a nice day! ******\n"
     ss += "**************************************************************"
+    ss += globs.about
     if not flag:
         print ss
     del args
