@@ -592,7 +592,7 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
     ## produce more human and machine-readable formats
     #print('ligoc is ' + str(ligoc))
     #print('lig is ' + str(ligs))
-    print(rootdir)
+    #print(rootdir)
     romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
     if args.name: # if set externerally
         name = rootdir+'/'+args.name

@@ -55,7 +55,6 @@ def tcgen(args,strfiles,method):
     # Overwrite plus add any new dictionary keys from commandline input.       
     for xyzf in strfiles:
         rdir = xyzf.rsplit('/',1)[0]
-        print("rdir is " + rdir)
         xyzft = xyzf.rsplit('/',1)[-1]
         xyzf += '.xyz'
         coordfs.append(xyzf.rsplit('/',1)[-1])
@@ -169,7 +168,7 @@ def tcgen(args,strfiles,method):
                 fixed_atoms = temp.getBondedAtoms(metal_ind)
                 fixed_atoms = [str(int(i)+1) for i in fixed_atoms] # 1-based indices
                 string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
-                print(string_to_write)
+                #print(string_to_write)
                 output.write('$constraint_set \n')
                 output.write(string_to_write + '\n')
             output.write('end\n')
@@ -196,7 +195,7 @@ def tcgen(args,strfiles,method):
                 fixed_atoms = temp.getBondedAtoms(metal_ind)
                 fixed_atoms = [str(int(i)+1) for i in fixed_atoms] # 1-based indices
                 string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
-                print(string_to_write)
+                #print(string_to_write)
                 output.write('$constraint_set \n')
                 output.write(string_to_write + '\n')
             output.write('end\n')

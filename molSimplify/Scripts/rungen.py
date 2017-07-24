@@ -373,7 +373,8 @@ def rungen(rundir,args,chspfname,globs):
     ##### fetch smart name
         fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,bind=args.bind,bsmi=args.nambsmi)
         if globs.debug:
-		print('name is  '+fname)
+            print('fname is ' + str(fname))
+
         #        if args.bind:
                 # create folder for runs and check if it already exists
         #            if args.nambsmi:

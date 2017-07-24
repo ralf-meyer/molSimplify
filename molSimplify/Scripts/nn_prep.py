@@ -319,36 +319,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
 
     if valid:
-        sfd = get_sfd()
-    #    print(sfd)
-        ### scale for ANN by normalizing all values
-        alpha = (alpha - sfd['alpha'][0])/sfd['alpha'][1]
-        ox = (ox - sfd['ox'][0])/sfd['ox'][1]
-        eq_dent = (eq_dent - sfd['eq_dent'][0])/sfd['eq_dent'][1]
-        ax_dent = (ax_dent - sfd['ax_dent'][0])/sfd['ax_dent'][1]
-        eq_charge = (eq_charge - sfd['eq_charge'][0])/sfd['eq_charge'][1]
-        ax_charge = (ax_charge - sfd['ax_charge'][0])/sfd['ax_charge'][1]
 
-        sum_delen = (sum_delen - sfd['sum_delen'][0])/sfd['sum_delen'][1]
-        max_delen = (max_delen - sfd['max_delen'][0])/sfd['max_delen'][1]
-        eq_bo = (eq_bo - sfd['eq_bo'][0])/sfd['eq_bo'][1]
-        ax_bo = (ax_bo - sfd['ax_bo'][0])/sfd['ax_bo'][1]
-        eq_ki = (eq_ki - sfd['eq_ki'][0])/sfd['eq_ki'][1]
-        ax_ki = (ax_ki - sfd['ax_ki'][0])/sfd['ax_ki'][1]
-        if args.debug:
-            print('after normalization ')
-            print('ax_bo',ax_bo)
-            print('eq_bo',eq_bo)
-            print('ax_dent',ax_dent)
-            print('eq_dent',eq_dent)
-            print('ax_charge',ax_charge)
-            print('eq_charge',eq_charge)
-            print('sum_delen',sum_delen)
-            print('max_delen',max_delen)
-            print('ax_type',ax_type)
-            print('eq_type',eq_type)
-            print('ax_ki',ax_ki)
-            print('eq_ki',eq_ki)
 
 
         nn_excitation = [0,0,0,0,0, # metals co/cr/fe/mn/ni                 #1-5
@@ -364,31 +335,34 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                    ax_dent,eq_dent,# ax_dent/eq_dent/ #9-10
                    0,0,0,0, # axlig_connect: Cl,N,O,S #11 -14
                    0,0,0,0, # eqliq_connect: Cl,N,O,S #15-18
-                   ax_bo,eq_bo, #axlig_bo, eqliq_bo #19-20
-		   ax_ki,eq_ki,#axlig_ki, eqliq_kii #21-22
-                   sum_delen,max_delen] #mdelen, maxdelen #23-24
+                   sum_delen,max_delen, #mdelen, maxdelen #19-20
+                   ax_bo,eq_bo, #axlig_bo, eqliq_bo #21-22
+                   ax_ki,eq_ki]#axlig_ki, eqliq_kii #23-24
+                    
     #print(slope_excitation)
     #print('\n')
     ### discrete variable encodings
     if valid:
         valid,nn_excitation = metal_corrector(nn_excitation,this_metal)
         valid,slope_excitation = metal_corrector(slope_excitation,this_metal)
-   # print('metal_cor',valid)
     #
     if valid:
         valid,nn_excitation = ax_lig_corrector(nn_excitation,ax_type)
         valid,slope_excitation = ax_lig_corrector(slope_excitation,ax_type)
 
-    #print('ax_cor',valid)
-    #
+   # print('ax_cor',valid)
+  #  print('start eq check')
     if valid:
         valid,nn_excitation = eq_lig_corrector(nn_excitation,eq_type)
         valid,slope_excitation = eq_lig_corrector(slope_excitation,eq_type)
-
-    #print('eq_cor',valid)
+     
+  #  print('eq_cor',valid)
     #
     #print(slope_excitation)
-
+    #print('excitations: ')
+    #print(nn_excitation)
+    #print(slope_excitation)
+   
     if valid:
         print("*******************************************************************")
         print("************** ANN is engaged and advising on spin ****************")
@@ -419,7 +393,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             ANN_trust = 'very low'
         ANN_attributes.update({'ANN_trust':ANN_trust})
         ## engage ANN
-        delta = 0 
+        delta = 0  
+
         delta = get_splitting(nn_excitation)
         ## report to stdout
         if delta[0] < 0 and not high_spin:
@@ -465,61 +440,42 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
 
 def ax_lig_corrector(excitation,con_atom_type):
-    ax_lig_index_dictionary = {'Cl':11,'F':11,'N':12,'O':13,'S':14,'C':14}
+    ax_lig_index_dictionary = {'Cl':11,'F':11,'N':12,'O':13,'S':14}
     ## C is the basic value
     try:
         if not con_atom_type == "C":
             excitation[ax_lig_index_dictionary[con_atom_type]] = 1
-        else:
-            excitation[ax_lig_index_dictionary[con_atom_type]] = 0
         valid = True
     except:
        valid = False
     return valid,excitation
 
 def eq_lig_corrector(excitation,con_atom_type):
-    eq_lig_index_dictionary = {'Cl':15,'F':15,'N':16,'O':17,'S':18,'C':0}
+    #print('in eliq cor, excitation 1;5'  + str(excitation[1:5]))
+    eq_lig_index_dictionary = {'Cl':15,'F':15,'N':16,'O':17,'S':18}
     try:
         if not con_atom_type == "C":
             excitation[eq_lig_index_dictionary[con_atom_type]] = 1
-        else:
-            excitation[eq_lig_index_dictionary[con_atom_type]] = 0
- 
         valid = True
     except:
        valid = False
+    #print('end eliq cor, excitation 1;5'  + str(excitation[1:5]))
     return valid,excitation
 
 
 
 def metal_corrector(excitation,metal):
     metal_index_dictionary = {'co':0,'cr':1,'fe':2,'mn':3,'ni':4}
+    #print(excitation)
+    #print('metal is ' + str(metal) +' setting slot ' +str(metal_index_dictionary[metal]) + ' to 1' )
     try:
-        excitation[metal_index_dictionary[metal]] = 1
+        excitation[metal_index_dictionary[metal]] += 1
         valid = True
     except:
        valid = False
+    
     return valid,excitation
 #n = network_builder([25,50,51],"nn_split")
-
-def get_sfd():
-    sfd = {"split_energy":[-54.19,144.8982826576],
-           "slope":[-174.20,161.58],
-           "ls_min":[1.8146,0.6910],
-           "hs_min":[1.8882,0.6956],
-           "ox":[2,1],
-           "alpha":[0,0.3],
-           "ax_charge":[-2,2],
-           "eq_charge":[-2,2],
-           "ax_dent":[1,1],
-           "eq_dent":[1,3],
-           "sum_delen":[-5.34,12.78],
-           "max_delen":[-0.89, 2.13],
-           "ax_bo":[0.00,3.00],
-           "eq_bo":[0.00,3.00],
-           "ax_ki":[0.00, 4.29],
-           "eq_ki":[0.00,6.96]}
-    return sfd
 
 def spin_classify(metal,spin,ox):
     metal_spin_dictionary = {'co':{2:4,3:5},
@@ -542,25 +498,17 @@ def spin_classify(metal,spin,ox):
     return high_spin,spin_ops
 
 def get_splitting(excitation):
-    sfd = get_sfd()
     delta = simple_splitting_ann(excitation)
-    delta = delta*sfd['split_energy'][1] + sfd['split_energy'][0] 
     return delta
 def get_slope(slope_excitation):
-    sfd = get_sfd()
-    HFX = simple_slope_ann(slope_excitation)
-    HFX = HFX*sfd['slope'][1] + sfd['slope'][0] 
+    HFX = simple_slope_ann(slope_excitation)    
     return HFX
 
 def get_ls_dist(excitation):
-    sfd = get_sfd()
     r = simple_ls_ann(excitation)
-    r = r*sfd['ls_min'][1] + sfd['ls_min'][0] 
     return r
 
 def get_hs_dist(excitation):
-    sfd = get_sfd()
     r = simple_hs_ann(excitation)
-    r = r*sfd['hs_min'][1] + sfd['hs_min'][0] 
     return r
 

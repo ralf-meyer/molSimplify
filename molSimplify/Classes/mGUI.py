@@ -167,7 +167,7 @@ class mGUI():
         self.rtligocch = mQLabel('Frequency',ctip1,'c',12) # occurrence header
         ctip2 = 'Connection atom(s) of ligands (default: 1).'
         self.rtsmicath = mQLabel('Connections',ctip2,'c',12) # connection atom header
-        ctip3 = 'Do not remove hydrogens while connecting ligand to core. default False' # keep Hs header
+        ctip3 = 'Do not remove hydrogens while connecting ligand to core. default True' # keep Hs header
         self.keepHh = mQLabel('keep\nHs',ctip3,'c',12) # occurrence header
         ctip4 = 'Custom bond length for M-L in Angstrom'
         self.MLbondsh = mQLabel('M-L\nbond',ctip4,'c',12)# custom metal ligand bond length header
@@ -212,7 +212,7 @@ class mGUI():
             self.ligconn.append(mQLineEdit('',ctip2,'l',12))
             self.grid.addWidget(self.ligconn[ii],10+ii,4,1,2)
             ## keep Hydrogens ##
-            self.ligH.append(mQComboBox(['no','yes'],ctip3,12))
+            self.ligH.append(mQComboBox(['yes','no'],ctip3,12))
             self.grid.addWidget(self.ligH[ii],10+ii,6,1,1)
             ## ML bond lengths ##
             self.ligML.append(mQLineEdit('',ctip4,'l',12))

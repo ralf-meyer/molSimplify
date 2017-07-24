@@ -658,6 +658,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
         if ligname not in licores.keys():
+            print(args.smicat)
+            
             if args.smicat and len(args.smicat) >= i and args.smicat[i]:
                 if 'pi' in args.smicat[i]:
                     cats0.append(['c'])
@@ -805,7 +807,9 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 batslist.append(bats)
    #########################################################
    #### ANN module
+   
     ANN_attributes = dict()
+    ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
     if args.skipANN:
          print('Skipping ANN')
          ANN_flag = False
@@ -2062,7 +2066,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                 nligats = lig3D.natoms
                 if args.calccharge:
                     args.charge = core3D.charge
-                    print('setting charge to be ' + str(args.charge))
+                    print('Setting charge to be ' + str(args.charge))
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
                     core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
@@ -2149,7 +2153,6 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                     l = 'smi'+str(nosmiles)
                 nosmiles += 1
         ligname += ''.join("%s" % l[0:2])
-    print(ligname)
     if args.bind:
         # load bind, add hydrogens and convert to mol3D
         bind,bsmi,emsg = bind_load(args.bind,bindcores)
@@ -2284,7 +2287,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                 getinputargs(args,fname+'B')
     else:
         fname = name_complex(rootdir,name_core,ligands,ligoc,sernum,args,bind= False,bsmi=False)
-        print('fname' +str(fname))
+        
         core3D.writexyz(fname)
         strfiles.append(fname)
         getinputargs(args,fname)
@@ -2295,7 +2298,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     # check for molecule sanity
     sanity,d0 = core3D.sanitycheck(True)
     if args.debug:
-        print('setting sanity diag, min dist at ' +str(d0))
+        print('setting sanity diag, min dist at ' +str(d0) + ' (higher is better)')
     this_diag.set_sanity(sanity,d0)
     this_diag.set_mol(core3D)
     this_diag.write_report(fname+'.report')
@@ -2309,5 +2312,5 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     if args.gui:
         args.gui.iWtxt.setText('In folder '+pfold+' generated '+str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
-    print '\nIn folder '+pfold+' generated ',Nogeom,' structures!'
+    print '\nIn folder '+pfold+' generated ',Nogeom,' structure(s)!'
     return strfiles, emsg, this_diag

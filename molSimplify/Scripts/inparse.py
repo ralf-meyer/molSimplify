@@ -375,7 +375,7 @@ def parseinputfile(args):
                     lloc = []
                     l1 = filter(None,re.split(',| ',ll))
                     for lll in l1:
-                        if lll.lower()!='cm':
+                        if lll.lower()!='pi':
                             lloc.append(int(lll)-1)
                         else:
                             lloc.append(lll.lower())
@@ -701,7 +701,7 @@ def parseinputs_advanced(*p):
     parser = p[0]
     # advanced structure generation options
     parser.add_argument("-rundir", help="directory for jobs, default ~/Runs",action="store_true")
-    parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well",action="store_true")
+    parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]",action="store_true")
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default='True')
     parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
