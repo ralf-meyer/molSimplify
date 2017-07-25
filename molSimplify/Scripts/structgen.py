@@ -325,7 +325,7 @@ def ffoptsimp(ff,mol):
     if s == 'False':
         print('FF setup failed')
     ### force field optimize structure
-    forcefield.ConjugateGradients(9999)
+    forcefield.ConjugateGradients(2000)
     forcefield.GetCoordinates(obmol)
     en = forcefield.Energy()
     mol.OBmol = pybel.Molecule(obmol)
@@ -660,11 +660,13 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
         if ligname not in licores.keys():
             print(args.smicat)
             
-            if args.smicat and len(args.smicat) >= i and args.smicat[i]:
-                if 'pi' in args.smicat[i]:
+            #if args.smicat and len(args.smicat) >= i and args.smicat[i]:
+            if args.smicat and len(args.smicat)>= (smilesligs+1):
+                
+                if 'pi' in args.smicat[smilesligs]:
                     cats0.append(['c'])
                 else:
-                    cats0.append(args.smicat[i])
+                    cats0.append(args.smicat[smilesligs])
             else:
                 cats0.append([1])
             dent_i = len(cats0[-1])
@@ -687,6 +689,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
         for j in range(0,oc_i):
             occs0[i] += 1
             toccs += dent_i
+
     ### sort by descending denticity (needed for adjacent connection atoms) ###
     ligandsU,occsU,dentsU = ligs,occs0,dentl # save unordered lists
     indcs = smartreorderligs(args,ligs,dentl,licores)

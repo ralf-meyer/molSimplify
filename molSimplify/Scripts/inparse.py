@@ -210,13 +210,16 @@ def cleaninput(args):
         if 'ba' in opts[0].lower():
             args.ffoption = 'ba'
         else:
-            args.ffoption = ''
-            for op in opts:
-                op = op.strip(' ')
-                if op[0].lower()=='b':
-                    args.ffoption += 'b'
-                if op[0].lower()=='a':
-                    args.ffoption += 'a'
+            if 'no' in opts[0].lower():
+                args.ffoption = 'no'
+            else:
+                args.ffoption = ''
+                for op in opts:
+                    op = op.strip(' ')
+                    if op[0].lower()=='b':
+                        args.ffoption += 'b'
+                    if op[0].lower()=='a':
+                        args.ffoption += 'a'
     elif args.ff:
         args.ffoption = 'ba'
 
@@ -370,16 +373,24 @@ def parseinputfile(args):
                 args.smicat = []
                 l = line.split('smicat',1)[1]
                 l = l.replace(' ','')
-                l = re.split('/|\t|&',l)
-                for ll in l:
-                    lloc = []
-                    l1 = filter(None,re.split(',| ',ll))
-                    for lll in l1:
-                        if lll.lower()!='pi':
-                            lloc.append(int(lll)-1)
-                        else:
-                            lloc.append(lll.lower())
-                    args.smicat.append(lloc)
+                l = l.split('],[')
+                for smicats in l:
+                    smicats=smicats.strip('[]')
+                    smicats=smicats.split(',')
+                    loc = list()
+                    for ll in smicats:
+                        try:
+                            if ll.lower()!='pi':
+                                    lloc.append(int(ll)-1)
+                            else:
+                                    lloc.append(ll.lower())
+                        except:
+                            print('ERROR: smicat processing failed at ' + str(ll))
+                            print('Please use integers or  "pi" and divide by smiles ligand using [],[]')
+                    args.smicat.append(lloc)    
+                
+                print('final smicat set to ' + str(args.smicat))
+                
             if '-pangles' in line:
                 args.pangles = []
                 l = filter(None,line.split('pangles',1)[1])
@@ -705,7 +716,7 @@ def parseinputs_advanced(*p):
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default='True')
     parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
-    parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA", default='BA')
+    parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
     parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
     parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default='False')
     parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default='True')

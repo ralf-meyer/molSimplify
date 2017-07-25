@@ -556,6 +556,7 @@ def plugin_defs():
 ###   file/folder name control   ###
 ####################################
 def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
+    ### DEPRECIATED, USE NAME_COMPLEX instead
     # reads in argument namespace
     # and chooses an appropriate name
     # bind_ident is used to pass binding
@@ -590,9 +591,6 @@ def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
 def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
-    #print('ligoc is ' + str(ligoc))
-    #print('lig is ' + str(ligs))
-    #print(rootdir)
     romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
     if args.name: # if set externerally
         name = rootdir+'/'+args.name
@@ -615,10 +613,12 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
         else:
             spin = "0"
         licores = getlicores()
+        sminum = 0
         for i,lig in enumerate(ligs):
             if not lig in licores:
                 lig = lig.split('\t')[0]
-                name += '_smi' + str(sernum+1) + '_' + str(ligoc[i])
+                sminum += 1
+                name += '_smi' str(int(sernum)+int(sminum)) + '_' + str(ligoc[i])
             else:
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)

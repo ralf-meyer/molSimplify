@@ -156,17 +156,23 @@ def get_con_at_type(mol,connection_atoms):
     this_type = ""
     been_set = False
     valid = True
-    for atoms in connection_atoms:
-        this_symbol = mol.getAtom(atoms).symbol()
-        if not (this_symbol == this_type):
-            if not been_set:
-                this_type = this_symbol
-            else:
-                print('different connection atoms in one ligand')
-                valid = False
-    if not this_type in ['C','O','Cl','N','S']:
+    ## test if the ligand is pi-bonded
+    if 'pi' in connection_atoms:
+        print('ANN cannot handle Pi bonding (yet)')
         valid = False
-        print('untrained atom type: ',this_type)
+        this_type='pi'
+    else:
+        for atoms in connection_atoms:
+            this_symbol = mol.getAtom(atoms).symbol()
+            if not (this_symbol == this_type):
+                if not been_set:
+                    this_type = this_symbol
+                else:
+                    print('different connection atoms in one ligand')
+                    valid = False
+        if not this_type in ['C','O','Cl','N','S']:
+            valid = False
+            print('untrained atom type: ',this_type)
     return valid,this_type
 
 

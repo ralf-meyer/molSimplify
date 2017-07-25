@@ -71,13 +71,23 @@ def csv_loader(path):
             this_line = [float(a) for a in lines]
             ret_list += this_line
     return ret_list
-def matrix_loader(path):
+def matrix_loader(path,rownames=False):
+    ## loads matrix with rowname option
     #print('in matrix loader')
-    path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
-    with open(path_to_file,'r') as csvfile:
-        csv_lines = csv.reader(csvfile,delimiter= ',')
-        mat = [a for a in csv_lines]
-    return mat
+    if rownames:
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+        with open(path_to_file, "r") as f:
+            csv_lines = list(csv.reader(f))
+            row_names = [row[0] for row in csv_lines[1:]]
+            mat = [row[1:] for row in csv_lines]
+        print(row_names)
+        return mat,row_names
+    else:
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+        with open(path_to_file,'r') as csvfile:
+            csv_lines = csv.reader(csvfile,delimiter= ',')
+            mat = [a for a in csv_lines]
+        return mat
 
 
 #n = network_builder([25,50,51],"nn_split")
@@ -155,24 +165,26 @@ def excitation_standardizer(excitation,tag):
     return(excitation,sp_center,sp_shift )
 
 def find_eu_dist(excitation):
-    big_mat = np.array(matrix_loader('bigmat.csv'),dtype='float64')
+    mat,rownames = matrix_loader('train_data.csv',rownames=True)
+    train_mat = np.array(mat,dtype='float64')
     min_dist = 1000
 
     alb = (np.array(excitation))
     ext_st = [str(i) for i in alb]
-#    print(ext_st)
-#    print('shape of exct ' + str(np.array(excitation).shape))
-#    print('size of exct ' + str(np.array(excitation).size))
-#    print('type of exct ' + str(np.array(excitation).dtype))
+    print(ext_st)
+    print('shape of exct ' + str(np.array(excitation).shape))
+    print('size of exct ' + str(np.array(excitation).size))
+    print('type of exct ' + str(np.array(excitation).dtype))
 
-    for rows in big_mat:
-        #print(rows)
-        #print('****')
-        #print('****')
-        #print('****')
-        #print('shape of data row ' + str(rows.shape))
-        #print('len of data row is ' + str(rows.size))
-        #print('type of row ' + str(rows.dtype))
+    for rows in train_mat:
+        print(rows)
+        print('****')
+        print('****')
+        print('****')
+        print('shape of data row ' + str(rows.shape))
+        print('len of data row is ' + str(rows.size))
+        print('type of row ' + str(rows.dtype))
+        sardines
         #print('****')
         #print(np.subtract(rows,np.array(excitation)))
         np.subtract(rows,np.array(excitation))
