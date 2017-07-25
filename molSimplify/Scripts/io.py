@@ -618,7 +618,7 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
             if not lig in licores:
                 lig = lig.split('\t')[0]
                 sminum += 1
-                name += '_smi' str(int(sernum)+int(sminum)) + '_' + str(ligoc[i])
+                name += '_smi' +str(int(sernum)+int(sminum)) + '_' + str(ligoc[i])
             else:
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)

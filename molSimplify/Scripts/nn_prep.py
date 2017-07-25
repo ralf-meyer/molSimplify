@@ -177,7 +177,6 @@ def get_con_at_type(mol,connection_atoms):
 
 
 def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
-
     ### prepares and runs ANN calculation
 
     ######################
@@ -267,10 +266,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             eq_lig3D.convert2mol3D() ## mol3D representation of ligand
             if ax_tcat:
                     ax_lig3D.cat = ax_tcat
-                    print('custom ax connect atom given (0-ind) '+str(ax_tcat))
+                    if args.debug:
+                        print('custom ax connect atom given (0-ind) '+str(ax_tcat))
             if eq_tcat:
                     eq_lig3D.cat = eq_tcat
-                    print('custom eq connect atom given (0-ind) '+str(eq_tcat))
+                    if args.debug:
+                        print('custom eq connect atom given (0-ind) '+str(eq_tcat))
     if args.debug:
         print('finished checking ligands, valid is '+str(valid))
     if valid:
@@ -368,22 +369,24 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     #print('excitations: ')
     #print(nn_excitation)
     #print(slope_excitation)
-   
+    
     if valid:
-        print("*******************************************************************")
-        print("************** ANN is engaged and advising on spin ****************")
+        print("******************************************************************")
+        print("************** ANN is engaged and advising on spin ***************")
         print("************** and metal-ligand bond distances    ****************")
-        print("*******************************************************************")
+        print("******************************************************************")
         if high_spin:
             print('You have selected a high-spin state, s = ' + str(spin))
         else:
             print('You have selected a low-spin state, s = ' + str(spin))
         ## test Euclidean norm to training data distance
-        train_dist = find_eu_dist(nn_excitation)
+        train_dist,best_row = find_eu_dist(nn_excitation)
         ANN_trust = max(0.01,1.0-train_dist)
 
-        ANN_attributes.update({'ANN_dist_to_train':train_dist})
+        ANN_attributes.update({'ANN_dist_to_train':train_dist} )
+        ANN_attributes.update({'ANN_closest_train':best_row} )
         print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +str(ANN_trust))
+        print(' with closest training row ' + best_row[:-2])
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
@@ -392,10 +395,10 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('ANN results are probably useful for this complex ')
             ANN_trust  = 'medium'
         elif float(train_dist)< 1.0:
-            print('ANN results are fairly far from trainig data, be cautious ')
+            print('ANN results are fairly far from training data, be cautious ')
             ANN_trust = 'low'
         elif float(train_dist)> 1.0:
-            print('ANN results are too far from trainig data, be cautious ')
+            print('ANN results are too far from training data, be cautious ')
             ANN_trust = 'very low'
         ANN_attributes.update({'ANN_trust':ANN_trust})
         ## engage ANN
@@ -438,6 +441,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         HFX_slope = get_slope(slope_excitation)
         print('Predicted HFX exchange sensitivity is : '+"{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX')
 	ANN_attributes.update({'ANN_slope':HFX_slope})
+        print("*******************************************************************")
+        print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
 
     if not valid and not ANN_reason:

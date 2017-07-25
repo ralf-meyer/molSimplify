@@ -810,9 +810,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 batslist.append(bats)
    #########################################################
    #### ANN module
-   
+
     ANN_attributes = dict()
-    ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
     if args.skipANN:
          print('Skipping ANN')
          ANN_flag = False
@@ -833,6 +832,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
              ANN_flag = False
              ANN_bondl = 0
     this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
+
     ##############################
     ###############################
     #### loop over ligands and ####

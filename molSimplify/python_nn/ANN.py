@@ -73,14 +73,12 @@ def csv_loader(path):
     return ret_list
 def matrix_loader(path,rownames=False):
     ## loads matrix with rowname option
-    #print('in matrix loader')
     if rownames:
         path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            row_names = [row[0] for row in csv_lines[1:]]
+            row_names = [row[0] for row in csv_lines]
             mat = [row[1:] for row in csv_lines]
-        print(row_names)
         return mat,row_names
     else:
         path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
@@ -94,7 +92,7 @@ def matrix_loader(path,rownames=False):
 def simple_splitting_ann(excitation):
     globs=globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + "ms_split")
-    print('path to ANN data: ',path_to_file)
+    #print('path to ANN data: ',path_to_file)
     n = simple_network_builder([25,50,50],"ms_split") 
     excitation,sp_center,sp_shift = excitation_standardizer(excitation,'split')
    # print('center is ' + str(sp_center))
@@ -141,101 +139,33 @@ def excitation_standardizer(excitation,tag):
     ## that may help predictions 
     ## currently testing for
     ## splitting and slope only 
-  #  print('in excitation standardizer')
     centers = csv_loader(tag+"_center.csv")
-   # print(centers)
     shifts = csv_loader(tag+"_scale.csv")
-
     descriptor_centers = np.array(centers[1:])
     descriptor_shifts = np.array(shifts[1:])
     sp_center =  centers[0]
     sp_shift =  shifts[0]   
     excitation = np.array(excitation)
-    
     mean = np.mean(excitation)
     sd = np.std(excitation,ddof=0)
-   # print('mean/sd',mean,sd) 
-   # print('pre excite : ' + str(excitation))
     excitation = (excitation - descriptor_centers)
     excitation = np.divide(excitation,descriptor_shifts)
     mean = np.mean(excitation)
     sd = np.std(excitation,ddof=0)
-   #print('mean/sd',mean,sd)
-   # print('post excite : ' + str(excitation))
     return(excitation,sp_center,sp_shift )
 
 def find_eu_dist(excitation):
+    # returns euclidean distance to nearest trainning 
+    # vector in desciptor space
     mat,rownames = matrix_loader('train_data.csv',rownames=True)
     train_mat = np.array(mat,dtype='float64')
     min_dist = 1000
-
-    alb = (np.array(excitation))
-    ext_st = [str(i) for i in alb]
-    print(ext_st)
-    print('shape of exct ' + str(np.array(excitation).shape))
-    print('size of exct ' + str(np.array(excitation).size))
-    print('type of exct ' + str(np.array(excitation).dtype))
-
-    for rows in train_mat:
-        print(rows)
-        print('****')
-        print('****')
-        print('****')
-        print('shape of data row ' + str(rows.shape))
-        print('len of data row is ' + str(rows.size))
-        print('type of row ' + str(rows.dtype))
-        sardines
-        #print('****')
-        #print(np.subtract(rows,np.array(excitation)))
+    excitation,sp_center,sp_shift = excitation_standardizer(excitation,'split')
+    for i,rows in enumerate(train_mat):
         np.subtract(rows,np.array(excitation))
-        this_dist = np.linalg.norm(np.subtract(rows,np.array(excitation)))
-        #print('this_dist is ' + str(this_dist) )
+        this_dist = np.linalg.norm(np.subtract(rows,np.array(excitation)))/3
         if this_dist < min_dist:
             min_dist = this_dist
-            best_row = rows
-        ll = ['co','cr','fe','mn','ni',
-              'ox','alpha','eq_charge','ax_charge', #ox/alpha/eqlig charge/axlig charge #6-9
-              'ax_dent','eq_dent',# ax_dent/eq_dent/ #10-11
-              'ax_Cl','N','O','S', #12 -15
-              'eq_Cl','N','O','S', #16-19
-              'm_delen','maxdelen', #mdelen, maxdelen #20-21
-              'ax_bo','eq_bo', #axlig_bo, eqliq_bo #22-23
-              'ax_ki','eq_ki']#axlig_ki, eqliq_kii #24-25
+            best_row = rownames[i]
+    return min_dist,best_row
 
-    #with open('/home/jp/Dropbox/MyGit/molSimplify_dev/excit.csv','w') as f:
-    #        for items in ll:
-    #                f.write(str(items))
-    #                f.write(',')
-    #        f.write('\n')
-
-    #       for items in alb:
-    #                f.write(str(items))
-    #                f.write(',')
-    #        f.write('\n')
-    #       for items in best_row:
-    #                f.write(str(items))
-    #                f.write(',')
-
-    return min_dist
-    # returns euclidean distance to nearest trainning 
-    # vector in desciptor space
-
-
-
-#for c in [connection for connections in n.connections.values() for connection in connections]:
-#        print("{} -> {} => {}".format(c.inmod.name, c.outmod.name, c.params))
-### view weights:
-#for mod in n.modules:
-#    print("Module:", mod.name)
-#    if mod.paramdim > 0:
-#        print("--parameters:", mod.params)
-#        for conn in net.connections[mod]:
-#            print("-connection to", conn.outmod.name)
-#            if conn.paramdim > 0:
-#                print("- parameters", conn.params)
-#                if hasattr(net, "recurrentConns"):
-#                    print("Recurrent connections")
-#                    for conn in net.recurrentConns:
-#                        print("-", conn.inmod.name, " to", conn.outmod.name)
-#                        if conn.paramdim > 0:
-#                            print("- parameters", conn.params)

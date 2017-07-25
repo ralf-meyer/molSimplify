@@ -377,7 +377,7 @@ def parseinputfile(args):
                 for smicats in l:
                     smicats=smicats.strip('[]')
                     smicats=smicats.split(',')
-                    loc = list()
+                    lloc = list()
                     for ll in smicats:
                         try:
                             if ll.lower()!='pi':
