@@ -42,7 +42,7 @@ class mGUI():
         ### check for configuration file ###
         homedir = os.path.expanduser("~")
         globs = globalvars() # global variables
-        if not os.path_exists(globs.rundir):
+        if not os.path.exists(globs.rundir):
                  os.makedirs(globs.rundir)
         #overX = True if 'localhost' in os.environ['DISPLAY'].lower() else False # detect running over X
  #       configfile = False if not glob.glob(homedir+'/.molSimplify') else True
