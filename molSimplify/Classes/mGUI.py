@@ -28,6 +28,10 @@ class mGUI():
         # build gui
         self.app = app
         self.initGUI(app)
+        globs = globalvars() # global variables
+        if not os.path.exists(globs.rundir):
+                print(globs.rundir)
+                os.makedirs(globs.rundir)
     ### builds the gui
     def initGUI(self,app):
         '''
@@ -1893,10 +1897,11 @@ class mGUI():
             if len(ligs)==0:
                 return
             else:
+                print(ligs)
+                
                 for i,pmol in enumerate(ligs):
                     ### return the svg with atom labels as a string
-                    svgstr = pmol.write(format="svg",filename=None,
-                                 opt={'i':None})
+                    svgstr = pmol.write(format="svg",filename=None)
                     ### unpacked nested svg as in pybel._repr_svg_
                     namespace = "http://www.w3.org/2000/svg"
                     ET.register_namespace("", namespace)

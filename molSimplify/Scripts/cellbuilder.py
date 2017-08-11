@@ -1090,6 +1090,7 @@ def slab_module_supervisor(args,rootdir):
         if not os.path.exists(rootdir + 'slab'):
                 os.makedirs(rootdir + 'slab')
 
+        
         if cif_path:
             try:
                 unit_cell,cell_vector = import_from_cif(cif_path)
@@ -1118,7 +1119,7 @@ def slab_module_supervisor(args,rootdir):
                 print(cell_vector[0])
                 print(cell_vector[1])
                 print(cell_vector[2])
-                print('\n\n')
+                print('\n')
 #                cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),-1*angle) for i in cell_vector]
                 unit_cell.writexyz(rootdir + 'slab/step_1.xyz')
 #                unit_cell = rotate_around_axis(unit_cell,[0,0,0],u,-1*angle)
@@ -1128,12 +1129,18 @@ def slab_module_supervisor(args,rootdir):
         print('max dims are' + str(max_dims))
 
         ext_duplication_vector =[[0,0,0],[0,0,0],[0,0,0]]
-        if miller_flag:
-            for i in [0,1,2]:
-                ext_duplication_vector[i][i] = max_dims[i]
+        if (miller_flag) and False:
+            ext_duplication_vector = old_cv
+            #for i in [0,1,2]:
+            #    ext_duplication_vector[i][i] = max_dims[i]
         else:
             ext_duplication_vector = cell_vector
-       # ext_duplication_vector = old_cv
+        
+        if debug:
+            print('first ext_dup vector is: ')
+            print(ext_duplication_vector[0])
+            print(ext_duplication_vector[1])
+            print(ext_duplication_vector[2])        
 
 
         if slab_size:
@@ -1174,38 +1181,47 @@ def slab_module_supervisor(args,rootdir):
  
         if miller_flag:
             if (len(non_zero_indices) > 2):
+                print('Note: this miller index is currenlty unsupported, aborting')
+                return(False)
                 duplication_vector[1] += -2
                 duplication_vector[2] += -4
 
         if debug:
             print(rootdir)
-            super_cell.writexyz(rootdir + 'slab/step_2.xyz')
+            super_cell.writexyz(rootdir + 'slab/step_2c.xyz')
         ############################
         ############################
         ext_duplication_vector = [[i*duplication_vector[0] for i in ext_duplication_vector[0]],
                          [i*duplication_vector[1] for i in ext_duplication_vector[1]],
                          [i*duplication_vector[2] for i in ext_duplication_vector[2]]]
- 
+        if debug:
+            print('second ext_dup vector is: ')
+            print(ext_duplication_vector[0])
+            print(ext_duplication_vector[1])
+            print(ext_duplication_vector[2])
         if miller_flag:
            if debug:
                super_cell.writexyz(rootdir + 'slab/step_3.xyz')
            ## this lowers the cell into the xy plane
            #############################################################
            #############################################################
+           print('rotating angle ' + str(angle) + ' around ' + str(u))
            super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)##
            #############################################################
            #############################################################
            if debug:
                super_cell.writexyz(rootdir + 'slab/step_4.xyz')
-
-           super_cell= shave_under_layer(super_cell)
-           super_cell= shave_under_layer(super_cell)
-           super_cell= shave_under_layer(super_cell)
-           super_cell= shave_under_layer(super_cell)
-           super_cell= shave_surface_layer(super_cell)
-           super_cell= shave_surface_layer(super_cell)
-           super_cell= shave_surface_layer(super_cell)
-
+           if miller_flag:
+              if (len(non_zero_indices) > 2):
+                  super_cell= shave_under_layer(super_cell)
+                  super_cell= shave_under_layer(super_cell)
+              #    super_cell= shave_under_layer(super_cell)
+             #     super_cell= shave_under_layer(super_cell)
+             #     super_cell= shave_surface_layer(super_cell)
+               #   super_cell= shave_surface_layer(super_cell)
+                  super_cell= shave_surface_layer(super_cell)
+                  if debug:
+                      super_cell.writexyz(rootdir + 'slab/step_4_after_shave.xyz')
 
 
 
