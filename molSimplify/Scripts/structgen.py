@@ -658,8 +658,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
         if ligname not in licores.keys():
-            print(args.smicat)
-            
             #if args.smicat and len(args.smicat) >= i and args.smicat[i]:
             if args.smicat and len(args.smicat)>= (smilesligs+1):
                 

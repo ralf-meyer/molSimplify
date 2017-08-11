@@ -38,6 +38,8 @@ class mGUI():
         ### check for configuration file ###
         homedir = os.path.expanduser("~")
         globs = globalvars() # global variables
+        if not os.path_exists(globs.rundir):
+                 os.makedirs(globs.rundir)
         #overX = True if 'localhost' in os.environ['DISPLAY'].lower() else False # detect running over X
  #       configfile = False if not glob.glob(homedir+'/.molSimplify') else True
 #        if not configfile:
@@ -1893,10 +1895,11 @@ class mGUI():
             if len(ligs)==0:
                 return
             else:
+                print(ligs)
+                
                 for i,pmol in enumerate(ligs):
                     ### return the svg with atom labels as a string
-                    svgstr = pmol.write(format="svg",filename=None,
-                                 opt={'i':None})
+                    svgstr = pmol.write(format="svg",filename=None)
                     ### unpacked nested svg as in pybel._repr_svg_
                     namespace = "http://www.w3.org/2000/svg"
                     ET.register_namespace("", namespace)
