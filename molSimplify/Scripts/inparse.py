@@ -8,7 +8,7 @@
 ##############################################################
 
 # import std modules
-import glob, os, re, argparse, sys
+import glob, os, re, argparse, sys, ast
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
@@ -210,7 +210,7 @@ def cleaninput(args):
         if 'ba' in opts[0].lower():
             args.ffoption = 'ba'
         else:
-            if 'no' in opts[0].lower():
+            if 'no' in opts[0].lower() or 'n' in opts[0].lower():
                 args.ffoption = 'no'
             else:
                 args.ffoption = ''
@@ -362,6 +362,7 @@ def parseinputfile(args):
                 args.ff = l[1].lower()
             if (l[0]=='-ffoption' and len(l[1:]) > 0):
                 args.ffoption = l[1:]
+                print('setting ffoption ' + str(args.ffoption))
             if (l[0]=='-place' and len(l[1:]) > 0):
                 args.place = l[1]
             if (l[0]=='-sminame' and len(l[1:]) > 0):
@@ -398,6 +399,44 @@ def parseinputfile(args):
                 l = re.split(',|\t|&|\n',l)
                 for ll in l:
                     args.pangles.append(ll) if ll!='' else args.pangles.append(False)
+            if (l[0]=='-decoration' and len(l[1:]) > 0):
+                print(line)
+                print('l[1] = ' + str(l[1]))
+                list_to_parse = (line.strip().split(' ')[1:])
+                print('list_to_parse 1= ' + str(list_to_parse))
+                list_to_add = list()
+                local_list = list()
+                if not isinstance(list_to_parse,basestring):
+                    for decor in list_to_parse:
+                        print('decor is ' + str(decor))
+                        decor = str(decor).strip().strip('[]').split(',')
+                        print('adding ' + str(decor))
+                        local_list = local_list + [str(i) for i in decor]
+                        list_to_add.append([str(i) for i in decor])
+                    print('local list ' + str(local_list))
+                else:
+                    list_to_add = [list_to_parse]
+                args.decoration = list_to_add
+                print(args.decoration)
+            if (l[0]=='-decoration_index' and len(l[1:]) > 0):
+                print(line)
+                print('l[1] = ' + str(l[1]))
+                list_to_parse = (line.strip().split(' ')[1:])
+                print('list_to_parse 1= ' + str(list_to_parse))
+                list_to_add = list()
+                local_list = list()
+                if not isinstance(list_to_parse,basestring):
+                    for decor in list_to_parse:
+                        print('decor is ' + str(decor))
+                        decor = str(decor).strip().strip('[]').split(',')
+                        print('adding ' + str(decor))
+                        local_list = local_list + [str(i) for i in decor]
+                        list_to_add.append([int(i) for i in decor])
+                    print('local list ' + str(local_list))
+                else:
+                    list_to_add = [list_to_parse]
+                args.decoration_index = list_to_add
+                print(args.decoration_index)
             # parse qc arguments
             if (l[0]=='-qccode' and len(l[1:]) > 0):
                 args.qccode = l[1]
@@ -719,6 +758,8 @@ def parseinputs_advanced(*p):
     parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
     parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
     parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default='False')
+    parser.add_argument("-decoration_index", help="list of indicies on each ligand to decorate",action="store_true") # decoration indexes, one list per ligand
+    parser.add_argument("-decoration", help="list of SMILES for each decoratation",action="store_true") # decoration, one list ligand  
     parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default='True')
     parser.add_argument("-MLbonds", help="custom M-L bond length (Ang) for corresponding ligand",action="store_true")
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')

@@ -47,7 +47,6 @@ def metal_only_autocorrelation(mol,prop,d):
 		return False
 	return(autocorrelation_vector)
 
-def full_deltametric(mol,prop,d):
 	w = construct_property_vector(mol,prop)
 	index_set = range(0,mol.natoms)
 	deltametric_vector = numpy.zeros(d+1)
@@ -238,21 +237,6 @@ def find_ligand_deltametrics_oct(mol,prop,loud,depth,name=False):
 	## count ligands
 	n_ax = len(ax_ligand_list)
 	n_eq = len(eq_ligand_list)
-	## get full ligand AC
-	ax_ligand_ac_full = []
-	eq_ligand_ac_full = []
-	for i in range(0,n_ax):
-		if not list(ax_ligand_ac_full):
-			ax_ligand_ac_full = full_deltametric(ax_ligand_list[i].mol,prop,depth) 
-		else:
-			ax_ligand_ac_full += full_deltametric(ax_ligand_list[i].mol,prop,depth) 
-	ax_ligand_ac_full = np.divide(ax_ligand_ac_full,n_ax)
-	for i in range(0,n_eq):
-		if not list(eq_ligand_ac_full):
-			eq_ligand_ac_full = full_deltametric(eq_ligand_list[i].mol,prop,depth) 
-		else:
-			eq_ligand_ac_full += full_deltametric(eq_ligand_list[i].mol,prop,depth) 
-	eq_ligand_ac_full = np.divide(eq_ligand_ac_full,n_eq)
 
 	## get partial ligand AC
 	ax_ligand_ac_con= []
@@ -271,7 +255,7 @@ def find_ligand_deltametrics_oct(mol,prop,loud,depth,name=False):
 			eq_ligand_ac_con += atom_only_deltametric(eq_ligand_list[i].mol,prop,depth,eq_con_int_list[i]) 
 	eq_ligand_ac_con = np.divide(eq_ligand_ac_con,n_eq)
 
-	return ax_ligand_ac_full,eq_ligand_ac_full,ax_ligand_ac_con,eq_ligand_ac_con
+	return ax_ligand_ac_con,eq_ligand_ac_con
 def generate_all_ligand_autocorrelations(mol,loud,depth=4,name=False):
 	result_ax_full = list()
 	result_eq_full = list()
@@ -302,7 +286,7 @@ def generate_all_ligand_deltametrics(mol,loud,depth=4,name=False):
 	allowed_strings = ['electronegativity','nuclear_charge','ident','topology','size']
 	labels_strings = ['chi','Z','I','T','S']
 	for ii,properties in enumerate(allowed_strings):
-		ax_ligand_ac_full,eq_ligand_ac_full,ax_ligand_ac_con,eq_ligand_ac_con = find_ligand_deltametrics_oct(mol,properties,loud,depth,name)
+		ax_ligand_ac_con,eq_ligand_ac_con = find_ligand_deltametrics_oct(mol,properties,loud,depth,name)
 		this_colnames = []
 		for i in range(0,depth+1):
 			this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -311,8 +295,7 @@ def generate_all_ligand_deltametrics(mol,loud,depth=4,name=False):
 		result_eq_full.append(eq_ligand_ac_full)
 		result_ax_con.append(ax_ligand_ac_con)
 		result_eq_con.append(eq_ligand_ac_con)
-	results_dictionary={'colnames':colnames,'result_ax_full':result_ax_full,'result_eq_full':result_eq_full,
-                        'result_ax_con':result_ax_con,'result_eq_con':result_eq_con}
+	results_dictionary={'colnames':colnames,'result_ax_con':result_ax_con,'result_eq_con':result_eq_con}
 	return  results_dictionary
 
 def generate_metal_autocorrelations(mol,loud,depth=4):
@@ -357,21 +340,4 @@ def generate_full_complex_autocorrelations(mol,loud,depth=4):
 		result.append(metal_ac)
 	results_dictionary={'colnames':colnames,'results':result}
 	return  results_dictionary
-def generate_full_complex_deltametrics(mol,loud,depth=4):
-	result = list()
-	colnames = []
-	allowed_strings = ['electronegativity','nuclear_charge','ident','topology','size']
-	labels_strings = ['chi','Z','I','T','S']
-	for ii,properties in enumerate(allowed_strings):
-		metal_ac = full_deltametric(mol,properties,depth)
-		this_colnames = []
-		for i in range(0,depth+1):
-			this_colnames.append(labels_strings[ii] + '-' + str(i))
-		colnames.append(this_colnames)
-		result.append(metal_ac)
-	results_dictionary={'colnames':colnames,'results':result}
-	return  results_dictionary
 
-
-
-	

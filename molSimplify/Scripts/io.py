@@ -342,6 +342,7 @@ def core_load(usercore,mcores):
 ### convert to molecule ###
 ###########################
 def lig_load(userligand,licores):
+    
     globs = globalvars()
     ### get groups ###
     groups = []
@@ -371,10 +372,13 @@ def lig_load(userligand,licores):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
             print emsg
             return False, emsg
+        
         if ('.xyz' in flig):
             lig.OBmol = lig.getOBmol(flig,'xyzf')
+            
         elif ('.mol' in flig):
             lig.OBmol = lig.getOBmol(flig,'molf')
+            
         elif ('.smi' in flig):
             lig.OBmol = lig.getOBmol(flig,'smif')
             # generate coordinates if not existing

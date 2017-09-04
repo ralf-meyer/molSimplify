@@ -325,7 +325,7 @@ def ffoptsimp(ff,mol):
     if s == 'False':
         print('FF setup failed')
     ### force field optimize structure
-    forcefield.ConjugateGradients(2000)
+    forcefield.ConjugateGradients(500)
     forcefield.GetCoordinates(obmol)
     en = forcefield.Energy()
     mol.OBmol = pybel.Molecule(obmol)
@@ -345,6 +345,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
     A: ff whole structure after addition (each step)
     BA: 0 and 1 together
     '''
+    print('force field on ')
     globs = globalvars()
     metals = range(21,31)+range(39,49)+range(72,81)
     ### check requested force field
@@ -391,7 +392,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         if s == 'False':
             print('FF setup failed')
         ### force field optimize structure
-        forcefield.ConjugateGradients(2000)
+        forcefield.ConjugateGradients(200)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -409,14 +410,14 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds):
         ### set up forcefield
         forcefield = openbabel.OBForceField.FindForceField(ff)
         if len(connected) < 2:
-            mol.OBmol.make3D('mmff94',1000) # add hydrogens and coordinates
+            mol.OBmol.make3D(ff,100) # add hydrogens and coordinates
         obmol = mol.OBmol.OBMol # convert to OBmol
         forcefield.Setup(obmol,constr)
         ### force field optimize structure
         if obmol.NumHvyAtoms() > 10:
-            forcefield.ConjugateGradients(2000)
+            forcefield.ConjugateGradients(50)
         else:
-            forcefield.ConjugateGradients(500)
+            forcefield.ConjugateGradients(200)
         forcefield.GetCoordinates(obmol)
         en = forcefield.Energy()
         mol.OBmol = pybel.Molecule(obmol)
@@ -660,7 +661,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
         if ligname not in licores.keys():
             #if args.smicat and len(args.smicat) >= i and args.smicat[i]:
             if args.smicat and len(args.smicat)>= (smilesligs+1):
-                
+
                 if 'pi' in args.smicat[smilesligs]:
                     cats0.append(['c'])
                 else:
@@ -808,7 +809,9 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 batslist.append(bats)
    #########################################################
    #### ANN module
-
+    if args.debug:
+        pass
+    print('force field status '+ str(args.ffoption))
     ANN_attributes = dict()
     if args.skipANN:
          print('Skipping ANN')
@@ -851,12 +854,15 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # load ligand
                 lig,emsg = lig_load(ligand,licores) # load ligand
-                # check for smiles, force not removal of hydrogen
-                #allremH = True
-                #if ('+' in ligand or '-' in ligand):
-                #    allremH = False
                 if emsg:
                     return False,emsg
+                ## check if ligand should decorated
+                if args.decoration and args.decoration_index:
+                    print(args.decoration)
+                    print(type(args.decoration))
+                    if len(args.decoration) > i and len(args.decoration_index) > i:
+                        print('decorating ' + str(ligand) + ' with ' +str(args.decoration[i]) + ' at sites '  + str(args.decoration_index))
+                        lig = decorate_ligand(args,ligand,args.decoration[i],args.decoration_index[i])
                 # if SMILES string
                 if not lig.cat and tcats[i]:
                     if 'c' in tcats[i]:
@@ -1218,25 +1224,26 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     rtarget = getPointu(mcoords, bondl, vecdiff(r1b,mcoords)) # get second point target
                     dr = vecdiff(rtarget,lig3D.getAtom(catoms[1]).coords())
                     # distort ligand in nsteps steps
-                    nsteps = 15
-                    ddr = [di/nsteps for di in dr]
-                    ens =[]
-                    cutoff = 5.0 # kcal/mol
-                    for ii in range(0,nsteps):
-                        lig3D,enl = ffopt('mmff94',lig3D,[],1,[catoms[0],catoms[1]],False,[])
-                        ens.append(enl)
-                        lig3D.getAtom(catoms[1]).translate(ddr)
-                        # check fo cutoff
-                        if ens[-1] - ens[0] > 5.0:
-                            # fix ML bond length get optimum guess
-                            r0,r1 = lig3D.getAtomCoords(catoms[0]),lig3D.getAtomCoords(catoms[1])
-                            r01 = distance(r0,r1)
-                            theta1 = 180*arccos(0.5*r01/bondl)/pi
-                            theta2 = vecangle(vecdiff(r1,r0),vecdiff(mcoords,r0))
-                            dtheta = theta2-theta1
-                            theta,urot = rotation_params(mcoords,r0,r1)
-                            lig3D = rotate_around_axis(lig3D,r0,urot,-dtheta) # rotate so that it matches bond
-                            break
+                    if not args.ffoption == 'no':
+                        nsteps = 15
+                        ddr = [di/nsteps for di in dr]
+                        ens=[]
+                        cutoff = 5.0 # kcal/mol
+                        for ii in range(0,nsteps):
+                            lig3D,enl = ffopt('mmff94',lig3D,[],1,[catoms[0],catoms[1]],False,[])
+                            ens.append(enl)
+                            lig3D.getAtom(catoms[1]).translate(ddr)
+                            # check fo cutoff
+                            if ens[-1] - ens[0] > 5.0:
+                                # fix ML bond length get optimum guess
+                                r0,r1 = lig3D.getAtomCoords(catoms[0]),lig3D.getAtomCoords(catoms[1])
+                                r01 = distance(r0,r1)
+                                theta1 = 180*arccos(0.5*r01/bondl)/pi
+                                theta2 = vecangle(vecdiff(r1,r0),vecdiff(mcoords,r0))
+                                dtheta = theta2-theta1
+                                theta,urot = rotation_params(mcoords,r0,r1)
+                                lig3D = rotate_around_axis(lig3D,r0,urot,-dtheta) # rotate so that it matches bond
+                                break
                     # prevent H clashes by rotating connecting atom
                     nHs1 = len(lig3D.getHsbyIndex(catoms[0]))
                     if nHs1 > 0:
@@ -2081,6 +2088,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
 ### main structure generation function ###
 ##########################################
 def structgen(args,rootdir,ligands,ligoc,globs,sernum):
+
     # INPUT
     #   - args: placeholder for input arguments
     #   - rootdir: directory of current run
@@ -2315,3 +2323,127 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structure(s)!'
     return strfiles, emsg, this_diag
+
+    
+    
+def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
+    # INPUT
+    #   - args: placeholder for input arguments
+    #   - ligand_to_decorate: mol3D ligand
+    #   - decoration: list of smiles/decorations
+    #   - decoration_index: list of ligand atoms to replace
+    # OUTPUT
+    #   - new_ligand: built ligand
+    #   - complex3D: list of all mol3D ligands and core
+    #   - emsg: error messages
+    #if args.debug:
+    #    print  'decorating ligand'
+    lig = ligand_to_decorate
+    ## reorder to ensure highest atom index 
+    ## removed first
+    print(type(decoration_index))
+    sort_order = [i[0] for i in sorted(enumerate(decoration_index), key=lambda x:x[1])]
+    print(decoration_index)
+
+    print(sort_order)
+
+    print(type(sort_order))
+    print(type(sort_order[0]))
+    decoration_index = [decoration_index[i] for i in sort_order]
+    decoration=[decoration[i] for i in sort_order]
+    licores = getlicores()
+    lig,emsg = lig_load(lig,licores)
+    lig.convert2mol3D() # convert to mol3D
+    ### comment 
+    lig.printxyz()
+    ## create new ligand
+    merged_ligand = mol3D()
+    merged_ligand.copymol3D(lig)
+    for i,dec in enumerate(decoration):
+        print('\n** decoration number ' +str(i)+ ' attaching ' + dec + ' at site '+str(decoration_index[i]) 
+    + '**\n')
+        dec,emsg = lig_load(dec,licores)
+        dec.convert2mol3D() # convert to mol3D
+        dec.printxyz()
+        print(merged_ligand.getAtom(decoration_index[i]).symbol())
+        print(merged_ligand.getAtom(decoration_index[i]).coords())
+        merged_ligand.writexyz('basic.xyz')
+        dec.writexyz('dec' + str(i) + '.xyz')
+        Hs = dec.getHsbyIndex(0)
+        if len(Hs) > 0:
+            dec.deleteatom(Hs[0])
+            dec.charge = dec.charge - 1
+        dec.writexyz('dec_noH' + str(i) + '.xyz')
+        dec.alignmol(dec.getAtom(0),merged_ligand.getAtom(decoration_index[i]))
+        r1 = dec.getAtom(0).coords()
+        r2 = dec.centermass() # center of mass
+        rrot = r1
+        decb = mol3D()
+        decb.copymol3D(dec)
+        ####################################
+        # center of mass of local environment (to avoid bad placement of bulky ligands)
+        auxmol = mol3D()
+        for at in dec.getBondedAtoms(0):
+            auxmol.addAtom(dec.getAtom(at))
+        if auxmol.natoms > 0:
+            r2 = auxmol.centermass() # overwrite global with local centermass
+            ####################################
+            # rotate around axis and get both images
+            theta,u = rotation_params(merged_ligand.centermass(),r1,r2)
+            print('u = ' + str(u) + ' theta  = ' + str(theta))
+            dec = rotate_around_axis(dec,rrot,u,theta)
+            dec.writexyz('dec_ARA' + str(i) + '.xyz')
+            decb = rotate_around_axis(decb,rrot,u,theta-180)
+            decb.writexyz('dec_ARB' + str(i) + '.xyz')
+            d1 = distance(merged_ligand.getAtom(decoration_index[i]).coords(),dec.centermass())
+            d2 = distance(merged_ligand.getAtom(decoration_index[i]).coords(),decb.centermass())
+            dec = dec if (d2 < d1)  else decb # pick best one
+        #####################################
+        # check for linear molecule
+        auxm = mol3D()
+        for at in dec.getBondedAtoms(0):
+            auxm.addAtom(dec.getAtom(at))
+        if auxm.natoms > 1:
+            r0 = dec.getAtom(0).coords()
+            r1 = auxm.getAtom(0).coords()
+            r2 = auxm.getAtom(1).coords()
+            if checkcolinear(r1,r0,r2):
+                theta,urot = rotation_params(r1,merged_ligand.getAtom(decoration_index[i]).coords(),r2)
+                theta = vecangle(vecdiff(r0,merged_ligand.getAtom(decoration_index[i]).coords()),urot)
+                dec = rotate_around_axis(dec,r0,urot,theta)
+        r1 = dec.getAtom(0).coords()
+        u = vecdiff(r1,merged_ligand.getAtom(decoration_index[i]).coords())
+        dtheta = 2
+        optmax = -9999
+        totiters = 0
+        decb = mol3D()
+        decb.copymol3D(dec)
+        # check for minimum distance between atoms and center of mass distance
+        while totiters < 180:
+            print('totiters '+ str(totiters))
+            dec = rotate_around_axis(dec,r1,u,dtheta)
+            d0 = dec.mindist(merged_ligand) # try to maximize minimum atoms distance
+            d0cm = dec.distance(merged_ligand) # try to maximize center of mass distance
+            iteropt = d0cm+d0 # optimization function
+            if (iteropt > optmax): # if better conformation, keep
+                decb = mol3D()
+                decb.copymol3D(dec)
+                optmax = iteropt
+                temp = mol3D()
+                temp.copymol3D(merged_ligand)
+                temp.combine(decb)
+                temp.writexyz('opt_iter_'+str(totiters)+'.xyz')
+                print('new max! ' + str(iteropt) )
+            totiters += 1
+        dec = decb
+        dec.writexyz('dec_fin' + str(i) + '.xyz')
+        merged_ligand.deleteatom(decoration_index[i])
+        merged_ligand.combine(dec)
+        merged_ligand.writexyz('merged' + str(i) + '.xyz')
+        merged_ligand.printxyz()
+        print('************')
+    merged_ligand.convert2OBmol()
+    merged_ligand,emsg = ffoptsimp('MMFF94',merged_ligand)
+    merged_ligand.writexyz('merged_relaxed.xyz')
+    return(merged_ligand)
+    

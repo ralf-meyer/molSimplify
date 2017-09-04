@@ -69,7 +69,6 @@ except ImportError:
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
-    print(args)
     ### run GUI by default ###
     args = sys.argv[1:]
     gui = True
@@ -107,6 +106,7 @@ def main(args=None):
         elif 'binding' in args:
             parser = argparse.ArgumentParser(description=DescString_binding)
             parseinputs_binding(parser)            
+
         elif 'customcore' in args:
             parser = argparse.ArgumentParser(description=DescString_customcore)
             parseinputs_customcore(parser) 
@@ -141,7 +141,6 @@ def main(args=None):
         # create input file from commandline
         infile = parseCLI(filter(None,args))
         args = ['main.py','-i',infile]
-        print args
         emsg = startgen(args,False,gui)
 if __name__ == '__main__':
     main()
