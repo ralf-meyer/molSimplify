@@ -36,45 +36,45 @@ def generate_all_ligand_misc(mol,loud):
 	for i in range(0,n_ax):
 		if not (i==0):
 			result_ax_dent += ax_ligand_list[i].dent
-			result_ax_maxdelen += get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
-			result_ax_ki += kier(ax_ligand_list[i].mol)
-			result_ax_tki += get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
+			#result_ax_maxdelen += get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
+			#result_ax_ki += kier(ax_ligand_list[i].mol)
+			#result_ax_tki += get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
 		else:
 			result_ax_dent = ax_ligand_list[i].dent
-			result_ax_maxdelen = get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
-			result_ax_ki = kier(ax_ligand_list[i].mol)
-			result_ax_tki = get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
+			#result_ax_maxdelen = get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
+			#result_ax_ki = kier(ax_ligand_list[i].mol)
+			#result_ax_tki = get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
 	## average axial results
 	result_ax_dent = np.divide(result_ax_dent,n_ax)
-	result_ax_maxdelen = np.divide(result_ax_maxdelen,n_ax)
-	result_ax_ki = np.divide(result_ax_ki,n_ax)
-	result_ax_tki = np.divide(result_ax_tki,n_ax)
-	## loop over axial ligands
+	#result_ax_maxdelen = np.divide(result_ax_maxdelen,n_ax)
+	#result_ax_ki = np.divide(result_ax_ki,n_ax)
+	#result_ax_tki = np.divide(result_ax_tki,n_ax)
+	## loop over eq ligands
 	for i in range(0,n_eq):
 		if not (i==0):
 			result_eq_dent += eq_ligand_list[i].dent
-			result_eq_maxdelen += get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
-			result_eq_ki += kier(eq_ligand_list[i].mol)
-			result_eq_tki += get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
+			#result_eq_maxdelen += get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
+			#result_eq_ki += kier(eq_ligand_list[i].mol)
+			#result_eq_tki += get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
 		else:
 			result_eq_dent = eq_ligand_list[i].dent
-			result_eq_maxdelen = get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
-			result_eq_ki = kier(eq_ligand_list[i].mol)
-			result_eq_tki = get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
-	## average axial results
+			#result_eq_maxdelen = get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
+			#result_eq_ki = kier(eq_ligand_list[i].mol)
+			#result_eq_tki = get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
+	## average eq results
 	result_eq_dent = np.divide(result_eq_dent,n_eq)
-	result_eq_maxdelen = np.divide(result_eq_maxdelen,n_eq)
-	result_eq_ki = np.divide(result_eq_ki,n_eq)
-	result_eq_tki = np.divide(result_eq_tki,n_eq)
+	#result_eq_maxdelen = np.divide(result_eq_maxdelen,n_eq)
+	#result_eq_ki = np.divide(result_eq_ki,n_eq)
+	#result_eq_tki = np.divide(result_eq_tki,n_eq)
 	## save the results
 	result_ax.append(result_ax_dent)
-	result_ax.append(result_ax_maxdelen)
-	result_ax.append(result_ax_ki)
-	result_ax.append(result_ax_tki)
+	#result_ax.append(result_ax_maxdelen)
+	#result_ax.append(result_ax_ki)
+	#result_ax.append(result_ax_tki)
 	result_eq.append(result_eq_dent)
-	result_eq.append(result_eq_maxdelen)
-	result_eq.append(result_eq_ki)
-	result_eq.append(result_eq_tki)
+	#result_eq.append(result_eq_maxdelen)
+	#result_eq.append(result_eq_ki)
+	#result_eq.append(result_eq_tki)
 	results_dictionary={'colnames':colnames,'result_ax':result_ax,'result_eq':result_eq}
 	return  results_dictionary
 
@@ -86,7 +86,7 @@ def get_lig_EN(mol,connection_atoms):
         max_EN = 0 
         globs =globalvars() 
         for atoms in connection_atoms:
-                this_atoms_neighbors = mol.getBondedAtoms(atoms)
+                this_atoms_neighbors = mol.getBondedAtomsSmart(atoms)
                 for bound_atoms in this_atoms_neighbors:
                         this_EN = float(globs.endict()[mol.getAtom(atoms).symbol()]) -  float(globs.endict()[mol.getAtom(bound_atoms).symbol()])
                         if (abs(this_EN) >= max_EN):

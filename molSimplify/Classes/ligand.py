@@ -12,7 +12,7 @@
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Scripts.geometry import * 
-
+from collections import Counter
 
 class ligand:
 	def __init__(self,master_mol,index_list,dent):
@@ -51,11 +51,62 @@ class ligand:
 					[new_active_set.append(element) for element in this_atoms_neighbors]
 				active_set = new_active_set
 		return trunc_mol
+
 def ligand_breakdown(mol):
 	# this function takes an octahedral 
 	# complex and returns ligands
 	metal_index = mol.findMetal()
-	bondedatoms = mol.getBondedAtoms(metal_index)
+	bondedatoms = mol.getBondedAtomsSmart(metal_index)
+	bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+	#print(bonded_atom_symbols)
+        #if Counter(bonded_atom_symbols) == Counter(['N', 'N', 'C', 'N', 'N', 'N', 'N', 'C']):
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+        #if Counter(bonded_atom_symbols) == Counter(['N', 'N', 'C', 'O', 'O', 'N', 'N', 'C']):
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+        #if Counter(bonded_atom_symbols) == Counter(['N', 'N', 'N', 'N', 'C', 'N', 'N']):
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+        #if Counter(bonded_atom_symbols) == Counter(['O', 'C', 'C', 'O', 'N', 'N', 'O', 'C', 'C', 'O']):
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+                #bad_ind = bonded_atom_symbols.index('C')
+                #del bondedatoms[bad_ind]
+                #print('***** special intervention *** ')
+                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
+                #print(bonded_atom_symbols)
+        
 	counter = 0
 	liglist = []
 	ligdents = []
@@ -98,6 +149,7 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 		print("max d = " + str(max_dent))
 		print("min_dent = " +  str(min_dent))
 		print("ligand list is" + str(liglist))
+                print('denticities are  ' + str(ligdents))
 	eq_lig_list = list()
 	ax_lig_list = list()
 	ax_con_list = list()
@@ -167,11 +219,11 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 				eq_con_list.append(ligcons[2])
 			elif min_dent == 2 and max_dent==2 and n_ligs ==3 and not n_unique_ligs ==1:
 				## this is a hetero/bidentate case
-				for i,ligs in enumerate(lig_list):
-					if lig_counts[i] == 2:
+				for i,ligs in enumerate(liglist):
+					if all_ligand_counts[i] == 2:
 						eq_lig_list.append(i)
 						eq_con_list.append(ligcons[i])
-					elif  lig_counts[i] == 1:
+					elif  all_ligand_counts[i] == 1:
 						ax_lig_list.append(i)
 						ax_con_list.append(ligcons[i])
 	elif (n_ligs == 6): # all mono  case, 
@@ -238,7 +290,8 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 		print('eq_liq is ind ',eq_lig_list)
 		print('ax_liq is ind ',ax_lig_list)
 		print('ax built lig [0] ext ind :' + str(built_ligand_list[ax_lig_list[0]].ext_int_dict.keys())) 
-		print('ax built lig [1] ext ind :' + str(built_ligand_list[ax_lig_list[1]].ext_int_dict.keys())) 
+                if len(ax_lig_list)>1:
+                        print('ax built lig [1] ext ind :' + str(built_ligand_list[ax_lig_list[1]].ext_int_dict.keys())) 
 		print('eq built lig [0] ext ind: '+str(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys())) 
 		print('eq_con is '+str((eq_con_list)))
 		print('ax_con is '+str((ax_con_list)))

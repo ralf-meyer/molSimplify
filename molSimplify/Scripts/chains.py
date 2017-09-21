@@ -205,15 +205,15 @@ def grow_linear_step(chain,new_unit,dim,interv):
 
 		add_mol.translate(interv)
 		
-                add_mol.writexyz('/home/jp/Dropbox/precut.xyz')
+                add_mol.writexyz('precut.xyz')
                 add_mol = remove_closest_h(add_mol,combined_mol)
-                add_mol.writexyz('/home/jp/Dropbox/postcut.xyz')
+                add_mol.writexyz('postcut.xyz')
 		combined_mol = combined_mol.combine(add_mol)
 		#combined_mol,en = chain_ffopt('',combined_mol,[])       
 
-		combined_mol.writexyz('/home/jp/Runs/pre.xyz')
+		combined_mol.writexyz('pre.xyz')
 
-		combined_mol.writexyz('/home/jp/Runs/post.xyz')
+		combined_mol.writexyz('post.xyz')
 
 		return combined_mol
 
@@ -230,51 +230,54 @@ def chain_builder_supervisor(args,rundir):
 		monomer.OBmol = monomer.getOBmol(args.chain,'smi')
 		monomer.OBmol.make3D('mmff94',0)
 		monomer.convert2mol3D()
-#        monomer.printxyz()
-		monomer.writexyz('/home/jp/Runs/mono.xyz')
+
+		monomer.writexyz('mono.xyz')
 		dimer = mol3D()
 		dimer.OBmol = dimer.getOBmol(args.chain+args.chain,'smi')
 		dimer.OBmol.make3D('mmff94',0)
 		dimer.convert2mol3D()
 		dimer.printxyz()
-		dimer.writexyz('/home/jp/Dropbox/di.xyz')
+		dimer.writexyz('di.xyz')
+                interd,interv = interatomic_dist(dimer,len(args.chain),0)
+		print('interv is')
+		print(interv)
+                
 		trimer = mol3D()
 		trimer.OBmol = trimer.getOBmol(args.chain+args.chain + args.chain,'smi')
 		trimer.OBmol.make3D('mmff94',0)
 		trimer.convert2mol3D()
 		trimer.printxyz()
-		trimer.writexyz('/home/jp/Dropbox/tri.xyz')
+		trimer.writexyz('tri.xyz')
 
 		my_dim = mol3D()
 		my_dim.copymol3D(monomer)
-		my_dim = zero_x(monomer)
+		my_dim.writexyz('prestart.xyz')
+                
+		my_dim = trim_H(my_dim,monomer.getAtom(len(args.chain)-1).coords())
+		my_dim = zero_x(my_dim)
 		basic_lengths = find_extents(my_dim)
-#        print(basic_lengths)
+
 		basic_x  = basic_lengths[0]
 		basic_y  = basic_lengths[1]
 
-		interd,interv = interatomic_dist(dimer,3,0)
-		print('interv is')
-		print(interv)
-		my_dim.writexyz('/home/jp/Dropbox/prestart.xyz')
 
-#		my_dim = trim_H(my_dim,[basic_x,basic_y,0])
-                my_dim.deleteatoms([8])
-		my_dim.writexyz('/home/jp/Dropbox/start.xyz')
+		my_dim.writexyz('start.xyz')
 
 		middle = mol3D()
 		middle.copymol3D(monomer)
+                print('connection atom is '+monomer.getAtom(len(args.chain)-1).symbol())
+		middle = trim_H(middle,monomer.getAtom(len(args.chain)-1).coords())
+
 		middle =zero_x(middle)
 		middle = trim_H(middle,[0,0,0])
-		middle = trim_H(middle,[basic_x,0,0])
 
 		end = mol3D()
 		end.copymol3D(monomer)
 		end =zero_x(end)
-#		end = trim_H(end,[0,0,0])
+		end = trim_H(end,[0,0,0])
 
-		middle.writexyz('/home/jp/Dropbox/middle.xyz')
-		end.writexyz('/home/jp/Dropbox/end.xyz')
+		middle.writexyz('middle.xyz')
+		end.writexyz('end.xyz')
 
 
 
@@ -294,9 +297,9 @@ def chain_builder_supervisor(args,rundir):
 		my_dim = grow_linear_step(my_dim,end,0,interv)
 
 #        my_dim.printxyz()
-		my_dim.writexyz('/home/jp/Dropbox/poly.xyz')
+		my_dim.writexyz('poly.xyz')
 		my_dim,en = chain_ffopt('',my_dim,[])       
-		my_dim.writexyz('/home/jp/Dropbox/polyf.xyz')
+		my_dim.writexyz('polyf.xyz')
 
 
 		if emsg:

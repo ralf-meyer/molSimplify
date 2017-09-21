@@ -31,12 +31,11 @@ def atom_only_autocorrelation(mol,prop,d,atomIdx):
 	if hasattr(atomIdx, "__len__"):
 		for elements in atomIdx:
 			autocorrelation_vector += autocorrelation(mol,w,elements,d)
-#		autocorrelation_vector = np.divide(autocorrelation_vector,len(atomIdx))
+		autocorrelation_vector = np.divide(autocorrelation_vector,len(atomIdx))
 	else:
 		autocorrelation_vector += autocorrelation(mol,w,atomIdx,d)
 	return(autocorrelation_vector)
 def metal_only_autocorrelation(mol,prop,d):
-
 	autocorrelation_vector = numpy.zeros(d)
 	try:
 		metal_ind = mol.findMetal()
@@ -61,7 +60,7 @@ def atom_only_deltametric(mol,prop,d,atomIdx):
 	if hasattr(atomIdx, "__len__"):
 		for elements in atomIdx:
 			deltametric_vector += deltametric(mol,w,elements,d)
-#		deltametric_vector = np.divide(deltametric_vector,len(atomIdx))
+		deltametric_vector = np.divide(deltametric_vector,len(atomIdx))
 	else:
 		deltametricvector += deltametric(mol,w,atomIdx,d)
 	return(deltametric_vector)
@@ -95,7 +94,8 @@ def autocorrelation(mol,prop_vec,orig,d):
 		new_active_set = set()
 		for this_atom in active_set:
 			## prepare all atoms attached to this connection 
-			this_atoms_neighbors =  mol.getBondedAtoms(this_atom)
+			#print('called in AC')
+			this_atoms_neighbors =  mol.getBondedAtomsSmart(this_atom)
 			for bound_atoms in this_atoms_neighbors:
 				if (bound_atoms not in historical_set) and (bound_atoms not in active_set):
 					new_active_set.add(bound_atoms)
@@ -123,7 +123,8 @@ def deltametric(mol,prop_vec,orig,d):
 		new_active_set = set()
 		for this_atom in active_set:
 			## prepare all atoms attached to this connection 
-			this_atoms_neighbors =  mol.getBondedAtoms(this_atom)
+			#print('called in DAC')
+			this_atoms_neighbors =  mol.getBondedAtomsSmart(this_atom)
 			for bound_atoms in this_atoms_neighbors:
 				if (bound_atoms not in historical_set) and (bound_atoms not in active_set):
 					new_active_set.add(bound_atoms)
@@ -173,7 +174,7 @@ def construct_property_vector(mol,prop):
 	elif prop == 'topology':
     		for i,atoms in enumerate(mol.getAtoms()):
 			#print('atom # ' + str(i) + " symbol =  " + str(atoms.symbol()))
-			w[i] = len(mol.getBondedAtoms(i))
+			w[i] = len(mol.getBondedAtomsSmart(i))
 		done = True
 	if not done:
     		for i,atoms in enumerate(mol.getAtoms()):
@@ -183,6 +184,8 @@ def construct_property_vector(mol,prop):
 
 def find_ligand_autocorrelations_oct(mol,prop,loud,depth,name=False):
 	## this function takes a
+	## symmetric (axial == axial,
+	## equatorial == equatorial)
 	## octahedral complex
 	## and returns autocorrelations for 
 	## the axial an equatorial ligands
@@ -291,8 +294,6 @@ def generate_all_ligand_deltametrics(mol,loud,depth=4,name=False):
 		for i in range(0,depth+1):
 			this_colnames.append(labels_strings[ii] + '-' + str(i))
 		colnames.append(this_colnames)
-		result_ax_full.append(ax_ligand_ac_full)
-		result_eq_full.append(eq_ligand_ac_full)
 		result_ax_con.append(ax_ligand_ac_con)
 		result_eq_con.append(eq_ligand_ac_con)
 	results_dictionary={'colnames':colnames,'result_ax_con':result_ax_con,'result_eq_con':result_eq_con}

@@ -35,7 +35,7 @@ def obtain_truncation(mol,con_atoms,hops):
                             trunc_mol.addAtom(mol.getAtom(this_atom))
                             added_list.append(this_atom)
                     ## prepare all atoms attached to this connection 
-                    this_atoms_neighbors =  mol.getBondedAtoms(this_atom)
+                    this_atoms_neighbors =  mol.getBondedAtomsSmart(this_atom)
                     for bound_atoms in this_atoms_neighbors:
                         if (bound_atoms not in added_list):
                             trunc_mol.addAtom(mol.getAtom(bound_atoms))
@@ -48,7 +48,7 @@ def create_graph(mol):
     index_set = range(0,mol.natoms)
     A  = np.matrix(np.zeros((mol.natoms,mol.natoms)))
     for i in index_set:
-        this_bonded_atoms = mol.getBondedAtoms(i)
+        this_bonded_atoms = mol.getBondedAtomsSmart(i)
         for j in index_set:
             if j in this_bonded_atoms:
                 A[i,j] = 1
@@ -60,7 +60,7 @@ def get_lig_EN(mol,connection_atoms):
         max_EN = 0 
         globs =globalvars() 
         for atoms in connection_atoms:
-                this_atoms_neighbors = mol.getBondedAtoms(atoms)
+                this_atoms_neighbors = mol.getBondedAtomsSmart(atoms)
                 for bound_atoms in this_atoms_neighbors:
                         this_EN = float(globs.endict()[mol.getAtom(atoms).symbol()]) -  float(globs.endict()[mol.getAtom(bound_atoms).symbol()])
                         if (abs(this_EN) >= max_EN):
