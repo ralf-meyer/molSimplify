@@ -400,41 +400,34 @@ def parseinputfile(args):
                 for ll in l:
                     args.pangles.append(ll) if ll!='' else args.pangles.append(False)
             if (l[0]=='-decoration' and len(l[1:]) > 0):
-                print(line)
-                print('l[1] = ' + str(l[1]))
                 list_to_parse = (line.strip().split(' ')[1:])
-                print('list_to_parse 1= ' + str(list_to_parse))
                 list_to_add = list()
                 local_list = list()
                 if not isinstance(list_to_parse,basestring):
                     for decor in list_to_parse:
-                        print('decor is ' + str(decor))
                         decor = str(decor).strip().strip('[]').split(',')
-                        print('adding ' + str(decor))
                         local_list = local_list + [str(i) for i in decor]
                         list_to_add.append([str(i) for i in decor])
-                    print('local list ' + str(local_list))
                 else:
                     list_to_add = [list_to_parse]
                 args.decoration = list_to_add
-                print(args.decoration)
             if (l[0]=='-decoration_index' and len(l[1:]) > 0):
-                print(line)
-                print('l[1] = ' + str(l[1]))
                 list_to_parse = (line.strip().split(' ')[1:])
-                print('list_to_parse 1= ' + str(list_to_parse))
                 list_to_add = list()
                 local_list = list()
                 if not isinstance(list_to_parse,basestring):
                     for decor in list_to_parse:
-                        print('decor is ' + str(decor))
+                        #print('correcting string')
                         decor = str(decor).strip().strip('[]').split(',')
-                        print('adding ' + str(decor))
+                        #print(decor)
                         local_list = local_list + [str(i) for i in decor]
-                        list_to_add.append([int(i) for i in decor])
-                    print('local list ' + str(local_list))
+                        #print(local_list)
+                        ### correct for 0 index
+                        list_to_add.append([int(i.strip('[]'))-1 for i in decor]) 
+                        
                 else:
-                    list_to_add = [list_to_parse]
+                    ### correct for 0 index
+                    list_to_add = [int(list_to_parse.strip('[]'))-1]
                 args.decoration_index = list_to_add
                 print(args.decoration_index)
             # parse qc arguments

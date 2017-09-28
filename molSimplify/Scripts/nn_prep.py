@@ -10,6 +10,7 @@
 # import custom modules
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
+from molSimplify.Informatics.decoration_manager import*
 from molSimplify.Classes.globalvars import *
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.python_nn.ANN import *
@@ -62,10 +63,12 @@ def check_ligands(ligs,batlist,dents,tcats):
     ## of connection atoms
 
     n_ligs = len(ligs)
-    unique_ligans = []
+    unique_ligands = []
+    axial_ind_list =[]
+    equitorial_ind_list =[]
     axial_ligs = []
     equitorial_ligs = []
-    ax_dent =0 
+    ax_dent = 0 
     eq_dent  =0
     eq_ligs = []
     eq_tcat = False
@@ -131,7 +134,10 @@ def check_ligands(ligs,batlist,dents,tcats):
     if not (len(equitorial_ligs) == 1):
         print('equitorial ligs mismatch: ',equitorial_ligs,eq_dent)
         valid = False
-    return valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat
+    if valid: # get the index position in ligs
+        axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
+        equitorial_ind_list = [ligs.index(eq_lig) for eq_lig in equitorial_ligs]
+    return valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat,axial_ind_list,equitorial_ind_list
 
 def check_metal(metal,oxidation_state):
     supported_metal_dict = {"fe":[2,3],"mn":[2,3],"cr":[2,3],
@@ -195,13 +201,20 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     newligs = []
     newcats = []
     newdents = []
+    newdecs = [False]*6
+    newdec_inds = [[]]*6
     ANN_trust = False
+    count = -1
     for i,lig in enumerate(ligs):
         this_occ = occs[i]
         for j in range(0,int(this_occ)):
+            count += 1
             newligs.append(lig)
             newdents.append(dents[i])
             newcats.append(tcats[i])
+            if args.decoration:               
+                newdecs[count] = (args.decoration[i])
+                newdec_inds[count] = (args.decoration_index[i])
 
     ligs = newligs  
     dents = newdents
@@ -236,7 +249,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if emsg:
         print(str(" ".join( ["ANN messages:"] +   [str(i) for i in emsg] )))
     if valid:
-        valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat = check_ligands(ligs,batslist,dents,tcats)
+        valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat,axial_ind_list,equitorial_ind_list = check_ligands(ligs,batslist,dents,tcats)
         if args.debug:
             print("\n")
             print("ligand validity is  "+str(valid))
@@ -259,8 +272,19 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             ax_lig3D,r_emsg = lig_load(axial_ligs[0],licores) # load ligand
             if r_emsg:
                     emsg += r_emsg
+            ## check decoration index
+            if newdecs:
+                        if newdecs[axial_ind_list[0]]:
+                            #print('decorating ' + str(axial_ligs[0]) + ' with ' +str(newdecs[axial_ind_list[0]]) + ' at sites '  + str(newdec_inds[axial_ind_list[0]]))
+                            ax_lig3D = decorate_ligand(args,axial_ligs[0],newdecs[axial_ind_list[0]],newdec_inds[axial_ind_list[0]])
+            
             ax_lig3D.convert2mol3D() ## mol3D representation of ligand
+            ### eq
             eq_lig3D,r_emsg = lig_load(equitorial_ligs[0],licores) # load ligand
+            if newdecs:
+                if newdecs[equitorial_ind_list[0]]:
+                            #print('decorating ' + str(equitorial_ligs[0]) + ' with ' +str(newdecs[equitorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equitorial_ind_list[0]]))
+                            eq_lig3D = decorate_ligand(args,equitorial_ligs[0],newdecs[equitorial_ind_list[0]],newdec_inds[equitorial_ind_list[0]])
             if r_emsg:
                     emsg += r_emsg
             eq_lig3D.convert2mol3D() ## mol3D representation of ligand

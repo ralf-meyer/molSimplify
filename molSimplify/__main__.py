@@ -88,9 +88,9 @@ def main(args=None):
     #    elif 'chainb' in args:
     #        parser = argparse.ArgumentParser(description=DescString_chainb)
     #        parseinputs_chainb(parser)            
-        elif 'autocorr' in args:
-            parser = argparse.ArgumentParser(description=DescString_autocorr)
-            parseinputs_autocorr(parser)           
+    #    elif 'autocorr' in args:
+    #        parser = argparse.ArgumentParser(description=DescString_autocorr)
+    #        parseinputs_autocorr(parser)           
         elif 'db' in args:
             parser = argparse.ArgumentParser(description=DescString_db)
             parseinputs_db(parser)       
