@@ -19,7 +19,7 @@ import sys, os, random, shutil, unicodedata, inspect, glob, time, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 
-import pybel
+import pybel, openbabel
 
 class mGUI():
     getgeoms()
@@ -1899,11 +1899,13 @@ class mGUI():
             if len(ligs)==0:
                 return
             else:
-                print(ligs)
-                
                 for i,pmol in enumerate(ligs):
+                    ## use openbabel to convert to labeled SVG
+                    obConversion = openbabel.OBConversion()
+                    obConversion.SetOutFormat("svg")
+                    obConversion.AddOption("i", obConversion.OUTOPTIONS, "") 
                     ### return the svg with atom labels as a string
-                    svgstr = pmol.write(format="svg",filename=None)
+                    svgstr = obConversion.WriteString(pmol.OBMol)
                     ### unpacked nested svg as in pybel._repr_svg_
                     namespace = "http://www.w3.org/2000/svg"
                     ET.register_namespace("", namespace)
