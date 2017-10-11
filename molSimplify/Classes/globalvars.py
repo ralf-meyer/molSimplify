@@ -6,7 +6,6 @@
 ########   variables that are shared   #############
 ##########    within the program       #############
 ####################################################
-
 import os, inspect, glob, platform, sys, subprocess
 from math import sqrt 
 
@@ -19,13 +18,15 @@ amassdict = {'X':(1.0,0,0.77),'H':(1.0079,1,0.37),'B':(10.83,5,0.85),'C':(12.010
              'Ga':(69.72,31,1.24),'Ge':(72.63,32,1.21),'As':(74.92,33,1.21),'Se':(78.96,34,1.16),'Br':(79.904,35,1.14),
              'Rb':(85.47,37,2.10),'Sr':(87.62,38,1.85),'Y':(88.91,39,1.63),'Zr':(91.22,40,1.54),'Nb':(92.91,41,1.47),
              'Mo':(95.96,42,1.38),'Ru':(101.1,44,1.25),'Rh':(102.9,45,1.25),'Pd':(106.4,46,1.20),'Ag':(107.9,47,1.28),
+	     'Tc':(98.9,43,1.56),'Cd':(112.4,48,1.48),'La':(138.9,57,1.69),'Hf':(178.5,72,1.50),'Ta':(180.9,73,1.38),
+             'W':(183.8,74,1.46),'Re':(186.2,75,1.59),'Os':(190.2,76,1.28),'Ir':(192.2,77,1.37),'Hg':(200.6,80,1.49),
              'In':(114.8,49,1.42),'Sn':(118.7,50,1.40),'I':(126.9,53,1.33),'Pt':(195.1,78,1.23),'Au':(197.0,79,1.24)}
 
 # list of metals
 metalslist = ['Sc','SC','scandium','Ti','TI','titanium','V','vanadium','Cr','CR','chromium','Mn','MN','manganese','Fe','FE','iron','Co','CO',
             'cobalt','Ni','NI','nickel','Cu','CU','copper','Zn','ZN','zinc','Y','yttrium','Zr','ZR','zirconium','Nb','NB','niobium','Mo','MO',
             'molybdenum','Tc','TC','technetium','Ru','RU','ruthenium','Rh','RH','rhodium','Pd','PD','palladium','Ag','AG','silver','Cd','CD',
-            'cadmium','Lu','LU','lutetium','Hf','HF','hafnium','Ta','TA','tantalum','W','tungsten','Re','RE','rhenium','Os','OS','osmium',
+            'cadmium','La','LA','lanthanum','Hf','HF','hafnium','Ta','TA','tantalum','W','tungsten','Re','RE','rhenium','Os','OS','osmium',
             'Ir','IR','iridium','Pt','PT','platinum','Au','AU','gold','Hg','HG','mercury']
 
 # list of elements sorted by atomic number
@@ -43,8 +44,8 @@ endict =     { "H" : 2.20, "Li": 0.98, "Be": 1.57, "B" : 2.04, "C" : 2.55, "N" :
      "Cl": 3.16, "K" : 0.82, "Ca": 1.00, "Sc": 1.36, "Ti": 1.54, "V" : 1.63, "Cr": 1.66,
     "Mn": 1.55, "Fe": 1.83, "Co": 1.88, "Ni": 1.91, "Cu": 1.90, "Zn": 1.65,  "Ga": 1.81,
     "Ge": 2.01, "As": 2.18, "Se": 2.55, "Br": 2.96, "Mo": 2.16, "Tc": 2.10, "Rh": 2.28,
-    "Pd": 2.20, "Ag": 1.93,"Cd": 1.69, "In": 1.78, "Sb": 2.05, "I":  2.66, "Cs": 0.79,
-    "Os": 2.20, "Ir": 2.20, "Pt": 2.28, "Au": 2.54, "Hg": 2.00, "Pb": 2.33,}
+    "Pd": 2.20, "Ag": 1.93,"Cd": 1.69, "In": 1.78, "Sb": 2.05, "I":  2.66, "Cs": 0.79, 
+    "Y":1.22, "Zr":1.33, "Nb":1.60, "Ru":2.20, "La":1.10, "Hf":1.30, "Ta":1.50, "W":2.36, "Re":1.90}
 
 ########################################
 ### module for running bash commands ###
