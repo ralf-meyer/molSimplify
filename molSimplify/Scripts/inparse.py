@@ -76,6 +76,7 @@ def checkinput(args):
 ########## check true or false  ###########
 ###########################################
 def checkTrue(arg):
+
     if 'auto' in arg.lower():
         return 'auto'
     elif 'y' in arg.lower() or '1' in arg.lower() or 't' in arg.lower() or arg==1:
@@ -746,14 +747,14 @@ def parseinputs_advanced(*p):
     parser.add_argument("-rundir", help="directory for jobs, default ~/Runs",action="store_true")
     parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]",action="store_true")
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
-    parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default='True')
+    parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default=True)
     parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
     parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
     parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
-    parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default='False')
+    parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default=False)
     parser.add_argument("-decoration_index", help="list of indicies on each ligand to decorate",action="store_true") # decoration indexes, one list per ligand
     parser.add_argument("-decoration", help="list of SMILES for each decoratation",action="store_true") # decoration, one list ligand  
-    parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default='True')
+    parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default=True)
     parser.add_argument("-MLbonds", help="custom M-L bond length (Ang) for corresponding ligand",action="store_true")
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
     parser.add_argument("-langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")

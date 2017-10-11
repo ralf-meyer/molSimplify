@@ -611,8 +611,8 @@ def findsmarts(lig3D,smarts,catom):
 #################################################
 def mcomplex(args,core,ligs,ligoc,licores,globs):
     
-    print(args.ligocc)
     
+    #sadness
     # INPUT
     #   - args: placeholder for input arguments
     #   - core: mol3D structure with core
