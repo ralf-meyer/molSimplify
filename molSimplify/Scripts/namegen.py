@@ -23,4 +23,3 @@ def name_complex(core,ligs,ligoc,args):
         names += '_' + str(lig[:3]) + '-' + str(ligoc[i])
     names += "_"+str(spin)
     return name
-

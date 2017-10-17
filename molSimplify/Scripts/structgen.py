@@ -806,8 +806,10 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     core3D.addAtom(atom3D(metal,corexyz[0])) # add metal
     if args.calccharge:
         if args.oxstate:
-            romans={'0':'0','I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
-            core3D.charge = int(romans[args.oxstate])
+            if args.oxstate in romans.keys():
+                core3D.charge = int(romans[args.oxstate])
+            else:
+                core3D.charge = int(args.oxstate)
     mcoords = core3D.getAtom(0).coords() # metal coordinates in backbone
     ### initialize complex list of ligands/core
     auxm = mol3D()
@@ -1759,9 +1761,10 @@ def customcore(args,core,ligs,ligoc,licores,globs):
     core3D.copymol3D(core)
     cmcore = core3D.centermass()
     if args.calccharge:
-        if args.oxstate:
-            romans={'0':'0','I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
+        if args.oxstate in romans.keys():
             core3D.charge = int(romans[args.oxstate])
+        else:
+			core3D.charge = int(args.oxstate) 
     # remove one hydrogen for each functionalization
     Hs = []
     if not args.replig:

@@ -26,25 +26,43 @@ def checkinput(args):
         args.core = ['fe']
     # check oxidation state
     if not args.oxstate:
-		try:
-			print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
-			args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-		except:
-			print 'WARNING: No oxidation state specified. Defaulting to II'
-			args.oxstate = 'II'
+        try:
+            print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
+            args.oxstate = globs.defaultoxstate[args.core[0].lower()]
+        except:
+            print 'WARNING: No oxidation state specified. Defaulting to 2'
+            args.oxstate = '2'
+    # check spin state (doesn't work for custom cores)
+    if not args.spin:
+        if args.oxstate in romans.keys():
+            oxstatenum = romans[args.oxstate]
+        else:
+            oxstatenum = args.oxstate
+        if args.core[0].lower() in mtlsdlist:
+            if mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2) in defaultspins:
+                defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2)]
+                print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
+                print 'Please check this against our ANN output (where available)'
+            else:
+                print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
+                defaultspinstate = '1'
+        else:
+            defaultspinstate = '1'
+            print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+        args.spin = defaultspinstate
     # check ligands
     if not args.lig and not args.rgen:
         if args.gui:
             from Classes.mWidgets import mQDialogWarn
-            qqb = mQDialogWarn('Warning','You specified no ligands.\n')
+            qqb = mQDialogWarn('Warning','You specified no ligands.')
             qqb.setParent(args.gui.wmain)
         else:
-            print 'WARNING: No ligands specified. Defaulting to water.\n'
+            print 'WARNING: No ligands specified. Defaulting to water.'
         args.lig = ['water']
     # check coordination number and geometry
     if not args.coord and not args.geometry:
         if not args.gui:
-            print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).\n'
+            print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).'
             args.coord = 6
             args.geometry = 'oct'
     coords,geomnames,geomshorts,geomgroups = getgeoms()
@@ -66,12 +84,32 @@ def checkinput(args):
             print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
     # check number of ligands
     if args.coord and not args.ligocc:
-        print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.\n')
+        print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.')
         args.ligocc = [args.coord]
         for lig in args.lig[1:]:
             args.ligocc.append(0)
 
-
+def checkinput_ts(args):
+    globs = globalvars()
+    emsg = False
+    # check core
+    if not args.core:
+        print 'WARNING: No core specified. Defaulting to Fe(II)(N4Py). Available cores are: '+getcores()
+        args.core = ['fen4py']
+    # check substrate
+    if not args.substrate:
+        print 'WARNING: No substrate specified. Defaulting to methane.'
+        args.substrate = ['methane']
+    # reacting atoms will be checked later because defaults can only be determined after structures are loaded
+    # check charge
+    if not args.charge:
+        print 'WARNING: Charge not specified. calccharge does not work for custom cores. Defaulting to 0.'
+        args.charge = '0'
+    # check spin state
+    if not args.spin:
+        print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+        args.spin = '1'
+        
 ###########################################
 ########## check true or false  ###########
 ###########################################
@@ -196,7 +234,7 @@ def cleaninput(args):
     keepHs_default = 'auto'
     if not args.keepHs:
         args.keepHs = [keepHs_default]
-    if args.keepHs:
+    if args.keepHs and args.lig:
         while len(args.keepHs) < len(args.lig):
             args.keepHs.append(keepHs_default)
         for i,s in enumerate(args.keepHs):
@@ -639,7 +677,15 @@ def parseinputfile(args):
                 args.expose_type = l[1]
             if (l[0]=='-shave_extra_layers'):#9
                 args.shave_extra_layers = int(l[1])
-
+            # parse TS generation arguments
+            if (l[0]=='-tsgen'):
+                args.tsgen = True
+            if (l[0]=='-substrate'):
+                args.substrate = l[1:]
+            if (l[0]=='-reactatomc'):
+                args.reactatomc = l[1:]
+            if (l[0]=='-reactatoms'):
+                args.reactatoms = l[1:]                                 
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -696,6 +742,7 @@ def parseinputfile(args):
 		args.simple =True
 	    if (l[0] == '-max_descriptors'):
 		args.max_descriptors = [str(i) for i in l[1:]]
+		
 
 #############################################################
 ########## mainly for help and listing options  #############
@@ -720,6 +767,7 @@ def parseall(parser):
     parseinputs_postproc(parser,args)
     parseinputs_random(parser,args)
     parseinputs_binding(parser,args)
+    parseinputs_tsgen(parser,args)
     parseinputs_customcore(parser,args)
     parseinputs_naming(parser,args)
     return args
@@ -731,7 +779,7 @@ def parseinputs_basic(*p):
     parser.add_argument("-geometry", help="geometry",action="store_true")
     parser.add_argument("-lig", help="ligands to be included in complex")
     parser.add_argument("-ligocc", help="number of corresponding ligands",action="store_true") # e.g. 1,2,1
-    parser.add_argument("-spin", help="Net spin, default 1 (closed-shell)", default=[1])
+    parser.add_argument("-spin", help="Spin multiplicity (e.g., 1 for singlet)")
     parser.add_argument("-keepHs", help="force keep hydrogens, default auto for each ligand") # specified in cleaninput
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
@@ -961,6 +1009,20 @@ def parseinputs_binding(*p):
     parser.add_argument("-bref","--bref", help="reference atoms for placement of extra molecules, default COM (center of mass). e.g. 1,5 or 1-5, Fe, COM",action="store_true")
     parser.add_argument("-bsep","--bsep", help="flag for separating extra molecule in input or xyz file",action="store_true")
     parser.add_argument("-btheta","--btheta", help="polar angle theta for binding species, default random between 0 and 360",action="store_true")
+    if len(p) == 1: # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2: # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0 
+
+def parseinputs_tsgen(*p):
+    parser = p[0]
+    parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
+    parser.add_argument("-substrate", help="small molecule substrate")
+    parser.add_argument("-reactatomc", help="index of reacting atom in core")
+    parser.add_argument("-reactatoms", help="index of reacting atom in substrate")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args

@@ -54,6 +54,7 @@ DescString_inputgen = 'Printing quantum chemistry code input file generation hel
 DescString_postproc = 'Printing post-processing help.'
 DescString_random = 'Printing random generation help.'
 DescString_binding = 'Printing binding species (second molecule) generation help.'
+DescString_tsgen = 'Printing transition state generation help.'
 DescString_customcore = 'Printing custom core functionalization help.'
 DescString_naming = 'Printing custom filename help.'
 
@@ -106,7 +107,9 @@ def main(args=None):
         elif 'binding' in args:
             parser = argparse.ArgumentParser(description=DescString_binding)
             parseinputs_binding(parser)            
-
+        elif 'tsgen' in args:
+            parser = argparse.ArgumentParser(description=DescString_tsgen)
+            parseinputs_tsgen(parser)            
         elif 'customcore' in args:
             parser = argparse.ArgumentParser(description=DescString_customcore)
             parseinputs_customcore(parser) 

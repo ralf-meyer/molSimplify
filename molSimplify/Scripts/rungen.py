@@ -11,6 +11,7 @@ from structgen import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.jobgen import *
 from molSimplify.Scripts.qcgen import *
+from molSimplify.Scripts.tsgen import *
 from molSimplify.Classes.rundiag import *
 import argparse, sys, os, shutil, itertools, random
 from collections import Counter
@@ -209,7 +210,10 @@ def multigenruns(rundir,args,globs):
                     fname='N'+ch[1:]+'S'+sp
                 else:
                     fname='P'+ch+'S'+sp
-                emsg = rungen(rundir,args,fname,globs)
+                if args.tsgen:
+                    emsg = tsgen_supervisor(rundir,args,fname,globs)
+                else:
+                    emsg = rungen(rundir,args,fname,globs)
                 if emsg:
                     return emsg
     elif (multch):
@@ -221,7 +225,10 @@ def multigenruns(rundir,args,globs):
                 fname='N'+ch[1:]
             else:
                 fname='P'+ch[1:]
-            emsg = rungen(rundir,args,fname,globs)
+            if args.tsgen:
+                emsg = tsgen_supervisor(rundir,args,fname,globs)
+            else:
+                emsg = rungen(rundir,args,fname,globs)
             if emsg:
                 return emsg
     elif (multsp):
@@ -230,7 +237,10 @@ def multigenruns(rundir,args,globs):
         for sp in spins:
             args.spin = sp
             fname = 'S'+sp
-            emsg = rungen(rundir,args,fname,globs)
+            if args.tsgen:
+                emsg = tsgen_supervisor(rundir,args,fname,globs)
+            else:
+                emsg = rungen(rundir,args,fname,globs)
             if emsg:
                 return emsg
     else:
@@ -238,7 +248,10 @@ def multigenruns(rundir,args,globs):
             args.charge = args.charge[0]
         if args.spin:
             args.spin = args.spin[0]
-        emsg = rungen(rundir,args,fname,globs) # default
+        if args.tsgen:
+            emsg = tsgen_supervisor(rundir,args,fname,globs)
+        else:
+            emsg = rungen(rundir,args,fname,globs)
     return emsg
 
 #########################################################
@@ -542,9 +555,12 @@ def rungen(rundir,args,chspfname,globs):
                 fname = rootdir.rsplit('/',1)[-1]
                 shutil.move(rootdir,rundir+'/badjobs/'+fname)
             elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
-                f = open(ligfilename+'-good.smi','a')
-                f.write(args.lig[0])
-                f.close()  
+                try:
+                    f = open(ligfilename+'-good.smi','a')
+                    f.write(args.lig[0])
+                    f.close()
+                except:
+					0  
         elif not emsg:
             if args.gui:
                 qq = mQDialogInf('Folder skipped','Folder '+rootdir+' was skipped.')
@@ -553,3 +569,151 @@ def rungen(rundir,args,chspfname,globs):
                 print 'Folder '+rootdir+' was skipped..\n'
     return emsg    
 
+##############################################
+### transition state generation ###
+##############################################
+
+def tsgen_supervisor(rundir,args,chspfname,globs):
+	emsg = False
+	# load specified core into a mol3D object
+	mcores = getmcores()
+	cc, emsg = core_load(args.core,mcores)
+	if emsg:
+		return emsg
+	subcores = getsubcores()
+	print args.substrate
+	if len(args.substrate) > 1:
+		print('Currently only one substrate molecule is supported.')
+		return
+	else:
+		substr, emsg = substr_load(args.substrate[0],subcores)
+	if emsg:
+		return emsg
+	# loop over ligands
+	print args.reactatomc
+	print args.reactatoms
+	##### fetch smart name
+	fname = name_TS(rundir,args.core,substr,args,bind=args.bind,bsmi=args.nambsmi)
+	if globs.debug:
+		print('fname is ' + str(fname))
+	rootdir = fname
+	# check for charges/spin
+	rootcheck = False
+	if (chspfname):
+		rootcheck = rootdir
+		rootdir = rootdir + '/'+chspfname
+	if (args.suff):
+		rootdir += args.suff
+	# check for mannual overwrite of 
+	# directory name
+	if args.jobdir:
+		rootdir = rundir + args.jobdir
+	# check for top directory
+	skip = False
+	if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
+		args.checkdirt = True
+		if not args.rprompt:
+			flagdir=raw_input('\nDirectory '+rootcheck +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
+			if 'k' in flagdir.lower():
+				flagdir = 'keep'
+			elif 's' in flagdir.lower():
+					flagdir = 'skip'
+			else:
+				flagdir = 'replace'
+		else:
+			flagdir = 'replace'
+			# replace existing directory
+		if (flagdir=='replace'):
+			shutil.rmtree(rootcheck)
+			os.mkdir(rootcheck)
+		# skip existing directory
+		elif flagdir=='skip':
+			skip = True
+		# keep both (default)
+		else:
+			ifold = 1
+			while glob.glob(rootdir+'_'+str(ifold)):
+				ifold += 1
+				rootcheck += '_'+str(ifold)
+				os.mkdir(rootcheck)
+	elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
+		if globs.debug:
+			print('rootcheck is  ' + str(rootcheck))
+		args.checkdirt = True
+		try:
+			os.mkdir(rootcheck)
+		except:
+			print 'Directory '+rootcheck+' can not be created. Exiting..\n'
+			return
+	# check for actual directory
+	if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
+		args.checkdirb = True
+		if not args.rprompt:
+			flagdir=raw_input('\nDirectory '+rootdir +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
+			if 'k' in flagdir.lower():
+				flagdir = 'keep'
+			elif 's' in flagdir.lower():
+					flagdir = 'skip'
+			else:
+				flagdir = 'replace'
+		else:
+			#qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
+			#flagdir = qqb.getaction()
+			flagdir = 'replace'
+		# replace existing directory
+		if (flagdir=='replace'):
+			shutil.rmtree(rootdir)
+			os.mkdir(rootdir)
+		# skip existing directory
+		elif flagdir=='skip':
+			skip = True
+		# keep both (default)
+		else:
+			ifold = 1
+			while glob.glob(rootdir+'_'+str(ifold)):
+				ifold += 1
+			rootdir += '_'+str(ifold)
+			os.mkdir(rootdir)
+	elif not os.path.isdir(rootdir) or not args.checkdirb and not skip:
+		if not os.path.isdir(rootdir):
+			args.checkdirb = True
+			os.mkdir(rootdir)
+	####################################
+	############ GENERATION ############
+	####################################
+	if not skip:
+		# generate xyz files
+		strfiles,emsg,this_diag = tsgen(args,rootdir,substr,globs)
+		# generate QC input files
+		if args.qccode and not emsg:
+			args.runtyp = 'ts'
+			if args.charge and (isinstance(args.charge, list)):
+				args.charge = args.charge[0]
+			if args.spin and (isinstance(args.spin, list)):
+				args.spin = args.spin[0]
+			if args.qccode.lower() in 'terachem tc Terachem TeraChem TERACHEM TC':
+				jobdirs = multitcgen(args,strfiles)
+				print 'TeraChem input files generated!'
+			elif 'gam' in args.qccode.lower():
+				jobdirs = multigamgen(args,strfiles)
+				print 'GAMESS input files generated!'
+			elif 'qch' in args.qccode.lower():
+				jobdirs = multiqgen(args,strfiles)
+				print 'QChem input files generated!'
+			else:
+				print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
+		# generate jobscripts
+		if args.jsched and not emsg:
+			if args.jsched in 'SBATCH SLURM slurm sbatch':
+				slurmjobgen(args,jobdirs)
+				print 'SLURM jobscripts generated!'
+			elif args.jsched in 'SGE Sungrid sge':
+				sgejobgen(args,jobdirs)
+				print 'SGE jobscripts generated!'
+		if this_diag.sanity: # move to separate subdirectory if generated structure was bad
+			fname = rootdir.rsplit('/',1)[-1]
+			shutil.move(rootdir,rundir+'/badjobs/'+fname)
+	elif not emsg:
+		print 'Folder '+rootdir+' was skipped..\n'
+	return emsg  
+	

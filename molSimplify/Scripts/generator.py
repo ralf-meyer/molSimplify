@@ -88,10 +88,13 @@ def startgen(argv,flag,gui):
         # parse input file
     if args.i:
         parseinputfile(args)
-    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate):        # check input arguments
+    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
         # check input arguments
         print 'Checking input...'
-        emsg = checkinput(args)
+        if args.tsgen:
+            emsg = checkinput_ts(args)
+        else:
+            emsg = checkinput(args)
         # check before cleaning input arguments and clean only if checked
         cleaninput(args)
     args.gui = False # deepcopy will give error
@@ -151,13 +154,16 @@ def startgen(argv,flag,gui):
     elif (args.correlate):
         print('analysis is looking for correlations')
         analysis_supervisor(args,rundir)
-
-    # normal structure generation
+    # normal structure generation or transition state building
     else:
         args = copy.deepcopy(args0)
         # add gui flag
         args.gui = gui
         corests=args.core
+        if args.tsgen: # goes through multigenruns for maximum interoperability
+            print('building a transition state')
+        else:
+            print('building an equilibrium complex')
         for cc in corests:
             args.core = cc
             emsg = multigenruns(rundir,args,globs)

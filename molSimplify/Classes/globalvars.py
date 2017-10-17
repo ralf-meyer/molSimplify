@@ -29,6 +29,14 @@ metalslist = ['Sc','SC','scandium','Ti','TI','titanium','V','vanadium','Cr','CR'
             'cadmium','La','LA','lanthanum','Hf','HF','hafnium','Ta','TA','tantalum','W','tungsten','Re','RE','rhenium','Os','OS','osmium',
             'Ir','IR','iridium','Pt','PT','platinum','Au','AU','gold','Hg','HG','mercury']
 
+# list of transition metals and d-electron count
+mtlsdlist = {'sc':1,'ti':2,'v':3,'cr':4,'mn':5,'fe':6,'ni':7,'co':8,'cu':9,'zn':10,'y':1,'zr':2,'nb':3,
+             'mo':4,'tc':5,'ru':6,'rh':7,'pd':8,'ag':9,'cd':10,'hf':1,'ta':2,'w':3,'re':4,'os':5,'ir':6,
+             'pt':8,'au':9,'hg':10}
+
+# list of default spins for each d-electron count (make this metal/oxidation state specific)
+defaultspins = {0:'1',1:'2',2:'3',3:'4',4:'5',5:'6',6:'5',7:'4',8:'3',9:'2',10:'1'}
+
 # list of elements sorted by atomic number
 elementsbynum=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca',
                     'Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr',
@@ -46,6 +54,9 @@ endict =     { "H" : 2.20, "Li": 0.98, "Be": 1.57, "B" : 2.04, "C" : 2.55, "N" :
     "Ge": 2.01, "As": 2.18, "Se": 2.55, "Br": 2.96, "Mo": 2.16, "Tc": 2.10, "Rh": 2.28,
     "Pd": 2.20, "Ag": 1.93,"Cd": 1.69, "In": 1.78, "Sb": 2.05, "I":  2.66, "Cs": 0.79, 
     "Y":1.22, "Zr":1.33, "Nb":1.60, "Ru":2.20, "La":1.10, "Hf":1.30, "Ta":1.50, "W":2.36, "Re":1.90}
+
+# roman numerals
+romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6','VII':'7','VIII':'8'}
 
 ########################################
 ### module for running bash commands ###

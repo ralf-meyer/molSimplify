@@ -1,0 +1,8 @@
+# substrate name, substrate structure file, abbreviation (unique)
+methane:CH4.xyz,CH4
+ethane:C2H6.xyz,C2H6
+methanol:CH3OH.xyz,CH3OH
+water:H2O.xyz,H2O
+oxo:O.xyz,O
+hydroxo:OH.xyz,OH
+nitrous:N2O.xyz,N2O
