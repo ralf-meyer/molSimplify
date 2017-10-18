@@ -78,20 +78,20 @@ def getconnection1(core,Midx,BL):
 				cpoint = P
 	return cpoint
 
-def distort_substr(substr,reactatoms,XYBL):
-    adjsidx = substr.getBondedAtoms(reactatoms)[0]
-    substr.BCM(reactatoms,adjsidx,XYBL)
+def distort_substr(substr,substreact,XYBL):
+    adjsidx = substr.getBondedAtoms(substreact)[0]
+    substr.BCM(substreact,adjsidx,XYBL)
     return substr    
 
-def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
+def tsgen(mode,args,rootdir,core,substr,compreact,substreact,globs):
     # INPUT
     #   - mode: TS generation mode (see rungen.py)
     #   - args: placeholder for input arguments
     #   - rootdir: directory of current run
     #   - core: core mol3D (generated in rungen.py)
     #   - substr: substrate mol3D
-    #   - reactatomc: complex reacting atom(s) (see rungen)
-    #   - reactatoms: substrate reacting atom(s) (see rungen)
+    #   - compreact: complex reacting atom(s) (see rungen)
+    #   - substreact: substrate reacting atom(s) (see rungen)
     #   - globs: class with global variables
     # OUTPUT
     #   - strfiles: list of xyz files generated
@@ -112,20 +112,20 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
         return strfiles, emsg, this_diag
     elif mode == 1: # oxidative addition of a single group
 		# get first connecting point
-        MLBL = 0.9*(core.getAtom(reactatomc).rad + substr.getAtom(reactatoms).rad)
+        MLBL = 0.9*(core.getAtom(compreact).rad + substr.getAtom(substreact).rad)
         # In future this will be trained. Using sum cov rad for now.
-        cpoint = getconnection1(core,reactatomc,MLBL)
+        cpoint = getconnection1(core,compreact,MLBL)
         # distort substrate molecule
-        adjsidx = substr.getBondedAtoms(reactatoms)[0]
-        XYBL = 1.1*(substr.getAtom(reactatoms).rad + substr.getAtom(adjsidx).rad)
-        substr = distort_substr(substr,reactatoms,XYBL)
+        adjsidx = substr.getBondedAtoms(substreact)[0]
+        XYBL = 1.1*(substr.getAtom(substreact).rad + substr.getAtom(adjsidx).rad)
+        substr = distort_substr(substr,substreact,XYBL)
         # align substrate molecule
         MXYang = 135
-        substr.alignmol(substr.getAtom(reactatoms),atom3D('H',cpoint))
+        substr.alignmol(substr.getAtom(substreact),atom3D('H',cpoint))
         tmp3D = mol3D()
         tmp3D.copymol3D(core)
         tmp3D.addAtom(atom3D('Cl',cpoint))
-        ligalignpt = getconnection2(tmp3D,tmp3D.natoms-1,reactatomc,XYBL,MXYang)
+        ligalignpt = getconnection2(tmp3D,tmp3D.natoms-1,compreact,XYBL,MXYang)
         theta,u = rotation_params(substr.getAtomCoords(adjsidx),cpoint,ligalignpt)
         substr = rotate_around_axis(substr,cpoint,u,180-theta)
         # for substrates with more than 2 atoms, rotate around X-Y axis to minimize steric repulsion
@@ -149,34 +149,34 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
             substr = substrb
     elif mode == 3: # abstraction
         # distort A-B bond
-        adjcidx = core.getBondedAtoms(reactatomc)[0]
-        ABBL = 1.1*(core.getAtom(reactatomc).rad + core.getAtom(adjcidx).rad)
-        core.BCM(reactatomc,adjcidx,ABBL)
+        adjcidx = core.getBondedAtoms(compreact)[0]
+        ABBL = 1.1*(core.getAtom(compreact).rad + core.getAtom(adjcidx).rad)
+        core.BCM(compreact,adjcidx,ABBL)
         # set B-X distance 
-        BXBL = 1.1*(substr.getAtom(reactatoms).rad + core.getAtom(reactatomc).rad)
-        Bcoords = core.getAtom(reactatomc).coords()
+        BXBL = 1.1*(substr.getAtom(substreact).rad + core.getAtom(compreact).rad)
+        Bcoords = core.getAtom(compreact).coords()
         # get connecting point of abstracted atom
         angopt = 180
-        cpoint = getconnection2(core,reactatomc,adjcidx,BXBL,angopt)
+        cpoint = getconnection2(core,compreact,adjcidx,BXBL,angopt)
         core.deleteatom(core.natoms-1) # delete added atom
         # copy substrate
         substr_copy = mol3D()
         substr_copy.copymol3D(substr)
         # distort substrate molecule
-        adjsidx = substr.getBondedAtoms(reactatoms)[0]
-        XYBL = 1.1*(substr.getAtom(reactatoms).rad + substr.getAtom(adjsidx).rad)
-        substr = distort_substr(substr,reactatoms,XYBL)
+        adjsidx = substr.getBondedAtoms(substreact)[0]
+        XYBL = 1.1*(substr.getAtom(substreact).rad + substr.getAtom(adjsidx).rad)
+        substr = distort_substr(substr,substreact,XYBL)
         # align substrate according to connection atom and shadow atom
-        substr.alignmol(substr.getAtom(reactatoms),atom3D('H',cpoint))
+        substr.alignmol(substr.getAtom(substreact),atom3D('H',cpoint))
         # perform rotations
-        mcoords = core.getAtomCoords(reactatomc)
-        r0 = core.getAtomCoords(reactatomc)
-        r1 = substr.getAtomCoords(reactatoms)
+        mcoords = core.getAtomCoords(compreact)
+        r0 = core.getAtomCoords(compreact)
+        r1 = substr.getAtomCoords(substreact)
         r2 = substr.centermass() # center of mass
         if not r2:
             emsg = 'Center of mass calculation for substrate failed. Check input.'
             print emsg
-        at = substr_copy.getBondedAtoms(reactatoms)
+        at = substr_copy.getBondedAtoms(substreact)
         rrot = r1
         theta,u = rotation_params(r0,r1,r2)
         # align center of mass of local environment
@@ -187,12 +187,8 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
             # center of mass of local environment (to avoid bad placement of bulky ligands)
             auxmol = mol3D()
             for i in at:
-                auxmol.addAtom(substr.getAtom(i))
-            auxmol.writexyz('auxmol')    
+                auxmol.addAtom(substr.getAtom(i))   
             r2 = auxmol.centermass() # overwrite global with local centermass
-            print r0
-            print r1
-            print r2
             theta,u = rotation_params(r0,r1,r2)
             ####################################
             # rotate around axis and get both images
@@ -208,7 +204,7 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
             for i in at: # BUGGY, SHOULD BE CHECKED IN THE PRE-DISTORTED SUBSTRATE INSTEAD
                 auxm.addAtom(substr.getAtom(i))
             if auxm.natoms > 1:
-                r0 = substr.getAtom(reactatoms).coords()
+                r0 = substr.getAtom(substreact).coords()
                 r1 = auxm.getAtom(0).coords()
                 r2 = auxm.getAtom(1).coords()
                 if checkcolinear(r1,r0,r2):
@@ -218,9 +214,9 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
                     substr = rotate_around_axis(substr,r0,urot,theta)
             #####################################
             # check for symmetric molecule
-            if distance(substr.getAtom(reactatoms).coords(),substr.centersym()) < 8.0e-2:
-                atsc = substr.getBondedAtoms(reactatoms)
-                r0a = substr.getAtom(reactatoms).coords()
+            if distance(substr.getAtom(substreact).coords(),substr.centersym()) < 8.0e-2:
+                atsc = substr.getBondedAtoms(substreact)
+                r0a = substr.getAtom(substreact).coords()
                 r1a = substr.getAtom(atsc[0]).coords()
                 r2a = substr.getAtom(atsc[1]).coords()
                 theta,u = rotation_params(r0a,r1a,r2a)
@@ -236,7 +232,7 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
                 d1 = substrb.mindist(ts3D)
                 substr = substr if (d1 < d2)  else substrb # pick best one
             # rotate around axis of symmetry and get best orientation
-            r1 = substr.getAtom(reactatoms).coords()
+            r1 = substr.getAtom(substreact).coords()
             u = vecdiff(r1,mcoords)
             dtheta = 2
             optmax = -9999
@@ -255,12 +251,11 @@ def tsgen(mode,args,rootdir,core,substr,reactatomc,reactatoms,globs):
                     optmax = iteropt
                 totiters += 1
             substr = substrb
-            substr.writexyz('substr')
     # combine molecules
     ts3D = mol3D()
     ts3D.copymol3D(core)
     ts3D = ts3D.combine(substr)
-    ts3D.sanitycheck(0)		
+    ts3D.sanitycheck(0)
     ############ END FUNCTIONALIZING ###########
     fname = name_TS(rootdir,args.core,substr,args,bind=args.bind,bsmi=args.nambsmi)
     ts3D.writexyz(fname)

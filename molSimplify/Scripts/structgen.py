@@ -1000,7 +1000,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             auxmol = mol3D()
                             auxmol.addAtom(lig3D.getAtom(atom0))
                             for at in lig3D.getBondedAtoms(atom0):
-                                auxmol.addAtom(atom3D(xyz=lig3D.getAtom(at).coords(),Sym = 'C'))
+								auxmol.addAtom(lig3D.getAtom(at))
+                                #auxmol.addAtom(atom3D(xyz=lig3D.getAtom(at).coords(),Sym = 'C'))
                             if auxmol.natoms == 2 and auxmol.mindistmol() > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(at).rad): # bent, terminal connecting atom:
                                 r2 = PointRotateAxis(vecdiff(auxmol.getAtom(1).coords(),auxmol.getAtom(0).coords()),auxmol.getAtom(0).coords(),auxmol.getAtom(1).coords(),globs.linearbentang)
                                 auxmol.deleteatom(0)
