@@ -1022,7 +1022,7 @@ def parseinputs_tsgen(*p):
     parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
     parser.add_argument("-substrate", help="small molecule substrate")
     parser.add_argument("-reactatomc", help="index of reacting atom in core")
-    parser.add_argument("-reactatoms", help="index of reacting atom in substrate")
+    parser.add_argument("-reactatoms", help="index of reacting atom(s) in substrate")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args

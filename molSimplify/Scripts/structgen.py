@@ -996,10 +996,17 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             lig3Db.copymol3D(lig3D)
                             ####################################
                             # center of mass of local environment (to avoid bad placement of bulky ligands)
+                            # TG: Fixed to better handle asymmetric and linear/bent ligands
                             auxmol = mol3D()
+                            auxmol.addAtom(lig3D.getAtom(atom0))
                             for at in lig3D.getBondedAtoms(atom0):
-                                auxmol.addAtom(lig3D.getAtom(at))
-                            r2 = auxmol.centermass() # overwrite global with local centermass
+                                auxmol.addAtom(atom3D(xyz=lig3D.getAtom(at).coords(),Sym = 'C'))
+                            if auxmol.natoms == 2 and auxmol.mindistmol() > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(at).rad): # bent, terminal connecting atom:
+                                r2 = PointRotateAxis(vecdiff(auxmol.getAtom(1).coords(),auxmol.getAtom(0).coords()),auxmol.getAtom(0).coords(),auxmol.getAtom(1).coords(),globs.linearbentang)
+                                auxmol.deleteatom(0)
+                            else:
+                                auxmol.deleteatom(0)
+                                r2 = auxmol.centermass() # overwrite global with local centermass
                             theta,u = rotation_params(r0,r1,r2)
                             ####################################
                             # rotate around axis and get both images
@@ -1908,11 +1915,17 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                         lig3Db = mol3D()
                         lig3Db.copymol3D(lig3D)
                         ####################################
-                        # center of mass of local environment (to avoid bad placement of bulky ligands)
+                        # TG: Fixed to better handle asymmetric and linear/bent ligands
                         auxmol = mol3D()
+                        auxmol.addAtom(lig3D.getAtom(atom0))
                         for at in lig3D.getBondedAtoms(atom0):
-                            auxmol.addAtom(lig3D.getAtom(at))
-                        r2 = auxmol.centermass() # overwrite global with local centermass
+                            auxmol.addAtom(atom3D(xyz=lig3D.getAtom(at).coords(),Sym = 'C'))
+                        if auxmol.natoms == 2 and auxmol.mindistmol() > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(at).rad): # bent, terminal connecting atom:
+                            r2 = PointRotateAxis(vecdiff(auxmol.getAtom(1).coords(),auxmol.getAtom(0).coords()),auxmol.getAtom(0).coords(),auxmol.getAtom(1).coords(),globs.linearbentang)
+                            auxmol.deleteatom(0)
+                        else:
+                            auxmol.deleteatom(0)
+                            r2 = auxmol.centermass() # overwrite global with local centermass
                         theta,u = rotation_params(r0,r1,r2)
                         ####################################
                         # rotate around axis and get both images

@@ -90,6 +90,26 @@ class mol3D:
         # align molecule
         self.translate(dv)
 
+    ###########################################
+    ### performs bond centric manipulation  ###
+    ###########################################
+    def BCM(self,idx1,idx2,d):
+        # INPUT
+        #   - idx1: index of atom to be moved
+        #   - idx2: index of bond-defining atom
+        #   - d: new bond length (A)
+        bondv = self.getAtom(idx1).distancev(self.getAtom(idx2)) # 1 - 2
+        u = 0.0
+        for u0 in bondv:
+            u += (u0*u0)
+        u = sqrt(u)
+        dl = d - u # dl > 0: stretch, dl < 0: shrink
+        dR = [i*(d/u - 1) for i in bondv]
+        for i in self.getBondedAtoms(idx1):
+            if i != idx2:
+                self.getAtom(i).translate(dR)
+        self.getAtom(idx1).translate(dR)
+
     #############################################
     ### calculates center of mass of molecule ###
     #############################################
