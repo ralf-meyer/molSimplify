@@ -37,7 +37,7 @@ cyanoaceticporphyrin:cyanoaceticporphyrin.mol,caprph,0 3 1 2,build tetradentate,
 cyanopyridine:cyanopyridine.mol,cyanopyrd,3,build organic,BA,0
 cyclam:cyclam.mol,cyclam,15 34 17 36,build tetradentate,A,0
 cyclen:cyclen.mol,cyclen,6 0 3 9,build tetradentate,A,0
-cyclopentadienyl:cyclopentadienyl.mol,Cp,0 1 2 3 4 pi,build aromatic organometallic,BA,-1
+cyclopentadienyl:cyclopentadienyl.mol,Cp,0 1 2 3 4 pi,build aromatic organometallic,N,-1
 cysteine:cysteine.mol,Cys,5,build functionalize aminoacid,BA,0
 dd:dd.smi,dd,0,all  build functionalize,BA
 diaminomethyl:diaminomethyl.mol,damthyl,0 1,build bidentate,N,-1
@@ -158,3 +158,5 @@ valine:valine.mol,Val,3,build functionalize aminoacid,BA,0
 valineB:valine.mol,Val,3 17,build functionalize aminoacid,BA,0
 water:water.mol,wat,0,build small,N,0
 x:x.mol,x,0,all small,N,-1
+ooh:ooh.xyz,ooh,0,all small,N,-1
+co2:co2.mol,co2,0,all small,N,-1

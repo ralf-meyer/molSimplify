@@ -72,3 +72,5 @@ iridium:Ir.mol,0,8
 ir:Ir.mol,0,8
 mercury:Hg.mol,0,8
 hg:Hg.mol,0,8
+n2ots:N2OTS.xyz,0,5
+zncat:zncat.xyz,0,4

@@ -867,6 +867,22 @@ class mol3D:
         return mind
 
     #############################################################################
+    ### calculates minimum distance between atoms in the molecule and a point ###
+    #############################################################################
+    def mindisttopoint(self,point):
+        # INPUT
+        #   - mol: second molecule
+        #   - point: [x,y,z] of point
+        # OUTPUT
+        #   - mind: minimum distance between atoms and point
+        mind = 1000
+        for atom1 in self.atoms:
+            d = distance(atom1.coords(),point)
+            if (d < mind):
+                mind = d
+        return mind
+
+    #############################################################################
     ### calculates minimum distance between non-hydrogen atoms in 2 molecules ###
     #############################################################################
     def mindistnonH(self,mol):
