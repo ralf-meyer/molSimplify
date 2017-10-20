@@ -228,97 +228,48 @@ def smartreorderligs(args,ligs,dentl,licores):
 ###########################################
 ### loads M-L bond length from database ###
 ###########################################
-def getbondlength(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
-    # INPUT
-    #   - args: palceholder for input arguments
-    #   - metal: name for metallic element
-    #   - m3D: mol3D with main complex
-    #   - lig3D: mol3D with ligand
-    #   - matom: index of metal atom in m3D
-    #   - atom0: index of connecting atom in lig3D
-    #   - ligand: name of ligand
-    #   - MLbonds: data from database
-    # OUTPUT
-    #   - bondl: bond length in A
-    ### check for roman letters in oxstate
-    romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
-    if args.oxstate: # if defined put oxstate in keys
-        if args.oxstate in romans.keys():
-            oxs = romans[args.oxstate]
-        else:
-            oxs = args.oxstate
-    else:
-        oxs = '-'
-    # check for spin multiplicity
-    spin = args.spin if args.spin else '-'
-    key = []
-    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))
-    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,'-')) # disregard exact ligand
-    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,ligand)) # disregard oxstate/spin
-    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,'-')) # else just consider bonding atom
-    found = False
-    # search for data
-    for kk in key:
-        if (kk in MLbonds.keys()): # if exact key in dictionary
-            bondl = float(MLbonds[kk])
-            found = True
-            break
-    if not found: # last resort covalent radii
-        bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
-    return bondl
-###########################################
-### loads M-L bond length from database ###
-### and report if the compound is in DB ###
-###########################################
-def getbondlengthStrict(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
-    # INPUT
-    #   - args: palceholder for input arguments
-    #   - metal: name for metallic element
-    #   - m3D: mol3D with main complex
-    #   - lig3D: mol3D with ligand
-    #   - matom: index of metal atom in m3D
-    #   - atom0: index of connecting atom in lig3D
-    #   - ligand: name of ligand
-    #   - MLbonds: data from database
-    # OUTPUT
-    #   - bondl: bond length in A
-    #   - exact_match: bool, was there an exact match?
-    ### check for roman letters in oxstate
-    romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
-    if args.oxstate: # if defined put oxstate in keys
-        if args.oxstate in romans.keys():
-            oxs = romans[args.oxstate]
-        else:
-            oxs = args.oxstate
-    else:
-        oxs = '-'
-    # check for spin multiplicity
-    spin = args.spin if args.spin else '-'
-    key = []
-    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))
-    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,'-')) # disregard exact ligand
-    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,ligand)) # disregard oxstate/spin
-    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,'-')) # else just consider bonding atom
-    found = False
-    exact_match = False
-    # search for data
-    for kk in key:
-        if (kk in MLbonds.keys()): # if exact key in dictionary
-            bondl = float(MLbonds[kk])
-            found = True
-            if (kk == ((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))): ## exact match
-               exact_match = True
-            break
-    if not found: # last resort covalent radii
-        bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
-    if args.debug:
-        print('ms default distance is  ' + str(bondl))
-    return bondl,exact_match
+#def get_MLdist_database(args,metal,m3D,lig3D,matom,atom0,ligand,MLbonds):
+    ## INPUT
+    ##   - args: palceholder for input arguments
+    ##   - metal: name for metallic element
+    ##   - m3D: mol3D with main complex
+    ##   - lig3D: mol3D with ligand
+    ##   - matom: index of metal atom in m3D
+    ##   - atom0: index of connecting atom in lig3D
+    ##   - ligand: name of ligand
+    ##   - MLbonds: data from database
+    ## OUTPUT
+    ##   - bondl: bond length in A
+    #### check for roman letters in oxstate
+    #romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6'}
+    #if args.oxstate: # if defined put oxstate in keys
+        #if args.oxstate in romans.keys():
+            #oxs = romans[args.oxstate]
+        #else:
+            #oxs = args.oxstate
+    #else:
+        #oxs = '-'
+    ## check for spin multiplicity
+    #spin = args.spin if args.spin else '-'
+    #key = []
+    #key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))
+    #key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,'-')) # disregard exact ligand
+    #key.append((metal,'-','-',lig3D.getAtom(atom0).sym,ligand)) # disregard oxstate/spin
+    #key.append((metal,'-','-',lig3D.getAtom(atom0).sym,'-')) # else just consider bonding atom
+    #found = False
+    ## search for data
+    #for kk in key:
+        #if (kk in MLbonds.keys()): # if exact key in dictionary
+            #bondl = float(MLbonds[kk])
+            #found = True
+            #break
+    #if not found: # last resort covalent radii
+        #bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
+    #return bondl
 
 ###############################
 ### FORCE FIELD OPTIMIZATION ##
 ###############################
-
 def ffoptsimp(ff,mol):
     # simple FF opt
     forcefield = openbabel.OBForceField.FindForceField('MMFF94')
@@ -604,15 +555,326 @@ def findsmarts(lig3D,smarts,catom):
     else:
         return False
 
+def align_lig_center(mcoords,lig3D,atom0,i):
+    # Aligns a ligand's center of symmetry along the metal-connecting atom axis.
+    # mcoords: metal coordinates
+    # lig3D: mol3D of ligand to be rotated
+    # atom0: ligand connecting atom
+    # RETURNS
+    # lig3D_aligned: mol3D of aligned ligand
+    
+    # rotate to align center of symmetry
+    globs = globalvars()
+    r0 = mcoords
+    r1 = lig3D.getAtom(atom0).coords()
+    lig3Db = mol3D()
+    lig3Db.copymol3D(lig3D)
+    auxmol = mol3D()
+    for at in lig3D.getBondedAtoms(atom0):
+        auxmol.addAtom(lig3D.getAtom(at))
+    r2 = auxmol.centersym()
+    theta,u = rotation_params(r0,r1,r2)
+    # rotate around axis and get both images
+    lig3D = rotate_around_axis(lig3D,r1,u,theta)
+    lig3Db = rotate_around_axis(lig3Db,r1,u,theta-180)
+    d2 = distance(mcoords,lig3D.centermass())
+    d1 = distance(mcoords,lig3Db.centermass())
+    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+    # additional rotation for bent terminal connecting atom:
+    if auxmol.natoms == 1 and auxmol.mindistmol() > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(at).rad): 
+        print('bending of linear terminal ligand')
+        ##warning: force field might overwrite this
+        r1 = lig3D.getAtom(atom0).coords()
+        r2 = auxmol.getAtom(0).coords()
+        theta,u = rotation_params([1,1,1],r1,r2)
+        lig3D = rotate_around_axis(lig3D,r1,u,globs.linearbentang) 
+    lig3D_aligned = mol3D()
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned    
+
+def align_linear_pi_lig(mcoords,lig3D,atom0,ligpiatoms):
+    # Aligns a linear pi ligand's connecting point to the metal-ligand axis.
+    # mcoords: metal coordinates
+    # lig3D: ligand mol3D
+    # atom0: ligand center of mass placeholder (where is this written?)
+    # ligpiatoms: ligand pi-connecting atoms
+    # RETURNS
+    # lig3D_aligned: mol3D of aligned ligand
+    
+    # first rotate in the metal plane to ensure perpendicularity
+    r0 = mcoords
+    r1 = lig3D.getAtom(ligpiatoms[0]).coords()
+    r2 = lig3D.getAtom(ligpiatoms[1]).coords()
+    theta,u = rotation_params(r0,r1,r2)
+    objfuncopt = 90
+    thetaopt = 0
+    for theta in range(0,360,1):
+        lig3D_tmp = mol3D()
+        lig3D_tmp.copymol3D(lig3D)
+        lig3D_tmp = rotate_around_axis(lig3D_tmp, lig3D_tmp.getAtom(atom0).coords(), u, theta)
+        #objfunc = abs(vecangle(vecdiff(lig3D_tmp.getAtom(atom0).coords(),mcoords),vecdiff(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),lig3D_tmp.getAtom(ligpiatoms[1]).coords()))-90)
+        objfunc = abs(distance(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),mcoords) - distance(lig3D_tmp.getAtom(ligpiatoms[1]).coords(),mcoords))
+        print objfunc
+        if objfunc < objfuncopt:
+            thetaopt = theta
+            objfuncopt = objfunc
+            lig3Dopt = mol3D() # lig3Dopt = lig3D_tmp DOES NOT WORK!!!
+            lig3Dopt.copymol3D(lig3D_tmp) 
+    lig3D = lig3Dopt
+    # then rotate 90 degrees about the bond axis to further reduce steric repulsion
+    r1 = lig3D.getAtom(ligpiatoms[0]).coords()
+    r2 = lig3D.getAtom(ligpiatoms[1]).coords()
+    u = vecdiff(r1,r2)
+    lig3D_tmpa = mol3D()
+    lig3D_tmpa.copymol3D(lig3D)
+    lig3D_tmpa = rotate_around_axis(lig3D_tmpa, lig3D_tmpa.getAtom(atom0).coords(), u, 90)
+    lig3D_tmpb = mol3D()
+    lig3D_tmpb.copymol3D(lig3D)                        
+    lig3D_tmpb = rotate_around_axis(lig3D_tmpb, lig3D_tmpb.getAtom(atom0).coords(), u, -90)
+    d1 = distance(mcoords,lig3D_tmpa.centermass())
+    d2 = distance(mcoords,lig3D_tmpb.centermass())
+    #lig3D = lig3D if (d1 < d2)  else lig3Db 
+    lig3D = lig3D_tmpa if (d1 > d2) else lig3D_tmpb # pick the better structure
+    lig3D_aligned = mol3D()
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned 
+
+def check_rotate_linear_lig(mcoords,lig3D,atom0):
+    # Checks if ligand has a linear coordination environment (e.g., OCO) and ensures perpendicularity to M-L axis
+    # mcoords: metal coordinates
+    # lig3D: ligand mol3D
+    # atom0: ligand center of mass placeholder (where is this written?)
+    # RETURNS
+    # lig3D_aligned: mol3D of aligned ligand
+    
+    auxm = mol3D()
+    lig3D_aligned = mol3D()
+    for at in lig3D.getBondedAtoms(atom0):
+        auxm.addAtom(lig3D.getAtom(at))
+    if auxm.natoms > 1:
+        r0 = lig3D.getAtom(atom0).coords()
+        r1 = auxm.getAtom(0).coords()
+        r2 = auxm.getAtom(1).coords()
+        if checkcolinear(r1,r0,r2):
+            # rotate so that O-C-O bond is perpendicular to M-L axis
+            theta,urot = rotation_params(r1,mcoords,r2)
+            theta = vecangle(vecdiff(r0,mcoords),urot)
+            lig3D = rotate_around_axis(lig3D,r0,urot,theta)
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned
+
+def check_rotate_symm_lig(mcoords,lig3D,atom0,core3D):
+    # Checks if ligand has is symmetric about connecting atom (center of symmetry coincides with connecting atom) and minimizes clashes with rest of complex
+    # mcoords: metal coordinates
+    # lig3D: ligand mol3D
+    # atom0: ligand center of mass placeholder (where is this written?)
+    # core3D: mol3D of partially built complex
+    # RETURNS
+    # lig3D_aligned: mol3D of aligned ligand
+    
+    if distance(lig3D.getAtom(atom0).coords(),lig3D.centersym()) < 8.0e-2:
+        at = lig3D.getBondedAtoms(atom0)
+        r0 = lig3D.getAtom(atom0).coords()
+        r1 = lig3D.getAtom(at[0]).coords()
+        r2 = lig3D.getAtom(at[1]).coords()
+        theta,u = rotation_params(r0,r1,r2)
+        theta = vecangle(u,vecdiff(r0,mcoords))
+        urot = cross(u,vecdiff(r0,mcoords))
+        # rotate around axis and get both images
+        lig3Db = mol3D()
+        lig3Db.copymol3D(lig3D)
+        lig3D = rotate_around_axis(lig3D,r0,urot,theta)
+        lig3Db = rotate_around_axis(lig3Db,r0,urot,-theta)
+        # compute shortest distances to metal center
+        d2 = lig3D.mindist(core3D)
+        d1 = lig3Db.mindist(core3D)
+        lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+    lig3D_aligned = mol3D()
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned
+
+def rotate_MLaxis_minimize_steric(mcoords,lig3D,atom0,core3D):
+    # Rotates aligned ligand about M-L axis to minimize steric clashes with rest of complex
+    # mcoords: metal coordinates
+    # lig3D: ligand mol3D
+    # atom0: ligand center of mass placeholder (where is this written?)
+    # core3D: mol3D of partially built complex
+    # RETURNS
+    # lig3D_aligned: mol3D of aligned ligand
+    
+    r1 = lig3D.getAtom(atom0).coords()
+    u = vecdiff(r1,mcoords)
+    dtheta = 2
+    optmax = -9999
+    totiters = 0
+    lig3Db = mol3D()
+    lig3Db.copymol3D(lig3D)
+    # maximize a combination of minimum distance between atoms and center of mass distance
+    while totiters < 180:
+        lig3D = rotate_around_axis(lig3D,r1,u,dtheta)
+        d0 = lig3D.mindist(core3D) # shortest distance
+        d0cm = lig3D.distance(core3D) # center of mass distance
+        iteropt = d0cm+10*log(d0)
+        if (iteropt > optmax): # if better conformation, keep
+            lig3Db = mol3D()
+            lig3Db.copymol3D(lig3D)
+            optmax = iteropt
+        totiters += 1
+    lig3D = lig3Db
+    lig3D_aligned = mol3D()
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned    
+ 
+def get_MLdist(args,lig3D,atom0,ligand,m3D,MLb,i,ANN_flag,this_diag,MLbonds):
+    # gets target M-L distance from desired source (custom, sum cov rad or ANN)
+    # args: argument namespace
+    # lig3D: ligand mol3D   
+    # atom0: ligand connecting atom
+    # ligand: ligand name
+    # m3D: backbone mol3D for determining cov rad
+    # MLb: custom M-L bond length (if any)
+    # i: index of ligand    
+    # ANN_flag: flag determining if ANN is on
+    # this_diag: used for ANN
+    # MLbonds: M-L database
+    # RETURNS
+    # bondl: target M-L distance
+            
+    # first check for user-specified distances and use them        
+    if MLb and MLb[i]:
+        print('using user-specified M-L distances')
+        if 'c' in MLb[i].lower():
+            bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
+        else:
+            bondl = float(MLb[i])
+    else:
+    # otherwise, check for exact DB match    
+        bondl,exact_match = get_MLdist_database(args,m3D,lig3D,atom0,ligand,MLbonds)
+        this_diag.set_dict_bl(bondl)
+        if not exact_match and ANN_flag:
+            # if no exact match found and ANN enabled, use it
+            print('no M-L match in DB, using ANN')
+            bondl =  ANN_bondl
+        elif exact_match:
+            print('using exact M-L match from DB')
+        else:
+            print('ANN not active and exact M-L match not found in DB, warning distance may not be accurate')
+    return bondl
+
+def get_MLdist_database(args,m3D,lig3D,atom0,ligand,MLbonds):
+    # loads M-L bond length from database and reports if compound is in DB
+    # if completely non-existent, defaults to sum cov rad
+    # INPUT
+    #   - args: argument namespace
+    #   - m3D: backbone mol3D
+    #   - lig3D: ligand mol3D
+    #   - atom0: ligand connecting atom
+    #   - ligand: name of ligand
+    #   - MLbonds: data from database
+    # OUTPUT
+    #   - bondl: bond length in A
+    #   - exact_match: bool, was there an exact match?
+    
+    matom = 0
+    metal = m3D.getAtom(matom).sym
+    # check for roman letters in oxstate
+    if args.oxstate: # if defined put oxstate in keys
+        if args.oxstate in romans.keys():
+            oxs = romans[args.oxstate]
+        else:
+            oxs = args.oxstate
+    else:
+        oxs = '-'
+    # check for spin multiplicity
+    spin = args.spin if args.spin else '-'
+    key = []
+    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))
+    key.append((metal,oxs,spin,lig3D.getAtom(atom0).sym,'-')) # disregard exact ligand
+    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,ligand)) # disregard oxstate/spin
+    key.append((metal,'-','-',lig3D.getAtom(atom0).sym,'-')) # else just consider bonding atom
+    found = False
+    exact_match = False
+    # search for data
+    for kk in key:
+        if (kk in MLbonds.keys()): # if exact key in dictionary
+            bondl = float(MLbonds[kk])
+            found = True
+            if (kk == ((metal,oxs,spin,lig3D.getAtom(atom0).sym,ligand))): ## exact match
+               exact_match = True
+            break
+    if not found: # last resort covalent radii
+        bondl = m3D.getAtom(matom).rad + lig3D.getAtom(atom0).rad
+    if args.debug:
+        print('ms default distance is  ' + str(bondl))
+    return bondl,exact_match
+   
+def align_dent1_lig(args,batslist,ligsused,m3D,core3D,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,this_diag,MLbonds,MLoptbds,i):
+    # Aligns a monodentate ligand to core connecting atom coordinates.
+    # args: namespace of arguments
+    # batslist: list of backbone positions for coordination geometry/ligand denticity
+    # ligsused: number of ligands placed
+    # m3D: backbone mol3D
+    # core3D: mol3D of partially built complex
+    # ligand: name of ligand
+    # lig3D: ligand mol3D
+    # catoms: ligand connecting atoms
+    # rempi: flag determining if ligand is a pi-bonding ligand
+    # ligpiatoms: pi-coordinating atoms in ligand (default 0 if rempi false)
+    # MLb: custom M-L bond length (if any)
+    # ANN_flag: flag determining if ANN is on
+    # this_diag: used for ANN
+    # MLbonds: M-L bond database
+    # MLoptbds: list of final M-L bond lengths
+    # i: index of ligand
+    # RETURNS
+    # lig3D_aligned: mol3D of aligned ligand
+    
+    # get metal identity and location
+    metal = core3D.getAtom(0).sym
+    mcoords = core3D.getAtom(0).coords()
+    # connecting point in backbone to align ligand to
+    batoms = batslist[ligsused]
+    if len(batoms) < 1 :
+        emsg = 'Connecting all ligands is not possible. Check your input!'
+        if args.gui:
+            qqb = mQDialogWarn('Warning',emsg)
+            qqb.setParent(args.gui.wmain)
+        return
+    # connection atom in lig3D
+    atom0 = catoms[0]
+    # translate ligand to overlap with backbone connecting point
+    lig3D.alignmol(lig3D.getAtom(atom0),m3D.getAtom(batoms[0]))
+    if rempi and len(ligpiatoms) == 2:
+        # align linear (non-arom.) pi-coordinating ligand
+        lig3D = align_linear_pi_lig(mcoords,lig3D,atom0,ligpiatoms)
+    elif lig3D.natoms > 1:
+        # align ligand center of mass
+        lig3D = align_lig_center(mcoords,lig3D,atom0,i)
+        if lig3D.natoms > 2:
+            # check for linear molecule and align
+            lig3D = check_rotate_linear_lig(mcoords,lig3D,atom0)
+            # check for symmetric molecule
+            lig3D = check_rotate_symm_lig(mcoords,lig3D,atom0,core3D)
+        # rotate around M-L axis to minimize steric repulsion
+        lig3D = rotate_MLaxis_minimize_steric(mcoords,lig3D,atom0,core3D)
+    # determine bond length (database/cov rad/ANN)
+    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D,MLb,i,ANN_flag,this_diag,MLbonds)
+
+
+    MLoptbds.append(bondl)
+    # align ligand to correct M-L distance
+    cmdist = bondl - distance(lig3D.getAtom(atom0).coords(),mcoords)+distance(lig3D.centermass(),mcoords)
+    lig3D=setcmdistance(lig3D, mcoords, cmdist)
+    lig3D_aligned = mol3D()
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned
 
 #################################################
 ####### functionalizes core with ligands ########
 ############## for metal complexes ##############
 #################################################
 def mcomplex(args,core,ligs,ligoc,licores,globs):
-    
-    
-    #sadness
+
     # INPUT
     #   - args: placeholder for input arguments
     #   - core: mol3D structure with core
@@ -627,8 +889,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
         ### create a diagnostic object to pass information
         ### to the other parts of the code
     this_diag = run_diag()
-    db_overwrite = False
-        ###
 
     if globs.debug:
         print '\nGenerating complex with ligands and occupations:',ligs,ligoc
@@ -662,8 +922,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     ### load bond data ###
     MLbonds = loaddata('/Data/ML.dat')
     ### calculate occurrences, denticities etc for all ligands ###
-    print(ligs)
-    
     for i,ligname in enumerate(ligs):
         # if not in cores -> smiles/file
         if ligname not in licores.keys():
@@ -913,6 +1171,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 lig3D = lig # change name
                 lig3D.convert2mol3D() # convert to mol3D
                 # check for pi-coordinating ligand
+                ligpiatoms = []
                 if 'pi' in lig.cat:
                     lig3Dpiatoms = mol3D()
                     for k in lig.cat[:-1]:
@@ -966,161 +1225,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 ## optimize geometry by minimizing steric effects ##
                 ####################################################
                 if (denticity == 1):
-                    # connection atoms in backbone
-                    batoms = batslist[ligsused]
-                    if len(batoms) < 1 :
-                        emsg = 'Connecting all ligands is not possible. Check your input!'
-                        if args.gui:
-                            qqb = mQDialogWarn('Warning',emsg)
-                            qqb.setParent(args.gui.wmain)
-                        break
-                    # connection atom in lig3D
-                    atom0 = catoms[0]
-                    # align molecule according to connection atom and shadow atom
-                    lig3D.alignmol(lig3D.getAtom(atom0),m3D.getAtom(batoms[0]))
-                    if (not rempi) or (rempi and len(ligpiatoms) != 2):
-                        r1 = lig3D.getAtom(atom0).coords()
-                        r2 = lig3D.centermass() # center of mass
-                        if not r2:
-                            emsg = 'Center of mass calculation for ligand failed. Check input.'
-                            print emsg
-                            if args.gui:
-                                qqb = mQDialogWarn('Warning',emsg)
-                                qqb.setParent(args.gui.wmain)
-                            break
-                        rrot = r1
-                        theta,u = rotation_params(r0,r1,r2)
-                        # for most ligands align center of mass of local environment
-                        if (lig3D.natoms > 1 and not rempi):
-                            lig3Db = mol3D()
-                            lig3Db.copymol3D(lig3D)
-                            ####################################
-                            # center of mass of local environment (to avoid bad placement of bulky ligands)
-                            auxmol = mol3D()
-                            for at in lig3D.getBondedAtoms(atom0):
-                                auxmol.addAtom(lig3D.getAtom(at))
-                            r2 = auxmol.centermass() # overwrite global with local centermass
-                            theta,u = rotation_params(r0,r1,r2)
-                            ####################################
-                            # rotate around axis and get both images
-                            lig3D = rotate_around_axis(lig3D,rrot,u,theta)
-                            lig3Db = rotate_around_axis(lig3Db,rrot,u,theta-180)
-                            d2 = distance(mcoords,lig3D.centermass())
-                            d1 = distance(mcoords,lig3Db.centermass())
-                            lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
-                        if lig3D.natoms > 2:
-                        #####################################
-                        # check for linear molecule
-                            auxm = mol3D()
-                            for at in lig3D.getBondedAtoms(atom0):
-                                auxm.addAtom(lig3D.getAtom(at))
-                            if auxm.natoms > 1:
-                                r0 = lig3D.getAtom(atom0).coords()
-                                r1 = auxm.getAtom(0).coords()
-                                r2 = auxm.getAtom(1).coords()
-                                if checkcolinear(r1,r0,r2):
-                                    # we will rotate so that angle is right
-                                    theta,urot = rotation_params(r1,mcoords,r2)
-                                    theta = vecangle(vecdiff(r0,mcoords),urot)
-                                    lig3D = rotate_around_axis(lig3D,r0,urot,theta)
-                        #####################################
-                        # check for symmetric molecule
-                            if distance(lig3D.getAtom(atom0).coords(),lig3D.centersym()) < 8.0e-2:
-                                atsc = lig3D.getBondedAtoms(atom0)
-                                r0a = lig3D.getAtom(atom0).coords()
-                                r1a = lig3D.getAtom(atsc[0]).coords()
-                                r2a = lig3D.getAtom(atsc[1]).coords()
-                                theta,u = rotation_params(r0a,r1a,r2a)
-                                theta = vecangle(u,vecdiff(r0a,mcoords))
-                                urot = cross(u,vecdiff(r0a,mcoords))
-                                ####################################
-                                # rotate around axis and get both images
-                                lig3Db = mol3D()
-                                lig3Db.copymol3D(lig3D)
-                                lig3D = rotate_around_axis(lig3D,r0a,urot,theta)
-                                lig3Db = rotate_around_axis(lig3Db,r0a,urot,-theta)
-                                d2 = lig3D.mindist(core3D)
-                                d1 = lig3Db.mindist(core3D)
-                                lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
-                            # rotate around axis of symmetry and get best orientation
-                        r1 = lig3D.getAtom(atom0).coords()
-                        u = vecdiff(r1,mcoords)
-                        dtheta = 2
-                        optmax = -9999
-                        totiters = 0
-                        lig3Db = mol3D()
-                        lig3Db.copymol3D(lig3D)
-                        # check for minimum distance between atoms and center of mass distance
-                        while totiters < 180:
-                            lig3D = rotate_around_axis(lig3D,r1,u,dtheta)
-                            d0 = lig3D.mindist(core3D) # try to maximize minimum atoms distance
-                            d0cm = lig3D.distance(core3D) # try to maximize center of mass distance
-                            iteropt = d0cm+10*log(d0) # optimization function
-                            if (iteropt > optmax): # if better conformation, keep
-                                lig3Db = mol3D()
-                                lig3Db.copymol3D(lig3D)
-                                optmax = iteropt
-                            totiters += 1
-                        lig3D = lig3Db
-                    if rempi and len(ligpiatoms) == 2:
-                        # for non-aromatic pi-coordinating ligands, first rotate in the metal plane to ensure perpendicularity
-                        r0 = mcoords
-                        r1 = lig3D.getAtom(ligpiatoms[0]).coords()
-                        r2 = lig3D.getAtom(ligpiatoms[1]).coords()
-                        theta,u = rotation_params(r0,r1,r2)
-                        objfuncopt = 90
-                        thetaopt = 0
-                        for theta in range(0,360,1):
-                            lig3D_tmp = mol3D()
-                            lig3D_tmp.copymol3D(lig3D)
-                            lig3D_tmp = rotate_around_axis(lig3D_tmp, lig3D_tmp.getAtom(atom0).coords(), u, theta)
-                            objfunc = abs(vecangle(vecdiff(lig3D_tmp.getAtom(atom0).coords(),mcoords),vecdiff(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),lig3D_tmp.getAtom(ligpiatoms[1]).coords()))-90)
-                            if objfunc < objfuncopt:
-                                thetaopt = theta
-                                objfuncopt = objfunc
-                                lig3Dopt = mol3D() # lig3Dopt = lig3D_tmp DOES NOT WORK!!!
-                                lig3Dopt.copymol3D(lig3D_tmp) 
-                        lig3D = lig3Dopt
-                        # then rotate 90 degrees about the bond axis to further reduce steric repulsion
-                        r1 = lig3D.getAtom(ligpiatoms[0]).coords()
-                        r2 = lig3D.getAtom(ligpiatoms[1]).coords()
-                        u = vecdiff(r1,r2)
-                        lig3D_tmpa = mol3D()
-                        lig3D_tmpa.copymol3D(lig3D)
-                        lig3D_tmpa = rotate_around_axis(lig3D_tmpa, lig3D_tmpa.getAtom(atom0).coords(), u, 90)
-                        lig3D_tmpb = mol3D()
-                        lig3D_tmpb.copymol3D(lig3D)                        
-                        lig3D_tmpb = rotate_around_axis(lig3D_tmpb, lig3D_tmpb.getAtom(atom0).coords(), u, -90)
-                        d1 = distance(mcoords,lig3D_tmpa.centermass())
-                        d2 = distance(mcoords,lig3D_tmpb.centermass())
-                        lig3D = lig3D if (d1 < d2)  else lig3Db 
-                        lig3D = lig3D_tmpa if (d1 > d2) else lig3D_tmpb # pick the better structure                    
-                    # get distance from bonds table or vdw radii
-                    if MLb and MLb[i]:
-                        if 'c' in MLb[i].lower():
-                            bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
-                        else:
-                            bondl = float(MLb[i]) # check for custom
-                    else:
-                        if not ANN_flag:
-                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-
-                        else:
-                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-                            if not exact_match:
-                                if args.debug:
-                                        print('No match in DB, using ANN')
-                                bondl =  ANN_bondl
-                            else:
-                                if args.debug:
-                                    print('using exact match from DB')
-                                db_overwrite = True
-                    MLoptbds.append(bondl)
-                    # get correct distance for center of mass
-                    cmdist = bondl - distance(r1,mcoords)+distance(lig3D.centermass(),mcoords)
-                    lig3D=setcmdistance(lig3D, mcoords, cmdist)
+                    lig3D = align_dent1_lig(args,batslist,ligsused,m3D,core3D,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,this_diag,MLbonds,MLoptbds,i)
                 elif (denticity == 2):
                     # get cis conformer if possible
                     # search all bonds for rotatable bond linking connecting atoms
@@ -1243,20 +1348,17 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         else:
                             bondl = float(MLb[i]) # check for custom
                     else:
-                        if not ANN_flag:
-                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
+                        bondl,exact_match = get_MLdist_database(args,core3D,lig3D,atom0,ligand,MLbonds)
+                        this_diag.set_dict_bl(bondl)
+                        if not exact_match:
+                            if args.debug:
+                                print('No match in DB, using ANN')
+                            bondl =  ANN_bondl
                         else:
-                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-                            if not exact_match:
-                                if args.debug:
-                                    print('No match in DB, using ANN')
-                                bondl =  ANN_bondl
-                            else:
-                                if args.debug:
-                                    print('using exact match from DB')
-                                db_overwrite = True
+                            if args.debug:
+                                print('using exact match from DB')
+                                #db_overwrite = True
+                    #bondl = get_MLdist(lig3D,m3D,MLb,i,ANN_flag,this_diag)
                     MLoptbds.append(bondl)
                     MLoptbds.append(bondl)
                     lig3D = setPdistance(lig3D, r1, r0, bondl)
@@ -1447,26 +1549,27 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                             lig3D = rotate_around_axis(lig3D,rc1,uc,180)
                             break
                     # get distance from bonds table or vdw radii
-                    if MLb and MLb[i]:
-                        if 'c' in MLb[i].lower():
-                            bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
-                        else:
-                            bondl = float(MLb[i]) # check for custom
-                    else:
-                        if not ANN_flag:
-                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-                        else:
-                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-                            if not exact_match:
-                                if args.debug:
-                                        print('Not match in DB, using ANN')
-                                bondl =  ANN_bondl
-                            else:
-                                if args.debug:
-                                    print('using exact match from DB')
-                                db_overwrite = True
+                    #if MLb and MLb[i]:
+                        #if 'c' in MLb[i].lower():
+                            #bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
+                        #else:
+                            #bondl = float(MLb[i]) # check for custom
+                    #else:
+                        #if not ANN_flag:
+                            #bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            #this_diag.set_dict_bl(bondl)
+                        #else:
+                            #bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            #this_diag.set_dict_bl(bondl)
+                            #if not exact_match:
+                                #if args.debug:
+                                        #print('Not match in DB, using ANN')
+                                #bondl =  ANN_bondl
+                            #else:
+                                #if args.debug:
+                                    #print('using exact match from DB')
+                                #db_overwrite = True
+                    bondl = get_MLdist(lig3D,m3D,MLb,i,ANN_flag,this_diag)            
                     for iib in range(0,3):
                         MLoptbds.append(bondl)
                     # set correct distance
@@ -1526,26 +1629,27 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     # rotate around axis and get both images
                     lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
                     # get distance from bonds table or vdw radii
-                    if MLb and MLb[i]:
-                        if 'c' in MLb[i].lower():
-                            bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
-                        else:
-                            bondl = float(MLb[i]) # check for custom
-                    else:
-                        if not ANN_flag:
-                            bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-                        else:
-                            bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            this_diag.set_dict_bl(bondl)
-                            if not exact_match :
-                                if args.debug:
-                                        print('No match in DB, using ANN')
-                                bondl =  ANN_bondl
-                            else:
-                                if args.debug:
-                                    print('using exact match from DB at  ' + num2str(bondl))
-                                db_overwrite = True
+                    #if MLb and MLb[i]:
+                        #if 'c' in MLb[i].lower():
+                            #bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
+                        #else:
+                            #bondl = float(MLb[i]) # check for custom
+                    #else:
+                        #if not ANN_flag:
+                            #bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            #this_diag.set_dict_bl(bondl)
+                        #else:
+                            #bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
+                            #this_diag.set_dict_bl(bondl)
+                            #if not exact_match :
+                                #if args.debug:
+                                        #print('No match in DB, using ANN')
+                                #bondl =  ANN_bondl
+                            #else:
+                                #if args.debug:
+                                    #print('using exact match from DB at  ' + num2str(bondl))
+                                #db_overwrite = True
+                    bondl = get_MLdist(lig3D,m3D,MLb,i,ANN_flag,this_diag)
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
                 elif (denticity == 5):
@@ -1594,7 +1698,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                     d1 = distance(lig3D.getAtom(catoms[0]).coords(),m3D.getAtom(batoms[0]).coords())
                     d2 = distance(lig3Db.getAtom(catoms[0]).coords(),m3D.getAtom(batoms[0]).coords())
                     lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
-                    bondl = getbondlength(args,metal,core3D,lig3D,0,catoms[0],ligand,MLbonds)
+                    bondl = get_MLdist_database(args,core3D,lig3D,catoms[0],ligand,MLbonds)
                     # flip if necessary
                     if len(batslist) > ligsused:
                         nextatbats = batslist[ligsused]
@@ -1622,9 +1726,10 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         ligc.addAtom(lig3D.getAtom(catoms[i]))
                     # translate metal to the middle of octahedral
                     core3D.translate(vecdiff(ligc.centermass(),mcoords))
-                    bondl = getbondlength(args,metal,core3D,lig3D,0,catoms[0],ligand,MLbonds)
+                    bondl = get_MLdist_database(args,core3D,lig3D,catoms[0],ligand,MLbonds)
                     for iib in range(0,6):
                         MLoptbds.append(bondl)
+                #lig3D.writexyz('opt')
                 auxm = mol3D()
                 auxm.copymol3D(lig3D)
                 complex3D.append(auxm)
@@ -1647,8 +1752,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
     if args.ff and 'a' in args.ffoption:
         core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds)
     ###############################
-        if db_overwrite:
-            print('bond distance from ANN overwritten by database value (exact match)')
 
     return core3D,complex3D,emsg,this_diag
 
@@ -1908,11 +2011,17 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                         lig3Db = mol3D()
                         lig3Db.copymol3D(lig3D)
                         ####################################
-                        # center of mass of local environment (to avoid bad placement of bulky ligands)
+                        # TG: Fixed to better handle asymmetric and linear/bent ligands
                         auxmol = mol3D()
+                        auxmol.addAtom(lig3D.getAtom(atom0))
                         for at in lig3D.getBondedAtoms(atom0):
-                            auxmol.addAtom(lig3D.getAtom(at))
-                        r2 = auxmol.centermass() # overwrite global with local centermass
+                            auxmol.addAtom(atom3D(xyz=lig3D.getAtom(at).coords(),Sym = 'C'))
+                        if auxmol.natoms == 2 and auxmol.mindistmol() > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(at).rad): # bent, terminal connecting atom:
+                            r2 = PointRotateAxis(vecdiff(auxmol.getAtom(1).coords(),auxmol.getAtom(0).coords()),auxmol.getAtom(0).coords(),auxmol.getAtom(1).coords(),globs.linearbentang)
+                            auxmol.deleteatom(0)
+                        else:
+                            auxmol.deleteatom(0)
+                            r2 = auxmol.centermass() # overwrite global with local centermass
                         theta,u = rotation_params(r0,r1,r2)
                         ####################################
                         # rotate around axis and get both images
@@ -1984,7 +2093,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     else:
                         mm3D = mol3D()
                         mm3D.addAtom(conatom3D)
-                        bondl = getbondlength(args,conatom3D.sym,mm3D,lig3D,0,atom0,ligand,MLbonds)
+                        bondl = get_MLdist_database(args,mm3D,lig3D,atom0,ligand,MLbonds)
                     # get correct distance for center of mass
                     u = vecdiff(cpoint,mcoords)
                     lig3D = aligntoaxis2(lig3D, cpoint, mcoords, u, bondl)
@@ -2096,7 +2205,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     else:
                         mm3D = mol3D()
                         mm3D.addAtom(conatom3D)
-                        bondl = getbondlength(args,conatom3D.sym,mm3D,lig3D,0,atom0,ligand,MLbonds)
+                        bondl = get_MLdist_database(args,conatom3D.sym,mm3D,lig3D,0,atom0,ligand,MLbonds)
                     # get correct distance for center of mass
                     u = vecdiff(cpoint,mcoords)
                     lig3D = aligntoaxis2(lig3D, cpoint, mcoords, u, bondl)

@@ -13,7 +13,17 @@ from math import sqrt
 import numpy as np
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import pybel, time, os, subprocess
+import pybel, openbabel
+import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
+from pkg_resources import resource_filename, Requirement
+import xml.etree.ElementTree as ET
+try:
+    import PyQt5
+    from molSimplify.Classes.miniGUI import *
+    qtflag = True
+except ImportError:
+    qtflag = False
+    pass
 
 #########################################
 ### Euclidean distance between points ###
@@ -89,6 +99,26 @@ class mol3D:
         dv = atom2.distancev(atom1)
         # align molecule
         self.translate(dv)
+
+    ###########################################
+    ### performs bond centric manipulation  ###
+    ###########################################
+    def BCM(self,idx1,idx2,d):
+        # INPUT
+        #   - idx1: index of atom to be moved
+        #   - idx2: index of bond-defining atom
+        #   - d: new bond length (A)
+        bondv = self.getAtom(idx1).distancev(self.getAtom(idx2)) # 1 - 2
+        u = 0.0
+        for u0 in bondv:
+            u += (u0*u0)
+        u = sqrt(u)
+        dl = d - u # dl > 0: stretch, dl < 0: shrink
+        dR = [i*(d/u - 1) for i in bondv]
+        for i in self.getBondedAtoms(idx1):
+            if i != idx2:
+                self.getAtom(i).translate(dR)
+        self.getAtom(idx1).translate(dR)
 
     #############################################
     ### calculates center of mass of molecule ###
@@ -292,6 +322,35 @@ class mol3D:
         cm1 = mol.centermass()
         pmc = distance(cm0,cm1)
         return pmc
+
+    ###########################################################
+    ### draws svg of molecule in popup window (uses pyqt5)  ###
+    ###########################################################
+    def draw_svg(self,filename):
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat("svg")
+        obConversion.AddOption("i", obConversion.OUTOPTIONS, "") 
+        ### return the svg with atom labels as a string
+        svgstr = obConversion.WriteString(self.OBmol.OBMol)
+        ### unpacked nested svg as in pybel._repr_svg_
+        namespace = "http://www.w3.org/2000/svg"
+        ET.register_namespace("", namespace)
+        tree = ET.fromstring(svgstr)
+        svg = tree.find("{{{ns}}}g/{{{ns}}}svg".format(ns=namespace))
+        newsvg = ET.tostring(svg).decode("utf-8")
+        ### write unpacked svg file   
+        fname = filename+'.svg'
+        with open(fname, "w") as svg_file:
+            svg_file.write(newsvg)
+        if qtflag:
+            ### Initialize fake gui   
+            fakegui = miniGUI(sys.argv)
+            ### Add the svg to the window
+            fakegui.addsvg(fname)
+            ### Show window
+            fakegui.show()
+        else:
+            print('No PyQt5 found. SVG file written to directory.')
 
     #######################################
     ### finds closest metal in molecule ###
@@ -805,6 +864,22 @@ class mol3D:
                 d = distance(atom1.coords(),atom0.coords())
                 if  (d < mind) and ii!=jj:
                     mind = distance(atom1.coords(),atom0.coords())
+        return mind
+
+    #############################################################################
+    ### calculates minimum distance between atoms in the molecule and a point ###
+    #############################################################################
+    def mindisttopoint(self,point):
+        # INPUT
+        #   - mol: second molecule
+        #   - point: [x,y,z] of point
+        # OUTPUT
+        #   - mind: minimum distance between atoms and point
+        mind = 1000
+        for atom1 in self.atoms:
+            d = distance(atom1.coords(),point)
+            if (d < mind):
+                mind = d
         return mind
 
     #############################################################################

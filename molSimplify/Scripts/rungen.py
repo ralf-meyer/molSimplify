@@ -304,6 +304,37 @@ def checkmultilig(ligs):
 
     return llist,tcats,multidx
 
+#################
+### draw mode ###
+#################
+def draw_supervisor(args,rundir):
+    if args.lig:
+        print('Due to technical limitations, we will draw only the first ligand.') 
+        print('To view multiple ligands at once, consider using the GUI instead.')
+        licores = getlicores()
+        l = args.lig[0]
+        lig, emsg = lig_load(l,licores)
+        lig.draw_svg(l)
+    elif args.core:
+        if len(args.core) > 1:
+            print('Due to technical limitations, we will draw only the first core.')
+        print('Drawing the core.')
+        if args.substrate:
+            print('Due to technical limitations, we can draw only one structure per run. To draw the substrate, run the program again.')
+        mcores = getmcores()
+        cc, emsg = core_load(args.core[0],mcores)
+        cc.draw_svg(args.core[0])
+    elif args.substrate:
+        if len(args.substrate) > 1:
+            print('Due to technical limitations, we will draw only the first substrate.')
+        print('Drawing the substrate.')
+        print args.substrate[0]
+        subcores = getsubcores()
+        substrate, emsg = substr_load(args.substrate[0],subcores)
+        substrate.draw_svg(args.substrate[0])
+    else:
+		print('You have not specified anything to draw. Currently supported: ligand, core, substrate')
+
 ##############################################
 ### normal structure generation of complex ###
 ##############################################
@@ -579,19 +610,18 @@ def tsgen_supervisor(rundir,args,chspfname,globs):
 	mcores = getmcores()
 	cc, emsg = core_load(args.core,mcores)
 	if emsg:
-		return emsg
+		return emsg	
+	cc.convert2mol3D()
 	subcores = getsubcores()
-	print args.substrate
+	# load substrate molecule into a mol3D object
 	if len(args.substrate) > 1:
-		print('Currently only one substrate molecule is supported.')
+		print('Currently only one substrate molecule is supported. Exiting...')
 		return
 	else:
 		substr, emsg = substr_load(args.substrate[0],subcores)
 	if emsg:
 		return emsg
-	# loop over ligands
-	print args.reactatomc
-	print args.reactatoms
+	substr.convert2mol3D()	
 	##### fetch smart name
 	fname = name_TS(rundir,args.core,substr,args,bind=args.bind,bsmi=args.nambsmi)
 	if globs.debug:
@@ -681,9 +711,61 @@ def tsgen_supervisor(rundir,args,chspfname,globs):
 	####################################
 	############ GENERATION ############
 	####################################
+	# determine TS generation mode/reaction type
+	# 1: oxidative addition of a single group to an unsaturated complex (e.g., Fe(II) + O2 -> Fe(III)-O-O)
+	# 2: oxidative addition of two groups to an unsaturated complex (e.g., Pd + CH4 -> Pd(H)(CH3))
+	# 3: abstraction (ligand only reaction) (e.g., Fe(IV)=O + CH4 -> Fe(III)-OH + CH3)
+	# 1: compreact is the metal center, substreact is one atom
+	# 2: compreact is the metal center, substreact is two bonded atoms
+	# 3: compreact is not the metal center and bonded to only one atom, substreact is one atom
+	if len(args.compreact) == 1:
+		compreact = int(args.compreact[0]) - 1 # one-indexed in input
+	else:
+		print('Error: Currently only one complex reacting atom is supported. Exiting...')
+		return
+	if cc.getAtom(compreact).ismetal():
+		if len(args.substreact) == 1:
+			substreact = int(args.substreact[0]) - 1 # one-indexed in input
+			if len(substr.getBondedAtoms(substreact)) == 1:
+				if len(cc.getBondedAtomsOct(compreact)) < 6:
+					mode = 1
+					print('Mode 1: oxidative addition of a single group')
+				else:
+					print('Error: You have specified oxidative addition of a single group, but the metal atom is not unsaturated. Please check your input. Exiting...')
+					return
+			else:
+				print('Error: You have specified oxidative addition of a single group, but the substrate atom is not terminal. Please check your input. Exiting...')
+				return
+		elif len(args.substreact) == 2:
+			if int(args.substreact[1]) in substr.getBondedAtoms(int(args.substreact[0])):
+				if len(cc.getBondedAtomsOct(compreact)) < 5:
+					substreact = [int(i) - 1 for i in args.substreact] # one-indexed in input
+					mode = 2
+					print('Mode 2: oxidative addition of two groups')	
+				else:				
+					print('Error: You have specified oxidative addition of two groups, but the metal atom does not have two available empty sites. Please check your input. Exiting...')
+					return 
+			else:
+				print('Error: You have specified oxidative addition of two groups, but the two substrate groups are not bonded. Please check your input. Exiting...') 
+				return
+	elif len(cc.getBondedAtoms(compreact)) == 1:
+		if len(args.substreact) == 1:
+			substreact = int(args.substreact[0]) - 1 # one-indexed in input
+		else:
+			print('Error: You have specified abstraction, but specified more than one substrate atom. Please check your input. Exiting...')
+			return
+		if len(substr.getBondedAtoms(substreact)) == 1:
+			mode = 3
+			print('Mode 3: Abstraction')
+		else:
+			print('Error: You have specified abstraction, but the substrate atom is not terminal. Please check your input. Exiting...')
+			return
+	else:
+		print('Error: You have specified abstraction, but the abstracting atom is not terminal. Please check your input. Exiting...')
+		return
 	if not skip:
 		# generate xyz files
-		strfiles,emsg,this_diag = tsgen(args,rootdir,substr,globs)
+		strfiles,emsg,this_diag = tsgen(mode,args,rootdir,cc,substr,compreact,substreact,globs)
 		# generate QC input files
 		if args.qccode and not emsg:
 			args.runtyp = 'ts'

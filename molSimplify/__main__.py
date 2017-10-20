@@ -32,7 +32,7 @@ from molSimplify.Classes.globalvars import *
 
 globs = globalvars()
 DescString_basic = 'Welcome to molSimplify. Only basic usage is described here.\n'
-DescString_basic += 'For help on advanced modules, please refer to our documentation at WEBLINK or provide additional commands to -h, as below:\n'
+DescString_basic += 'For help on advanced modules, please refer to our documentation at molsimplify.mit.edu or provide additional commands to -h, as below:\n'
 DescString_basic += '-h advanced: advanced structure generation help\n'
 DescString_basic += '-h slabgen: slab builder help\n'
 #DescString_basic += '-h chainb: chain builder help\n'
@@ -43,6 +43,7 @@ DescString_basic += '-h postproc: post-processing help\n'
 DescString_basic += '-h random: random generation help\n'
 DescString_basic += '-h binding: binding species (second molecule) generation help\n'
 DescString_basic += '-h customcore: custom core functionalization help\n'
+DescString_basic += '-h tsgen: transition state generation help\n'
 DescString_basic += '-h naming: custom filename help\n'
 
 DescString_advanced = 'Printing advanced structure generation help.'

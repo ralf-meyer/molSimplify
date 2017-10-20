@@ -149,6 +149,7 @@ class globalvars:
         # default geometries for each coordination number if none specified
         self.defaultgeometry = {8:('sqap','square_antiprismatic'),7:('pbp','pentagonal_bipyramidal'),6:('oct','octahedral'),5:('tbp','trigonal bipyramidal'),4:('thd','tetrahedral'),3:('trigonal planar','tpl'),2:('linear','li'),1:('one','one')}
         self.defaultoxstate = {'au':'I','gold':'I','scandium':'III','sc':'III','ti':'IV','titanium':'IV'}
+        self.linearbentang = 45 # bent "linear" angle in degrees, e.g., in Fe(III)-superoxo or a bent nitrosyl
     def amass(self):
         return amassdict
     def metals(self):

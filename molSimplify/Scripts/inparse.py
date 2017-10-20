@@ -682,10 +682,12 @@ def parseinputfile(args):
                 args.tsgen = True
             if (l[0]=='-substrate'):
                 args.substrate = l[1:]
-            if (l[0]=='-reactatomc'):
-                args.reactatomc = l[1:]
-            if (l[0]=='-reactatoms'):
-                args.reactatoms = l[1:]                                 
+            if (l[0]=='-compreact'):
+                args.compreact = l[1:]
+            if (l[0]=='-substreact'):
+                args.substreact = l[1:]
+            if (l[0]=='-drawmode'):
+                args.drawmode = True                                      
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -1021,8 +1023,9 @@ def parseinputs_tsgen(*p):
     parser = p[0]
     parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
     parser.add_argument("-substrate", help="small molecule substrate")
-    parser.add_argument("-reactatomc", help="index of reacting atom in core")
-    parser.add_argument("-reactatoms", help="index of reacting atom in substrate")
+    parser.add_argument("-compreact", help="index of reacting atom in core")
+    parser.add_argument("-substreact", help="index of reacting atom(s) in substrate")
+    parser.add_argument("-drawmode", help="flag for enabling draw mode (NOTE: this cancels TS generation)",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args

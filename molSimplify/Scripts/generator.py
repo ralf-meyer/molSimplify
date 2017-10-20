@@ -88,7 +88,7 @@ def startgen(argv,flag,gui):
         # parse input file
     if args.i:
         parseinputfile(args)
-    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
+    if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
         # check input arguments
         print 'Checking input...'
         if args.tsgen:
@@ -143,6 +143,8 @@ def startgen(argv,flag,gui):
                 print emsg
                 del args
                 return emsg
+    elif args.drawmode:
+        emsg = draw_supervisor(args,rundir)            
     # slab/place on slab?
     elif (args.slab_gen or args.place_on_slab):
         emsg = slab_module_supervisor(args,rundir)
