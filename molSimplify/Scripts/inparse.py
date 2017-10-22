@@ -240,8 +240,13 @@ def cleaninput(args):
         for i,s in enumerate(args.keepHs):
             if args.keepHs[i].lower() != 'auto':
                 args.keepHs[i]=checkTrue(s)
-    # convert ff option to abe code
-    if args.ff and args.ffoption:
+    # parse FF settings:
+    # if no FF opt is requested, turn off
+    print args.ffoption
+    if args.ffoption[0].lower() == ('n' or 'no'):
+        args.ff = False
+    # if FF opt is desired, parse FF choice
+    else:
         b = False
         a = False
         e = False
@@ -259,8 +264,7 @@ def cleaninput(args):
                         args.ffoption += 'b'
                     if op[0].lower()=='a':
                         args.ffoption += 'a'
-    elif args.ff:
-        args.ffoption = 'ba'
+
 
 ###################################################
 ##########  parse command line input  #############
