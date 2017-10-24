@@ -296,7 +296,6 @@ def loadcoord(coord):
 ### convert to molecule ###
 ###########################
 def core_load(usercore,mcores):
-    print('loading core '+usercore)
     globs = globalvars()
     if '~' in usercore:
         homedir = os.path.expanduser("~")
@@ -374,7 +373,6 @@ def core_load(usercore,mcores):
 ### convert to molecule   ### 
 #############################
 def substr_load(usersubstrate,subcores):
-    print('loading substrate '+usersubstrate)
     globs = globalvars()
     if '~' in usersubstrate:
         homedir = os.path.expanduser("~")
@@ -450,7 +448,6 @@ def substr_load(usersubstrate,subcores):
 ### convert to molecule ###
 ###########################
 def lig_load(userligand,licores):
-    print('loading ligand '+userligand)
     globs = globalvars()
     ### get groups ###
     groups = []
