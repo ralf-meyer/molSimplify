@@ -9,6 +9,7 @@
 # import std modules
 import pybel, glob, os,shutil, re, argparse, sys, random
 from molSimplify.Classes.mol3D import *
+from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
 
