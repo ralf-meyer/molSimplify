@@ -29,4 +29,6 @@ install:
 
 script:
   # Your test script goes here
+  - pytest
   - molsimplify -h
+  
