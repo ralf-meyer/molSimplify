@@ -2,7 +2,9 @@ import pytest
 import pybel, argparse
 import os
 import openbabel as ob
-from molSimplify.Scripts.geometry import kabsch
+from molSimplify.Scripts.inparse import *
+from molSimplify.Scripts.generator import *
+from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from pkg_resources import resource_filename, Requirement
@@ -51,3 +53,29 @@ def parse4test(infile,tmpdir):
     f.write(newdata)
     print "Input file parsed for test is located: ",newname
     return newname
+
+def compare_report(report1,report2):
+    data1=open(report1).read()
+    data2=open(report2).read()
+    Equal=(data1==data2)
+    return Equal
+
+def runtest(tmpdir,name):
+    infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
+    newinfile = parse4test(infile,tmpdir)
+    args =['main.py','-i', newinfile]
+    startgen(args,False,False)
+    myjobdir=jobdir(infile)
+    output_xyz = myjobdir + '/'+ name + '.xyz'
+    output_report = myjobdir + '/'+ name + '.report'
+    ref_xyz = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+".xyz")
+    ref_report = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+".report")
+    print "Test input file: ", newinfile
+    print "Test output files are generated in ",myjobdir
+    print "Output xyz file: ", output_xyz
+    pass_xyz=fuzzy_compare_xyz(output_xyz,ref_xyz,0.001)
+    print "Reference xyz file: ", ref_xyz
+    print "Test report file: ", output_report
+    print "Reference report file: ", ref_report
+    pass_report = compare_report(output_report,ref_report)
+    return [pass_xyz,pass_report]

@@ -10,3 +10,4 @@ include molSimplify/icons/geoms/*
 include molSimplify/icons/geoms_labels/*
 include tests/inputs/*
 include tests/refs/*
+include tests/README.txt
