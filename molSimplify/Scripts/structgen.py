@@ -249,8 +249,11 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
     if (constopt > 0):
         ### get metal
         midx = mol.findMetal()
-        ### convert mol3D to OBmol via xyz file, because AFTER/END option have coordinates
+        ### convert mol3D to OBmol
         mol.convert2OBmol()
+        obmol = mol.OBmol.OBMol
+        # initialize force field
+        forcefield = openbabel.OBForceField.FindForceField(ff)
         ### initialize constraints
         constr = openbabel.OBFFConstraints()
         ### openbabel indexing starts at 1 ### !!!
@@ -262,21 +265,22 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
                 indmtls.append(iiat)
                 mtlsnums.append(atom.atomicnum)
                 atom.OBAtom.SetAtomicNum(6)
-        ## add distance constraints
+        # freeze and ignore metals
+        for midxm in indmtls:
+            constr.AddAtomConstraint(midxm+1) # indexing babel
+        # add coordinating atom constraints
         for ii,catom in enumerate(connected):
             if constopt==1 or frozenangles:
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
-        for midxm in indmtls:
-            ### freeze metal
-            constr.AddAtomConstraint(midxm+1) # indexing babel
+            # ensure fake carbons have correct valence for FF setup
+            if obmol.GetAtom(midx+1).GetValence() > 4:
+                obmol.DeleteBond(obmol.GetBond(midxm+1,catom+1))
         ### freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
         ### set up forcefield
-        forcefield = openbabel.OBForceField.FindForceField(ff)
-        obmol = mol.OBmol.OBMol
         s = forcefield.Setup(obmol,constr)
         if s == False:
             print('FF setup failed')
@@ -287,7 +291,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
                 forcefield.ConjugateGradients(200)
                 forcefield.GetCoordinates(obmol)
                 mol.OBmol = pybel.Molecule(obmol)
-                mol.convert2mol3D()
+                mol.convert2mol3D()              
                 overlap,mind = mol.sanitycheck(True)
                 if not overlap:
                     break
@@ -532,18 +536,19 @@ def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
     # rotate around axis and get both images
     lig3D = rotate_around_axis(lig3D,r1,u,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,u,theta-180)
-    # compure shortest distances to core
-    d2 = lig3D.mindist(core3D)
-    d1 = lig3Db.mindist(core3D)
+    # compare shortest distances to core reference coordinates
+    d2 = lig3D.mindisttopoint(r0)
+    d1 = lig3Db.mindisttopoint(r0)
     lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
     # additional rotation for bent terminal connecting atom:
-    if auxmol.natoms == 1 and auxmol.mindistmol() > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(at).rad): 
-        print('bending of linear terminal ligand')
-        ##warning: force field might overwrite this
-        r1 = lig3D.getAtom(atom0).coords()
-        r2 = auxmol.getAtom(0).coords()
-        theta,u = rotation_params([1,1,1],r1,r2)
-        lig3D = rotate_around_axis(lig3D,r1,u,globs.linearbentang) 
+    if auxmol.natoms == 1:
+        if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad): 
+            print('bending of linear terminal ligand')
+            ##warning: force field might overwrite this
+            r1 = lig3D.getAtom(atom0).coords()
+            r2 = auxmol.getAtom(0).coords()
+            theta,u = rotation_params([1,1,1],r1,r2)
+            lig3D = rotate_around_axis(lig3D,r1,u,globs.linearbentang) 
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned    
@@ -970,7 +975,7 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,mcoo
         lig3Dtmp = mol3D()
         lig3Dtmp.copymol3D(lig3D)
         for ii in range(0,nsteps):
-            lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[],1,[catoms[0],catoms[1]],False,[],'Adaptive') 
+            lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[],1,[catoms[0],catoms[1]],False,[],'Adaptive')
             ens.append(enl)
             lig3Dtmp.getAtom(catoms[1]).translate(ddr)
             # once the ligand strain energy becomes too high, stop and accept ligand position 
@@ -1002,11 +1007,11 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,mcoo
         # Relax the ligand
         lig3Dtmp.addAtom(core3D.getAtom(0))
         lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[catoms[1]],2,[catoms[0]],False,MLoptbds[-2:-1],200) 
-        lig3Dtmp.deleteatom(lig3Dtmp.natoms-1)
+        lig3Dtmp.deleteatom(lig3Dtmp.natoms-1) 
     en_final = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],0)
     if en_final - en_start > 20:
         print 'Warning: Complex may be strained. Change in ligand MM energy (kcal/mol) = ' + str(en_final - en_start)    
-        print 'Consider using our conformer search mode (not implemented yet)'
+        print 'Consider using our conformer search mode (to be implemented in a future release)'
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3Dtmp)
     return lig3D_aligned                    
