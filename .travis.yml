@@ -29,6 +29,6 @@ install:
 
 script:
   # Your test script goes here
-  - python setup.py test
+  - python -m pytest tests/
   - molsimplify -h
   
