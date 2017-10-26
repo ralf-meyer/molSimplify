@@ -21,7 +21,7 @@ def fuzzy_compare_xyz(xyz1,xyz2,thresh):
     mol1 = xyz2mol3D(xyz1)
     mol2 = xyz2mol3D(xyz2)
     rmsd12 = mol1.rmsd(mol2)
-    print('rmsd is ' +'{0:.2f}".format(rmsd12)')
+    print('rmsd is ' +'{0:.2f}'.format(rmsd12))
     if rmsd12 < thresh:
         fuzzyEqual=True
     return fuzzyEqual
