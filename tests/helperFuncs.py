@@ -55,12 +55,15 @@ def parse4test(infile,tmpdir):
     return newname
 
 def compare_report(report1,report2):
-    data1=open(report1).read()
-    data2=open(report2).read()
-    Equal=(data1==data2)
+    data1=open(report1,'r').readlines()
+    data2=open(report2,'r').readlines()
+    Equal = True
+    for i,lines in enumerate(data1):
+        if Equal:
+            Equal = (lines.strip() == data2[i].strip())
     return Equal
 
-def runtest(tmpdir,name):
+def runtest(tmpdir,name,thresh = 0.1):
     infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
     newinfile = parse4test(infile,tmpdir)
     args =['main.py','-i', newinfile]
@@ -73,9 +76,11 @@ def runtest(tmpdir,name):
     print "Test input file: ", newinfile
     print "Test output files are generated in ",myjobdir
     print "Output xyz file: ", output_xyz
-    pass_xyz=fuzzy_compare_xyz(output_xyz,ref_xyz,0.001)
+    pass_xyz=fuzzy_compare_xyz(output_xyz,ref_xyz,thresh)
+    pass_report = compare_report(output_report,ref_report)
     print "Reference xyz file: ", ref_xyz
     print "Test report file: ", output_report
     print "Reference report file: ", ref_report
-    pass_report = compare_report(output_report,ref_report)
+    print "Reference xyz status: ", pass_xyz
+    print "Reference report status: ", pass_report
     return [pass_xyz,pass_report]

@@ -1,6 +1,7 @@
 Instructions for Installing and Running Test Cases for molSimplify
       by Fang Liu  10/24/2017
 
+
 I.  The structure of the repo
 
     |- molSimplify
@@ -37,13 +38,16 @@ II. Add a test case
   2. Put yourTestCase.in under: tests/inputs/
      Put yourTestCase.xyz,  yourTestCase.report  under: tests/refs/
 
-  3. Create a test python script with the template shown below:
+  3. Create a test python script with the template shown below. Thresh
+     is an optional tolerance for RMSD comparison, and defaults to 0.1 A.
+     If you are adding a small test cas (e.g. hexachloride), consider
+     reducing this parameter. Otherwise it is likely fine as is. 
 
 ############ test_yourTestCase.py  #########
 import helperFuncs as hp
 
 def test_example_1(tmpdir):
-    [pass_xyz,pass_report] = hp.runtest(tmpdir,"yourTestCase")
+    [pass_xyz,pass_report] = hp.runtest(tmpdir,"yourTestCase",thresh)
     assert pass_xyz and pass_report
 
 #############################################
