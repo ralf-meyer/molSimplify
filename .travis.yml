@@ -26,6 +26,8 @@ install:
   - conda config --add channels hjkgroup
   - conda build --python $TRAVIS_PYTHON_VERSION conda-recipe
   - conda install molsimplify --use-local
+  # Needed for testing without Pybrain
+  - conda install pytest
 
 script:
   # Your test script goes here
