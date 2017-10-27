@@ -21,6 +21,7 @@ def fuzzy_compare_xyz(xyz1,xyz2,thresh):
     mol1 = xyz2mol3D(xyz1)
     mol2 = xyz2mol3D(xyz2)
     rmsd12 = mol1.rmsd(mol2)
+    print('rmsd is ' +'{0:.2f}'.format(rmsd12))
     if rmsd12 < thresh:
         fuzzyEqual=True
     return fuzzyEqual
@@ -57,7 +58,15 @@ def parse4test(infile,tmpdir):
 def compare_report(report1,report2):
     data1=open(report1,'r').readlines()
     data2=open(report2,'r').readlines()
-    Equal = True
+    if data1 and data2:
+        Equal = True
+    else:
+        Equal = False
+        print('File not found:') 
+        if not data1:
+            print('missing: ' + str(report1))
+        if not data2:
+            print('missing: ' + str(report2))
     for i,lines in enumerate(data1):
         if Equal:
             Equal = (lines.strip() == data2[i].strip())
