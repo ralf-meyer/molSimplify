@@ -265,7 +265,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
                 indmtls.append(iiat)
                 mtlsnums.append(atom.atomicnum)
                 atom.OBAtom.SetAtomicNum(6)
-        # freeze and ignore metals
+        # freeze metals
         for midxm in indmtls:
             constr.AddAtomConstraint(midxm+1) # indexing babel
         # add coordinating atom constraints
@@ -353,9 +353,7 @@ def ffoptd(ff,mol,connected,ccatoms,frozenats,nligats):
     #   - mol: force field optimized mol3D
     metals = range(21,31)+range(39,49)+range(72,81)
     ### convert mol3D to OBmol via xyz file, because AFTER/END option have coordinates
-    mol.writexyz('tmp.xyz')
-    mol.OBmol = mol.getOBmol('tmp.xyz','xyzf')
-    os.remove('tmp.xyz')
+    mol.convert2OBmol()
     ### initialize constraints
     constr = openbabel.OBFFConstraints()
     ### openbabel indexing starts at 1 ### !!!
@@ -380,7 +378,9 @@ def ffoptd(ff,mol,connected,ccatoms,frozenats,nligats):
     ### set up forcefield
     forcefield = openbabel.OBForceField.FindForceField(ff)
     obmol = mol.OBmol.OBMol
-    forcefield.Setup(obmol,constr)
+    s = forcefield.Setup(obmol,constr)
+    if s == False:
+        print('FF setup failed')    
     ### force field optimize structure
     if obmol.NumHvyAtoms() > 10:
         forcefield.ConjugateGradients(4000)
@@ -536,10 +536,12 @@ def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
     # rotate around axis and get both images
     lig3D = rotate_around_axis(lig3D,r1,u,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,u,theta-180)
-    # compare shortest distances to core reference coordinates
-    d2 = lig3D.mindisttopoint(r0)
-    d1 = lig3Db.mindisttopoint(r0)
-    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+    # compare distances to core reference coordinates
+    d2 = distance(r0,lig3D.centersym())
+    #d2b = lig3D.mindist(core3D)
+    d1 = distance(r0,lig3Db.centersym())
+    #d1b = lig3Db.mindist(core3D)
+    lig3D = lig3D if (d1 < d2) else lig3Db # pick best one
     # additional rotation for bent terminal connecting atom:
     if auxmol.natoms == 1:
         if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad): 
@@ -1044,12 +1046,22 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
     atom0 = catoms[0]
     # translate ligand to overlap with backbone connecting point
     lig3D.alignmol(lig3D.getAtom(atom0),cpoint)
+    # determine bond length (database/cov rad/ANN)
+    bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
+    MLoptbds.append(bondl)
+    # align ligand to correct M-L distance
+    u = vecdiff(cpoint.coords(),corerefcoords)
+    lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)   
     if rempi and len(ligpiatoms) == 2:
         # align linear (non-arom.) pi-coordinating ligand
         lig3D = align_linear_pi_lig(corerefcoords,lig3D,atom0,ligpiatoms)
     elif lig3D.natoms > 1:
         # align ligand center of symmetry
         lig3D = align_lig_centersym(corerefcoords,lig3D,atom0,core3D)
+        core3Dtmp = mol3D()
+        core3Dtmp.copymol3D(core3D)
+        core3Dtmp.combine(lig3D)
+        core3Dtmp.writexyz('centersym')
         if lig3D.natoms > 2:
             # check for linear molecule and align
             lig3D = check_rotate_linear_lig(corerefcoords,lig3D,atom0)
@@ -1057,12 +1069,9 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
             lig3D = check_rotate_symm_lig(corerefcoords,lig3D,atom0,core3D)
         # rotate around M-L axis to minimize steric repulsion
         lig3D = rotate_MLaxis_minimize_steric(corerefcoords,lig3D,atom0,core3D)
-    # determine bond length (database/cov rad/ANN)
-    bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
-    MLoptbds.append(bondl)
     # align ligand to correct M-L distance
-    u = vecdiff(cpoint.coords(),corerefcoords)
-    lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)
+    #u = vecdiff(cpoint.coords(),corerefcoords)
+    #lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned,MLoptbds
@@ -1927,8 +1936,10 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     cpoint = cpoints[confcount]
                     mcoords = core3D.getAtom(ccatoms[totlig]).coords() # metal coordinates in backbone
                     # connection atom save
+                    conatoms = [ccatoms[totlig]]
                     conatom3D = atom3D(core3D.getAtom(ccatoms[totlig]).sym,core3D.getAtom(ccatoms[totlig]).coords())
                 else:
+					# replace ligand
                     cpoint = core3D.getAtom(ccatoms[totlig]).coords()
                     conatoms = core3D.getBondedAtoms(ccatoms[totlig])
                     # find smaller ligand to remove
@@ -2016,12 +2027,15 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     args.charge = core3D.charge
                     print('Setting charge to be ' + str(args.charge))
                 # perform FF optimization if requested
-                if args.ff and 'a' in args.ffoption:
-                    core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
+                if 'a' in args.ffoption:
+                    connected = core3D.getBondedAtoms(core3D.findMetal())
+                    core3D,enc = ffopt(args.ff,core3D,connected,1,range(0,core3D.natoms-nligats),False,[],'Adaptive')
+                    #core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
             totlig += 1
     # perform FF optimization if requested
-    if args.ff and 'a' in args.ffoption:
-        core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
+    if 'a' in args.ffoption:
+        core3D,enc = ffopt(args.ff,core3D,connected,1,range(0,core3D.natoms-nligats),False,[],'Adaptive')
+        #core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
     return core3D,emsg
 
 ##########################################
