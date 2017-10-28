@@ -23,7 +23,7 @@ from molSimplify.Informatics.decoration_manager import*
 # import standard modules
 import os, sys
 from pkg_resources import resource_filename, Requirement
-import pybel, openbabel, random, itertools
+import openbabel, random, itertools
 from numpy import log, arccos, cross, dot, pi
 numpy.seterr(all='raise')
 
@@ -196,7 +196,8 @@ def smartreorderligs(args,ligs,dentl,licores):
     lsizes = []
     for ligand in ligs:
         lig,emsg = lig_load(ligand,licores) # load ligand
-        lsizes.append(len(lig.OBmol.atoms))
+        lig.convert2mol3D()
+        lsizes.append(lig.natoms)
     # group by denticities
     dents = list(set(dentl))
     ligdentsidcs = [[] for a in dents]
@@ -213,20 +214,6 @@ def smartreorderligs(args,ligs,dentl,licores):
             indcs.append(ligdentsidcs[ii][l])
     return indcs
 
-def ffoptsimp(ff,mol):
-    # simple FF opt (Tim) - not used anywhere???
-    forcefield = openbabel.OBForceField.FindForceField('MMFF94')
-    obmol = mol.OBmol.OBMol
-    s = forcefield.Setup(obmol)
-    if s == 'False':
-        print('FF setup failed')
-    ### force field optimize structure
-    forcefield.ConjugateGradients(500)
-    forcefield.GetCoordinates(obmol)
-    en = forcefield.Energy()
-    mol.OBmol = pybel.Molecule(obmol)
-    mol.convert2mol3D()
-    return mol,en
 
 def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
     # Main constrained FF opt routine
@@ -249,9 +236,9 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
     if (constopt > 0):
         ### get metal
         midx = mol.findMetal()
-        ### convert mol3D to OBmol
-        mol.convert2OBmol()
-        obmol = mol.OBmol.OBMol
+        ### convert mol3D to OBMol
+        mol.convert2OBMol()
+        OBMol = mol.OBMol
         # initialize force field
         forcefield = openbabel.OBForceField.FindForceField(ff)
         ### initialize constraints
@@ -260,12 +247,12 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         # convert metals to carbons for FF
         indmtls = []
         mtlsnums = []
-        for iiat,atom in enumerate(mol.OBmol.atoms):
-            if atom.atomicnum in metals:
+        for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+            if atom.GetAtomicNum() in metals:
                 indmtls.append(iiat)
-                mtlsnums.append(atom.atomicnum)
-                atom.OBAtom.SetAtomicNum(6)
-        # freeze metals
+                mtlsnums.append(atom.GetAtomicNum())
+                atom.SetAtomicNum(6)
+        # freeze and ignore metals
         for midxm in indmtls:
             constr.AddAtomConstraint(midxm+1) # indexing babel
         # add coordinating atom constraints
@@ -275,13 +262,13 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
             # ensure fake carbons have correct valence for FF setup
-            if obmol.GetAtom(midx+1).GetValence() > 4:
-                obmol.DeleteBond(obmol.GetBond(midxm+1,catom+1))
+            if OBMol.GetAtom(midx+1).GetValence() > 4:
+                OBMol.DeleteBond(OBMol.GetBond(midxm+1,catom+1))
         ### freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
         ### set up forcefield
-        s = forcefield.Setup(obmol,constr)
+        s = forcefield.Setup(OBMol,constr)
         if s == False:
             print('FF setup failed')
         ### force field optimize structure
@@ -289,8 +276,8 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             i = 0
             while i < 50:
                 forcefield.ConjugateGradients(200)
-                forcefield.GetCoordinates(obmol)
-                mol.OBmol = pybel.Molecule(obmol)
+                forcefield.GetCoordinates(OBMol)
+                mol.OBMol = OBMol
                 mol.convert2mol3D()              
                 overlap,mind = mol.sanitycheck(True)
                 if not overlap:
@@ -302,22 +289,22 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             except:
                 n = 200    
             forcefield.ConjugateGradients(n)
-            forcefield.GetCoordinates(obmol)
-            mol.OBmol = pybel.Molecule(obmol)
+            forcefield.GetCoordinates(OBMol)
+            mol.OBMol = OBMol
             mol.convert2mol3D()
         else:
-            forcefield.GetCoordinates(obmol)
-            mol.OBmol = pybel.Molecule(obmol)
+            forcefield.GetCoordinates(OBMol)
+            mol.OBMol = OBMol
             mol.convert2mol3D()
             en = forcefield.Energy()
             return en
         en = forcefield.Energy()
-        mol.OBmol = pybel.Molecule(obmol)
+        mol.OBMol = OBMol
         # reset atomic number to metal
         for i,iiat in enumerate(indmtls):
-            mol.OBmol.atoms[iiat].OBAtom.SetAtomicNum(mtlsnums[i])
+            mol.OBMol.GetAtomById(iiat).SetAtomicNum(mtlsnums[i])
         mol.convert2mol3D()
-        del forcefield, constr, obmol
+        del forcefield, constr, OBMol
     else:
         ### initialize constraints
         constr = openbabel.OBFFConstraints()
@@ -326,75 +313,75 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             constr.AddAtomConstraint(catom+1) # indexing babel
         ### set up forcefield
         forcefield = openbabel.OBForceField.FindForceField(ff)
-        if len(connected) < 2:
-            mol.OBmol.localopt('mmff94',100) # add hydrogens and coordinates
-        obmol = mol.OBmol.OBMol # convert to OBmol
-        s = forcefield.Setup(obmol,constr)   
+        #if len(connected) < 2:
+            #mol.OBMol.localopt('mmff94',100) # add hydrogens and coordinates
+        OBMol = mol.OBMol # convert to OBMol
+        s = forcefield.Setup(OBMol,constr)   
         ### force field optimize structure
-        if obmol.NumHvyAtoms() > 10:
+        if OBMol.NumHvyAtoms() > 10:
             forcefield.ConjugateGradients(50)
         else:
             forcefield.ConjugateGradients(200)
-        forcefield.GetCoordinates(obmol)
+        forcefield.GetCoordinates(OBMol)
         en = forcefield.Energy()
-        mol.OBmol = pybel.Molecule(obmol)
+        mol.OBMol = OBMol
         mol.convert2mol3D()
-        del forcefield, constr, obmol
+        del forcefield, constr, OBMol
     return mol,en
 
-def ffoptd(ff,mol,connected,ccatoms,frozenats,nligats):
-    # Custom core FF opt (Tim)
-    # INPUT
-    #   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
-    #   - mol: mol3D to be ff optimized
-    #   - connected: indices of connection atoms to metal
-    #   - constopt: flag for constrained optimization
-    # OUTPUT
-    #   - mol: force field optimized mol3D
-    metals = range(21,31)+range(39,49)+range(72,81)
-    ### convert mol3D to OBmol via xyz file, because AFTER/END option have coordinates
-    mol.convert2OBmol()
-    ### initialize constraints
-    constr = openbabel.OBFFConstraints()
-    ### openbabel indexing starts at 1 ### !!!
-    # convert metals to carbons for FF
-    indmtls = []
-    mtlsnums = []
-    for iiat,atom in enumerate(mol.OBmol.atoms):
-        if atom.atomicnum in metals:
-            indmtls.append(iiat)
-            mtlsnums.append(atom.atomicnum)
-            atom.OBAtom.SetAtomicNum(6)
-    ### add distance constraints
-    for ict,catom in enumerate(connected):
-        dma = mol.getAtom(ccatoms[ict]).distance(mol.getAtom(catom))
-        constr.AddDistanceConstraint(ccatoms[ict]+1,catom+1,dma) # indexing babel
-    ### freeze core
-    for ii in range(0,mol.natoms-nligats):
-        constr.AddAtomConstraint(ii+1) # indexing babel
-    ### freeze small ligands
-    for cat in frozenats:
-        constr.AddAtomConstraint(cat+1) # indexing babel
-    ### set up forcefield
-    forcefield = openbabel.OBForceField.FindForceField(ff)
-    obmol = mol.OBmol.OBMol
-    s = forcefield.Setup(obmol,constr)
-    if s == False:
-        print('FF setup failed')    
-    ### force field optimize structure
-    if obmol.NumHvyAtoms() > 10:
-        forcefield.ConjugateGradients(4000)
-    else:
-        forcefield.ConjugateGradients(2000)
-    forcefield.GetCoordinates(obmol)
-    en = forcefield.Energy()
-    mol.OBmol = pybel.Molecule(obmol)
-    # reset atomic number to metal
-    for i,iiat in enumerate(indmtls):
-        mol.OBmol.atoms[iiat].OBAtom.SetAtomicNum(mtlsnums[i])
-    mol.convert2mol3D()
-    del forcefield, constr, obmol
-    return mol,en
+#def ffoptd(ff,mol,connected,ccatoms,frozenats,nligats):
+    ## Custom core FF opt (Tim)
+    ## INPUT
+    ##   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
+    ##   - mol: mol3D to be ff optimized
+    ##   - connected: indices of connection atoms to metal
+    ##   - constopt: flag for constrained optimization
+    ## OUTPUT
+    ##   - mol: force field optimized mol3D
+    #metals = range(21,31)+range(39,49)+range(72,81)
+    #### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
+    #mol.writexyz('tmp.xyz')
+    #mol.OBMol = mol.getOBMol('tmp.xyz','xyzf')
+    #os.remove('tmp.xyz')
+    #### initialize constraints
+    #constr = openbabel.OBFFConstraints()
+    #### openbabel indexing starts at 1 ### !!!
+    ## convert metals to carbons for FF
+    #indmtls = []
+    #mtlsnums = []
+    #for iiat,atom in enumerate(mol.OBmol.atoms):
+        #if atom.atomicnum in metals:
+            #indmtls.append(iiat)
+            #mtlsnums.append(atom.atomicnum)
+            #atom.OBAtom.SetAtomicNum(6)
+    #### add distance constraints
+    #for ict,catom in enumerate(connected):
+        #dma = mol.getAtom(ccatoms[ict]).distance(mol.getAtom(catom))
+        #constr.AddDistanceConstraint(ccatoms[ict]+1,catom+1,dma) # indexing babel
+    #### freeze core
+    #for ii in range(0,mol.natoms-nligats):
+        #constr.AddAtomConstraint(ii+1) # indexing babel
+    #### freeze small ligands
+    #for cat in frozenats:
+        #constr.AddAtomConstraint(cat+1) # indexing babel
+    #### set up forcefield
+    #forcefield = openbabel.OBForceField.FindForceField(ff)
+    #obmol = mol.OBmol.OBMol
+    #forcefield.Setup(obmol,constr)
+    #### force field optimize structure
+    #if obmol.NumHvyAtoms() > 10:
+        #forcefield.ConjugateGradients(4000)
+    #else:
+        #forcefield.ConjugateGradients(2000)
+    #forcefield.GetCoordinates(obmol)
+    #en = forcefield.Energy()
+    #mol.OBmol = pybel.Molecule(obmol)
+    ## reset atomic number to metal
+    #for i,iiat in enumerate(indmtls):
+        #mol.OBmol.atoms[iiat].OBAtom.SetAtomicNum(mtlsnums[i])
+    #mol.convert2mol3D()
+    #del forcefield, constr, obmol
+    #return mol,en
 
 def getconnection(core,cm,catom,toconnect):
     # Use FF to estimate optimum backbone positioning (Tim)
@@ -496,22 +483,23 @@ def getconnection2(core,cidx,BL):
     return cpoint
 
 def findsmarts(lig3D,smarts,catom):
+    return False
     # returns true if connecting atom of lig3D is part of SMARTS pattern
     # lig3D: OBmol of mol3D
     # smarts: list of SMARTS patterns
     # catom: connecting atom of lig3D (zero based numbering)
-    mall = []
-    for sm in smarts:
-        sm = pybel.Smarts(sm)
-        matches = sm.findall(lig3D)
-        matches = [i for sub in matches for i in sub]
-        for m in matches:
-            if m not in mall:
-                mall.append(m)
-    if catom+1 in mall:
-        return True
-    else:
-        return False
+    #mall = []
+    #for sm in smarts:
+        #sm = pybel.Smarts(sm)
+        #matches = sm.findall(lig3D)
+        #matches = [i for sub in matches for i in sub]
+        #for m in matches:
+            #if m not in mall:
+                #mall.append(m)
+    #if catom+1 in mall:
+        #return True
+    #else:
+        #return False
 
 def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
     # Aligns a ligand's center of symmetry along the metal-connecting atom axis.
@@ -536,12 +524,10 @@ def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
     # rotate around axis and get both images
     lig3D = rotate_around_axis(lig3D,r1,u,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,u,theta-180)
-    # compare distances to core reference coordinates
-    d2 = distance(r0,lig3D.centersym())
-    #d2b = lig3D.mindist(core3D)
-    d1 = distance(r0,lig3Db.centersym())
-    #d1b = lig3Db.mindist(core3D)
-    lig3D = lig3D if (d1 < d2) else lig3Db # pick best one
+    # compare shortest distances to core reference coordinates
+    d2 = lig3D.mindisttopoint(r0)
+    d1 = lig3Db.mindisttopoint(r0)
+    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
     # additional rotation for bent terminal connecting atom:
     if auxmol.natoms == 1:
         if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad): 
@@ -1046,22 +1032,12 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
     atom0 = catoms[0]
     # translate ligand to overlap with backbone connecting point
     lig3D.alignmol(lig3D.getAtom(atom0),cpoint)
-    # determine bond length (database/cov rad/ANN)
-    bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
-    MLoptbds.append(bondl)
-    # align ligand to correct M-L distance
-    u = vecdiff(cpoint.coords(),corerefcoords)
-    lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)   
     if rempi and len(ligpiatoms) == 2:
         # align linear (non-arom.) pi-coordinating ligand
         lig3D = align_linear_pi_lig(corerefcoords,lig3D,atom0,ligpiatoms)
     elif lig3D.natoms > 1:
         # align ligand center of symmetry
         lig3D = align_lig_centersym(corerefcoords,lig3D,atom0,core3D)
-        core3Dtmp = mol3D()
-        core3Dtmp.copymol3D(core3D)
-        core3Dtmp.combine(lig3D)
-        core3Dtmp.writexyz('centersym')
         if lig3D.natoms > 2:
             # check for linear molecule and align
             lig3D = check_rotate_linear_lig(corerefcoords,lig3D,atom0)
@@ -1069,9 +1045,12 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
             lig3D = check_rotate_symm_lig(corerefcoords,lig3D,atom0,core3D)
         # rotate around M-L axis to minimize steric repulsion
         lig3D = rotate_MLaxis_minimize_steric(corerefcoords,lig3D,atom0,core3D)
+    # determine bond length (database/cov rad/ANN)
+    bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
+    MLoptbds.append(bondl)
     # align ligand to correct M-L distance
-    #u = vecdiff(cpoint.coords(),corerefcoords)
-    #lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)
+    u = vecdiff(cpoint.coords(),corerefcoords)
+    lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned,MLoptbds
@@ -1431,7 +1410,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
             denticity = dents[i]
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # load ligand
-                lig,emsg = lig_load(ligand,licores) # load ligand              
+                lig,emsg = lig_load(ligand,licores) # load ligand       
+                lig.convert2mol3D()       
                 if emsg:
                     return False,emsg
                 ## check if ligand should decorated
@@ -1445,12 +1425,11 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 # if SMILES string
                 if not lig.cat and tcats[i]:
                     if 'c' in tcats[i]:
-                        lig.cat = [len(lig.OBmol.atoms)]
+                        lig.cat = [lig.natoms]
                     else:
                         lig.cat = tcats[i]
                 ###############################
                 lig3D = lig # change name
-                lig3D.convert2mol3D() # convert to mol3D
                 # check for pi-coordinating ligand
                 ligpiatoms = []
                 if 'pi' in lig.cat:
@@ -1470,9 +1449,9 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                 if not rempi: 
                     # check smarts match
                     if 'auto' in keepHs[i]:
-                        lig3D.convert2OBmol()
+                        lig3D.convert2OBMol()
                         for j,catom in enumerate(lig.cat):
-                            match = findsmarts(lig3D.OBmol,globs.remHsmarts,catom)
+                            match = findsmarts(lig3D.OBMol,globs.remHsmarts,catom)
                             if match:
                                 keepHs[i][j] = False
                             else:
@@ -1936,10 +1915,8 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     cpoint = cpoints[confcount]
                     mcoords = core3D.getAtom(ccatoms[totlig]).coords() # metal coordinates in backbone
                     # connection atom save
-                    conatoms = [ccatoms[totlig]]
                     conatom3D = atom3D(core3D.getAtom(ccatoms[totlig]).sym,core3D.getAtom(ccatoms[totlig]).coords())
                 else:
-					# replace ligand
                     cpoint = core3D.getAtom(ccatoms[totlig]).coords()
                     conatoms = core3D.getBondedAtoms(ccatoms[totlig])
                     # find smaller ligand to remove
@@ -2027,15 +2004,12 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     args.charge = core3D.charge
                     print('Setting charge to be ' + str(args.charge))
                 # perform FF optimization if requested
-                if 'a' in args.ffoption:
-                    connected = core3D.getBondedAtoms(core3D.findMetal())
-                    core3D,enc = ffopt(args.ff,core3D,connected,1,range(0,core3D.natoms-nligats),False,[],'Adaptive')
-                    #core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
+                if args.ff and 'a' in args.ffoption:
+                    core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
             totlig += 1
     # perform FF optimization if requested
-    if 'a' in args.ffoption:
-        core3D,enc = ffopt(args.ff,core3D,connected,1,range(0,core3D.natoms-nligats),False,[],'Adaptive')
-        #core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
+    if args.ff and 'a' in args.ffoption:
+        core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
     return core3D,emsg
 
 ##########################################

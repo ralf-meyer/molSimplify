@@ -13,7 +13,7 @@ from math import sqrt
 import numpy as np
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import pybel, openbabel
+import openbabel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
@@ -65,7 +65,7 @@ class mol3D:
         self.charge = 0
         self.ffopt = 'BA'
         self.name = '' # name of molecule
-        self.OBmol = False      # holder for babel molecule
+        self.OBMol = False      # holder for babel molecule
         self.cat = []        # connection atoms
         self.denticity = 0   # denticity
         self.ident = ''      # identifier
@@ -173,30 +173,36 @@ class mol3D:
     ############################################################
     def convert2mol3D(self):
         # initialize again
-        d = self.denticity
         self.initialize()
         # get elements dictionary
         elem = globalvars().elementsbynum()
         # loop over atoms
-        for atom in self.OBmol:
+        for atom in openbabel.OBMolAtomIter(self.OBMol):
             # get coordinates
-            pos = atom.coords
+            pos = [atom.GetX(),atom.GetY(),atom.GetZ()]
+            print(pos)
+            
             # get atomic symbol
-            sym = elem[atom.atomicnum-1]
+            sym = elem[atom.GetAtomicNum() -1]
             # add atom to molecule
             self.addAtom(atom3D(sym,[pos[0],pos[1],pos[2]]))
-            self.denticity = d
+            
     ############################################################
     ### converts mol3D to OBmol and adds to current molecule ###
     ############################################################
-    def convert2OBmol(self):
+    def convert2OBMol(self):
         # write temp xyz
         self.writexyz('tempr.xyz')
-        self.OBmol = pybel.readfile("xyz","tempr.xyz").next()
-        #mybash('obabel -ixyz tempr.xyz -omol -O tempr.mol')
-        #self.OBmol = self.getOBmol('tempr.mol','molf')
+        
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInFormat("xyz")
+
+        OBMol = openbabel.OBMol()
+        obConversion.ReadFile(OBMol,'tempr.xyz')        
+        
+        self.OBMol = OBMol
         os.remove('tempr.xyz')
-        #os.remove('tempr.mol')
+        
     ###################################
     ### combines 2 molecules in one ###
     ###################################
@@ -256,12 +262,12 @@ class mol3D:
     #####################################
     ##### create molecular graph #######
     #####################################
-    def createmoleculargraph(self):
+    def createMolecularGraph(self):
         ## create connectivity matrix from mol3D information
         index_set = range(0,self.natoms)
         A  = np.matrix(np.zeros((self.natoms,self.natoms)))
         for i in index_set:
-            this_bonded_atoms = self.getBondedAtomsOct(i)
+            this_bonded_atoms = self.getBondedAtomsOct(i,debug=False)
             for j in index_set:
                 if j in this_bonded_atoms:
                     A[i,j] = 1
@@ -331,8 +337,8 @@ class mol3D:
         obConversion.SetOutFormat("svg")
         obConversion.AddOption("i", obConversion.OUTOPTIONS, "") 
         ### return the svg with atom labels as a string
-        svgstr = obConversion.WriteString(self.OBmol.OBMol)
-        ### unpacked nested svg as in pybel._repr_svg_
+        svgstr = obConversion.WriteString(self.OBMol)
+        
         namespace = "http://www.w3.org/2000/svg"
         ET.register_namespace("", namespace)
         tree = ET.fromstring(svgstr)
@@ -434,6 +440,7 @@ class mol3D:
         return subm
 
     ########################################
+    ########################################
     ### returns a specific atom by index ###
     ########################################
     def getAtom(self,idx):
@@ -512,21 +519,19 @@ class mol3D:
         #   - nats: list of indices of connected atoms
         ratom = self.getAtom(ind)
         #print('called slow function...')
-
         # calculates adjacent number of atoms
         nats = []
         for i,atom in enumerate(self.atoms):
             valid = True # flag 
             d = distance(ratom.coords(),atom.coords())
-            distance_max = 1.15*(atom.rad+ratom.rad) 
-            if d < distance_max and i!=ind:
-                ## if we are claming these are bound, check if
-                ## metal 
-                if atom.ismetal() or ratom.ismetal():
-                    ## one the atoms is a metal!
-                    ## use only short radius for nonmetals and main 
-                    ## group elements
-                    distance_max = 1.30*(atom.rad+ratom.rad) 
+            ## default interatomic radius
+            ## for non-metalics
+            distance_max = 1.15*(atom.rad+ratom.rad)
+            if atom.ismetal() or ratom.ismetal(): 
+                ## one the atoms is a metal!
+                ## use a longer max for metals
+                distance_max = 1.30*(atom.rad+ratom.rad) 
+                if d < distance_max and i!=ind:
                     ### trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
                         if debug:
@@ -535,48 +540,40 @@ class mol3D:
                             print(ratom.symbol())
                         valid = False
                     if d < distance_max and i!=ind and valid:
-                        if atom.symbol() == "C":
-                            print('metal-C case!')                
+                        if atom.symbol() == "C":           
                             ## in this case, atom might be intruder C!
                             possible_inds = self.getBondedAtoms(ind) ## bonded to metal
-                            #print(possible_inds)
                             if len(possible_inds)>6:
                                 metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,ind))
-                                #print('ind: '+str(ind))
-                                #print('metal prox:' + str(metal_prox))
+                               
                                 allowed_inds = metal_prox[0:6]
-                                #print('trimmed to '+str(allowed_inds))
-                                #print(allowed_inds)
-                                
-                                #metal_prox.remove(ind)
-                                #for    j in allowed_inds:
-                                #    print(self.getAtom(j).symbol())
+                                if debug:
+                                    print('ind: '+str(ind))
+                                    print('metal prox:' + str(metal_prox))
+                                    print('trimmed to '+str(allowed_inds))
+                                    print(allowed_inds)
                                 if not i in allowed_inds:
                                     valid = False
                                     if debug:
-                                        print('bannded based on atom: ' + str(i) + ' not in ' +str(allowed_inds))
+                                        print('bond rejected based on atom: ' + str(i) + ' not in ' +str(allowed_inds))
                                 else:
                                     if debug:
                                         print('Ok based on atom')
-                        if ratom.symbol() == "C":
-                            print('metal-C case!')                
-                            ## in this case, atom might be intruder C!
+                        if ratom.symbol() == "C":            
+                            ## in this case, ratom might be intruder C!
                             possible_inds = self.getBondedAtoms(i) ## bonded to metal
-                            #print(possible_inds)
                             metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,i))
-                            #print('i: '+str(i))
-                            #print('metal prox:' + str(metal_prox))
-                            #metal_prox.remove(i)
-                            #print(metal_prox)
                             if len(possible_inds)>6:
                                 allowed_inds = metal_prox[0:6]
-                             #   print('trimmed to '+str(allowed_inds))
-                              #  for j in allowed_inds:
-                               #     print(self.getAtom(j).symbol())
+                                if debug:
+                                    print('ind: '+str(ind))
+                                    print('metal prox:' + str(metal_prox))
+                                    print('trimmed to '+str(allowed_inds))
+                                    print(allowed_inds)
                                 if not ind in allowed_inds:
                                     valid = False
                                     if debug:
-                                        print('removing based on ratom ' + str(ind) + ' with symbol ' + ratom.symbol())
+                                        print('bond rejected based on ratom ' + str(ind) + ' with symbol ' + ratom.symbol())
                                 else:
                                     if debug:
                                         print('ok based on ratom...')
@@ -592,17 +589,17 @@ class mol3D:
                         print('has been disallowed from bond with ' + str(ind) + ' (' + ratom.symbol() + ')')
                         print(' at distance ' + str(d) + ' (which would normally be less than ' + str(distance_max) + ')')
                     if d<2 and not atom.symbol() == 'H' and not ratom.symbol() == 'H':
-                        print('STOP! this is too weird for me man' )
-                        sadness
-                            
+                        print('Error, mol3D could not understand conenctivity in mol' )
+                        os.exit()
         return nats
     #######################################################
     ### returns list of bonded atoms to a specific atom ###
     ###### using the molecular graph, or creates it  ######
     #######################################################
+    ## OCTHEDRAL COMPLEXES ONLY
     def getBondedAtomsSmart(self,ind):
         if not len(self.graph):
-            self.createmoleculargraph()
+            self.createMolecularGraph()
         return list(np.nonzero(np.ravel(self.graph[ind]))[0])
 
         
@@ -791,23 +788,23 @@ class mol3D:
     ###############################################################
     ### assigns openbabel molecule from smiles or xyz/mol files ###
     ###############################################################
-    def getOBmol(self,fst,convtype):
+    def getOBMol(self,fst,convtype):
         # INPUT
         #   - fst: filename
         #   - convtype: type of input file
         # OUTPUT
-        #   - mol: pybel molecule loaded from file
-        if convtype=='smi':
-            mol = pybel.readstring("smi",fst)
-        elif convtype=='smif':
-            mol = pybel.readfile("smi",fst).next()
-        elif convtype=='sdff':
-            mol = pybel.readfile("sdf",fst).next()
-        elif convtype=='xyzf':
-            mol = pybel.readfile("xyz",fst).next()
-        elif convtype=='molf':
-            mol = pybel.readfile("mol",fst).next()
-        return mol
+        #   - mol: openbabel molecule loaded from file
+        obConversion = openbabel.OBConversion()
+        OBMol = openbabel.OBMol()
+        self.OBMol = OBMol
+        obConversion.SetInFormat(convtype[:-1])
+        obConversion.ReadFile(self.OBMol,fst)
+        f = forcefield = openbabel.OBForceField.FindForceField('mmff94')
+        f = forcefield.Setup(self.OBMol)
+        f =forcefield.ConjugateGradients(200)
+        f =forcefield.GetCoordinates(self.OBMol)
+
+        return OBMol
 
     ############################################
     ### initialize for conversion from OBMol ###
