@@ -7,7 +7,7 @@
 ##########################################################
 
 # import std modules
-import pybel, glob, os,shutil, re, argparse, sys, random
+import glob, os,shutil, re, argparse, sys, random, openbabel
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.globalvars import *
@@ -312,19 +312,17 @@ def core_load(usercore,mcores):
             fcore = globs.custom_path + "/Cores/" +dbentry[0]
         else:
             fcore = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/" +dbentry[0])
-
         # check if core xyz/mol file exists
         if not glob.glob(fcore):
             emsg ="We can't find the core structure file %s right now! Something is amiss. Exiting..\n" % fcore
             print emsg
             return False,emsg
         if ('.xyz' in fcore):
-            core.OBmol = core.getOBmol(fcore,'xyzf')
+            core.OBMol = core.getOBMol(fcore,'xyzf')
         elif ('.mol' in fcore):
-            core.OBmol = core.getOBmol(fcore,'molf')
+            core.OBMol = core.getOBMol(fcore,'molf')
         elif ('.smi' in fcore):
-            core.OBmol = core.getOBmol(fcore,'smif')
-            core.OBmol.make3D('mmff94',0) # generate 3D coords
+            core.OBMol = core.getOBMol(fcore,'smif')
         core.cat = [int(l) for l in filter(None,dbentry[1])]
         core.denticity = dbentry[2]
         core.ident = usercore
@@ -335,10 +333,8 @@ def core_load(usercore,mcores):
             print('Core is a '+ftype+' file')
             # try and catch error if conversion doesn't work
             try:
-                core.OBmol = core.getOBmol(usercore,ftype+'f') # convert from file
-                if 'smi' in usercore:
-                    core.OBmol.make3D('mmff94',0)
-                print('Core successfully converted to OBmol')
+                core.OBMol = core.getOBMol(usercore,ftype+'f') # convert from file
+                print('Core successfully converted to OBMol')
             except IOError:
                 emsg = 'Failed converting file ' +usercore+' to molecule..Check your file.\n'
                 print emsg
@@ -355,8 +351,7 @@ def core_load(usercore,mcores):
         usercore = checkTMsmiles(usercore)
         # try and catch error if conversion doesn't work
         try:
-            core.OBmol = core.getOBmol(usercore,'smi') # convert from smiles
-            core.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
+            core.OBMol = core.getOBMol(usercore,'smi') # convert from smiles
             print('Core successfully interpreted as smiles')
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
@@ -396,12 +391,11 @@ def substr_load(usersubstrate,subcores):
             print emsg
             return False,emsg
         if ('.xyz' in fsubst):
-            substrate.OBmol = substrate.getOBmol(fsubst,'xyzf')
+            substrate.OBMol = substrate.getOBMol(fsubst,'xyzf')
         elif ('.mol' in fsubst):
-            substrate.OBmol = substrate.getOBmol(fsubst,'molf')
+            substrate.OBMol = substrate.getOBMol(fsubst,'molf')
         elif ('.smi' in fsubst):
-            substrate.OBmol = substrate.getOBmol(fsubst,'smif')
-            substrate.OBmol.make3D('mmff94',0) # generate 3D coords
+            substrate.OBMol = substrate.getOBMol(fsubst,'smif')
         substrate.ident = dbentry[1]
     ### load from file
     elif ('.mol' in usersubstrate or '.xyz' in usersubstrate or '.smi' in usersubstrate):
@@ -410,10 +404,8 @@ def substr_load(usersubstrate,subcores):
             print('Substrate is a '+ftype+' file')
             # try and catch error if conversion doesn't work
             try:
-                substrate.OBmol = substrate.getOBmol(usersubstrate,ftype+'f') # convert from file
-                if 'smi' in usersubstrate:
-                    substrate.OBmol.make3D('mmff94',0)
-                print('Substrate successfully converted to OBmol')
+                substrate.OBMol = substrate.getOBMol(usersubstrate,ftype+'f') # convert from file
+                print('Substrate successfully converted to OBMol')
             except IOError:
                 emsg = 'Failed converting file ' +usersubstrate+' to molecule..Check your file.\n'
                 print emsg
@@ -430,8 +422,7 @@ def substr_load(usersubstrate,subcores):
         usersubstrate = checkTMsmiles(usersubstrate)
         # try and catch error if conversion doesn't work
         try:
-            substrate.OBmol = substrate.getOBmol(usersubstrate,'smi') # convert from smiles
-            substrate.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
+            substrate.OBMol = substrate.getOBMol(usersubstrate,'smi') # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
@@ -481,15 +472,13 @@ def lig_load(userligand,licores):
             return False, emsg
         
         if ('.xyz' in flig):
-            lig.OBmol = lig.getOBmol(flig,'xyzf')
+            lig.OBMol = lig.getOBMol(flig,'xyzf')
             
         elif ('.mol' in flig):
-            lig.OBmol = lig.getOBmol(flig,'molf')
+            lig.OBMol = lig.getOBMol(flig,'molf')
             
         elif ('.smi' in flig):
-            lig.OBmol = lig.getOBmol(flig,'smif')
-            # generate coordinates if not existing
-            lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
+            lig.OBMol = lig.getOBMol(flig,'smif')
         ### modified the check for length,
         ### as it parsing string length instead of
         ### list length!
@@ -498,7 +487,7 @@ def lig_load(userligand,licores):
         else:
            lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
-        lig.charge = lig.OBmol.charge
+        lig.charge = lig.OBMol.GetTotalCharge()
         if 'pi' in dbentry[2]:
             lig.cat = [int(l) for l in dbentry[2][:-1]]
             lig.cat.append('pi')
@@ -521,12 +510,10 @@ def lig_load(userligand,licores):
             # try and catch error if conversion doesn't work
             try:
                 print('ligand is an '+ftype+' file')
-                lig.OBmol = lig.getOBmol(userligand,ftype+'f') # convert from smiles
+                lig.OBMol = lig.getOBMol(userligand,ftype+'f') # convert from smiles
                 # generate coordinates if not existing
-                if lig.OBmol.dim==0:
-                    lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
-                lig.charge = lig.OBmol.charge
-                print('Ligand successfully converted to OBmol')
+                lig.charge = lig.OBMol.GetTotalCharge()
+                print('Ligand successfully converted to OBMol')
             except IOError:
                 emsg = 'Failed converting file ' +userligand+' to molecule..Check your file.\n'
                 return False,emsg
@@ -542,12 +529,11 @@ def lig_load(userligand,licores):
         #userligand = checkTMsmiles(userligand)
         # try and catch error if conversion doesn't work
         try:
-            lig.OBmol = lig.getOBmol(userligand,'smi') # convert from smiles
-            lig.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
-            #lig.OBmol.write(format='mol', filename='smilig.mol', overwrite=True)
-            #lig.OBmol = lig.getOBmol('smilig.mol','molf')
+            lig.OBMol = lig.getOBMol(userligand,'smi') # convert from smiles
+            #lig.OBMol.write(format='mol', filename='smilig.mol', overwrite=True)
+            #lig.OBMol = lig.getOBMol('smilig.mol','molf')
             #os.remove('smilig.mol')
-            lig.charge = lig.OBmol.charge
+            lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
@@ -586,22 +572,20 @@ def bind_load(userbind,bindcores):
             print emsg
             return False,False,emsg
         if ('.xyz' in fbind):
-            bind.OBmol = bind.getOBmol(fbind,'xyzf')
+            bind.OBMol = bind.getOBMol(fbind,'xyzf')
         elif ('.mol' in fbind):
-            bind.OBmol = bind.getOBmol(fbind,'molf')
+            bind.OBMol = bind.getOBMol(fbind,'molf')
         elif ('.smi' in fbind):
-            bind.OBmol = bind.getOBmol(fbind,'smif')
-        bind.charge = bind.OBmol.charge
+            bind.OBMol = bind.getOBMol(fbind,'smif')
+        bind.charge = bind.OBMol.GetTotalCharge()
     ### load from file
     elif ('.mol' in userbind or '.xyz' in userbind or '.smi' in userbind):
         if glob.glob(userbind):
             ftype = userbind.split('.')[-1]
             # try and catch error if conversion doesn't work
             try:
-                bind.OBmol = bind.getOBmol(userbind,ftype+'f') # convert from file
-                if bind.OBmol.dim==0:
-                    bind.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
-                bind.charge = bind.OBmol.charge
+                bind.OBMol = bind.getOBMol(userbind,ftype+'f') # convert from file
+                bind.charge = bind.OBMol.GetTotalCharge()
             except IOError:
                 emsg = 'Failed converting file ' +userbind+' to molecule..Check your file.\n'
                 return False,emsg
@@ -616,9 +600,8 @@ def bind_load(userbind,bindcores):
         userbind = checkTMsmiles(userbind)
         # try and catch error if conversion doesn't work
         try:
-            bind.OBmol = bind.getOBmol(userbind,'smi') # convert from smiles
-            bind.OBmol.make3D('mmff94',0) # add hydrogens and coordinates
-            bind.charge = bind.OBmol.charge
+            bind.OBMol = bind.getOBMol(userbind,'smi') # convert from smiles
+            bind.charge = bind.OBMol.GetTotalCharge()
             bsmi = True
             bind.ident = 'smi'
         except IOError:
