@@ -17,7 +17,6 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
 # import standard modules
 import os, sys
-from pybel import *
 import openbabel
 from pkg_resources import resource_filename, Requirement
 import random, itertools

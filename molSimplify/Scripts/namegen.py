@@ -4,7 +4,6 @@
 from structgen import *
 from molSimplify.Scripts.io import *
 import argparse, sys, os, shutil, itertools, random
-import pybel
 
 def name_complex(core,ligs,ligoc,args):
     center = core.getAtom(0).symbol()

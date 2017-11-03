@@ -1,5 +1,5 @@
 import pytest
-import pybel, argparse
+import argparse
 import os
 import openbabel as ob
 import numpy as np
@@ -11,20 +11,15 @@ from molSimplify.Classes.mol3D import distance
 from molSimplify.Classes.atom3D import atom3D
 from pkg_resources import resource_filename, Requirement
 
-def xyz2mol3D(xyz,keepOBMol=False):
-    mymol = mol3D()
-    mymol.OBmol = pybel.readfile('xyz', xyz).next()
-    mymol.convert2mol3D()
-    mymol.OBmol = False
-    return mymol
-
 def fuzzy_equal(x1,x2,thresh):
     return np.fabs(float(x1)-float(x2)) < thresh
 
 def fuzzy_compare_xyz(xyz1,xyz2,thresh):
     fuzzyEqual=False
-    mol1 = xyz2mol3D(xyz1)
-    mol2 = xyz2mol3D(xyz2)
+    mol1 = mol3D()
+    mol1.readfromxyz(xyz1)
+    mol2 = mol3D()
+    mol2.readfromxyz(xyz2)
     rmsd12 = mol1.rmsd(mol2)
     print('rmsd is ' +'{0:.2f}'.format(rmsd12))
     if rmsd12 < thresh:
@@ -32,7 +27,8 @@ def fuzzy_compare_xyz(xyz1,xyz2,thresh):
     return fuzzyEqual
 
 def getAllLigands(xyz):
-    mymol3d = xyz2mol3D(xyz)
+    mymol3d = mol3D()
+    mymol3d.readfromxyz(xyz)
     # OUTPUT
     #   -mol3D: mol3D of all ligands
     mm = mymol3d.findMetal()
@@ -77,9 +73,11 @@ def getMetalLigBondLength(mymol3d):
 # Compare number of atoms
 def compareNumAtoms(xyz1,xyz2):
     print "Checking total number of atoms"
-    mol1 = xyz2mol3D(xyz1)
-    mol2 = xyz2mol3D(xyz2)
-    # Compare number of atoms
+    mol1 = mol3D()
+    mol1.readfromxyz(xyz1)
+    mol2 = mol3D()
+    mol2.readfromxyz(xyz1)
+   # Compare number of atoms
     passNumAtoms = (mol1.natoms == mol2.natoms)
     print "Pass total number of atoms check: ",passNumAtoms
     return passNumAtoms
@@ -87,8 +85,10 @@ def compareNumAtoms(xyz1,xyz2):
 # Compare Metal Ligand Bond Length
 def compareMLBL(xyz1,xyz2,thresh):
     print "Checking metal-ligand bond length"
-    mol1 = xyz2mol3D(xyz1)
-    mol2 = xyz2mol3D(xyz2)
+    mol1 = mol3D()
+    mol1.readfromxyz(xyz1)
+    mol2 = mol3D()
+    mol2.readfromxyz(xyz1)
     bl1 = getMetalLigBondLength(mol1)
     bl2 = getMetalLigBondLength(mol2)
     passMLBL =True

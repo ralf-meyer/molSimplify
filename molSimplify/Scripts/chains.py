@@ -2,7 +2,7 @@
 # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 
-import sys, os, random, shutil, inspect, argparse
+import sys, os, random, shutil, inspect, argparse, openbabel
 from molSimplify.Scripts.rungen import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.inparse import *
@@ -26,40 +26,37 @@ def chain_ffopt(ff,mol,frozenats):
 		if ff.lower() not in ffav:
 			print 'Requested force field not available. Defaulting to MMFF94'
 			ff = 'mmff94'
-		### convert mol3D to OBmol via xyz file, because AFTER/END option have coordinates
+		### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
 		backup_mol = mol3D()
 		backup_mol.copymol3D(mol)
 		#   print('bck ' + str(backup_mol.getAtom(0).coords()))
 		#   print('mol_ibf ' + str(mol.getAtom(0).coords()))
-
-		mol.writexyz('tmp.xyz')
-		mol.OBmol = mol.getOBmol('tmp.xyz','xyzf')
-		os.remove('tmp.xyz')
+		mol.convert2OBMol()
 		### initialize constraints
-		constr = pybel.ob.OBFFConstraints()
+		constr = openbabel.OBFFConstraints()
 		### openbabel indexing starts at 1 ### !!!
 		# convert metals to carbons for FF
 		indmtls = []
 		mtlsnums = []
-		for iiat,atom in enumerate(mol.OBmol.atoms):
+		for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
 			if atom.atomicnum in metals:
 				indmtls.append(iiat)
-				mtlsnums.append(atom.atomicnum)
+				mtlsnums.append(atom.GetAtomicNum())
 				atom.OBAtom.SetAtomicNum(19)
 		for cat in frozenats:
 			constr.AddAtomConstraint(cat+1) # indexing babel
 		### set up forcefield
-		forcefield =pybel.ob.OBForceField.FindForceField(ff)
-		obmol = mol.OBmol.OBMol
+		forcefield = openbabel.OBForceField.FindForceField(ff)
+		OBMol = mol.OBMol
 		forcefield.Setup(obmol,constr)
 		## force field optimize structure
 		forcefield.ConjugateGradients(2500)
-		forcefield.GetCoordinates(obmol)
-		mol.OBmol = pybel.Molecule(obmol)
+		forcefield.GetCoordinates(OBMol)
+		mol.OBMol = OBMol
 
 # reset atomic number to metal
 		for i,iiat in enumerate(indmtls):
-			mol.OBmol.atoms[iiat].OBAtom.SetAtomicNum(mtlsnums[i])
+			mol.OBMol.GetAtomById(iiat).SetAtomicNum(mtlsnums[i])
 		mol.convert2mol3D()
 
 		en = forcefield.Energy()
@@ -68,7 +65,7 @@ def chain_ffopt(ff,mol,frozenats):
 		# print('mol_af ' + str(mol.getAtom(0).coords()))
 
 		#  print('ff delta = ' + str(backup_mol.rmsd(mol)))
-		del forcefield, constr, obmol
+		del forcefield, constr, OBMol
 		return mol,en
 
 def mdistance(r1,r2):

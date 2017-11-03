@@ -470,13 +470,10 @@ def lig_load(userligand,licores):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
             print emsg
             return False, emsg
-        
         if ('.xyz' in flig):
-            lig.OBMol = lig.getOBMol(flig,'xyzf')
-            
+            lig.OBMol = lig.getOBMol(flig,'xyzf')            
         elif ('.mol' in flig):
             lig.OBMol = lig.getOBMol(flig,'molf')
-            
         elif ('.smi' in flig):
             lig.OBMol = lig.getOBMol(flig,'smif')
         ### modified the check for length,
@@ -502,37 +499,31 @@ def lig_load(userligand,licores):
             lig.grps = []
         if len(dbentry) > 3:
             lig.ffopt = dbentry[4][0]
-        ### load from file
-        #print('dent is ' + str(lig.denticity))
+    ### load from file
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
-        if glob.glob(userligand):
-            ftype = userligand.split('.')[-1]
+        flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
+        if glob.glob(flig):
+            ftype = flig.split('.')[-1]
             # try and catch error if conversion doesn't work
             try:
                 print('ligand is an '+ftype+' file')
-                lig.OBMol = lig.getOBMol(userligand,ftype+'f') # convert from smiles
+                lig.OBMol = lig.getOBMol(flig,ftype+'f') # convert from file
                 # generate coordinates if not existing
                 lig.charge = lig.OBMol.GetTotalCharge()
                 print('Ligand successfully converted to OBMol')
             except IOError:
                 emsg = 'Failed converting file ' +userligand+' to molecule..Check your file.\n'
                 return False,emsg
-            lig.ident = userligand.rsplit('/')[-1]
+            lig.ident = flig.rsplit('/')[-1]
             lig.ident = lig.ident.split('.'+ftype)[0]
         else:
             emsg = 'Ligand file '+userligand+' does not exist. Exiting..\n'
             print emsg
             return False,emsg
-    ### if not, try converting from SMILES
+    ### if not, try interpreting as SMILES string
     else:
-        # check for transition metals
-        #userligand = checkTMsmiles(userligand)
-        # try and catch error if conversion doesn't work
         try:
-            lig.OBMol = lig.getOBMol(userligand,'smi') # convert from smiles
-            #lig.OBMol.write(format='mol', filename='smilig.mol', overwrite=True)
-            #lig.OBMol = lig.getOBMol('smilig.mol','molf')
-            #os.remove('smilig.mol')
+            lig.OBMol = lig.getOBMol(userligand,'smistring') # convert from smiles
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
         except IOError:

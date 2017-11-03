@@ -26,7 +26,7 @@
 #############  all parts of the program   ################
 ##########################################################
 
-import sys, os, random, shutil, inspect, argparse
+import sys, os, random, shutil, inspect, argparse, openbabel
 from molSimplify.Scripts.rungen import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.inparse import *

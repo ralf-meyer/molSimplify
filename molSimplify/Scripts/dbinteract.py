@@ -14,7 +14,7 @@ from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 # import std modules
 import os, sys, re, string, shutil, time
-import pybel, openbabel
+import openbabel
 
 ######################################################
 ### get directories for ChEMBL/emolecules database ###
@@ -130,7 +130,7 @@ def checkscr(args):
 #################################
 def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	#######################################
-	##   smi: pybel reference smiles     ##
+	##   smi: reference smiles     ##
 	##   nmols: number of similar ones   ##
 	## dbselect: database to be searched ##
 	#######################################
@@ -350,14 +350,15 @@ def dissim(outf,n):
 ####################################
 def matchsmarts(smarts,outf,catoms,nres):
     # read output file to pybel mol
-    mols = list(pybel.readfile('smi',outf))
-    sm = pybel.Smarts(smarts)
+    sm = openbabel.OBSmartsPattern()
+    sm.Init(smarts)
     f = open(outf,'r')
     s = f.read().splitlines()
     f.close()
     f = open(outf,'w')
-    for i,mol in enumerate(mols):
-        smm = sm.findall(mol)
+    for i,mol in enumerate(s):
+        sm.Match(mol)
+        smm = list(sm.GetUMapList())
         if len(smm) > 0:
             pmatch = smm[0]
             cc = ''
@@ -365,7 +366,7 @@ def matchsmarts(smarts,outf,catoms,nres):
                 att = at-1 # indexing
                 cc += str(pmatch[att])+','
             #if i < nres:
-            f.write(s[i]+' '+cc[:-1]+'\n')
+            f.write(mol+' '+cc[:-1]+'\n')
                 #f.write(s[i]+'\n')
         else:
             pass
@@ -395,29 +396,32 @@ def dbsearch(rundir,args,globs):
             qqb.setParent(args.gui.DBWindow)
         print "No database file found within "+globs.chemdbdir+'. Search not possible.'
         return True
-    if args.dbsim:
-	print('similarity searching')
-        if '.smi' in args.dbsim:
-            if glob.glob(args.dbsim):
-                f = open(args.dbsim,'r')
-                smistr = f.read()
-                f.close()
-            else:
-                print 'File '+args.dbsim+' not existing. Check your input.'
-                print 'Similarity search terminating..'
-                return True
-        elif ('.mol' in args.dbsim or '.xyz' in args.dbsim):
-            if glob.glob(args.dbsim):
-                ftype = args.dbsim.split('.')[-1]
-                pymol = pybel.readfile(ftype,args.dbsim).next()
-                smistr = pymol.write("smi")
-            else:
-                print 'File '+args.dbsim+' not existing. Check your input.'
-                print 'Similarity search terminating..'
-                return True
-        else:
-            smistr = args.dbsim
-            print smistr
+    #if args.dbsim:
+	#print('similarity searching')
+        #if '.smi' in args.dbsim:
+            #if glob.glob(args.dbsim):
+                #f = open(args.dbsim,'r')
+                #smistr = f.read()
+                #f.close()
+            #else:
+                #print 'File '+args.dbsim+' not existing. Check your input.'
+                #print 'Similarity search terminating..'
+                #return True
+        #elif ('.mol' in args.dbsim or '.xyz' in args.dbsim):
+            #if glob.glob(args.dbsim):
+                #ftype = args.dbsim.split('.')[-1]
+                #obConversion = openbabel.OBConversion()
+                #obConversion.SetInFormat(ftype)
+                #OBMol = openbabel.OBMol()
+                #obConversion.ReadFile(OBMol,args.dbsim)
+                #smistr = pybel.write("smi")
+            #else:
+                #print 'File '+args.dbsim+' not existing. Check your input.'
+                #print 'Similarity search terminating..'
+                #return True
+        #else:
+            #smistr = args.dbsim
+            #print smistr
     if args.dbsmarts:
         if '.smi' in args.dbsmarts:
             if glob.glob(args.dbsmarts):
@@ -431,7 +435,7 @@ def dbsearch(rundir,args,globs):
         elif ('.mol' in args.dbsmarts or '.xyz' in args.dbsmarts):
             if glob.glob(args.dbsmarts):
                 ftype = args.dbsmarts.split('.')[-1]
-                pymol = pybel.readfile(ftype,args.dbsmarts).next()
+                
                 smistr = pymol.write("smi")
             else:
                 print 'File '+args.dbsmarts+' does not exist. Check your input.'
@@ -545,38 +549,19 @@ def dbsearch(rundir,args,globs):
     # do pattern matching
     nres = 50 if not args.dbresults else int(args.dbresults)
     if args.dbsmarts or args.dbhuman:
-	print('number of smiles strings BEFORE SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
+        print('number of smiles strings BEFORE SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
         flag = matchsmarts(smistr,outf,catoms,nres)
-	print('number of smiles strings AFTER SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
+        print('number of smiles strings AFTER SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
     if args.debug:
-	print('outf is '+str(outf))
+        print('outf is '+str(outf))
     ### maximal dissimilarity search
     if args.dbdissim:
         dissim(outf,int(args.dbdissim))
-	if args.debug:
-		print('outf is '+str(outf)+'\n')
-
-        #flag = stripsalts('dissimres.smi',args.dbdissim)
-        #flag = matchsmarts(smistr,'dissimres.smi',catoms,int(args.dbdissim))
-        #print(flag)
-    	if args.rundir:
-        	os.rename('dissimres.smi',args.rundir+'/dissimres.smi')
-		print('rundir is ' + str(args.rundir))
-		print('\n\n********************\n')
-		print('writing max dissimilar list to   + str(args.rundir) +  /' + str(outf) +'\n' )
-		print('********************\n\n')
-
-	else:
-		print('\n\n********************\n')
-		print('writing max dissimilar list to ' + str(cwd) + '/' + str(outf)+'\n'  )
-		print('********************\n\n')
-
     if args.rundir:
-		print('writing output to ' + str(args.rundir) + '/' + str(outf)+'\n' )
-		os.rename(outf,args.rundir+'/'+outf)
+        print('writing output to ' + str(args.rundir) + '/' + str(outf)+'\n' )
+        os.rename(outf,args.rundir+'/'+outf)
     else:
-    		print('writing output to ' + str(cwd) + '/' + str(outf) +'\n' )
-
+        print('writing output to ' + str(cwd) + '/' + str(outf) +'\n' )
     #os.chdir(cwd)
     #print time.time()
     return False

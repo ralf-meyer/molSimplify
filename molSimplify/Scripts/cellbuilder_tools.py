@@ -1,7 +1,7 @@
 # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 import os, sys, copy
-import glob, re, math, random, string, numpy, pybel
+import glob, re, math, random, string, numpy, openbabel
 from math import pi
 #from scipy.spatial import Delaunay, ConvexHull
 #import networkx as nx
@@ -27,25 +27,22 @@ def cell_ffopt(ff,mol,frozenats):
     if ff.lower() not in ffav:
         print 'Requested force field not available. Defaulting to MMFF94'
         ff = 'mmff94'
-    ### convert mol3D to OBmol via xyz file, because AFTER/END option have coordinates
+    ### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
     backup_mol = mol3D()
     backup_mol.copymol3D(mol)
  #   print('bck ' + str(backup_mol.getAtom(0).coords()))
  #   print('mol_ibf ' + str(mol.getAtom(0).coords()))
-
-    mol.writexyz('tmp.xyz')
-    mol.OBmol = mol.getOBmol('tmp.xyz','xyzf')
-    os.remove('tmp.xyz')
+    mol.convert2OBMol()
     ### initialize constraints
-    constr = pybel.ob.OBFFConstraints()
+    constr = openbabel.OBFFConstraints()
     ### openbabel indexing starts at 1 ### !!!
     # convert metals to carbons for FF
     indmtls = []
     mtlsnums = []
-    for iiat,atom in enumerate(mol.OBmol.atoms):
+    for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
         if atom.atomicnum in metals:
             indmtls.append(iiat)
-            mtlsnums.append(atom.atomicnum)
+            mtlsnums.append(atom.GetAtomicNum())
             atom.OBAtom.SetAtomicNum(19)
     for cat in frozenats:
         constr.AddAtomConstraint(cat+1) # indexing babel
@@ -57,15 +54,15 @@ def cell_ffopt(ff,mol,frozenats):
     forcefield.ConjugateGradients(2500)
     forcefield.GetCoordinates(obmol)
     mol.OBmol = obmol
-
     # reset atomic number to metal
     for i,iiat in enumerate(indmtls):
-        mol.OBmol.atoms[iiat].OBAtom.SetAtomicNum(mtlsnums[i])
+        mol.OBMol.GetAtomById(iiat).SetAtomicNum(mtlsnums[i])
     mol.convert2mol3D()
 
     en = forcefield.Energy()
  
     del forcefield, constr, obmol
+
     return mol,en
 ################################
 def import_from_cif(fst):
@@ -86,18 +83,18 @@ def import_from_cif(fst):
     emsg =list()
     exit_status = 0
     gamma = 0
-    obConversion = pybel.ob.OBConversion()
+    obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats("cif", "xyz")
-    mol = pybel.ob.OBMol()
+    mol = openbabel.OBMol()
     try:
         obConversion.ReadFile(mol, fst)
-        fillUC = pybel.ob.OBOp.FindType("fillUC")
-        fillUC = pybel.ob.OBOp.FindType("fillUC")
+        fillUC = openbabel.OBOp.FindType("fillUC")
+        fillUC = openbabel.OBOp.FindType("fillUC")
         fillUC.Do(mol, "strict")
-        unit_cell.OBmol =pybel.Molecule(mol)
+        unit_cell.OBMol = mol
         unit_cell.convert2mol3D()
     except:
-        emsg.append("Error in reading of cif file by pybel")
+        emsg.append("Error in reading of cif file by openbabel")
         exit_status = 1
     with open(fst) as f:
         lines = f.readlines()
