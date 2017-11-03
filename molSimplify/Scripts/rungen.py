@@ -289,7 +289,6 @@ def checkmultilig(ligs):
         else:
             mligs.append([lig])
         tcats.append(connatoms)
-    print mligs
     ligandslist = list(itertools.product(*mligs))
     # convert tuple to list
     llist = []

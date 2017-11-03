@@ -214,7 +214,6 @@ def smartreorderligs(args,ligs,dentl,licores):
             indcs.append(ligdentsidcs[ii][l])
     return indcs
 
-
 def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
     # Main constrained FF opt routine
     # INPUT ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds)
@@ -261,9 +260,16 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
-            # ensure fake carbons have correct valence for FF setup
-            if OBMol.GetAtom(midx+1).GetValence() > 4:
-                OBMol.DeleteBond(OBMol.GetBond(midxm+1,catom+1))
+        # ensure fake carbons have correct valence for FF setup
+        i = 0
+        if OBMol.GetAtom(midx+1).GetValence() > 4:
+            while OBMol.GetAtom(midx+1).GetValence() > 4:
+                OBMol.DeleteBond(OBMol.GetBond(midx+1,mol.getBondedAtomsOct(midx)[i]+1))
+                i += 1
+        elif OBMol.GetAtom(midx+1).GetValence() == 0:
+            for i in mol.getBondedAtomsOct(midx):
+                if OBMol.GetAtom(midx+1).GetValence() < 4:
+                    OBMol.AddBond(midx+1,i+1,1)                  
         ### freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
@@ -512,7 +518,6 @@ def align_linear_pi_lig(mcoords,lig3D,atom0,ligpiatoms):
         lig3D_tmp = rotate_around_axis(lig3D_tmp, lig3D_tmp.getAtom(atom0).coords(), u, theta)
         #objfunc = abs(vecangle(vecdiff(lig3D_tmp.getAtom(atom0).coords(),mcoords),vecdiff(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),lig3D_tmp.getAtom(ligpiatoms[1]).coords()))-90)
         objfunc = abs(distance(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),mcoords) - distance(lig3D_tmp.getAtom(ligpiatoms[1]).coords(),mcoords))
-        print objfunc
         if objfunc < objfuncopt:
             thetaopt = theta
             objfuncopt = objfunc
@@ -699,8 +704,8 @@ def find_rotate_rotatable_bond(lig3D,catoms):
     bats = list(set(lig3D.getBondedAtomsnotH(catoms[0])) | set(lig3D.getBondedAtomsnotH(catoms[1])))
     rb1 = 1000
     rb2 = 1000
-    for ii in range(lig3D.OBmol.OBMol.NumBonds()):
-        bd = lig3D.OBmol.OBMol.GetBond(ii)
+    for ii in range(lig3D.OBMol.NumBonds()):
+        bd = lig3D.OBMol.GetBond(ii)
         bst = bd.GetBeginAtomIdx()
         ben = bd.GetEndAtomIdx()
         if bd.IsRotor() and (bst-1 in bats) and (ben-1 in bats):
@@ -981,6 +986,12 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
     atom0 = catoms[0]
     # translate ligand to overlap with backbone connecting point
     lig3D.alignmol(lig3D.getAtom(atom0),cpoint)
+    # determine bond length (database/cov rad/ANN)
+    bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
+    MLoptbds.append(bondl)
+    # align ligand to correct M-L distance
+    u = vecdiff(cpoint.coords(),corerefcoords)
+    lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)
     if rempi and len(ligpiatoms) == 2:
         # align linear (non-arom.) pi-coordinating ligand
         lig3D = align_linear_pi_lig(corerefcoords,lig3D,atom0,ligpiatoms)
@@ -994,12 +1005,7 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
             lig3D = check_rotate_symm_lig(corerefcoords,lig3D,atom0,core3D)
         # rotate around M-L axis to minimize steric repulsion
         lig3D = rotate_MLaxis_minimize_steric(corerefcoords,lig3D,atom0,core3D)
-    # determine bond length (database/cov rad/ANN)
-    bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
-    MLoptbds.append(bondl)
-    # align ligand to correct M-L distance
-    u = vecdiff(cpoint.coords(),corerefcoords)
-    lig3D = aligntoaxis2(lig3D, cpoint.coords(), corerefcoords, u, bondl)
+
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned,MLoptbds
@@ -1929,21 +1935,19 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                 ### initialize variables
                 atom0, r0, r1, r2, r3 = 0, mcoords, 0, 0, 0 # initialize variables
                 cpoint = atom3D(Sym='X',xyz=cpoint)
-                coreref = conatoms[0]
+                coreref = conatoms[0]			 
                 ####################################################
                 ##    attach ligand depending on the denticity    ##
                 ## optimize geometry by minimizing steric effects ##
                 ####################################################
                 if (denticity == 1):
                     lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,False,[],MLb,False,0,this_diag,MLbonds,[],i)
-                    connected.append(core3D.natoms+atom0)
                     # list of frozen atoms (small ligands)
                     if 'A' not in lig.ffopt:
                         for latdix in range(0,lig3D.natoms):
                             frozenats.append(latdix+core3D.natoms)
                     # combine molecules
                     core3D = core3D.combine(lig3D)
- 
                 else:
                     emsg = 'Multidentate ligands not supported for custom cores. Skipping.\n'
                     print emsg

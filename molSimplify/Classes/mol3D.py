@@ -796,7 +796,6 @@ class mol3D:
         OBMol = openbabel.OBMol()
         if convtype == 'smistring':
             obConversion.SetInFormat('smi')
-            print fst
             obConversion.ReadString(OBMol,fst)
         else:
             obConversion.SetInFormat(convtype[:-1])

@@ -310,12 +310,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ax_ki = get_truncated_kier(ax_lig3D,ax_lig3D.cat)
         eq_EN = get_lig_EN(eq_lig3D,eq_lig3D.cat)
         ax_EN = get_lig_EN(ax_lig3D,ax_lig3D.cat)
-        eq_bo = get_bond_order(eq_lig3D.OBmol.OBMol,eq_lig3D.cat,eq_lig3D)
-        ax_bo = get_bond_order(ax_lig3D.OBmol.OBMol,ax_lig3D.cat,ax_lig3D)
+        eq_bo = get_bond_order(eq_lig3D.OBMol,eq_lig3D.cat,eq_lig3D)
+        ax_bo = get_bond_order(ax_lig3D.OBMol,ax_lig3D.cat,ax_lig3D)
 
 
-        eq_charge = eq_lig3D.OBmol.charge
-        ax_charge = ax_lig3D.OBmol.charge
+        eq_charge = eq_lig3D.OBMol.GetTotalCharge()
+        ax_charge = ax_lig3D.OBMol.GetTotalCharge()
 
          
         ## preprocess:
