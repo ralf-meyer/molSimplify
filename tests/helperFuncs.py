@@ -77,7 +77,7 @@ def compareNumAtoms(xyz1,xyz2):
     mol1.readfromxyz(xyz1)
     mol2 = mol3D()
     mol2.readfromxyz(xyz1)
-    # Compare number of atoms
+   # Compare number of atoms
     passNumAtoms = (mol1.natoms == mol2.natoms)
     print "Pass total number of atoms check: ",passNumAtoms
     return passNumAtoms
