@@ -808,7 +808,7 @@ def parseinputs_advanced(*p):
     parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default=False)
     parser.add_argument("-decoration_index", help="list of indicies on each ligand to decorate",action="store_true") # decoration indexes, one list per ligand
     parser.add_argument("-decoration", help="list of SMILES for each decoratation",action="store_true") # decoration, one list ligand  
-    parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default=True)
+    parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default True)",default=False)
     parser.add_argument("-MLbonds", help="custom M-L bond length (Ang) for corresponding ligand",action="store_true")
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
     parser.add_argument("-langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
