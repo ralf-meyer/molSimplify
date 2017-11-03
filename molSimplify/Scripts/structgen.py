@@ -1360,8 +1360,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # load ligand
                 lig,emsg = lig_load(ligand,licores) # load ligand       
-                lig.convert2mol3D()
-                print lig.natoms       
+                lig.convert2mol3D()    
                 if emsg:
                     return False,emsg
                 ## check if ligand should decorated
@@ -1402,7 +1401,6 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         lig3D.convert2OBMol()
                         for j,catom in enumerate(lig.cat):
                             match = findsmarts(lig3D.OBMol,globs.remHsmarts,catom)
-                            print ('smarts match '+str(match))
                             if match:
                                 keepHs[i][j] = False
                             else:

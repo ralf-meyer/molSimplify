@@ -180,8 +180,6 @@ class mol3D:
         for atom in openbabel.OBMolAtomIter(self.OBMol):
             # get coordinates
             pos = [atom.GetX(),atom.GetY(),atom.GetZ()]
-            print(pos)
-            
             # get atomic symbol
             sym = elem[atom.GetAtomicNum() -1]
             # add atom to molecule
