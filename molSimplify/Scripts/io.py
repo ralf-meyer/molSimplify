@@ -302,7 +302,6 @@ def core_load(usercore,mcores):
         usercore = usercore.replace('~',homedir)
     emsg = False
     core = mol3D() # initialize core molecule
-    print(core)
     ### check if core exists in dictionary
     if usercore.lower() in mcores.keys():
         print('loading core from dictionary')
