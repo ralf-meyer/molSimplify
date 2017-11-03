@@ -38,17 +38,27 @@ II. Add a test case
   2. Put yourTestCase.in under: tests/inputs/
      Put yourTestCase.xyz,  yourTestCase.report  under: tests/refs/
 
-  3. Create a test python script with the template shown below. Thresh
-     is an optional tolerance for RMSD comparison, and defaults to 0.1 A.
+  3. Create a test python script with the template shown below. 
+     threshMLBL: the threshold for checking metal-ligand bondlength and defaults to 0.1 A
+     threshLG: tolerance for RMSD comparison of Ligand Geometries, and defaults to 0.1 A.
+     threshOG: tolerance for RMSD comparison of Overal Geometries, and defaults to 2.0 A
      If you are adding a small test cas (e.g. hexachloride), consider
-     reducing this parameter. Otherwise it is likely fine as is. 
+     reducing this parameter. Otherwise it is likely fine it is. 
 
 ############ test_yourTestCase.py  #########
 import helperFuncs as hp
 
 def test_example_1(tmpdir):
-    [pass_xyz,pass_report] = hp.runtest(tmpdir,"yourTestCase",thresh)
-    assert pass_xyz and pass_report
+    testName="yourTestCase"
+    threshMLBL = 0.1 #Change this value for your need
+    threshLG = 0.1 #Change this value for your need
+    threshOG = 2.0 #Change this value for you need
+    [passNumAtoms,passMLBL,passLG,passOG,pass_report] = hp.runtest(tmpdir,testName,threshMLBL,threshLG,threshOG)
+    assert passNumAtoms
+    assert passMLBL
+    assert passLG
+    assert passOG
+    assert pass_report
 
 #############################################
 
