@@ -1,7 +1,7 @@
 # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 import os, sys
-import glob, re, math, random, string, numpy, pybel
+import glob, re, math, random, string, numpy
 from math import pi
 from molSimplify.Scripts.geometry import *
 from molSimplify.Classes.atom3D import *

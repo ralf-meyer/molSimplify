@@ -16,8 +16,7 @@ from molSimplify.Classes.rundiag import *
 import argparse, sys, os, shutil, itertools, random
 from collections import Counter
 from pkg_resources import resource_filename, Requirement
-
-import pybel
+import openbabel
 
 #######################################
 ### get subset between list1, list2 ###
@@ -264,34 +263,33 @@ def checkmultilig(ligs):
     # loop over ligands
     for i,lig in enumerate(ligs):
         connatoms = []
-        if ('.smi' in lig or '.xyz' in lig or '.mol' in lig):
-            lsuf = lig.split('.')[-1]
+        if '.smi' in lig:
             if '~' in lig:
                 lig = lig.replace('~',os.path.expanduser("~"))
             # read molecule
-            if glob.glob(lig):
-            	moll = list(pybel.readfile(lsuf,lig))
-                mols = [m.write('smi') for m in moll]
-                f = open(lig,'r')
+            flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +lig)
+            if glob.glob(flig):
+                f = open(flig,'r')
                 s = f.read().splitlines()
                 for ss in s:
-			ss = ss.replace('\t',' ')
-                	sf = filter(None,ss.split(' '))
-                        if len(sf) > 0:
-                            connatoms.append(sf[-1])
-                            multidx = i
-                        else:
-                            connatoms.append(False)
+                    ss = ss.replace('\t',' ')
+                    sf = filter(None,ss.split(' '))
+                    if len(sf) > 0:
+                        connatoms.append(sf[-1])
+                        multidx = i
+                    else:
+                        connatoms.append(False)
                 f.close()
-                if len(mols) > 1:
-                        mligs.append(mols)
+                if len(s) > 1:
+                    mligs.append(s)
                 else:
-                        mligs.append([lig])
+                    mligs.append([lig])
             else:
-            	mligs.append([lig])
+                mligs.append([lig])
         else:
             mligs.append([lig])
         tcats.append(connatoms)
+    print mligs
     ligandslist = list(itertools.product(*mligs))
     # convert tuple to list
     llist = []
@@ -368,8 +366,6 @@ def rungen(rundir,args,chspfname,globs):
     smicat0 = [ss for ss in args.smicat] if args.smicat else False    
     # loop over ligands
     for mcount, mlig in enumerate(mligs):
-	if args.debug:
-        	print('in rungen, ligand is' + str(mlig) + ' of  ' + str(len(mligs)))
         args.smicat = [ss for ss in smicat0] if smicat0 else False
         args.checkdir, skip = False, False # initialize flags
         if len(mligs) > 0 and mligs[0]:

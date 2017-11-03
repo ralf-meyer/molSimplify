@@ -329,60 +329,6 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         del forcefield, constr, OBMol
     return mol,en
 
-#def ffoptd(ff,mol,connected,ccatoms,frozenats,nligats):
-    ## Custom core FF opt (Tim)
-    ## INPUT
-    ##   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
-    ##   - mol: mol3D to be ff optimized
-    ##   - connected: indices of connection atoms to metal
-    ##   - constopt: flag for constrained optimization
-    ## OUTPUT
-    ##   - mol: force field optimized mol3D
-    #metals = range(21,31)+range(39,49)+range(72,81)
-    #### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
-    #mol.writexyz('tmp.xyz')
-    #mol.OBMol = mol.getOBMol('tmp.xyz','xyzf')
-    #os.remove('tmp.xyz')
-    #### initialize constraints
-    #constr = openbabel.OBFFConstraints()
-    #### openbabel indexing starts at 1 ### !!!
-    ## convert metals to carbons for FF
-    #indmtls = []
-    #mtlsnums = []
-    #for iiat,atom in enumerate(mol.OBmol.atoms):
-        #if atom.atomicnum in metals:
-            #indmtls.append(iiat)
-            #mtlsnums.append(atom.atomicnum)
-            #atom.OBAtom.SetAtomicNum(6)
-    #### add distance constraints
-    #for ict,catom in enumerate(connected):
-        #dma = mol.getAtom(ccatoms[ict]).distance(mol.getAtom(catom))
-        #constr.AddDistanceConstraint(ccatoms[ict]+1,catom+1,dma) # indexing babel
-    #### freeze core
-    #for ii in range(0,mol.natoms-nligats):
-        #constr.AddAtomConstraint(ii+1) # indexing babel
-    #### freeze small ligands
-    #for cat in frozenats:
-        #constr.AddAtomConstraint(cat+1) # indexing babel
-    #### set up forcefield
-    #forcefield = openbabel.OBForceField.FindForceField(ff)
-    #obmol = mol.OBmol.OBMol
-    #forcefield.Setup(obmol,constr)
-    #### force field optimize structure
-    #if obmol.NumHvyAtoms() > 10:
-        #forcefield.ConjugateGradients(4000)
-    #else:
-        #forcefield.ConjugateGradients(2000)
-    #forcefield.GetCoordinates(obmol)
-    #en = forcefield.Energy()
-    #mol.OBmol = pybel.Molecule(obmol)
-    ## reset atomic number to metal
-    #for i,iiat in enumerate(indmtls):
-        #mol.OBmol.atoms[iiat].OBAtom.SetAtomicNum(mtlsnums[i])
-    #mol.convert2mol3D()
-    #del forcefield, constr, obmol
-    #return mol,en
-
 def getconnection(core,cm,catom,toconnect):
     # Use FF to estimate optimum backbone positioning (Tim)
     ff = 'UFF'
@@ -483,23 +429,26 @@ def getconnection2(core,cidx,BL):
     return cpoint
 
 def findsmarts(lig3D,smarts,catom):
-    return False
-    # returns true if connecting atom of lig3D is part of SMARTS pattern
-    # lig3D: OBmol of mol3D
-    # smarts: list of SMARTS patterns
-    # catom: connecting atom of lig3D (zero based numbering)
-    #mall = []
-    #for sm in smarts:
-        #sm = pybel.Smarts(sm)
-        #matches = sm.findall(lig3D)
-        #matches = [i for sub in matches for i in sub]
-        #for m in matches:
-            #if m not in mall:
-                #mall.append(m)
-    #if catom+1 in mall:
-        #return True
-    #else:
-        #return False
+    #returns true if connecting atom of lig3D is part of SMARTS pattern
+    #lig3D: OBMol of mol3D
+    #smarts: list of SMARTS patterns (strings)
+    #catom: connecting atom of lig3D (zero based numbering)
+    mall = []
+    for smart in smarts:
+        # initialize SMARTS matcher
+        sm = openbabel.OBSmartsPattern()
+        sm.Init(smart)
+        sm.Match(lig3D)
+        matches = list(sm.GetUMapList())
+        # unpack tuple
+        matches = [i for sub in matches for i in sub]
+        for m in matches:
+            if m not in mall:
+                mall.append(m)
+    if catom+1 in mall:
+        return True
+    else:
+        return False
 
 def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
     # Aligns a ligand's center of symmetry along the metal-connecting atom axis.
@@ -1411,7 +1360,8 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # load ligand
                 lig,emsg = lig_load(ligand,licores) # load ligand       
-                lig.convert2mol3D()       
+                lig.convert2mol3D()
+                print lig.natoms       
                 if emsg:
                     return False,emsg
                 ## check if ligand should decorated
@@ -1452,6 +1402,7 @@ def mcomplex(args,core,ligs,ligoc,licores,globs):
                         lig3D.convert2OBMol()
                         for j,catom in enumerate(lig.cat):
                             match = findsmarts(lig3D.OBMol,globs.remHsmarts,catom)
+                            print ('smarts match '+str(match))
                             if match:
                                 keepHs[i][j] = False
                             else:
@@ -1954,6 +1905,7 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     allremH = False
                 # load ligand
                 lig,emsg = lig_load(ligand,licores) # load ligand
+                lig.convert2mol3D()
                 if emsg:
                     return False,emsg
                 # if SMILES string
@@ -2005,11 +1957,11 @@ def customcore(args,core,ligs,ligoc,licores,globs):
                     print('Setting charge to be ' + str(args.charge))
                 # perform FF optimization if requested
                 if args.ff and 'a' in args.ffoption:
-                    core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
+					core3D,enc = ffopt(args.ff,core3D,connected,1,range(0,core3D.natoms-nligats),False,[],'Adaptive')
             totlig += 1
     # perform FF optimization if requested
     if args.ff and 'a' in args.ffoption:
-        core3D,enc = ffoptd(args.ff,core3D,connected,ccatoms,frozenats,nligats)
+		core3D,enc = ffopt(args.ff,core3D,connected,1,range(0,core3D.natoms-nligats),False,[],'Adaptive')
     return core3D,emsg
 
 ##########################################

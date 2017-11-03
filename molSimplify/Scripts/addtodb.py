@@ -13,7 +13,7 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mWidgets import *
 
 import os, sys, subprocess, re, unicodedata
-import pybel, openbabel, random, shutil
+import openbabel, random, shutil
 from pkg_resources import resource_filename, Requirement
 
 ###############################

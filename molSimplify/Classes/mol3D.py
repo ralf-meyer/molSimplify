@@ -793,17 +793,25 @@ class mol3D:
         #   - fst: filename
         #   - convtype: type of input file
         # OUTPUT
-        #   - mol: openbabel molecule loaded from file
+        #   - OBMol: openbabel molecule loaded from file
         obConversion = openbabel.OBConversion()
         OBMol = openbabel.OBMol()
+        if convtype == 'smistring':
+            obConversion.SetInFormat('smi')
+            print fst
+            obConversion.ReadString(OBMol,fst)
+        else:
+            obConversion.SetInFormat(convtype[:-1])
+            obConversion.ReadFile(OBMol,fst)
+        if 'smi' in convtype:
+            OBMol.AddHydrogens()    
+            b = openbabel.OBBuilder()
+            b.Build(OBMol)
+        forcefield = openbabel.OBForceField.FindForceField('mmff94')
+        forcefield.Setup(OBMol)
+        forcefield.ConjugateGradients(200)
+        forcefield.GetCoordinates(OBMol)
         self.OBMol = OBMol
-        obConversion.SetInFormat(convtype[:-1])
-        obConversion.ReadFile(self.OBMol,fst)
-        f = forcefield = openbabel.OBForceField.FindForceField('mmff94')
-        f = forcefield.Setup(self.OBMol)
-        f =forcefield.ConjugateGradients(200)
-        f =forcefield.GetCoordinates(self.OBMol)
-
         return OBMol
 
     ############################################

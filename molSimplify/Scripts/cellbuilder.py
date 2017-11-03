@@ -1,7 +1,7 @@
 # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 import os, sys, copy
-import glob, re, math, random, string, numpy, pybel
+import glob, re, math, random, string, numpy
 from math import pi
 from scipy.spatial import Delaunay, ConvexHull
 from molSimplify.Scripts.geometry import *

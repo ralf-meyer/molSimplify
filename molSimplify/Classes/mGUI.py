@@ -19,7 +19,7 @@ import sys, os, random, shutil, unicodedata, inspect, glob, time, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 
-import pybel, openbabel
+import openbabel
 
 class mGUI():
     getgeoms()
@@ -1931,106 +1931,10 @@ class mGUI():
                 ### Add close button to window
                 self.lgrid.addWidget(self.lwclose,1,0)
                 self.lwindow.show()
-
-    def drawligs(self):
-            ### collects all the info and passes it to molSimplify ###
-            rdir = self.etrdir.text()
-            if rdir[-1]=='/':
-                rdir = rdir[:-1]
-            # creat running dir if not existing
-            if not os.path.isdir(rdir):
-                os.mkdir(rdir)
-            args = grabguivars(self)
-            if len(args['-lig']) < 1:
-                qm = mQDialogWarn('Warning','No ligands are specified.')
-                return False
-            else:
-                args['-lig']=args['-lig'].replace(' ','')
-                lls = args['-lig'].split(',')
-                liglist = []
-                # check if multiple ligands in .smi file
-                for l in lls:
-                    if '.smi' in l:
-                        f = open(l,'r')
-                        smis = filter(None,f.read().splitlines())
-                        liglist += smis
-                    else:
-                        liglist.append(l)
-
-                licores = getlicores()
-                simpleligs = getslicores()
-                ligs = []
-                for l in liglist:
-                    if l in simpleligs.keys():
-                        l = simpleligs[l][0]
-                    if isinstance(l,unicode):
-                        ll = unicodedata.normalize('NFKD',l).encode('ascii','ignore')
-                    else:
-                        ll = l
-                    lig,emsg = lig_load(ll,licores)
-                    if emsg:
-                        mQDialogWarn('Error',emsg)
-                    else:
-                        ligs.append(lig.OBmol)
-                if len(ligs)==0:
-                    return
-                fcount = 0
-                while glob.glob(rdir+'/ligs'+str(fcount)+'.png'):
-                    fcount += 1
-                # get current dir
-                cwd = os.getcwd()
-                os.chdir(rdir) # change to working dir
-                outputf  = 'ligs.sdf'
-                locf = 'ligs'+str(fcount)
-                outbase = rdir+'/'+locf
-                outf = pybel.Outputfile("sdf",outputf,overwrite=True)
-                for mol in ligs:
-                    outf.write(mol)
-                # convert to svg
-                globs= globalvars()
-                cmd = "obabel -isdf "+outputf+" -O "+locf+".svg -xC -xi"
-                t = mybash(cmd)
-                if glob.glob(outputf):
-                    os.remove(outputf)
-                else:
-                    mQDialogErr('Error','Image could not be generated\n.')
-                    os.chdir(cwd)
-                    return
-                ####################
-                ### draw ligands ###
-                ####################
-                cmd = 'convert -density 500 '+locf+'.svg '+locf+'.png'
-                s = mybash(cmd)
-                if not glob.glob(locf+'.png') :
-                    mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
-                else:
-                    os.remove(locf+".svg")
-                    shutil.move(locf+'.png',outbase+'.png')
-                    self.c1p = mQPixmap(outbase+'.png')
-                    rows = self.lgrid.rowCount()
-                    if rows > 1:
-                        for i in reversed(range(self.lgrid.count())):
-                            self.lgrid.itemAt(i).widget().setParent(None)
-                    self.lgrid.addWidget(self.c1p,0,0)
-                    # button for closing window
-                    ctip = 'Close current window'
-                    self.lwindow.setWindowTitle('Ligands 2D')
-                    self.lwclose = mQPushButton('Close',ctip,14)
-                    self.lwclose.clicked.connect(self.qcloseligs)
-                    self.lgrid.addWidget(self.lwclose,1,0)
-                    self.lwindow.show()
-                    self.lwindow.setWindowState(Qt.WindowMaximized)
-                    center(self.lwindow)
-                # change back
-                os.chdir(cwd)
-        ### draw ligands
     def viewgeom(self):
             globs = globalvars()
             # get geometry
             geom = self.dcoordg.currentText()
-
-            #gfname = globs.installdir+'/icons/geoms/'+geom+'.png'
-
             gfname = resource_filename(Requirement.parse("molSimplify"),"molSimplify/icons/geoms/" + geom +".png")
             if glob.glob(gfname):
                 rows = self.lgrid.rowCount()
@@ -2086,56 +1990,42 @@ class mGUI():
 
                 lig,emsg = lig_load(ll,licores)
                 if not emsg:
-                    ligs.append(lig.OBmol)
+                    ligs.append(lig.OBMol)
             if len(ligs)==0:
                 return
-            fcount = 0
-            while glob.glob(rdir+'/ligs'+str(fcount)+'.png'):
-                fcount += 1
-            # get cwd
-            cwd = os.getcwd()
-            os.chdir(rdir) # change to working dir
-            outputf  = 'ligs.smi'
-            locf = 'ligs'+str(fcount)
-            outbase = rdir+'/'+locf
-            outf = pybel.Outputfile("smi",outputf,overwrite=True)
-            for mol in ligs:
-                outf.write(mol)
-            # convert to svg
-            cmd = "obabel -ismi "+outputf+" -O "+locf+".svg -xC -xi"
-            t = mybash(cmd)
-            print t
-            if glob.glob(outputf):
-                os.remove(outputf)
             else:
-                mQDialogInf('Error','Image could not be generated\n.')
-                os.chdir(cwd)
-                return
-            ####################
-            ### draw ligands ###
-            ####################
-            cmd = 'convert -density 1200 '+locf+'.svg '+locf+'.png'
-            s = mybash(cmd)
-            print s
-            if not glob.glob(locf+'.png') :
-                mQDialogInf('Done','2D representation of ligands generated in file ' +outbase+'.svg ! Conversion to png failed.')
-            else:
-                os.remove(locf+".svg")
-                shutil.move(locf+'.png',outbase+'.png')
-                self.c1p = mQPixmap(outbase+'.png')
-                rows = self.lgrid.rowCount()
-                if rows > 1:
-                    for i in reversed(range(self.lgrid.count())):
-                        self.lgrid.itemAt(i).widget().setParent(None)
-                self.lgrid.addWidget(self.c1p,0,0)
-                # button for closing window
+                for i,pmol in enumerate(ligs):
+                    ## use openbabel to convert to labeled SVG
+                    obConversion = openbabel.OBConversion()
+                    obConversion.SetOutFormat("svg")
+                    obConversion.AddOption("i", obConversion.OUTOPTIONS, "") 
+                    ### return the svg with atom labels as a string
+                    svgstr = obConversion.WriteString(pmol)
+                    ### unpacked nested svg as in pybel._repr_svg_
+                    namespace = "http://www.w3.org/2000/svg"
+                    ET.register_namespace("", namespace)
+                    tree = ET.fromstring(svgstr)
+                    svg = tree.find("{{{ns}}}g/{{{ns}}}svg".format(ns=namespace))
+                    newsvg = ET.tostring(svg).decode("utf-8")
+                    ### write unpacked svg to temp file
+                    filedes, filename = tempfile.mkstemp()
+                    with open(filename, "w") as svg_file:
+                        svg_file.write(newsvg)
+                    ### Read the temp file into an SvgWidget
+                    self.svgwidget = mSvgWidget(filename)
+                    ### Add the svg to the window
+                    self.lgrid.addWidget(self.svgwidget,0,i)
+                    ### Cleanup temp files
+                    os.close(filedes)
+                    os.remove(filename)
+                ### Build close button
                 ctip = 'Close current window'
-                self.lwclose = mQPushButton('Close',ctip,14)
+                self.lwindow.setWindowTitle('Ligands 2D')
+                self.lwclose = QPushButton('Close')
                 self.lwclose.clicked.connect(self.qcloseligs)
+                ### Add close button to window
                 self.lgrid.addWidget(self.lwclose,1,0)
-                self.lwindow.show()
-                center(self.lwindow)
-            os.chdir(cwd)
+                self.lwindow.show()             
     ### enable random input
     def enablerandom(self):
         if self.randomchk.isChecked():
