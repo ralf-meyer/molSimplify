@@ -257,6 +257,7 @@ class mol3D:
         self.charge = mol0.charge
         self.denticity = mol0.denticity
         self.ident = mol0.ident
+        self.ffopt = mol0.ffopt
     #####################################
     ##### create molecular graph #######
     #####################################
@@ -804,10 +805,10 @@ class mol3D:
             OBMol.AddHydrogens()    
             b = openbabel.OBBuilder()
             b.Build(OBMol)
-        forcefield = openbabel.OBForceField.FindForceField('mmff94')
-        forcefield.Setup(OBMol)
-        forcefield.ConjugateGradients(200)
-        forcefield.GetCoordinates(OBMol)
+        #forcefield = openbabel.OBForceField.FindForceField('mmff94')
+        #forcefield.Setup(OBMol)
+        #forcefield.ConjugateGradients(200)
+        #forcefield.GetCoordinates(OBMol)
         self.OBMol = OBMol
         return OBMol
 

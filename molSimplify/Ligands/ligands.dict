@@ -22,8 +22,7 @@ benzene:benzene.mol,bnz,4,build small organic,BA,-1
 benzene_pi:benzene_pi.mol,bnp,0 1 2 3 4 5 pi,build small organometallic,N,0
 benzenedithiol:benzenedithiol.mol,benzenedithiol,0 11,build functionalize bidentate,BA,-1
 benzenethiol:benzenethiol.mol,bthil,0,build functionalize small,N,-1
-bipy:bipy.mol,bip,0 1,build bidentate,BA,0
-bipyridine:bipy.mol,bip,0 1,build bidentate,BA,0
+bipy:bipy.mol,bip,0 1,build bidentate,N,0
 bpabipy:BPAbipy.mol,bpabp,0 13 26 48 30,build core,BA,0
 bromide:bromide.mol,brode,0,build functionalize small,N,-1
 carbonyl:carbonyl.mol,crbn,0,build small,N,0

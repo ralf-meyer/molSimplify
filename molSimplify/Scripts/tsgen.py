@@ -8,6 +8,7 @@
 
 # import custom modules
 from molSimplify.Scripts.geometry import *
+from molSimplify.Scripts.structgen import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.globalvars import *
