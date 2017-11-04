@@ -57,63 +57,14 @@ def ligand_breakdown(mol):
 	# complex and returns ligands
 	metal_index = mol.findMetal()
 	bondedatoms = mol.getBondedAtomsSmart(metal_index)
-	bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-	#print(bonded_atom_symbols)
-        #if Counter(bonded_atom_symbols) == Counter(['N', 'N', 'C', 'N', 'N', 'N', 'N', 'C']):
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-        #if Counter(bonded_atom_symbols) == Counter(['N', 'N', 'C', 'O', 'O', 'N', 'N', 'C']):
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-        #if Counter(bonded_atom_symbols) == Counter(['N', 'N', 'N', 'N', 'C', 'N', 'N']):
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-        #if Counter(bonded_atom_symbols) == Counter(['O', 'C', 'C', 'O', 'N', 'N', 'O', 'C', 'C', 'O']):
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-                #bad_ind = bonded_atom_symbols.index('C')
-                #del bondedatoms[bad_ind]
-                #print('***** special intervention *** ')
-                #bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]        
-                #print(bonded_atom_symbols)
-        
+	bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]              
 	counter = 0
 	liglist = []
 	ligdents = []
 	ligcons = []
 	for atom in bondedatoms:
-		#print('this atom type is ' + mol.getAtom(atom).symbol())
-		#print('conection number ' + str(atom) + " of " + str(bondedatoms))
+		print('this atom type is ' + mol.getAtom(atom).symbol())
+		print('conection number ' + str(atom) + " of " + str(bondedatoms))
 		fragment = mol.findsubMol(atom,metal_index)
 		this_cons = [x for x in fragment if (x in bondedatoms)]
 		unique =  True
@@ -129,6 +80,7 @@ def ligand_breakdown(mol):
 			ligdents[matched] += 1
 	return liglist,ligdents,ligcons
 def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
+        valid = True
 	metal_index = mol.findMetal()
 	built_ligand_list  = list()
 	lig_natoms_list = list()
@@ -149,7 +101,13 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 		print("max d = " + str(max_dent))
 		print("min_dent = " +  str(min_dent))
 		print("ligand list is" + str(liglist))
-                print('denticities are  ' + str(ligdents))
+		print('denticities are  ' + str(ligdents))
+	if max(ligdents) == 4 and min(ligdents) != 1:
+                valid = False
+                print('bad denticities: ' + str(ligdents)) 
+	if max(ligdents) >= 4:
+                valid = False
+                print('bad denticities: ' + str(ligdents)) 
 	eq_lig_list = list()
 	ax_lig_list = list()
 	ax_con_list = list()
@@ -285,7 +243,7 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 			#eq_lig=ligand_records[ligand_counts.index(4)]
 	ax_ligand_list = [built_ligand_list[i] for i in ax_lig_list]
 	eq_ligand_list = [built_ligand_list[i] for i in eq_lig_list]
-	if loud:
+	if loud and valid:
 		print('lig_nat_list',lig_natoms_list)
 		print('eq_liq is ind ',eq_lig_list)
 		print('ax_liq is ind ',ax_lig_list)
