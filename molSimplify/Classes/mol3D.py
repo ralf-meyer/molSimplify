@@ -384,14 +384,10 @@ class mol3D:
     def findMetal(self):
         # OUTPUT
         #   - mm: indices of all metals in the molecule
-        mm = False
-        mindist = 1000
-        cm = self.centermass()
+        mm = []
         for i,atom in enumerate(self.atoms):
             if atom.ismetal():
-                if distance(atom.coords(),cm) < mindist:
-                    mindist = distance(atom.coords(),cm)
-                    mm = i
+                mm.append(i)
         return mm
 
     #########################################

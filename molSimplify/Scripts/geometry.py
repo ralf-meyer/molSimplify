@@ -153,9 +153,9 @@ def getPointu(Rr, dist, u):
     t = bl/norm(u) # get t as t=bl/norm(r1-r0)
     # get point
     P = [0,0,0]
-    P[0] = t*u[0]-Rr[0]
-    P[1] = t*u[1]-Rr[1]
-    P[2] = t*u[2]-Rr[2]
+    P[0] = t*u[0]+Rr[0]
+    P[1] = t*u[1]+Rr[1]
+    P[2] = t*u[2]+Rr[2]
     return P
 
 ##################################################

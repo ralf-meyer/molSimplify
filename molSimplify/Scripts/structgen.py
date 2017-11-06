@@ -451,7 +451,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         # initialize force field
         forcefield = openbabel.OBForceField.FindForceField(ff)
         ### initialize constraints
-        constr = openbabel.OBFFConstraints()
+        constr = openbabel.OBFFConstraints()      
         ### openbabel indexing starts at 1 ### !!!
         # convert metals to carbons for FF
         indmtls = []
@@ -463,23 +463,34 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
                 atom.SetAtomicNum(6)
         # freeze and ignore metals
         for midxm in indmtls:
-            constr.AddAtomConstraint(midxm+1) # indexing babel
+            constr.AddAtomConstraint(midxm+1) # indexing babel           
         # add coordinating atom constraints
         for ii,catom in enumerate(connected):
             if constopt==1 or frozenangles:
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
+        bridgingatoms = []        
+        # identify bridging atoms in the case of bimetallic cores
+        for i in range(mol.natoms):
+            nbondedmetals = len([idx for idx in range(len(mol.getBondedAtomsOct(i))) if mol.getAtom(mol.getBondedAtomsOct(i)[idx]).ismetal()])
+            if nbondedmetals > 1:
+                bridgingatoms.append(i)
         # ensure fake carbons have correct valence for FF setup
-        i = 0
-        if OBMol.GetAtom(midx+1).GetValence() > 4:
-            while OBMol.GetAtom(midx+1).GetValence() > 4:
-                OBMol.DeleteBond(OBMol.GetBond(midx+1,mol.getBondedAtomsOct(midx)[i]+1))
-                i += 1
-        elif OBMol.GetAtom(midx+1).GetValence() == 0:
-            for i in mol.getBondedAtomsOct(midx):
-                if OBMol.GetAtom(midx+1).GetValence() < 4:
-                    OBMol.AddBond(midx+1,i+1,1)                  
+        for m in indmtls:
+            i = 0
+            # too many bonds: delete bonds
+            if OBMol.GetAtom(m+1).GetValence() > 4:
+                while OBMol.GetAtom(m+1).GetValence() > 4:
+                    # delete bond only if it is a real metal-terminal ligand bond
+                    if OBMol.GetBond(m+1,mol.getBondedAtomsOct(m)[i]+1) is not None and mol.getBondedAtomsOct(m)[i] not in bridgingatoms:
+                        OBMol.DeleteBond(OBMol.GetBond(m+1,mol.getBondedAtomsOct(m)[i]+1))
+                    i += 1
+            # too few bonds: add bonds
+            elif OBMol.GetAtom(m+1).GetValence() == 0:
+                for i in mol.getBondedAtomsOct(m+1):
+                    if OBMol.GetAtom(m+1).GetValence() < 4:
+                        OBMol.AddBond(m+1,i+1,1)               
         ### freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
@@ -501,7 +512,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
                 i += 1
         elif nsteps != 0:
             try:
-                n = adaptive
+                n = nsteps
             except:
                 n = 200    
             forcefield.ConjugateGradients(n)
@@ -510,10 +521,6 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             mol.convert2mol3D()
         else:
             forcefield.GetCoordinates(OBMol)
-            mol.OBMol = OBMol
-            mol.convert2mol3D()
-            en = forcefield.Energy()
-            return en
         en = forcefield.Energy()
         mol.OBMol = OBMol
         # reset atomic number to metal
@@ -1064,28 +1071,29 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,mcoords)
     lig3D = rotate_around_axis(lig3D,r1,urot,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
     # select best
-    rm0,rm1 = lig3D.centermass(),lig3Db.centermass()
-    theta,ul0 = rotation_params(rm0,r0l,r1l)
-    theta,ul1 = rotation_params(rm1,r0l,r1l)
-    th0 = 180*arccos(dot(ub,ul0)/(norm(ub)*norm(ul0)))/pi
-    th0 = min(abs(th0),abs(180-th0))
-    th1 = 180*arccos(dot(ub,ul1)/(norm(ub)*norm(ul1)))/pi
-    th1 = min(abs(th1),abs(180-th1))
-    lig3D = lig3D if th0 < th1 else lig3Db
+    #rm0,rm1 = lig3D.centermass(),lig3Db.centermass()
+    #theta,ul0 = rotation_params(rm0,r0l,r1l)
+    #theta,ul1 = rotation_params(rm1,r0l,r1l)
+    #th0 = 180*arccos(dot(ub,ul0)/(norm(ub)*norm(ul0)))/pi
+    #th0 = min(abs(th0),abs(180-th0))
+    #th1 = 180*arccos(dot(ub,ul1)/(norm(ub)*norm(ul1)))/pi
+    #th1 = min(abs(th1),abs(180-th1))
+    #lig3D = lig3D if th0 < th1 else lig3Db
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned,r1b     
 
-def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,mcoords,MLoptbds):
+def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,coreref,MLoptbds):
     # Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.
     # compute starting ligand FF energy for later comparison
+    corerefcoords = coreref.coords()
     dr = vecdiff(rtarget,lig3D.getAtom(catoms[1]).coords())
     cutoff = 5 # energy threshold for ligand strain, kcal/mol
     lig3Dtmp = mol3D()
     lig3Dtmp.copymol3D(lig3D)
-    lig3Dtmp,en_start = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],1000)
+    lig3Dtmp,en_start = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],200)
     # take steps between current ligand position and ideal position on backbone
-    nsteps = 100
+    nsteps = 20
     ddr = [di/nsteps for di in dr]
     ens=[]
     finished = False
@@ -1110,9 +1118,9 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,mcoo
                     cutoff += 5000000
                     relax = True
                     break
-                theta2 = vecangle(vecdiff(r1,r0),vecdiff(mcoords,r0))
+                theta2 = vecangle(vecdiff(r1,r0),vecdiff(corerefcoords,r0))
                 dtheta = theta2-theta1
-                theta,urot = rotation_params(mcoords,r0,r1)  
+                theta,urot = rotation_params(corerefcoords,r0,r1)  
                 lig3Dtmp = rotate_around_axis(lig3Dtmp,r0,urot,-dtheta) # rotate so that it matches bond
                 finished = True 
                 break
@@ -1121,14 +1129,13 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,mcoo
     # for long linear ligand chains, this procedure might produce the wrong ligand curvature. If so, reflect about M-L plane        
     lig3Dtmpb = mol3D()
     lig3Dtmpb.copymol3D(lig3Dtmp)
-    lig3Dtmpb = reflect_through_plane(lig3Dtmpb,vecdiff(midpt(lig3Dtmpb.getAtom(catoms[0]).coords(),lig3Dtmpb.getAtom(catoms[1]).coords()),mcoords),lig3Dtmpb.getAtom(catoms[0]).coords())
+    lig3Dtmpb = reflect_through_plane(lig3Dtmpb,vecdiff(midpt(lig3Dtmpb.getAtom(catoms[0]).coords(),lig3Dtmpb.getAtom(catoms[1]).coords()),corerefcoords),lig3Dtmpb.getAtom(catoms[0]).coords())
     lig3Dtmp = lig3Dtmpb if lig3Dtmp.mindist(core3D) < lig3Dtmpb.mindist(core3D) else lig3Dtmp
     if relax:
         # Relax the ligand
-        lig3Dtmp.addAtom(core3D.getAtom(0))
         lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[catoms[1]],2,[catoms[0]],False,MLoptbds[-2:-1],200) 
         lig3Dtmp.deleteatom(lig3Dtmp.natoms-1) 
-    en_final = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],0)
+    lig3Dtmp,en_final = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],0)
     if en_final - en_start > 20:
         print 'Warning: Complex may be strained. Change in ligand MM energy (kcal/mol) = ' + str(en_final - en_start)    
         print 'Consider using our conformer search mode (to be implemented in a future release)'
@@ -1199,19 +1206,19 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     lig3D.alignmol(lig3D.getAtom(atom0),cpoint)
     r1 = lig3D.getAtom(atom0).coords()
     # Crude rotations to bring the 2nd connecting atom closer to its ideal location
-    lig3D,r1b = align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefcoords)
+    lig3D,r1b = align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefcoords)  
     ## get bond length
     bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
     MLoptbds.append(bondl)
     MLoptbds.append(bondl)
-    lig3D = setPdistance(lig3D, r1, r0, bondl)
+    lig3D = setPdistance(lig3D, r1, r0, bondl)    
     # get target point for 2nd connecting atom
     rtarget = getPointu(corerefcoords, bondl, vecdiff(r1b,corerefcoords)) # get second point target
     if args.ff and 'B' in lig3D.ffopt:
         # align 2nd connecting atom while balancing the desired location and ligand strain
-        lig3D = align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,corerefcoords,MLoptbds)
+        lig3D = align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,coreref,MLoptbds)
     else:
-        print 'Warning: Ligand FF optimization is inactive.'    
+        print 'Warning: Ligand FF optimization is inactive.'  
     # rotate connecting atoms to align Hs properly
     lig3D = rotate_catoms_fix_Hs(lig3D,catoms,corerefcoords,core3D)
     # freeze local geometry
