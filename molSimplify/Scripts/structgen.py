@@ -501,8 +501,8 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         ### force field optimize structure
         elif nsteps == 'Adaptive':
             i = 0
-            while i < 50:
-                forcefield.ConjugateGradients(200)
+            while i < 20:
+                forcefield.ConjugateGradients(100)
                 forcefield.GetCoordinates(OBMol)
                 mol.OBMol = OBMol
                 mol.convert2mol3D()              
@@ -514,7 +514,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             try:
                 n = nsteps
             except:
-                n = 200    
+                n = 100    
             forcefield.ConjugateGradients(n)
             forcefield.GetCoordinates(OBMol)
             mol.OBMol = OBMol
