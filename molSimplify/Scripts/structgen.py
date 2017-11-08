@@ -502,7 +502,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         elif nsteps == 'Adaptive':
             i = 0
             while i < 20:
-                forcefield.ConjugateGradients(100)
+                forcefield.ConjugateGradients(50)
                 forcefield.GetCoordinates(OBMol)
                 mol.OBMol = OBMol
                 mol.convert2mol3D()              
@@ -641,7 +641,7 @@ def findsmarts(lig3D,smarts,catom):
     else:
         return False
 
-def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
+def align_lig_centersym(corerefcoords,lig3D,atom0,core3D,EnableAutoLinearBend):
     # Aligns a ligand's center of symmetry along the metal-connecting atom axis.
     # corerefcoords: core reference coordinates
     # lig3D: mol3D of ligand to be rotated
@@ -669,7 +669,7 @@ def align_lig_centersym(corerefcoords,lig3D,atom0,core3D):
     lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
     # additional rotation for bent terminal connecting atom:
     if auxmol.natoms == 1:
-        if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad): 
+        if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad) and EnableAutoLinearBend: 
             print('bending of linear terminal ligand')
             ##warning: force field might overwrite this
             r1 = lig3D.getAtom(atom0).coords()
@@ -744,8 +744,8 @@ def check_rotate_linear_lig(corerefcoords,lig3D,atom0):
         r2 = auxm.getAtom(1).coords()
         if checkcolinear(r1,r0,r2):
             # rotate so that O-C-O bond is perpendicular to M-L axis
-            theta,urot = rotation_params(r1,mcoords,r2)
-            theta = vecangle(vecdiff(r0,mcoords),urot)
+            theta,urot = rotation_params(r1,corerefcoords,r2)
+            theta = vecangle(vecdiff(r0,corerefcoords),urot)
             lig3D = rotate_around_axis(lig3D,r0,urot,theta)
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
@@ -962,7 +962,10 @@ def get_MLdist(args,lig3D,atom0,ligand,metal,MLb,i,ANN_flag,ANN_bondl,this_diag,
     else:
     # otherwise, check for exact DB match    
         bondl,exact_match = get_MLdist_database(args,metal,lig3D,atom0,ligand,MLbonds)
-        this_diag.set_dict_bl(bondl)
+        try:
+            this_diag.set_dict_bl(bondl)
+        except:
+            pass
         if not exact_match and ANN_flag:
             # if no exact match found and ANN enabled, use it
             print('no M-L match in DB, using ANN')
@@ -1143,7 +1146,7 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
     lig3D_aligned.copymol3D(lig3Dtmp)
     return lig3D_aligned                    
    
-def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,i):
+def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi=False,ligpiatoms=[],MLb=[],ANN_flag=False,ANN_bondl=[],this_diag=0,MLbonds=dict(),MLoptbds=[],i=0,EnableAutoLinearBend=True):
     # Aligns a monodentate ligand to core connecting atom coordinates.
     # args: namespace of arguments
     # cpoint: atom3D containing backbone connecting point
@@ -1181,7 +1184,7 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiat
         lig3D = align_linear_pi_lig(corerefcoords,lig3D,atom0,ligpiatoms)
     elif lig3D.natoms > 1:
         # align ligand center of symmetry
-        lig3D = align_lig_centersym(corerefcoords,lig3D,atom0,core3D)
+        lig3D = align_lig_centersym(corerefcoords,lig3D,atom0,core3D,EnableAutoLinearBend)
         if lig3D.natoms > 2:
             # check for linear molecule and align
             lig3D = check_rotate_linear_lig(corerefcoords,lig3D,atom0)
