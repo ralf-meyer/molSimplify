@@ -106,9 +106,10 @@ class mol3D:
     def BCM(self,idx1,idx2,d):
         # INPUT
         #   - idx1: index of atom to be moved
-        #   - idx2: index of bond-defining atom
+        #   - idx2: index of anchor atom
         #   - d: new bond length (A)
         bondv = self.getAtom(idx1).distancev(self.getAtom(idx2)) # 1 - 2
+        # compute current bond length
         u = 0.0
         for u0 in bondv:
             u += (u0*u0)
@@ -384,14 +385,10 @@ class mol3D:
     def findMetal(self):
         # OUTPUT
         #   - mm: indices of all metals in the molecule
-        mm = False
-        mindist = 1000
-        cm = self.centermass()
+        mm = []
         for i,atom in enumerate(self.atoms):
             if atom.ismetal():
-                if distance(atom.coords(),cm) < mindist:
-                    mindist = distance(atom.coords(),cm)
-                    mm = i
+                mm.append(i)
         return mm
 
     #########################################

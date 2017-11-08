@@ -89,7 +89,7 @@ nitroso:nitroso.mol,nits,0,build functionalize small,N,-1
 nme3:nme3.mol,nme3,0,build small,N,0
 noxygen:noxygen.mol,noxd,0,build small,N,0
 ome2:ome2.mol,ome2,0,build small,N,0
-ox:oxalate.mol,oxate,1 4,build bidentate,BA,-2
+ox:oxalate.mol,oxate,1 4,build bidentate,A,-2
 oxygen:oxygen.mol,oxd,0,build small,N,-2
 pcy3:PCy3.mol,pcy3,0,build bulky big,BA,0
 propylene:propylene.mol,propylene,pi,build organometallic,N,0
