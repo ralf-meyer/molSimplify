@@ -1143,10 +1143,10 @@ def slab_module_supervisor(args,rootdir):
             point_coefficients = threshold_basis(point_coefficients,1E-6)
             print('coords in transformed UC:' )
             print(point_coefficients)
-            for i in range(0,len(point_coefficients)):
-                for j in [0,1,2]:
-                    if point_coefficients[i][j]<0:
-                        point_coefficients[i][j] += 1      
+            #for i in range(0,len(point_coefficients)):
+            #    for j in [0,1,2]:
+             #       if point_coefficients[i][j]<0:
+             #           point_coefficients[i][j] += 1      
             new_coords = [evaluate_basis_coefficients(points,new_basis) for points in point_coefficients]
             for i,coords in enumerate(new_coords):
                 unit_cell.getAtom(i).setcoords(coords)
@@ -1168,7 +1168,7 @@ def slab_module_supervisor(args,rootdir):
                          [i*duplication_vector[1] for i in ext_duplication_vector[1]],
                          [i*duplication_vector[2] for i in ext_duplication_vector[2]]]
         
-        if miller_index and False:
+        if miller_index:
             duplication_vector[2] += 2 ## add some extra height to trim off 
                                        ## this is a hack to prevent bumpy bottoms
                                        ## when duplicating cell vectors were
@@ -1196,12 +1196,8 @@ def slab_module_supervisor(args,rootdir):
         #############################################################
         if miller_index:
             print('rotating angle ' + str(angle) + ' around ' + str(u))##
-            decoy = mol3D()
-            decoy.copymol3D(super_cell)
             super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)##
             #decoy = rotate_around_axis(decoy,[0,0,0],u,angle)##
-            print('rotating angle ' + str(angle) + ' around ' + str(u))##
-            print('rotating cv')
             cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),numpy.pi*angle/(180)) for i in cell_vector]
             ext_duplication_vector =  [PointRotateAxis(u,[0,0,0],list(i),numpy.pi*angle/(180)) for i in ext_duplication_vector]
             # threshold:
@@ -1296,31 +1292,33 @@ def slab_module_supervisor(args,rootdir):
 
         ## move in all negative positions
         #if all(super_cell_vector[0]) <= 0: ## all signs are the same:
-        ##    super_cell_vector[0] = [-1*i for i in super_cell_vector[0]]
-        #point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
+        #    super_cell_vector[0] = [-1*i for i in super_cell_vector[0]]
+        point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
         #print('coords in final slab:' )
         #print(point_coefficients)
-        #point_coefficients = threshold_basis(point_coefficients,1E-6)
+        point_coefficients = threshold_basis(point_coefficients,1E-6)
         #for i in range(0,len(point_coefficients)):
-            #for j in [0,1,2]:
-                #while point_coefficients[i][j]<0:
-                    #point_coefficients[i][j] += 1
-                #while point_coefficients[i][j]>1:
-                    #point_coefficients[i][j] -= 1
-        #new_coords = [evaluate_basis_coefficients(points,super_cell_vector) for points in point_coefficients]
+        #    for j in [0,1,2]:
+        #        if point_coefficients[i][j]<0:
+        #            point_coefficients[i][j] += 1
+        #        if point_coefficients[i][j] >1:
+        #            point_coefficients[i][j] -= 1
+        new_coords = [evaluate_basis_coefficients(points,super_cell_vector) for points in point_coefficients]
         
         #for j,points in enumerate(point_coefficients):
             #if min(new_coords[i])<0:
                 ### try shift one cv in each direction:
                 #potential_new_point = []
             
-        #for i,coords in enumerate(new_coords):
-            #super_cell.getAtom(i).setcoords(coords)
+        for i,coords in enumerate(new_coords):
+            super_cell.getAtom(i).setcoords(coords)
         #point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
-        #print('coords in final slab:' )
-        #print(point_coefficients)
-
-
+        print('coords in final slab:' )
+        print(point_coefficients)
+        ######
+        rest = super_cell.sanitycheck(silence = False)
+        print('result of collision check is  ' + str(rest))
+        
         #################################
         ## write slab output
         super_cell.writexyz(rootdir + 'slab/super' +''.join( [str(i) for i in duplication_vector])+'.xyz')
@@ -1333,7 +1331,7 @@ def slab_module_supervisor(args,rootdir):
         
         ## get some vapourspace
         final_cv = copy.deepcopy(super_cell_vector)
-        #final_cv[2][2] = float(final_cv[2][2]) + 20  
+        final_cv[2][2] = float(final_cv[2][2]) + 20  
         print('final cell vector, inc vapour space is :')
         print(final_cv)
         write_periodic_mol3d_to_qe(super_cell,final_cv,rootdir + 'slab/slab.in')
