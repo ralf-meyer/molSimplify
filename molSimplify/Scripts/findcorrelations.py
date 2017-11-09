@@ -12,10 +12,26 @@ from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.autocorrelation import *
 from molSimplify.Informatics.misc_descriptors import *
-from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
+
+def test_skl():
+    valid = ok
+    try:
+        from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
+    except:
+        valid = False
+    return valid
 
 def analysis_supervisor(args,rootdir):
 	status = True
+	print('looking for scikit-learn')
+	if test_skl():
+		from sklearn import linear_model,preprocessing,metrics,feature_selection,model_selection
+	else:
+		print("Error, scikit-learn not loadable")
+		status = False
+	if not args.correlate:
+		print("Error, correlation path not given")
+		status=False
 	print('looking for file at '+str(args.correlate))
 	if not args.correlate:
 		print("Error, correlation path not given")
