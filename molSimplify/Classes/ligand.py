@@ -63,8 +63,8 @@ def ligand_breakdown(mol):
 	ligdents = []
 	ligcons = []
 	for atom in bondedatoms:
-		print('this atom type is ' + mol.getAtom(atom).symbol())
-		print('conection number ' + str(atom) + " of " + str(bondedatoms))
+		#print('this atom type is ' + mol.getAtom(atom).symbol())
+		#print('conection number ' + str(atom) + " of " + str(bondedatoms))
 		fragment = mol.findsubMol(atom,metal_index)
 		this_cons = [x for x in fragment if (x in bondedatoms)]
 		unique =  True
@@ -102,7 +102,7 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 		print("min_dent = " +  str(min_dent))
 		print("ligand list is" + str(liglist))
 		print('denticities are  ' + str(ligdents))
-	if max(ligdents) == 4 and min(ligdents) != 1:
+	if (max(ligdents) == 4) and (min(ligdents) != 1):
                 valid = False
                 print('bad denticities: ' + str(ligdents)) 
 	if max(ligdents) >= 4:
@@ -255,8 +255,12 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 		print('ax_con is '+str((ax_con_list)))
 	if name:
 		for i,ax_ligand in enumerate(ax_ligand_list):
+			if not os.path.isdir('ligands'):
+                                os.mkdir('ligands')
 			ax_ligand.mol.writexyz('ligands/'+ name+'_'+str(i)+'_ax.xyz')
 		for i,eq_ligand in enumerate(eq_ligand_list):
+                        if not os.path.isdir('ligands'):
+                                os.mkdir('ligands')
 			eq_ligand.mol.writexyz('ligands/'+ name+'_'+str(i)+'_eq.xyz')
 	for j,ax_con in enumerate(ax_con_list):
 		ax_con_int_list.append([built_ligand_list[ax_lig_list[j]].ext_int_dict[i] for i in ax_con]) # convert to interal index
