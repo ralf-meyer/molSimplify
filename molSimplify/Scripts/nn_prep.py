@@ -536,7 +536,7 @@ def spin_classify(metal,spin,ox):
     return high_spin,spin_ops
 
 def get_splitting(excitation):
-    print(excitation)
+    #print(excitation)
     delta = simple_splitting_ann(excitation)
     return delta
 def get_slope(slope_excitation):

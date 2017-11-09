@@ -95,10 +95,10 @@ def simple_splitting_ann(excitation):
     #print('path to ANN data: ',path_to_file)
     n = simple_network_builder([25,50,50],"ms_split") 
     excitation,sp_center,sp_shift = excitation_standardizer(excitation,'split')
-    print(excitation)
-    print('center is ' + str(sp_center))
-    print('scale is '+ str(sp_shift))
-    print(excitation)
+    #print(excitation)
+    #print('center is ' + str(sp_center))
+    #print('scale is '+ str(sp_shift))
+    #print(excitation)
     result = n.activate(excitation)
 
     
@@ -170,7 +170,7 @@ def find_eu_dist(excitation):
             min_dist = this_dist
             best_row = rownames[i]
             min_row = rows
-    print('min dist is ' +str(min_dist))
-    print(min_row)
+    #print('min dist is ' +str(min_dist))
+    #print(min_row)
     return min_dist,best_row
 
