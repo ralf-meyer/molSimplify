@@ -1220,7 +1220,7 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     lig3D = setPdistance(lig3D, r1, r0, bondl)    
     # get target point for 2nd connecting atom
     rtarget = getPointu(corerefcoords, bondl, vecdiff(r1b,corerefcoords)) # get second point target
-    if args.ff and 'B' in lig3D.ffopt:
+    if args.ff:
         # align 2nd connecting atom while balancing the desired location and ligand strain
         lig3D = align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,coreref,MLoptbds)
     else:
