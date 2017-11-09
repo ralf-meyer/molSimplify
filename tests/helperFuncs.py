@@ -172,6 +172,36 @@ def parse4test(infile,tmpdir):
     print "Input file parsed for test is located: ",newname
     return newname
 
+def parse4testNoFF(infile,tmpdir):
+    name = jobname(infile)
+    newname = name+"_noff" 
+    newinfile = name+"_noff.in"
+    f=tmpdir.join(newinfile)
+    fullnewname = f.dirname+"/"+newinfile
+    data=open(infile).readlines()
+    newdata=""
+    hasJobdir = False
+    hasName = False
+    hasFF = False
+    for line in data:
+        if ("-ff " in line):
+            hasFF=True
+            break
+    if not hasFF:
+        print "No FF optimization used in original input file. No need to do further test."
+        fullnewname = ""
+    else:
+        print "FF optimization used in original input file. Now test for no FF result."
+        for line in data:
+            if not (("-jobdir" in line) or ("-name" in line) or ("-ff " in line) ):
+                newdata+=line
+        newdata+="-jobdir "+newname+"\n"
+        newdata+="-name "+newname+"\n"
+        print newdata
+        f.write(newdata)
+        print "Input file parsed for no FF test is located: ",fullnewname
+    return fullnewname
+
 def compare_report(report1,report2):
     data1=open(report1,'r').readlines()
     data2=open(report2,'r').readlines()
@@ -210,4 +240,30 @@ def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     print "Reference report file: ", ref_report
     print "Reference xyz status: ", pass_xyz
     print "Reference report status: ", pass_report
+    return [passNumAtoms, passMLBL, passLG, passOG, pass_report]
+
+def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
+    infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
+    newinfile = parse4testNoFF(infile,tmpdir)
+    [passNumAtoms, passMLBL, passLG, passOG, pass_report]=[True,True,True,True,True]
+    if newinfile != "":
+        newname=jobname(newinfile)
+        args =['main.py','-i', newinfile]
+        startgen(args,False,False)
+        myjobdir=jobdir(newinfile)
+        output_xyz = myjobdir + '/'+ newname + '.xyz'
+        output_report = myjobdir + '/'+ newname + '.report'
+        ref_xyz = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+newname+".xyz")
+        ref_report = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+newname+".report")
+        print "Test input file: ", newinfile
+        print "Test output files are generated in ",myjobdir
+        print "Output xyz file: ", output_xyz
+        pass_xyz=compareGeo(output_xyz,ref_xyz,threshMLBL,threshLG,threshOG)
+        [passNumAtoms,passMLBL,passLG,passOG] = pass_xyz
+        pass_report = compare_report(output_report,ref_report)
+        print "Reference xyz file: ", ref_xyz
+        print "Test report file: ", output_report
+        print "Reference report file: ", ref_report
+        print "Reference xyz status: ", pass_xyz
+        print "Reference report status: ", pass_report
     return [passNumAtoms, passMLBL, passLG, passOG, pass_report]
