@@ -333,7 +333,7 @@ def init_ligand(args,lig,tcats,keepHs,i):
     if args.ff and 'b' in args.ffoption and not rempi:
         if 'b' in lig.ffopt.lower():
             print 'FF optimizing ligand'
-            lig,enl = ffopt(args.ff,lig,lig.cat,0,[],False,[],100)
+            lig,enl = ffopt(args.ff,lig,lig.cat,0,[],False,[],100,args.debug)
     # skip hydrogen removal for pi-coordinating ligands    
     if not rempi: 
         # check smarts match
@@ -424,7 +424,7 @@ def smartreorderligs(args,ligs,dentl,licores):
             indcs.append(ligdentsidcs[ii][l])
     return indcs
 
-def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
+def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=False):
     # Main constrained FF opt routine
     # INPUT ffopt(args.ff,core3D,connected,2,frozenats,freezeangles,MLoptbds)
     #   - ff: force field to use, available MMFF94, UFF, Ghemical, GAFF
@@ -451,7 +451,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         # initialize force field
         forcefield = openbabel.OBForceField.FindForceField(ff)
         ### initialize constraints
-        constr = openbabel.OBFFConstraints()      
+        constr = openbabel.OBFFConstraints()     
         ### openbabel indexing starts at 1 ### !!!
         # convert metals to carbons for FF
         indmtls = []
@@ -471,29 +471,29 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
         bridgingatoms = []        
-        # identify bridging atoms in the case of bimetallic cores
+        # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
+        # these are immune to deletion
         for i in range(mol.natoms):
-            nbondedmetals = len([idx for idx in range(len(mol.getBondedAtomsOct(i))) if mol.getAtom(mol.getBondedAtomsOct(i)[idx]).ismetal()])
-            if nbondedmetals > 1:
+            nbondedmetals = len([idx for idx in range(len(mol.getBondedAtoms(i))) if mol.getAtom(mol.getBondedAtoms(i)[idx]).ismetal()])
+            if nbondedmetals > 1 or (nbondedmetals == 1 and len(mol.getBondedAtoms(i)) == 1):
                 bridgingatoms.append(i)
-        # ensure fake carbons have correct valence for FF setup
+        # ensure correct valences for FF setup
         for m in indmtls:
-            i = 0
-            # too many bonds: delete bonds
-            if OBMol.GetAtom(m+1).GetValence() > 4:
-                while OBMol.GetAtom(m+1).GetValence() > 4:
-                    # delete bond only if it is a real metal-terminal ligand bond
-                    if OBMol.GetBond(m+1,mol.getBondedAtomsOct(m)[i]+1) is not None and mol.getBondedAtomsOct(m)[i] not in bridgingatoms:
-                        OBMol.DeleteBond(OBMol.GetBond(m+1,mol.getBondedAtomsOct(m)[i]+1))
-                    i += 1
-            # too few bonds: add bonds
-            elif OBMol.GetAtom(m+1).GetValence() == 0:
-                for i in mol.getBondedAtomsOct(m+1):
-                    if OBMol.GetAtom(m+1).GetValence() < 4:
-                        OBMol.AddBond(m+1,i+1,1)               
+            # first delete all metal-ligand bonds excluding bridging atoms
+            for i in range(len(mol.getBondedAtoms(m))):
+                if OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1) is not None and mol.getBondedAtoms(m)[i] not in bridgingatoms:
+                    OBMol.DeleteBond(OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1))
+            # then add back one metal-ligand bond for FF
+            if OBMol.GetAtom(m+1).GetValence() == 0:
+                for i in mol.getBondedAtomsOct(m,1+len(bridgingatoms)):
+                    if OBMol.GetAtom(m+1).GetValence() < 1 and i not in bridgingatoms:
+                        OBMol.AddBond(m+1,i+1,1)
         ### freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
+        if debug:
+            for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+                print ('atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence()))
         ### set up forcefield
         s = forcefield.Setup(OBMol,constr)
         if s == False:
@@ -551,52 +551,6 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps):
         mol.convert2mol3D()
         del forcefield, constr, OBMol
     return mol,en
-
-#def getconnection(core,catom):
-    ## Use FF to estimate optimum backbone positioning (Tim)
-    #cm = core.centermass()
-    #ff = 'UFF'
-    #metals = range(21,31)+range(39,49)+range(72,81)
-    #### get hydrogens
-    #Hlist = core.getHs()
-    #### add fake atoms for catoms
-    #ncore = core.natoms
-    ## add fake atom in local centermass axis
-    #coords = core.getAtom(catom).coords()
-    #dd = distance(coords,core.centermass())
-    #backbcoords = alignPtoaxis(coords,coords,vecdiff(coords,core.centermass()),1.5)
-    #bopt = backbcoords
-    ## manually find best positioning
-    #am = mol3D()
-    #am.addAtom(atom3D('C',backbcoords))
-    ##for ii in range(0,toconnect-1):
-    #ii = 0
-    #P = PointTranslateSph(coords,am.atoms[ii].coords(),[1.5,45,30])
-    #am.addAtom(atom3D('C',P))
-    #setopt = []
-    #mdist = -1
-    ##for ii in range(0,toconnect):
-    #ii = 0
-    #for itheta in range(0,360,3):
-        #for iphi in range(0,180,2):
-            #P = PointTranslateSph(coords,backbcoords,[1.5,itheta,iphi])
-            #am.atoms[ii].setcoords(P)
-            #dd = 0
-            ##for idx in range(0,toconnect):
-            #dd += distance(cm,am.atoms[0].coords())
-            #if (am.mindistmol() > 0.0):
-                #d0 = dd+0.5*(log(core.mindist(am)*am.mindistmol()))
-                #print d0
-            #if d0 > mdist:
-                #mdist = d0
-                #setopt = am.coordsvect()
-    ##for ii in range(0,toconnect):
-    #core.addAtom(atom3D('C',setopt[0]))
-    ##connPts = []
-    ##for ii in range(0,toconnect):
-    ##connPts.append(core.getAtom(ncore+ii).coords())
-    #print core.getAtom(ncore).coords()
-    #return core.getAtom(ncore).coords()
 
 def getconnection(core,cidx,BL):
     # finds the optimum attachment point for an atom/group to a central atom given the desired bond length
@@ -1097,7 +1051,7 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
     cutoff = 5 # energy threshold for ligand strain, kcal/mol
     lig3Dtmp = mol3D()
     lig3Dtmp.copymol3D(lig3D)
-    lig3Dtmp,en_start = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],200)
+    lig3Dtmp,en_start = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],200,args.debug)
     # take steps between current ligand position and ideal position on backbone
     nsteps = 20
     ddr = [di/nsteps for di in dr]
@@ -1108,7 +1062,7 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
         lig3Dtmp = mol3D()
         lig3Dtmp.copymol3D(lig3D)
         for ii in range(0,nsteps):
-            lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[],1,[catoms[0],catoms[1]],False,[],'Adaptive')
+            lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[],1,[catoms[0],catoms[1]],False,[],'Adaptive',args.debug)
             ens.append(enl)
             lig3Dtmp.getAtom(catoms[1]).translate(ddr)
             # once the ligand strain energy becomes too high, stop and accept ligand position 
@@ -1139,9 +1093,9 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
     lig3Dtmp = lig3Dtmpb if lig3Dtmp.mindist(core3D) < lig3Dtmpb.mindist(core3D) else lig3Dtmp
     if relax:
         # Relax the ligand
-        lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[catoms[1]],2,[catoms[0]],False,MLoptbds[-2:-1],200) 
+        lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[catoms[1]],2,[catoms[0]],False,MLoptbds[-2:-1],200,args.debug) 
         lig3Dtmp.deleteatom(lig3Dtmp.natoms-1) 
-    lig3Dtmp,en_final = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],0)
+    lig3Dtmp,en_final = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],0,args.debug)
     if en_final - en_start > 20:
         print 'Warning: Complex may be strained. Change in ligand MM energy (kcal/mol) = ' + str(en_final - en_start)    
         print 'Consider using our conformer search mode (to be implemented in a future release)'
@@ -1606,27 +1560,6 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                         lig3Db.writexyz('lig3db.xyz')
                     # rotate around axis and get both images
                     lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
-                    # get distance from bonds table or vdw radii
-                    #if MLb and MLb[i]:
-                        #if 'c' in MLb[i].lower():
-                            #bondl = m3D.getAtom(0).rad + lig3D.getAtom(atom0).rad
-                        #else:
-                            #bondl = float(MLb[i]) # check for custom
-                    #else:
-                        #if not ANN_flag:
-                            #bondl = getbondlength(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            #this_diag.set_dict_bl(bondl)
-                        #else:
-                            #bondl,exact_match = getbondlengthStrict(args,metal,core3D,lig3D,0,atom0,ligand,MLbonds)
-                            #this_diag.set_dict_bl(bondl)
-                            #if not exact_match :
-                                #if args.debug:
-                                        #print('No match in DB, using ANN')
-                                #bondl =  ANN_bondl
-                            #else:
-                                #if args.debug:
-                                    #print('using exact match from DB at  ' + num2str(bondl))
-                                #db_overwrite = True
                     bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
@@ -1723,13 +1656,13 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 # perform FF optimization if requested
                 if 'a' in args.ffoption:
                     print('FF optimizing molecule after placing ligand')
-                    core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive')
+                    core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
             totlig += denticity
             ligsused += 1
     # perform FF optimization if requested
     if 'a' in args.ffoption:
         print('Performing final FF opt')
-        core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive')
+        core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     ###############################
 
     return core3D,complex3D,emsg,this_diag

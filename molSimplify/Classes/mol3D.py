@@ -508,9 +508,10 @@ class mol3D:
     ### specialized for use in octagedral single metal  ###
     #################### complexes  #######################
     #######################################################
-    def getBondedAtomsOct(self,ind,debug=False):
+    def getBondedAtomsOct(self,ind,CN=6,debug=False):
         # INPUT
         #   - ind: index of reference atom
+        #   - CN: known coordination number of complex (default 6)
         # OUTPUT
         #   - nats: list of indices of connected atoms
         ratom = self.getAtom(ind)
@@ -541,10 +542,10 @@ class mol3D:
                         if atom.symbol() == "C":           
                             ## in this case, atom might be intruder C!
                             possible_inds = self.getBondedAtomsnotH(ind) ## bonded to metal
-                            if len(possible_inds)>6:
+                            if len(possible_inds)>CN:
                                 metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,ind))
                                
-                                allowed_inds = metal_prox[0:6]
+                                allowed_inds = metal_prox[0:CN]
                                 if debug:
                                     print('ind: '+str(ind))
                                     print('metal prox:' + str(metal_prox))
@@ -561,8 +562,8 @@ class mol3D:
                             ## in this case, ratom might be intruder C!
                             possible_inds = self.getBondedAtomsnotH(i) ## bonded to metal
                             metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,i))
-                            if len(possible_inds)>6:
-                                allowed_inds = metal_prox[0:6]
+                            if len(possible_inds)>CN:
+                                allowed_inds = metal_prox[0:CN]
                                 if debug:
                                     print('ind: '+str(ind))
                                     print('metal prox:' + str(metal_prox))
