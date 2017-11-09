@@ -1074,14 +1074,17 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,mcoords)
     lig3D = rotate_around_axis(lig3D,r1,urot,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
     # select best
-    #rm0,rm1 = lig3D.centermass(),lig3Db.centermass()
-    #theta,ul0 = rotation_params(rm0,r0l,r1l)
-    #theta,ul1 = rotation_params(rm1,r0l,r1l)
-    #th0 = 180*arccos(dot(ub,ul0)/(norm(ub)*norm(ul0)))/pi
-    #th0 = min(abs(th0),abs(180-th0))
-    #th1 = 180*arccos(dot(ub,ul1)/(norm(ub)*norm(ul1)))/pi
-    #th1 = min(abs(th1),abs(180-th1))
-    #lig3D = lig3D if th0 < th1 else lig3Db
+    try:
+        rm0,rm1 = lig3D.centermass(),lig3Db.centermass()
+        theta,ul0 = rotation_params(rm0,r0l,r1l)
+        theta,ul1 = rotation_params(rm1,r0l,r1l)
+        th0 = 180*arccos(dot(ub,ul0)/(norm(ub)*norm(ul0)))/pi
+        th0 = min(abs(th0),abs(180-th0))
+        th1 = 180*arccos(dot(ub,ul1)/(norm(ub)*norm(ul1)))/pi
+        th1 = min(abs(th1),abs(180-th1))
+        lig3D = lig3D if th0 < th1 else lig3Db
+    except:
+        pass
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned,r1b     
