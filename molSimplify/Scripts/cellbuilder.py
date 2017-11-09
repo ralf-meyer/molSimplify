@@ -1143,10 +1143,10 @@ def slab_module_supervisor(args,rootdir):
             point_coefficients = threshold_basis(point_coefficients,1E-6)
             print('coords in transformed UC:' )
             print(point_coefficients)
-            for i in range(0,len(point_coefficients)):
-                for j in [0,1,2]:
-                    if point_coefficients[i][j]<0:
-                        point_coefficients[i][j] += 1      
+            #for i in range(0,len(point_coefficients)):
+            #    for j in [0,1,2]:
+             #       if point_coefficients[i][j]<0:
+             #           point_coefficients[i][j] += 1      
             new_coords = [evaluate_basis_coefficients(points,new_basis) for points in point_coefficients]
             for i,coords in enumerate(new_coords):
                 unit_cell.getAtom(i).setcoords(coords)
@@ -1169,7 +1169,7 @@ def slab_module_supervisor(args,rootdir):
                          [i*duplication_vector[2] for i in ext_duplication_vector[2]]]
         
         if miller_index:
-            duplication_vector[2] += 4 ## add some extra height to trim off 
+            duplication_vector[2] += 2 ## add some extra height to trim off 
                                        ## this is a hack to prevent bumpy bottoms
                                        ## when duplicating cell vectors were
                                        ## elements in the top an bottom layes
@@ -1197,11 +1197,14 @@ def slab_module_supervisor(args,rootdir):
         if miller_index:
             print('rotating angle ' + str(angle) + ' around ' + str(u))##
             super_cell = rotate_around_axis(super_cell,[0,0,0],u,angle)##
+            #decoy = rotate_around_axis(decoy,[0,0,0],u,angle)##
             cell_vector =  [PointRotateAxis(u,[0,0,0],list(i),numpy.pi*angle/(180)) for i in cell_vector]
             ext_duplication_vector =  [PointRotateAxis(u,[0,0,0],list(i),numpy.pi*angle/(180)) for i in ext_duplication_vector]
             # threshold:
             cell_vector=threshold_basis(cell_vector,1E-6)
             ext_duplication_vector = threshold_basis(ext_duplication_vector,1E-6)
+            u_keep = 0 + u
+            angle_keep  = 0+angle
         #############################################################
         
         if debug:
@@ -1214,6 +1217,7 @@ def slab_module_supervisor(args,rootdir):
             print(ext_duplication_vector[1])
             print(ext_duplication_vector[2])
             super_cell.writexyz(rootdir + 'slab/after_rotate.xyz') 
+        
         if miller_index: ## get rid of the extra padding we added:
                   super_cell= shave_under_layer(super_cell)
                   super_cell= shave_under_layer(super_cell)
@@ -1228,7 +1232,7 @@ def slab_module_supervisor(args,rootdir):
         angle = -1*vecangle(cell_vector[0],[1,0,0])
         if debug:
             print('x-axis angle is  ' + str(angle))
-        if abs(angle) > 5:
+        if abs(angle) > 5 and False:
            print('angle is '+ str(angle))
            u = [0,0,1]
            print('aligning  with x-axis')
@@ -1257,7 +1261,7 @@ def slab_module_supervisor(args,rootdir):
                     if debug:
                         print('cutting due to zmax')
                     super_cell= shave_surface_layer(super_cell)
-                if counter > 10:
+                if counter > 20:
                         print('stopping after 10 cuts, zmax not obtained')
                         stop_flag = True
         if debug:
@@ -1287,31 +1291,35 @@ def slab_module_supervisor(args,rootdir):
 
 
         ## move in all negative positions
-        if all(super_cell_vector[0]) <= 0: ## all signs are the same:
-            super_cell_vector[0] = [-1*i for i in super_cell_vector[0]]
+        #if all(super_cell_vector[0]) <= 0: ## all signs are the same:
+        #    super_cell_vector[0] = [-1*i for i in super_cell_vector[0]]
         point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
-        print('coords in final slab:' )
-        print(point_coefficients)
+        #print('coords in final slab:' )
+        #print(point_coefficients)
         point_coefficients = threshold_basis(point_coefficients,1E-6)
-        for i in range(0,len(point_coefficients)):
-            for j in [0,1,2]:
-                while point_coefficients[i][j]<0:
-                    point_coefficients[i][j] += 1
-                while point_coefficients[i][j]>1:
-                    point_coefficients[i][j] -= 1
+        #for i in range(0,len(point_coefficients)):
+        #    for j in [0,1,2]:
+        #        if point_coefficients[i][j]<0:
+        #            point_coefficients[i][j] += 1
+        #        if point_coefficients[i][j] >1:
+        #            point_coefficients[i][j] -= 1
         new_coords = [evaluate_basis_coefficients(points,super_cell_vector) for points in point_coefficients]
         
-        for j,points in enumerate(point_coefficients):
-            if min(new_coords[i])<0:
-                ## try shift one cv in each direction:
-                potential_new_point = []
+        #for j,points in enumerate(point_coefficients):
+            #if min(new_coords[i])<0:
+                ### try shift one cv in each direction:
+                #potential_new_point = []
             
         for i,coords in enumerate(new_coords):
             super_cell.getAtom(i).setcoords(coords)
-        point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
+        #point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
         print('coords in final slab:' )
         print(point_coefficients)
+        ######
+        rest = super_cell.sanitycheck(silence = False)
+        print('result of collision check is  ' + str(rest))
         
+        #################################
         ## write slab output
         super_cell.writexyz(rootdir + 'slab/super' +''.join( [str(i) for i in duplication_vector])+'.xyz')
         print ('\n Created a supercell in ' + str(rootdir) + '\n')

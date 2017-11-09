@@ -693,7 +693,9 @@ def parseinputfile(args):
             if (l[0]=='-substreact'):
                 args.substreact = l[1:]
             if (l[0]=='-drawmode'):
-                args.drawmode = True                                      
+                args.drawmode = True 
+            if (l[0]=='-substplaceff'):
+                args.substplaceff = True                                                      
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -1032,6 +1034,7 @@ def parseinputs_tsgen(*p):
     parser.add_argument("-compreact", help="index of reacting atom in core")
     parser.add_argument("-substreact", help="index of reacting atom(s) in substrate")
     parser.add_argument("-drawmode", help="flag for enabling draw mode (NOTE: this cancels TS generation)",action="store_true")
+    parser.add_argument("-substplaceff", help="full FF opt at each possible connecting point (default False - uses empirically estimated sterics)",default=False)
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args

@@ -106,9 +106,10 @@ class mol3D:
     def BCM(self,idx1,idx2,d):
         # INPUT
         #   - idx1: index of atom to be moved
-        #   - idx2: index of bond-defining atom
+        #   - idx2: index of anchor atom
         #   - d: new bond length (A)
         bondv = self.getAtom(idx1).distancev(self.getAtom(idx2)) # 1 - 2
+        # compute current bond length
         u = 0.0
         for u0 in bondv:
             u += (u0*u0)
@@ -523,6 +524,8 @@ class mol3D:
             ## for non-metalics
             distance_max = 1.15*(atom.rad+ratom.rad)
             if atom.ismetal() or ratom.ismetal(): 
+                if debug:
+                    print('metal in  cat ' + str(atom.symbol()) + ' and rat ' +str(ratom.symbol()) )
                 ## one the atoms is a metal!
                 ## use a longer max for metals
                 distance_max = 1.30*(atom.rad+ratom.rad) 
@@ -537,7 +540,7 @@ class mol3D:
                     if d < distance_max and i!=ind and valid:
                         if atom.symbol() == "C":           
                             ## in this case, atom might be intruder C!
-                            possible_inds = self.getBondedAtoms(ind) ## bonded to metal
+                            possible_inds = self.getBondedAtomsnotH(ind) ## bonded to metal
                             if len(possible_inds)>6:
                                 metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,ind))
                                
@@ -554,9 +557,9 @@ class mol3D:
                                 else:
                                     if debug:
                                         print('Ok based on atom')
-                        if ratom.symbol() == "C":            
+                        if ratom.symbol() == "C":  
                             ## in this case, ratom might be intruder C!
-                            possible_inds = self.getBondedAtoms(i) ## bonded to metal
+                            possible_inds = self.getBondedAtomsnotH(i) ## bonded to metal
                             metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,i))
                             if len(possible_inds)>6:
                                 allowed_inds = metal_prox[0:6]
@@ -572,11 +575,14 @@ class mol3D:
                                 else:
                                     if debug:
                                         print('ok based on ratom...')
+                else:
+                    if debug:
+                        print('distance too great')
             if (d < distance_max and i!=ind):
                 if valid:
-                    #print('Valid atom  ind ' + str(i) + ' (' + atom.symbol() + ')')
-                    #print('and ' + str(ind) + ' (' + ratom.symbol() + ')')
-                    #print(' at distance ' + str(d) + ' (which is less than ' + str(distance_max) + ')')
+                    if debug:
+                        print('Valid atom  ind ' + str(i) + ' (' + atom.symbol() + ') and ' + str(ind) + ' (' + ratom.symbol() + ')')
+                        print(' at distance ' + str(d) + ' (which is less than ' + str(distance_max) + ')')
                     nats.append(i)
                 else:
                     if debug:
@@ -613,7 +619,12 @@ class mol3D:
         nats = []
         for i,atom in enumerate(self.atoms):
             d = distance(ratom.coords(),atom.coords())
-            if (d < 1.2*(atom.rad+ratom.rad) and i!=ind and atom.sym!='H'):
+            distance_max = 1.15*(atom.rad+ratom.rad)
+            if atom.ismetal() or ratom.ismetal(): 
+                distance_max = 1.30*(atom.rad+ratom.rad) 
+            else:
+                distance_max = 1.15*(atom.rad+ratom.rad)
+            if (d < distance_max and i!=ind and atom.sym!='H'):
                 nats.append(i)
         return nats
 
