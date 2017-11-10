@@ -55,7 +55,7 @@ class ligand:
 def ligand_breakdown(mol):
 	# this function takes an octahedral 
 	# complex and returns ligands
-	metal_index = mol.findMetal()
+	metal_index = mol.findMetal()[0]
 	bondedatoms = mol.getBondedAtomsSmart(metal_index)
 	bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]              
 	counter = 0
@@ -81,7 +81,7 @@ def ligand_breakdown(mol):
 	return liglist,ligdents,ligcons
 def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
         valid = True
-	metal_index = mol.findMetal()
+	metal_index = mol.findMetal()[0]
 	built_ligand_list  = list()
 	lig_natoms_list = list()
 	unique_ligands = list()
