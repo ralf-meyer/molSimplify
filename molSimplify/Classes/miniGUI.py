@@ -1,3 +1,10 @@
+## @file miniGUI.py
+#  Defines mini GUI class for drawing molecules from the command line
+#
+#  Written by Terry Gani for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from molSimplify.Classes.mWidgets import *
@@ -6,6 +13,7 @@ import sys, os, random, shutil, unicodedata, inspect, glob, time, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 
+## Mini GUI class for drawing molecules from the command line
 class miniGUI(QApplication):
     def __init__(self, args):
         QApplication.__init__(self,args)

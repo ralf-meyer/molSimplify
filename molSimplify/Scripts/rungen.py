@@ -1,11 +1,9 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
-
-##########################################################
-##########  Top level script that coordinates  ###########
-##########    generation of structues, input   ###########
-##########         files, jobscripts           ###########
-##########################################################
+## @file rungen.py
+#  Top level script that coordinates generation of all files
+#  
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
 from structgen import *
 from molSimplify.Scripts.io import *
@@ -176,9 +174,11 @@ def constrgen(rundir,args,globs):
         emsg = rungen(rundir,args,False,globs) # run structure generation
     return args, emsg
 
-################################################################
-### generates multiple runs for different ox and spin states ###
-################################################################
+## Generates multiple runs for different oxidation and spin states
+#  @param rundir Run directory
+#  @param args Namespace of arguments
+#  @param globs Global variables
+#  @return Error messages
 def multigenruns(rundir,args,globs):
     emsg = False
     args.jid = 0 # initilize global name identifier
@@ -247,9 +247,9 @@ def multigenruns(rundir,args,globs):
             emsg = rungen(rundir,args,fname,globs)
     return emsg
 
-#########################################################
-### checks for multiple ligands specified in one file ###
-#########################################################
+## Check for multiple ligands specified in one file
+#  @param ligs List of ligands
+#  @return Ligand list, connecting atoms, multiple ligand flag
 def checkmultilig(ligs):
     mligs = []
     tcats = []
@@ -295,9 +295,9 @@ def checkmultilig(ligs):
 
     return llist,tcats,multidx
 
-#################
-### draw mode ###
-#################
+## Draw mode supervisor
+#  @param args Namespace of arguments
+#  @param rundir Run directory
 def draw_supervisor(args,rundir):
     if args.lig:
         print('Due to technical limitations, we will draw only the first ligand.') 
@@ -323,9 +323,12 @@ def draw_supervisor(args,rundir):
     else:
 		print('You have not specified anything to draw. Currently supported: ligand, core, substrate')
 
-##############################################
-### normal structure generation of complex ###
-##############################################
+## Normal structure generation
+#  @param rundir Run directory
+#  @param args Namespace of arguments
+#  @param chspfname Folder name for charges and spins
+#  @param globs Global variables
+#  @return Error messages
 def rungen(rundir,args,chspfname,globs):
     try:
         from Classes.mWidgets import qBoxFolder
@@ -568,10 +571,12 @@ def rungen(rundir,args,chspfname,globs):
                 print 'Folder '+rootdir+' was skipped..\n'
     return emsg    
 
-##############################################
-### transition state generation ###
-##############################################
-
+## Transition state generation
+#  @param rundir Run directory
+#  @param args Namespace of arguments
+#  @param chspfname Folder name for charges and spins
+#  @param globs Global variables
+#  @return Error messages
 def tsgen_supervisor(rundir,args,chspfname,globs):
 	emsg = False
 	# load specified core into a mol3D object

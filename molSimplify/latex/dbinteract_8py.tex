@@ -1,0 +1,43 @@
+\hypertarget{dbinteract_8py}{}\section{Scripts/dbinteract.py File Reference}
+\label{dbinteract_8py}\index{Scripts/dbinteract.\+py@{Scripts/dbinteract.\+py}}
+
+
+Interacts with databases for similarity searches and screening.  
+
+
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract}{mol\+Simplify.\+Scripts.\+dbinteract}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_abfa2f67547bce607376ee4c470a03365}{mol\+Simplify.\+Scripts.\+dbinteract.\+setupdb} (dbselect)
+\begin{DoxyCompactList}\small\item\em Setup database. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_ac94d292a78fcd04eb85787a6378d0d4d}{mol\+Simplify.\+Scripts.\+dbinteract.\+obfilters} ()
+\begin{DoxyCompactList}\small\item\em Print prebuilt openbabel filters. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_a5000fc00f49c30c6e563846fe531a959}{mol\+Simplify.\+Scripts.\+dbinteract.\+checkscr} (args)
+\begin{DoxyCompactList}\small\item\em Parse screening input from arguments. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_ae1b41b44ad2be286cff8e18f87e75dc8}{mol\+Simplify.\+Scripts.\+dbinteract.\+getsimilar} (smi, nmols, dbselect, finger, squery, args)
+\begin{DoxyCompactList}\small\item\em Substructure search. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_a3e69e497ffabc7e01ac66782b19bc542}{mol\+Simplify.\+Scripts.\+dbinteract.\+stripsalts} (fname)
+\begin{DoxyCompactList}\small\item\em Strip salts from list of S\+M\+I\+L\+ES results. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_a27650a76a840ae1929e789e6e8a0c36a}{mol\+Simplify.\+Scripts.\+dbinteract.\+getels} (smistr)
+\begin{DoxyCompactList}\small\item\em Get list of unique elements in S\+M\+I\+L\+ES string. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_aa430c983537352397787b7e0f0bfe822}{mol\+Simplify.\+Scripts.\+dbinteract.\+checkels} (fname, allowedels)
+\begin{DoxyCompactList}\small\item\em Filters screening results based on list of allowed elements. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_ad7cec45df1ee9f3e74f2959ca6c5b1e2}{mol\+Simplify.\+Scripts.\+dbinteract.\+dissim} (outf, n)
+\begin{DoxyCompactList}\small\item\em Maximal dissimilarity search. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_ad591694d6621ccf8a487ccbb155dc3d2}{mol\+Simplify.\+Scripts.\+dbinteract.\+matchsmarts} (smarts, outf, catoms)
+\begin{DoxyCompactList}\small\item\em Matches initial S\+M\+A\+R\+TS and computes connection atoms. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1dbinteract_a4ff17f8e5ab72528618b47331a975143}{mol\+Simplify.\+Scripts.\+dbinteract.\+dbsearch} (rundir, args, globs)
+\begin{DoxyCompactList}\small\item\em Main driver for database search. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Interacts with databases for similarity searches and screening. 
+
+Written by Tim Ioannidis for H\+JK Group
+
+Dpt of Chemical Engineering, M\+IT 

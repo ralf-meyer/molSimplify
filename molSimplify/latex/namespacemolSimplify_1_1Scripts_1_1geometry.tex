@@ -1,0 +1,708 @@
+\hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry}{}\section{mol\+Simplify.\+Scripts.\+geometry Namespace Reference}
+\label{namespacemolSimplify_1_1Scripts_1_1geometry}\index{mol\+Simplify.\+Scripts.\+geometry@{mol\+Simplify.\+Scripts.\+geometry}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab22dfc9103deb322f3fe52878f24aec9}{norm} (u)
+\begin{DoxyCompactList}\small\item\em Euclidean norm. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a6b3a18a3eb0c01b23c6acb6f374e1850}{normalize} (u)
+\begin{DoxyCompactList}\small\item\em Normalize a vector. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a862dd678e349d0608d2568670e1b7200}{distance} (R1, R2)
+\begin{DoxyCompactList}\small\item\em Euclidean distance between points. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_af1b60f550f00adbeeb61fcff1482d793}{vecdiff} (r1, r2)
+\begin{DoxyCompactList}\small\item\em Element-\/wise vector difference. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a05a77dc1d71d199b47473f48f992b101}{midpt} (r1, r2)
+\begin{DoxyCompactList}\small\item\em Vector midpoint. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a0280692d9c985bc7dccab778bb908aa7}{checkcolinear} (R1, R2, R3)
+\begin{DoxyCompactList}\small\item\em Checks if three points are collinear. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ac2cd923a9da794af670abf98d5ca91e1}{checkplanar} (R1, R2, R3, R4)
+\begin{DoxyCompactList}\small\item\em Checks if four points are coplanar. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab85ace2116d6845043cd6658e191bb66}{vecangle} (r1, r2)
+\begin{DoxyCompactList}\small\item\em Computes angle between two vectors. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a5bfdcb82216f2f334bdf30542cd168bf}{get\+Pointu} (Rr, dist, u)
+\begin{DoxyCompactList}\small\item\em Gets point given reference point, direction vector and distance. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a3571c84ff85925ce0a23c08efddf5e1a}{rotation\+\_\+params} (r0, r1, r2)
+\begin{DoxyCompactList}\small\item\em Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab71755d5aac3ee68201fb79536be659d}{kabsch} (mol0, mol1)
+\begin{DoxyCompactList}\small\item\em Aligns (translates and rotates) two molecules to minimize R\+M\+SD using the Kabsch algorithm. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a9a8fcceacae8daff63411a8fc15a9f25}{Reflect\+Plane} (u, r, Rp)
+\begin{DoxyCompactList}\small\item\em Reflects point about plane defined by its normal vector and a point on the plane. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab7f86efbae768b9ed6edfeff4598616b}{Point\+Rotate\+Axis} (u, rp, r, theta)
+\begin{DoxyCompactList}\small\item\em Rotates point about axis defined by direction vector and point on axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad39ef08129915708a2ba644855c324ab}{Point\+Translate\+Sph} (Rp, p0, D)
+\begin{DoxyCompactList}\small\item\em Translates point in spherical coordinates. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a05bad44739a2ebd5679d059f3d0084b8}{Point\+Translateto\+P\+Sph} (Rp, p0, D)
+\begin{DoxyCompactList}\small\item\em Converts spherical translation vector into Cartesian translation vector. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}{Point\+Rotate\+Sph} (Rp, p0, D)
+\begin{DoxyCompactList}\small\item\em Rotates point about Cartesian axes defined relative to given origin. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad14edfe334bcb81ff7f4de4dfd630fc7}{reflect\+\_\+through\+\_\+plane} (mol, u, Rp)
+\begin{DoxyCompactList}\small\item\em Reflects molecule about plane defined by its normal vector and a point on the plane. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a90caa7a6dc952df17fce36ea2711eff3}{rotate\+\_\+around\+\_\+axis} (mol, Rp, u, theta)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about axis defined by direction vector and point on axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a5df8aae5c4383cfebd5d9a62eef388a5}{set\+Pdistance} (mol, Rr, Rp, bond)
+\begin{DoxyCompactList}\small\item\em Translates molecule such that a given point in the molecule is at a given distance from a reference point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a67598d5fb5cb3e55b1829298b62d9f46}{set\+Pdistanceu} (mol, Rr, Rp, bond, u)
+\begin{DoxyCompactList}\small\item\em Translates molecule such that a given point in the molecule is at a given distance from a reference point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a3ea4c34e0e07a3a92d31bd6b673a1fce}{setcmdistance} (mol, Rp, bond)
+\begin{DoxyCompactList}\small\item\em Translates molecule such that its center of mass is at a given distance from a reference point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab942da4b95418e12716685e3abee16e5}{protate} (mol, Rr, D)
+\begin{DoxyCompactList}\small\item\em Translates molecule in spherical coordinates based on center of mass reference. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a5f9b944e195ebf9c9997e1abc7d4fd74}{protateref} (mol, Rr, Rref, D)
+\begin{DoxyCompactList}\small\item\em Translates molecule in spherical coordinates based on arbitrary reference. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a891c57b819e0c6b2a00e9a495fc0dac9}{cmrotate} (mol, D)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about its center of mass. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ac0753e6f8d4fa1b2193cdbf99e3d1c8b}{rotate\+Ref} (mol, Ref, D)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about an arbitrary point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ae639e596da3de910ae56f9ced7d336e9}{aligntoaxis} (mol, Rr, Rp, u)
+\begin{DoxyCompactList}\small\item\em Translates molecule to align point to axis at constant distance. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad1b4c0975cd5853ea6c66f707c5e55a5}{aligntoaxis2} (mol, Rr, Rp, u, d)
+\begin{DoxyCompactList}\small\item\em Translates molecule to align point to axis at arbitrary distance. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a23714d51ef2a9e32e4c566497de8f506}{align\+Ptoaxis} (Rr, Rp, u, d)
+\begin{DoxyCompactList}\small\item\em Translates point and aligns to axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a0c9d5009b8beb6cb765756fe15596191}{pmrotate} (mol, Rp, D)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about Cartesian axes defined relative to given origin. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a23714d51ef2a9e32e4c566497de8f506}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a23714d51ef2a9e32e4c566497de8f506}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!align\+Ptoaxis@{align\+Ptoaxis}}
+\index{align\+Ptoaxis@{align\+Ptoaxis}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{align\+Ptoaxis()}{alignPtoaxis()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+align\+Ptoaxis (\begin{DoxyParamCaption}\item[{}]{Rr,  }\item[{}]{Rp,  }\item[{}]{u,  }\item[{}]{d }\end{DoxyParamCaption})}
+
+
+
+Translates point and aligns to axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Rr} & Point to be aligned \\
+\hline
+{\em Rp} & Reference point on axis \\
+\hline
+{\em u} & Direction vector of axis \\
+\hline
+{\em d} & Final distance from aligned point to axis \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Translation vector 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ae639e596da3de910ae56f9ced7d336e9}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ae639e596da3de910ae56f9ced7d336e9}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!aligntoaxis@{aligntoaxis}}
+\index{aligntoaxis@{aligntoaxis}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{aligntoaxis()}{aligntoaxis()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+aligntoaxis (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rr,  }\item[{}]{Rp,  }\item[{}]{u }\end{DoxyParamCaption})}
+
+
+
+Translates molecule to align point to axis at constant distance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rr} & Point to be aligned \\
+\hline
+{\em Rp} & Reference point on axis \\
+\hline
+{\em u} & Direction vector of axis \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ad1b4c0975cd5853ea6c66f707c5e55a5}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ad1b4c0975cd5853ea6c66f707c5e55a5}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!aligntoaxis2@{aligntoaxis2}}
+\index{aligntoaxis2@{aligntoaxis2}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{aligntoaxis2()}{aligntoaxis2()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+aligntoaxis2 (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rr,  }\item[{}]{Rp,  }\item[{}]{u,  }\item[{}]{d }\end{DoxyParamCaption})}
+
+
+
+Translates molecule to align point to axis at arbitrary distance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rr} & Point to be aligned \\
+\hline
+{\em Rp} & Reference point on axis \\
+\hline
+{\em u} & Direction vector of axis \\
+\hline
+{\em d} & Final distance from aligned point to axis \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a0280692d9c985bc7dccab778bb908aa7}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a0280692d9c985bc7dccab778bb908aa7}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!checkcolinear@{checkcolinear}}
+\index{checkcolinear@{checkcolinear}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{checkcolinear()}{checkcolinear()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+checkcolinear (\begin{DoxyParamCaption}\item[{}]{R1,  }\item[{}]{R2,  }\item[{}]{R3 }\end{DoxyParamCaption})}
+
+
+
+Checks if three points are collinear. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em R1} & Point 1 \\
+\hline
+{\em R2} & Point 2 \\
+\hline
+{\em R3} & Point 3 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Collinear flag 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ac2cd923a9da794af670abf98d5ca91e1}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ac2cd923a9da794af670abf98d5ca91e1}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!checkplanar@{checkplanar}}
+\index{checkplanar@{checkplanar}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{checkplanar()}{checkplanar()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+checkplanar (\begin{DoxyParamCaption}\item[{}]{R1,  }\item[{}]{R2,  }\item[{}]{R3,  }\item[{}]{R4 }\end{DoxyParamCaption})}
+
+
+
+Checks if four points are coplanar. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em R1} & Point 1 \\
+\hline
+{\em R2} & Point 2 \\
+\hline
+{\em R3} & Point 3 \\
+\hline
+{\em R4} & Point 4 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Coplanar flag 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a891c57b819e0c6b2a00e9a495fc0dac9}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a891c57b819e0c6b2a00e9a495fc0dac9}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!cmrotate@{cmrotate}}
+\index{cmrotate@{cmrotate}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{cmrotate()}{cmrotate()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+cmrotate (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Rotates molecule about its center of mass. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}{Point\+Rotate\+Sph()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be rotated \\
+\hline
+{\em D} & \mbox{[}theta-\/x, theta-\/y, theta-\/z\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a862dd678e349d0608d2568670e1b7200}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a862dd678e349d0608d2568670e1b7200}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!distance@{distance}}
+\index{distance@{distance}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{distance()}{distance()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+distance (\begin{DoxyParamCaption}\item[{}]{R1,  }\item[{}]{R2 }\end{DoxyParamCaption})}
+
+
+
+Euclidean distance between points. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em R1} & Point 1 \\
+\hline
+{\em R2} & Point 2 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Euclidean distance 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a5bfdcb82216f2f334bdf30542cd168bf}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a5bfdcb82216f2f334bdf30542cd168bf}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!get\+Pointu@{get\+Pointu}}
+\index{get\+Pointu@{get\+Pointu}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{get\+Pointu()}{getPointu()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+get\+Pointu (\begin{DoxyParamCaption}\item[{}]{Rr,  }\item[{}]{dist,  }\item[{}]{u }\end{DoxyParamCaption})}
+
+
+
+Gets point given reference point, direction vector and distance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Rr} & Reference point \\
+\hline
+{\em dist} & Distance \\
+\hline
+{\em u} & Direction vector \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Final point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ab71755d5aac3ee68201fb79536be659d}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ab71755d5aac3ee68201fb79536be659d}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!kabsch@{kabsch}}
+\index{kabsch@{kabsch}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{kabsch()}{kabsch()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+kabsch (\begin{DoxyParamCaption}\item[{}]{mol0,  }\item[{}]{mol1 }\end{DoxyParamCaption})}
+
+
+
+Aligns (translates and rotates) two molecules to minimize R\+M\+SD using the Kabsch algorithm. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em mol0} & mol3D of molecule to be aligned \\
+\hline
+{\em mol1} & mol3D of reference molecule \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Aligned mol3D 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a05a77dc1d71d199b47473f48f992b101}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a05a77dc1d71d199b47473f48f992b101}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!midpt@{midpt}}
+\index{midpt@{midpt}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{midpt()}{midpt()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+midpt (\begin{DoxyParamCaption}\item[{}]{r1,  }\item[{}]{r2 }\end{DoxyParamCaption})}
+
+
+
+Vector midpoint. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em r1} & Point 1 \\
+\hline
+{\em r2} & Point 2 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector midpoint 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ab22dfc9103deb322f3fe52878f24aec9}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ab22dfc9103deb322f3fe52878f24aec9}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!norm@{norm}}
+\index{norm@{norm}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{norm()}{norm()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+norm (\begin{DoxyParamCaption}\item[{}]{u }\end{DoxyParamCaption})}
+
+
+
+Euclidean norm. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & Vector \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Norm of u 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a6b3a18a3eb0c01b23c6acb6f374e1850}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a6b3a18a3eb0c01b23c6acb6f374e1850}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!normalize@{normalize}}
+\index{normalize@{normalize}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{normalize()}{normalize()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+normalize (\begin{DoxyParamCaption}\item[{}]{u }\end{DoxyParamCaption})}
+
+
+
+Normalize a vector. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & Vector \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Normalized vector 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a0c9d5009b8beb6cb765756fe15596191}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a0c9d5009b8beb6cb765756fe15596191}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!pmrotate@{pmrotate}}
+\index{pmrotate@{pmrotate}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{pmrotate()}{pmrotate()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+pmrotate (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rp,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Rotates molecule about Cartesian axes defined relative to given origin. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}{Point\+Rotate\+Sph()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be rotated \\
+\hline
+{\em Rp} & Cartesian origin \\
+\hline
+{\em D} & \mbox{[}theta-\/x, theta-\/y, theta-\/z\mbox{]} in D\+E\+G\+R\+E\+ES \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ab7f86efbae768b9ed6edfeff4598616b}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ab7f86efbae768b9ed6edfeff4598616b}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!Point\+Rotate\+Axis@{Point\+Rotate\+Axis}}
+\index{Point\+Rotate\+Axis@{Point\+Rotate\+Axis}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{Point\+Rotate\+Axis()}{PointRotateAxis()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+Point\+Rotate\+Axis (\begin{DoxyParamCaption}\item[{}]{u,  }\item[{}]{rp,  }\item[{}]{r,  }\item[{}]{theta }\end{DoxyParamCaption})}
+
+
+
+Rotates point about axis defined by direction vector and point on axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & Direction vector of axis \\
+\hline
+{\em rp} & Reference point along axis \\
+\hline
+{\em r} & Point to be rotated \\
+\hline
+{\em theta} & Angle of rotation in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Rotated point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}\label{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!Point\+Rotate\+Sph@{Point\+Rotate\+Sph}}
+\index{Point\+Rotate\+Sph@{Point\+Rotate\+Sph}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{Point\+Rotate\+Sph()}{PointRotateSph()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+Point\+Rotate\+Sph (\begin{DoxyParamCaption}\item[{}]{Rp,  }\item[{}]{p0,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Rotates point about Cartesian axes defined relative to given origin. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Rp} & Cartesian origin \\
+\hline
+{\em p0} & Point to be rotated \\
+\hline
+{\em D} & \mbox{[}theta-\/x, theta-\/y, theta-\/z\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Rotated point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ad39ef08129915708a2ba644855c324ab}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ad39ef08129915708a2ba644855c324ab}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!Point\+Translate\+Sph@{Point\+Translate\+Sph}}
+\index{Point\+Translate\+Sph@{Point\+Translate\+Sph}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{Point\+Translate\+Sph()}{PointTranslateSph()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+Point\+Translate\+Sph (\begin{DoxyParamCaption}\item[{}]{Rp,  }\item[{}]{p0,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Translates point in spherical coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Rp} & Origin of sphere \\
+\hline
+{\em p0} & Point to be translated \\
+\hline
+{\em D} & \mbox{[}final radial distance, change in polar phi, change in azimuthal theta\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Translated point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a05bad44739a2ebd5679d059f3d0084b8}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a05bad44739a2ebd5679d059f3d0084b8}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!Point\+Translateto\+P\+Sph@{Point\+Translateto\+P\+Sph}}
+\index{Point\+Translateto\+P\+Sph@{Point\+Translateto\+P\+Sph}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{Point\+Translateto\+P\+Sph()}{PointTranslatetoPSph()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+Point\+Translateto\+P\+Sph (\begin{DoxyParamCaption}\item[{}]{Rp,  }\item[{}]{p0,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Converts spherical translation vector into Cartesian translation vector. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Rp} & Origin of sphere \\
+\hline
+{\em p0} & Point to be translated \\
+\hline
+{\em D} & \mbox{[}final radial distance, change in polar phi, change in azimuthal theta\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Translation vector 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ab942da4b95418e12716685e3abee16e5}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ab942da4b95418e12716685e3abee16e5}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!protate@{protate}}
+\index{protate@{protate}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{protate()}{protate()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+protate (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rr,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Translates molecule in spherical coordinates based on center of mass reference. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad39ef08129915708a2ba644855c324ab}{Point\+Translate\+Sph()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rr} & Origin of sphere \\
+\hline
+{\em D} & \mbox{[}final radial distance, change in polar phi, change in azimuthal theta\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a5f9b944e195ebf9c9997e1abc7d4fd74}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a5f9b944e195ebf9c9997e1abc7d4fd74}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!protateref@{protateref}}
+\index{protateref@{protateref}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{protateref()}{protateref()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+protateref (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rr,  }\item[{}]{Rref,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Translates molecule in spherical coordinates based on arbitrary reference. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad39ef08129915708a2ba644855c324ab}{Point\+Translate\+Sph()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rr} & Origin of sphere \\
+\hline
+{\em Rref} & Reference point in molecule \\
+\hline
+{\em D} & \mbox{[}final radial distance, change in polar phi, change in azimuthal theta\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ad14edfe334bcb81ff7f4de4dfd630fc7}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ad14edfe334bcb81ff7f4de4dfd630fc7}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!reflect\+\_\+through\+\_\+plane@{reflect\+\_\+through\+\_\+plane}}
+\index{reflect\+\_\+through\+\_\+plane@{reflect\+\_\+through\+\_\+plane}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{reflect\+\_\+through\+\_\+plane()}{reflect\_through\_plane()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+reflect\+\_\+through\+\_\+plane (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{u,  }\item[{}]{Rp }\end{DoxyParamCaption})}
+
+
+
+Reflects molecule about plane defined by its normal vector and a point on the plane. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a9a8fcceacae8daff63411a8fc15a9f25}{Reflect\+Plane()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be reflected \\
+\hline
+{\em u} & Normal vector to plane \\
+\hline
+{\em Rp} & Reference point on plane \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of reflected molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a9a8fcceacae8daff63411a8fc15a9f25}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a9a8fcceacae8daff63411a8fc15a9f25}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!Reflect\+Plane@{Reflect\+Plane}}
+\index{Reflect\+Plane@{Reflect\+Plane}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{Reflect\+Plane()}{ReflectPlane()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+Reflect\+Plane (\begin{DoxyParamCaption}\item[{}]{u,  }\item[{}]{r,  }\item[{}]{Rp }\end{DoxyParamCaption})}
+
+
+
+Reflects point about plane defined by its normal vector and a point on the plane. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & Normal vector to plane \\
+\hline
+{\em r} & Point to be reflected \\
+\hline
+{\em Rp} & Reference point on plane \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Reflected point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a90caa7a6dc952df17fce36ea2711eff3}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a90caa7a6dc952df17fce36ea2711eff3}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!rotate\+\_\+around\+\_\+axis@{rotate\+\_\+around\+\_\+axis}}
+\index{rotate\+\_\+around\+\_\+axis@{rotate\+\_\+around\+\_\+axis}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{rotate\+\_\+around\+\_\+axis()}{rotate\_around\_axis()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+rotate\+\_\+around\+\_\+axis (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rp,  }\item[{}]{u,  }\item[{}]{theta }\end{DoxyParamCaption})}
+
+
+
+Rotates molecule about axis defined by direction vector and point on axis. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab7f86efbae768b9ed6edfeff4598616b}{Point\+Rotate\+Axis()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be rotated \\
+\hline
+{\em Rp} & Reference point along axis \\
+\hline
+{\em u} & Direction vector of axis \\
+\hline
+{\em theta} & Angle of rotation in D\+E\+G\+R\+E\+ES \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ac0753e6f8d4fa1b2193cdbf99e3d1c8b}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ac0753e6f8d4fa1b2193cdbf99e3d1c8b}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!rotate\+Ref@{rotate\+Ref}}
+\index{rotate\+Ref@{rotate\+Ref}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{rotate\+Ref()}{rotateRef()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+rotate\+Ref (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Ref,  }\item[{}]{D }\end{DoxyParamCaption})}
+
+
+
+Rotates molecule about an arbitrary point. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}{Point\+Rotate\+Sph()}. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be rotated \\
+\hline
+{\em Ref} & Reference point \\
+\hline
+{\em D} & \mbox{[}theta-\/x, theta-\/y, theta-\/z\mbox{]} in R\+A\+D\+I\+A\+NS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a3571c84ff85925ce0a23c08efddf5e1a}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a3571c84ff85925ce0a23c08efddf5e1a}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!rotation\+\_\+params@{rotation\+\_\+params}}
+\index{rotation\+\_\+params@{rotation\+\_\+params}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{rotation\+\_\+params()}{rotation\_params()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+rotation\+\_\+params (\begin{DoxyParamCaption}\item[{}]{r0,  }\item[{}]{r1,  }\item[{}]{r2 }\end{DoxyParamCaption})}
+
+
+
+Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em r0} & Point 0 \\
+\hline
+{\em r1} & Point 1 \\
+\hline
+{\em r2} & Point 2 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Angle in degrees 
+
+Normal vector 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a3ea4c34e0e07a3a92d31bd6b673a1fce}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a3ea4c34e0e07a3a92d31bd6b673a1fce}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!setcmdistance@{setcmdistance}}
+\index{setcmdistance@{setcmdistance}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{setcmdistance()}{setcmdistance()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+setcmdistance (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rp,  }\item[{}]{bond }\end{DoxyParamCaption})}
+
+
+
+Translates molecule such that its center of mass is at a given distance from a reference point. 
+
+The molecule is moved along the axis given by the two points. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rp} & Reference alignment point \\
+\hline
+{\em bond} & Final distance of aligned point to alignment point \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a5df8aae5c4383cfebd5d9a62eef388a5}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a5df8aae5c4383cfebd5d9a62eef388a5}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!set\+Pdistance@{set\+Pdistance}}
+\index{set\+Pdistance@{set\+Pdistance}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{set\+Pdistance()}{setPdistance()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+set\+Pdistance (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rr,  }\item[{}]{Rp,  }\item[{}]{bond }\end{DoxyParamCaption})}
+
+
+
+Translates molecule such that a given point in the molecule is at a given distance from a reference point. 
+
+The molecule is moved along the axis given by the two points. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rr} & Point in molecule to be aligned \\
+\hline
+{\em Rp} & Reference alignment point \\
+\hline
+{\em bond} & Final distance of aligned point to alignment point \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_a67598d5fb5cb3e55b1829298b62d9f46}\label{namespacemolSimplify_1_1Scripts_1_1geometry_a67598d5fb5cb3e55b1829298b62d9f46}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!set\+Pdistanceu@{set\+Pdistanceu}}
+\index{set\+Pdistanceu@{set\+Pdistanceu}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{set\+Pdistanceu()}{setPdistanceu()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+set\+Pdistanceu (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{Rr,  }\item[{}]{Rp,  }\item[{}]{bond,  }\item[{}]{u }\end{DoxyParamCaption})}
+
+
+
+Translates molecule such that a given point in the molecule is at a given distance from a reference point. 
+
+The molecule is moved along an arbitrary axis. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule to be translated \\
+\hline
+{\em Rr} & Point in molecule to be aligned \\
+\hline
+{\em Rp} & Reference alignment point \\
+\hline
+{\em bond} & Final distance of aligned point to alignment point \\
+\hline
+{\em u} & Direction vector of axis \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of translated molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_ab85ace2116d6845043cd6658e191bb66}\label{namespacemolSimplify_1_1Scripts_1_1geometry_ab85ace2116d6845043cd6658e191bb66}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!vecangle@{vecangle}}
+\index{vecangle@{vecangle}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{vecangle()}{vecangle()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+vecangle (\begin{DoxyParamCaption}\item[{}]{r1,  }\item[{}]{r2 }\end{DoxyParamCaption})}
+
+
+
+Computes angle between two vectors. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em r1} & Vector 1 \\
+\hline
+{\em r2} & Vector 2 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Angle between vectors in degrees 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1geometry_af1b60f550f00adbeeb61fcff1482d793}\label{namespacemolSimplify_1_1Scripts_1_1geometry_af1b60f550f00adbeeb61fcff1482d793}} 
+\index{mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}!vecdiff@{vecdiff}}
+\index{vecdiff@{vecdiff}!mol\+Simplify\+::\+Scripts\+::geometry@{mol\+Simplify\+::\+Scripts\+::geometry}}
+\subsubsection{\texorpdfstring{vecdiff()}{vecdiff()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+geometry.\+vecdiff (\begin{DoxyParamCaption}\item[{}]{r1,  }\item[{}]{r2 }\end{DoxyParamCaption})}
+
+
+
+Element-\/wise vector difference. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em r1} & Point 1 \\
+\hline
+{\em r2} & Point 2 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector difference 
+\end{DoxyReturn}

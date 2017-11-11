@@ -1,5 +1,10 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file findcorrelations.py
+#  Automated correlation analysis module
+#  
+#   Written by JP Janet for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
+
 import os, sys, copy
 import glob, re, math, random, string, numpy
 from math import pi

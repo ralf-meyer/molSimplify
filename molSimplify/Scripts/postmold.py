@@ -1,29 +1,31 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file postmold.py
+#  Post-processes molden files
+#  
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-#######################################################
-########## This script parses molden files  ###########
-####### and calculates various MO properties  #########
-#######################################################
-
-# import std modules
 import os, sys, subprocess, time, re
-# import local modules
 from molSimplify.Scripts.postparse import *
 from molSimplify.Classes.globalvars import *
 
-
+## Class for atoms containing molden file properties
 class AtomClass:
-  typ = '' # type
-  ID = '0' # molden id
-  nel = '0' # number of electrons
+  ## type
+  typ = ''
+  ## molden ID
+  ID = '0'
+  ## Number of electrons
+  nel = '0'
+  ## Coordinates
   xyz = ['0.0','0.0','0.0']
-  # number of s,p,d primitives | number of s,p,d and total shells, primitives
+  ## number of s,p,d primitives | number of s,p,d and total shells, primitives
   ns,np,nd,nf,nsc,npc,ndc,nfc,totc = (0,)*9
 
-####################################
-### get range for S,P,D orbitals ###
-####################################
+## Get range for s, p, d orbitals
+#  @param idx Atom index
+#  @param atoms List of atoms
+#  @return Orbital ranges
 def getrange(idx,atoms):
     totc = 0 
     for i in range(0,idx):
@@ -31,9 +33,9 @@ def getrange(idx,atoms):
     totc += 1 # start index at 1 instead of 0 to compare with molden
     return [totc,totc+atoms[idx].nsc,totc+atoms[idx].nsc+atoms[idx].npc*3]
 
-#####################################
-### parse molden file and get MOs ###
-#####################################
+## Parse molden file and get MOs
+#  @param folder Subdirectory containing molden file
+#  @param molf Molden file name
 def parse(folder,molf):
     metals = ['Sc','SC','Ti','TI','V','Cr','CR','Mn','MN','Fe','FE','Co','CO','Ni','NI','Cu','CU','Zn','ZN']
     print "Parsing "+molf.split('.molden')[0]
@@ -221,9 +223,9 @@ def parse(folder,molf):
     f.write(outtxt)
     f.close()
 
-#########################
-### parse _orbs files ###
-#########################
+## Parse orbital files
+#  @param orbf Orbital file
+#  @return Orbital properties (FMO eigenvalues, occupancies)
 def parsed(orbf):
     # read results file
     f=open(orbf,'r')
@@ -258,9 +260,8 @@ def parsed(orbf):
     egap = ehomo - elumo
     return [ens0,dbandc,ehomo,elumo,efermi,egap,avocc]
 
-##################################
-### get MOs average properties ###
-##################################
+## Write MO properties
+#  @param dirf Subdirectory containing results files
 def getresd(dirf):
     # get results files
     resfiles=mybash("find '"+dirf+"' -name *_orbs.txt")
@@ -282,9 +283,11 @@ def getresd(dirf):
     f.write(txt+''.join(text))
     f.close()
 
-###################################
-#### Post process molden files ####
-###################################
+## Post-process all molden files in subdirectory
+#  @param molf Molden file name
+#  @param folder Subdirectory containing molden file
+#  @param gui GUI flag
+#  @param flog Log file name
 def moldpost(molf,folder,gui,flog):
     # parse each file and get MO information
     for f in molf:

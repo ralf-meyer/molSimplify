@@ -1,45 +1,31 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file addtodb.py
+#  Adds new molecules to database
+#  
+#  Written by Tim Ioannidis for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
-#################################################################
-######## This scripts adds new molecules to our database ########
-#################################################################
-
-# import custom modules
 from geometry import *
 from io import *
 from molSimplify.Classes.globalvars import *
-# import std modules
 from molSimplify.Classes.mWidgets import *
-
 import os, sys, subprocess, re, unicodedata
 import openbabel, random, shutil
 from pkg_resources import resource_filename, Requirement
 
-###############################
-### adds to ligand database ###
-###############################
+## Add molecule to ligand database
+#  @param smimol SMILES string or molecule file to be added
+#  @param sminame Name of ligand for key in dictionary
+#  @param smident Denticity of ligand
+#  @param smicat Ligand connecting atoms
+#  @param smigrps Ligand groups
+#  @param smictg Ligand category
+#  @param ffopt Flag for ligand FF optimization
+#  @return Error messages
 def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
-    #  INPUT
-    #   - smimol: SMILES string or molecule file to be added
-    #   - sminame: name of ligand for key in dictionary
-    #   - smident: denticity of the ligand
-    #   - smicat: connection atoms
-    #  OUTPUT
-    #   - emsg: error messages
     emsg = False
     globs = globalvars()
     if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
-	## here, we need to give a path, try and
-	## get one from cmd line:
-#        if args.gui:
-	    ## the GUI is handled in the GUI script,
-	    ## this should not reached during normal
-#	    ## operation (it's n
-#            qqb = mQDialogWarn('Warning','No custom user-writable directory found, addition not  not possible.')
-#            qqb.setParent(args.gui.DBWindow)
-#            raise Exception('Custom path not set!')
-#	else: 
 	print('To add to database, you need to set a custom path. Please enter a writeable file path:')
 	new_path = input('path=')
 	globs.add_custom_path(new_path)
@@ -112,27 +98,19 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
         f.close()
     return emsg
     
-##############################
-### adds to cores database ###
-##############################
+## Add molecule to cores database
+#  @param smimol SMILES string or molecule file to be added
+#  @param sminame Name of core for key in dictionary
+#  @param smicat Core connecting atoms
+#  @return Error messages
 def addtocdb(smimol,sminame,smicat):
-    #  INPUT
-    #   - smimol: SMILES string or molecule file to be added
-    #   - sminame: name of core for key in dictionary
-    #   - smicat: connection atoms
     emsg = False
     globs = globalvars()
     if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
-    	## here, we need to give a path, try and
-    	## get one from cmd line:
-    	## the GUI is handled in the GUI script,
-    	## this should not reached during normal
-    	## operation 
     	print('To add to database, you need to set a custom path. Please enter a writeable file path:')
     	new_path = input('path=')
     	globs.add_custom_path(new_path)
     	copy_to_custom_path()
-
     cpath = globs.custom_path + "/Cores/cores.dict"
     mcores = readdict(cpath)
     cores_folder = globs.custom_path + "/Cores/"
@@ -182,30 +160,20 @@ def addtocdb(smimol,sminame,smicat):
         f.close()
     return emsg
     
-########################################
-### adds to binding species database ###
-########################################
+## Add molecule to binding species database
+#  @param smimol SMILES string or molecule file to be added
+#  @param sminame Name of binding species for key in dictionary
+#  @return Error messages
 def addtobdb(smimol,sminame):
-    #  INPUT
-    #   - smimol: SMILES string or molecule file to be added
-    #   - sminame: name of binding species for key in dictionary
     globs = globalvars()
     if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
-    	## here, we need to give a path, try and
-    	## get one from cmd line:
-    	## the GUI is handled in the GUI script,
-    	## this should not reached during normal
-    	## operation 
     	print('To add to database, you need to set a custom path. Please enter a writeable file path:')
     	new_path = input('path=')
     	globs.add_custom_path(new_path)
     	copy_to_custom_path()
-
     bpath = globs.custom_path + "/Bind/bind.dict"
     bindcores = readdict(bpath)
     bind_folder = globs.custom_path + "/Bind/"
-
-
     # check if binding species exists
     if sminame in bindcores.keys():
         emsg = 'Molecule '+sminame+' already existing in binding species database.'
@@ -254,22 +222,14 @@ def addtobdb(smimol,sminame):
         f.close()
     return emsg
     
-############################
-### remove from database ###
-############################
+## Remove molecule from database
+#  @param sminame Name of molecule for key in dictionary
+#  @param ropt Flag for molecule type (0 for core, 1 for ligand, 2 for binding species)
+#  @return Error messages
 def removefromDB(sminame,ropt):
-    #  INPUT
-    #   - sminame: name of molecule for key in dictionary
-    #  OUTPUT
-    #   - emsg: error messages
     emsg = False
     globs = globalvars()
     if not globs.custom_path  or not os.path.exists(str(globs.custom_path)):
-    	## here, we need to give a path, try and
-    	## get one from cmd line:
-    	## the GUI is handled in the GUI script,
-    	## this should not reached during normal
-    	## operation 
     	print('To database, you need to set a custom path. Please enter a writeable file path:')
     	new_path = input('path=')
     	globs.add_custom_path(new_path)

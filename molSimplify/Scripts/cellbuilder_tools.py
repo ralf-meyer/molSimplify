@@ -1,5 +1,10 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file cellbuilder_tools.py
+#  Contains routines for building unit cells with adsorbed species.
+#
+#  Written by JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
+
 import os, sys, copy
 import glob, re, math, random, string, numpy, openbabel
 from math import pi
@@ -11,6 +16,7 @@ from molSimplify.Classes.mol3D import*
 from molSimplify.Classes.globalvars import globalvars
 from operator import add
 from molSimplify.Scripts.periodic_QE import *
+
 ###############################
 def cell_ffopt(ff,mol,frozenats):
     ### FORCE FIELD OPTIMIZATION ##

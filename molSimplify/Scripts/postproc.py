@@ -1,31 +1,29 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file postproc.py
+#  Main postprocessing driver
+#  
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-#####################################################
-######## This script interacts with mutiwfn  ########
-###########  and postprocess results. ###############
-#####################################################
-
-# import custom modules
 from molSimplify.Classes.globalvars import *
 from molSimplify.Scripts.postparse import *
 from molSimplify.Scripts.postmold import *
 from molSimplify.Scripts.postmwfn import *
-# import std modules
 import os, sys, glob, subprocess, time, math, shutil
 
-######################
-### check multiwfn ###
-######################
+## Check if multiwfn exists
+#  @param mdir Multiwfn directory
+#  @return bool
 def checkmultiwfn(mdir):
     if not glob.glob(mdir):
         return False
     else:
         return True
 
-####################################
-#### Main postprocessing driver ####
-####################################
+## Main postprocessing driver
+#  @param rundir Runs directory
+#  @param args Namespace of arguments
+#  @param globs Global variables
 def postproc(rundir,args,globs):
     globs = globalvars()
     if args.gui:

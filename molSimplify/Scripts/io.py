@@ -1,20 +1,17 @@
-# Written by Tim Ioannidis for HJK Group
-# modified by JP Janet
-# Dpt of Chemical Engineering, MIT
+## @file io.py
+#  Input/output functions
+#  
+#  Written by Tim Ioannidis for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
-##########################################################
-########## This script handles input/output  #############
-##########################################################
-
-# import std modules
 import glob, os,shutil, re, argparse, sys, random, openbabel
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.globalvars import *
+from molSimplify.Classes.mol3D import mol3D
 from pkg_resources import resource_filename, Requirement
 
-##############################################
-### function to print available geometries ###
-##############################################
+## Print available geometries
 def printgeoms():
     globs = globalvars()
     if globs.custom_path:
@@ -41,9 +38,7 @@ def printgeoms():
         print "Coordination: %s, geometry: %s,\t short name: %s " %(coords[i],g,geomshorts[i])
     print ''
     
-##############################################
-### function to get available geometries ###
-##############################################
+## Get available geometries
 def getgeoms():
     globs = globalvars()
     if globs.custom_path:
@@ -72,9 +67,9 @@ def getgeoms():
         geomgroups[count].append(geomshorts[i])   
     return coords,geomnames,geomshorts,geomgroups
 
-###################################
-### function to read dictionary ###
-###################################
+## Read data into dictionary
+#  @param fname Filename containing dictionary data
+#  @return Dictionary
 def readdict(fname):
     d = dict()
     f = open(fname,'r')
@@ -96,9 +91,8 @@ def readdict(fname):
             d[key] = vv
     return d 
 
-##############################
-### get ligands dictionary ###
-##############################
+## Get ligands in dictionary
+#  @return List of ligands in dictionary
 def getligs():
     licores = getlicores()
     a=[]
@@ -107,15 +101,12 @@ def getligs():
     a = sorted(a)
     a = ' '.join(a)
     return a
-##############################
-### get ligands cores      ###
-##############################
+    
+## Get ligands cores
+#
+#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getligs() but returns the full dictionary
+#  @return Ligands dictionary
 def getlicores():
-    ## this form of the functionn
-    ## is used extensively in the GUI
-    ## so it got it's own call. This
-    ## is basically the same as getligs but
-    ## returns the full dictionary
     globs = globalvars()
     if globs.custom_path: # test if a custom path is used:
          licores = str(globs.custom_path).rstrip('/') + "/Ligands/ligands.dict"
@@ -123,9 +114,9 @@ def getlicores():
         licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
     licores = readdict(licores)
     return licores
-##############################
-### get simple ligands dict###
-##############################
+
+## Get simple ligands in dictionary
+#  @return List of ligands in simple ligands dictionary
 def getsimpleligs():
     slicores = getslicores()
     for key in slicores:
@@ -133,9 +124,11 @@ def getsimpleligs():
     a = sorted(a)
     a = ' '.join(a)
     return a
-##############################
-### get simple ligands core###
-##############################
+    
+## Get simple ligands cores
+#
+#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getsimpleligs() but returns the full dictionary
+#  @return Simple ligands dictionary
 def getslicores():
     globs = globalvars()
     if globs.custom_path: # test if a custom path is used:
@@ -144,9 +137,10 @@ def getslicores():
         slicores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/simple_ligands.dict")
     slicores = readdict(slicores)
     return slicores
-#########################
-### get ligand groups ###
-#########################
+    
+## Get ligand groups
+#  @param licores Ligand dictionary
+#  @return Ligand groups
 def getligroups(licores):
     groups = []
     for entry in licores:
@@ -155,9 +149,9 @@ def getligroups(licores):
     a = ' '.join(groups)
     return a
     
-###################################
-### put [] on metals for SMILES ###
-###################################
+## Enclose metal elements in SMILES string with square brackets
+#  @param smi SMILES string
+#  @return Processed SMILES string
 def checkTMsmiles(smi):
     g = globalvars()
     for m in g.metals():
@@ -165,9 +159,8 @@ def checkTMsmiles(smi):
             smi = smi.replace(m,'['+m+']')
     return smi
 
-##############################
-### get bind dictionary ###
-##############################
+## Get binding species in dictionary
+#  @return List of binding species in dictionary
 def getbinds():
     bindcores = getbcores() 
     a=[]
@@ -176,15 +169,12 @@ def getbinds():
     a = sorted(a)
     a = ' '.join(a)
     return a
-#############################
-### get bind cores      ###
-##############################
+    
+## Get binding species cores
+#
+#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getbinds() but returns the full dictionary
+#  @return Binding species dictionary
 def getbcores():
-    ## this form of the functionn
-    ## is used extensively in the GUI
-    ## so it got it's own call. This
-    ## is basically the same as getbinds() but
-    ## returns the full dictionary
     globs = globalvars()
     if globs.custom_path: # test if a custom path is used:
         bcores = str(globs.custom_path).rstrip('/') + "/Bind/bind.dict"
@@ -192,9 +182,9 @@ def getbcores():
         bcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind/bind.dict")
     bcores = readdict(bcores)
     return bcores
-############################
-### get cores dictionary ###
-############################
+    
+## Get cores in dictionary
+#  @return List of cores in dictionary
 def getcores():
     mcores = getmcores()
     a=[]
@@ -203,15 +193,12 @@ def getcores():
     a = sorted(a)
     a = ' '.join(a)
     return a
-#############################
-### get mcores            ###
-##############################
+    
+## Get core cores
+#
+#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getcores() but returns the full dictionary
+#  @return Cores dictionary
 def getmcores():
-    ## this form of the functionn
-    ## is used extensively in the GUI
-    ## so it got it's own call. This
-    ## is basically the same as getcores() but
-    ## returns the full dictionary
     globs = globalvars()
     if globs.custom_path: # test if a custom path is used:
          mcores = str(globs.custom_path).rstrip('/') + "/Cores/cores.dict"
@@ -219,9 +206,9 @@ def getmcores():
         mcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Cores/cores.dict")
     mcores = readdict(mcores)
     return mcores
-############################
-### get substrates dictionary ###
-############################
+    
+## Get substrates in dictionary
+#  @return List of substrates in dictionary
 def getsubstrates():
     subcores = getsubcores()
     a=[]
@@ -230,15 +217,12 @@ def getsubstrates():
     a = sorted(a)
     a = ' '.join(a)
     return a
-#############################
-### get subcores          ###
-#############################
+    
+## Get substrate cores
+#
+#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getsubstrates() but returns the full dictionary
+#  @return Substrates dictionary
 def getsubcores():
-    ## this form of the functionn
-    ## is used extensively in the GUI
-    ## so it got it's own call. This
-    ## is basically the same as getsubstrates() but
-    ## returns the full dictionary
     globs = globalvars()
     if globs.custom_path: # test if a custom path is used:
          subcores = str(globs.custom_path).rstrip('/') + "/Substrates/substrates.dict"
@@ -246,9 +230,10 @@ def getsubcores():
         subcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/substrates.dict")
     subcores = readdict(subcores)
     return subcores
-#######################
-### load bonds data ###
-#######################
+    
+## Load M-L bond length dictionary from data
+#  @param path to data file
+#  @return M-L bond length dictionary
 def loaddata(path):
     globs = globalvars()
         # loads ML data from ML.dat file and
@@ -269,9 +254,9 @@ def loaddata(path):
     f.close()
     return d
 
-###########################
-###    load backbone    ###
-###########################
+## Load backbone coordinates
+#  @param coord Name of coordination geometry
+#  @return List of backbone coordinates
 def loadcoord(coord):
     globs = globalvars()
 #    f = open(installdir+'Data/'+coord+'.dat')
@@ -289,11 +274,10 @@ def loadcoord(coord):
         b.append([float(l[0]),float(l[1]),float(l[2])])
     return b
     
-    
-###########################
-###    load core and    ###
-### convert to molecule ###
-###########################
+## Load core and convert to mol3D
+#  @param usercore Name of core
+#  @param mcores Cores dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+#  @return mol3D of core, error messages
 def core_load(usercore,mcores=None):
     if mcores == None:
         mcores = getmcores()
@@ -351,7 +335,7 @@ def core_load(usercore,mcores=None):
         usercore = checkTMsmiles(usercore)
         # try and catch error if conversion doesn't work
         try:
-            core.OBMol = core.getOBMol(usercore,'smi') # convert from smiles
+            core.OBMol = core.getOBMol(usercore,'smistring',True) # convert from smiles
             print('Core successfully interpreted as smiles')
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
@@ -364,10 +348,10 @@ def core_load(usercore,mcores=None):
         core.ident = 'core'
     return core,emsg
 
-#############################
-###    load substrate and ###
-### convert to molecule   ### 
-#############################
+## Load substrate and convert to mol3D
+#  @param usersubstrate Name of substrate
+#  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+#  @return mol3D of substrate, error messages
 def substr_load(usersubstrate,subcores=None):
     if subcores == None:
         subcores = getsubcores()
@@ -424,7 +408,7 @@ def substr_load(usersubstrate,subcores=None):
         usersubstrate = checkTMsmiles(usersubstrate)
         # try and catch error if conversion doesn't work
         try:
-            substrate.OBMol = substrate.getOBMol(usersubstrate,'smi') # convert from smiles
+            substrate.OBMol = substrate.getOBMol(usersubstrate,'smistring',True) # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
@@ -437,10 +421,10 @@ def substr_load(usersubstrate,subcores=None):
         substrate.ident = 'substrate'
     return substrate,emsg
    
-###########################
-###   load ligand and   ###
-### convert to molecule ###
-###########################
+## Load ligand and convert to mol3D
+#  @param userligand Name of ligand
+#  @param licores Ligands dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+#  @return mol3D of ligand, error messages
 def lig_load(userligand,licores=None):
     if licores == None:
         licores = getlicores()
@@ -528,7 +512,7 @@ def lig_load(userligand,licores=None):
     ### if not, try interpreting as SMILES string
     else:
         try:
-            lig.OBMol = lig.getOBMol(userligand,'smistring') # convert from smiles
+            lig.OBMol = lig.getOBMol(userligand,'smistring',True) # convert from smiles
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
         except IOError:
@@ -542,10 +526,10 @@ def lig_load(userligand,licores=None):
     lig.name = userligand
     return lig,emsg
 
-####################################
-###   load binding species and   ###
-#####   convert to molecule    #####
-####################################
+## Load binding species and convert to mol3D
+#  @param userbind Name of binding species
+#  @param bindcores Binding species dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+#  @return mol3D of binding species, error messages
 def bind_load(userbind,bindcores):
     globs = globalvars()
     if '~' in userbind:
@@ -607,8 +591,9 @@ def bind_load(userbind,bindcores):
             return False,False,emsg
     return bind, bsmi, emsg
 
-
-# write input file
+## Write input file from arguments
+#  @param args Namespace of arguments
+#  @param fname File name
 def getinputargs(args,fname):
     # list with arguments
     # write input args
@@ -635,50 +620,54 @@ def getinputargs(args,fname):
                     f.write(str(getattr(args, arg)))
                 f.write('\n')
     f.close()
-#####################################
-###    load plugin definitions    ###
-#####################################
+
+## Load plugin definitions
 def plugin_defs():
     globs = globalvars()
     plugin_path = resource_filename(Requirement.parse("molSimplify"),"molSimplify/plugindefines_reference.txt")
     return plugin_path
 
-#####################################
-###   file/folder name control   ###
-####################################
-def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
-    ### DEPRECIATED, USE NAME_COMPLEX instead
-    # reads in argument namespace
-    # and chooses an appropriate name
-    # bind_ident is used to pass binding
-    # species information 
-    print('the root directory for this calc is '+ (rootdir))
-    # check if smiles string in binding species
-    if args.bind:
-        if bsmi:
-            if args.nambsmi: # if name specified use it in file
-                fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
-                if args.name:
-                    fname = rootdir+'/'+args.name+args.nambsmi[0:2]
-            else: # else use default
-                fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm' 
-                if args.name:
-                   fname = rootdir+'/'+args.name+'bsm'
-        else: # else use name from binding in dictionary
-            fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
-            if args.name:
-                fname = rootdir+'/'+args.name + bind.ident[0:2]
-    else:
-        if globs.debug:
-            print('the root calculation directory is' + str(rootdir))
-        fname = rootdir+'/'+core.ident[0:3]+ligname
-        if args.name:
-            fname = rootdir+'/'+args.name
+#def get_name(args,rootdir,core,ligname,bind = False,bsmi = False):
+    #### DEPRECIATED, USE NAME_COMPLEX instead
+    ## reads in argument namespace
+    ## and chooses an appropriate name
+    ## bind_ident is used to pass binding
+    ## species information 
+    #print('the root directory for this calc is '+ (rootdir))
+    ## check if smiles string in binding species
+    #if args.bind:
+        #if bsmi:
+            #if args.nambsmi: # if name specified use it in file
+                #fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
+                #if args.name:
+                    #fname = rootdir+'/'+args.name+args.nambsmi[0:2]
+            #else: # else use default
+                #fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm' 
+                #if args.name:
+                   #fname = rootdir+'/'+args.name+'bsm'
+        #else: # else use name from binding in dictionary
+            #fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+            #if args.name:
+                #fname = rootdir+'/'+args.name + bind.ident[0:2]
+    #else:
+        #if globs.debug:
+            #print('the root calculation directory is' + str(rootdir))
+        #fname = rootdir+'/'+core.ident[0:3]+ligname
+        #if args.name:
+            #fname = rootdir+'/'+args.name
 
-    return fname
+    #return fname
 
-
-
+## Generate complex name
+#  @param rootdir Root directory
+#  @param core mol3D of core
+#  @param ligs List of ligand names
+#  @param ligoc List of ligand occurrences
+#  @param sernum Complex serial number
+#  @param args Namespace of arguments
+#  @param bind Flag for binding species (default False)
+#  @param bsmi Flag for SMILES binding species (default False)
+#  @return Complex name
 def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
@@ -718,6 +707,14 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
                     name += "_" + +args.nambsmi[0:2]
     return name
 
+## Generate transition state name
+#  @param rootdir Root directory
+#  @param core mol3D of core
+#  @param subst mol3D of substrate
+#  @param args Namespace of arguments
+#  @param bind Flag for binding species (default False)
+#  @param bsmi Flag for SMILES binding species (default False)
+#  @return Transition state name
 def name_TS(rootdir,core,subst,args,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
@@ -750,10 +747,7 @@ def name_TS(rootdir,core,subst,args,bind= False,bsmi=False):
                     name += "_" + +args.nambsmi[0:2]
     return name
 
-##############################################
-### function to copy ligands, bind and     ###
-### cores to user-specified path       ###
-##############################################
+## Copies ligands, binding species and cores to user-specified path
 def copy_to_custom_path():
     globs = globalvars()
     if not globs.custom_path:

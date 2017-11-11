@@ -1,18 +1,18 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file postparse.py
+#  Post-processes quantum chemistry output files
+#  
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-#####################################################
-######## This script generates a summary of  ########
-######  the runs as part of post processing   #######
-#####################################################
-
-# import std modules
 import os, sys, subprocess, time
 from molSimplify.Classes.globalvars import *
 
-############################
-### find between strings ###
-############################
+## Gets subset of string between two substrings
+#  @param s String to be split
+#  @param first First substring
+#  @param last Last substring
+#  @return Subset of string between substrings
 def find_between(s, first, last ):
     # returns string between first and last substrings
     s=s.split(first,1)
@@ -22,12 +22,13 @@ def find_between(s, first, last ):
     else:
         return ""
 
+## List of metals
 metals = {'Sc':21,'Ti':22,'V':23,'Cr':24,'Mn':25,'Fe':26,'Co':27,'Ni':28,'Cu':29,
           'Y':39,'Zr':40,'Nb':41,'Mo':42,'Tc':43,'Ru':44,'Rh':45,'Pd':46,'Pt':78,'Au':79,'In':49}
 
-##############################
-### parse unrestricted nbo ###
-##############################
+## Parse unrestricted NBO output
+#  @param s String containing NBO output
+#  @return NBO output including d-band center and d occupancies
 def nbo_parser_unrestricted(s):
     res = [] # list of output: [atom],[charge],[average % metal-centered hyb in NBOs],
              # [average %d character in NBOs], [average LV orb occup], [average %d char in LVs]
@@ -104,9 +105,9 @@ def nbo_parser_unrestricted(s):
         dband = 0.0
     return res,doccup,dband
     
-############################
-### parse restricted nbo ###
-############################
+## Parse restricted NBO output
+#  @param s String containing NBO output
+#  @return NBO output
 def nbo_parser_restricted(s):
     res = [] # list of output: [atom],[charge],[average % metal-centered hyb in NBOs],
              # [average %d character in NBOs]
@@ -149,9 +150,10 @@ def nbo_parser_restricted(s):
     res.append(0.01*nlmores[1]/nlmores[0])
     return res
 
-##########################################
-### get orbital info for unrestricted ####
-##########################################
+## Get information on orbitals with metal character
+#  @param s String containing NBO output
+#  @param metal Element name of metal
+#  @return Orbital information
 def spinnbo(s,metal):
     sNBO = []
     sLV = []
@@ -183,9 +185,10 @@ def spinnbo(s,metal):
                 sNBO.append([occup,perhyb,perd])
     return [sNBO]
 
-#######################################
-### get nlmo info for unrestricted ####
-#######################################
+## Get unrestricted NLMO information
+#  @param s String containing NBO output
+#  @param metal Element name of metal
+#  @return NLMO information
 def spinnlmo(s,metal):
     # get NLMOs containing metal
     ss = s.split('NATURAL LOCALIZED MOLECULAR ORBITAL (NLMO) ANALYSIS')[1].splitlines()    
@@ -200,9 +203,11 @@ def spinnlmo(s,metal):
     nlmo = [nlmoccup, pernlmo]
     return nlmo
 
-########################
-### parse nbo output ###
-########################
+## Parse NBO output
+#  @param resfiles Files to be post-processed
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log file name
 def nbopost(resfiles,folder,gui,flog):
     t=time.strftime('%c')
     headern="Date: " +  t+ "\nHere are the current results for runs in folder '"+folder+"'\n"
@@ -240,9 +245,11 @@ def nbopost(resfiles,folder,gui,flog):
     f=open(folder+'/nbo.txt','w')
     f.write(headern+''.join(textnbo))
 
-##############################
-### parse terachem results ###
-##############################
+## Parse terachem output
+#  @param resfiles Files to be post-processed
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log file name
 def terapost(resfiles,folder,gui,flog):
     t=time.strftime('%c')
     flog.write('################## Calculating results summary ##################\n\n')
@@ -325,9 +332,11 @@ def terapost(resfiles,folder,gui,flog):
         f.write(header+''.join(text)) 
         f.close()
 
-#############################
-### parse gamess results ####
-#############################
+## Parse GAMESS output
+#  @param resfiles Files to be post-processed
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log file name
 def gampost(resfiles,folder,gui,flog):
     t=time.strftime('%c')
     header="Date: " +  t+ "\nHere are the current results for runs in folder '"+folder+"'\n"

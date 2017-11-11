@@ -1,20 +1,18 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file postmwfn.py
+#  Post-processes Multiwfn output
+#  
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-##################################################
-######## This script post process molden  ########
-#######  files using the Multiwfn program  #######
-##################################################
-
-# import std modules
 import os, sys, subprocess, time, math, re
 from numpy import cross, dot
-# import local modules
 from molSimplify.Classes.globalvars import *
 
-###############################
-### distance between points ###
-###############################
+## Gets distance between points
+#  @param R1 Point 1
+#  @param R2 Point 2
+#  @return Distance
 def distance(R1,R2):
     d = 0.0
     d += pow(R1[0]-R2[0],2)
@@ -22,9 +20,11 @@ def distance(R1,R2):
     d += pow(R1[2]-R2[2],2)
     return sqrt(d)
 
-############################
-### find between strings ###
-############################
+## Gets subset of string between two substrings
+#  @param s String to be split
+#  @param first First substring
+#  @param last Last substring
+#  @return Subset of string between substrings
 def find_between(s, first, last ):
     # returns string between first and last substrings
     s=s.split(first,1)
@@ -34,21 +34,23 @@ def find_between(s, first, last ):
     else:
         return ""
 
+## List of metals
 metals = {'Sc':21,'Ti':22,'V':23,'Cr':24,'Mn':25,'Fe':26,'Co':27,'Ni':28,'Cu':29,
           'Y':39,'Zr':40,'Nb':41,'Mo':42,'Tc':43,'Ru':44,'Rh':45,'Pd':46,'Pt':78,'Au':79,'In':49}
 
-############################
-### get r from cartesian ###
-############################
+## Gets distance of Cartesian point to origin
+#  @param v Cartesian point
+#  @return Distance
 def radial(v):
     rsq = v[1]*v[1]
     rsq += v[2]*v[2]
     rsq += v[3]*v[3]
     return math.sqrt(rsq)
 
-##########################
-### calculate integral ###
-##########################
+## Integrate grid
+#  @param den Array of points
+#  @param dV Volume of differential element
+#  @return Integrated quantity
 def calc(den,dV):
     bohr_to_angstrom = 0.529177249 
     totpts = len(den)
@@ -60,9 +62,12 @@ def calc(den,dV):
     I = I*dV
     return I
     
-######################################
-### calculate spreads and averages ###
-######################################
+## Calculate spreads and averages of density and ELF
+#  @param den Array of densities
+#  @param ELF Array of ELF values
+#  @param totel Total number of electrons
+#  @param dV Volume of differential element
+#  @return Spreads and averages (mean, stdev, skewness)
 def spreadcalc(den,ELF,totel,dV):
     Rm = 0 # mean distance = av(r*rho)
     Sp = 0 # spread = standard dev
@@ -99,9 +104,11 @@ def spreadcalc(den,ELF,totel,dV):
     ESk = dV*ESk/totel
     return Rm,Sp,Sk,Em,ESD,ESk
 
-######################
-### calculate HELP ###
-######################
+## Calculate HELP function from cube
+#  @param den Array of points
+#  @param ELF ELF values
+#  @param dV Volume of differential element
+#  @return Integrated HELP
 def calcHELP(den,ELF,dV):
     totpts = len(den)
     if len(den) != len(ELF):
@@ -115,9 +122,9 @@ def calcHELP(den,ELF,dV):
     I = I*dV
     return I
 
-######################
-### parse cubefile ###
-######################
+## Parse cube file
+#  @param cubef Name of cube file
+#  @return Array of data, volume of differential element
 def parsecube(cubef):
     # open and read cube file
     f=open(cubef,'r')
@@ -194,9 +201,10 @@ def parsecube(cubef):
                 den[idx][3] = Z - rmetal[2]
     return den,dV
 
-################################
-### calculate wfn properties ###
-################################
+## Calculate wavefunction properties
+#  @param denf Density cube file
+#  @param elff ELF cube file
+#  @return Integrated HELP, number of electrons, spreads
 def wfncalc(denf,elff):
     [den,dV] = parsecube(denf)
     totel = calc(den,dV)
@@ -205,9 +213,9 @@ def wfncalc(denf,elff):
     HELPval = calcHELP(den,ELF,dV)
     return HELPval,totel,svars
 
-################################################
-### calculates difference between cube files ###
-################################################
+## Computes alpha and beta densities from total and spin density cubes
+#  @param cubefTOT Density cube file
+#  @param cubefSPIN Spin density cube file
 def cubespin(cubefTOT, cubefSPIN):
     # open and read cube files
     [denT,n, pre] = readden(cubefTOT)
@@ -240,9 +248,9 @@ def cubespin(cubefTOT, cubefSPIN):
             j = 0 
     f.close()
 
-######################################
-### reads cube file for processing ###
-######################################
+## Parse density cube file
+#  @param inputf Density cube file
+#  @return Density array, parameters, additional info
 def readden(inputf):
     f=open(inputf,'r')
     s=f.read().splitlines()
@@ -299,9 +307,11 @@ def readden(inputf):
                 den[idx][3] = Z 
     return den,n1,pre
 
-##########################
-### generate cubefiles ###
-##########################
+## Use Multiwfn to generate cube files from molden files
+#  @param molf Input molden file
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log filename
 def getcubes(molf,folder,gui,flog):
     # get Multiwfn
     globs = globalvars()
@@ -362,11 +372,12 @@ def getcubes(molf,folder,gui,flog):
             if glob.glob('denalpha.cub'):
                 os.rename('denalpha.cub',cubedir+resd+'-denalpha.cub')
                 os.rename('denbeta.cub',cubedir+resd+'-denbeta.cub')
-        #################################################
 
-#########################################
-### calculate wavefunction properties ###
-#########################################
+## Calculate wavefunction properties from molden file
+#  @param molf Input molden file
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log filename
 def getwfnprops(molf,folder,gui,flog):
     globs = globalvars()
     Multiwfn = globs.multiwfn
@@ -423,9 +434,11 @@ def getwfnprops(molf,folder,gui,flog):
     f.write(header+''.join(text))
     f.close()
 
-#########################
-### calculate charges ###
-#########################
+## Calculate charges from molden file
+#  @param molf Input molden file
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log filename
 def getcharges(molf,folder,gui,flog):
     # get Multiwfn
     globs = globalvars()
@@ -529,9 +542,11 @@ def getcharges(molf,folder,gui,flog):
     f.close()
     f.close()
 
-#####################################
-### calculate local-deloc indices ###
-#####################################
+## Calculate delocalization indices from molden file
+#  @param molf Input molden file
+#  @param folder Folder containing runs
+#  @param gui GUI flag
+#  @param flog Log filename
 def deloc(molf,folder,gui,flog):
     # get multiwfn exec
     globs = globalvars()

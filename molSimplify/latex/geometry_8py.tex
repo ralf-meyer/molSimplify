@@ -1,0 +1,83 @@
+\hypertarget{geometry_8py}{}\section{Scripts/geometry.py File Reference}
+\label{geometry_8py}\index{Scripts/geometry.\+py@{Scripts/geometry.\+py}}
+
+
+Contains many useful 3D Euclidean geometric manipulation routines.  
+
+
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry}{mol\+Simplify.\+Scripts.\+geometry}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab22dfc9103deb322f3fe52878f24aec9}{mol\+Simplify.\+Scripts.\+geometry.\+norm} (u)
+\begin{DoxyCompactList}\small\item\em Euclidean norm. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a6b3a18a3eb0c01b23c6acb6f374e1850}{mol\+Simplify.\+Scripts.\+geometry.\+normalize} (u)
+\begin{DoxyCompactList}\small\item\em Normalize a vector. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a862dd678e349d0608d2568670e1b7200}{mol\+Simplify.\+Scripts.\+geometry.\+distance} (R1, R2)
+\begin{DoxyCompactList}\small\item\em Euclidean distance between points. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_af1b60f550f00adbeeb61fcff1482d793}{mol\+Simplify.\+Scripts.\+geometry.\+vecdiff} (r1, r2)
+\begin{DoxyCompactList}\small\item\em Element-\/wise vector difference. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a05a77dc1d71d199b47473f48f992b101}{mol\+Simplify.\+Scripts.\+geometry.\+midpt} (r1, r2)
+\begin{DoxyCompactList}\small\item\em Vector midpoint. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a0280692d9c985bc7dccab778bb908aa7}{mol\+Simplify.\+Scripts.\+geometry.\+checkcolinear} (R1, R2, R3)
+\begin{DoxyCompactList}\small\item\em Checks if three points are collinear. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ac2cd923a9da794af670abf98d5ca91e1}{mol\+Simplify.\+Scripts.\+geometry.\+checkplanar} (R1, R2, R3, R4)
+\begin{DoxyCompactList}\small\item\em Checks if four points are coplanar. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab85ace2116d6845043cd6658e191bb66}{mol\+Simplify.\+Scripts.\+geometry.\+vecangle} (r1, r2)
+\begin{DoxyCompactList}\small\item\em Computes angle between two vectors. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a5bfdcb82216f2f334bdf30542cd168bf}{mol\+Simplify.\+Scripts.\+geometry.\+get\+Pointu} (Rr, dist, u)
+\begin{DoxyCompactList}\small\item\em Gets point given reference point, direction vector and distance. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a3571c84ff85925ce0a23c08efddf5e1a}{mol\+Simplify.\+Scripts.\+geometry.\+rotation\+\_\+params} (r0, r1, r2)
+\begin{DoxyCompactList}\small\item\em Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab71755d5aac3ee68201fb79536be659d}{mol\+Simplify.\+Scripts.\+geometry.\+kabsch} (mol0, mol1)
+\begin{DoxyCompactList}\small\item\em Aligns (translates and rotates) two molecules to minimize R\+M\+SD using the Kabsch algorithm. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a9a8fcceacae8daff63411a8fc15a9f25}{mol\+Simplify.\+Scripts.\+geometry.\+Reflect\+Plane} (u, r, Rp)
+\begin{DoxyCompactList}\small\item\em Reflects point about plane defined by its normal vector and a point on the plane. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab7f86efbae768b9ed6edfeff4598616b}{mol\+Simplify.\+Scripts.\+geometry.\+Point\+Rotate\+Axis} (u, rp, r, theta)
+\begin{DoxyCompactList}\small\item\em Rotates point about axis defined by direction vector and point on axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad39ef08129915708a2ba644855c324ab}{mol\+Simplify.\+Scripts.\+geometry.\+Point\+Translate\+Sph} (Rp, p0, D)
+\begin{DoxyCompactList}\small\item\em Translates point in spherical coordinates. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a05bad44739a2ebd5679d059f3d0084b8}{mol\+Simplify.\+Scripts.\+geometry.\+Point\+Translateto\+P\+Sph} (Rp, p0, D)
+\begin{DoxyCompactList}\small\item\em Converts spherical translation vector into Cartesian translation vector. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_aeacb625442bc7c0d1d4fac98696a0cb1}{mol\+Simplify.\+Scripts.\+geometry.\+Point\+Rotate\+Sph} (Rp, p0, D)
+\begin{DoxyCompactList}\small\item\em Rotates point about Cartesian axes defined relative to given origin. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad14edfe334bcb81ff7f4de4dfd630fc7}{mol\+Simplify.\+Scripts.\+geometry.\+reflect\+\_\+through\+\_\+plane} (mol, u, Rp)
+\begin{DoxyCompactList}\small\item\em Reflects molecule about plane defined by its normal vector and a point on the plane. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a90caa7a6dc952df17fce36ea2711eff3}{mol\+Simplify.\+Scripts.\+geometry.\+rotate\+\_\+around\+\_\+axis} (mol, Rp, u, theta)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about axis defined by direction vector and point on axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a5df8aae5c4383cfebd5d9a62eef388a5}{mol\+Simplify.\+Scripts.\+geometry.\+set\+Pdistance} (mol, Rr, Rp, bond)
+\begin{DoxyCompactList}\small\item\em Translates molecule such that a given point in the molecule is at a given distance from a reference point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a67598d5fb5cb3e55b1829298b62d9f46}{mol\+Simplify.\+Scripts.\+geometry.\+set\+Pdistanceu} (mol, Rr, Rp, bond, u)
+\begin{DoxyCompactList}\small\item\em Translates molecule such that a given point in the molecule is at a given distance from a reference point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a3ea4c34e0e07a3a92d31bd6b673a1fce}{mol\+Simplify.\+Scripts.\+geometry.\+setcmdistance} (mol, Rp, bond)
+\begin{DoxyCompactList}\small\item\em Translates molecule such that its center of mass is at a given distance from a reference point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ab942da4b95418e12716685e3abee16e5}{mol\+Simplify.\+Scripts.\+geometry.\+protate} (mol, Rr, D)
+\begin{DoxyCompactList}\small\item\em Translates molecule in spherical coordinates based on center of mass reference. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a5f9b944e195ebf9c9997e1abc7d4fd74}{mol\+Simplify.\+Scripts.\+geometry.\+protateref} (mol, Rr, Rref, D)
+\begin{DoxyCompactList}\small\item\em Translates molecule in spherical coordinates based on arbitrary reference. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a891c57b819e0c6b2a00e9a495fc0dac9}{mol\+Simplify.\+Scripts.\+geometry.\+cmrotate} (mol, D)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about its center of mass. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ac0753e6f8d4fa1b2193cdbf99e3d1c8b}{mol\+Simplify.\+Scripts.\+geometry.\+rotate\+Ref} (mol, Ref, D)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about an arbitrary point. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ae639e596da3de910ae56f9ced7d336e9}{mol\+Simplify.\+Scripts.\+geometry.\+aligntoaxis} (mol, Rr, Rp, u)
+\begin{DoxyCompactList}\small\item\em Translates molecule to align point to axis at constant distance. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_ad1b4c0975cd5853ea6c66f707c5e55a5}{mol\+Simplify.\+Scripts.\+geometry.\+aligntoaxis2} (mol, Rr, Rp, u, d)
+\begin{DoxyCompactList}\small\item\em Translates molecule to align point to axis at arbitrary distance. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a23714d51ef2a9e32e4c566497de8f506}{mol\+Simplify.\+Scripts.\+geometry.\+align\+Ptoaxis} (Rr, Rp, u, d)
+\begin{DoxyCompactList}\small\item\em Translates point and aligns to axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1geometry_a0c9d5009b8beb6cb765756fe15596191}{mol\+Simplify.\+Scripts.\+geometry.\+pmrotate} (mol, Rp, D)
+\begin{DoxyCompactList}\small\item\em Rotates molecule about Cartesian axes defined relative to given origin. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Contains many useful 3D Euclidean geometric manipulation routines. 
+
+Unless otherwise stated, all \char`\"{}points\char`\"{} refer to 3-\/element lists.
+
+Written by Tim Ioannidis for H\+JK Group
+
+Dpt of Chemical Engineering, M\+IT 

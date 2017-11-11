@@ -1,5 +1,10 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file periodic_QE.py
+#  Generates Quantum ESPRESSO input files from slab builder
+#  
+#  Written by JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
+
 import os, sys
 import glob, re, math, random, string, numpy
 from math import pi

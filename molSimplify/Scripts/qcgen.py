@@ -1,22 +1,20 @@
-# Written by Tim Ioannidis for HJK
-#         and JP Janeti for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file qcgen.py
+#  Generates quantum chemistry input files
+#  
+#  Written by Tim Ioannidis and JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-#########################################################
-############ This script generates input  ###############
-##########  for Quantum Chem calculations   #############
-#########################################################
 from molSimplify.Classes.globalvars import *
 import glob, sys, os, shutil
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import *
 
-#####################################################
-########## This module generates input  #############
-##########  for TeraChem calculations   #############
-#####################################################
-### generate multiple runs if multiple methods requested ###
+## Generate multiple terachem runs if multiple methods requested
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @return List of job directories
 def multitcgen(args,strfiles):
     jobdirs = []
     method = False
@@ -34,7 +32,11 @@ def multitcgen(args,strfiles):
             os.remove(xyzf+'.report')
     return jobdirs
 
-### generate terachem input files ###
+## Generate terachem input files
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @param method Method (e.g. b3lyp)
+#  @return List of job directories
 def tcgen(args,strfiles,method):
     # global variables
     globs = globalvars()
@@ -202,21 +204,20 @@ def tcgen(args,strfiles,method):
             output.close()
     return jobdirs
 
-#####################################################
-########## This module generates input  #############
-##########    for GAMESS calculations   #############
-#####################################################
-
-### convert xyz to gxyz ###
+## Converts normal xyz file to gxyz (GAMESS format) file
+#  @param filename Filename of xyz file
+#  @return Filename of gxyz file
 def xyz2gxyz(filename):
-    # convert normal xyz file to gamess format
     mol=mol3D() # create mol3D object
     mol.readfromxyz(filename) # read molecule
     gfilename = filename.replace('.xyz','.gxyz') # new file name
     mol.writegxyz(gfilename) # write gamess formatted xyz file
     return gfilename.split('.gxyz')[0]
 
-### generate multiple runs if multiple methods requested ###
+## Generate multiple GAMESS runs if multiple methods requested
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @return List of job directories
 def multigamgen(args,strfiles):
     method = False
     jobdirs=[]
@@ -233,7 +234,11 @@ def multigamgen(args,strfiles):
         os.remove(xyzf+'.molinp')
     return jobdirs
 
-### generate input files for gamess###
+## Generate GAMESS input files
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @param method Method (e.g. b3lyp)
+#  @return List of job directories
 def gamgen(args,strfiles,method):
     # get global variables
     globs = globalvars()
@@ -391,12 +396,10 @@ def gamgen(args,strfiles,method):
         output.close()
     return jobdirs
 
-    
-####################################################
-########## This module generates input  ############
-##########    for QChem calculations   #############
-####################################################
-### generate multiple runs if multiple methods requested ###
+## Generate multiple QChem runs if multiple methods requested
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @return List of job directories
 def multiqgen(args,strfiles):
     method = False
     jobdirs=[]
@@ -413,7 +416,11 @@ def multiqgen(args,strfiles):
         os.remove(xyzf + '.report')
     return jobdirs
 
-### generate input files for qchem ###
+## Generate QChem input files
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @param method Method (e.g. b3lyp)
+#  @return List of job directories
 def qgen(args,strfiles,method):
     # get global variables
     globs = globalvars()
@@ -460,8 +467,6 @@ def qgen(args,strfiles,method):
             shutil.copy2(xyzf.replace('.xyz','.report'),mdir.replace('.xyz','.report'))
         except:
             pass
-
-
     # Check for existence of basis and sanitize name
     if args.basis and len(args.basis) > 1:
         jobparams['BASIS']=args.basis
@@ -518,14 +523,11 @@ def qgen(args,strfiles,method):
         output.close()
     return jobdirs
 
-
-
-    
-####################################################
-########## This module generates input  ############
-##########    for MOLPAC calculations   #############
-####################################################
-
+## Generate MOPAC input files
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @param rootdir Root directory 
+#  @return List of job directories
 def mlpgen(args,strfiles,rootdir):
     # get global variables
     globs = globalvars()

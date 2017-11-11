@@ -1,0 +1,58 @@
+\hypertarget{distgeom_8py}{}\section{distgeom.\+py File Reference}
+\label{distgeom_8py}\index{distgeom.\+py@{distgeom.\+py}}
+
+
+Implements a basic distance geometry conformer search routine.  
+
+
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacemolSimplify_1_1distgeom}{mol\+Simplify.\+distgeom}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a4acf9d8d49cd4e59048bfd34a8ca694f}{mol\+Simplify.\+distgeom.\+Cos\+Rule} (AB, BC, theta)
+\begin{DoxyCompactList}\small\item\em Applies the cosine rule to get the length of AC given lengths of AB, BC and angle A\+BC. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a96dab17a0c3b3ca663bcbc695f46d1b4}{mol\+Simplify.\+distgeom.\+Get\+Bounds\+Matrices} (mol, natoms)
+\begin{DoxyCompactList}\small\item\em Generate distance bounds matrices. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_ae87d97e79600fafa6255331c1b738af6}{mol\+Simplify.\+distgeom.\+Triangle} (LB, UB, natoms)
+\begin{DoxyCompactList}\small\item\em Triangle inequality bounds smoothing. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_aeea656ddbab4cd45d9229cf937cc5166}{mol\+Simplify.\+distgeom.\+Metrize} (LB, UB, natoms, Full=True)
+\begin{DoxyCompactList}\small\item\em Metrization to select random in-\/range distances. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a0e20f4ca4b2932cc006bc638df4fe07b}{mol\+Simplify.\+distgeom.\+Get\+C\+M\+Dists} (D, natoms)
+\begin{DoxyCompactList}\small\item\em Get distances of each atom to CM given the distance matrix. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a6d508087b38951d64ecc00438d3139d3}{mol\+Simplify.\+distgeom.\+Get\+Metric\+Matrix} (D, D0, natoms)
+\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a2a9f4b671337bde3a1a15d9adef28959}{mol\+Simplify.\+distgeom.\+Get3\+Eigs} (G, natoms)
+\begin{DoxyCompactList}\small\item\em Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a9393f464d0cdef4e6ad87bcc895767d2}{mol\+Simplify.\+distgeom.\+Dist\+Err} (x, args)
+\begin{DoxyCompactList}\small\item\em Computes distance error function for scipy optimization. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a10453db24bcddc639b204904f395b0be}{mol\+Simplify.\+distgeom.\+Save\+Conf} (X, mol, ffclean=True)
+\begin{DoxyCompactList}\small\item\em Further cleans up with OB FF and saves to a new mol3D object. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_ae5eb55abad68fccba5f8fa87b706d7a3}{mol\+Simplify.\+distgeom.\+Get\+Conf} (mol)
+\begin{DoxyCompactList}\small\item\em Uses distance geometry to get a random conformer. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{namespacemolSimplify_1_1distgeom_a1ec709e458f1fd6d747723c8b11e8c01}{mol\+Simplify.\+distgeom.\+mol} = mol3D()
+\item 
+\hyperlink{namespacemolSimplify_1_1distgeom_af6f56fc1cd06c121370cfa2a22683a53}{mol\+Simplify.\+distgeom.\+ffclean}
+\item 
+def \hyperlink{namespacemolSimplify_1_1distgeom_a635b102e04affd33a6b7c8322c3efa6b}{mol\+Simplify.\+distgeom.\+conf3D} = Get\+Conf(mol)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Implements a basic distance geometry conformer search routine. 
+
+Written by Terry Gani for H\+JK Group
+
+Dpt of Chemical Engineering, M\+IT
+
+Adapted from\+:
+
+\mbox{[}1\mbox{]} J. M. Blaney and J. S. Dixon, \char`\"{}\+Distance Geometry in Molecular Modeling\char`\"{}, in Reviews in Computational Chemistry, V\+CH (1994)
+
+\mbox{[}2\mbox{]} G. Crippen and T. F. Havel, \char`\"{}\+Distance Geometry and Molecular Conformation\char`\"{}, in Chemometrics Research Studies Series, Wiley (1988) 

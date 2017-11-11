@@ -1,0 +1,905 @@
+\hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen}{}\section{mol\+Simplify.\+Scripts.\+structgen Namespace Reference}
+\label{namespacemolSimplify_1_1Scripts_1_1structgen}\index{mol\+Simplify.\+Scripts.\+structgen@{mol\+Simplify.\+Scripts.\+structgen}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a5913017e9413ea0a08b21faa12d34600}{setdiff} (a, b)
+\begin{DoxyCompactList}\small\item\em Gets the elements in set a that are not in set b. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_aeab6e4135b3aea86dfde6a2d8b81069a}{getbackbcombsall} (nums)
+\begin{DoxyCompactList}\small\item\em Gets all possible combinations for connection atoms in geometry in the case of forced order or unknown geometry. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_aa4efa4ec6b344b172d90a999b7a81ac7}{getnupdateb} (backbatoms, denticity)
+\begin{DoxyCompactList}\small\item\em Gets a combination of backbone points that satisfies denticity and updates possible combinations. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a58eaeb979acdfe86a20f086609495725}{getsmilescat} (args, indsmi)
+\begin{DoxyCompactList}\small\item\em Gets connection atoms of S\+M\+I\+L\+ES string ligand. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ad59becac42b9cc602dfb5ed08452922b}{getsmident} (args, indsmi)
+\begin{DoxyCompactList}\small\item\em Gets denticity of smiles string. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a0143758ce0284cc6b662a5ac5f39818b}{init\+\_\+\+A\+NN} (args, ligands, occs, dents, batslist, tcats, licores)
+\begin{DoxyCompactList}\small\item\em Initializes A\+NN. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a2c5ec4647f80764e3e8526df7662a524}{init\+\_\+template} (args, cpoints\+\_\+required)
+\begin{DoxyCompactList}\small\item\em Initializes core and template mol3\+Ds and properties. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a3687ca508aa4390f1964ead5ce0411db}{init\+\_\+ligand} (args, lig, tcats, keep\+Hs, i)
+\begin{DoxyCompactList}\small\item\em Initializes ligand 3D geometry and properties. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a54f5af396e8da068c110f90043ba9621}{modifybackbonep} (backb, pangles)
+\begin{DoxyCompactList}\small\item\em Distorts backbone according to user specified angles. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a4f54c3884321f27f7791785de3a348d1}{distortbackbone} (backb, distort)
+\begin{DoxyCompactList}\small\item\em Randomly distorts backbone. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ace8c0eaa680157fc0242697a53a847a8}{smartreorderligs} (args, ligs, dentl, licores)
+\begin{DoxyCompactList}\small\item\em Smart reorder ligands by denticity (-\/ligalign True) \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a1c48077780530e1f82a2048b3e4e47e2}{ffopt} (ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps, debug=False)
+\begin{DoxyCompactList}\small\item\em Main constrained FF opt routine. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ad6bd8da07746ef83a1374c1776786c60}{getconnection} (core, cidx, BL)
+\begin{DoxyCompactList}\small\item\em Finds the optimum attachment point for an atom/group to a central atom given the desired bond length. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_aee6e54250dad5568a77b82c86c1b94eb}{findsmarts} (lig3D, smarts, catom)
+\begin{DoxyCompactList}\small\item\em Checks if connecting atom of lig3D is part of S\+M\+A\+R\+TS pattern. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a4de00a1cf6de4864f75bdf73db1f499a}{align\+\_\+lig\+\_\+centersym} (corerefcoords, lig3D, atom0, core3D, Enable\+Auto\+Linear\+Bend)
+\begin{DoxyCompactList}\small\item\em Aligns a ligand\textquotesingle{}s center of symmetry along the metal-\/connecting atom axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_aed95f3baf72816668130eceae3c8b227}{align\+\_\+linear\+\_\+pi\+\_\+lig} (corerefcoords, lig3D, atom0, ligpiatoms)
+\begin{DoxyCompactList}\small\item\em Aligns a linear pi ligand\textquotesingle{}s connecting point to the metal-\/ligand axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ab5c4d52d92fc35bced000f207abd08cf}{check\+\_\+rotate\+\_\+linear\+\_\+lig} (corerefcoords, lig3D, atom0)
+\begin{DoxyCompactList}\small\item\em Checks if ligand has a linear coordination environment (e.\+g., O\+CO) and ensures perpendicularity to M-\/L axis. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a7a42738de45a860a1c6d28922d008136}{check\+\_\+rotate\+\_\+symm\+\_\+lig} (corerefcoords, lig3D, atom0, core3D)
+\begin{DoxyCompactList}\small\item\em Checks if ligand has is symmetric about connecting atom (center of symmetry coincides with connecting atom) and minimizes clashes with rest of complex. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_aed8e7b09083ade40bbfd8001f18bd0a2}{rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric} (corerefcoords, lig3D, atom0, core3D)
+\begin{DoxyCompactList}\small\item\em Rotates aligned ligand about M-\/L axis to minimize steric clashes with rest of complex. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a9c4c45a6c8757db294e57137c875b848}{rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs} (lig3D, catoms, n, mcoords, core3D)
+\begin{DoxyCompactList}\small\item\em Rotates a connecting atom of a multidentate ligand to improve H atom placement. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_acef75ef9f8bfc225c6b2bd327c3a2bed}{rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs} (lig3D, catoms, mcoords, core3D)
+\begin{DoxyCompactList}\small\item\em Rotates connecting atoms of multidentate ligands to improve H atom placement. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ae544f12f83f1b924270e798011a4dfc3}{find\+\_\+rotate\+\_\+rotatable\+\_\+bond} (lig3D, catoms)
+\begin{DoxyCompactList}\small\item\em Finds and rotates a rotatable bond in a bidentate ligand to obtain cis conformer. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_aa5c9d690144b1d971dbca6f8ec29ef6f}{get\+\_\+\+M\+Ldist} (args, lig3D, atom0, ligand, metal, M\+Lb, i, A\+N\+N\+\_\+flag, A\+N\+N\+\_\+bondl, this\+\_\+diag, M\+Lbonds)
+\begin{DoxyCompactList}\small\item\em Gets target M-\/L distance from desired source (custom, sum cov rad or A\+NN) Aligns a monodentate ligand to core connecting atom coordinates. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a465ae4df8d02b58855091e9f98d2c2a9}{get\+\_\+\+M\+Ldist\+\_\+database} (args, metal, lig3D, atom0, ligand, M\+Lbonds)
+\begin{DoxyCompactList}\small\item\em Loads M-\/L bond length from database and reports if compound is in DB. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ad738c67fce6cc4b42b66d20282aa0b17}{get\+\_\+batoms} (args, batslist, ligsused)
+\begin{DoxyCompactList}\small\item\em Get backbone atoms from template. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ae637242b085f9768b5ae20a2204f6bc6}{align\+\_\+dent2\+\_\+catom2\+\_\+coarse} (args, lig3D, core3D, catoms, r1, r0, m3D, batoms, corerefcoords)
+\begin{DoxyCompactList}\small\item\em Crude rotations to improve alignment of the 2nd connecting atom of a bidentate ligand. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a03a7d014d089398102d9c1b9e939f133}{align\+\_\+dent2\+\_\+catom2\+\_\+refined} (args, lig3D, catoms, bondl, r1, r0, core3D, rtarget, coreref, M\+Loptbds)
+\begin{DoxyCompactList}\small\item\em Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a91f6c3dc244887d2e71cdfa122ee7993}{align\+\_\+dent1\+\_\+lig} (args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=False, ligpiatoms=\mbox{[}$\,$\mbox{]}, M\+Lb=\mbox{[}$\,$\mbox{]}, A\+N\+N\+\_\+flag=False, A\+N\+N\+\_\+bondl=\mbox{[}$\,$\mbox{]}, this\+\_\+diag=0, M\+Lbonds=dict(), M\+Loptbds=\mbox{[}$\,$\mbox{]}, i=0, Enable\+Auto\+Linear\+Bend=True)
+\begin{DoxyCompactList}\small\item\em Aligns a monodentate ligand to core connecting atom coordinates. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a458be04ee9ec1f9d32c81b5b7448fcec}{align\+\_\+dent2\+\_\+lig} (args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, catoms, M\+Lb, A\+N\+N\+\_\+flag, A\+N\+N\+\_\+bondl, this\+\_\+diag, M\+Lbonds, M\+Loptbds, frozenats, i)
+\begin{DoxyCompactList}\small\item\em Aligns a bidentate ligand to core connecting atom coordinates. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a343f959db73f414f9f717d2a7f2ab18c}{mcomplex} (args, ligs, ligoc, licores, globs)
+\begin{DoxyCompactList}\small\item\em Main ligand placement routine. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a88cde12602c0445fff9fe6921415aad4}{structgen} (args, rootdir, ligands, ligoc, globs, sernum)
+\begin{DoxyCompactList}\small\item\em Main structure generation routine. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a2ef014c1f2b0eae8ccc7784c704bdfd9}{all}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a91f6c3dc244887d2e71cdfa122ee7993}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a91f6c3dc244887d2e71cdfa122ee7993}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!align\+\_\+dent1\+\_\+lig@{align\+\_\+dent1\+\_\+lig}}
+\index{align\+\_\+dent1\+\_\+lig@{align\+\_\+dent1\+\_\+lig}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{align\+\_\+dent1\+\_\+lig()}{align\_dent1\_lig()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+dent1\+\_\+lig (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{cpoint,  }\item[{}]{core3D,  }\item[{}]{coreref,  }\item[{}]{ligand,  }\item[{}]{lig3D,  }\item[{}]{catoms,  }\item[{}]{rempi = {\ttfamily False},  }\item[{}]{ligpiatoms = {\ttfamily \mbox{[}\mbox{]}},  }\item[{}]{M\+Lb = {\ttfamily \mbox{[}\mbox{]}},  }\item[{}]{A\+N\+N\+\_\+flag = {\ttfamily False},  }\item[{}]{A\+N\+N\+\_\+bondl = {\ttfamily \mbox{[}\mbox{]}},  }\item[{}]{this\+\_\+diag = {\ttfamily 0},  }\item[{}]{M\+Lbonds = {\ttfamily dict()},  }\item[{}]{M\+Loptbds = {\ttfamily \mbox{[}\mbox{]}},  }\item[{}]{i = {\ttfamily 0},  }\item[{}]{Enable\+Auto\+Linear\+Bend = {\ttfamily True} }\end{DoxyParamCaption})}
+
+
+
+Aligns a monodentate ligand to core connecting atom coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em cpoint} & atom3D containing backbone connecting point \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+{\em coreref} & atom3D of core reference atom \\
+\hline
+{\em ligand} & Name of ligand for dictionary lookup \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+{\em rempi} & Flag for pi-\/coordinating ligand \\
+\hline
+{\em ligpiatoms} & List of pi-\/coordinating atom indices in ligand \\
+\hline
+{\em M\+Lb} & Custom M-\/L bond length (if any) \\
+\hline
+{\em A\+N\+N\+\_\+flag} & Flag for A\+NN activation \\
+\hline
+{\em A\+N\+N\+\_\+bondl} & A\+N\+N-\/predicted M-\/L bond length \\
+\hline
+{\em this\+\_\+diag} & A\+NN diagnostic object \\
+\hline
+{\em M\+Lbonds} & M-\/L bond dictionary \\
+\hline
+{\em M\+Loptbds} & List of final M-\/L bond lengths \\
+\hline
+{\em i} & Ligand serial number \\
+\hline
+{\em Enable\+Auto\+Linear\+Bend} & Flag for enabling automatic bending of linear ligands (e.\+g. superoxo) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of aligned ligand, updated list of M-\/L bond lengths 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ae637242b085f9768b5ae20a2204f6bc6}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ae637242b085f9768b5ae20a2204f6bc6}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!align\+\_\+dent2\+\_\+catom2\+\_\+coarse@{align\+\_\+dent2\+\_\+catom2\+\_\+coarse}}
+\index{align\+\_\+dent2\+\_\+catom2\+\_\+coarse@{align\+\_\+dent2\+\_\+catom2\+\_\+coarse}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{align\+\_\+dent2\+\_\+catom2\+\_\+coarse()}{align\_dent2\_catom2\_coarse()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+dent2\+\_\+catom2\+\_\+coarse (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{lig3D,  }\item[{}]{core3D,  }\item[{}]{catoms,  }\item[{}]{r1,  }\item[{}]{r0,  }\item[{}]{m3D,  }\item[{}]{batoms,  }\item[{}]{corerefcoords }\end{DoxyParamCaption})}
+
+
+
+Crude rotations to improve alignment of the 2nd connecting atom of a bidentate ligand. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+{\em r1} & Coordinates of ligand first connecting atom \\
+\hline
+{\em r0} & Coordinates of core reference point \\
+\hline
+{\em m3D} & mol3D of backbone template \\
+\hline
+{\em batoms} & List of backbone atom indices \\
+\hline
+{\em corerefcoords} & Coordinates of core reference atom \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of aligned ligand, coordinates of second backbone point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a03a7d014d089398102d9c1b9e939f133}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a03a7d014d089398102d9c1b9e939f133}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!align\+\_\+dent2\+\_\+catom2\+\_\+refined@{align\+\_\+dent2\+\_\+catom2\+\_\+refined}}
+\index{align\+\_\+dent2\+\_\+catom2\+\_\+refined@{align\+\_\+dent2\+\_\+catom2\+\_\+refined}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{align\+\_\+dent2\+\_\+catom2\+\_\+refined()}{align\_dent2\_catom2\_refined()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+dent2\+\_\+catom2\+\_\+refined (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{lig3D,  }\item[{}]{catoms,  }\item[{}]{bondl,  }\item[{}]{r1,  }\item[{}]{r0,  }\item[{}]{core3D,  }\item[{}]{rtarget,  }\item[{}]{coreref,  }\item[{}]{M\+Loptbds }\end{DoxyParamCaption})}
+
+
+
+Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+{\em bondl} & Target M-\/L bond length \\
+\hline
+{\em r1} & Coordinates of ligand first connecting atom \\
+\hline
+{\em r0} & Coordinates of core reference point \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+{\em rtarget} & Coordinates of target point for second connecting atom \\
+\hline
+{\em coreref} & atom3D of core reference atom \\
+\hline
+{\em M\+Loptbds} & List of final M-\/L bond lengths \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of aligned ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a458be04ee9ec1f9d32c81b5b7448fcec}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a458be04ee9ec1f9d32c81b5b7448fcec}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!align\+\_\+dent2\+\_\+lig@{align\+\_\+dent2\+\_\+lig}}
+\index{align\+\_\+dent2\+\_\+lig@{align\+\_\+dent2\+\_\+lig}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{align\+\_\+dent2\+\_\+lig()}{align\_dent2\_lig()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+dent2\+\_\+lig (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{cpoint,  }\item[{}]{batoms,  }\item[{}]{m3D,  }\item[{}]{core3D,  }\item[{}]{coreref,  }\item[{}]{ligand,  }\item[{}]{lig3D,  }\item[{}]{catoms,  }\item[{}]{M\+Lb,  }\item[{}]{A\+N\+N\+\_\+flag,  }\item[{}]{A\+N\+N\+\_\+bondl,  }\item[{}]{this\+\_\+diag,  }\item[{}]{M\+Lbonds,  }\item[{}]{M\+Loptbds,  }\item[{}]{frozenats,  }\item[{}]{i }\end{DoxyParamCaption})}
+
+
+
+Aligns a bidentate ligand to core connecting atom coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em cpoint} & atom3D containing backbone connecting point \\
+\hline
+{\em batoms} & List of backbone atom indices \\
+\hline
+{\em m3D} & mol3D of backbone template \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+{\em coreref} & atom3D of core reference atom \\
+\hline
+{\em ligand} & Name of ligand for dictionary lookup \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+{\em M\+Lb} & Custom M-\/L bond length (if any) \\
+\hline
+{\em A\+N\+N\+\_\+flag} & Flag for A\+NN activation \\
+\hline
+{\em A\+N\+N\+\_\+bondl} & A\+N\+N-\/predicted M-\/L bond length \\
+\hline
+{\em this\+\_\+diag} & A\+NN diagnostic object \\
+\hline
+{\em M\+Lbonds} & M-\/L bond dictionary \\
+\hline
+{\em M\+Loptbds} & List of final M-\/L bond lengths \\
+\hline
+{\em frozenats} & Atoms frozen in FF optimization \\
+\hline
+{\em i} & Ligand serial number \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of aligned ligand, updated lists of frozen atoms and M-\/L bond lengths 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a4de00a1cf6de4864f75bdf73db1f499a}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a4de00a1cf6de4864f75bdf73db1f499a}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!align\+\_\+lig\+\_\+centersym@{align\+\_\+lig\+\_\+centersym}}
+\index{align\+\_\+lig\+\_\+centersym@{align\+\_\+lig\+\_\+centersym}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{align\+\_\+lig\+\_\+centersym()}{align\_lig\_centersym()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+lig\+\_\+centersym (\begin{DoxyParamCaption}\item[{}]{corerefcoords,  }\item[{}]{lig3D,  }\item[{}]{atom0,  }\item[{}]{core3D,  }\item[{}]{Enable\+Auto\+Linear\+Bend }\end{DoxyParamCaption})}
+
+
+
+Aligns a ligand\textquotesingle{}s center of symmetry along the metal-\/connecting atom axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em corerefcoords} & Core reference coordinates \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+{\em Enable\+Auto\+Linear\+Bend} & Flag for enabling automatic bending of linear ligands (e.\+g. superoxo) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of aligned ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_aed95f3baf72816668130eceae3c8b227}\label{namespacemolSimplify_1_1Scripts_1_1structgen_aed95f3baf72816668130eceae3c8b227}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!align\+\_\+linear\+\_\+pi\+\_\+lig@{align\+\_\+linear\+\_\+pi\+\_\+lig}}
+\index{align\+\_\+linear\+\_\+pi\+\_\+lig@{align\+\_\+linear\+\_\+pi\+\_\+lig}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{align\+\_\+linear\+\_\+pi\+\_\+lig()}{align\_linear\_pi\_lig()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+linear\+\_\+pi\+\_\+lig (\begin{DoxyParamCaption}\item[{}]{corerefcoords,  }\item[{}]{lig3D,  }\item[{}]{atom0,  }\item[{}]{ligpiatoms }\end{DoxyParamCaption})}
+
+
+
+Aligns a linear pi ligand\textquotesingle{}s connecting point to the metal-\/ligand axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em corerefcoords} & Core reference coordinates \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+{\em ligpiatoms} & List of ligand pi-\/connecting atom indices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of aligned ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ab5c4d52d92fc35bced000f207abd08cf}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ab5c4d52d92fc35bced000f207abd08cf}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!check\+\_\+rotate\+\_\+linear\+\_\+lig@{check\+\_\+rotate\+\_\+linear\+\_\+lig}}
+\index{check\+\_\+rotate\+\_\+linear\+\_\+lig@{check\+\_\+rotate\+\_\+linear\+\_\+lig}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{check\+\_\+rotate\+\_\+linear\+\_\+lig()}{check\_rotate\_linear\_lig()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+check\+\_\+rotate\+\_\+linear\+\_\+lig (\begin{DoxyParamCaption}\item[{}]{corerefcoords,  }\item[{}]{lig3D,  }\item[{}]{atom0 }\end{DoxyParamCaption})}
+
+
+
+Checks if ligand has a linear coordination environment (e.\+g., O\+CO) and ensures perpendicularity to M-\/L axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em corerefcoords} & Core reference coordinates \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a7a42738de45a860a1c6d28922d008136}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a7a42738de45a860a1c6d28922d008136}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!check\+\_\+rotate\+\_\+symm\+\_\+lig@{check\+\_\+rotate\+\_\+symm\+\_\+lig}}
+\index{check\+\_\+rotate\+\_\+symm\+\_\+lig@{check\+\_\+rotate\+\_\+symm\+\_\+lig}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{check\+\_\+rotate\+\_\+symm\+\_\+lig()}{check\_rotate\_symm\_lig()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+check\+\_\+rotate\+\_\+symm\+\_\+lig (\begin{DoxyParamCaption}\item[{}]{corerefcoords,  }\item[{}]{lig3D,  }\item[{}]{atom0,  }\item[{}]{core3D }\end{DoxyParamCaption})}
+
+
+
+Checks if ligand has is symmetric about connecting atom (center of symmetry coincides with connecting atom) and minimizes clashes with rest of complex. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em corerefcoords} & Core reference coordinates \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a4f54c3884321f27f7791785de3a348d1}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a4f54c3884321f27f7791785de3a348d1}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!distortbackbone@{distortbackbone}}
+\index{distortbackbone@{distortbackbone}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{distortbackbone()}{distortbackbone()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+distortbackbone (\begin{DoxyParamCaption}\item[{}]{backb,  }\item[{}]{distort }\end{DoxyParamCaption})}
+
+
+
+Randomly distorts backbone. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em backb} & List with points comprising the backbone \\
+\hline
+{\em distort} & \% distortion of the backbone \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of distorted backbone points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a1c48077780530e1f82a2048b3e4e47e2}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a1c48077780530e1f82a2048b3e4e47e2}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!ffopt@{ffopt}}
+\index{ffopt@{ffopt}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{ffopt()}{ffopt()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+ffopt (\begin{DoxyParamCaption}\item[{}]{ff,  }\item[{}]{mol,  }\item[{}]{connected,  }\item[{}]{constopt,  }\item[{}]{frozenats,  }\item[{}]{frozenangles,  }\item[{}]{mlbonds,  }\item[{}]{nsteps,  }\item[{}]{debug = {\ttfamily False} }\end{DoxyParamCaption})}
+
+
+
+Main constrained FF opt routine. 
+
+To optimize metal-\/containing complexes with M\+M\+F\+F94, an intricate procedure of masking the metal atoms and manually editing their valences is applied.
+
+Open\+Babel\textquotesingle{}s implementation of M\+M\+F\+F94 may run extremely slowly on some systems. If so, consider switching to U\+FF.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ff} & Force field to use, available M\+M\+F\+F94, U\+FF, Ghemical, G\+A\+FF \\
+\hline
+{\em mol} & mol3D of molecule to be optimized \\
+\hline
+{\em connected} & List of indices of connection atoms to metal \\
+\hline
+{\em constopt} & Flag for constrained optimization -\/ 0\+: unconstrained, 1\+: fixed connecting atom positions, 2\+: fixed connecting atom distances \\
+\hline
+{\em frozenats} & List of frozen atom indices \\
+\hline
+{\em frozenangles} & Flag for frozen angles, equivalent to constopt==1 \\
+\hline
+{\em mlbonds} & List of M-\/L bonds for distance constraints \\
+\hline
+{\em nsteps} & Number of steps to take -\/ Adaptive\+: run only enough steps to remove clashes, default 200 \\
+\hline
+{\em debug} & Flag for debug info printing \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+F\+F-\/calculated energy, mol3D of optimized molecule 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ae544f12f83f1b924270e798011a4dfc3}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ae544f12f83f1b924270e798011a4dfc3}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!find\+\_\+rotate\+\_\+rotatable\+\_\+bond@{find\+\_\+rotate\+\_\+rotatable\+\_\+bond}}
+\index{find\+\_\+rotate\+\_\+rotatable\+\_\+bond@{find\+\_\+rotate\+\_\+rotatable\+\_\+bond}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{find\+\_\+rotate\+\_\+rotatable\+\_\+bond()}{find\_rotate\_rotatable\_bond()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+find\+\_\+rotate\+\_\+rotatable\+\_\+bond (\begin{DoxyParamCaption}\item[{}]{lig3D,  }\item[{}]{catoms }\end{DoxyParamCaption})}
+
+
+
+Finds and rotates a rotatable bond in a bidentate ligand to obtain cis conformer. 
+
+For certain ligands (e.\+g., N\+C\+CN) this is a more efficient version of the generic distance geometry conformer search.
+
+
+\begin{DoxyParams}{Parameters}
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_aee6e54250dad5568a77b82c86c1b94eb}\label{namespacemolSimplify_1_1Scripts_1_1structgen_aee6e54250dad5568a77b82c86c1b94eb}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!findsmarts@{findsmarts}}
+\index{findsmarts@{findsmarts}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{findsmarts()}{findsmarts()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+findsmarts (\begin{DoxyParamCaption}\item[{}]{lig3D,  }\item[{}]{smarts,  }\item[{}]{catom }\end{DoxyParamCaption})}
+
+
+
+Checks if connecting atom of lig3D is part of S\+M\+A\+R\+TS pattern. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em lig3D} & O\+B\+Mol of mol3D \\
+\hline
+{\em smarts} & List of S\+M\+A\+R\+TS patterns (strings) \\
+\hline
+{\em catom} & Connecting atom of lig3D (zero based numbering) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+S\+M\+A\+R\+TS match flag 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ad738c67fce6cc4b42b66d20282aa0b17}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ad738c67fce6cc4b42b66d20282aa0b17}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!get\+\_\+batoms@{get\+\_\+batoms}}
+\index{get\+\_\+batoms@{get\+\_\+batoms}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{get\+\_\+batoms()}{get\_batoms()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+get\+\_\+batoms (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{batslist,  }\item[{}]{ligsused }\end{DoxyParamCaption})}
+
+
+
+Get backbone atoms from template. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em batslist} & List of backbone connecting atoms for each ligand \\
+\hline
+{\em ligsused} & Number of ligands placed \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Backbone connecting atoms for ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_aa5c9d690144b1d971dbca6f8ec29ef6f}\label{namespacemolSimplify_1_1Scripts_1_1structgen_aa5c9d690144b1d971dbca6f8ec29ef6f}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!get\+\_\+\+M\+Ldist@{get\+\_\+\+M\+Ldist}}
+\index{get\+\_\+\+M\+Ldist@{get\+\_\+\+M\+Ldist}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{get\+\_\+\+M\+Ldist()}{get\_MLdist()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+get\+\_\+\+M\+Ldist (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{lig3D,  }\item[{}]{atom0,  }\item[{}]{ligand,  }\item[{}]{metal,  }\item[{}]{M\+Lb,  }\item[{}]{i,  }\item[{}]{A\+N\+N\+\_\+flag,  }\item[{}]{A\+N\+N\+\_\+bondl,  }\item[{}]{this\+\_\+diag,  }\item[{}]{M\+Lbonds }\end{DoxyParamCaption})}
+
+
+
+Gets target M-\/L distance from desired source (custom, sum cov rad or A\+NN) Aligns a monodentate ligand to core connecting atom coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+{\em ligand} & Name of ligand for dictionary lookup \\
+\hline
+{\em metal} & atom3D of atom 1 (usually a metal) \\
+\hline
+{\em M\+Lb} & Custom M-\/L bond length (if any) \\
+\hline
+{\em i} & Ligand serial number \\
+\hline
+{\em A\+N\+N\+\_\+flag} & Flag for A\+NN activation \\
+\hline
+{\em A\+N\+N\+\_\+bondl} & A\+N\+N-\/predicted M-\/L bond length \\
+\hline
+{\em this\+\_\+diag} & A\+NN diagnostic object \\
+\hline
+{\em M\+Lbonds} & M-\/L bond dictionary \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M-\/L bond length in Angstroms 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a465ae4df8d02b58855091e9f98d2c2a9}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a465ae4df8d02b58855091e9f98d2c2a9}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!get\+\_\+\+M\+Ldist\+\_\+database@{get\+\_\+\+M\+Ldist\+\_\+database}}
+\index{get\+\_\+\+M\+Ldist\+\_\+database@{get\+\_\+\+M\+Ldist\+\_\+database}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{get\+\_\+\+M\+Ldist\+\_\+database()}{get\_MLdist\_database()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+get\+\_\+\+M\+Ldist\+\_\+database (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{metal,  }\item[{}]{lig3D,  }\item[{}]{atom0,  }\item[{}]{ligand,  }\item[{}]{M\+Lbonds }\end{DoxyParamCaption})}
+
+
+
+Loads M-\/L bond length from database and reports if compound is in DB. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em metal} & atom3D of atom 1 (usually a metal) \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+{\em ligand} & Name of ligand \\
+\hline
+{\em M\+Lbonds} & M-\/L dictionary \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Bond length in Angstroms, flag for exact DB match 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_aeab6e4135b3aea86dfde6a2d8b81069a}\label{namespacemolSimplify_1_1Scripts_1_1structgen_aeab6e4135b3aea86dfde6a2d8b81069a}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!getbackbcombsall@{getbackbcombsall}}
+\index{getbackbcombsall@{getbackbcombsall}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{getbackbcombsall()}{getbackbcombsall()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+getbackbcombsall (\begin{DoxyParamCaption}\item[{}]{nums }\end{DoxyParamCaption})}
+
+
+
+Gets all possible combinations for connection atoms in geometry in the case of forced order or unknown geometry. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em nums} & List of connection atoms \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of possible backbone atom combinations 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ad6bd8da07746ef83a1374c1776786c60}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ad6bd8da07746ef83a1374c1776786c60}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!getconnection@{getconnection}}
+\index{getconnection@{getconnection}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{getconnection()}{getconnection()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+getconnection (\begin{DoxyParamCaption}\item[{}]{core,  }\item[{}]{cidx,  }\item[{}]{BL }\end{DoxyParamCaption})}
+
+
+
+Finds the optimum attachment point for an atom/group to a central atom given the desired bond length. 
+
+Objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom 
+\begin{DoxyParams}{Parameters}
+{\em core} & mol3D of core \\
+\hline
+{\em cidx} & Core connecting atom index \\
+\hline
+{\em BL} & Optimal core-\/ligand bond length \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Coordinates of optimum attachment point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_aa4efa4ec6b344b172d90a999b7a81ac7}\label{namespacemolSimplify_1_1Scripts_1_1structgen_aa4efa4ec6b344b172d90a999b7a81ac7}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!getnupdateb@{getnupdateb}}
+\index{getnupdateb@{getnupdateb}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{getnupdateb()}{getnupdateb()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+getnupdateb (\begin{DoxyParamCaption}\item[{}]{backbatoms,  }\item[{}]{denticity }\end{DoxyParamCaption})}
+
+
+
+Gets a combination of backbone points that satisfies denticity and updates possible combinations. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em backbatoms} & List of possible backbone atom combinations \\
+\hline
+{\em denticity} & Required denticity \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Selected combination, updated list of possible backbone atom combinations 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ad59becac42b9cc602dfb5ed08452922b}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ad59becac42b9cc602dfb5ed08452922b}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!getsmident@{getsmident}}
+\index{getsmident@{getsmident}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{getsmident()}{getsmident()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+getsmident (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{indsmi }\end{DoxyParamCaption})}
+
+
+
+Gets denticity of smiles string. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em indsmi} & Index of S\+M\+I\+L\+ES string ligand \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Denticity of S\+M\+I\+L\+ES ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a58eaeb979acdfe86a20f086609495725}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a58eaeb979acdfe86a20f086609495725}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!getsmilescat@{getsmilescat}}
+\index{getsmilescat@{getsmilescat}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{getsmilescat()}{getsmilescat()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+getsmilescat (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{indsmi }\end{DoxyParamCaption})}
+
+
+
+Gets connection atoms of S\+M\+I\+L\+ES string ligand. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em indsmi} & Index of S\+M\+I\+L\+ES string ligand \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of connection atoms 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a0143758ce0284cc6b662a5ac5f39818b}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a0143758ce0284cc6b662a5ac5f39818b}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!init\+\_\+\+A\+NN@{init\+\_\+\+A\+NN}}
+\index{init\+\_\+\+A\+NN@{init\+\_\+\+A\+NN}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{init\+\_\+\+A\+N\+N()}{init\_ANN()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+\+A\+NN (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{ligands,  }\item[{}]{occs,  }\item[{}]{dents,  }\item[{}]{batslist,  }\item[{}]{tcats,  }\item[{}]{licores }\end{DoxyParamCaption})}
+
+
+
+Initializes A\+NN. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em ligands} & List of ligands \\
+\hline
+{\em occs} & List of ligand occupations \\
+\hline
+{\em dents} & List of ligand denticities \\
+\hline
+{\em batslist} & Backbone points list \\
+\hline
+{\em tcats} & List of ligand connecting atoms \\
+\hline
+{\em licores} & Ligand dictionary \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A\+NN flag, predicted BL and other attributes 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a3687ca508aa4390f1964ead5ce0411db}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a3687ca508aa4390f1964ead5ce0411db}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!init\+\_\+ligand@{init\+\_\+ligand}}
+\index{init\+\_\+ligand@{init\+\_\+ligand}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{init\+\_\+ligand()}{init\_ligand()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+ligand (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{lig,  }\item[{}]{tcats,  }\item[{}]{keep\+Hs,  }\item[{}]{i }\end{DoxyParamCaption})}
+
+
+
+Initializes ligand 3D geometry and properties. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em lig} & Name of ligand \\
+\hline
+{\em tcats} & List of ligand connecting atoms \\
+\hline
+{\em keep\+Hs} & flag for keeping H atoms on connecting atoms \\
+\hline
+{\em i} & Ligand index \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of ligand, flag for pi-\/coordination, pi-\/coordinating atoms 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a2c5ec4647f80764e3e8526df7662a524}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a2c5ec4647f80764e3e8526df7662a524}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!init\+\_\+template@{init\+\_\+template}}
+\index{init\+\_\+template@{init\+\_\+template}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{init\+\_\+template()}{init\_template()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+template (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{cpoints\+\_\+required }\end{DoxyParamCaption})}
+
+
+
+Initializes core and template mol3\+Ds and properties. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em cpoints\+\_\+required} & Number of connecting points required \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of core, template, geometry, backbone atoms, coordination number, core reference atom index 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a343f959db73f414f9f717d2a7f2ab18c}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a343f959db73f414f9f717d2a7f2ab18c}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!mcomplex@{mcomplex}}
+\index{mcomplex@{mcomplex}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{mcomplex()}{mcomplex()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+mcomplex (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{ligs,  }\item[{}]{ligoc,  }\item[{}]{licores,  }\item[{}]{globs }\end{DoxyParamCaption})}
+
+
+
+Main ligand placement routine. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em ligs} & List of ligands \\
+\hline
+{\em ligoc} & List of ligand occupations \\
+\hline
+{\em licores} & Ligand dictionary \\
+\hline
+{\em globs} & Global variables \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of built complex, list of all mol3D ligands and core, error messages 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a54f5af396e8da068c110f90043ba9621}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a54f5af396e8da068c110f90043ba9621}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!modifybackbonep@{modifybackbonep}}
+\index{modifybackbonep@{modifybackbonep}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{modifybackbonep()}{modifybackbonep()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+modifybackbonep (\begin{DoxyParamCaption}\item[{}]{backb,  }\item[{}]{pangles }\end{DoxyParamCaption})}
+
+
+
+Distorts backbone according to user specified angles. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em backb} & List with points comprising the backbone \\
+\hline
+{\em pangles} & Pairs of theta/phi angles in D\+E\+G\+R\+E\+ES \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of distorted backbone points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a9c4c45a6c8757db294e57137c875b848}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a9c4c45a6c8757db294e57137c875b848}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs@{rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs}}
+\index{rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs@{rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs()}{rotate\_catom\_fix\_Hs()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs (\begin{DoxyParamCaption}\item[{}]{lig3D,  }\item[{}]{catoms,  }\item[{}]{n,  }\item[{}]{mcoords,  }\item[{}]{core3D }\end{DoxyParamCaption})}
+
+
+
+Rotates a connecting atom of a multidentate ligand to improve H atom placement. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+{\em n} & Index of connecting atom \\
+\hline
+{\em mcoords} & Core reference (usually a metal) coordintes \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_acef75ef9f8bfc225c6b2bd327c3a2bed}\label{namespacemolSimplify_1_1Scripts_1_1structgen_acef75ef9f8bfc225c6b2bd327c3a2bed}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs@{rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs}}
+\index{rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs@{rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs()}{rotate\_catoms\_fix\_Hs()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+rotate\+\_\+catoms\+\_\+fix\+\_\+\+Hs (\begin{DoxyParamCaption}\item[{}]{lig3D,  }\item[{}]{catoms,  }\item[{}]{mcoords,  }\item[{}]{core3D }\end{DoxyParamCaption})}
+
+
+
+Rotates connecting atoms of multidentate ligands to improve H atom placement. 
+
+Loops over \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a9c4c45a6c8757db294e57137c875b848}{rotate\+\_\+catom\+\_\+fix\+\_\+\+Hs()}. 
+\begin{DoxyParams}{Parameters}
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em catoms} & List of ligand connecting atom indices \\
+\hline
+{\em mcoords} & Core reference (usually a metal) coordintes \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_aed8e7b09083ade40bbfd8001f18bd0a2}\label{namespacemolSimplify_1_1Scripts_1_1structgen_aed8e7b09083ade40bbfd8001f18bd0a2}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric@{rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric}}
+\index{rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric@{rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric()}{rotate\_MLaxis\_minimize\_steric()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+rotate\+\_\+\+M\+Laxis\+\_\+minimize\+\_\+steric (\begin{DoxyParamCaption}\item[{}]{corerefcoords,  }\item[{}]{lig3D,  }\item[{}]{atom0,  }\item[{}]{core3D }\end{DoxyParamCaption})}
+
+
+
+Rotates aligned ligand about M-\/L axis to minimize steric clashes with rest of complex. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em corerefcoords} & Core reference coordinates \\
+\hline
+{\em lig3D} & mol3D of ligand \\
+\hline
+{\em atom0} & Ligand connecting atom index \\
+\hline
+{\em core3D} & mol3D of partially built complex \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of rotated ligand 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a5913017e9413ea0a08b21faa12d34600}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a5913017e9413ea0a08b21faa12d34600}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!setdiff@{setdiff}}
+\index{setdiff@{setdiff}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{setdiff()}{setdiff()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+setdiff (\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})}
+
+
+
+Gets the elements in set a that are not in set b. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em a} & List with elements \\
+\hline
+{\em b} & List with elements \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of elements in a that are not in b 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_ace8c0eaa680157fc0242697a53a847a8}\label{namespacemolSimplify_1_1Scripts_1_1structgen_ace8c0eaa680157fc0242697a53a847a8}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!smartreorderligs@{smartreorderligs}}
+\index{smartreorderligs@{smartreorderligs}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{smartreorderligs()}{smartreorderligs()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+smartreorderligs (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{ligs,  }\item[{}]{dentl,  }\item[{}]{licores }\end{DoxyParamCaption})}
+
+
+
+Smart reorder ligands by denticity (-\/ligalign True) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em ligs} & List of ligands \\
+\hline
+{\em dentl} & List of ligand denticities \\
+\hline
+{\em licores} & Ligand dictionary return Reordered ligand indices \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a88cde12602c0445fff9fe6921415aad4}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a88cde12602c0445fff9fe6921415aad4}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!structgen@{structgen}}
+\index{structgen@{structgen}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{structgen()}{structgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+structgen.\+structgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{rootdir,  }\item[{}]{ligands,  }\item[{}]{ligoc,  }\item[{}]{globs,  }\item[{}]{sernum }\end{DoxyParamCaption})}
+
+
+
+Main structure generation routine. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em rootdir} & Directory of current run \\
+\hline
+{\em ligands} & List of ligands \\
+\hline
+{\em ligoc} & List of ligand occupations \\
+\hline
+{\em globs} & Global variables \\
+\hline
+{\em sernum} & Serial number of complex for naming \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of xyz files generated, error messages 
+\end{DoxyReturn}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1structgen_a2ef014c1f2b0eae8ccc7784c704bdfd9}\label{namespacemolSimplify_1_1Scripts_1_1structgen_a2ef014c1f2b0eae8ccc7784c704bdfd9}} 
+\index{mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}!all@{all}}
+\index{all@{all}!mol\+Simplify\+::\+Scripts\+::structgen@{mol\+Simplify\+::\+Scripts\+::structgen}}
+\subsubsection{\texorpdfstring{all}{all}}
+{\footnotesize\ttfamily mol\+Simplify.\+Scripts.\+structgen.\+all}
+
