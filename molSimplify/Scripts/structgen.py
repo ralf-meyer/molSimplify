@@ -247,6 +247,8 @@ def init_template(args,cpoints_required):
                     corerefatoms.addAtom(conatom3D)
                     #corerefatoms.append(atclose)
                     delatoms = mindelats
+                    # add connecting points to template
+                    m3D.addAtom(atom3D(Sym='X',xyz=cpoint))
                     # for multidentate ligands: if a submolecule contains multiple ccatoms, add all of them to the template
                     for atomidx in delatoms:
                         if atomidx in ccatoms[i+1:]:
@@ -262,8 +264,7 @@ def init_template(args,cpoints_required):
                     # delete submolecule        
                     core3D.deleteatoms(delatoms)
                     m3D.deleteatoms(delatoms)
-                    # add connecting points to template
-                    m3D.addAtom(atom3D(Sym='X',xyz=cpoint))
+
                 except IndexError:
                     pass        
             nums = m3D.findAtomsbySymbol('X')
