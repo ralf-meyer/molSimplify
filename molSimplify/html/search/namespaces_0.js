@@ -14,7 +14,7 @@ var searchData=
   ['decoration_5fmanager',['decoration_manager',['../namespacemolSimplify_1_1Informatics_1_1decoration__manager.html',1,'molSimplify::Informatics']]],
   ['dft_5fobs',['dft_obs',['../namespacemolSimplify_1_1Classes_1_1dft__obs.html',1,'molSimplify::Classes']]],
   ['dictionary_5ftoolbox',['dictionary_toolbox',['../namespacemolSimplify_1_1python__nn_1_1dictionary__toolbox.html',1,'molSimplify::python_nn']]],
-  ['distgeom',['distgeom',['../namespacemolSimplify_1_1distgeom.html',1,'molSimplify']]],
+  ['distgeom',['distgeom',['../namespacemolSimplify_1_1Scripts_1_1distgeom.html',1,'molSimplify::Scripts']]],
   ['findcorrelations',['findcorrelations',['../namespacemolSimplify_1_1Scripts_1_1findcorrelations.html',1,'molSimplify::Scripts']]],
   ['generator',['generator',['../namespacemolSimplify_1_1Scripts_1_1generator.html',1,'molSimplify::Scripts']]],
   ['geo_5fanalyze',['geo_analyze',['../namespacemolSimplify_1_1Informatics_1_1geo__analyze.html',1,'molSimplify::Informatics']]],

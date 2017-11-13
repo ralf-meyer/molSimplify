@@ -1,7 +1,7 @@
 var searchData=
 [
   ['sanitycheck',['sanitycheck',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#af79c7b686fca67c122bb1e0507f845a6',1,'molSimplify::Classes::mol3D::mol3D']]],
-  ['saveconf',['SaveConf',['../namespacemolSimplify_1_1distgeom.html#a10453db24bcddc639b204904f395b0be',1,'molSimplify::distgeom']]],
+  ['saveconf',['SaveConf',['../namespacemolSimplify_1_1Scripts_1_1distgeom.html#a2930b926314c9aca7d5a27808147eb03',1,'molSimplify::Scripts::distgeom']]],
   ['searchdbw',['searchDBW',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a3e26f5921315eb26fb15784d35777abc',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['set_5fann',['set_ANN',['../classmolSimplify_1_1Classes_1_1rundiag_1_1run__diag.html#a065d2729214e5d3af49f9435a585cb11',1,'molSimplify::Classes::rundiag::run_diag']]],
   ['set_5fdict_5fbl',['set_dict_bl',['../classmolSimplify_1_1Classes_1_1rundiag_1_1run__diag.html#aafd5fdd0e5de8e0d1caf2de4ee328599',1,'molSimplify::Classes::rundiag::run_diag']]],

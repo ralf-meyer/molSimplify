@@ -57,7 +57,7 @@ var searchData=
   ['distance_5f2d_5ftorus_5fnext_5fonly',['distance_2d_torus_next_only',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#ad2d18e2318556932990c9262691c1d91',1,'molSimplify::Scripts::cellbuilder_tools']]],
   ['distance_5fzw',['distance_zw',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#ab9c8e3fbb8626a035c3b4d7b64f13e57',1,'molSimplify::Scripts::cellbuilder_tools']]],
   ['distancev',['distancev',['../classmolSimplify_1_1Classes_1_1atom3D_1_1atom3D.html#a32e06fac98f2835db82a3a265495481f',1,'molSimplify::Classes::atom3D::atom3D']]],
-  ['disterr',['DistErr',['../namespacemolSimplify_1_1distgeom.html#a9393f464d0cdef4e6ad87bcc895767d2',1,'molSimplify::distgeom']]],
+  ['disterr',['DistErr',['../namespacemolSimplify_1_1Scripts_1_1distgeom.html#ac30129928233e408ea43718d61a583c1',1,'molSimplify::Scripts::distgeom']]],
   ['distgeom_2epy',['distgeom.py',['../distgeom_8py.html',1,'']]],
   ['distortbackbone',['distortbackbone',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#a4f54c3884321f27f7791785de3a348d1',1,'molSimplify::Scripts::structgen']]],
   ['distper',['distper',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a40448c41f93073c42c1205d22f712bfa',1,'molSimplify::Classes::mGUI::mGUI']]],

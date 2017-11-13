@@ -5,7 +5,7 @@ var searchData=
   ['sanity_5fis_5fset',['sanity_is_set',['../classmolSimplify_1_1Classes_1_1rundiag_1_1run__diag.html#a589e3d95a6d3b459b9d691f1489710ef',1,'molSimplify::Classes::rundiag::run_diag']]],
   ['sanitycheck',['sanitycheck',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#af79c7b686fca67c122bb1e0507f845a6',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['saveaction',['saveAction',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#ae3efab33323abd42c4e34bbbf53ca3c7',1,'molSimplify::Classes::mGUI::mGUI']]],
-  ['saveconf',['SaveConf',['../namespacemolSimplify_1_1distgeom.html#a10453db24bcddc639b204904f395b0be',1,'molSimplify::distgeom']]],
+  ['saveconf',['SaveConf',['../namespacemolSimplify_1_1Scripts_1_1distgeom.html#a2930b926314c9aca7d5a27808147eb03',1,'molSimplify::Scripts::distgeom']]],
   ['scheduler',['scheduler',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a611c7cb0b074607db768b74f38ddaa33',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['sdist',['sdist',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a3a7433f6e52eb96f1023964b422da554',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['searchdb',['searchDB',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#aa285f01a77a2661d61c925cafd4c4e30',1,'molSimplify::Classes::mGUI::mGUI']]],

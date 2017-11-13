@@ -48,7 +48,7 @@ var searchData=
   ['copymol3d',['copymol3D',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a09b722d1243e562169a88a591812a2ed',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['core_5fload',['core_load',['../namespacemolSimplify_1_1Scripts_1_1io.html#a0eec4377fe71927746ad97bbdc8d2d34',1,'molSimplify::Scripts::io']]],
   ['correlation_5fsupervisor',['correlation_supervisor',['../namespacemolSimplify_1_1Scripts_1_1findcorrelations.html#a395f925222c2a91bf7e19df5cff8850e',1,'molSimplify::Scripts::findcorrelations']]],
-  ['cosrule',['CosRule',['../namespacemolSimplify_1_1distgeom.html#a4acf9d8d49cd4e59048bfd34a8ca694f',1,'molSimplify::distgeom']]],
+  ['cosrule',['CosRule',['../namespacemolSimplify_1_1Scripts_1_1distgeom.html#a755cf7c0dbe32d75e3aa2c43ce1b8093',1,'molSimplify::Scripts::distgeom']]],
   ['countersubset',['counterSubset',['../namespacemolSimplify_1_1Scripts_1_1rungen.html#af46815168bcc1608e7a0ba3eb472e565',1,'molSimplify::Scripts::rungen']]],
   ['create_5fcolumb_5fmatrix',['create_columb_matrix',['../namespacemolSimplify_1_1Informatics_1_1coulomb__analyze.html#a349112f635d910243066420a87f9b54b',1,'molSimplify::Informatics::coulomb_analyze']]],
   ['create_5fgraph',['create_graph',['../namespacemolSimplify_1_1Informatics_1_1graph__analyze.html#a0d46f8d11eb44ac8146cd744e540260a',1,'molSimplify::Informatics::graph_analyze']]],

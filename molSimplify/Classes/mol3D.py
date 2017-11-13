@@ -265,6 +265,7 @@ class mol3D:
         self.denticity = mol0.denticity
         self.ident = mol0.ident
         self.ffopt = mol0.ffopt
+        self.OBMol = mol0.OBMol
         
     ## Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
@@ -606,7 +607,6 @@ class mol3D:
                         print(' at distance ' + str(d) + ' (which would normally be less than ' + str(distance_max) + ')')
                     if d<2 and not atom.symbol() == 'H' and not ratom.symbol() == 'H':
                         print('Error, mol3D could not understand conenctivity in mol' )
-                        os.exit()
         return nats
         
         

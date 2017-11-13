@@ -13,7 +13,7 @@ var searchData=
   ['metal_5fonly_5fautocorrelation',['metal_only_autocorrelation',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a00dcb307fecc150201228d5f2792d197',1,'molSimplify::Informatics::autocorrelation']]],
   ['metal_5fonly_5fdeltametric',['metal_only_deltametric',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a1ccea3bccb1bd9899e511bc271891170',1,'molSimplify::Informatics::autocorrelation']]],
   ['metals',['metals',['../classmolSimplify_1_1Classes_1_1globalvars_1_1globalvars.html#a673cd53d924bdfef605d520b8c2ab3a8',1,'molSimplify::Classes::globalvars::globalvars']]],
-  ['metrize',['Metrize',['../namespacemolSimplify_1_1distgeom.html#aeea656ddbab4cd45d9229cf937cc5166',1,'molSimplify::distgeom']]],
+  ['metrize',['Metrize',['../namespacemolSimplify_1_1Scripts_1_1distgeom.html#ad4130e9756e5c59f610fa85188697e88',1,'molSimplify::Scripts::distgeom']]],
   ['midpt',['midpt',['../namespacemolSimplify_1_1Scripts_1_1geometry.html#a05a77dc1d71d199b47473f48f992b101',1,'molSimplify::Scripts::geometry']]],
   ['mindist',['mindist',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#ab051fea5908eab8ddcd39d4ea4688657',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['mindistmol',['mindistmol',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#abc383cd8e5f7a2963b5b220fe5f23c02',1,'molSimplify::Classes::mol3D::mol3D']]],

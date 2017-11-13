@@ -26,7 +26,6 @@ var searchData=
   ['clogo',['clogo',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a6893e6dddb84445671e0e42f3859df04',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['comments',['comments',['../classmolSimplify_1_1Classes_1_1dft__obs_1_1dft__observation.html#a066e80e95ba60d9c47f429a2cfb80cc6',1,'molSimplify::Classes::dft_obs::dft_observation']]],
   ['completer',['completer',['../classmolSimplify_1_1Classes_1_1mWidgets_1_1mQLineEditL.html#a957e9facab3d5870125767a2de4993ec',1,'molSimplify::Classes::mWidgets::mQLineEditL']]],
-  ['conf3d',['conf3D',['../namespacemolSimplify_1_1distgeom.html#a635b102e04affd33a6b7c8322c3efa6b',1,'molSimplify::distgeom']]],
   ['coor',['coor',['../classmolSimplify_1_1Classes_1_1dft__obs_1_1dft__observation.html#aad1241c6ecc3a8523e003a0932c7557f',1,'molSimplify::Classes::dft_obs::dft_observation']]],
   ['coord',['coord',['../classmolSimplify_1_1Classes_1_1dft__obs_1_1dft__observation.html#a27a15326c6736a859dff035435df69e9',1,'molSimplify::Classes::dft_obs::dft_observation']]],
   ['coords',['coords',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a08fe615c0bebb8859d34e8ea918e8aaf',1,'molSimplify::Classes::mGUI::mGUI']]],

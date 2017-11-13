@@ -32,11 +32,18 @@ def CosRule(AB,BC,theta):
     return AC
 
 ## Generate distance bounds matrices
+#  
+#  The basic idea is outlined in ref [1].
+#  
+#  We first apply 1-2 (bond length) and 1-3 (bond angle) constraints, read from the FF-optimized initial conformer.
+#  
+#  Next, to bias the search towards coordinating conformers, approximate connection atom distance constraints based on topological distances are also included.
 #  @param mol mol3D of molecule
 #  @param natoms Number of atoms in molecule
+#  @param catoms List of ligand connection atoms (default empty)
+#  @param A Distance 2 connectivity matrix
 #  @return Lower and upper bounds matrices
-def GetBoundsMatrices(mol,natoms):
-    # We use only 1-2 (bond lengths) and 1-3 (bond angles) constraints, read from the FF-optimized initial conformer.
+def GetBoundsMatrices(mol,natoms,catoms=[],A=[]):
     LB = np.zeros((natoms,natoms)) # lower bound
     UB = np.zeros((natoms,natoms)) # upper bound, both symmetric
     for i in range(natoms):
@@ -57,7 +64,29 @@ def GetBoundsMatrices(mol,natoms):
                     UB[i][k] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))
                     UB[k][i] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))      
                     LB[i][k] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))
-                    LB[k][i] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))                      
+                    LB[k][i] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))
+    # set cis 1-2 constraints for connecting atoms
+    for i,catom in enumerate(catoms[:-1]):
+        # exclude catoms with distance 2 or less e.g. NCN
+        if A[catoms[i],catoms[i+1]] == 0:
+	        UB[catoms[i]][catoms[i+1]] = 2.8
+	        UB[catoms[i+1]][catoms[i]] = 2.8
+	        LB[catoms[i]][catoms[i+1]] = 2.8
+	        LB[catoms[i+1]][catoms[i]] = 2.8
+    # set right-triangle 1-3 constraints for connecting atoms
+    if len(catoms) > 2:
+        for i,catom in enumerate(catoms[:-2]):
+	        UB[catoms[i]][catoms[i+2]] = 4.0
+	        UB[catoms[i+2]][catoms[i]] = 4.0        
+	        LB[catoms[i]][catoms[i+2]] = 4.0
+	        LB[catoms[i+2]][catoms[i]] = 4.0
+	# set planar 1-4 constraints for connecting atoms
+    if len(catoms) > 3:
+        for i,catom in enumerate(catoms[:-3]):
+	        UB[catoms[i]][catoms[i+3]] = 2.8
+	        UB[catoms[i+3]][catoms[i]] = 2.8        
+	        LB[catoms[i]][catoms[i+3]] = 2.8
+	        LB[catoms[i+3]][catoms[i]] = 2.8                              
     for i in range(natoms):
         for j in range(i):
             # fill LBs with sums of vdW radii and UBs with arbitrary large cutoff
@@ -65,7 +94,7 @@ def GetBoundsMatrices(mol,natoms):
                 LB[i][j] = vdwrad[mol.getAtom(i).sym] + vdwrad[mol.getAtom(j).sym]
                 LB[j][i] = vdwrad[mol.getAtom(i).sym] + vdwrad[mol.getAtom(j).sym]            
                 UB[i][j] = 100
-                UB[j][i] = 100   
+                UB[j][i] = 100              
     return LB,UB
 
 ## Triangle inequality bounds smoothing
@@ -78,7 +107,6 @@ def GetBoundsMatrices(mol,natoms):
 #  @param natoms Number of atoms in molecule
 #  @return Triangularized bounds matrices
 def Triangle(LB,UB,natoms):
-    # 
     LL = LB
     UL = UB
     for k in range(natoms):
@@ -104,8 +132,7 @@ def Triangle(LB,UB,natoms):
 #  @param natoms Number of atoms in molecule
 #  @param Full Full metrization (scales O(N^5), default false) 
 #  @return Distance matrix
-def Metrize(LB,UB,natoms,Full=True):
-
+def Metrize(LB,UB,natoms,Full=False):
     D = np.zeros((natoms,natoms))
     LB,UB = Triangle(LB,UB,natoms)
     for i in range(natoms-1):
@@ -121,26 +148,30 @@ def Metrize(LB,UB,natoms,Full=True):
 #  Copied from ref [2], pp. 309
 #  @param D Distance matrix
 #  @param natoms Number of atoms in molecule
-#  @return Vector of CM distances
+#  @return Vector of CM distances, flag for successful search
 def GetCMDists(D,natoms):
     D0 = np.zeros(natoms)
-    for i in range(natoms):
-        for j in range(natoms):
-            D0[i] += D[i][j]**2/natoms
-        for j in range(natoms):
-            for k in range(j,natoms):
-                D0[i] -= (D[j][k])**2/natoms**2
-        D0[i] = sqrt(D0[i])
-    return D0
+    try:
+        status = True
+        for i in range(natoms):
+            for j in range(natoms):
+                D0[i] += D[i][j]**2/natoms
+            for j in range(natoms):
+                for k in range(j,natoms):
+                    D0[i] -= (D[j][k])**2/natoms**2
+            D0[i] = sqrt(D0[i])
+    except ValueError:
+        status = False
+    return D0,status
 
-#  Get metric matrix from distance matrix and CM distances
+##  Get metric matrix from distance matrix and CM distances
 #  
 #  Copied from ref [1], pp. 306
 #  @param D Distance matrix
 #  @param D0 Vector of CM distances
+#  @param natoms Number of atoms in molecule
 #  @return Metric matrix
 def GetMetricMatrix(D,D0,natoms):
-
     G = np.zeros((natoms,natoms))
     for i in range(natoms):
         for j in range(natoms):
@@ -178,23 +209,34 @@ def DistErr(x,*args):
     return E
 
 ## Further cleans up with OB FF and saves to a new mol3D object
+#  
+#  Note that distance geometry tends to produce puckered aromatic rings because of the lack of explicit impropers, see Riniker et al. JCIM (2015) 55, 2562-74 for details.
+#  
+#  Hence, a FF optimization (with connection atoms constrained) is recommended to clean up the structure.
 #  @param X Array of coordinates
 #  @param mol mol3D of original molecule
 #  @param ffclean Flag for OB FF cleanup (default True)
+#  @param catoms List of connection atoms (default empty), used to generate FF constraints if specified
 #  @return mol3D of new conformer
-def SaveConf(X,mol,ffclean=True):
+def SaveConf(X,mol,ffclean=True,catoms=[]):
     mol3Dnew = mol3D()
     mol3Dnew.copymol3D(mol)
-    for i in range(mol3Dnew.natoms):
-        mol3Dnew.getAtom(i).setcoords(X[i,:])
-    mol3Dnew.convert2OBMol()
+    # set coordinates using OBMol to keep bonding info
+    OBMol = mol3Dnew.OBMol
+    for i,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+        atom.SetVector(X[i,0],X[i,1],X[i,2])
+    mol3Dnew.convert2mol3D()
+    # mol3Dnew.writexyz('noff')
     if ffclean:
-        OBMol = mol3Dnew.OBMol
         ff = openbabel.OBForceField.FindForceField('mmff94')
-        s = ff.Setup(OBMol)
+        constr = openbabel.OBFFConstraints()
+        # constrain connecting atoms
+        for catom in catoms:
+            constr.AddAtomConstraint(catom+1)
+        s = ff.Setup(OBMol,constr)
         if not s:
             print('FF setup failed')
-        for i in range(10):
+        for i in range(100):
             ff.SteepestDescent(10)
             ff.ConjugateGradients(10)
         ff.GetCoordinates(OBMol)
@@ -204,32 +246,41 @@ def SaveConf(X,mol,ffclean=True):
 
 ## Uses distance geometry to get a random conformer.
 #  @param mol mol3D of molecule
+#  @param catoms List of connection atoms (default empty), used to generate additional constraints if specified (see GetBoundsMatrices())
 #  @return mol3D of new conformer
-def GetConf(mol):
+def GetConf(mol,catoms=[]):
     natoms = mol.natoms
-    start = time.time()
-    LB,UB = GetBoundsMatrices(mol,natoms)
-    BM = time.time()
-    print('Bounds ',str(BM-start))
-    D = Metrize(LB,UB,natoms,Full=True)
-    Met = time.time()
-    print('Metrize ',str(Met-BM))
-    D0 = GetCMDists(D,natoms)
+    mol.createMolecularGraph()
+    A = mol.graph
+    A = A + np.dot(A,np.transpose(A))
+    #start = time.time()
+    LB,UB = GetBoundsMatrices(mol,natoms,catoms,A)
+    #BM = time.time()
+    #print('Bounds',str(BM-start))
+    status = False
+    while not status:
+	    D = Metrize(LB,UB,natoms,False)
+	    #Met = time.time()
+	    #print('Metrize',str(Met-BM))
+	    D0,status = GetCMDists(D,natoms)
     G = GetMetricMatrix(D,D0,natoms)
     L,V = Get3Eigs(G,natoms)
     X = np.dot(V,L) # get projection
     x = np.reshape(X,3*natoms)
-    res1 = optimize.fmin_cg(DistErr,x,gtol=0.1,args=(LB,UB,natoms))
-    Opt = time.time()
-    print('Optimize ',str(Opt-Met))
+    res1 = optimize.fmin_cg(DistErr,x,gtol=0.1,args=(LB,UB,natoms),disp=0)
+    #Opt = time.time()
+    #print('Optimize',str(Opt-Met))
     X = np.reshape(res1,(natoms,3))
-    conf3D = SaveConf(X,mol,ffclean=True)
-    ff = time.time()
-    print('FF '+str(ff-Opt))
+    conf3D = SaveConf(X,mol,True,catoms)
+    #ff = time.time()
+    #print('FF'+str(ff-Opt))
     return conf3D
-    
-mol = mol3D()
-mol.getOBMol('NCCCN','smistring',ffclean=True)
-mol.convert2mol3D()
-conf3D = GetConf(mol)
-print distance(conf3D.getAtom(0).coords(),conf3D.getAtom(4).coords())
+
+# for testing
+#mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
+#mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
+#catoms = [7,10,18,19]
+#catoms = [0,4,9,13]
+#mol.convert2mol3D()
+#conf = GetConf(mol,catoms)
+#conf.writexyz('conf')
