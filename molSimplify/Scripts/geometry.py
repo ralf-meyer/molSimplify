@@ -9,7 +9,7 @@
 
 import sys
 import copy
-from numpy import arccos, cross, dot, pi
+from numpy import arccos, cross, dot, pi, transpose
 from numpy import sin, cos, mat, array, arctan2
 from numpy.linalg import det, svd
 from math import pi ,sin, cos, sqrt
@@ -154,16 +154,14 @@ def rotation_params(r0,r1,r2):
 #  @param mol1 mol3D of reference molecule
 #  @return Aligned mol3D
 def kabsch(mol0,mol1):
-    # INPUT
-    #   - mol0: molecule to be aligned
-    #   - mol1: reference molecule
-    # OUTPUT
-    #   - mol0: aligned molecule
+    # translate to align centroids with origin
+    mol0 = setPdistance(mol0,mol0.centersym(),[0,0,0],0)
+    mol1 = setPdistance(mol1,mol1.centersym(),[0,0,0],0)    
     # get coordinates and matrices P,Q
     P, Q = [],[]
-    for atom0,atom1 in zip(mol0.GetAtoms(),mol1.GetAtoms()):
+    for atom0,atom1 in zip(mol0.getAtoms(),mol1.getAtoms()):
         P.append(atom0.coords())
-        Q.append(atom1,coords())
+        Q.append(atom1.coords())
     # Computation of the covariance matrix
     C = dot(transpose(P), Q)
     # Computation of the optimal rotation matrix
@@ -175,15 +173,15 @@ def kabsch(mol0,mol1):
     # see http://en.wikipedia.org/wiki/Kabsch_algorithm
     V, S, W = svd(C)
     d = (det(V) * det(W)) < 0.0
+    # Create Rotation matrix U
     if d:
         S[-1] = -S[-1]
-        V[:,-1] = -V[:,-1]
-    # Create Rotation matrix U
+        V[:, -1] = -V[:, -1]
     U = dot(V, W)
     # Rotate P
     P = dot(P, U)
     # write back coordinates
-    for i,atom in enumerate(mol0.GetAtoms()):
+    for i,atom in enumerate(mol0.getAtoms()):
         atom.setcoords(P[i])
     return mol0
     
@@ -428,12 +426,6 @@ def setPdistanceu(mol, Rr, Rp, bond, u):
 #  @param bond Final distance of aligned point to alignment point
 #  @return mol3D of translated molecule
 def setcmdistance(mol, Rp, bond):
-    # INPUT
-    #   - mol: molecule to be manipulated
-    #   - Rp: reference point [x,y,z]
-    #   - bond: final bond length between Rp, center of mass
-    # OUTPUT
-    #   - mol: translated molecule
     # get float bond length
     bl = float(bond)
     # get center of mass

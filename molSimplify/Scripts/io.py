@@ -511,8 +511,8 @@ def lig_load(userligand,licores=None):
             return False,emsg
     ### if not, try interpreting as SMILES string
     else:
-        try:
-            lig.OBMol = lig.getOBMol(userligand,'smistring',True) # convert from smiles
+        try: 
+            lig.getOBMol(userligand,'smistring',True) # convert from smiles
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
         except IOError:
