@@ -397,7 +397,7 @@ def rungen(rundir,args,chspfname,globs):
             lig = ''
             ligocc = ''
     ##### fetch smart name
-        fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,bind=args.bind,bsmi=args.nambsmi)
+        fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,nconf=False,sanity=False,bind=args.bind,bsmi=args.nambsmi)
         if globs.debug:
             print('fname is ' + str(fname))
         rootdir = fname
@@ -553,9 +553,7 @@ def rungen(rundir,args,chspfname,globs):
                 elif args.jsched in 'SGE Sungrid sge':
                     sgejobgen(args,jobdirs)
                     print 'SGE jobscripts generated!'
-            if this_diag.sanity: # move to separate subdirectory if generated structure was bad
-                fname = rootdir.rsplit('/',1)[-1]
-                shutil.move(rootdir,rundir+'/badjobs/'+fname)
+
             elif multidx != -1: # if ligand input was a list of smiles strings, write good smiles strings to separate list
                 try:
                     f = open(ligfilename+'-good.smi','a')

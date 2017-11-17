@@ -129,7 +129,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
 #  @param args Namespace of arguments
 #  @param cpoints_required Number of connecting points required
 #  @return mol3D of core, template, geometry, backbone atoms, coordination number, core reference atom index
-def init_template(args,cpoints_required):
+def init_template(args,cpoints_required,globs):
     # initialize core and template
     core3D = mol3D()
     m3D = mol3D()
@@ -147,7 +147,7 @@ def init_template(args,cpoints_required):
         coords,geomnames,geomshorts,geomgroups = getgeoms()
         maxcoord = len(geomgroups)
         # get list of possible combinations for connecting points
-        bbcombsdict = bbcombs_mononuc
+        bbcombsdict = globs.bbcombs_mononuc()
         # get a default geometry
         geom = geomgroups[coord-1][0]
         # check if geometry is defined and overwrite
@@ -294,16 +294,16 @@ def init_ligand(args,lig,tcats,keepHs,i):
             lig.cat = [lig.natoms]
         else:
             lig.cat = tcats[i]
+    # add decorations to ligand        
     if args.decoration and args.decoration_index:
         if len(args.decoration) > i and len(args.decoration_index) > i:
             if args.decoration[i]:
                 if args.debug:
                     print('decorating ' + str(ligand) + ' with ' +str(args.decoration[i]) + ' at sites '  + str(args.decoration_index))
                 lig = decorate_ligand(args,ligand,args.decoration[i],args.decoration_index[i])
+    # change name
     lig3D = mol3D()
     lig3D.copymol3D(lig)
-    if not lig3D.OBMol:
-        lig3D.convert2OBMol()
     # check for pi-coordinating ligand
     ligpiatoms = []
     if 'pi' in lig.cat:
@@ -348,10 +348,8 @@ def init_ligand(args,lig,tcats,keepHs,i):
                 lig3D.deleteatom(Hs[0])
                 lig3D.charge = lig3D.charge - 1
     # Conformer search for multidentate SMILES ligands
+    lig3D.convert2OBMol()
     if len(lig.cat) > 1 and tcats[i]:
-        print('You have specified a multidentate SMILES ligand.')
-        print('We will attempt to find a suitable conformer for coordination.')
-        print('This may take several minutes for very large ligands. Please be patient.')
         lig3D = GetConf(lig3D,lig.cat)    # check if ligand should decorated
     return lig3D,rempi,ligpiatoms
 
@@ -1328,6 +1326,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     freezeangles = False # custom angles imposed
     MLoptbds = []   # list of bond lengths
     rempi = False   # remove dummy pi orbital center of mass atom
+    backbatoms = []
+    batslist = []
+    bats = []
     # load bond data
     MLbonds = loaddata('/Data/ML.dat')
     # calculate occurrences, denticities etc for all ligands
@@ -1418,10 +1419,10 @@ def mcomplex(args,ligs,ligoc,licores,globs):
             cpoints_required += dents[i]
 
     # load core and initialize template
-    m3D,core3D,geom,backbatoms,coord,corerefatoms = init_template(args,cpoints_required)
+    m3D,core3D,geom,backbatoms,coord,corerefatoms = init_template(args,cpoints_required,globs)
     # Get connection points for all the ligands
     # smart alignment and forced order
-    batslist = []
+    
     #if geom:        
     if args.ligloc and args.ligalign:
         batslist0 = []
@@ -1461,16 +1462,17 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     totlig = 0  # total number of ligands added
     ligsused = 0
     for i,ligand in enumerate(ligands):
+        if not(ligand=='x' or ligand =='X'):
+            # load ligand
+            lig,emsg = lig_load(ligand)
+            lig.convert2mol3D()
+            # initialize ligand
+            lig3D,rempi,ligpiatoms = init_ligand(args,lig,tcats,keepHs,i)
+            if emsg:
+                return False,emsg         
         for j in range(0,occs[i]):
             denticity = dents[i]
-        
-            if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
-                # load ligand
-                lig,emsg = lig_load(ligand) # load ligand
-                lig.convert2mol3D()
-                if emsg:
-                    return False,emsg   
-                lig3D,rempi,ligpiatoms = init_ligand(args,lig,tcats,keepHs,i)
+            if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):  
                 # add atoms to connected atoms list
                 catoms = lig.cat # connection atoms
                 initatoms = core3D.natoms # initial number of atoms in core3D
@@ -1740,27 +1742,12 @@ def mcomplex(args,ligs,ligoc,licores,globs):
         core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     return core3D,complex3D,emsg,this_diag
 
-## Main structure generation routine
-#  @param args Namespace of arguments
-#  @param rootdir Directory of current run
-#  @param ligands List of ligands
-#  @param ligoc List of ligand occupations
-#  @param globs Global variables
-#  @param sernum Serial number of complex for naming
-#  @return List of xyz files generated, error messages
-def structgen(args,rootdir,ligands,ligoc,globs,sernum):
-    emsg = False
-    # import gui options
-    if args.gui:
-        from Classes.mWidgets import mQDialogWarn
+def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     # load ligand dictionary
     licores = getlicores()
-    strfiles = []
-    ########## START FUNCTIONALIZING ##########
-
+    # build structure
     sanity = False
     this_diag = run_diag()
-    # check if ligands specified for functionalization
     if (ligands):
         core3D,complex3D,emsg,this_diag = mcomplex(args,ligands,ligoc,licores,globs)
         name_core = args.core
@@ -1770,12 +1757,9 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
         print('You specified no ligands. Returning the core.')
         core3D = mol3D()
         name_core = core3D
-    ############ END FUNCTIONALIZING ###########
-    # generate multiple geometric arrangements
-    Nogeom = int(args.bindnum) if args.bindnum and args.bind else 1 # number of different combinations
-    ligname = '' # name of file
+    # generate file name parts
+    ligname = ''
     nosmiles = 0
-    # generate name of the file
     for l in ligands:
         if l not in licores.keys():
             if '.xyz' in l or '.mol' in l:
@@ -1795,6 +1779,74 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                     l = 'smi'+str(nosmiles)
                 nosmiles += 1
         ligname += ''.join("%s" % l[0:2])
+    if args.calccharge:
+        args.charge = core3D.charge
+        if args.debug:
+            print('setting charge to be ' + str(args.charge))
+    # check for molecule sanity
+    sanity,d0 = core3D.sanitycheck(True)
+    if sanity:
+        print 'WARNING: Generated complex is not good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
+        if args.gui:
+            ssmsg = 'Generated complex in folder '+rootdir+' is no good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
+            qqb = mQDialogWarn('Warning',ssmsg)
+            qqb.setParent(args.gui.wmain)        
+    if args.debug:
+        print('setting sanity diag, min dist at ' +str(d0) + ' (higher is better)')
+    this_diag.set_sanity(sanity,d0)
+    # generate file name
+    fname = name_complex(rootdir,name_core,ligands,ligoc,sernum,args,nconf,sanity)   
+    # write xyz file
+    core3D.writexyz(fname)
+    strfiles.append(fname)    
+    # write report file
+    this_diag.set_mol(core3D)
+    this_diag.write_report(fname+'.report') 
+    # write input file from command line arguments
+    getinputargs(args,fname)             
+    del core3D
+
+    return strfiles, emsg, this_diag
+        
+## Main structure generation routine
+#  @param args Namespace of arguments
+#  @param rootdir Directory of current run
+#  @param ligands List of ligands
+#  @param ligoc List of ligand occupations
+#  @param globs Global variables
+#  @param sernum Serial number of complex for naming
+#  @return List of xyz files generated, error messages
+def structgen(args,rootdir,ligands,ligoc,globs,sernum):
+    emsg = False
+    # import gui options
+    if args.gui:
+        from Classes.mWidgets import mQDialogWarn
+    # load ligand dictionary
+    
+    strfiles = []
+  
+    if args.smicat:
+        if sum([len(i)>1 for i in args.smicat]) > 1:
+            print('You have specified multidentate SMILES ligand(s).')
+            print('We will automatically find suitable conformer(s) for coordination.')			
+            for n in range(1,int(args.nconfs)+1):
+                print 'Generating conformer '+str(n)+' of '+args.nconfs+':'	
+                strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,n)
+
+        else:
+            strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum)
+    else:
+        strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum)
+    
+    # number of different combinations
+    if args.bindnum and args.bind:
+        Nogeom = int(args.bindnum)
+    elif args.smicat:
+        if sum([len(i)>1 for i in args.smicat]) > 1:
+            Nogeom = int(args.nconfs)
+    else:
+        Nogeom = 1
+    # generate multiple geometric arrangements 
     if args.bind:
         # load bind, add hydrogens and convert to mol3D
         bind,bsmi,emsg = bind_load(args.bind)
@@ -1927,34 +1979,13 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
                 del an3Db
                 getinputargs(args,fname+'R')
                 getinputargs(args,fname+'B')
-    else:
-        fname = name_complex(rootdir,name_core,ligands,ligoc,sernum,args,bind= False,bsmi=False)
-        
-        core3D.writexyz(fname)
-        strfiles.append(fname)
-        getinputargs(args,fname)
+
     pfold = rootdir.split('/',1)[-1]
-    if args.calccharge:
-        args.charge = core3D.charge
-        print('setting charge to be ' + str(args.charge))
-    # check for molecule sanity
-    sanity,d0 = core3D.sanitycheck(True)
-    if args.debug:
-        print('setting sanity diag, min dist at ' +str(d0) + ' (higher is better)')
-    this_diag.set_sanity(sanity,d0)
-    this_diag.set_mol(core3D)
-    this_diag.write_report(fname+'.report')
-    del core3D
-    if sanity:
-        print 'WARNING: Generated complex is not good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
-        if args.gui:
-            ssmsg = 'Generated complex in folder '+rootdir+' is no good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
-            qqb = mQDialogWarn('Warning',ssmsg)
-            qqb.setParent(args.gui.wmain)
     if args.gui:
         args.gui.iWtxt.setText('In folder '+pfold+' generated '+str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     print '\nIn folder '+pfold+' generated ',Nogeom,' structure(s)!'
+
     return strfiles, emsg, this_diag
 
  

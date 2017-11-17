@@ -658,7 +658,7 @@ def plugin_defs():
 
     #return fname
 
-## Generate complex name
+## Generate complex name (this is actually used instead of namegen.py)
 #  @param rootdir Root directory
 #  @param core mol3D of core
 #  @param ligs List of ligand names
@@ -668,16 +668,19 @@ def plugin_defs():
 #  @param bind Flag for binding species (default False)
 #  @param bsmi Flag for SMILES binding species (default False)
 #  @return Complex name
-def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
+def name_complex(rootdir,core,ligs,ligoc,sernum,args,nconf=False,sanity=False,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
     if args.name: # if set externerally
         name = rootdir+'/'+args.name
     else:
+        center = ''
+        if sanity:
+            center += 'badjob_'
         try:
-            center = core.getAtom(0).symbol().lower()
+            center += core.getAtom(0).symbol().lower()
         except:
-            center = str(core).lower()
+            center += str(core).lower()
         name = rootdir + '/' + center
         if args.oxstate:
             if args.oxstate in romans.keys():
@@ -701,6 +704,8 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,bind= False,bsmi=False):
             else:
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
+        if nconf and args.nconfs > 1:
+            name += "_conf_"+str(nconf)
         if args.bind:
             if bsmi:
                 if args.nambsmi: # if name specified use it in file
