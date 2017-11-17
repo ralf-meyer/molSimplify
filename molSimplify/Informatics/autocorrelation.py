@@ -37,7 +37,7 @@ def atom_only_autocorrelation(mol,prop,d,atomIdx):
 def metal_only_autocorrelation(mol,prop,d):
 	autocorrelation_vector = numpy.zeros(d)
 	try:
-		metal_ind = mol.findMetal()
+		metal_ind = mol.findMetal()[0]
 		w = construct_property_vector(mol,prop)
 		autocorrelation_vector = autocorrelation(mol,w,metal_ind,d)
 	except:	
@@ -66,7 +66,7 @@ def atom_only_deltametric(mol,prop,d,atomIdx):
 def metal_only_deltametric(mol,prop,d):
 	deltametric_vector = numpy.zeros(d)
 	try:
-		metal_ind = mol.findMetal()
+		metal_ind = mol.findMetal()[0]
 		w = construct_property_vector(mol,prop)
 		deltametric_vector = deltametric(mol,w,metal_ind,d)
 	except:	

@@ -1,22 +1,17 @@
-# Written by HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file inparse.py
+#  Processes inputs
+#
+#  Written by Tim Ioannidisfor HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-# Note to developers: when adding new keywords, update both parseinputfile as well as parseinputs_CAT.
-
-##############################################################
-########## This script processes the input file  #############
-##############################################################
-
-# import std modules
 import glob, os, re, argparse, sys, ast
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
 
-######################################################
-########## check core/ligands specified  #############
-######################################################
-### checks input for correctness and uses defaults otherwise ### -> How do we do this for the GUI? Also make sure this doesn't break for other features e.g. slab builder
+## Checks input for correctness and uses defaults otherwise
+#  @param args Namespace of arguments
 def checkinput(args):
 	globs = globalvars()
 	emsg = False
@@ -92,6 +87,8 @@ def checkinput(args):
 	        for lig in args.lig[1:]:
 	            args.ligocc.append(0)
 
+## Checks TS builder input for correctness and uses defaults otherwise
+#  @param args Namespace of arguments
 def checkinput_ts(args):
     globs = globalvars()
     emsg = False
@@ -113,9 +110,9 @@ def checkinput_ts(args):
         print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
         args.spin = '1'
         
-###########################################
-########## check true or false  ###########
-###########################################
+## Check true or false
+#  @param arg String to be checked    
+#  @return bool
 def checkTrue(arg):
 
     if 'auto' in arg.lower():
@@ -125,9 +122,9 @@ def checkTrue(arg):
     else:
         return False
 
-########################################
-########## check for number  ###########
-########################################
+## Check if variable is a number
+#  @param s variable to be checked
+#  @return bool
 def is_number(s):
     try:
         float(s)
@@ -142,10 +139,8 @@ def is_number(s):
         pass
     return False
 
-###########################################
-########## consolidate lists  #############
-###########################################
-### consolidate arguments ###
+## Consolidate arguments into lists
+#  @param args Namespace of arguments
 def cleaninput(args):
     globs = globalvars()
     # check ligands
@@ -267,11 +262,9 @@ def cleaninput(args):
                     if op[0].lower()=='a':
                         args.ffoption += 'a'
 
-
-###################################################
-##########  parse command line input  #############
-###################################################
-### parses inputfile ###
+## Generates input file from command line input
+#  @param args Namespace of arguments
+#  @return CLIinput.inp (file name)
 def parseCLI(args):
     cliargs = ' '.join(args)
     s = filter(None,cliargs.split('-'))
@@ -283,10 +276,8 @@ def parseCLI(args):
     f.close()
     return fname
 
-###########################################
-##########  parse input file  #############
-###########################################
-### parses inputfile ###
+## Parses input file
+#  @param args Namespace of arguments
 def parseinputfile(args):
     #### arguments that don't match with  inparse name and
     ### are not automatically initialized go here:
@@ -436,7 +427,12 @@ def parseinputfile(args):
                     args.smicat.append(lloc)    
                 
                 print('final smicat set to ' + str(args.smicat))
-                
+            if (l[0]=='-nconfs' and len(l[1:]) > 0):
+                args.nconfs = l[1]    
+            #if (l[0]=='-maxconfs' and len(l[1:]) > 0):
+                #args.maxconfs = l[1]
+            if (l[0]=='-scoreconfs'):
+                args.scoreconfs = True                                
             if '-pangles' in line:
                 args.pangles = []
                 l = filter(None,line.split('pangles',1)[1])
@@ -753,11 +749,9 @@ def parseinputfile(args):
 	    if (l[0] == '-max_descriptors'):
 		args.max_descriptors = [str(i) for i in l[1:]]
 		
-
-#############################################################
-########## mainly for help and listing options  #############
-#############################################################
-### parses commandline arguments and prints help information ###
+## Parses command line arguments and prints help information
+#  @param parser Parser object
+#  @return Namespace of arguments
 def parseall(parser):
     globs = globalvars()
     parser.add_argument("-i", help="input file")
@@ -782,8 +776,11 @@ def parseall(parser):
     parseinputs_naming(parser,args)
     return args
 
+## Parses basic input options and prints help
+#  @param *p Parser pointer
 def parseinputs_basic(*p):
     parser = p[0]
+    parser.add_argument("-core", help="core structure with currently available: "+getcores())
     parser.add_argument("-oxstate", help="oxidation state of the metal") # specified in cleaninput
     parser.add_argument("-coord", help="coordination such as 4,5,6",action="store_true")
     parser.add_argument("-geometry", help="geometry",action="store_true")
@@ -798,12 +795,17 @@ def parseinputs_basic(*p):
         args = p[1]
         parser.parse_args(namespace=args)
         return 0
-
+        
+## Parses advanced input options and prints help
+#  @param *p Parser pointer
 def parseinputs_advanced(*p):
     parser = p[0]
     # advanced structure generation options
     parser.add_argument("-rundir", help="directory for jobs, default ~/Runs",action="store_true")
     parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]",action="store_true")
+    parser.add_argument("-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default='1')
+    parser.add_argument("-scoreconfs", help="Attempt to filter out identical conformers and rank them by rmsd to the desired template, default false", default=False)
+    #parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default=True)
     parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
@@ -825,6 +827,8 @@ def parseinputs_advanced(*p):
         parser.parse_args(namespace=args)
         return 0
 
+## Parses slab builder options and prints help
+#  @param *p Parser pointer
 def parseinputs_slabgen(*p):
     parser = p[0]
     # slab builder input: controli
@@ -868,6 +872,8 @@ def parseinputs_slabgen(*p):
         parser.parse_args(namespace=args)
         return 0
 
+## Parses automated correlation analysis options and prints help
+#  @param *p Parser pointer
 def parseinputs_autocorr(*p):
     parser = p[0]
     parser.add_argument('-correlate', help = "path to file for analysis, should contain name,value,folder where name.xyz geo is located on each line") #0
@@ -882,6 +888,8 @@ def parseinputs_autocorr(*p):
         parser.parse_args(namespace=args)
     return 0
 
+## Parses chain builder options and prints help
+#  @param *p Parser pointer
 def parseinputs_chainb(*p):
     parser = p[0]
     parser.add_argument('-chain', help = "SMILES string of monomer", action = "store_true") #0
@@ -894,6 +902,8 @@ def parseinputs_chainb(*p):
         parser.parse_args(namespace=args)
     return 0
 
+## Parses database search options and prints help
+#  @param *p Parser pointer
 def parseinputs_db(*p):
     parser = p[0]
     parser.add_argument("-dbsearch", help="flag enabling db search",action="store_true") 
@@ -927,6 +937,8 @@ def parseinputs_db(*p):
         parser.parse_args(namespace=args)
     return 0
 
+## Parses input file generation options and prints help
+#  @param *p Parser pointer
 def parseinputs_inputgen(*p):
     parser = p[0]
     parser.add_argument("-qccode", help="Code to use, only terachem (default), GAMESS and qchem are currently supported", default='terachem')
@@ -969,6 +981,8 @@ def parseinputs_inputgen(*p):
         parser.parse_args(namespace=args)
     return 0
 
+## Parses postprocessing options and prints help
+#  @param *p Parser pointer
 def parseinputs_postproc(*p):
     parser = p[0]
     parser.add_argument("-postp", help="post process results",action="store_true")
@@ -991,6 +1005,8 @@ def parseinputs_postproc(*p):
         parser.parse_args(namespace=args)
     return 0
 
+## Parses random generation options and prints help
+#  @param *p Parser pointer
 def parseinputs_random(*p):
     parser = p[0]
     parser.add_argument("-liggrp","--liggrp", help="ligand group for random generation ",action="store_true")
@@ -1006,6 +1022,8 @@ def parseinputs_random(*p):
         parser.parse_args(namespace=args)
     return 0 
 
+## Parses binding species placement options and prints help
+#  @param *p Parser pointer
 def parseinputs_binding(*p):
     parser = p[0]
     parser.add_argument("-bind", help="binding species, currently available: "+getbinds(),action="store_true")
@@ -1027,6 +1045,8 @@ def parseinputs_binding(*p):
         parser.parse_args(namespace=args)
     return 0 
 
+## Parses transition state building options and prints help
+#  @param *p Parser pointer
 def parseinputs_tsgen(*p):
     parser = p[0]
     parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
@@ -1043,9 +1063,10 @@ def parseinputs_tsgen(*p):
         parser.parse_args(namespace=args)
     return 0 
 
+## Parses ligand replacement options and prints help
+#  @param *p Parser pointer
 def parseinputs_customcore(*p):
     parser = p[0]
-    parser.add_argument("-core", help="core structure with currently available: "+getcores())
     parser.add_argument("-replig", help="flag for replacing ligand at specified connection point",action="store_true")
     parser.add_argument("-ccatoms", help="core connection atoms indices, indexing starting from 1")
     if len(p) == 1: # only one input, printing help only
@@ -1056,6 +1077,8 @@ def parseinputs_customcore(*p):
         parser.parse_args(namespace=args)
     return 0 
 
+## Parses file naming options and prints help
+#  @param *p Parser pointer
 def parseinputs_naming(*p):
     parser = p[0]
     parser.add_argument("-name", help="custom name for complex",action="store_true")

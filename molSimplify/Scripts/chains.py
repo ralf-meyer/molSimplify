@@ -1,6 +1,9 @@
-
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file chains.py
+#  Builds chains of monomers with regular conformation.
+#
+#  Written by JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
 import sys, os, random, shutil, inspect, argparse, openbabel
 from molSimplify.Scripts.rungen import *

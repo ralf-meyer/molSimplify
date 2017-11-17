@@ -1,0 +1,56 @@
+\hypertarget{postmwfn_8py}{}\section{Scripts/postmwfn.py File Reference}
+\label{postmwfn_8py}\index{Scripts/postmwfn.\+py@{Scripts/postmwfn.\+py}}
+
+
+Post-\/processes Multiwfn output.  
+
+
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn}{mol\+Simplify.\+Scripts.\+postmwfn}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_ada72b25c1943d2ec37349a9e994d19ab}{mol\+Simplify.\+Scripts.\+postmwfn.\+distance} (R1, R2)
+\begin{DoxyCompactList}\small\item\em Gets distance between points. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a3ce036a04943095833c3ea8c1a3ebd0a}{mol\+Simplify.\+Scripts.\+postmwfn.\+find\+\_\+between} (s, first, last)
+\begin{DoxyCompactList}\small\item\em Gets subset of string between two substrings. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_aa6d873258728986e9d51dbfdcd5119f7}{mol\+Simplify.\+Scripts.\+postmwfn.\+radial} (v)
+\begin{DoxyCompactList}\small\item\em Gets distance of Cartesian point to origin. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a2c5438051e9d06efd355d34eb5966673}{mol\+Simplify.\+Scripts.\+postmwfn.\+calc} (den, dV)
+\begin{DoxyCompactList}\small\item\em Integrate grid. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_aaf11b91ca1c7ad0bacc396aee9f93f9e}{mol\+Simplify.\+Scripts.\+postmwfn.\+spreadcalc} (den, E\+LF, totel, dV)
+\begin{DoxyCompactList}\small\item\em Calculate spreads and averages of density and E\+LF. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a6e704fa37983b620d0c1f0d6ea75eea9}{mol\+Simplify.\+Scripts.\+postmwfn.\+calc\+H\+E\+LP} (den, E\+LF, dV)
+\begin{DoxyCompactList}\small\item\em Calculate H\+E\+LP function from cube. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_ad7f5d65e9c9c97393c12e09adc84539d}{mol\+Simplify.\+Scripts.\+postmwfn.\+parsecube} (cubef)
+\begin{DoxyCompactList}\small\item\em Parse cube file. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_ae0537c78599271f79891ffab0b308ad0}{mol\+Simplify.\+Scripts.\+postmwfn.\+wfncalc} (denf, elff)
+\begin{DoxyCompactList}\small\item\em Calculate wavefunction properties. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a56fde1195282f9d99cbc7c9b908c5fe4}{mol\+Simplify.\+Scripts.\+postmwfn.\+cubespin} (cubef\+T\+OT, cubef\+S\+P\+IN)
+\begin{DoxyCompactList}\small\item\em Computes alpha and beta densities from total and spin density cubes. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a959558b8a0ce7ce7fcf7068235e5065b}{mol\+Simplify.\+Scripts.\+postmwfn.\+readden} (inputf)
+\begin{DoxyCompactList}\small\item\em Parse density cube file. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a01eded6de9df25e9ce55630e36571684}{mol\+Simplify.\+Scripts.\+postmwfn.\+getcubes} (molf, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Use Multiwfn to generate cube files from molden files. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a716e70de36f0fca9b8f443d444417f7c}{mol\+Simplify.\+Scripts.\+postmwfn.\+getwfnprops} (molf, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Calculate wavefunction properties from molden file. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a01480945515714deee75f164f07a8b6f}{mol\+Simplify.\+Scripts.\+postmwfn.\+getcharges} (molf, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Calculate charges from molden file. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a3d06d34a3a564ff309a955f7a30a1f96}{mol\+Simplify.\+Scripts.\+postmwfn.\+deloc} (molf, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Calculate delocalization indices from molden file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+dictionary \hyperlink{namespacemolSimplify_1_1Scripts_1_1postmwfn_a9a96407d6ceb115d681da0f03f378b61}{mol\+Simplify.\+Scripts.\+postmwfn.\+metals}
+\begin{DoxyCompactList}\small\item\em List of metals. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Post-\/processes Multiwfn output. 
+
+Written by Tim Ioannidis for H\+JK Group
+
+Dpt of Chemical Engineering, M\+IT 

@@ -1,16 +1,15 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file jobgen.py
+#  Generates jobscripts for queueing systems
+#  
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-#####################################################
-######## This script generates jobscripts  ##########
-#####################################################
 import argparse, glob, sys, os, subprocess
 
-#####################################################
-######## This script generates jobscripts  ##########
-########       for submission to SGE       ##########
-#####################################################
-### generates jobscripts for SGE queueing system ###
+## Generates jobscripts for SGE queueing system
+#  @param args Namespace of arguments
+#  @param jobdirs Subdirectories for jobscript placement
 def sgejobgen(args,jobdirs):
     # consolidate lists
     jd = []
@@ -119,11 +118,9 @@ def sgejobgen(args,jobdirs):
             print 'Not supported QC code requested. Please input execution command manually'
         output.close()
 
-######################################################
-######### This script generates jobscripts  ##########
-########       for submission to Slurm       #########
-######################################################
-### generates jobscripts for Slurm queueing system ###
+## Generates jobscripts for SLURM queueing system
+#  @param args Namespace of arguments
+#  @param jobdirs Subdirectories for jobscript placement
 def slurmjobgen(args,jobdirs):
     # consolidate lists
     jd = []

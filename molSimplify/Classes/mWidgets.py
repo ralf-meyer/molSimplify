@@ -1,5 +1,9 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file mWidgets.py
+#  Defines auxiliary classes for building GUI.
+#
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -9,18 +13,12 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.Scripts.io import *
 import os, imghdr, struct
 
-####################################################
-########### Defines auxiliary classes  #############
-############## for building the GUI  ###############
-####################################################
-
+## Get screen size
 def getscreensize():
     screenShape = QDesktopWidget().screenGeometry()
     return [screenShape.width(),screenShape.height()]
 
-######################################
-#### Center main widget on screen ####
-######################################
+## Center main widget on screen
 def center(self):
     frameGm = self.frameGeometry()
     screen = QApplication.desktop().screenNumber(QApplication.desktop().cursor().pos())
@@ -28,9 +26,7 @@ def center(self):
     frameGm.moveCenter(centerPoint)
     self.move(frameGm.topLeft())
 
-#########################
-#### Relative resize ####
-#########################
+## Relative resize
 def relresize(self,parent,scale):
     parentgeom = parent.frameGeometry()
     width = parentgeom.width()*scale
@@ -39,18 +35,14 @@ def relresize(self,parent,scale):
     ymarg = 0.5*(1.0-scale)*parentgeom.height()
     self.setGeometry(xmarg,ymarg,width,height)
 
-###########################
-#### Main Window class ####
-###########################
+## GUI main window class
 class mQMainWindow(QMainWindow):
     def __init__(self):
         super(mQMainWindow,self).__init__()
     def closeEvent(self,event):
         sys.exit()
 
-##########################
-#### Pushbutton class ####
-##########################
+## GUI push button class
 class mQPushButton(QPushButton):
     def __init__(self,txt,ctip,fontsize):
         super(mQPushButton,self).__init__()
@@ -66,9 +58,7 @@ class mQPushButton(QPushButton):
     #def leaveEvent(self,event):
     #    self.setStyleSheet("background-color:;")
 
-########################
-#### Checkbox class ####
-########################
+## GUI checkbox class
 class mQCheckBox(QCheckBox):
     # margins and scale are fractional
     def __init__(self,txt,ctip,fontsize):
@@ -91,9 +81,7 @@ class mQCheckBox(QCheckBox):
         else:
             return 0
 
-############################
-#### Dropdown box class ####
-############################
+## GUI dropdown box class
 class mQComboBox(QComboBox):
     # margins and scale are fractional
     def __init__(self,txt,ctip,fontsize):
@@ -110,9 +98,7 @@ class mQComboBox(QComboBox):
     def getText(self):
         return self.currentText()
 
-######################
-#### Slider class ####
-######################
+## GUI slider class
 class mQSlider(QSlider):
     # margins and scale are fractional
     def __init__(self,ctip):
@@ -122,6 +108,7 @@ class mQSlider(QSlider):
         self.setValue(0)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
 
+## GUI box folder class
 class qBoxFolder(QDialog):
     # constructor needs window, marginW, marginH and Font size
     # margins and scale are fractional
@@ -146,9 +133,7 @@ class qBoxFolder(QDialog):
         else:
             return False
 
-############################
-#### Pop up boxes class ####
-############################
+## GUI popup boxes class
 class mQDialogInf(QDialog):
     def __init__(self,toptxt,txt):
         super(mQDialogInf,self).__init__()
@@ -159,6 +144,7 @@ class mQDialogInf(QDialog):
         self.msgBox.addButton(QPushButton('OK'), QMessageBox.YesRole)
         self.msgBox.exec_()
 
+## GUI error dialog box class
 class mQDialogErr(QDialog):
     def __init__(self,toptxt,txt):
         super(mQDialogErr,self).__init__()
@@ -169,6 +155,7 @@ class mQDialogErr(QDialog):
         self.msgBox.addButton(QPushButton('OK'), QMessageBox.YesRole)
         self.msgBox.exec_()
 
+## GUI warning dialog box class
 class mQDialogWarn(QDialog):
     def __init__(self,toptxt,txt):
         super(mQDialogWarn,self).__init__()
@@ -178,9 +165,8 @@ class mQDialogWarn(QDialog):
         self.msgBox.setText(txt)
         self.msgBox.addButton(QPushButton('OK'), QMessageBox.YesRole)
         self.msgBox.exec_()
-###################################
-#### Defines class QMessageBox ####
-###################################
+        
+## GUI message box class
 class mQMessageBox(QMessageBox):
     def __init__(self,title,text,typ,autoclose):
         super(mQMessageBox,self).__init__()
@@ -198,9 +184,7 @@ class mQMessageBox(QMessageBox):
         if self.autoclose:
             self.hide()
 
-######################
-#### Editor class ####
-######################
+## GUI editor class
 class mQTextEdit(QTextEdit):
     def __init__(self,txt,align,fontsize):
         super(mQTextEdit,self).__init__()
@@ -215,9 +199,7 @@ class mQTextEdit(QTextEdit):
         self.setFont(f)
         self.show()
 
-############################
-#### Static texts class ####
-############################
+## GUI static texts class
 class mQLabel(QLabel):
     # constructor needs text, tip, alignment, fontsize
     def __init__(self,txt,ctip,align,fontsize):
@@ -266,9 +248,7 @@ class mQLabel(QLabel):
         #--- update font size ---
         self.setFont(f)
 
-##########################
-#### Edit texts class ####
-##########################
+## GUI edit texts class
 class mQLineEdit(QLineEdit):
     # constructor needs text, tip, alignment, fontsize
     def __init__(self,txt,ctip,align,fontsize):
@@ -287,9 +267,7 @@ class mQLineEdit(QLineEdit):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setCursorPosition(0)
 
-##########################
-#### Edit texts class ####
-##########################
+## Another GUI edit texts class
 class mQLineEditL(QComboBox):
     # constructor needs text, tip, alignment, fontsize
     def __init__(self,txt,ctip,align,fontsize,licores):
@@ -322,9 +300,7 @@ class mQLineEditL(QComboBox):
             index = self.findText(str(text))
             self.setCurrentIndex(index)
 
-########################
-#### Spin box class ####
-########################
+## GUI spin box class
 class mQSpinBox(QSpinBox):
     # constructor needs text, tip, alignment, fontsize
     def __init__(self,ctip):
@@ -334,12 +310,10 @@ class mQSpinBox(QSpinBox):
         self.setToolTip(ctip)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
 
-###########################
-#### Get size of image ####
-###########################
+## Determine image type and return its size
+#
+#  From draco
 def get_image_size(fname):
-    '''Determine the image type of fhandle and return its size.
-    from draco'''
     with open(fname, 'rb') as fhandle:
         head = fhandle.read(24)
         if len(head) != 24:
@@ -372,9 +346,7 @@ def get_image_size(fname):
             return
         return width, height
 
-######################
-#### Pixmap class ####
-######################
+## GUI pixmap class
 class mQPixmap(QLabel):
     def __init__(self,picpath):
         super(mQPixmap,self).__init__()
@@ -387,14 +359,12 @@ class mQPixmap(QLabel):
         h = self.height()
         self.setPixmap(self.pixmap.scaled(w,h,Qt.KeepAspectRatio,Qt.SmoothTransformation))
 
-#######################
-### SvgWidget class ###
-#######################
+## GUI svg widget class
 class mSvgWidget(QSvgWidget):
     def __init__(self,svgpath):
         super(mSvgWidget,self).__init__()
         self.load(svgpath)
-        ### minimum useful size of molecule svgs
+        # minimum useful size of molecule svgs
         self.setMinimumSize(200,200)
         policy = QSizePolicy(QSizePolicy.MinimumExpanding,
                                 QSizePolicy.MinimumExpanding)

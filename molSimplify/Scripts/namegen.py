@@ -1,10 +1,20 @@
-# Written by JP for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file namegen.py
+#  Generates filenames
+#  
+#  Written by JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
 from structgen import *
 from molSimplify.Scripts.io import *
 import argparse, sys, os, shutil, itertools, random
 
+## Generates name for complex given core and ligands
+#  @param core mol3D of core
+#  @param ligs List of ligand names
+#  @param ligoc List of ligand occurrences
+#  @param args Namespace of arguments
+#  @return Complex name
 def name_complex(core,ligs,ligoc,args):
     center = core.getAtom(0).symbol()
     name = center + '_'

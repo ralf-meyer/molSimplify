@@ -1,13 +1,10 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file nn_prep.py
+#  Helper routines for ANN integration
+#  
+#   Written by JP Janet for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
-##########################################################
-####### This script is a collection of helper ############
-########  routines for ANN integration in    #############
-########           molsimplify               #############
-##########################################################
-
-# import custom modules
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Informatics.decoration_manager import*
@@ -15,9 +12,7 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.python_nn.ANN import *
 import numpy
-# import standard modules
 import openbabel
-
 
 def get_bond_order(OBMol,connection_atoms,mol):
     ## informs the ANN
@@ -536,7 +531,7 @@ def spin_classify(metal,spin,ox):
     return high_spin,spin_ops
 
 def get_splitting(excitation):
-    print(excitation)
+    #print(excitation)
     delta = simple_splitting_ann(excitation)
     return delta
 def get_slope(slope_excitation):

@@ -1,24 +1,19 @@
-# Written by Tim Ioannidis
-#for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file dbinteract.py
+#  Interacts with databases for similarity searches and screening.
+#
+#  Written by Tim Ioannidis for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-######################################################
-######## This script interacts with chemical  ########
-#####  databases performing similarity search   ######
-########  and screening. It uses openbabel. ##########
-######################################################
-
-# import custom modules
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
-# import std modules
 import os, sys, re, string, shutil, time
 import openbabel
 
-######################################################
-### get directories for ChEMBL/emolecules database ###
-######################################################
+## Setup database
+#  @param dbselect Name of database
+#  @return sdf and fs databases
 def setupdb(dbselect):
     globs = globalvars()
     dbdir = os.path.relpath(globs.chemdbdir)+'/'
@@ -41,10 +36,8 @@ def setupdb(dbselect):
         dbf2 = dbdir+dbfs[0]
     return [dbf1,dbf2]
 
-#######################
-#### Print filters ####
-#######################
-
+## Print prebuilt openbabel filters
+#  @return String of prebuilt openbabel filters
 def obfilters():
     s = " A list of available filters for Database searching is listed below.\n"
     s += """
@@ -81,9 +74,9 @@ def obfilters():
     """
     return s
 
-#############################
-#### Check for screening ####
-#############################
+## Parse screening input from arguments
+#  @param args Argument namespace
+#  @return String of screening options
 def checkscr(args):
 	scr = '"'
 	#if args.dbsmarts:
@@ -125,16 +118,16 @@ def checkscr(args):
 		scr = scr[:-2]+'"'
 	return scr
 
-#################################
-##### Substructure search ####
-#################################
+## Substructure search
+#  @param smi Reference SMILES string 
+#  @param nmols Number of hits desired
+#  @param dbselect Database to be searched
+#  @param finger Fingerprint to be used
+#  @param squery Filters to be applied
+#  @param args Argument namespace
+#  @return Filename of screening results
 def getsimilar(smi,nmols,dbselect,finger,squery,args):
-	#######################################
-	##   smi: reference smiles     ##
-	##   nmols: number of similar ones   ##
-	## dbselect: database to be searched ##
-	#######################################
-	## get database files
+	##get database files
 	[dbsdf,dbfs] = setupdb(dbselect)
 	print('database set up :' + str(dbsdf) + ' || ' + str(dbfs))
 	globs = globalvars()
@@ -146,7 +139,7 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	else:
 		mybash(obab+' -isdf '+dbsdf+' -osdf -O tmp.sdf -d')
 		com = obab+' tmp.sdf simres.smi -xf'+finger+' -s"'+smi+'"'
-	## perform search using bash commandline
+	# perform search using bash commandline
 	print('Performing substructure search:')
 	print('running:  '+ str(com))
  	res = mybash(com)
@@ -179,10 +172,11 @@ def getsimilar(smi,nmols,dbselect,finger,squery,args):
 	else:
 		return 'simres.smi',False
 
-##################################
-##### Strip salts from smiles ####
-##################################
-def stripsalts(fname,nres):
+## Strip salts from list of SMILES results
+#
+#  Performs text matching
+#  @param fname Filename of screening results
+def stripsalts(fname):
 	acc0 = ['H','B','C','N','O','F','P','S','Cl','Br','I','Si']
 	acc1 = ['O-','F-','Cl-','Br-','I-','C@@H','C@H','N+','C@']
 	rejected = ['@@H','@H',"/","\\"]
@@ -217,9 +211,11 @@ def stripsalts(fname,nres):
 	f.close()
 	return 0
 
-##################################
-### Filter results by element ####
-##################################
+## Get list of unique elements in SMILES string
+#
+#  Performs text matching
+#  @param smistr SMILES string
+#  @return List of elements
 def getels(smistr):
 	els = []
 	els1 = ['H','B','C','N','O','F','K','P','S','V','Y','I']
@@ -239,6 +235,11 @@ def getels(smistr):
 		i = i + 1
 	return els
 
+## Filters screening results based on list of allowed elements
+#
+#  Performs text matching
+#  @param fname Filename of screening results
+#  @param allowedels List of allowed elements
 def checkels(fname,allowedels):
 	print('Filtering by allowed elements:' +str(allowedels))
 	if glob.glob(fname):
@@ -264,9 +265,13 @@ def checkels(fname,allowedels):
 	print 'Element filter returns',str(nf),'results'
 	return 0
 
-#######################################
-##### Maximal dissimilarity search ####
-#######################################
+## Maximal dissimilarity search
+#
+#  Uses a greedy algorithm that maximizes sums of Tanimoto distances with all elements picked
+#  
+#  Results are written into dissimres.smi file.
+#  @param outf Filename containing SMILES strings to be processed
+#  @param n Number of dissimilar molecules required
 def dissim(outf,n):
 	globs = globalvars()
 
@@ -344,12 +349,11 @@ def dissim(outf,n):
 	f.close()
 	return 0
 
-####################################
-#### Matches initial SMARTS and ####
-####  defines connection atoms  ####
-####################################
-def matchsmarts(smarts,outf,catoms,nres):
-    # read output file to pybel mol
+## Matches initial SMARTS and computes connection atoms
+#  @param smarts SMARTS string
+#  @param outf Filename containing SMILES strings
+#  @param catoms Connection atoms of SMARTS string
+def matchsmarts(smarts,outf,catoms):
     sm = openbabel.OBSmartsPattern()
     sm.Init(smarts)
     f = open(outf,'r')
@@ -373,12 +377,11 @@ def matchsmarts(smarts,outf,catoms,nres):
     f.close()
     return 0
 
-####################################
-##### Main driver for db search ####
-####################################
+## Main driver for database search
+#  @param rundir Run directory
+#  @param args Argument namespace
+#  @param globs Global variables
 def dbsearch(rundir,args,globs):
-    #print time.time()
-
     cwd = os.getcwd()
     flag = False
 
@@ -514,7 +517,7 @@ def dbsearch(rundir,args,globs):
         print('Stripping salts and removing duplicates')
 
 	print('number of smiles strings BEFORE salt stripping: ' + mybash("cat " + outf+ '| wc -l'))
-        flag = stripsalts(outf,args.dbresults)
+        flag = stripsalts(outf)
 	print('number of smiles strings AFTER salt stripping: ' + mybash("cat " + outf+ '| wc -l'))
 	#print('flag from salt stripping: ' + str(flag))
 	print('number of smiles strings BEFORE unique: ' + mybash("cat " + outf+ '| wc -l'))
@@ -550,7 +553,7 @@ def dbsearch(rundir,args,globs):
     nres = 50 if not args.dbresults else int(args.dbresults)
     if args.dbsmarts or args.dbhuman:
         print('number of smiles strings BEFORE SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
-        flag = matchsmarts(smistr,outf,catoms,nres)
+        flag = matchsmarts(smistr,outf,catoms)
         print('number of smiles strings AFTER SMARTS filter: ' + mybash("cat " + outf+ '| wc -l'))
     if args.debug:
         print('outf is '+str(outf))
@@ -563,5 +566,4 @@ def dbsearch(rundir,args,globs):
     else:
         print('writing output to ' + str(cwd) + '/' + str(outf) +'\n' )
     #os.chdir(cwd)
-    #print time.time()
     return False

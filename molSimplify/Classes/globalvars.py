@@ -1,15 +1,15 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file globalvars.py
+#  Contains useful constants used throughout the code.
+#  
+#  Written by Tim Ioannidis for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
-####################################################
-#########   Defines class of global    #############
-########   variables that are shared   #############
-##########    within the program       #############
-####################################################
 import os, inspect, glob, platform, sys, subprocess
 from math import sqrt 
 
-# atoms dictionary contains atomic mass, atomic number, covalent radius, data from http://www.webelements.com/ (last accessed May 13th 2015)
+## Dictionary containing atomic mass, atomic number, covalent radius
+# Data from http://www.webelements.com/ (last accessed May 13th 2015)
 amassdict = {'X':(1.0,0,0.77),'H':(1.0079,1,0.37),'B':(10.83,5,0.85),'C':(12.0107,6,0.77),'N':(14.0067,7,0.75),'O':(15.9994,8,0.73),
              'F':(18.9984,9,0.71),'Na':(22.99,11,1.55),'Mg':(24.30,12,1.39),'Al':(26.98,13,1.26),'Si':(28.08,14,1.16),
              'P':(30.9738,15,1.06),'S':(32.065,16,1.02),'Cl':(35.453,17,0.99),'K':(39.10,19,1.96),'Ca':(40.08,20,1.71),
@@ -22,22 +22,26 @@ amassdict = {'X':(1.0,0,0.77),'H':(1.0079,1,0.37),'B':(10.83,5,0.85),'C':(12.010
              'W':(183.8,74,1.46),'Re':(186.2,75,1.59),'Os':(190.2,76,1.28),'Ir':(192.2,77,1.37),'Hg':(200.6,80,1.49),
              'In':(114.8,49,1.42),'Sn':(118.7,50,1.40),'I':(126.9,53,1.33),'Pt':(195.1,78,1.23),'Au':(197.0,79,1.24)}
 
-# list of metals
+## van der Waals radii for commmon elements
+# Data from http://www.webelements.com/ (last accessed May 13th 2015)
+vdwrad = {'H':1.2,'C':1.7,'N':1.55,'O':1.52,'F':1.47,'P':1.8,'S':1.8,'Cl':1.75,'Br':1.85,'I':1.98}
+
+## Metals
 metalslist = ['Sc','SC','scandium','Ti','TI','titanium','V','vanadium','Cr','CR','chromium','Mn','MN','manganese','Fe','FE','iron','Co','CO',
             'cobalt','Ni','NI','nickel','Cu','CU','copper','Zn','ZN','zinc','Y','yttrium','Zr','ZR','zirconium','Nb','NB','niobium','Mo','MO',
             'molybdenum','Tc','TC','technetium','Ru','RU','ruthenium','Rh','RH','rhodium','Pd','PD','palladium','Ag','AG','silver','Cd','CD',
             'cadmium','La','LA','lanthanum','Hf','HF','hafnium','Ta','TA','tantalum','W','tungsten','Re','RE','rhenium','Os','OS','osmium',
             'Ir','IR','iridium','Pt','PT','platinum','Au','AU','gold','Hg','HG','mercury']
 
-# list of transition metals and d-electron count
+## d-electron counts of transition metals
 mtlsdlist = {'sc':1,'ti':2,'v':3,'cr':4,'mn':5,'fe':6,'ni':7,'co':8,'cu':9,'zn':10,'y':1,'zr':2,'nb':3,
              'mo':4,'tc':5,'ru':6,'rh':7,'pd':8,'ag':9,'cd':10,'hf':1,'ta':2,'w':3,'re':4,'os':5,'ir':6,
              'pt':8,'au':9,'hg':10}
 
-# list of default spins for each d-electron count (make this metal/oxidation state specific)
+## Default spins for each d-electron count (make this metal/oxidation state specific)
 defaultspins = {0:'1',1:'2',2:'3',3:'4',4:'5',5:'6',6:'5',7:'4',8:'3',9:'2',10:'1'}
 
-# list of elements sorted by atomic number
+## Elements sorted by atomic number
 elementsbynum=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca',
                     'Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr',
                     'Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe',
@@ -55,41 +59,14 @@ endict =     { "H" : 2.20, "Li": 0.98, "Be": 1.57, "B" : 2.04, "C" : 2.55, "N" :
     "Pd": 2.20, "Ag": 1.93,"Cd": 1.69, "In": 1.78, "Sb": 2.05, "I":  2.66, "Cs": 0.79, 
     "Y":1.22, "Zr":1.33, "Nb":1.60, "Ru":2.20, "La":1.10, "Hf":1.30, "Ta":1.50, "W":2.36, "Re":1.90}
 
-# roman numerals
+## Roman numerals
 romans={'I':'1','II':'2','III':'3','IV':'4','V':'5','VI':'6','VII':'7','VIII':'8'}
 
-# backbone combinations
-bbcombs_mononuc = dict()
-bbcombs_mononuc['one'] = [[1]]
-bbcombs_mononuc['li'] = [[1],[2]]
-bbcombs_mononuc['oct'] = [[1,2,3,4,5,6], # 6-dentate
-				 [1,2,3,4,5],[1,2,3,4,6],[1,2,3,5,6],[1,2,4,5,6], # 5-dentate
-				 [1,3,4,5,6],[2,3,4,5,6], # 5-dentate
-				 [1,2,3,4],[2,5,4,6],[1,5,3,6], # 4-dentate
-				 [1,2,3],[1,4,2],[1,4,3],[1,5,3],[1,6,3],[2,3,4], # 3-dentate
-				 [2,5,4],[2,6,4],[5,4,6],[5,1,6],[5,2,6],[5,3,6], # 3-dentate
-				 [1,2],[1,4],[1,5],[1,6],[2,3],[2,5], # 2-dentate
-				 [2,6],[3,5],[3,6],[4,5],[4,6],[3,4], # 2-dentate
-				 [1],[2],[3],[4],[5],[6]] # 1-dentate
-bbcombs_mononuc['pbp'] = [[1,2,3,4,5,6],[1,2,3,4,6], # 6/5-dentate
-				  [1,2,3,5], # 4-dentate
-				  [1,2,3],[1,2,4],[2,1,5],[3,1,6],[5,6,3],[2,6,5], # 3-dentate
-				  [1,2],[2,3],[3,4],[4,5],[1,7],[2,6],[5,7],[3,6], # 2-dentate
-				  [1],[2],[3],[4],[5],[6],[7]] # 1-dentate
-bbcombs_mononuc['spy'] = [[1,2,3,4,5],[1,2,3,4],[1,2,3],[2,3,4],[3,4,1],[4,1,2],
-				 [1,2],[1,4],[2,3],[3,4],[4,5],[2,5],[3,5],[1,5],[1],[2],[3],[4],[5]]
-bbcombs_mononuc['sqp'] = [[1,4,2,3],[1,2,3],[2,3,4],[3,4,1],[4,1,2],[1,2],[1,4],[2,3],[3,4],
-				  [1],[2],[3],[4]]
-bbcombs_mononuc['tbp'] = [[1,2,3,4,5],[1,3,4,5],[3,2,4],[4,5,3],[5,1,3],[4,5],[5,3],[3,4],
-				 [1,4],[1,5],[1,3],[2,4],[2,5],[2,3],[1],[2],[3],[4],[5]]
-bbcombs_mononuc['thd'] = [[1,2,3,4],[3,2,4],[2,4,1],[4,1,3],[2,4],[4,3],[3,2],[1,3],[1,4],[2,4],[1],[2],[3],[4]]
-bbcombs_mononuc['tpl'] = [[1,2,3],[1,2],[2,3],[1,3],[1],[2],[3]]
-bbcombs_mononuc['tpr'] = [[1,2,3,4,5,6],[1,2,3,4,5],[1,2,5,4],[5,2,3,6],[1,4,6,3],[1,2,3],[3,6,5],
-				 [2,3],[2,5],[5,6],[6,4],[4,1],[1],[2],[3],[4],[5],[6]]
 
-########################################
-### module for running bash commands ###
-########################################
+
+## Module for running bash commands
+#  @param cmd String containing command to be run
+#  @return bash output string
 def mybash(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = []
@@ -100,11 +77,13 @@ def mybash(cmd):
             break
     return ''.join(stdout)
 
+## Defines global variables used throughout the code
 class globalvars:
+    ## Constructor
+    #  @param self The object pointer
     def __init__(self):
-        ###### PROGRAM NAME ######
+        ## Program name
         self.PROGRAM = 'molSimplify'
-        ###### About message #####
         s = '\nmolSimplify v1.3.3x\nFreely distributed under the GNU GPL license.\n'
         s += 'Copyright 2017 Kulik Lab @ MIT\n'
         s += 'Developed by: Efthymios Ioannidis (timis@mit.edu)\n'
@@ -114,12 +93,13 @@ class globalvars:
         s += 'E. I. Ioannidis, T. Z. H. Gani, H. J. Kulik. J. Comput. Chem. 2016, 37, 2106-2117.\n'
         s += 'J.P. Janet, Q. Zhao, E.I. Ioannidis, H.J. Kulik. Mol. Simul. 2017,43(5-6), 327-345.\n'
         s += 'J.P. Janet, T. Z. H. Gani, A. H. Steeves, E. I. Ioannidis, H. J. Kulik. Ind. Eng. Chem. Res. 2017, 56(17), 4898-4910.\n'
+        ## About message
         self.about = s
         ###### GET INFORMATION ######
         runfromcmd, Linux, OSX = False, False, False
         ### check if running through commandline ###
         if sys.stdin.isatty():
-            # running through command line
+            ## running through command line
             runfromcmd = True
         else:
             runfromcmd = False
@@ -155,7 +135,6 @@ class globalvars:
                     d[sp[0]] = sp[1]
                 except:
                     pass
-                #self.installdir = cdir  ## this is should be unused
             if 'CHEMDBDIR' in d.keys():
                 self.chemdbdir = d['CHEMDBDIR']
             if 'MULTIWFN' in d.keys():
@@ -168,32 +147,88 @@ class globalvars:
             f.write('CHEMDBDIR=\n')
             f.close()
 
-        # global settings
+        ## Home directory
         self.homedir = homedir
-        self.nosmiles = 0 # number of smiles ligands
-        self.rundir = homedir+'/Runs/'# Jobs directory
+        ## Number of smiles ligands
+        self.nosmiles = 0
+        ## Jobs directory
+        self.rundir = homedir+'/Runs/'
+        ## Number of generated structures
         self.generated = 0 
-        self.debug = False # additional output for debuggin
-        self.remHsmarts = ["O=CN","O=CO","n","N=CN","nN"] # remove Hs from connecting atoms within these SMARTS patterns
-        # default geometries for each coordination number if none specified
+        ## Additional debug output
+        self.debug = False
+        ## SMARTS patterns for forced hydrogen removal
+        self.remHsmarts = ["O=CN","O=CO","n","N=CN","nN"]
+        ## Default geometries for each coordination number if none specified
         self.defaultgeometry = {8:('sqap','square_antiprismatic'),7:('pbp','pentagonal_bipyramidal'),6:('oct','octahedral'),5:('tbp','trigonal bipyramidal'),4:('thd','tetrahedral'),3:('trigonal planar','tpl'),2:('linear','li'),1:('one','one')}
+        ## Default oxidation states for elements
         self.defaultoxstate = {'au':'I','gold':'I','scandium':'III','sc':'III','ti':'IV','titanium':'IV'}
-        self.linearbentang = 45 # bent "linear" angle in degrees, e.g., in Fe(III)-superoxo or a bent nitrosyl
+        ## bent "linear" angle in degrees, e.g., in Fe(III)-superoxo or a bent nitrosyl
+        self.linearbentang = 45
+
+    ## Returns atomic mass dictionary
+    #  @param self The object pointer
+    #  @return Atomic mass dictionary
     def amass(self):
         return amassdict
+            
+    ## Returns metals list
+    #  @param self The object pointer
+    #  @return Metals list     
     def metals(self):
         return metalslist
+       
+    ## Returns list of elements by number
+    #  @param self The object pointer
+    #  @return List of elements by number             
     def elementsbynum(self):
         return elementsbynum
+        
+    ## Returns electronegativity dictionary
+    #  @param self The object pointer
+    #  @return Electronegativity dictionary        
     def endict(self):
         return endict
+        
+    ## Record custom path in ~/.molSimplify file
+    #  @param self The object pointer
+    #  @param path Custom path 
     def add_custom_path(self,path):
-    	# this function  is used to
-    	# record the cutsom path in 
-    	# the ~./molsimplify fil
         homedir = os.path.expanduser("~")
      	f = open(homedir+'/.'+self.PROGRAM,'a')
         f.write('CUSTOM_DATA_PATH='+str(path)+"\n")
         f.close()
 
-
+    ## Get backbone combinations dictionary
+    #  @param self The object pointer    
+    #  @return Backbone combinations dictionary
+    def bbcombs_mononuc(self):
+        bbcombs_mononuc = dict()
+        bbcombs_mononuc['one'] = [[1]]
+        bbcombs_mononuc['li'] = [[1],[2]]
+        bbcombs_mononuc['oct'] = [[1,2,3,4,5,6], # 6-dentate
+                         [1,2,3,4,5],[1,2,3,4,6],[1,2,3,5,6],[1,2,4,5,6], # 5-dentate
+                         [1,3,4,5,6],[2,3,4,5,6], # 5-dentate
+                         [1,2,3,4],[2,5,4,6],[1,5,3,6], # 4-dentate
+                         [1,2,3],[1,4,2],[1,4,3],[1,5,3],[1,6,3],[2,3,4], # 3-dentate
+                         [2,5,4],[2,6,4],[5,4,6],[5,1,6],[5,2,6],[5,3,6], # 3-dentate
+                         [1,2],[1,4],[1,5],[1,6],[2,3],[2,5], # 2-dentate
+                         [2,6],[3,5],[3,6],[4,5],[4,6],[3,4], # 2-dentate
+                         [1],[2],[3],[4],[5],[6]] # 1-dentate
+        bbcombs_mononuc['pbp'] = [[1,2,3,4,5,6],[1,2,3,4,6], # 6/5-dentate
+                          [1,2,3,5], # 4-dentate
+                          [1,2,3],[1,2,4],[2,1,5],[3,1,6],[5,6,3],[2,6,5], # 3-dentate
+                          [1,2],[2,3],[3,4],[4,5],[1,7],[2,6],[5,7],[3,6], # 2-dentate
+                          [1],[2],[3],[4],[5],[6],[7]] # 1-dentate
+        bbcombs_mononuc['spy'] = [[1,2,3,4,5],[1,2,3,4],[1,2,3],[2,3,4],[3,4,1],[4,1,2],
+                         [1,2],[1,4],[2,3],[3,4],[4,5],[2,5],[3,5],[1,5],[1],[2],[3],[4],[5]]
+        bbcombs_mononuc['sqp'] = [[1,4,2,3],[1,2,3],[2,3,4],[3,4,1],[4,1,2],[1,2],[1,4],[2,3],[3,4],
+                          [1],[2],[3],[4]]
+        bbcombs_mononuc['tbp'] = [[1,2,3,4,5],[1,3,4,5],[3,2,4],[4,5,3],[5,1,3],[4,5],[5,3],[3,4],
+                         [1,4],[1,5],[1,3],[2,4],[2,5],[2,3],[1],[2],[3],[4],[5]]
+        bbcombs_mononuc['thd'] = [[1,2,3,4],[3,2,4],[2,4,1],[4,1,3],[2,4],[4,3],[3,2],[1,3],[1,4],[2,4],[1],[2],[3],[4]]
+        bbcombs_mononuc['tpl'] = [[1,2,3],[1,2],[2,3],[1,3],[1],[2],[3]]
+        bbcombs_mononuc['tpr'] = [[1,2,3,4,5,6],[1,2,3,4,5],[1,2,5,4],[5,2,3,6],[1,4,6,3],[1,2,3],[3,6,5],
+                         [2,3],[2,5],[5,6],[6,4],[4,1],[1],[2],[3],[4],[5],[6]]
+        return bbcombs_mononuc
+    

@@ -1,0 +1,220 @@
+\hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen}{}\section{mol\+Simplify.\+Scripts.\+tsgen Namespace Reference}
+\label{namespacemolSimplify_1_1Scripts_1_1tsgen}\index{mol\+Simplify.\+Scripts.\+tsgen@{mol\+Simplify.\+Scripts.\+tsgen}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a87681ac0a98980187ecb8cd451419539}{getconnections} (core, catom, Midx, BL, \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a04e8e706dd6866bed934574a55c5960a}{A\+B\+Xang})
+\begin{DoxyCompactList}\small\item\em Gets all possible substrate connecting points (X in A-\/B...X-\/Y). \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a88f6cac491a82d3c4d8ffc9bbbf81939}{substplacecheap} (core, conn\+Pts, catom)
+\begin{DoxyCompactList}\small\item\em Cheap method for determining optimal connecting point by empirically maximizing distances. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a21186624592614ad3b00554a54108dc0}{substplaceff\+\_\+mode3} (core, substr, substreact, compreact, cpoint, args, connected, frozenats)
+\begin{DoxyCompactList}\small\item\em Aligns substrate to connecting point while minimizing sterics (abstraction version) \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a7cc357bc5c467116ebf134d0d726c5b5}{substplaceff\+\_\+mode1} (core, substr, substreact, compreact, cpoint, ligalignpt, args, connected, frozenats)
+\begin{DoxyCompactList}\small\item\em Aligns substrate to connecting point while minimizing sterics (oxidative addition version) \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_aeaa5828b747b01e0e202412dc79ebcce}{tsgen} (mode, args, rootdir, core, substr, compreact, substreact, globs)
+\begin{DoxyCompactList}\small\item\em Main transition state generation routine. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+float \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a0d48d88fd33cd358c1207a60f8db09fa}{X\+Ycoeff} = 1.\+1
+\begin{DoxyCompactList}\small\item\em XY sum cov rad coefficient. \end{DoxyCompactList}\item 
+int \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a27e6b63f27d41cb0442aa856b6743533}{M\+X\+Yang} = 135
+\begin{DoxyCompactList}\small\item\em Mode 1 (oxidative addition) M\+XY angle. \end{DoxyCompactList}\item 
+float \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a15badf85c643c7785a7c5603154e2b67}{M\+Xdistcoeff} = 0.\+9
+\begin{DoxyCompactList}\small\item\em Mode 1 (oxidative addition) MX sum cov rad coefficient. \end{DoxyCompactList}\item 
+int \hyperlink{namespacemolSimplify_1_1Scripts_1_1tsgen_a04e8e706dd6866bed934574a55c5960a}{A\+B\+Xang} = 170
+\begin{DoxyCompactList}\small\item\em Mode 3 (abstraction) A\+BX angle. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a87681ac0a98980187ecb8cd451419539}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a87681ac0a98980187ecb8cd451419539}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!getconnections@{getconnections}}
+\index{getconnections@{getconnections}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{getconnections()}{getconnections()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+tsgen.\+getconnections (\begin{DoxyParamCaption}\item[{}]{core,  }\item[{}]{catom,  }\item[{}]{Midx,  }\item[{}]{BL,  }\item[{}]{A\+B\+Xang }\end{DoxyParamCaption})}
+
+
+
+Gets all possible substrate connecting points (X in A-\/B...X-\/Y). 
+
+Given a fixed A\+BX angle and AB distance, these lie on a circle.
+
+Due to limitations of geometry routines, we sample the sphere and keep points within $\sim$1 deg of the circle. 
+\begin{DoxyParams}{Parameters}
+{\em core} & mol3D of core \\
+\hline
+{\em catom} & Connecting atom to core \\
+\hline
+{\em Midx} & Core reference metal index \\
+\hline
+{\em BL} & Target B-\/X distance \\
+\hline
+{\em A\+B\+Xang} & Target A-\/\+B-\/X angle \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of discretized possible connecting points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a88f6cac491a82d3c4d8ffc9bbbf81939}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a88f6cac491a82d3c4d8ffc9bbbf81939}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!substplacecheap@{substplacecheap}}
+\index{substplacecheap@{substplacecheap}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{substplacecheap()}{substplacecheap()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+tsgen.\+substplacecheap (\begin{DoxyParamCaption}\item[{}]{core,  }\item[{}]{conn\+Pts,  }\item[{}]{catom }\end{DoxyParamCaption})}
+
+
+
+Cheap method for determining optimal connecting point by empirically maximizing distances. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em core} & mol3D of core \\
+\hline
+{\em conn\+Pts} & List of possible connecting points \\
+\hline
+{\em catom} & Connecting atom to core \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Optimal substrate connecting point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a7cc357bc5c467116ebf134d0d726c5b5}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a7cc357bc5c467116ebf134d0d726c5b5}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!substplaceff\+\_\+mode1@{substplaceff\+\_\+mode1}}
+\index{substplaceff\+\_\+mode1@{substplaceff\+\_\+mode1}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{substplaceff\+\_\+mode1()}{substplaceff\_mode1()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+tsgen.\+substplaceff\+\_\+mode1 (\begin{DoxyParamCaption}\item[{}]{core,  }\item[{}]{substr,  }\item[{}]{substreact,  }\item[{}]{compreact,  }\item[{}]{cpoint,  }\item[{}]{ligalignpt,  }\item[{}]{args,  }\item[{}]{connected,  }\item[{}]{frozenats }\end{DoxyParamCaption})}
+
+
+
+Aligns substrate to connecting point while minimizing sterics (oxidative addition version) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em core} & mol3D of core \\
+\hline
+{\em substr} & mol3D of substrate \\
+\hline
+{\em substreact} & Index of substrate reacting atom \\
+\hline
+{\em compreact} & Index of core reacting atom \\
+\hline
+{\em cpoint} & Coordinates of distal ligand atom connecting point \\
+\hline
+{\em ligalignpt} & Coordinates of proximal ligand atom connecting point \\
+\hline
+{\em args} & Namespace of arguments \\
+\hline
+{\em connected} & List of connecting atoms for FF optimization \\
+\hline
+{\em frozenats} & Indices of atoms frozen in FF optimization \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Name of files generated, error messages, run diagnostic info 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a21186624592614ad3b00554a54108dc0}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a21186624592614ad3b00554a54108dc0}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!substplaceff\+\_\+mode3@{substplaceff\+\_\+mode3}}
+\index{substplaceff\+\_\+mode3@{substplaceff\+\_\+mode3}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{substplaceff\+\_\+mode3()}{substplaceff\_mode3()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+tsgen.\+substplaceff\+\_\+mode3 (\begin{DoxyParamCaption}\item[{}]{core,  }\item[{}]{substr,  }\item[{}]{substreact,  }\item[{}]{compreact,  }\item[{}]{cpoint,  }\item[{}]{args,  }\item[{}]{connected,  }\item[{}]{frozenats }\end{DoxyParamCaption})}
+
+
+
+Aligns substrate to connecting point while minimizing sterics (abstraction version) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em core} & mol3D of core \\
+\hline
+{\em substr} & mol3D of substrate \\
+\hline
+{\em substreact} & Index of substrate reacting atom \\
+\hline
+{\em compreact} & Index of core reacting atom \\
+\hline
+{\em cpoint} & Coordinates of connecting point \\
+\hline
+{\em args} & Namespace of arguments \\
+\hline
+{\em connected} & List of connecting atoms for FF optimization \\
+\hline
+{\em frozenats} & Indices of atoms frozen in FF optimization \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Name of files generated, error messages, run diagnostic info 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_aeaa5828b747b01e0e202412dc79ebcce}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_aeaa5828b747b01e0e202412dc79ebcce}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!tsgen@{tsgen}}
+\index{tsgen@{tsgen}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{tsgen()}{tsgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+tsgen.\+tsgen (\begin{DoxyParamCaption}\item[{}]{mode,  }\item[{}]{args,  }\item[{}]{rootdir,  }\item[{}]{core,  }\item[{}]{substr,  }\item[{}]{compreact,  }\item[{}]{substreact,  }\item[{}]{globs }\end{DoxyParamCaption})}
+
+
+
+Main transition state generation routine. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em mode} & TS generation mode (\hyperlink{rungen_8py}{rungen.\+py}) \\
+\hline
+{\em args} & Namespace of arguments \\
+\hline
+{\em rootdir} & Root directory \\
+\hline
+{\em core} & mol3D of core \\
+\hline
+{\em substr} & mol3D of substrate \\
+\hline
+{\em compreact} & Index of core reacting atom \\
+\hline
+{\em substreact} & Index of substrate reacting atom \\
+\hline
+{\em globs} & Global variables \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Name of files generated, error messages, run diagnostic info 
+\end{DoxyReturn}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a04e8e706dd6866bed934574a55c5960a}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a04e8e706dd6866bed934574a55c5960a}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!A\+B\+Xang@{A\+B\+Xang}}
+\index{A\+B\+Xang@{A\+B\+Xang}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{A\+B\+Xang}{ABXang}}
+{\footnotesize\ttfamily int mol\+Simplify.\+Scripts.\+tsgen.\+A\+B\+Xang = 170}
+
+
+
+Mode 3 (abstraction) A\+BX angle. 
+
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a15badf85c643c7785a7c5603154e2b67}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a15badf85c643c7785a7c5603154e2b67}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!M\+Xdistcoeff@{M\+Xdistcoeff}}
+\index{M\+Xdistcoeff@{M\+Xdistcoeff}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{M\+Xdistcoeff}{MXdistcoeff}}
+{\footnotesize\ttfamily float mol\+Simplify.\+Scripts.\+tsgen.\+M\+Xdistcoeff = 0.\+9}
+
+
+
+Mode 1 (oxidative addition) MX sum cov rad coefficient. 
+
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a27e6b63f27d41cb0442aa856b6743533}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a27e6b63f27d41cb0442aa856b6743533}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!M\+X\+Yang@{M\+X\+Yang}}
+\index{M\+X\+Yang@{M\+X\+Yang}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{M\+X\+Yang}{MXYang}}
+{\footnotesize\ttfamily int mol\+Simplify.\+Scripts.\+tsgen.\+M\+X\+Yang = 135}
+
+
+
+Mode 1 (oxidative addition) M\+XY angle. 
+
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1tsgen_a0d48d88fd33cd358c1207a60f8db09fa}\label{namespacemolSimplify_1_1Scripts_1_1tsgen_a0d48d88fd33cd358c1207a60f8db09fa}} 
+\index{mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}!X\+Ycoeff@{X\+Ycoeff}}
+\index{X\+Ycoeff@{X\+Ycoeff}!mol\+Simplify\+::\+Scripts\+::tsgen@{mol\+Simplify\+::\+Scripts\+::tsgen}}
+\subsubsection{\texorpdfstring{X\+Ycoeff}{XYcoeff}}
+{\footnotesize\ttfamily float mol\+Simplify.\+Scripts.\+tsgen.\+X\+Ycoeff = 1.\+1}
+
+
+
+XY sum cov rad coefficient. 
+

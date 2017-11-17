@@ -1,4 +1,12 @@
+## @file generator.py
+#  Main script that coordinates all parts of the program.
+#  
+#  Written by Tim Ioannidis and JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
+
 #!/usr/bin/env python
+
 '''
     Copyright 2017 Kulik Lab @ MIT
 
@@ -17,15 +25,6 @@
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 
-# Written by Tim Ioannidis for HJK Group
-# Extended by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
-
-##########################################################
-############  Main script that coordinates  ##############
-#############  all parts of the program   ################
-##########################################################
-
 import sys, os, random, shutil, inspect, argparse, openbabel
 from molSimplify.Scripts.rungen import *
 from molSimplify.Scripts.io import *
@@ -42,9 +41,14 @@ from math import sqrt
 from math import floor
 
 
+## Coordinates subroutines
+#  @param argv Argument list 
+#  @param flag Flag for printing information
+#  @param gui Flag for GUI
+#  @return Error messages
 def startgen(argv,flag,gui):
     emsg = False
-    ### check for configuration file ##
+    # check for configuration file
     homedir = os.path.expanduser("~")
     #configfile = False if not glob.glob(homedir+'/.molSimplify') else True
     #if not configfile:
@@ -181,7 +185,6 @@ def startgen(argv,flag,gui):
         print ss
     del args
     return emsg
-    #################### END MAIN #####################
 
 if __name__ == "__main__":
     startgen()

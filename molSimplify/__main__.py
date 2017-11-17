@@ -1,3 +1,10 @@
+## @file __main__.py
+#  Gateway script to rest of program
+#  
+#  Written by Tim Ioannidis for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
+
 #!/usr/bin/env python
 '''
     Copyright 2017 Kulik Lab @ MIT
@@ -17,20 +24,13 @@
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 
-# Written by the HJK Group
-# Dpt of Chemical Engineering, MIT
-
-##########################################################
-############  Main script that coordinates  ##############
-#############  all parts of the program   ################
-##########################################################
-
 import sys, argparse, os, platform, shutil
 from Scripts.inparse import *
 from Scripts.generator import *
 from molSimplify.Classes.globalvars import *
 
 globs = globalvars()
+## Basic help description string
 DescString_basic = 'Welcome to molSimplify. Only basic usage is described here.\n'
 DescString_basic += 'For help on advanced modules, please refer to our documentation at molsimplify.mit.edu or provide additional commands to -h, as below:\n'
 DescString_basic += '-h advanced: advanced structure generation help\n'
@@ -45,18 +45,29 @@ DescString_basic += '-h binding: binding species (second molecule) generation he
 DescString_basic += '-h customcore: custom core functionalization help\n'
 DescString_basic += '-h tsgen: transition state generation help\n'
 DescString_basic += '-h naming: custom filename help\n'
-
+## Advanced help description string
 DescString_advanced = 'Printing advanced structure generation help.'
+## Slab builder help description string
 DescString_slabgen = 'Printing slab builder help.'
+## Chain builder help description string
 DescString_chainb = 'Printing chain builder help.'
+## Automated correlation analysis description string
 DescString_autocorr = 'Printing automated correlation analysis help.'
+## Database search help description string
 DescString_db = 'Printing database search help.'
+## Input file generation help description string
 DescString_inputgen = 'Printing quantum chemistry code input file generation help.'
+## Post-processing help description string
 DescString_postproc = 'Printing post-processing help.'
+## Random generation help description string
 DescString_random = 'Printing random generation help.'
+## Binding species placement help description string
 DescString_binding = 'Printing binding species (second molecule) generation help.'
+## Transition state generation help description string
 DescString_tsgen = 'Printing transition state generation help.'
-DescString_customcore = 'Printing custom core functionalization help.'
+## Ligand replacement help description string
+DescString_customcore = 'Printing ligand replacement help.'
+## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
 
 try:
@@ -68,6 +79,8 @@ except ImportError:
    qtflag = False
    pass
 
+## Main function
+#  @param args Argument namespace
 def main(args=None):
     if args is None:
         args = sys.argv[1:]

@@ -1,5 +1,10 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file cellbuilder.py
+#  Builds unit cells with adsorbed species.
+#
+#  Written by JP Janet for HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
+
 import os, sys, copy
 import glob, re, math, random, string, numpy
 from math import pi
@@ -11,6 +16,7 @@ from molSimplify.Classes.globalvars import globalvars
 from operator import add
 from molSimplify.Scripts.periodic_QE import *
 from molSimplify.Scripts.cellbuilder_tools import *
+
 ###############################
 def d_fix(unit_cell,cell_vector):
     fixed_cell = mol3D()

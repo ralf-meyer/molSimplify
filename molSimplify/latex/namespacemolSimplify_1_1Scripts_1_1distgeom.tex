@@ -1,0 +1,278 @@
+\hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom}{}\section{mol\+Simplify.\+Scripts.\+distgeom Namespace Reference}
+\label{namespacemolSimplify_1_1Scripts_1_1distgeom}\index{mol\+Simplify.\+Scripts.\+distgeom@{mol\+Simplify.\+Scripts.\+distgeom}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a755cf7c0dbe32d75e3aa2c43ce1b8093}{Cos\+Rule} (AB, BC, theta)
+\begin{DoxyCompactList}\small\item\em Applies the cosine rule to get the length of AC given lengths of AB, BC and angle A\+BC. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a511e618a1e62d7d1ad97e26692c62a42}{Get\+Bounds\+Matrices} (mol, natoms, catoms=\mbox{[}$\,$\mbox{]}, A=\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Generate distance bounds matrices. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a98a435bf4a8610164d5ba4dccf61f473}{Triangle} (LB, UB, natoms)
+\begin{DoxyCompactList}\small\item\em Triangle inequality bounds smoothing. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}{Metrize} (LB, UB, natoms, Full=False, seed=False)
+\begin{DoxyCompactList}\small\item\em Metrization to select random in-\/range distances. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a2bc5f7df82d7e489c9d6c56e743dd4de}{Get\+C\+M\+Dists} (D, natoms)
+\begin{DoxyCompactList}\small\item\em Get distances of each atom to CM given the distance matrix. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a4cab2a5d58e3b87a21782fe674644556}{Get\+Metric\+Matrix} (D, D0, natoms)
+\begin{DoxyCompactList}\small\item\em Get metric matrix from distance matrix and CM distances. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c82389260e6437}{Get3\+Eigs} (G, natoms)
+\begin{DoxyCompactList}\small\item\em Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ac30129928233e408ea43718d61a583c1}{Dist\+Err} (x, args)
+\begin{DoxyCompactList}\small\item\em Computes distance error function for scipy optimization. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}{Dist\+Err\+Grad} (x, args)
+\begin{DoxyCompactList}\small\item\em Computes gradient of distance error function for scipy optimization. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a2930b926314c9aca7d5a27808147eb03}{Save\+Conf} (X, mol, ffclean=True, catoms=\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Further cleans up with OB FF and saves to a new mol3D object. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ab4b658be4a3b69023b662b3268e73f66}{Get\+Conf} (mol, catoms=\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Uses distance geometry to get a random conformer. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a755cf7c0dbe32d75e3aa2c43ce1b8093}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a755cf7c0dbe32d75e3aa2c43ce1b8093}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Cos\+Rule@{Cos\+Rule}}
+\index{Cos\+Rule@{Cos\+Rule}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Cos\+Rule()}{CosRule()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Cos\+Rule (\begin{DoxyParamCaption}\item[{}]{AB,  }\item[{}]{BC,  }\item[{}]{theta }\end{DoxyParamCaption})}
+
+
+
+Applies the cosine rule to get the length of AC given lengths of AB, BC and angle A\+BC. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em AB} & Length of AB \\
+\hline
+{\em BC} & Length of BC \\
+\hline
+{\em theta} & Angle in degrees \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Length of AC 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_ac30129928233e408ea43718d61a583c1}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_ac30129928233e408ea43718d61a583c1}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Dist\+Err@{Dist\+Err}}
+\index{Dist\+Err@{Dist\+Err}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Dist\+Err()}{DistErr()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Dist\+Err (\begin{DoxyParamCaption}\item[{}]{x,  }\item[{}]{args }\end{DoxyParamCaption})}
+
+
+
+Computes distance error function for scipy optimization. 
+
+Copied from E3 in pp. 311 of ref. \mbox{[}1\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em x} & 1D array of coordinates to be optimized \\
+\hline
+{\em $\ast$args} & Other parameters (refer to scipy.\+optimize docs) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Objective function 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Dist\+Err\+Grad@{Dist\+Err\+Grad}}
+\index{Dist\+Err\+Grad@{Dist\+Err\+Grad}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Dist\+Err\+Grad()}{DistErrGrad()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Dist\+Err\+Grad (\begin{DoxyParamCaption}\item[{}]{x,  }\item[{}]{args }\end{DoxyParamCaption})}
+
+
+
+Computes gradient of distance error function for scipy optimization. 
+
+Copied from E3 in pp. 311 of ref. \mbox{[}1\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em x} & 1D array of coordinates to be optimized \\
+\hline
+{\em $\ast$args} & Other parameters (refer to scipy.\+optimize docs) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Objective function gradient 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c82389260e6437}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c82389260e6437}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Get3\+Eigs@{Get3\+Eigs}}
+\index{Get3\+Eigs@{Get3\+Eigs}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Get3\+Eigs()}{Get3Eigs()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Get3\+Eigs (\begin{DoxyParamCaption}\item[{}]{G,  }\item[{}]{natoms }\end{DoxyParamCaption})}
+
+
+
+Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em G} & Metric matrix \\
+\hline
+{\em natoms} & Number of atoms in molecule \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Three largest eigenvalues and corresponding eigenvectors 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a511e618a1e62d7d1ad97e26692c62a42}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a511e618a1e62d7d1ad97e26692c62a42}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Get\+Bounds\+Matrices@{Get\+Bounds\+Matrices}}
+\index{Get\+Bounds\+Matrices@{Get\+Bounds\+Matrices}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Get\+Bounds\+Matrices()}{GetBoundsMatrices()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Get\+Bounds\+Matrices (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{natoms,  }\item[{}]{catoms = {\ttfamily \mbox{[}\mbox{]}},  }\item[{}]{A = {\ttfamily \mbox{[}\mbox{]}} }\end{DoxyParamCaption})}
+
+
+
+Generate distance bounds matrices. 
+
+The basic idea is outlined in ref \mbox{[}1\mbox{]}.
+
+We first apply 1-\/2 (bond length) and 1-\/3 (bond angle) constraints, read from the F\+F-\/optimized initial conformer.
+
+Next, to bias the search towards coordinating conformers, approximate connection atom distance constraints based on topological distances are also included. 
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule \\
+\hline
+{\em natoms} & Number of atoms in molecule \\
+\hline
+{\em catoms} & List of ligand connection atoms (default empty) \\
+\hline
+{\em A} & Distance 2 connectivity matrix \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Lower and upper bounds matrices 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a2bc5f7df82d7e489c9d6c56e743dd4de}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a2bc5f7df82d7e489c9d6c56e743dd4de}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Get\+C\+M\+Dists@{Get\+C\+M\+Dists}}
+\index{Get\+C\+M\+Dists@{Get\+C\+M\+Dists}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Get\+C\+M\+Dists()}{GetCMDists()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Get\+C\+M\+Dists (\begin{DoxyParamCaption}\item[{}]{D,  }\item[{}]{natoms }\end{DoxyParamCaption})}
+
+
+
+Get distances of each atom to CM given the distance matrix. 
+
+Copied from ref \mbox{[}2\mbox{]}, pp. 309 
+\begin{DoxyParams}{Parameters}
+{\em D} & Distance matrix \\
+\hline
+{\em natoms} & Number of atoms in molecule \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector of CM distances, flag for successful search 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_ab4b658be4a3b69023b662b3268e73f66}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_ab4b658be4a3b69023b662b3268e73f66}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Get\+Conf@{Get\+Conf}}
+\index{Get\+Conf@{Get\+Conf}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Get\+Conf()}{GetConf()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Get\+Conf (\begin{DoxyParamCaption}\item[{}]{mol,  }\item[{}]{catoms = {\ttfamily \mbox{[}\mbox{]}} }\end{DoxyParamCaption})}
+
+
+
+Uses distance geometry to get a random conformer. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em mol} & mol3D of molecule \\
+\hline
+{\em catoms} & List of connection atoms (default empty), used to generate additional constraints if specified (see \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a511e618a1e62d7d1ad97e26692c62a42}{Get\+Bounds\+Matrices()}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of new conformer 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a4cab2a5d58e3b87a21782fe674644556}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a4cab2a5d58e3b87a21782fe674644556}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Get\+Metric\+Matrix@{Get\+Metric\+Matrix}}
+\index{Get\+Metric\+Matrix@{Get\+Metric\+Matrix}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Get\+Metric\+Matrix()}{GetMetricMatrix()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Get\+Metric\+Matrix (\begin{DoxyParamCaption}\item[{}]{D,  }\item[{}]{D0,  }\item[{}]{natoms }\end{DoxyParamCaption})}
+
+
+
+Get metric matrix from distance matrix and CM distances. 
+
+Copied from ref \mbox{[}1\mbox{]}, pp. 306 
+\begin{DoxyParams}{Parameters}
+{\em D} & Distance matrix \\
+\hline
+{\em D0} & Vector of CM distances \\
+\hline
+{\em natoms} & Number of atoms in molecule \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Metric matrix 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Metrize@{Metrize}}
+\index{Metrize@{Metrize}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Metrize()}{Metrize()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Metrize (\begin{DoxyParamCaption}\item[{}]{LB,  }\item[{}]{UB,  }\item[{}]{natoms,  }\item[{}]{Full = {\ttfamily False},  }\item[{}]{seed = {\ttfamily False} }\end{DoxyParamCaption})}
+
+
+
+Metrization to select random in-\/range distances. 
+
+Copied from ref \mbox{[}2\mbox{]}, pp. 253-\/254 
+\begin{DoxyParams}{Parameters}
+{\em LB} & Lower bounds matrix \\
+\hline
+{\em UB} & Upper bounds matrix \\
+\hline
+{\em natoms} & Number of atoms in molecule \\
+\hline
+{\em Full} & Full metrization (scales O(\+N$^\wedge$5), default false) \\
+\hline
+{\em seed} & Random number seed (default none) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Distance matrix 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a2930b926314c9aca7d5a27808147eb03}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a2930b926314c9aca7d5a27808147eb03}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Save\+Conf@{Save\+Conf}}
+\index{Save\+Conf@{Save\+Conf}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Save\+Conf()}{SaveConf()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Save\+Conf (\begin{DoxyParamCaption}\item[{}]{X,  }\item[{}]{mol,  }\item[{}]{ffclean = {\ttfamily True},  }\item[{}]{catoms = {\ttfamily \mbox{[}\mbox{]}} }\end{DoxyParamCaption})}
+
+
+
+Further cleans up with OB FF and saves to a new mol3D object. 
+
+Note that distance geometry tends to produce puckered aromatic rings because of the lack of explicit impropers, see Riniker et al. J\+C\+IM (2015) 55, 2562-\/74 for details.
+
+Hence, a FF optimization (with connection atoms constrained) is recommended to clean up the structure. 
+\begin{DoxyParams}{Parameters}
+{\em X} & Array of coordinates \\
+\hline
+{\em mol} & mol3D of original molecule \\
+\hline
+{\em ffclean} & Flag for OB FF cleanup (default True) \\
+\hline
+{\em catoms} & List of connection atoms (default empty), used to generate FF constraints if specified \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of new conformer 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a98a435bf4a8610164d5ba4dccf61f473}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a98a435bf4a8610164d5ba4dccf61f473}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Triangle@{Triangle}}
+\index{Triangle@{Triangle}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Triangle()}{Triangle()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Triangle (\begin{DoxyParamCaption}\item[{}]{LB,  }\item[{}]{UB,  }\item[{}]{natoms }\end{DoxyParamCaption})}
+
+
+
+Triangle inequality bounds smoothing. 
+
+Copied from ref \mbox{[}2\mbox{]}, pp. 252-\/253
+
+Scales O(\+N$^\wedge$3). 
+\begin{DoxyParams}{Parameters}
+{\em LB} & Lower bounds matrix \\
+\hline
+{\em UB} & Upper bounds matrix \\
+\hline
+{\em natoms} & Number of atoms in molecule \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Triangularized bounds matrices 
+\end{DoxyReturn}

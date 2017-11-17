@@ -1,23 +1,19 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file rundiag.py
+#  Contains run_diag class for ANN
+#  
+#  Written by JP Janet for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
-##########################################################
-########   Defines class of run diagnoistc   #############
-########   information to automated decision #############
-########   making and property prediction    #############
-##########################################################
-
-# import modules
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
 
+## Class of run diagnostic information to automated decision making and property prediction
 class run_diag:
-    ################################
-    ### constructor for classs  ####
-    ################################
+
+    ## Constructor
+    #  @param self The object pointer    
     def __init__(self):
-        # INPUT
-        """ Create a blank diagnostic object """
         globs = globalvars()
         self.sanity_is_set = False # flag to indicate if properties 
                             # have been written to this file

@@ -1,0 +1,190 @@
+\hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen}{}\section{mol\+Simplify.\+Scripts.\+qcgen Namespace Reference}
+\label{namespacemolSimplify_1_1Scripts_1_1qcgen}\index{mol\+Simplify.\+Scripts.\+qcgen@{mol\+Simplify.\+Scripts.\+qcgen}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_a94d2464e1bb9c7d8af5d714a947d6994}{multitcgen} (args, strfiles)
+\begin{DoxyCompactList}\small\item\em Generate multiple terachem runs if multiple methods requested. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_aa7bd72c4230e61a3db1f2162a04c3e77}{tcgen} (args, strfiles, method)
+\begin{DoxyCompactList}\small\item\em Generate terachem input files. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_a67aee71c611a98c744c92e8670b6ebeb}{xyz2gxyz} (filename)
+\begin{DoxyCompactList}\small\item\em Converts normal xyz file to gxyz (G\+A\+M\+E\+SS format) file. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_ac9ba55dfec85cff6e4ecabe2a4733e4d}{multigamgen} (args, strfiles)
+\begin{DoxyCompactList}\small\item\em Generate multiple G\+A\+M\+E\+SS runs if multiple methods requested. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_a9669d94c4c797a40526361b957e663ff}{gamgen} (args, strfiles, method)
+\begin{DoxyCompactList}\small\item\em Generate G\+A\+M\+E\+SS input files. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_a6b72e45f5e7b20a7cc8516c5cdfa49cc}{multiqgen} (args, strfiles)
+\begin{DoxyCompactList}\small\item\em Generate multiple Q\+Chem runs if multiple methods requested. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_ab403afe05d4244607fb8f6999f54135a}{qgen} (args, strfiles, method)
+\begin{DoxyCompactList}\small\item\em Generate Q\+Chem input files. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1qcgen_ade494ee8eea001fdec88ebd6997a3f1b}{mlpgen} (args, strfiles, rootdir)
+\begin{DoxyCompactList}\small\item\em Generate M\+O\+P\+AC input files. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_a9669d94c4c797a40526361b957e663ff}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_a9669d94c4c797a40526361b957e663ff}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!gamgen@{gamgen}}
+\index{gamgen@{gamgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{gamgen()}{gamgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+gamgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles,  }\item[{}]{method }\end{DoxyParamCaption})}
+
+
+
+Generate G\+A\+M\+E\+SS input files. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+{\em method} & Method (e.\+g. b3lyp) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_ade494ee8eea001fdec88ebd6997a3f1b}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_ade494ee8eea001fdec88ebd6997a3f1b}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!mlpgen@{mlpgen}}
+\index{mlpgen@{mlpgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{mlpgen()}{mlpgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+mlpgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles,  }\item[{}]{rootdir }\end{DoxyParamCaption})}
+
+
+
+Generate M\+O\+P\+AC input files. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+{\em rootdir} & Root directory \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_ac9ba55dfec85cff6e4ecabe2a4733e4d}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_ac9ba55dfec85cff6e4ecabe2a4733e4d}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!multigamgen@{multigamgen}}
+\index{multigamgen@{multigamgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{multigamgen()}{multigamgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+multigamgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles }\end{DoxyParamCaption})}
+
+
+
+Generate multiple G\+A\+M\+E\+SS runs if multiple methods requested. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_a6b72e45f5e7b20a7cc8516c5cdfa49cc}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_a6b72e45f5e7b20a7cc8516c5cdfa49cc}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!multiqgen@{multiqgen}}
+\index{multiqgen@{multiqgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{multiqgen()}{multiqgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+multiqgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles }\end{DoxyParamCaption})}
+
+
+
+Generate multiple Q\+Chem runs if multiple methods requested. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_a94d2464e1bb9c7d8af5d714a947d6994}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_a94d2464e1bb9c7d8af5d714a947d6994}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!multitcgen@{multitcgen}}
+\index{multitcgen@{multitcgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{multitcgen()}{multitcgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+multitcgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles }\end{DoxyParamCaption})}
+
+
+
+Generate multiple terachem runs if multiple methods requested. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_ab403afe05d4244607fb8f6999f54135a}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_ab403afe05d4244607fb8f6999f54135a}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!qgen@{qgen}}
+\index{qgen@{qgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{qgen()}{qgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+qgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles,  }\item[{}]{method }\end{DoxyParamCaption})}
+
+
+
+Generate Q\+Chem input files. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+{\em method} & Method (e.\+g. b3lyp) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_aa7bd72c4230e61a3db1f2162a04c3e77}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_aa7bd72c4230e61a3db1f2162a04c3e77}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!tcgen@{tcgen}}
+\index{tcgen@{tcgen}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{tcgen()}{tcgen()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+tcgen (\begin{DoxyParamCaption}\item[{}]{args,  }\item[{}]{strfiles,  }\item[{}]{method }\end{DoxyParamCaption})}
+
+
+
+Generate terachem input files. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Namespace of arguments \\
+\hline
+{\em strfiles} & List of xyz files produced \\
+\hline
+{\em method} & Method (e.\+g. b3lyp) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of job directories 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1qcgen_a67aee71c611a98c744c92e8670b6ebeb}\label{namespacemolSimplify_1_1Scripts_1_1qcgen_a67aee71c611a98c744c92e8670b6ebeb}} 
+\index{mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}!xyz2gxyz@{xyz2gxyz}}
+\index{xyz2gxyz@{xyz2gxyz}!mol\+Simplify\+::\+Scripts\+::qcgen@{mol\+Simplify\+::\+Scripts\+::qcgen}}
+\subsubsection{\texorpdfstring{xyz2gxyz()}{xyz2gxyz()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+qcgen.\+xyz2gxyz (\begin{DoxyParamCaption}\item[{}]{filename }\end{DoxyParamCaption})}
+
+
+
+Converts normal xyz file to gxyz (G\+A\+M\+E\+SS format) file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filename} & Filename of xyz file \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Filename of gxyz file 
+\end{DoxyReturn}

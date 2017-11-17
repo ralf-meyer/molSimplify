@@ -23,6 +23,7 @@ benzene_pi:benzene_pi.mol,bnp,0 1 2 3 4 5 pi,build small organometallic,N,0
 benzenedithiol:benzenedithiol.mol,benzenedithiol,0 11,build functionalize bidentate,BA,-1
 benzenethiol:benzenethiol.mol,bthil,0,build functionalize small,N,-1
 bipy:bipy.mol,bip,0 1,build bidentate,N,0
+bifu:bifuran.mol,bif,0 9,build bidentate,N,0
 bpabipy:BPAbipy.mol,bpabp,0 13 26 48 30,build core,BA,0
 bromide:bromide.mol,brode,0,build functionalize small,N,-1
 carbonyl:carbonyl.mol,crbn,0,build small,N,0
@@ -90,7 +91,7 @@ nme3:nme3.mol,nme3,0,build small,N,0
 noxygen:noxygen.mol,noxd,0,build small,N,0
 ome2:ome2.mol,ome2,0,build small,N,0
 ox:oxalate.mol,oxate,1 4,build bidentate,A,-2
-oxygen:oxygen.mol,oxd,0,build small,N,-2
+oxo:oxygen.mol,oxo,0,build small,N,-2
 pcy3:PCy3.mol,pcy3,0,build bulky big,BA,0
 propylene:propylene.mol,propylene,pi,build organometallic,N,0
 propyphenazone:Propyphenazone.mol,propyphenazone,0,build bulky,BA,0
@@ -159,3 +160,6 @@ water:water.mol,wat,0,build small,N,0
 x:x.mol,x,0,all small,N,-1
 ooh:ooh.xyz,ooh,0,all small,N,-1
 co2:co2.mol,co2,0,all small,N,-1
+phenphen:phenphen.mol,phenphen,9 12 26,build,BA,0
+thiophene:thiophene.mol,thip,0,build,BA,0
+phosphorine:phosphorine.mol,phob,3,build,BA,0

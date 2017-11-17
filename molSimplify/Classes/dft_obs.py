@@ -1,18 +1,17 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
-
-##########################################################
-######## Defines class of DFT observations################
-########     will be used to postprocess #################
-########   DFT results by measuring ligand properties ####
-##########################################################
-
+## @file dft_obs.py
+#  Contains dft_observation class.
+#   
+#  Written by JP Janet for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Classes.ligand import *
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Informatics.autocorrelation import *
 from molSimplify.Informatics.misc_descriptors import *
+
+## DFT observations used to postprocess DFT results by measuring ligand properties
 class dft_observation:
 	def __init__(self,name,geopath):
 		self.name = name

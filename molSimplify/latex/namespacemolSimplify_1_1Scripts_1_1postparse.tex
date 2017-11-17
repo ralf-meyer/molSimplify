@@ -1,0 +1,208 @@
+\hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse}{}\section{mol\+Simplify.\+Scripts.\+postparse Namespace Reference}
+\label{namespacemolSimplify_1_1Scripts_1_1postparse}\index{mol\+Simplify.\+Scripts.\+postparse@{mol\+Simplify.\+Scripts.\+postparse}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_a04fb9ea18ce31d7b1293555e11e45baa}{find\+\_\+between} (s, first, last)
+\begin{DoxyCompactList}\small\item\em Gets subset of string between two substrings. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_a8d5cc0fb78ca69556a0c1257b8529a23}{nbo\+\_\+parser\+\_\+unrestricted} (s)
+\begin{DoxyCompactList}\small\item\em Parse unrestricted N\+BO output. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_ade4a07685fb9e16d3d3ae139796e740f}{nbo\+\_\+parser\+\_\+restricted} (s)
+\begin{DoxyCompactList}\small\item\em Parse restricted N\+BO output. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_aa2a08eb5ade2736cf2d9dfadd5c777a3}{spinnbo} (s, metal)
+\begin{DoxyCompactList}\small\item\em Get information on orbitals with metal character. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_a4d3a6882f1fba50d3c119009732c95a9}{spinnlmo} (s, metal)
+\begin{DoxyCompactList}\small\item\em Get unrestricted N\+L\+MO information. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_a5f83458726e6d0b908bf86748fdf70d2}{nbopost} (resfiles, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Parse N\+BO output. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_aaac627b8678db1fa4627ae706a3464fd}{terapost} (resfiles, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Parse terachem output. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_ab4b2775a181fdb022a76cfd9d290cd59}{gampost} (resfiles, folder, gui, flog)
+\begin{DoxyCompactList}\small\item\em Parse G\+A\+M\+E\+SS output. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+dictionary \hyperlink{namespacemolSimplify_1_1Scripts_1_1postparse_af6144507bc4cf4e5b0a26d5635fdf234}{metals}
+\begin{DoxyCompactList}\small\item\em List of metals. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_a04fb9ea18ce31d7b1293555e11e45baa}\label{namespacemolSimplify_1_1Scripts_1_1postparse_a04fb9ea18ce31d7b1293555e11e45baa}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!find\+\_\+between@{find\+\_\+between}}
+\index{find\+\_\+between@{find\+\_\+between}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{find\+\_\+between()}{find\_between()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+find\+\_\+between (\begin{DoxyParamCaption}\item[{}]{s,  }\item[{}]{first,  }\item[{}]{last }\end{DoxyParamCaption})}
+
+
+
+Gets subset of string between two substrings. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & String to be split \\
+\hline
+{\em first} & First substring \\
+\hline
+{\em last} & Last substring \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Subset of string between substrings 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_ab4b2775a181fdb022a76cfd9d290cd59}\label{namespacemolSimplify_1_1Scripts_1_1postparse_ab4b2775a181fdb022a76cfd9d290cd59}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!gampost@{gampost}}
+\index{gampost@{gampost}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{gampost()}{gampost()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+gampost (\begin{DoxyParamCaption}\item[{}]{resfiles,  }\item[{}]{folder,  }\item[{}]{gui,  }\item[{}]{flog }\end{DoxyParamCaption})}
+
+
+
+Parse G\+A\+M\+E\+SS output. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em resfiles} & Files to be post-\/processed \\
+\hline
+{\em folder} & Folder containing runs \\
+\hline
+{\em gui} & G\+UI flag \\
+\hline
+{\em flog} & Log file name \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_ade4a07685fb9e16d3d3ae139796e740f}\label{namespacemolSimplify_1_1Scripts_1_1postparse_ade4a07685fb9e16d3d3ae139796e740f}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!nbo\+\_\+parser\+\_\+restricted@{nbo\+\_\+parser\+\_\+restricted}}
+\index{nbo\+\_\+parser\+\_\+restricted@{nbo\+\_\+parser\+\_\+restricted}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{nbo\+\_\+parser\+\_\+restricted()}{nbo\_parser\_restricted()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+nbo\+\_\+parser\+\_\+restricted (\begin{DoxyParamCaption}\item[{}]{s }\end{DoxyParamCaption})}
+
+
+
+Parse restricted N\+BO output. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & String containing N\+BO output \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+N\+BO output 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_a8d5cc0fb78ca69556a0c1257b8529a23}\label{namespacemolSimplify_1_1Scripts_1_1postparse_a8d5cc0fb78ca69556a0c1257b8529a23}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!nbo\+\_\+parser\+\_\+unrestricted@{nbo\+\_\+parser\+\_\+unrestricted}}
+\index{nbo\+\_\+parser\+\_\+unrestricted@{nbo\+\_\+parser\+\_\+unrestricted}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{nbo\+\_\+parser\+\_\+unrestricted()}{nbo\_parser\_unrestricted()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+nbo\+\_\+parser\+\_\+unrestricted (\begin{DoxyParamCaption}\item[{}]{s }\end{DoxyParamCaption})}
+
+
+
+Parse unrestricted N\+BO output. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & String containing N\+BO output \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+N\+BO output including d-\/band center and d occupancies 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_a5f83458726e6d0b908bf86748fdf70d2}\label{namespacemolSimplify_1_1Scripts_1_1postparse_a5f83458726e6d0b908bf86748fdf70d2}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!nbopost@{nbopost}}
+\index{nbopost@{nbopost}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{nbopost()}{nbopost()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+nbopost (\begin{DoxyParamCaption}\item[{}]{resfiles,  }\item[{}]{folder,  }\item[{}]{gui,  }\item[{}]{flog }\end{DoxyParamCaption})}
+
+
+
+Parse N\+BO output. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em resfiles} & Files to be post-\/processed \\
+\hline
+{\em folder} & Folder containing runs \\
+\hline
+{\em gui} & G\+UI flag \\
+\hline
+{\em flog} & Log file name \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_aa2a08eb5ade2736cf2d9dfadd5c777a3}\label{namespacemolSimplify_1_1Scripts_1_1postparse_aa2a08eb5ade2736cf2d9dfadd5c777a3}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!spinnbo@{spinnbo}}
+\index{spinnbo@{spinnbo}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{spinnbo()}{spinnbo()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+spinnbo (\begin{DoxyParamCaption}\item[{}]{s,  }\item[{}]{metal }\end{DoxyParamCaption})}
+
+
+
+Get information on orbitals with metal character. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & String containing N\+BO output \\
+\hline
+{\em metal} & Element name of metal \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Orbital information 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_a4d3a6882f1fba50d3c119009732c95a9}\label{namespacemolSimplify_1_1Scripts_1_1postparse_a4d3a6882f1fba50d3c119009732c95a9}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!spinnlmo@{spinnlmo}}
+\index{spinnlmo@{spinnlmo}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{spinnlmo()}{spinnlmo()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+spinnlmo (\begin{DoxyParamCaption}\item[{}]{s,  }\item[{}]{metal }\end{DoxyParamCaption})}
+
+
+
+Get unrestricted N\+L\+MO information. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & String containing N\+BO output \\
+\hline
+{\em metal} & Element name of metal \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+N\+L\+MO information 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_aaac627b8678db1fa4627ae706a3464fd}\label{namespacemolSimplify_1_1Scripts_1_1postparse_aaac627b8678db1fa4627ae706a3464fd}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!terapost@{terapost}}
+\index{terapost@{terapost}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{terapost()}{terapost()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+postparse.\+terapost (\begin{DoxyParamCaption}\item[{}]{resfiles,  }\item[{}]{folder,  }\item[{}]{gui,  }\item[{}]{flog }\end{DoxyParamCaption})}
+
+
+
+Parse terachem output. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em resfiles} & Files to be post-\/processed \\
+\hline
+{\em folder} & Folder containing runs \\
+\hline
+{\em gui} & G\+UI flag \\
+\hline
+{\em flog} & Log file name \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1postparse_af6144507bc4cf4e5b0a26d5635fdf234}\label{namespacemolSimplify_1_1Scripts_1_1postparse_af6144507bc4cf4e5b0a26d5635fdf234}} 
+\index{mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}!metals@{metals}}
+\index{metals@{metals}!mol\+Simplify\+::\+Scripts\+::postparse@{mol\+Simplify\+::\+Scripts\+::postparse}}
+\subsubsection{\texorpdfstring{metals}{metals}}
+{\footnotesize\ttfamily dictionary mol\+Simplify.\+Scripts.\+postparse.\+metals}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+1 =  \{\textcolor{stringliteral}{'Sc'}:21,\textcolor{stringliteral}{'Ti'}:22,\textcolor{stringliteral}{'V'}:23,\textcolor{stringliteral}{'Cr'}:24,\textcolor{stringliteral}{'Mn'}:25,\textcolor{stringliteral}{'Fe'}:26,\textcolor{stringliteral}{'Co'}:27,\textcolor{stringliteral}{'Ni'}:28,\textcolor{stringliteral}{'Cu'}:29,
+2           \textcolor{stringliteral}{'Y'}:39,\textcolor{stringliteral}{'Zr'}:40,\textcolor{stringliteral}{'Nb'}:41,\textcolor{stringliteral}{'Mo'}:42,\textcolor{stringliteral}{'Tc'}:43,\textcolor{stringliteral}{'Ru'}:44,\textcolor{stringliteral}{'Rh'}:45,\textcolor{stringliteral}{'Pd'}:46,\textcolor{stringliteral}{'Pt'}:78,\textcolor{stringliteral}{'Au'}:79,\textcolor{stringliteral}{'In'}:49\}
+\end{DoxyCode}
+
+
+List of metals. 
+

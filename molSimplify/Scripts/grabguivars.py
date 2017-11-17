@@ -1,26 +1,25 @@
-# Written by Tim Ioannidis for HJK Group
-# Dpt of Chemical Engineering, MIT
+## @file grabguivars.py
+#  Grabs arguments from GUI input
+#
+#  Written by Tim Ioannidisfor HJK Group
+#
+#  Dpt of Chemical Engineering, MIT
 
-##############################################################
-########## This script processes the input file  #############
-##############################################################
-
-# import std modules
 import glob, os, re, argparse, sys, time
 from io import *
 
-###########################################
-########## check true or false  ###########
-###########################################
+## Check true or false
+#  @param arg String to be checked    
+#  @return bool
 def checkTrue(arg):
     if 'n' in arg.lower() or '0' in arg.lower() or 'f' in arg.lower():
         return False
     else:
         return True
         
-#########################################
-########## collect ligands  #############
-#########################################
+## Collects ligand-related arguments
+#  @param gui GUI flag
+#  @return ligand-related arguments (ligs,ligoccs,lcats,kHs,MLb,lang,lname)
 def getligands(gui):
     ligs,ligoccs,lcats,kHs,MLb,lang,lname = '','','','','','',''
     for ii in range(0,7):
@@ -67,9 +66,9 @@ def getligands(gui):
     return ligs,ligoccs,lcats,kHs,MLb,lang,lname
 
 
-#########################################
-########## set ligands  #############
-#########################################
+## Fills in GUI variables from ligand-related arguments
+#  @param gui GUI flag
+#  @param ligs,ligoccs,lcats,kHs,MLb,lang,lname ligand-related arguments
 def setligands(gui,ligs,ligoccs,lcats,kHs,MLb,lang,lname):
     ligs = filter(None,re.split(',|\t|&',ligs))
     ligoccs = filter(None,re.split(',|\t|&',ligoccs))
@@ -107,9 +106,9 @@ def setligands(gui,ligs,ligoccs,lcats,kHs,MLb,lang,lname):
             gui.ligadd[ii+1].show()
             gui.ligadd[ii+1].setDisabled(False)
 
-#####################################################
-########## write options to input file  #############
-#####################################################
+## Writes options to input file with arbitrary name
+#  @param args Namespace of arguments
+#  @param fname Input file name
 def writeinputc(args,fname):
     f = open(fname,'w')
     f.write("# Input file generated from GUI options\n")
@@ -120,9 +119,9 @@ def writeinputc(args,fname):
                 f.write(key+' '+v+'\n')
     f.close()
 
-###########################################################
-########## write options to postp input file  #############
-###########################################################
+## Writes postprocessing options to input file
+#  @param args Namespace of arguments
+#  @param fname Input file name
 def writeinputp(args,fname):
     f = open(fname,'w')
     f.write("# Input file generated from GUI options\n")
@@ -130,9 +129,8 @@ def writeinputp(args,fname):
             f.write(key+' '+val+'\n')
     f.close()
     
-#####################################################
-########## write options to input file  #############
-#####################################################
+## Writes options to input file with fixed name
+#  @param args Namespace of arguments
 def writeinputf(args):
     f = open(args['-rundir']+'/geninput.inp','w')
     f.write("# Input file generated from GUI options\n")
@@ -148,9 +146,9 @@ def writeinputf(args):
     f.close()
     ff.close()
     
-#########################################################
-########## grabs GUI options to input file  #############
-#########################################################
+## Grabs all GUI options
+#  @param gui GUI flag
+#  @return Namespace of arguments
 def grabguivars(gui):
     # list with arguments
     args = dict()
@@ -273,9 +271,9 @@ def grabguivars(gui):
     writeinputf(args)
     return args
 
-#########################################################
-##########  grabs GUI options for terachem  #############
-#########################################################
+## Grabs GUI options for terachem input files
+#  @param gui GUI flag
+#  @return Namespace of arguments of related arguments (charge, spin, runtyp, method, basis, dispersion, qoption, rprompt)
 def grabguivarstc(gui):
     globs = globalvars()
     # list with arguments
@@ -293,9 +291,9 @@ def grabguivarstc(gui):
     writeinputc(args,globs.installdir+'/Data/.tcdefinput.inp')
     return args
 
-######################################################
-##########  grabs GUI options for GAMESS #############
-######################################################
+## Grabs GUI options for GAMESS input files
+#  @param gui GUI flag
+#  @return Namespace of arguments of related arguments (charge, spin, runtyp, method, gbasis, ngauss, npfunc, ndfunc, sysoption, ctrloption, scfoption, statoption, rprompt)
 def grabguivarsgam(gui):
     globs = globalvars()
     # list with arguments
@@ -318,9 +316,9 @@ def grabguivarsgam(gui):
     writeinputc(args,globs.installdir+'/Data/.gamdefinput.inp')
     return args
 
-#####################################################
-##########  grabs GUI options for QChem #############
-#####################################################
+## Grabs GUI options for QChem input files
+#  @param gui GUI flag
+#  @return Namespace of arguments of related arguments (charge, spin, runtyp, basis, remoption, exchange, correlation, unrestricted, rprompt)
 def grabguivarsqch(gui):
     globs = globalvars()
     # list with arguments
@@ -340,9 +338,9 @@ def grabguivarsqch(gui):
     writeinputc(args,globs.installdir+'/Data/.qchdefinput.inp')
     return args
 
-#########################################################
-##########  grabs GUI options for jobscript #############
-#########################################################
+## Grabs GUI options for jobscripts
+#  @param gui GUI flag
+#  @return Namespace of arguments of related arguments (jname, memory, wtime, queue, gpus, cpus, modules, joption, jcommand, rprompt)
 def grabguivarsjob(gui):
     globs = globalvars()
     # list with arguments
@@ -362,9 +360,9 @@ def grabguivarsjob(gui):
     writeinputc(args,globs.installdir+'/Data/.jobdefinput.inp')
     return args
 
-############################################################
-########## grabs GUI db options to input file  #############
-############################################################
+## Grabs GUI options for DB search
+#  @param gui GUI flag
+#  @return Namespace of arguments of related arguments (dbsim, dbcatoms, dbresults, dboutputf, dbbase, dbsmarts, dbfinger, dbatoms, dbbonds, dbarbonds, dbsbonds, dbmw)
 def grabdbguivars(gui):
     args = dict()
     ### database search options ###
@@ -403,10 +401,8 @@ def grabdbguivars(gui):
     writeinputc(args,rdir+'/dbinput.inp')
     return args
     
-    
-###################################################################
-########## grabs GUI options to input file for postp  #############
-###################################################################
+## Grabs GUI options for postprocessing
+#  @param gui GUI flag
 def grabguivarsP(gui):
     args = dict()
     ### post-processing options ###
@@ -434,9 +430,10 @@ def grabguivarsP(gui):
     args['-rprompt'] = 'True'
     ### write input file ###
     writeinputp(args,rdir+'/postproc.inp')
-#################################################
-########### loads input file to tc  #############
-#################################################
+
+## Reads terachem input options from input file
+#  @param gui GUI flag
+#  @param fname input file name
 def loadfrominputtc(gui,fname):
     f = open(fname,'r')
     s = f.read()
@@ -464,9 +461,10 @@ def loadfrominputtc(gui,fname):
             gui.etqctch.setText(st[-1])
         if '-runtyp'==st[0]:
             gui.qctcalc.setCurrentText(st[-1])
-#####################################################
-########### loads input file to GAMESS  #############
-#####################################################
+            
+## Reads GAMESS input options from input file
+#  @param gui GUI flag
+#  @param fname input file name
 def loadfrominputgam(gui,fname):
     f = open(fname,'r')
     s = f.read()
@@ -504,9 +502,10 @@ def loadfrominputgam(gui,fname):
             gui.qcgedscf.setText(gui.qcgedscf.toPlainText()+st[-1]+'\n')
         if '-statoption'==st[0]:
             gui.qcgedstat.setText(gui.qcgedstat.toPlainText()+st[-1]+'\n')
-####################################################
-########### loads input file to QChem  #############
-####################################################
+
+## Reads QChem input options from input file
+#  @param gui GUI flag
+#  @param fname input file name
 def loadfrominputqch(gui,fname):
     f = open(fname,'r')
     s = f.read()
@@ -533,9 +532,10 @@ def loadfrominputqch(gui,fname):
             gui.etqcQcor.setText(st[-1])
         if '-unrestricted'==st[0]:
             gui.chQun.setChecked(True)
-#########################################################
-########### loads input file to jobscripts  #############
-#########################################################
+            
+## Reads jobscript options from input file
+#  @param gui GUI flag
+#  @param fname input file name
 def loadfrominputjob(gui,fname):
     f = open(fname,'r')
     s = f.read()
@@ -565,9 +565,10 @@ def loadfrominputjob(gui,fname):
             gui.etjopt.setText(gui.etjopt.toPlainText()+st[-1]+'\n')
         if '-jcommand'==st[0]:
             gui.jcomm.setText(gui.jcomm.toPlainText()+st[-1]+'\n')
-#################################################
-########## loads input file to GUI  #############
-#################################################
+            
+## Reads all input options from input file
+#  @param gui GUI flag
+#  @param fname input file name
 def loadfrominputfile(gui,fname):
     f = open(fname,'r')
     s = f.read()

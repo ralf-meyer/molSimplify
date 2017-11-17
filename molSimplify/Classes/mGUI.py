@@ -1,10 +1,12 @@
-# Written by Tim Ioannidis for HJK Group
-# Modified by JP Janet
-# Dpt of Chemical Engineering, MIT
+## @file mGUI.py
+#  Contains main GUI class and routines. 
+#  
+#  Written by Tim Ioannidis for HJK Group
+#  
+#  Modified by JP Janet
+#  
+#  Dpt of Chemical Engineering, MIT
 
-####################################################
-########### Defines main class of GUI  #############
-####################################################
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 #from PyQt5.QtSvg import *
@@ -21,6 +23,7 @@ import xml.etree.ElementTree as ET
 
 import openbabel
 
+## Main GUI class
 class mGUI():
     getgeoms()
     ### constructor of gui ###

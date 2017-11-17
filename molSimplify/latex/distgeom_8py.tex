@@ -1,0 +1,51 @@
+\hypertarget{distgeom_8py}{}\section{Scripts/distgeom.py File Reference}
+\label{distgeom_8py}\index{Scripts/distgeom.\+py@{Scripts/distgeom.\+py}}
+
+
+Implements a basic distance geometry conformer search routine.  
+
+
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom}{mol\+Simplify.\+Scripts.\+distgeom}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a755cf7c0dbe32d75e3aa2c43ce1b8093}{mol\+Simplify.\+Scripts.\+distgeom.\+Cos\+Rule} (AB, BC, theta)
+\begin{DoxyCompactList}\small\item\em Applies the cosine rule to get the length of AC given lengths of AB, BC and angle A\+BC. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a511e618a1e62d7d1ad97e26692c62a42}{mol\+Simplify.\+Scripts.\+distgeom.\+Get\+Bounds\+Matrices} (mol, natoms, catoms=\mbox{[}$\,$\mbox{]}, A=\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Generate distance bounds matrices. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a98a435bf4a8610164d5ba4dccf61f473}{mol\+Simplify.\+Scripts.\+distgeom.\+Triangle} (LB, UB, natoms)
+\begin{DoxyCompactList}\small\item\em Triangle inequality bounds smoothing. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}{mol\+Simplify.\+Scripts.\+distgeom.\+Metrize} (LB, UB, natoms, Full=False, seed=False)
+\begin{DoxyCompactList}\small\item\em Metrization to select random in-\/range distances. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a2bc5f7df82d7e489c9d6c56e743dd4de}{mol\+Simplify.\+Scripts.\+distgeom.\+Get\+C\+M\+Dists} (D, natoms)
+\begin{DoxyCompactList}\small\item\em Get distances of each atom to CM given the distance matrix. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a4cab2a5d58e3b87a21782fe674644556}{mol\+Simplify.\+Scripts.\+distgeom.\+Get\+Metric\+Matrix} (D, D0, natoms)
+\begin{DoxyCompactList}\small\item\em Get metric matrix from distance matrix and CM distances. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c82389260e6437}{mol\+Simplify.\+Scripts.\+distgeom.\+Get3\+Eigs} (G, natoms)
+\begin{DoxyCompactList}\small\item\em Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ac30129928233e408ea43718d61a583c1}{mol\+Simplify.\+Scripts.\+distgeom.\+Dist\+Err} (x, args)
+\begin{DoxyCompactList}\small\item\em Computes distance error function for scipy optimization. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}{mol\+Simplify.\+Scripts.\+distgeom.\+Dist\+Err\+Grad} (x, args)
+\begin{DoxyCompactList}\small\item\em Computes gradient of distance error function for scipy optimization. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a2930b926314c9aca7d5a27808147eb03}{mol\+Simplify.\+Scripts.\+distgeom.\+Save\+Conf} (X, mol, ffclean=True, catoms=\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Further cleans up with OB FF and saves to a new mol3D object. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ab4b658be4a3b69023b662b3268e73f66}{mol\+Simplify.\+Scripts.\+distgeom.\+Get\+Conf} (mol, catoms=\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Uses distance geometry to get a random conformer. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Implements a basic distance geometry conformer search routine. 
+
+Written by Terry Gani for H\+JK Group
+
+Dpt of Chemical Engineering, M\+IT
+
+Adapted from\+:
+
+\mbox{[}1\mbox{]} J. M. Blaney and J. S. Dixon, \char`\"{}\+Distance Geometry in Molecular Modeling\char`\"{}, in Reviews in Computational Chemistry, V\+CH (1994)
+
+\mbox{[}2\mbox{]} G. Crippen and T. F. Havel, \char`\"{}\+Distance Geometry and Molecular Conformation\char`\"{}, in Chemometrics Research Studies Series, Wiley (1988) 

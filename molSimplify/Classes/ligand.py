@@ -1,19 +1,16 @@
-# Written by JP Janet for HJK Group
-# Dpt of Chemical Engineering, MIT
-
-##########################################################
-######## Defines class of ligands  #######################
-########     will be used to postprocess #################
-########   DFT results by measuring ligand properties ####
-##########################################################
-
-
+## @file ligand.py
+#  Defines ligand class for postprocessing DFT results by measuring ligand properties
+#  
+#  Written by JP Janet for HJK Group
+#  
+#  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Scripts.geometry import * 
 from collections import Counter
 
+## Ligand class for postprocessing DFT results by measuring ligand properties
 class ligand:
 	def __init__(self,master_mol,index_list,dent):
 		self.master_mol  = master_mol
@@ -55,7 +52,7 @@ class ligand:
 def ligand_breakdown(mol):
 	# this function takes an octahedral 
 	# complex and returns ligands
-	metal_index = mol.findMetal()
+	metal_index = mol.findMetal()[0]
 	bondedatoms = mol.getBondedAtomsSmart(metal_index)
 	bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]              
 	counter = 0
@@ -81,7 +78,7 @@ def ligand_breakdown(mol):
 	return liglist,ligdents,ligcons
 def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
         valid = True
-	metal_index = mol.findMetal()
+	metal_index = mol.findMetal()[0]
 	built_ligand_list  = list()
 	lig_natoms_list = list()
 	unique_ligands = list()

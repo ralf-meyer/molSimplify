@@ -100,6 +100,7 @@ Fe	2	1	N	bipy		2.02	# b3lyp lacvps
 Fe	2	5	N	bipy		2.23	# b3lyp lacvps
 Fe	3	2	N	bipy		2.00	# b3lyp lacvps
 Fe	3	6	N	bipy		2.15	# b3lyp lacvps
+Fe  2   5   O   oxo         1.61
 Fe	-	-	N	isothiocyanate	2.06	
 Mn	-	-	N	-		2.19
 Mn	-	-	C	-		2.01
