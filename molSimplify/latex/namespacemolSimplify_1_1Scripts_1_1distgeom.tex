@@ -9,7 +9,7 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a511e618a1e62d7d1ad97
 \begin{DoxyCompactList}\small\item\em Generate distance bounds matrices. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a98a435bf4a8610164d5ba4dccf61f473}{Triangle} (LB, UB, natoms)
 \begin{DoxyCompactList}\small\item\em Triangle inequality bounds smoothing. \end{DoxyCompactList}\item 
-def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ad4130e9756e5c59f610fa85188697e88}{Metrize} (LB, UB, natoms, Full=False)
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}{Metrize} (LB, UB, natoms, Full=False, seed=False)
 \begin{DoxyCompactList}\small\item\em Metrization to select random in-\/range distances. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a2bc5f7df82d7e489c9d6c56e743dd4de}{Get\+C\+M\+Dists} (D, natoms)
 \begin{DoxyCompactList}\small\item\em Get distances of each atom to CM given the distance matrix. \end{DoxyCompactList}\item 
@@ -19,6 +19,8 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c8
 \begin{DoxyCompactList}\small\item\em Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ac30129928233e408ea43718d61a583c1}{Dist\+Err} (x, args)
 \begin{DoxyCompactList}\small\item\em Computes distance error function for scipy optimization. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}{Dist\+Err\+Grad} (x, args)
+\begin{DoxyCompactList}\small\item\em Computes gradient of distance error function for scipy optimization. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_a2930b926314c9aca7d5a27808147eb03}{Save\+Conf} (X, mol, ffclean=True, catoms=\mbox{[}$\,$\mbox{]})
 \begin{DoxyCompactList}\small\item\em Further cleans up with OB FF and saves to a new mol3D object. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1distgeom_ab4b658be4a3b69023b662b3268e73f66}{Get\+Conf} (mol, catoms=\mbox{[}$\,$\mbox{]})
@@ -67,6 +69,26 @@ Copied from E3 in pp. 311 of ref. \mbox{[}1\mbox{]}
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 Objective function 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_a577069dfbb0c54289330e26d385cae55}} 
+\index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Dist\+Err\+Grad@{Dist\+Err\+Grad}}
+\index{Dist\+Err\+Grad@{Dist\+Err\+Grad}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
+\subsubsection{\texorpdfstring{Dist\+Err\+Grad()}{DistErrGrad()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Dist\+Err\+Grad (\begin{DoxyParamCaption}\item[{}]{x,  }\item[{}]{args }\end{DoxyParamCaption})}
+
+
+
+Computes gradient of distance error function for scipy optimization. 
+
+Copied from E3 in pp. 311 of ref. \mbox{[}1\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em x} & 1D array of coordinates to be optimized \\
+\hline
+{\em $\ast$args} & Other parameters (refer to scipy.\+optimize docs) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Objective function gradient 
 \end{DoxyReturn}
 \mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c82389260e6437}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_ae35bf82aac3a079973c82389260e6437}} 
 \index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Get3\+Eigs@{Get3\+Eigs}}
@@ -178,11 +200,11 @@ Copied from ref \mbox{[}1\mbox{]}, pp. 306
 \begin{DoxyReturn}{Returns}
 Metric matrix 
 \end{DoxyReturn}
-\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_ad4130e9756e5c59f610fa85188697e88}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_ad4130e9756e5c59f610fa85188697e88}} 
+\mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}\label{namespacemolSimplify_1_1Scripts_1_1distgeom_af91116418ad953ce66280bd1f3b014dd}} 
 \index{mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}!Metrize@{Metrize}}
 \index{Metrize@{Metrize}!mol\+Simplify\+::\+Scripts\+::distgeom@{mol\+Simplify\+::\+Scripts\+::distgeom}}
 \subsubsection{\texorpdfstring{Metrize()}{Metrize()}}
-{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Metrize (\begin{DoxyParamCaption}\item[{}]{LB,  }\item[{}]{UB,  }\item[{}]{natoms,  }\item[{}]{Full = {\ttfamily False} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+distgeom.\+Metrize (\begin{DoxyParamCaption}\item[{}]{LB,  }\item[{}]{UB,  }\item[{}]{natoms,  }\item[{}]{Full = {\ttfamily False},  }\item[{}]{seed = {\ttfamily False} }\end{DoxyParamCaption})}
 
 
 
@@ -197,6 +219,8 @@ Copied from ref \mbox{[}2\mbox{]}, pp. 253-\/254
 {\em natoms} & Number of atoms in molecule \\
 \hline
 {\em Full} & Full metrization (scales O(\+N$^\wedge$5), default false) \\
+\hline
+{\em seed} & Random number seed (default none) \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}

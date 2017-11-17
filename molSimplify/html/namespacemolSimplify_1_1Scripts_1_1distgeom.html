@@ -80,9 +80,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a98a435bf4a8610164d5ba4dccf61f473"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#a98a435bf4a8610164d5ba4dccf61f473">Triangle</a> (LB, UB, natoms)</td></tr>
 <tr class="memdesc:a98a435bf4a8610164d5ba4dccf61f473"><td class="mdescLeft">&#160;</td><td class="mdescRight">Triangle inequality bounds smoothing.  <a href="#a98a435bf4a8610164d5ba4dccf61f473">More...</a><br /></td></tr>
 <tr class="separator:a98a435bf4a8610164d5ba4dccf61f473"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4130e9756e5c59f610fa85188697e88"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#ad4130e9756e5c59f610fa85188697e88">Metrize</a> (LB, UB, natoms, Full=False)</td></tr>
-<tr class="memdesc:ad4130e9756e5c59f610fa85188697e88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metrization to select random in-range distances.  <a href="#ad4130e9756e5c59f610fa85188697e88">More...</a><br /></td></tr>
-<tr class="separator:ad4130e9756e5c59f610fa85188697e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af91116418ad953ce66280bd1f3b014dd"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#af91116418ad953ce66280bd1f3b014dd">Metrize</a> (LB, UB, natoms, Full=False, seed=False)</td></tr>
+<tr class="memdesc:af91116418ad953ce66280bd1f3b014dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metrization to select random in-range distances.  <a href="#af91116418ad953ce66280bd1f3b014dd">More...</a><br /></td></tr>
+<tr class="separator:af91116418ad953ce66280bd1f3b014dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2bc5f7df82d7e489c9d6c56e743dd4de"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#a2bc5f7df82d7e489c9d6c56e743dd4de">GetCMDists</a> (D, natoms)</td></tr>
 <tr class="memdesc:a2bc5f7df82d7e489c9d6c56e743dd4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get distances of each atom to CM given the distance matrix.  <a href="#a2bc5f7df82d7e489c9d6c56e743dd4de">More...</a><br /></td></tr>
 <tr class="separator:a2bc5f7df82d7e489c9d6c56e743dd4de"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -95,6 +95,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac30129928233e408ea43718d61a583c1"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#ac30129928233e408ea43718d61a583c1">DistErr</a> (x, args)</td></tr>
 <tr class="memdesc:ac30129928233e408ea43718d61a583c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes distance error function for scipy optimization.  <a href="#ac30129928233e408ea43718d61a583c1">More...</a><br /></td></tr>
 <tr class="separator:ac30129928233e408ea43718d61a583c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a577069dfbb0c54289330e26d385cae55"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#a577069dfbb0c54289330e26d385cae55">DistErrGrad</a> (x, args)</td></tr>
+<tr class="memdesc:a577069dfbb0c54289330e26d385cae55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes gradient of distance error function for scipy optimization.  <a href="#a577069dfbb0c54289330e26d385cae55">More...</a><br /></td></tr>
+<tr class="separator:a577069dfbb0c54289330e26d385cae55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2930b926314c9aca7d5a27808147eb03"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1distgeom.html#a2930b926314c9aca7d5a27808147eb03">SaveConf</a> (X, mol, ffclean=True, catoms=[])</td></tr>
 <tr class="memdesc:a2930b926314c9aca7d5a27808147eb03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Further cleans up with OB FF and saves to a new mol3D object.  <a href="#a2930b926314c9aca7d5a27808147eb03">More...</a><br /></td></tr>
 <tr class="separator:a2930b926314c9aca7d5a27808147eb03"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -183,6 +186,44 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Objective function </dd></dl>
+
+</div>
+</div>
+<a id="a577069dfbb0c54289330e26d385cae55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a577069dfbb0c54289330e26d385cae55">&#9670;&nbsp;</a></span>DistErrGrad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def molSimplify.Scripts.distgeom.DistErrGrad </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes gradient of distance error function for scipy optimization. </p>
+<p>Copied from E3 in pp. 311 of ref. [1] </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>1D array of coordinates to be optimized </td></tr>
+    <tr><td class="paramname">*args</td><td>Other parameters (refer to scipy.optimize docs) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Objective function gradient </dd></dl>
 
 </div>
 </div>
@@ -399,8 +440,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad4130e9756e5c59f610fa85188697e88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad4130e9756e5c59f610fa85188697e88">&#9670;&nbsp;</a></span>Metrize()</h2>
+<a id="af91116418ad953ce66280bd1f3b014dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af91116418ad953ce66280bd1f3b014dd">&#9670;&nbsp;</a></span>Metrize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -427,7 +468,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>Full</em> = <code>False</code>&#160;</td>
+          <td class="paramname"><em>Full</em> = <code>False</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>seed</em> = <code>False</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -444,6 +491,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">UB</td><td>Upper bounds matrix </td></tr>
     <tr><td class="paramname">natoms</td><td>Number of atoms in molecule </td></tr>
     <tr><td class="paramname">Full</td><td>Full metrization (scales O(N^5), default false) </td></tr>
+    <tr><td class="paramname">seed</td><td>Random number seed (default none) </td></tr>
   </table>
   </dd>
 </dl>

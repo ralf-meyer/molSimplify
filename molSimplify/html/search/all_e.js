@@ -1,7 +1,7 @@
 var searchData=
 [
   ['name',['name',['../classmolSimplify_1_1Classes_1_1dft__obs_1_1dft__observation.html#ac6d6bb5f8bab62c015d503390b3266b1',1,'molSimplify.Classes.dft_obs.dft_observation.name()'],['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a06cc059cb532fb64b3e9faa84ae1f8c9',1,'molSimplify.Classes.mol3D.mol3D.name()']]],
-  ['name_5fcomplex',['name_complex',['../namespacemolSimplify_1_1Scripts_1_1io.html#a46e78fd50789df0a774ccbe02fb87206',1,'molSimplify.Scripts.io.name_complex()'],['../namespacemolSimplify_1_1Scripts_1_1namegen.html#a04787b6890c4712d75d85cfba2ecfbda',1,'molSimplify.Scripts.namegen.name_complex()']]],
+  ['name_5fcomplex',['name_complex',['../namespacemolSimplify_1_1Scripts_1_1io.html#a64818a07711beacbd714d2c843c51862',1,'molSimplify.Scripts.io.name_complex()'],['../namespacemolSimplify_1_1Scripts_1_1namegen.html#a04787b6890c4712d75d85cfba2ecfbda',1,'molSimplify.Scripts.namegen.name_complex()']]],
   ['name_5fts',['name_TS',['../namespacemolSimplify_1_1Scripts_1_1io.html#a11b47a571bc01ae75ddbb581dc577349',1,'molSimplify::Scripts::io']]],
   ['namegen_2epy',['namegen.py',['../namegen_8py.html',1,'']]],
   ['nameligh',['nameligh',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a914adc23a74fe3fff6dbc2411ef1c77a',1,'molSimplify::Classes::mGUI::mGUI']]],

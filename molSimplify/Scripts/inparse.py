@@ -803,7 +803,7 @@ def parseinputs_advanced(*p):
     # advanced structure generation options
     parser.add_argument("-rundir", help="directory for jobs, default ~/Runs",action="store_true")
     parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]",action="store_true")
-    parser.add_argument("-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default=1)
+    parser.add_argument("-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default='1')
     parser.add_argument("-scoreconfs", help="Attempt to filter out identical conformers and rank them by rmsd to the desired template, default false", default=False)
     #parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['bbcombs_5fmononuc',['bbcombs_mononuc',['../namespacemolSimplify_1_1Classes_1_1globalvars.html#ab2bc502532f42e9bf3599514244c0406',1,'molSimplify::Classes::globalvars']]],
   ['bicores',['bicores',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#aa21862c44141bb7923f0fd131f49dfbf',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['bl_5fis_5fset',['bl_is_set',['../classmolSimplify_1_1Classes_1_1rundiag_1_1run__diag.html#a9169c98f4a082e5ba9a611dcd7f14dfe',1,'molSimplify::Classes::rundiag::run_diag']]],
   ['butadb',['butADB',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a33f8c00c0d69c9a4779ea17d3d1cbd89',1,'molSimplify::Classes::mGUI::mGUI']]],

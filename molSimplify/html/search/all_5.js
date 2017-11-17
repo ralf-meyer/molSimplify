@@ -1,6 +1,7 @@
 var searchData=
 [
   ['elementsbynum',['elementsbynum',['../classmolSimplify_1_1Classes_1_1globalvars_1_1globalvars.html#a056773e84caa30b9ef6bb482f7ebd68d',1,'molSimplify.Classes.globalvars.globalvars.elementsbynum()'],['../namespacemolSimplify_1_1Classes_1_1globalvars.html#a257faf0e6e5695b5c8d0835360f7b054',1,'molSimplify.Classes.globalvars.elementsbynum()']]],
+  ['emsg',['emsg',['../namespacemolSimplify_1_1distgeomtest.html#ac24be1a514e33c45680af41886bfb547',1,'molSimplify::distgeomtest']]],
   ['enabledb',['enableDB',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#a1a8594fea39ea07d47550afb2e75978d',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['enableemol',['enableemol',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#aa5f38a9ae05c47f75be5b14418c8b7d8',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['enableffinput',['enableffinput',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#ae168544d1b6a60d3e6e3164307be16a2',1,'molSimplify::Classes::mGUI::mGUI']]],

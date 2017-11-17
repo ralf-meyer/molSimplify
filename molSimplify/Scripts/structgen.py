@@ -1826,7 +1826,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     strfiles = []
   
     if args.smicat:
-        if sum([len(i)>1 for i in args.smicat]) > 1:
+        if sum([len(i)>1 for i in args.smicat]) > 0:
             print('You have specified multidentate SMILES ligand(s).')
             print('We will automatically find suitable conformer(s) for coordination.')			
             for n in range(1,int(args.nconfs)+1):
@@ -1842,7 +1842,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     if args.bindnum and args.bind:
         Nogeom = int(args.bindnum)
     elif args.smicat:
-        if sum([len(i)>1 for i in args.smicat]) > 1:
+        if sum([len(i)>1 for i in args.smicat]) > 0:
             Nogeom = int(args.nconfs)
     else:
         Nogeom = 1

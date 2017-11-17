@@ -52,6 +52,7 @@ var searchData=
   ['stripsalts',['stripsalts',['../namespacemolSimplify_1_1Scripts_1_1dbinteract.html#a3e69e497ffabc7e01ac66782b19bc542',1,'molSimplify::Scripts::dbinteract']]],
   ['structgen',['structgen',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#a88cde12602c0445fff9fe6921415aad4',1,'molSimplify::Scripts::structgen']]],
   ['structgen_2epy',['structgen.py',['../structgen_8py.html',1,'']]],
+  ['structgen_5fone',['structgen_one',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#ac02db5841c0976072db2c43a255a4863',1,'molSimplify::Scripts::structgen']]],
   ['substplacecheap',['substplacecheap',['../namespacemolSimplify_1_1Scripts_1_1tsgen.html#a88f6cac491a82d3c4d8ffc9bbbf81939',1,'molSimplify::Scripts::tsgen']]],
   ['substplaceff_5fmode1',['substplaceff_mode1',['../namespacemolSimplify_1_1Scripts_1_1tsgen.html#a7cc357bc5c467116ebf134d0d726c5b5',1,'molSimplify::Scripts::tsgen']]],
   ['substplaceff_5fmode3',['substplaceff_mode3',['../namespacemolSimplify_1_1Scripts_1_1tsgen.html#a21186624592614ad3b00554a54108dc0',1,'molSimplify::Scripts::tsgen']]],

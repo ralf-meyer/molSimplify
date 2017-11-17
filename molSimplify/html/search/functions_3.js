@@ -32,6 +32,7 @@ var searchData=
   ['choose_5fbest_5fsite',['choose_best_site',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder.html#ad6dfd641de36df3deee44b6d36cbe37b',1,'molSimplify::Scripts::cellbuilder']]],
   ['choose_5fnearest_5fneighbour',['choose_nearest_neighbour',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder.html#a333748f981e736ebf58c0fccf9f5fad8',1,'molSimplify::Scripts::cellbuilder']]],
   ['cleaninput',['cleaninput',['../namespacemolSimplify_1_1Scripts_1_1inparse.html#a9929bff732d871d6d76946753dfc078d',1,'molSimplify::Scripts::inparse']]],
+  ['cleave_5ftridentate',['cleave_tridentate',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#a9bd3ad91740926954046d231532e5ebe',1,'molSimplify::Scripts::structgen']]],
   ['closeevent',['closeEvent',['../classmolSimplify_1_1Classes_1_1mWidgets_1_1mQMainWindow.html#ad056877a48172e3cdb203fb822058234',1,'molSimplify::Classes::mWidgets::mQMainWindow']]],
   ['closest_5ftorus_5fpoint',['closest_torus_point',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#af8a1ed30f049db9b5e62efebf140ad97',1,'molSimplify::Scripts::cellbuilder_tools']]],
   ['cmrotate',['cmrotate',['../namespacemolSimplify_1_1Scripts_1_1geometry.html#a891c57b819e0c6b2a00e9a495fc0dac9',1,'molSimplify::Scripts::geometry']]],
