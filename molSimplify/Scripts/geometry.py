@@ -152,11 +152,11 @@ def rotation_params(r0,r1,r2):
 ## Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
 #  @param mol0 mol3D of molecule to be aligned
 #  @param mol1 mol3D of reference molecule
-#  @return Aligned mol3D
+#  @return Aligned mol3D, rotation matrix, translation vectors
 def kabsch(mol0,mol1):
     # translate to align centroids with origin
-    mol0 = setPdistance(mol0,mol0.centersym(),[0,0,0],0)
-    mol1 = setPdistance(mol1,mol1.centersym(),[0,0,0],0)    
+    mol0,d0 = setPdistance(mol0,mol0.centersym(),[0,0,0],0)
+    mol1,d1 = setPdistance(mol1,mol1.centersym(),[0,0,0],0)    
     # get coordinates and matrices P,Q
     P, Q = [],[]
     for atom0,atom1 in zip(mol0.getAtoms(),mol1.getAtoms()):
@@ -183,7 +183,7 @@ def kabsch(mol0,mol1):
     # write back coordinates
     for i,atom in enumerate(mol0.getAtoms()):
         atom.setcoords(P[i])
-    return mol0
+    return mol0,U.tolist(),d0,d1
     
 ## Reflects point about plane defined by its normal vector and a point on the plane
 #  @param u Normal vector to plane
@@ -254,6 +254,17 @@ def PointRotateAxis(u,rp,r,theta):
     rn[1] = R[1][0]*r[0]+R[1][1]*r[1]+R[1][2]*r[2] + R[1][3]
     rn[2] = R[2][0]*r[0]+R[2][1]*r[1]+R[2][2]*r[2] + R[2][3]
     return rn
+   
+## Rotates point using arbitrary 3x3 rotation matrix
+#  @param r Point to be rotated
+#  @param R 3x3 rotation matrix
+#  @return Rotated point
+def PointRotateMat(r,R):
+    rn = [0,0,0]
+    rn[0] = R[0][0]*r[0]+R[1][0]*r[1]+R[2][0]*r[2]
+    rn[1] = R[0][1]*r[0]+R[1][1]*r[1]+R[2][1]*r[2]
+    rn[2] = R[0][2]*r[0]+R[1][2]*r[1]+R[2][2]*r[2]
+    return rn    
     
 ## Translates point in spherical coordinates
 #  @param Rp Origin of sphere
@@ -371,6 +382,20 @@ def rotate_around_axis(mol,Rp,u,theta):
         atom.setcoords(Rt)
     return mol
 
+## Rotates molecule using arbitrary rotation matrix
+#
+#  Loops over PointRotateMat().
+#  @param mol mol3D of molecule to be rotated
+#  @param R Rotation matrix
+#  @param theta Angle of rotation in DEGREES
+#  @return mol3D of rotated molecule
+def rotate_mat(mol,R):
+    for atom in mol.atoms:
+        # Get new point after rotation
+        Rt = PointRotateMat(atom.coords(),R)
+        atom.setcoords(Rt)
+    return mol
+
 ## Translates molecule such that a given point in the molecule is at a given distance from a reference point
 #  
 #  The molecule is moved along the axis given by the two points.
@@ -393,7 +418,7 @@ def setPdistance(mol, Rr, Rp, bond):
     dxyz[2] = Rp[2]+t*u[2]-Rr[2]
     # translate molecule
     mol.translate(dxyz)
-    return mol
+    return mol,dxyz
     
 ## Translates molecule such that a given point in the molecule is at a given distance from a reference point
 #  
