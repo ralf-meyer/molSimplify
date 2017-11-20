@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['name_5fcomplex',['name_complex',['../namespacemolSimplify_1_1Scripts_1_1io.html#a46e78fd50789df0a774ccbe02fb87206',1,'molSimplify.Scripts.io.name_complex()'],['../namespacemolSimplify_1_1Scripts_1_1namegen.html#a04787b6890c4712d75d85cfba2ecfbda',1,'molSimplify.Scripts.namegen.name_complex()']]],
+  ['name_5fcomplex',['name_complex',['../namespacemolSimplify_1_1Scripts_1_1io.html#a64818a07711beacbd714d2c843c51862',1,'molSimplify.Scripts.io.name_complex()'],['../namespacemolSimplify_1_1Scripts_1_1namegen.html#a04787b6890c4712d75d85cfba2ecfbda',1,'molSimplify.Scripts.namegen.name_complex()']]],
   ['name_5fts',['name_TS',['../namespacemolSimplify_1_1Scripts_1_1io.html#a11b47a571bc01ae75ddbb581dc577349',1,'molSimplify::Scripts::io']]],
   ['nbo_5fparser_5frestricted',['nbo_parser_restricted',['../namespacemolSimplify_1_1Scripts_1_1postparse.html#ade4a07685fb9e16d3d3ae139796e740f',1,'molSimplify::Scripts::postparse']]],
   ['nbo_5fparser_5funrestricted',['nbo_parser_unrestricted',['../namespacemolSimplify_1_1Scripts_1_1postparse.html#a8d5cc0fb78ca69556a0c1257b8529a23',1,'molSimplify::Scripts::postparse']]],

@@ -140,9 +140,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a40650c28fe10183161a82e7127674f61"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1io.html#a40650c28fe10183161a82e7127674f61">plugin_defs</a> ()</td></tr>
 <tr class="memdesc:a40650c28fe10183161a82e7127674f61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load plugin definitions.  <a href="#a40650c28fe10183161a82e7127674f61">More...</a><br /></td></tr>
 <tr class="separator:a40650c28fe10183161a82e7127674f61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46e78fd50789df0a774ccbe02fb87206"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1io.html#a46e78fd50789df0a774ccbe02fb87206">name_complex</a> (rootdir, core, ligs, ligoc, sernum, args, bind=False, bsmi=False)</td></tr>
-<tr class="memdesc:a46e78fd50789df0a774ccbe02fb87206"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate complex name.  <a href="#a46e78fd50789df0a774ccbe02fb87206">More...</a><br /></td></tr>
-<tr class="separator:a46e78fd50789df0a774ccbe02fb87206"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64818a07711beacbd714d2c843c51862"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1io.html#a64818a07711beacbd714d2c843c51862">name_complex</a> (rootdir, core, ligs, ligoc, sernum, args, nconf=False, sanity=False, bind=False, bsmi=False)</td></tr>
+<tr class="memdesc:a64818a07711beacbd714d2c843c51862"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate complex name (this is actually used instead of <a class="el" href="namegen_8py.html" title="Generates filenames. ">namegen.py</a>)  <a href="#a64818a07711beacbd714d2c843c51862">More...</a><br /></td></tr>
+<tr class="separator:a64818a07711beacbd714d2c843c51862"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11b47a571bc01ae75ddbb581dc577349"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1io.html#a11b47a571bc01ae75ddbb581dc577349">name_TS</a> (rootdir, core, subst, args, bind=False, bsmi=False)</td></tr>
 <tr class="memdesc:a11b47a571bc01ae75ddbb581dc577349"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate transition state name.  <a href="#a11b47a571bc01ae75ddbb581dc577349">More...</a><br /></td></tr>
 <tr class="separator:a11b47a571bc01ae75ddbb581dc577349"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -648,8 +648,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a46e78fd50789df0a774ccbe02fb87206"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a46e78fd50789df0a774ccbe02fb87206">&#9670;&nbsp;</a></span>name_complex()</h2>
+<a id="a64818a07711beacbd714d2c843c51862"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64818a07711beacbd714d2c843c51862">&#9670;&nbsp;</a></span>name_complex()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -694,6 +694,18 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>nconf</em> = <code>False</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>sanity</em> = <code>False</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
           <td class="paramname"><em>bind</em> = <code>False</code>, </td>
         </tr>
         <tr>
@@ -710,7 +722,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Generate complex name. </p>
+<p>Generate complex name (this is actually used instead of <a class="el" href="namegen_8py.html" title="Generates filenames. ">namegen.py</a>) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rootdir</td><td>Root directory </td></tr>

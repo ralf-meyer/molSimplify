@@ -130,9 +130,12 @@ def Triangle(LB,UB,natoms):
 #  @param LB Lower bounds matrix
 #  @param UB Upper bounds matrix
 #  @param natoms Number of atoms in molecule
-#  @param Full Full metrization (scales O(N^5), default false) 
+#  @param Full Full metrization (scales O(N^5), default false)
+#  @param seed Random number seed (default none) 
 #  @return Distance matrix
-def Metrize(LB,UB,natoms,Full=False):
+def Metrize(LB,UB,natoms,Full=False,seed=False):
+    if seed:
+        numpy.random.seed(seed)
     D = np.zeros((natoms,natoms))
     LB,UB = Triangle(LB,UB,natoms)
     for i in range(natoms-1):
@@ -204,9 +207,35 @@ def DistErr(x,*args):
         for j in range(i+1,natoms):
             ri = [x[3*i],x[3*i+1],x[3*i+2]]
             rj = [x[3*j],x[3*j+1],x[3*j+2]]
-            E += (distance(ri,rj)**2/(UB[i][j]**2) - 1)**2 
-            E += (2*LB[i][j]**2/(LB[i][j]**2 + distance(ri,rj)**2) - 1)**2
-    return E
+            dij = distance(ri,rj)
+            uij = UB[i][j]
+            lij = LB[i][j]            
+            E += (dij**2/(uij**2) - 1)**2 
+            E += (2*lij**2/(lij**2 + dij**2) - 1)**2
+    return np.asarray(E)
+
+## Computes gradient of distance error function for scipy optimization
+#  
+#  Copied from E3 in pp. 311 of ref. [1]
+#  @param x 1D array of coordinates to be optimized
+#  @param *args Other parameters (refer to scipy.optimize docs)
+#  @return Objective function gradient
+def DistErrGrad(x,*args):
+    LB,UB,natoms = args
+    g = np.zeros(3*natoms)
+    for i in range(natoms):
+        jr = range(natoms)
+        jr.remove(i)
+        for j in jr:
+            ri = [x[3*i],x[3*i+1],x[3*i+2]]
+            rj = [x[3*j],x[3*j+1],x[3*j+2]]
+            dij = distance(ri,rj)
+            uij = UB[i][j]        
+            lij = LB[i][j]
+            g[3*i] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2/(lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i]-x[3*j]) # xi
+            g[3*i+1] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2/(lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+1]-x[3*j+1]) # yi  
+            g[3*i+2] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2/(lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+2]-x[3*j+2]) # zi
+    return g
 
 ## Further cleans up with OB FF and saves to a new mol3D object
 #  
@@ -219,14 +248,12 @@ def DistErr(x,*args):
 #  @param catoms List of connection atoms (default empty), used to generate FF constraints if specified
 #  @return mol3D of new conformer
 def SaveConf(X,mol,ffclean=True,catoms=[]):
-    mol3Dnew = mol3D()
-    mol3Dnew.copymol3D(mol)
+    conf3D = mol3D()
+    conf3D.copymol3D(mol)
     # set coordinates using OBMol to keep bonding info
-    OBMol = mol3Dnew.OBMol
+    OBMol = conf3D.OBMol
     for i,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
         atom.SetVector(X[i,0],X[i,1],X[i,2])
-    mol3Dnew.convert2mol3D()
-    # mol3Dnew.writexyz('noff')
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
@@ -236,13 +263,13 @@ def SaveConf(X,mol,ffclean=True,catoms=[]):
         s = ff.Setup(OBMol,constr)
         if not s:
             print('FF setup failed')
-        for i in range(100):
+        for i in range(200):
             ff.SteepestDescent(10)
             ff.ConjugateGradients(10)
         ff.GetCoordinates(OBMol)
-        mol3Dnew.OBMol = OBMol  
-        mol3Dnew.convert2mol3D()  
-    return mol3Dnew
+        conf3D.OBMol = OBMol  
+    conf3D.convert2mol3D()
+    return conf3D
 
 ## Uses distance geometry to get a random conformer.
 #  @param mol mol3D of molecule
@@ -253,27 +280,23 @@ def GetConf(mol,catoms=[]):
     mol.createMolecularGraph()
     A = mol.graph
     A = A + np.dot(A,np.transpose(A))
-    #start = time.time()
+    start = time.time()
     LB,UB = GetBoundsMatrices(mol,natoms,catoms,A)
-    #BM = time.time()
-    #print('Bounds',str(BM-start))
     status = False
     while not status:
-	    D = Metrize(LB,UB,natoms,False)
-	    #Met = time.time()
-	    #print('Metrize',str(Met-BM))
+	    D = Metrize(LB,UB,natoms)
 	    D0,status = GetCMDists(D,natoms)
     G = GetMetricMatrix(D,D0,natoms)
     L,V = Get3Eigs(G,natoms)
     X = np.dot(V,L) # get projection
     x = np.reshape(X,3*natoms)
-    res1 = optimize.fmin_cg(DistErr,x,gtol=0.1,args=(LB,UB,natoms),disp=0)
-    #Opt = time.time()
-    #print('Optimize',str(Opt-Met))
+    res1 = optimize.fmin_cg(DistErr,x,fprime=DistErrGrad,gtol=0.1,args=(LB,UB,natoms),disp=0)
+    Opt = time.time()
+    print('Optimize',str(Opt-start))
     X = np.reshape(res1,(natoms,3))
     conf3D = SaveConf(X,mol,True,catoms)
-    #ff = time.time()
-    #print('FF'+str(ff-Opt))
+    ff = time.time()
+    print('FF',str(ff-Opt))
     return conf3D
 
 # for testing

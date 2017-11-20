@@ -25,7 +25,7 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ad59becac42b9cc602df
 \begin{DoxyCompactList}\small\item\em Gets denticity of smiles string. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a0143758ce0284cc6b662a5ac5f39818b}{mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+\+A\+NN} (args, ligands, occs, dents, batslist, tcats, licores)
 \begin{DoxyCompactList}\small\item\em Initializes A\+NN. \end{DoxyCompactList}\item 
-def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a2c5ec4647f80764e3e8526df7662a524}{mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+template} (args, cpoints\+\_\+required)
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a761d405f3ea62ef631fb78791ef9db90}{mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+template} (args, cpoints\+\_\+required, globs)
 \begin{DoxyCompactList}\small\item\em Initializes core and template mol3\+Ds and properties. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a3687ca508aa4390f1964ead5ce0411db}{mol\+Simplify.\+Scripts.\+structgen.\+init\+\_\+ligand} (args, lig, tcats, keep\+Hs, i)
 \begin{DoxyCompactList}\small\item\em Initializes ligand 3D geometry and properties. \end{DoxyCompactList}\item 
@@ -71,8 +71,12 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a91f6c3dc244887d2e71
 \begin{DoxyCompactList}\small\item\em Aligns a monodentate ligand to core connecting atom coordinates. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a458be04ee9ec1f9d32c81b5b7448fcec}{mol\+Simplify.\+Scripts.\+structgen.\+align\+\_\+dent2\+\_\+lig} (args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, catoms, M\+Lb, A\+N\+N\+\_\+flag, A\+N\+N\+\_\+bondl, this\+\_\+diag, M\+Lbonds, M\+Loptbds, frozenats, i)
 \begin{DoxyCompactList}\small\item\em Aligns a bidentate ligand to core connecting atom coordinates. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a9bd3ad91740926954046d231532e5ebe}{mol\+Simplify.\+Scripts.\+structgen.\+cleave\+\_\+tridentate} (lig3D, catoms)
+\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a343f959db73f414f9f717d2a7f2ab18c}{mol\+Simplify.\+Scripts.\+structgen.\+mcomplex} (args, ligs, ligoc, licores, globs)
 \begin{DoxyCompactList}\small\item\em Main ligand placement routine. \end{DoxyCompactList}\item 
+def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_ac02db5841c0976072db2c43a255a4863}{mol\+Simplify.\+Scripts.\+structgen.\+structgen\+\_\+one} (strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=False)
+\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1structgen_a88cde12602c0445fff9fe6921415aad4}{mol\+Simplify.\+Scripts.\+structgen.\+structgen} (args, rootdir, ligands, ligoc, globs, sernum)
 \begin{DoxyCompactList}\small\item\em Main structure generation routine. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Variables}

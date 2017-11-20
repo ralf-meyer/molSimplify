@@ -427,7 +427,12 @@ def parseinputfile(args):
                     args.smicat.append(lloc)    
                 
                 print('final smicat set to ' + str(args.smicat))
-                
+            if (l[0]=='-nconfs' and len(l[1:]) > 0):
+                args.nconfs = l[1]    
+            #if (l[0]=='-maxconfs' and len(l[1:]) > 0):
+                #args.maxconfs = l[1]
+            if (l[0]=='-scoreconfs'):
+                args.scoreconfs = True                                
             if '-pangles' in line:
                 args.pangles = []
                 l = filter(None,line.split('pangles',1)[1])
@@ -798,6 +803,9 @@ def parseinputs_advanced(*p):
     # advanced structure generation options
     parser.add_argument("-rundir", help="directory for jobs, default ~/Runs",action="store_true")
     parser.add_argument("-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]",action="store_true")
+    parser.add_argument("-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default='1')
+    parser.add_argument("-scoreconfs", help="Attempt to filter out identical conformers and rank them by rmsd to the desired template, default false", default=False)
+    #parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default=True)
     parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
