@@ -105,7 +105,7 @@ def simple_splitting_ann(excitation):
     #print('result is ' + str(result))
     result = (result*sp_shift) + sp_center
     #print('result is ' + str(result))
-    return result
+    return result,excitation
 def simple_slope_ann(slope_excitation):
     globs=globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + "ms_slope")

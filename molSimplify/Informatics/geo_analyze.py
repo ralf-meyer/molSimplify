@@ -36,11 +36,18 @@ def getOctBondDistances(mol):
     print(eq_dist)
     return ax_dist, eq_dist
 def maximum_ML_dist(mol):
-
     core = mol.getAtom(mol.findMetal()[0]).coords()
     max_dist = 0
     for atom_inds in mol.getBondedAtomsSmart(mol.findMetal()[0]):
         dist = distance(core,mol.getAtom(atom_inds).coords())
+        if (dist > max_dist):
+            max_dist = dist
+    return max_dist
+def maximum_any_dist(mol):
+    core = mol.getAtom(mol.findMetal()[0])
+    max_dist = 0
+    for atoms in mol.getAtoms():
+        dist = distance(core.coords(),atoms.coords())
         if (dist > max_dist):
             max_dist = dist
     return max_dist

@@ -55,6 +55,7 @@ def pad_mol(mol,target_atoms):
     ## coulomb matrix
     this_natoms = mol.natoms
     blank_atom = atom3D(Sym='X') # placeholder type
+    blank_atom.frozen=False
     safe_stop = False
     counter = 0;
     while this_natoms < target_atoms and not safe_stop:

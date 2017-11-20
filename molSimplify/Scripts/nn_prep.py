@@ -426,7 +426,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ## engage ANN
         delta = 0  
 
-        delta = get_splitting(nn_excitation)
+        delta,scaled_excitation = get_splitting(nn_excitation)
         ## report to stdout
         if delta[0] < 0 and not high_spin:
             if abs(delta[0]) > 5:
@@ -440,6 +440,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                     print('warning, ANN predicts a near degenerate ground state for this complex')
         print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol')
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
+        ANN_attributes.update({'normed_excitation':scaled_excitation})
         ## reparse to save attributes
         ANN_attributes.update({'This spin':spin})
         if delta[0] < 0 and (abs(delta[0]) > 5):
@@ -532,8 +533,8 @@ def spin_classify(metal,spin,ox):
 
 def get_splitting(excitation):
     #print(excitation)
-    delta = simple_splitting_ann(excitation)
-    return delta
+    delta,scaled_excitation = simple_splitting_ann(excitation)
+    return delta,scaled_excitation
 def get_slope(slope_excitation):
     HFX = simple_slope_ann(slope_excitation)    
     return HFX
