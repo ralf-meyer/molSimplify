@@ -490,20 +490,20 @@ def lig_load(userligand,licores=None):
             lig.ffopt = dbentry[4][0]
     ### load from file
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
-        flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
-        if glob.glob(flig):
-            ftype = flig.split('.')[-1]
+        #flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
+        if glob.glob(userligand):
+            ftype = userligand.split('.')[-1]
             # try and catch error if conversion doesn't work
             try:
                 print('ligand is an '+ftype+' file')
-                lig.OBMol = lig.getOBMol(flig,ftype+'f') # convert from file
+                lig.OBMol = lig.getOBMol(userligand,ftype+'f') # convert from file
                 # generate coordinates if not existing
                 lig.charge = lig.OBMol.GetTotalCharge()
                 print('Ligand successfully converted to OBMol')
             except IOError:
                 emsg = 'Failed converting file ' +userligand+' to molecule..Check your file.\n'
                 return False,emsg
-            lig.ident = flig.rsplit('/')[-1]
+            lig.ident = userligand.rsplit('/')[-1]
             lig.ident = lig.ident.split('.'+ftype)[0]
         else:
             emsg = 'Ligand file '+userligand+' does not exist. Exiting..\n'
@@ -513,9 +513,11 @@ def lig_load(userligand,licores=None):
     else:
         try: 
             lig.getOBMol(userligand,'smistring',True) # convert from smiles
+            lig.convert2mol3D()
+            assert lig.natoms            
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
-        except IOError:
+        except:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
             emsg += "Furthermore, we couldn't find the ligand structure: '%s' in the ligands dictionary. Try again!\n" % userligand
             emsg += "\nAvailable ligands are: %s\n" % getligs()

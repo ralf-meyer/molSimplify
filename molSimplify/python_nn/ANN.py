@@ -171,6 +171,5 @@ def find_eu_dist(excitation):
             best_row = rownames[i]
             min_row = rows
     #print('min dist is ' +str(min_dist))
-    #print(min_row)
     return min_dist,best_row
 

@@ -255,19 +255,21 @@ def checkmultilig(ligs):
     tcats = []
     multidx = -1
     # loop over ligands
+    print(ligs)
     for i,lig in enumerate(ligs):
         connatoms = []
         if '.smi' in lig:
             if '~' in lig:
                 lig = lig.replace('~',os.path.expanduser("~"))
             # read molecule
-            flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +lig)
-            if glob.glob(flig):
-                f = open(flig,'r')
+            if glob.glob(lig):
+                print('found ligand file')
+                f = open(lig,'r')
                 s = f.read().splitlines()
                 for ss in s:
                     ss = ss.replace('\t',' ')
                     sf = filter(None,ss.split(' '))
+                    print(sf)
                     if len(sf) > 0:
                         connatoms.append(sf[-1])
                         multidx = i
@@ -292,7 +294,8 @@ def checkmultilig(ligs):
             for l1 in l0:
                 loclist.append(l1)
             llist.append(loclist)
-
+    print(llist)
+    print(tcats)
     return llist,tcats,multidx
 
 ## Draw mode supervisor

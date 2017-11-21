@@ -407,8 +407,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         ANN_attributes.update({'ANN_dist_to_train':train_dist} )
         ANN_attributes.update({'ANN_closest_train':best_row} )
-        print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +str(ANN_trust))
-        print(' with closest training row ' + best_row[:-2])
+        print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +"{0:.2f}".format(ANN_trust))
+        print(' with closest training row ' + best_row[:-2] + ' at HFX ' + str(best_row[-2:]) + '%')
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')

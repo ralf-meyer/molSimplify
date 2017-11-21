@@ -560,7 +560,7 @@ class mol3D:
                             if len(possible_inds)>CN:
                                 metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,ind))
                                
-                                allowed_inds = metal_prox[0:CN]
+                                allowed_inds = metal_prox[0:(CN+1)]
                                 if debug:
                                     print('ind: '+str(ind))
                                     print('metal prox:' + str(metal_prox))
