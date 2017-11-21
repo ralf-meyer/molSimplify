@@ -1239,7 +1239,7 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
     MLoptbds.append(bondl)
     MLoptbds.append(bondl)
-    lig3D = setPdistance(lig3D, r1, r0, bondl)    
+    lig3D,dxyz = setPdistance(lig3D, r1, r0, bondl)    
     # get target point for 2nd connecting atom
     rtarget = getPointu(corerefcoords, bondl, vecdiff(r1b,corerefcoords)) # get second point target
     if args.ff:
@@ -1863,10 +1863,22 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
             for n in range(1,int(args.nconfs)+1):
                 print 'Generating conformer '+str(n)+' of '+args.nconfs+':'	
                 strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,n)
+                print strfiles
         else:
             strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum)
     else:
         strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum)
+    
+    # score conformers
+    conf3Ds = dict()
+    if args.smicat:
+        if args.scoreconfs:
+            for i,strfile in enumerate(strfiles):
+                fname = strfile.rsplit('/',-1)[-1]
+                print rootdir
+                conf3D = core_load(strfile+'/'+fname+'.xyz')
+                conf3Ds[i] = conf3D
+    #print conf3Ds
     
     # number of different combinations
     if args.bindnum and args.bind:
