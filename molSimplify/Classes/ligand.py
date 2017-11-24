@@ -98,6 +98,7 @@ def ligand_breakdown(mol):
 	return liglist,ligdents,ligcons
 def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
         valid = True
+        loud = False
 	metal_index = mol.findMetal()[0]
 	built_ligand_list  = list()
 	lig_natoms_list = list()
@@ -122,9 +123,11 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 	if (max(ligdents) == 4) and (min(ligdents) != 1):
                 valid = False
                 print('bad denticities: ' + str(ligdents)) 
-	if max(ligdents) >= 4:
+                print('min denticities: ' + str(min(ligdents))) 
+	if max(ligdents) > 4:
                 valid = False
                 print('bad denticities: ' + str(ligdents)) 
+                print('max denticities: ' + str(min(ligdents))) 
 	eq_lig_list = list()
 	ax_lig_list = list()
 	ax_con_list = list()

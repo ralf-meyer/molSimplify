@@ -14,6 +14,7 @@ def getOctBondDistances(mol):
     ## This function gets
     ## ax and equitorial 
     ## min and max bond lengths
+    print('getting lig assignment')
     liglist,ligdents,ligcons = ligand_breakdown(mol)
     ax_ligand_list,eq_ligand_list,ax_natoms_list,eq_natoms_list,ax_con_int_list,eq_con_int_list,ax_con_list,eq_con_list,built_ligand_list=ligand_assign(mol,
                                                                                                                                                         liglist,

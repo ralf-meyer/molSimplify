@@ -122,13 +122,13 @@ def simple_slope_ann(slope_excitation):
     return result
 def simple_ls_ann(excitation):
     n = simple_network_builder([25,50,50],"ms_ls")
-    slope_excitation,ls_center,ls_shift = excitation_standardizer(excitation,'ls')
+    excitation,ls_center,ls_shift = excitation_standardizer(excitation,'ls')
     result = n.activate(excitation)
     result = result*ls_shift + ls_center
     return result
 def simple_hs_ann(excitation):
     n = simple_network_builder([25,50,50],"ms_hs")
-    slope_excitation,hs_center,hs_shift = excitation_standardizer(excitation,'hs')
+    excitation,hs_center,hs_shift = excitation_standardizer(excitation,'hs')
     result = n.activate(excitation)
     result = result*hs_shift + hs_center
     return result
