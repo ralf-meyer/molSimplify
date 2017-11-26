@@ -450,15 +450,19 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         else:
                 ANN_attributes.update({'ANN_gound_state':'dgen ' + str(spin_ops)})
 
-        r = 0
+        
+        r_ls = get_ls_dist(nn_excitation)
+        r_hs = get_hs_dist(nn_excitation)
         if not high_spin:
-            r = get_ls_dist(nn_excitation)
+            r = r_ls
         else:
-            r = get_hs_dist(nn_excitation)
+            r = r_hs
 
         print('ANN bond length is predicted to be: '+"{0:.2f}".format(float(r)) + ' angstrom')
         ANN_attributes.update({'ANN_bondl':r[0]})
-
+        print('ANN low spin bond length is predicted to be: '+"{0:.2f}".format(float(r_ls)) + ' angstrom')
+        print('ANN high spin bond length is predicted to be: '+"{0:.2f}".format(float(r_hs)) + ' angstrom')
+        
 	### use ANN to predict fucntional sensitivty
         HFX_slope = 0 
         HFX_slope = get_slope(slope_excitation)

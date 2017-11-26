@@ -1884,7 +1884,7 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     if args.bindnum and args.bind:
         Nogeom = int(args.bindnum)
     elif args.smicat:
-        if sum([len(i)>1 for i in args.smicat]) > 0:
+        if sum([len(i)>=1 for i in args.smicat]) > 0:
             Nogeom = int(args.nconfs)
     else:
         Nogeom = 1
