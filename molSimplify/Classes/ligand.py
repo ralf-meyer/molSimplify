@@ -128,7 +128,7 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
                 valid = False
                 print('bad denticities: ' + str(ligdents)) 
                 print('max denticities: ' + str(min(ligdents))) 
-	if n_ligs > 3:
+	if n_ligs > 3 and min(ligdents)>1:
                 valid = False              
                 print('too many ligs ' + str((n_ligs))) 
 	eq_lig_list = list()

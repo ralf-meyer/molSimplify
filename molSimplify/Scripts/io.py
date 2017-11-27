@@ -428,7 +428,7 @@ def substr_load(usersubstrate,subcores=None):
 def lig_load(userligand,licores=None):
     if licores == None:
         licores = getlicores()
-        licores.pop("x", None)
+        #@licores.pop("x", None)
     globs = globalvars()
     ### get groups ###
     groups = []
