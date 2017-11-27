@@ -105,7 +105,7 @@ def simple_splitting_ann(excitation):
     #print('result is ' + str(result))
     result = (result*sp_shift) + sp_center
     #print('result is ' + str(result))
-    return result
+    return result,excitation
 def simple_slope_ann(slope_excitation):
     globs=globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + "ms_slope")
@@ -122,13 +122,13 @@ def simple_slope_ann(slope_excitation):
     return result
 def simple_ls_ann(excitation):
     n = simple_network_builder([25,50,50],"ms_ls")
-    slope_excitation,ls_center,ls_shift = excitation_standardizer(excitation,'ls')
+    excitation,ls_center,ls_shift = excitation_standardizer(excitation,'ls')
     result = n.activate(excitation)
     result = result*ls_shift + ls_center
     return result
 def simple_hs_ann(excitation):
     n = simple_network_builder([25,50,50],"ms_hs")
-    slope_excitation,hs_center,hs_shift = excitation_standardizer(excitation,'hs')
+    excitation,hs_center,hs_shift = excitation_standardizer(excitation,'hs')
     result = n.activate(excitation)
     result = result*hs_shift + hs_center
     return result
@@ -171,6 +171,5 @@ def find_eu_dist(excitation):
             best_row = rownames[i]
             min_row = rows
     #print('min dist is ' +str(min_dist))
-    #print(min_row)
     return min_dist,best_row
 

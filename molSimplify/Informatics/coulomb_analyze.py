@@ -7,10 +7,7 @@ import math
 import random
 import string
 import numpy
-from geometry import *
-from atom3D import *
-from globalvars import globalvars
-from mol3D import*
+
 #name    metal   ox  axlig_charge    eqlig charge    axlig_dent  eqlig_dent  axlig_connect   eqlig_connect   axlig_natoms    eqlig_natoms    axlig_mdelen    eqlig_mdelen
 
 
@@ -55,6 +52,7 @@ def pad_mol(mol,target_atoms):
     ## coulomb matrix
     this_natoms = mol.natoms
     blank_atom = atom3D(Sym='X') # placeholder type
+    blank_atom.frozen=False
     safe_stop = False
     counter = 0;
     while this_natoms < target_atoms and not safe_stop:

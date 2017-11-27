@@ -1,12 +1,12 @@
 ## @file structgen.py
 #  Main structure generation routine
-#  
+#
 #  Written by Tim Ioannidis for HJK Group
-# 
+#
 #  Extended by JP Janet
-# 
+#
 #  Revised by Terry Gani
-#  
+#
 #  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Scripts.geometry import *
@@ -38,7 +38,7 @@ def setdiff(a,b):
 def getbackbcombsall(nums):
     bbcombs = []
     for i in range(1,len(nums)+1):
-        bbcombs += list(itertools.combinations(nums,i)) 
+        bbcombs += list(itertools.combinations(nums,i))
     for i,tup in enumerate(bbcombs):
         bbcombs[i] = list(tup)
     return bbcombs
@@ -123,8 +123,8 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
              ANN_reason = 'uncaught exception'
              ANN_flag = False
              ANN_bondl = 0
-    return ANN_flag,ANN_bondl,ANN_reason,ANN_attributes 
- 
+    return ANN_flag,ANN_bondl,ANN_reason,ANN_attributes
+
 ## Initializes core and template mol3Ds and properties
 #  @param args Namespace of arguments
 #  @param cpoints_required Number of connecting points required
@@ -134,11 +134,11 @@ def init_template(args,cpoints_required,globs):
     core3D = mol3D()
     m3D = mol3D()
     # container for ordered list of core reference atoms
-    corerefatoms = mol3D()         
+    corerefatoms = mol3D()
     # geometry load flag
     geom = False
     backbatoms = []
-    coord = 0 
+    coord = 0
     # build mode
     if args.geometry and not args.ccatoms:
         # determine geometry
@@ -173,8 +173,8 @@ def init_template(args,cpoints_required,globs):
         if args.distort:
             corexyz = distortbackbone(corexyz,args.distort) # random distortion
         # add center atom
-        if args.core[0].upper()+args.core[1:] in elementsbynum:    
-            centeratom = args.core[0].upper()+args.core[1:]  
+        if args.core[0].upper()+args.core[1:] in elementsbynum:
+            centeratom = args.core[0].upper()+args.core[1:]
         else:
             print('WARNING: Core is not an element. Defaulting to Fe')
             centeratom = 'Fe'
@@ -185,7 +185,7 @@ def init_template(args,cpoints_required,globs):
             m3D.addAtom(atom3D('X',corexyz[m]))
             corerefatoms.addAtom(core3D.getAtom(0))
             #corerefatoms.append(0)
-        
+
     # functionalize mode
     else:
         # check ccatoms
@@ -199,7 +199,7 @@ def init_template(args,cpoints_required,globs):
         coord = len(ccatoms)
         if args.debug:
             print('setting ccatoms ' + str(ccatoms))
-         
+
         # load core
         core,emsg = core_load(args.core)
         if emsg:
@@ -261,12 +261,12 @@ def init_template(args,cpoints_required,globs):
                         for cccat in range(i+1,len(ccatoms)):
                             lshift = len([a for a in delatoms if a < ccatoms[cccat]])
                             ccatoms[cccat] -= lshift
-                    # delete submolecule        
+                    # delete submolecule
                     core3D.deleteatoms(delatoms)
                     m3D.deleteatoms(delatoms)
 
                 except IndexError:
-                    pass        
+                    pass
             nums = m3D.findAtomsbySymbol('X')
             backbatoms = getbackbcombsall(nums)
     # set charge from oxidation state if desired
@@ -294,13 +294,7 @@ def init_ligand(args,lig,tcats,keepHs,i):
             lig.cat = [lig.natoms]
         else:
             lig.cat = tcats[i]
-    # add decorations to ligand        
-    if args.decoration and args.decoration_index:
-        if len(args.decoration) > i and len(args.decoration_index) > i:
-            if args.decoration[i]:
-                if args.debug:
-                    print('decorating ' + str(ligand) + ' with ' +str(args.decoration[i]) + ' at sites '  + str(args.decoration_index))
-                lig = decorate_ligand(args,ligand,args.decoration[i],args.decoration_index[i])
+
     # change name
     lig3D = mol3D()
     lig3D.copymol3D(lig)
@@ -320,8 +314,8 @@ def init_ligand(args,lig,tcats,keepHs,i):
         if 'b' in lig.ffopt.lower():
             print 'FF optimizing ligand'
             lig3D,enl = ffopt(args.ff,lig3D,lig3D.cat,0,[],False,[],100,args.debug)
-    # skip hydrogen removal for pi-coordinating ligands    
-    if not rempi: 
+    # skip hydrogen removal for pi-coordinating ligands
+    if not rempi:
         # check smarts match
         if 'auto' in keepHs[i]:
             for j,catom in enumerate(lig.cat):
@@ -337,11 +331,11 @@ def init_ligand(args,lig,tcats,keepHs,i):
                 if args.debug:
                     print('modifying charge down from ' + str(lig3D.charge))
                     try:
-                        print('debug keepHs check, removing? ' + str(keepHs) + ' i = ' +str(i)+ 
+                        print('debug keepHs check, removing? ' + str(keepHs) + ' i = ' +str(i)+
                     ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) +
                      ' length of keepHs list  '+ str(len(keepHs)))
                     except:
-                        pass 
+                        pass
                 # check for cats indices
                 if cat > Hs[0]:
                     lig.cat[j] -= 1
@@ -410,11 +404,11 @@ def smartreorderligs(args,ligs,dentl,licores):
     return indcs
 
 ## Main constrained FF opt routine
-#  
+#
 #  To optimize metal-containing complexes with MMFF94, an intricate procedure of masking the metal atoms and manually editing their valences is applied.
-#  
+#
 #  OpenBabel's implementation of MMFF94 may run extremely slowly on some systems. If so, consider switching to UFF.
-#  
+#
 #  @param ff Force field to use, available MMFF94, UFF, Ghemical, GAFF
 #  @param mol mol3D of molecule to be optimized
 #  @param connected List of indices of connection atoms to metal
@@ -424,7 +418,7 @@ def smartreorderligs(args,ligs,dentl,licores):
 #  @param mlbonds List of M-L bonds for distance constraints
 #  @param nsteps Number of steps to take - Adaptive: run only enough steps to remove clashes, default 200
 #  @param debug Flag for debug info printing
-#  @return FF-calculated energy, mol3D of optimized molecule  
+#  @return FF-calculated energy, mol3D of optimized molecule
 def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=False):
     globs = globalvars()
     metals = range(21,31)+range(39,49)+range(72,81)
@@ -443,7 +437,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
         # initialize force field
         forcefield = openbabel.OBForceField.FindForceField(ff)
         # initialize constraints
-        constr = openbabel.OBFFConstraints()     
+        constr = openbabel.OBFFConstraints()
         # openbabel indexing starts at 1 !!!
         # convert metals to carbons for FF
         indmtls = []
@@ -455,14 +449,14 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 atom.SetAtomicNum(6)
         # freeze and ignore metals
         for midxm in indmtls:
-            constr.AddAtomConstraint(midxm+1) # indexing babel           
+            constr.AddAtomConstraint(midxm+1) # indexing babel
         # add coordinating atom constraints
         for ii,catom in enumerate(connected):
             if constopt==1 or frozenangles:
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
-        bridgingatoms = []        
+        bridgingatoms = []
         # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
         # these are immune to deletion
         for i in range(mol.natoms):
@@ -497,7 +491,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 forcefield.ConjugateGradients(50)
                 forcefield.GetCoordinates(OBMol)
                 mol.OBMol = OBMol
-                mol.convert2mol3D()              
+                mol.convert2mol3D()
                 overlap,mind = mol.sanitycheck(True)
                 if not overlap:
                     break
@@ -506,7 +500,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
             try:
                 n = nsteps
             except:
-                n = 100    
+                n = 100
             forcefield.ConjugateGradients(n)
             forcefield.GetCoordinates(OBMol)
             mol.OBMol = OBMol
@@ -531,7 +525,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
         #if len(connected) < 2:
             #mol.OBMol.localopt('mmff94',100) # add hydrogens and coordinates
         OBMol = mol.OBMol # convert to OBMol
-        s = forcefield.Setup(OBMol,constr)   
+        s = forcefield.Setup(OBMol,constr)
         # force field optimize structure
         if OBMol.NumHvyAtoms() > 10:
             forcefield.ConjugateGradients(50)
@@ -545,7 +539,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
     return mol,en
 
 ## Finds the optimum attachment point for an atom/group to a central atom given the desired bond length
-#  
+#
 #  Objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
 #  @param core mol3D of core
 #  @param cidx Core connecting atom index
@@ -621,16 +615,16 @@ def align_lig_centersym(corerefcoords,lig3D,atom0,core3D,EnableAutoLinearBend):
     lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
     # additional rotation for bent terminal connecting atom:
     if auxmol.natoms == 1:
-        if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad) and EnableAutoLinearBend: 
+        if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad) and EnableAutoLinearBend:
             print('bending of linear terminal ligand')
             ##warning: force field might overwrite this
             r1 = lig3D.getAtom(atom0).coords()
             r2 = auxmol.getAtom(0).coords()
             theta,u = rotation_params([1,1,1],r1,r2)
-            lig3D = rotate_around_axis(lig3D,r1,u,globs.linearbentang) 
+            lig3D = rotate_around_axis(lig3D,r1,u,globs.linearbentang)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
-    return lig3D_aligned    
+    return lig3D_aligned
 
 ## Aligns a linear pi ligand's connecting point to the metal-ligand axis
 #  @param corerefcoords Core reference coordinates
@@ -656,7 +650,7 @@ def align_linear_pi_lig(corerefcoords,lig3D,atom0,ligpiatoms):
             thetaopt = theta
             objfuncopt = objfunc
             lig3Dopt = mol3D() # lig3Dopt = lig3D_tmp DOES NOT WORK!!!
-            lig3Dopt.copymol3D(lig3D_tmp) 
+            lig3Dopt.copymol3D(lig3D_tmp)
     lig3D = lig3Dopt
     # then rotate 90 degrees about the bond axis to further reduce steric repulsion
     r1 = lig3D.getAtom(ligpiatoms[0]).coords()
@@ -666,15 +660,15 @@ def align_linear_pi_lig(corerefcoords,lig3D,atom0,ligpiatoms):
     lig3D_tmpa.copymol3D(lig3D)
     lig3D_tmpa = rotate_around_axis(lig3D_tmpa, lig3D_tmpa.getAtom(atom0).coords(), u, 90)
     lig3D_tmpb = mol3D()
-    lig3D_tmpb.copymol3D(lig3D)                        
+    lig3D_tmpb.copymol3D(lig3D)
     lig3D_tmpb = rotate_around_axis(lig3D_tmpb, lig3D_tmpb.getAtom(atom0).coords(), u, -90)
     d1 = distance(corerefcoords,lig3D_tmpa.centermass())
     d2 = distance(corerefcoords,lig3D_tmpb.centermass())
-    #lig3D = lig3D if (d1 < d2)  else lig3Db 
+    #lig3D = lig3D if (d1 < d2)  else lig3Db
     lig3D = lig3D_tmpa if (d1 > d2) else lig3D_tmpb # pick the better structure
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
-    return lig3D_aligned 
+    return lig3D_aligned
 
 ## Checks if ligand has a linear coordination environment (e.g., OCO) and ensures perpendicularity to M-L axis
 #  @param corerefcoords Core reference coordinates
@@ -732,7 +726,7 @@ def check_rotate_symm_lig(corerefcoords,lig3D,atom0,core3D):
 #  @param atom0 Ligand connecting atom index
 #  @param core3D mol3D of partially built complex
 #  @return mol3D of rotated ligand
-def rotate_MLaxis_minimize_steric(corerefcoords,lig3D,atom0,core3D):  
+def rotate_MLaxis_minimize_steric(corerefcoords,lig3D,atom0,core3D):
     r1 = lig3D.getAtom(atom0).coords()
     u = vecdiff(r1,corerefcoords)
     dtheta = 2
@@ -754,10 +748,10 @@ def rotate_MLaxis_minimize_steric(corerefcoords,lig3D,atom0,core3D):
     lig3D = lig3Db
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
-    return lig3D_aligned    
+    return lig3D_aligned
 
 ## Rotates a connecting atom of a multidentate ligand to improve H atom placement
-#  
+#
 #  There are separate routines for terminal connecting atoms and intermediate connecting atoms.
 #  @param lig3D mol3D of ligand
 #  @param catoms List of ligand connecting atom indices
@@ -790,7 +784,7 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
             anchoratoms.append(list(set(subm).intersection(lig3D.getBondedAtoms(catoms[n])))[0])
     for atom in danglinggroup:
         confrag3D.addAtom(lig3D.getAtom(atom))
-        confragatomlist.append(atom)   
+        confragatomlist.append(atom)
     # terminal connecting atom
     confrag3Dtmp = mol3D()
     confrag3Dtmp.copymol3D(confrag3D)
@@ -805,12 +799,12 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
             localmaxs = []
             thetas = range(0,360,dtheta)
             for theta in thetas:
-                confrag3Dtmp = rotate_around_axis(confrag3Dtmp,refpt,u,dtheta)     
+                confrag3Dtmp = rotate_around_axis(confrag3Dtmp,refpt,u,dtheta)
                 auxmol = mol3D()
                 auxmol.addAtom(confrag3Dtmp.getAtom(0))
                 for at in confrag3Dtmp.getBondedAtoms(0):
                     auxmol.addAtom(confrag3Dtmp.getAtom(at))
-                auxmol.addAtom(lig3D.getAtom(anchoratom))  
+                auxmol.addAtom(lig3D.getAtom(anchoratom))
                 objs.append(distance(mcoords,auxmol.centersym()))
             for i,obj in enumerate(objs):
                 try:
@@ -841,36 +835,36 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
                 if objs[i] > objs[i-1] and objs[i] > objs[i+1]:
                     localmaxs.append(thetas[i])
             except IndexError:
-                pass       
+                pass
         if localmaxs == []:
             localmaxs = [0]
-        confrag3D = rotate_around_axis(confrag3D,refpt,u,localmaxs[0])                 
+        confrag3D = rotate_around_axis(confrag3D,refpt,u,localmaxs[0])
     for i,atom in enumerate(confragatomlist):
         lig3D.getAtom(atom).setcoords(confrag3D.getAtomCoords(i))
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
-    return lig3D_aligned   
+    return lig3D_aligned
 
 ## Rotates connecting atoms of multidentate ligands to improve H atom placement
-#  
+#
 #  Loops over rotate_catom_fix_Hs().
 #  @param lig3D mol3D of ligand
 #  @param catoms List of ligand connecting atom indices
 #  @param mcoords Core reference (usually a metal) coordintes
 #  @param core3D mol3D of partially built complex
 #  @return mol3D of rotated ligand
-def rotate_catoms_fix_Hs(lig3D,catoms,mcoords,core3D): 
+def rotate_catoms_fix_Hs(lig3D,catoms,mcoords,core3D):
     for i,n in enumerate(catoms):
         if len(lig3D.getHsbyIndex(n)) > 0:
             lig3D = rotate_catom_fix_Hs(lig3D,catoms,i,mcoords,core3D)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
-    return lig3D_aligned      
+    return lig3D_aligned
 
 ## Finds and rotates a rotatable bond in a bidentate ligand to obtain cis conformer
-#  
+#
 #  For certain ligands (e.g., NCCN) this is a more efficient version of the generic distance geometry conformer search.
-#  
+#
 #  @param lig3D mol3D of ligand
 #  @param catoms List of ligand connecting atom indices
 #  @return mol3D of rotated ligand
@@ -941,7 +935,7 @@ def find_rotate_rotatable_bond(lig3D,catoms):
 #  @param MLbonds M-L bond dictionary
 #  @return M-L bond length in Angstroms
 def get_MLdist(args,lig3D,atom0,ligand,metal,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds):
-    # first check for user-specified distances and use them        
+    # first check for user-specified distances and use them
     if MLb and MLb[i]:
         print('using user-specified M-L distances')
         if 'c' in MLb[i].lower():
@@ -949,7 +943,7 @@ def get_MLdist(args,lig3D,atom0,ligand,metal,MLb,i,ANN_flag,ANN_bondl,this_diag,
         else:
             bondl = float(MLb[i])
     else:
-    # otherwise, check for exact DB match    
+    # otherwise, check for exact DB match
         bondl,exact_match = get_MLdist_database(args,metal,lig3D,atom0,ligand,MLbonds)
         try:
             this_diag.set_dict_bl(bondl)
@@ -1017,7 +1011,7 @@ def get_batoms(args,batslist,ligsused):
         if args.gui:
             qqb = mQDialogWarn('Warning',emsg)
             qqb.setParent(args.gui.wmain)
-    return batoms        
+    return batoms
 
 ## Crude rotations to improve alignment of the 2nd connecting atom of a bidentate ligand
 #  @param args Namespace of arguments
@@ -1066,7 +1060,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
     else:
         theta = 0.0
     # rotate around axis
-    lig3Db = mol3D()       
+    lig3Db = mol3D()
     lig3Db.copymol3D(lig3D)
     lig3D = rotate_around_axis(lig3D,r1,urot,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
@@ -1084,7 +1078,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
         pass
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
-    return lig3D_aligned,r1b     
+    return lig3D_aligned,r1b
 
 ## Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.
 #  @param args Namespace of arguments
@@ -1112,14 +1106,14 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
     ens=[]
     finished = False
     relax = False
-    while True: 
+    while True:
         lig3Dtmp = mol3D()
         lig3Dtmp.copymol3D(lig3D)
         for ii in range(0,nsteps):
             lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[],1,[catoms[0],catoms[1]],False,[],'Adaptive',args.debug)
             ens.append(enl)
             lig3Dtmp.getAtom(catoms[1]).translate(ddr)
-            # once the ligand strain energy becomes too high, stop and accept ligand position 
+            # once the ligand strain energy becomes too high, stop and accept ligand position
             # or if the ideal coordinating point is reached without reaching the strain energy cutoff, stop
             if (ens[-1] - ens[0] > cutoff) or (ii == nsteps-1):
                 r0,r1 = lig3Dtmp.getAtomCoords(catoms[0]),lig3Dtmp.getAtomCoords(catoms[1])
@@ -1134,28 +1128,28 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
                     break
                 theta2 = vecangle(vecdiff(r1,r0),vecdiff(corerefcoords,r0))
                 dtheta = theta2-theta1
-                theta,urot = rotation_params(corerefcoords,r0,r1)  
+                theta,urot = rotation_params(corerefcoords,r0,r1)
                 lig3Dtmp = rotate_around_axis(lig3Dtmp,r0,urot,-dtheta) # rotate so that it matches bond
-                finished = True 
+                finished = True
                 break
         if finished:
             break
-    # for long linear ligand chains, this procedure might produce the wrong ligand curvature. If so, reflect about M-L plane        
+    # for long linear ligand chains, this procedure might produce the wrong ligand curvature. If so, reflect about M-L plane
     lig3Dtmpb = mol3D()
     lig3Dtmpb.copymol3D(lig3Dtmp)
     lig3Dtmpb = reflect_through_plane(lig3Dtmpb,vecdiff(midpt(lig3Dtmpb.getAtom(catoms[0]).coords(),lig3Dtmpb.getAtom(catoms[1]).coords()),corerefcoords),lig3Dtmpb.getAtom(catoms[0]).coords())
     lig3Dtmp = lig3Dtmpb if lig3Dtmp.mindist(core3D) < lig3Dtmpb.mindist(core3D) else lig3Dtmp
     if relax:
         # Relax the ligand
-        lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[catoms[1]],2,[catoms[0]],False,MLoptbds[-2:-1],200,args.debug) 
-        lig3Dtmp.deleteatom(lig3Dtmp.natoms-1) 
+        lig3Dtmp,enl = ffopt(args.ff,lig3Dtmp,[catoms[1]],2,[catoms[0]],False,MLoptbds[-2:-1],200,args.debug)
+        lig3Dtmp.deleteatom(lig3Dtmp.natoms-1)
     lig3Dtmp,en_final = ffopt(args.ff,lig3Dtmp,[],1,[],False,[],0,args.debug)
     if en_final - en_start > 20:
         print 'Warning: Complex may be strained. Ligand strain energy (kcal/mol) = ' + str(en_final - en_start)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3Dtmp)
-    return lig3D_aligned                    
-   
+    return lig3D_aligned
+
 ## Aligns a monodentate ligand to core connecting atom coordinates
 #  @param args Namespace of arguments
 #  @param cpoint atom3D containing backbone connecting point
@@ -1174,7 +1168,7 @@ def align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,core
 #  @param MLoptbds List of final M-L bond lengths
 #  @param i Ligand serial number
 #  @param EnableAutoLinearBend Flag for enabling automatic bending of linear ligands (e.g. superoxo)
-#  @return mol3D of aligned ligand, updated list of M-L bond lengths   
+#  @return mol3D of aligned ligand, updated list of M-L bond lengths
 def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi=False,ligpiatoms=[],MLb=[],ANN_flag=False,ANN_bondl=[],this_diag=0,MLbonds=dict(),MLoptbds=[],i=0,EnableAutoLinearBend=True):
     corerefcoords = coreref.coords()
     # connection atom in lig3D
@@ -1224,7 +1218,7 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi=False,l
 #  @param i Ligand serial number
 #  @return mol3D of aligned ligand, updated lists of frozen atoms and M-L bond lengths
 def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i):
-    corerefcoords = coreref.coords()    
+    corerefcoords = coreref.coords()
     r0 = corerefcoords
     # get cis conformer by rotating rotatable bonds
     #lig3D = find_rotate_rotatable_bond(lig3D,catoms)
@@ -1239,14 +1233,14 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
     MLoptbds.append(bondl)
     MLoptbds.append(bondl)
-    lig3D = setPdistance(lig3D, r1, r0, bondl)    
+    lig3D,dxyz = setPdistance(lig3D, r1, r0, bondl)
     # get target point for 2nd connecting atom
     rtarget = getPointu(corerefcoords, bondl, vecdiff(r1b,corerefcoords)) # get second point target
     if args.ff:
         # align 2nd connecting atom while balancing the desired location and ligand strain
         lig3D = align_dent2_catom2_refined(args,lig3D,catoms,bondl,r1,r0,core3D,rtarget,coreref,MLoptbds)
     else:
-        print 'Warning: Ligand FF optimization is inactive.'  
+        print 'Warning: Ligand FF optimization is inactive.'
     # rotate connecting atoms to align Hs properly
     lig3D = rotate_catoms_fix_Hs(lig3D,catoms,corerefcoords,core3D)
     # freeze local geometry
@@ -1258,7 +1252,7 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     return lig3D_aligned,frozenats,MLoptbds
 
 # Tries to break a tridentate ligand at the middle connecting atom into the middle fragment and two bidentate ligands which are then aligned separately.
-#  
+#
 #  Will fail if there are no suitable rotatable bonds, such as in a polycyclic aromatic ligand, and return a flag indicating as such.
 #  @param lig3D mol3D of tridentate ligand
 #  @param catoms List of connecting atoms
@@ -1289,12 +1283,12 @@ def cleave_tridentate(lig3D,catoms):
             catoms2.append(lig3D2.natoms-1)
             status = True
         else:
-            lig3D3.addAtom(lig3D.getAtom(i))            
+            lig3D3.addAtom(lig3D.getAtom(i))
     if lig3D1.natoms >= lig3D.natoms or lig3D2.natoms >= lig3D.natoms:
         status = False
     catoms1.reverse()
     catoms2.reverse()
-    return lig3D1,catoms1,lig3D2,catoms2,lig3D3,status    
+    return lig3D1,catoms1,lig3D2,catoms2,lig3D3,status
 
 ## Main ligand placement routine
 #  @param args Namespace of arguments
@@ -1422,8 +1416,8 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     m3D,core3D,geom,backbatoms,coord,corerefatoms = init_template(args,cpoints_required,globs)
     # Get connection points for all the ligands
     # smart alignment and forced order
-    
-    #if geom:        
+
+    #if geom:
     if args.ligloc and args.ligalign:
         batslist0 = []
         for i,ligand in enumerate(ligandsU):
@@ -1448,14 +1442,14 @@ def mcomplex(args,ligs,ligoc,licores,globs):
         for comb in batslist:
             for i in comb:
                 if i == 1:
-                    batslist[comb][i] = m3D.natoms - coord + 1            
+                    batslist[comb][i] = m3D.natoms - coord + 1
     # initialize ANN
     ANN_flag,ANN_bondl,ANN_reason,ANN_attributes = init_ANN(args,ligands,occs,dents,batslist,tcats,licores)
     this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
-    
+
     # freeze core
     for i in range(0,core3D.natoms):
-        frozenats.append(i) 
+        frozenats.append(i)
 
     # loop over ligands and begin functionalization
     # loop over ligands
@@ -1464,15 +1458,23 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     for i,ligand in enumerate(ligands):
         if not(ligand=='x' or ligand =='X'):
             # load ligand
-            lig,emsg = lig_load(ligand)
+            # add decorations to ligand
+            if args.decoration and args.decoration_index:
+                if len(args.decoration) > i and len(args.decoration_index) > i:
+                    if args.decoration[i]:
+                        if args.debug:
+                            print('decorating ' + str(ligand) + ' with ' +str(args.decoration[i]) + ' at sites '  + str(args.decoration_index))
+                        lig = decorate_ligand(args,ligand,args.decoration[i],args.decoration_index[i])
+            else:
+                lig,emsg = lig_load(ligand)
             lig.convert2mol3D()
             # initialize ligand
             lig3D,rempi,ligpiatoms = init_ligand(args,lig,tcats,keepHs,i)
             if emsg:
-                return False,emsg         
+                return False,emsg
         for j in range(0,occs[i]):
             denticity = dents[i]
-            if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):  
+            if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # add atoms to connected atoms list
                 catoms = lig.cat # connection atoms
                 initatoms = core3D.natoms # initial number of atoms in core3D
@@ -1501,7 +1503,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     auxm.addAtom(lig3D.getAtom(catoms[2]))
                     r0 = core3D.getAtom(0).coords()
                     lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)                    
+                    lig3Db.copymol3D(lig3D)
                     theta,urot = rotation_params(r0,lig3D.getAtom(atom0).coords(),auxm.centersym())
                     lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,theta)
                     # 2. align with correct plane
@@ -1522,32 +1524,32 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     theta,ulb = rotation_params(rl0b,rl1b,rl2b)
                     theta,uc = rotation_params(rc0,rc1,rc2)
                     d1 = norm(cross(ul,uc))
-                    d2 = norm(cross(ulb,uc)) 
-                    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one 
+                    d2 = norm(cross(ulb,uc))
+                    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
                     # 3. correct if not symmetric
                     theta0,urotaux = rotation_params(lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
                     theta1,urotaux = rotation_params(lig3D.getAtom(catoms[2]).coords(),lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
                     dtheta = 0.5*(theta1-theta0)
                     if abs(dtheta) > 0.5:
-                        lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,dtheta)                    
+                        lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,dtheta)
                     # 4. flip for correct stereochemistry
                     urot = vecdiff(lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
                     lig3Db = mol3D()
                     lig3Db.copymol3D(lig3D)
                     lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)
                     d1 = min(distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
-                    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))                       
-                    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one                                                  
+                    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
+                    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
                     # 5. flip to align 1st and 3rd connection atoms
                     lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)               
+                    lig3Db.copymol3D(lig3D)
                     theta,urot = rotation_params(lig3Db.getAtom(catoms[0]).coords(),lig3Db.getAtom(catoms[1]).coords(),lig3Db.getAtom(catoms[2]).coords())
-                    lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)                                
+                    lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)
                     d1 = min(distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
-                    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))                       
-                    lig3D = lig3D if d1 < d2 else lig3Db                    
-  
-                                                                                           
+                    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
+                    lig3D = lig3D if d1 < d2 else lig3Db
+
+
                     ### rotate around secondary axis ###
                     #auxm = mol3D()
                     #auxm.addAtom(lig3D.getAtom(catoms[0]))
@@ -1559,13 +1561,13 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                         #theta -= 180
                     #lig3Db = mol3D()
                     #lig3Db.copymol3D(lig3D)
-                    #lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,theta)                    
+                    #lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,theta)
                     #lig3Db = rotate_around_axis(lig3Db,lig3D.getAtom(atom0).coords(),urot,180-theta)
                     #d1 = distance(lig3D.getAtom(catoms[0]).coords(),m3D.getAtom(batoms[0]).coords())
                     #d2 = distance(lig3Db.getAtom(catoms[0]).coords(),m3D.getAtom(batoms[0]).coords())
                     #print d1
                     #print d2
-                    #lig3D = lig3D if (d1 < d2) else lig3Db     
+                    #lig3D = lig3D if (d1 < d2) else lig3Db
 
                     # if overlap flip
                     #dm0 = distance(lig3D.getAtom(catoms[0]).coords(),m3D.getAtom(0).coords())
@@ -1576,14 +1578,15 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                         #if iiat not in catoms and atom.sym != 'H' and distance(atom.coords(),m3D.getAtom(0).coords()) < min([dm0,dm1,dm2]):
                             #lig3D = rotate_around_axis(lig3D,rc1,uc,180)
                             #break
-                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)            
+                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
                     for iib in range(0,3):
                         MLoptbds.append(bondl)
                     # set correct distance
                     setPdistance(lig3D, lig3D.getAtom(atom0).coords(), m3D.getAtom(0).coords(), bondl)
                     # rotate connecting atoms to align Hs properly
-                    lig3D = rotate_catoms_fix_Hs(lig3D,[catoms[0],catoms[1],catoms[2]],m3D.getAtom(0).coords(),core3D)                  
+                    lig3D = rotate_catoms_fix_Hs(lig3D,[catoms[0],catoms[1],catoms[2]],m3D.getAtom(0).coords(),core3D)
                 elif (denticity == 4):
+					# note: catoms for ligand should be specified clockwise
                     # connection atoms in backbone
                     batoms = batslist[ligsused]
                     if len(batoms) < 1 :
@@ -1594,49 +1597,70 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                         break
                     # connection atom
                     atom0 = catoms[0]
-                    # align molecule according to symmetry center
-                    auxmol = mol3D()
+                    # align ligand center of symmetry to core reference atom
+                    auxmol_lig = mol3D()
+                    auxmol_m3D = mol3D()
                     for iiax in range(0,4):
-                        auxmol.addAtom(lig3D.getAtom(catoms[iiax]))
-                    if args.debug:
-                        m3D.writexyz('m3d.xyz')
-                        auxmol.writexyz('auxmol.xyz')
+                        auxmol_lig.addAtom(lig3D.getAtom(catoms[iiax]))
+                        auxmol_m3D.addAtom(m3D.getAtom(batoms[iiax]))
+                    lig3D.alignmol(atom3D('C',auxmol_lig.centersym()),m3D.getAtom(0))
+                    # necessary to prevent lig3D from being overwritten
+                    lig3Dtmp = mol3D()
+                    lig3Dtmp.copymol3D(lig3D)
+                    # compute average metal-ligand distance
+                    auxmol_lig = mol3D()
+                    auxmol_m3D = mol3D()
+                    sum_MLdists = 0
+                    for iiax in range(0,4):
+                        auxmol_lig.addAtom(lig3Dtmp.getAtom(catoms[iiax]))
+                        auxmol_m3D.addAtom(m3D.getAtom(batoms[iiax]))
+                        sum_MLdists += distance(m3D.getAtomCoords(0),auxmol_lig.getAtomCoords(iiax))
+                    avg_MLdists = sum_MLdists/4
+                    # scale template by average M-L distance
+                    auxmol_m3D.addAtom(m3D.getAtom(0))
+                    for iiax in range(0,4):
+                        auxmol_m3D.BCM(iiax,4,avg_MLdists)
+                    auxmol_m3D.deleteatom(4)
+                    # align lig3D to minimize RMSD from template
+                    auxmol_lig,U,d0,d1 = kabsch(auxmol_lig,auxmol_m3D)
+                    lig3D.translate(d0)
+                    lig3D = rotate_mat(lig3D,U)
+                    ## align plane
+                    #r0c = m3D.getAtom(batoms[0]).coords()
+                    #r1c = m3D.getAtom(batoms[1]).coords()
+                    #r2c = m3D.getAtom(batoms[2]).coords()
+                    #r0l = lig3D.getAtom(catoms[0]).coords()
+                    #r1l = lig3D.getAtom(catoms[1]).coords()
+                    #r2l = lig3D.getAtom(catoms[2]).coords()
+                    #theta,uc = rotation_params(r0c,r1c,r2c) # normal vector to backbone plane
+                    #theta,ul = rotation_params(r0l,r1l,r2l) # normal vector to ligand plane
+                    #lig3Db = mol3D()
+                    #lig3Db.copymol3D(lig3D)
+                    #theta = 180*arccos(dot(uc,ul)/(norm(uc)*norm(ul)))/pi
+                    #u = cross(uc,ul)
+                    ## rotate around axis to match planes
+                    #theta = 180-theta if theta > 90 else theta
+                    #lig3D = rotate_around_axis(lig3D,r0l,u,theta)
 
-                    lig3D.alignmol(atom3D('C',auxmol.centermass()),m3D.getAtom(0))
-                    # align plane
-                    r0c = m3D.getAtom(batoms[0]).coords()
-                    r1c = m3D.getAtom(batoms[1]).coords()
-                    r2c = m3D.getAtom(batoms[2]).coords()
-                    r0l = lig3D.getAtom(catoms[0]).coords()
-                    r1l = lig3D.getAtom(catoms[1]).coords()
-                    r2l = lig3D.getAtom(catoms[2]).coords()
-                    theta,uc = rotation_params(r0c,r1c,r2c) # normal vector to backbone plane
-                    theta,ul = rotation_params(r0l,r1l,r2l) # normal vector to ligand plane
-                    lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)
-                    theta = 180*arccos(dot(uc,ul)/(norm(uc)*norm(ul)))/pi
-                    u = cross(uc,ul)
-                    # rotate around axis to match planes
-                    theta = 180-theta if theta > 90 else theta
-                    lig3D = rotate_around_axis(lig3D,r0l,u,theta)
-                    # rotate ar?ound secondary axis to match atoms
-                    r0l = lig3D.getAtom(catoms[0]).coords()
-                    r1l = lig3D.getAtom(catoms[1]).coords()
-                    r2l = lig3D.getAtom(catoms[2]).coords()
-                    theta0,ul = rotation_params(r0l,r1l,r2l) # normal vector to ligand plane
-                    rm = lig3D.centermass()
-                    r1 = vecdiff(r0l,mcoords)
-                    r2 = vecdiff(r0c,mcoords)
-                    theta = 180*arccos(dot(r1,r2)/(norm(r1)*norm(r2)))/pi
-                    lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)
-                    if args.debug:
-                        print('normal to tetradentate ligand plane: ',ul)
-                        print('lig center of mass ',rm)
-                        lig3D.writexyz('lig3d.xyz')
-                        lig3Db.writexyz('lig3db.xyz')
-                    # rotate around axis and get both images
-                    lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
+                    ## rotate ar?ound secondary axis to match atoms
+                    #r0l = lig3D.getAtom(catoms[0]).coords()
+                    #r1l = lig3D.getAtom(catoms[1]).coords()
+                    #r2l = lig3D.getAtom(catoms[2]).coords()
+                    #theta0,ul = rotation_params(r0l,r1l,r2l) # normal vector to ligand plane
+                    #rm = lig3D.centersym()
+                    #r1 = vecdiff(r0l,mcoords)
+                    #r2 = vecdiff(r0c,mcoords)
+                    #theta = 180*arccos(dot(r1,r2)/(norm(r1)*norm(r2)))/pi
+                    #lig3Db = mol3D()
+                    #lig3Db.copymol3D(lig3D)
+                    #if args.debug:
+                        #print('normal to tetradentate ligand plane: ',ul)
+                        #print('lig center of symm ',rm)
+                        #lig3D.writexyz('lig3d.xyz')
+                        #lig3Db.writexyz('lig3db.xyz')
+                    ## rotate around axis and get both images
+                    #lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
+
                     bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
@@ -1742,6 +1766,17 @@ def mcomplex(args,ligs,ligoc,licores,globs):
         core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     return core3D,complex3D,emsg,this_diag
 
+
+## Main structure generation routine - single structure
+#  @param strfiles List of xyz files generated
+#  @param args Namespace of arguments
+#  @param rootdir Directory of current run
+#  @param ligands List of ligands
+#  @param ligoc List of ligand occupations
+#  @param globs Global variables
+#  @param sernum Serial number of complex for naming
+#  @param nconf Conformer ID, if any
+#  @return List of xyz files generated, error messages
 def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     # load ligand dictionary
     licores = getlicores()
@@ -1790,25 +1825,24 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
         if args.gui:
             ssmsg = 'Generated complex in folder '+rootdir+' is no good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
             qqb = mQDialogWarn('Warning',ssmsg)
-            qqb.setParent(args.gui.wmain)        
+            qqb.setParent(args.gui.wmain)
     if args.debug:
         print('setting sanity diag, min dist at ' +str(d0) + ' (higher is better)')
     this_diag.set_sanity(sanity,d0)
     # generate file name
-    fname = name_complex(rootdir,name_core,ligands,ligoc,sernum,args,nconf,sanity)   
+    fname = name_complex(rootdir,name_core,ligands,ligoc,sernum,args,nconf,sanity)
     # write xyz file
     core3D.writexyz(fname)
-    strfiles.append(fname)    
+    strfiles.append(fname)
     # write report file
     this_diag.set_mol(core3D)
-    this_diag.write_report(fname+'.report') 
+    this_diag.write_report(fname+'.report')
     # write input file from command line arguments
-    getinputargs(args,fname)             
+    getinputargs(args,fname)
     del core3D
-
     return strfiles, emsg, this_diag
-        
-## Main structure generation routine
+
+## Main structure generation routine - multiple structures
 #  @param args Namespace of arguments
 #  @param rootdir Directory of current run
 #  @param ligands List of ligands
@@ -1821,32 +1855,42 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     # import gui options
     if args.gui:
         from Classes.mWidgets import mQDialogWarn
-    # load ligand dictionary
-    
+
     strfiles = []
-  
+
     if args.smicat:
         if sum([len(i)>1 for i in args.smicat]) > 0:
             print('You have specified multidentate SMILES ligand(s).')
-            print('We will automatically find suitable conformer(s) for coordination.')			
+            print('We will automatically find suitable conformer(s) for coordination.')
             for n in range(1,int(args.nconfs)+1):
-                print 'Generating conformer '+str(n)+' of '+args.nconfs+':'	
+                print 'Generating conformer '+str(n)+' of '+args.nconfs+':'
                 strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,n)
-
+                print strfiles
         else:
             strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum)
     else:
         strfiles, emsg, this_diag = structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum)
-    
+
+    # score conformers
+    conf3Ds = dict()
+    if args.smicat:
+        if args.scoreconfs:
+            for i,strfile in enumerate(strfiles):
+                fname = strfile.rsplit('/',-1)[-1]
+                print rootdir
+                conf3D = core_load(strfile+'/'+fname+'.xyz')
+                conf3Ds[i] = conf3D
+    #print conf3Ds
+
     # number of different combinations
     if args.bindnum and args.bind:
         Nogeom = int(args.bindnum)
     elif args.smicat:
-        if sum([len(i)>1 for i in args.smicat]) > 0:
+        if sum([len(i)>=1 for i in args.smicat]) > 0:
             Nogeom = int(args.nconfs)
     else:
         Nogeom = 1
-    # generate multiple geometric arrangements 
+    # generate multiple geometric arrangements
     if args.bind:
         # load bind, add hydrogens and convert to mol3D
         bind,bsmi,emsg = bind_load(args.bind)
@@ -1987,5 +2031,3 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
     print '\nIn folder '+pfold+' generated ',Nogeom,' structure(s)!'
 
     return strfiles, emsg, this_diag
-
- 

@@ -21,7 +21,7 @@ def fuzzy_compare_xyz(xyz1,xyz2,thresh):
     mol1.readfromxyz(xyz1)
     mol2 = mol3D()
     mol2.readfromxyz(xyz2)
-    mol1 = kabsch(mol1,mol2)
+    mol1,U,d0,d1 = kabsch(mol1,mol2)
     rmsd12 = mol1.rmsd(mol2)
     print('rmsd is ' +'{0:.2f}'.format(rmsd12))
     if rmsd12 < thresh:
@@ -114,7 +114,7 @@ def compareLG(xyz1,xyz2,thresh):
         return passLG
     for i in range(0,len(ligs1)):
         print "Checking geometry for ligand # ",i
-        ligs1[i] = kabsch(ligs1[i],ligs2[i])
+        ligs1[i],U,d0,d1 = kabsch(ligs1[i],ligs2[i])
         rmsd12 = ligs1[i].rmsd(ligs2[i])
         print('rmsd is ' +'{0:.2f}'.format(rmsd12))
         if rmsd12 > thresh:

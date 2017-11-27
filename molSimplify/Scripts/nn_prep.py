@@ -407,8 +407,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         ANN_attributes.update({'ANN_dist_to_train':train_dist} )
         ANN_attributes.update({'ANN_closest_train':best_row} )
-        print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +str(ANN_trust))
-        print(' with closest training row ' + best_row[:-2])
+        print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +"{0:.2f}".format(ANN_trust))
+        print(' with closest training row ' + best_row[:-2] + ' at HFX ' + str(best_row[-2:]) + '%')
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
@@ -426,7 +426,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ## engage ANN
         delta = 0  
 
-        delta = get_splitting(nn_excitation)
+        delta,scaled_excitation = get_splitting(nn_excitation)
         ## report to stdout
         if delta[0] < 0 and not high_spin:
             if abs(delta[0]) > 5:
@@ -440,6 +440,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                     print('warning, ANN predicts a near degenerate ground state for this complex')
         print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol')
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
+        ANN_attributes.update({'normed_excitation':scaled_excitation})
         ## reparse to save attributes
         ANN_attributes.update({'This spin':spin})
         if delta[0] < 0 and (abs(delta[0]) > 5):
@@ -449,15 +450,19 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         else:
                 ANN_attributes.update({'ANN_gound_state':'dgen ' + str(spin_ops)})
 
-        r = 0
+        
+        r_ls = get_ls_dist(nn_excitation)
+        r_hs = get_hs_dist(nn_excitation)
         if not high_spin:
-            r = get_ls_dist(nn_excitation)
+            r = r_ls
         else:
-            r = get_hs_dist(nn_excitation)
+            r = r_hs
 
         print('ANN bond length is predicted to be: '+"{0:.2f}".format(float(r)) + ' angstrom')
         ANN_attributes.update({'ANN_bondl':r[0]})
-
+        print('ANN low spin bond length is predicted to be: '+"{0:.2f}".format(float(r_ls)) + ' angstrom')
+        print('ANN high spin bond length is predicted to be: '+"{0:.2f}".format(float(r_hs)) + ' angstrom')
+        
 	### use ANN to predict fucntional sensitivty
         HFX_slope = 0 
         HFX_slope = get_slope(slope_excitation)
@@ -532,8 +537,8 @@ def spin_classify(metal,spin,ox):
 
 def get_splitting(excitation):
     #print(excitation)
-    delta = simple_splitting_ann(excitation)
-    return delta
+    delta,scaled_excitation = simple_splitting_ann(excitation)
+    return delta,scaled_excitation
 def get_slope(slope_excitation):
     HFX = simple_slope_ann(slope_excitation)    
     return HFX

@@ -12,6 +12,11 @@ from collections import Counter
 
 ## Ligand class for postprocessing DFT results by measuring ligand properties
 class ligand:
+    ## Constructor
+    #  @param self The object pointer
+    #  @param master_mol A mol3D complex to extract ligand from
+    #  @param index_list A list of indices of the ligand atoms
+    #  @paran dent The denticity of the ligand
 	def __init__(self,master_mol,index_list,dent):
 		self.master_mol  = master_mol
 		self.index_list = index_list
@@ -19,6 +24,8 @@ class ligand:
 		self.ext_int_dict = dict() ## store		
 								## map betweem
 								## int and ext indcies
+	## Obtain the ligand from the complex mol3D object
+	# @param self The object pointer
 	def obtain_mol3d(self):
 		this_mol = mol3D()
 		this_ext_int_dict = dict()
@@ -30,6 +37,11 @@ class ligand:
 				j += 1 # keep count of how many are added
 		self.mol = this_mol 
 		self.ext_int_dict =  this_ext_int_dict
+	## Truncate ligand about connecting atoms
+	#  @param self The object pointer
+	#  @param con_atoms The connection atom indices
+	#  @param hops Number of bonds to truncate after
+	#  @return Truncated mol3D object
 	def obtain_truncation(self,con_atoms,hops):
 		self.trunc_mol = mol3D()
 		added_list = list()
@@ -48,6 +60,14 @@ class ligand:
 					[new_active_set.append(element) for element in this_atoms_neighbors]
 				active_set = new_active_set
 		return trunc_mol
+## Extract axial and equitorial components of a octahedral complex
+#  @param mol The mol3D object for the complex
+#  @param liglist List of ligands
+#  @return ligdents List of ligand dents
+#  @return ligcons List of ligand connection indices (in mol)
+
+
+
 
 def ligand_breakdown(mol):
 	# this function takes an octahedral 
@@ -78,6 +98,7 @@ def ligand_breakdown(mol):
 	return liglist,ligdents,ligcons
 def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
         valid = True
+        loud = False
 	metal_index = mol.findMetal()[0]
 	built_ligand_list  = list()
 	lig_natoms_list = list()
@@ -102,9 +123,14 @@ def ligand_assign(mol,liglist,ligdents,ligcons,loud=False,name=False):
 	if (max(ligdents) == 4) and (min(ligdents) != 1):
                 valid = False
                 print('bad denticities: ' + str(ligdents)) 
-	if max(ligdents) >= 4:
+                print('min denticities: ' + str(min(ligdents))) 
+	if max(ligdents) > 4:
                 valid = False
                 print('bad denticities: ' + str(ligdents)) 
+                print('max denticities: ' + str(min(ligdents))) 
+	if n_ligs > 3:
+                valid = False              
+                print('too many ligs ' + str((n_ligs))) 
 	eq_lig_list = list()
 	ax_lig_list = list()
 	ax_con_list = list()
