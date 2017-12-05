@@ -796,26 +796,38 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
             u = vecdiff(refpt,anchor)
             dtheta = 5
             objs = []
+            objopt = 0
             localmaxs = []
             thetas = range(0,360,dtheta)
             for theta in thetas:
                 confrag3Dtmp = rotate_around_axis(confrag3Dtmp,refpt,u,dtheta)
-                auxmol = mol3D()
-                auxmol.addAtom(confrag3Dtmp.getAtom(0))
+                auxmol1 = mol3D()
+                auxmol1.addAtom(confrag3Dtmp.getAtom(0))
                 for at in confrag3Dtmp.getBondedAtoms(0):
-                    auxmol.addAtom(confrag3Dtmp.getAtom(at))
-                auxmol.addAtom(lig3D.getAtom(anchoratom))
-                objs.append(distance(mcoords,auxmol.centersym()))
-            for i,obj in enumerate(objs):
-                try:
-                    if objs[i] > objs[i-1] and objs[i] > objs[i+1]:
-                        localmaxs.append(thetas[i])
-                except IndexError:
-                    pass
-        # in future, compare multiple local maxima
-        if localmaxs == []:
-            localmaxs = [0]
-        confrag3D = rotate_around_axis(confrag3D,refpt,u,localmaxs[0])
+                    auxmol1.addAtom(confrag3Dtmp.getAtom(at))
+                auxmol1.addAtom(lig3D.getAtom(anchoratom))
+                auxmol2 = mol3D()
+                auxmol2.copymol3D(confrag3Dtmp)
+                #objs.append(distance(mcoords,auxmol.centersym()))
+                if auxmol2.natoms > 3: 
+                    obj = auxmol2.mindisttopoint(mcoords)
+                else:
+                    obj = distance(mcoords,auxmol1.centersym())
+                if obj > objopt:
+                    objopt = obj
+                    thetaopt = theta    
+            #for i,obj in enumerate(objs):
+                #try:
+                    #if objs[i] > objs[i-1] and objs[i] > objs[i+1]:
+                        #localmaxs.append(thetas[i])
+                #except IndexError:
+                    #pass
+        ## in future, compare multiple local maxima
+        #if localmaxs == []:
+            #localmaxs = [0]
+        print auxmol2.natoms
+        confrag3D = rotate_around_axis(confrag3D,refpt,u,thetaopt)
+        #confrag3D = rotate_around_axis(confrag3D,refpt,u,localmaxs[0])
     # non-terminal connecting atom
     elif len(anchoratoms) == 2:
         refpt = confrag3D.getAtomCoords(0)
@@ -855,8 +867,8 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
 #  @return mol3D of rotated ligand
 def rotate_catoms_fix_Hs(lig3D,catoms,mcoords,core3D):
     for i,n in enumerate(catoms):
-        if len(lig3D.getHsbyIndex(n)) > 0:
-            lig3D = rotate_catom_fix_Hs(lig3D,catoms,i,mcoords,core3D)
+        #if len(lig3D.getHsbyIndex(n)) > 0:
+        lig3D = rotate_catom_fix_Hs(lig3D,catoms,i,mcoords,core3D)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
@@ -1038,7 +1050,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
     lig3D = rotate_around_axis(lig3D,r1,u,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,u,theta-180)
     d1 = distance(lig3D.getAtom(catoms[1]).coords(),m3D.getAtom(batoms[1]).coords())
-    d2 = distance(lig3Db.getAtom(catoms[1]).coords(),m3D.getAtom(batoms[1]).coords())
+    d2 = distance(lig3Db.getAtom(catoms[1]).coords(),m3D.getAtom(batoms[1]).coords())    
     lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
     # flip if overlap
     r0l = lig3D.getAtom(catoms[0]).coords()
@@ -1053,17 +1065,38 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
     r1l = lig3D.getAtom(catoms[1]).coords()
     rm = lig3D.centermass()
     urot = vecdiff(r1l,r0l)
-    theta,ub = rotation_params(corerefcoords,r0b,r1b)
-    theta,ul = rotation_params(rm,r0l,r1l)
-    if (norm(ub)*norm(ul)) > 1e-8:
-        theta = 180*arccos(dot(ub,ul)/(norm(ub)*norm(ul)))/pi-180.0
-    else:
-        theta = 0.0
+    #theta,ub = rotation_params(corerefcoords,r0b,r1b)
+    #theta,ul = rotation_params(rm,r0l,r1l)
+    #if (norm(ub)*norm(ul)) > 1e-8:
+        #theta = 180*arccos(dot(ub,ul)/(norm(ub)*norm(ul)))/pi-180.0
+    #else:
+        #theta = 0.0
     # rotate around axis
-    lig3Db = mol3D()
-    lig3Db.copymol3D(lig3D)
-    lig3D = rotate_around_axis(lig3D,r1,urot,theta)
-    lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
+    objopt = 0
+    for theta in range(0,360,5):
+        lig3D_tmp = mol3D()
+        lig3D_tmp.copymol3D(lig3D)
+        lig3D_tmp = rotate_around_axis(lig3D_tmp,r1,urot,theta)
+        lig3D_tmp2 = mol3D()
+        lig3D_tmp2.copymol3D(lig3D_tmp)
+        H1 = lig3D_tmp2.getBondedAtomsH(catoms[1])
+        H2 = lig3D_tmp2.getBondedAtomsH(catoms[0])
+        lig3D_tmp2.deleteatoms([catoms[1]]+[catoms[0]]+H1+H2)
+        obj = lig3D_tmp2.mindisttopoint(corerefcoords)
+        if obj > objopt:
+            objopt = obj
+            lig3Dopt = mol3D()
+            lig3Dopt.copymol3D(lig3D_tmp)
+    lig3D = mol3D()
+    lig3D.copymol3D(lig3Dopt)
+    tmp3D = mol3D()
+    tmp3D.copymol3D(m3D)
+    tmp3D.combine(lig3D)
+    tmp3D.writexyz('new')
+    #lig3Db = mol3D()
+    #lig3Db.copymol3D(lig3D)
+    #lig3D = rotate_around_axis(lig3D,r1,urot,theta)
+    #lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
     # select best
     try:
         rm0,rm1 = lig3D.centermass(),lig3Db.centermass()
@@ -1073,7 +1106,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
         th0 = min(abs(th0),abs(180-th0))
         th1 = 180*arccos(dot(ub,ul1)/(norm(ub)*norm(ul1)))/pi
         th1 = min(abs(th1),abs(180-th1))
-        lig3D = lig3D if th0 < th1 else lig3Db
+        lig3D = lig3D if th0 < th1 else lig3Db    
     except:
         pass
     lig3D_aligned = mol3D()
@@ -1228,7 +1261,7 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     lig3D.alignmol(lig3D.getAtom(atom0),cpoint)
     r1 = lig3D.getAtom(atom0).coords()
     # Crude rotations to bring the 2nd connecting atom closer to its ideal location
-    lig3D,r1b = align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefcoords)
+    lig3D,r1b = align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefcoords) 
     ## get bond length
     bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
     MLoptbds.append(bondl)
@@ -1489,6 +1522,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 cpoint = m3D.getAtom(batoms[0])
                 # attach ligand depending on the denticity
                 # optimize geometry by minimizing steric effects
+                print batoms
                 if (denticity == 1):
                     lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,i)
                 elif (denticity == 2):
@@ -1749,12 +1783,15 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                         frozenats.append(latdix+core3D.natoms)
                 # combine molecules
                 core3D = core3D.combine(lig3D)
+                core3D.convert2OBMol()
+                core3D.convert2mol3D()
                 # remove dummy cm atom if requested
                 if rempi:
                     core3D.deleteatom(core3D.natoms-1)
                 if args.calccharge:
                     core3D.charge += lig3D.charge
                 # perform FF optimization if requested
+
                 if 'a' in args.ffoption:
                     print('FF optimizing molecule after placing ligand')
                     core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)

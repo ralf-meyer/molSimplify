@@ -163,3 +163,4 @@ co2:co2.mol,co2,0,all small,N,-1
 phenphen:phenphen.mol,phenphen,9 12 26,build,BA,0
 thiophene:thiophene.mol,thip,0,build,BA,0
 phosphorine:phosphorine.mol,phob,3,build,BA,0
+test:test.xyz,test,10 14,build,BA,-1

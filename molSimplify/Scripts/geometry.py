@@ -409,13 +409,16 @@ def setPdistance(mol, Rr, Rp, bond):
     bl = float(bond)
     # get center of mass
     # get unit vector through line r = r0 + t*u
-    u = [a-b for a,b in zip(Rr,Rp)]
-    t = bl/norm(u) # get t as t=bl/norm(r1-r0)
-    # get shift for centermass
     dxyz = [0,0,0]
-    dxyz[0] = Rp[0]+t*u[0]-Rr[0]
-    dxyz[1] = Rp[1]+t*u[1]-Rr[1]
-    dxyz[2] = Rp[2]+t*u[2]-Rr[2]
+    try:
+        u = [a-b for a,b in zip(Rr,Rp)]
+        t = bl/norm(u) # get t as t=bl/norm(r1-r0)
+        # get shift for centermass
+        dxyz[0] = Rp[0]+t*u[0]-Rr[0]
+        dxyz[1] = Rp[1]+t*u[1]-Rr[1]
+        dxyz[2] = Rp[2]+t*u[2]-Rr[2]
+    except ZeroDivisionError:
+        pass      
     # translate molecule
     mol.translate(dxyz)
     return mol,dxyz

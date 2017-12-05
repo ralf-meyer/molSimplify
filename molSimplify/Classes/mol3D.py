@@ -641,6 +641,27 @@ class mol3D:
                 nats.append(i)
         return nats
 
+    ## Gets H atoms bonded to a specific atom
+    #
+    #  Otherwise identical to getBondedAtoms().
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsH(self,ind):
+        ratom = self.getAtom(ind)
+        # calculates adjacent number of atoms
+        nats = []
+        for i,atom in enumerate(self.atoms):
+            d = distance(ratom.coords(),atom.coords())
+            distance_max = 1.15*(atom.rad+ratom.rad)
+            if atom.ismetal() or ratom.ismetal(): 
+                distance_max = 1.30*(atom.rad+ratom.rad) 
+            else:
+                distance_max = 1.15*(atom.rad+ratom.rad)
+            if (d < distance_max and i!=ind and atom.sym=='H'):
+                nats.append(i)
+        return nats
+
     ## Gets atom that is furthest from the molecule COM along a given direction and returns the corresponding distance
     #  @param self The object pointer
     #  @param uP Search direction
