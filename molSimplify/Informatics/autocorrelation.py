@@ -44,13 +44,6 @@ def metal_only_autocorrelation(mol,prop,d):
 		print('Error, no metal found in mol object!')
 		return False
 	return(autocorrelation_vector)
-
-	w = construct_property_vector(mol,prop)
-	index_set = range(0,mol.natoms)
-	deltametric_vector = numpy.zeros(d+1)
-	for centers in index_set:
-		deltametric_vector += deltametric(mol,w,centers,d)
-	return(deltametric_vector)
 def atom_only_deltametric(mol,prop,d,atomIdx):
 	## atomIdx must b either a list of indcies
 	## or a single index
@@ -340,4 +333,24 @@ def generate_full_complex_autocorrelations(mol,loud,depth=4):
 		result.append(metal_ac)
 	results_dictionary={'colnames':colnames,'results':result}
 	return  results_dictionary
-
+def generate_atomonly_autocorrelations(mol,atomIdx,loud,depth=4):
+        ## this function gets autocorrelations for a molecule starting
+        ## in one single atom only 
+        # Inputs:
+        #       mol - mol3D class
+        #       atomIdx - int, index of atom3D class
+        #       loud - bool, print output
+        result = list()
+        colnames = []
+        allowed_strings = ['electronegativity','nuclear_charge','ident','topology','size']
+        labels_strings = ['chi','Z','I','T','S']
+        print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+        for ii,properties in enumerate(allowed_strings):
+                atom_only_ac = atom_only_autocorrelation(mol,properties,depth,atomIdx)
+                this_colnames = []
+                for i in range(0,depth+1):
+                        this_colnames.append(labels_strings[ii] + '-' + str(i))
+                colnames.append(this_colnames)
+                result.append(atom_only_ac)
+        results_dictionary={'colnames':colnames,'results':result}
+        return  results_dictionary
