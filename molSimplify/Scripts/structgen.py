@@ -477,9 +477,9 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
         # freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
-        if debug:
-            for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
-                print ('atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence()))
+        #if debug:
+            #for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+               # print ('atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence()))
         # set up forcefield
         s = forcefield.Setup(OBMol,constr)
         if s == False:
@@ -866,6 +866,14 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
 #  @param core3D mol3D of partially built complex
 #  @return mol3D of rotated ligand
 def rotate_catoms_fix_Hs(lig3D,catoms,mcoords,core3D):
+    print('in rotate catoms fix HS')
+    print('lig3D:' )
+    lig3D.printxyz()
+    print('catoms :  '  + str(catoms))
+    print('mcoords :  '  + str(mcoords))
+    print('core 3D:' )
+    core3D.printxyz()
+    print('\n')
     for i,n in enumerate(catoms):
         #if len(lig3D.getHsbyIndex(n)) > 0:
         lig3D = rotate_catom_fix_Hs(lig3D,catoms,i,mcoords,core3D)
@@ -1251,6 +1259,15 @@ def align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi=False,l
 #  @param i Ligand serial number
 #  @return mol3D of aligned ligand, updated lists of frozen atoms and M-L bond lengths
 def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i):
+    print('in align_dent2_lig')
+    print('ligand:' )
+    lig3D.printxyz
+    print('lig3D:' )
+    lig3D.printxyz
+    print('catoms :  '  + str(catoms))
+    print('cpoint :  '  + str(cpoint))
+    print('m 3D:' )
+    m3D.printxyz
     corerefcoords = coreref.coords()
     r0 = corerefcoords
     # get cis conformer by rotating rotatable bonds
