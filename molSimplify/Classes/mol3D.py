@@ -254,6 +254,8 @@ class mol3D:
     def combine(self,mol,bond_to_add=[]):
     #BondSafe
         cmol = self
+        cmol.convert2OBMol()
+        mol.convert2OBMol()
         n_one = cmol.natoms
         n_two = mol.natoms
         n_tot = n_one + n_two
