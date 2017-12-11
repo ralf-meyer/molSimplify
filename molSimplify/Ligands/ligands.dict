@@ -50,7 +50,7 @@ dmi:dmi.mol,dmi,0, build monodentate,A,0
 hmpa:hmpa.mol,hmpa,0, build monodentate,A,0
 edta:edta.mol,edta,0 1 2 3 4 5,build big,A,-4
 en:en.mol,en,0 1,build bidentate,N,0
-ethOHbipyridine:ethOHbipy.mol,ethOHbip,0 1,build bidentate,BA,0
+aceticacidbipyridine:aceticacidbipyridine.mol,aceticacidbip,0 1,build bidentate,BA,0
 ethanethiol:ethanethiol.mol,ethil,0,build functionalize small,N,-1
 ethbipyridine:ethbipy.mol,ethbip,0 1,build bidentate,BA,0
 ethyl:ethyl.mol,eth,1,functionalize organometallic small,N,-1
