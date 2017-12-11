@@ -1799,6 +1799,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     for latdix in range(0,lig3D.natoms):
                         frozenats.append(latdix+core3D.natoms)
                 # combine molecules
+                core3D.convert2OBMol()
                 core3D = core3D.combine(lig3D)
                 core3D.convert2OBMol()
                 core3D.convert2mol3D()

@@ -440,7 +440,6 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                     print('warning, ANN predicts a near degenerate ground state for this complex')
         print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol')
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
-        ANN_attributes.update({'normed_excitation':scaled_excitation})
         ## reparse to save attributes
         ANN_attributes.update({'This spin':spin})
         if delta[0] < 0 and (abs(delta[0]) > 5):

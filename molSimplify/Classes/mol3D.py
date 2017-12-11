@@ -174,7 +174,17 @@ class mol3D:
         pmc[1] /= self.natoms
         pmc[2] /= self.natoms
         return pmc
-
+    ## remove all openbabel bond order indo
+    #  @param self The object pointer
+    def cleanBonds(self):
+        obiter = openbabel.OBMolBondIter(self.OBMol)
+        n = self.natoms
+        bonds_to_del =  []
+        for bond in  obiter:
+            these_inds = [bond.GetBeginAtomIdx(),bond.GetEndAtomIdx()]
+            bonds_to_del.append(bond)
+        for i in bonds_to_del:
+            self.OBMol.DeleteBond(i)
     ## Converts OBMol to mol3D
     #
     #  Generally used after openbabel operations, such as when initializing a molecule from a file or FF optimizing it.
@@ -198,6 +208,13 @@ class mol3D:
     #  Required for performing openbabel operations on a molecule, such as FF optimizations.
     #  @param self The object pointer
     def convert2OBMol(self):
+        
+        # get BO matrix if exits:
+        repop  = False
+        if self.OBMol:
+            BO_mat = self.populateBOMatrix()
+            repop = True 
+        
         # write temp xyz
         self.writexyz('tempr.xyz')
 
@@ -206,23 +223,71 @@ class mol3D:
 
         OBMol = openbabel.OBMol()
         obConversion.ReadFile(OBMol,'tempr.xyz')        
-        
         self.OBMol = OBMol
         os.remove('tempr.xyz')
+        
+        if repop:
+            self.cleanBonds()
+            for i in range(0,self.natoms):
+                for j in range(0,self.natoms):
+                    if BO_mat[i][j]>0:
+                        self.OBMol.AddBond(i+1,j+1,int(BO_mat[i][j]))
+        
+        
         
     ## Combines two molecules
     #
     #  Each atom in the second molecule is appended to the first while preserving orders.
     #  @param self The object pointer
     #  @param mol mol3D containing molecule to be added
+    #  @param list of tuples (ind1,ind2,order) bonds to add (optional)
     #  @return mol3D contaning combined molecule
-    def combine(self,mol):
+    #def combine(self,mol):
+    #    cmol = self
+    #    n_one = cmol.natoms
+    #    n_two = mol.natoms
+    #    for atom in mol.atoms:
+    #        cmol.addAtom(atom)
+    #    cmol.graph = []
+    #    return cmol
+
+    def combine(self,mol,bond_to_add=[]):
+    #BondSafe
         cmol = self
+        n_one = cmol.natoms
+        n_two = mol.natoms
+        n_tot = n_one + n_two
+        # allocate
+        jointBOMat = np.zeros([n_tot,n_tot])
+        # get individual mats 
+        con_mat_one = cmol.populateBOMatrix()
+        con_mat_two = mol.populateBOMatrix()
+        # combine mats
+        for i in range(0,n_one):
+            for j in range(0,n_one):
+                jointBOMat[i][j] = con_mat_one[i][j]
+        for i in range(0,n_two):
+            for j in range(0,n_two):
+                jointBOMat[i+n_one][j+n_one] = con_mat_two[i][j]
+        # optional add additional bond(s)
+        if bond_to_add:
+            for bond_tuples in bond_to_add:
+                    jointBOMat[bond_tuples[0],bond_tuples[1]] = bond_tuples[2]
+                    jointBOMat[bond_tuples[1],bond_tuples[0]] = bond_tuples[2]
+        # add mol3Ds
         for atom in mol.atoms:
             cmol.addAtom(atom)
+        cmol.convert2OBMol()
+        # clean all bonds
+        cmol.cleanBonds()
+        # restore bond info
+        for i in range(0,n_tot):
+            for j in range(0,n_tot):
+                if jointBOMat[i][j]>0:
+                    cmol.OBMol.AddBond(i+1,j+1,int(jointBOMat[i][j]))
+        # reset graph
         cmol.graph = []
         return cmol
-
     ## Prints coordinates of all atoms in molecule
     #  @param self The object pointer
     #  @return String containing coordinates
@@ -477,6 +542,7 @@ class mol3D:
     #  @param idx Index of desired atom
     #  @return List of coordinates of desired atom
     def getAtomCoords(self,idx):
+        print(self.printxyz())
         return self.atoms[idx].coords()
 
     ## Gets atoms bonded to a specific atom
@@ -619,7 +685,6 @@ class mol3D:
         if not len(self.graph):
             self.createMolecularGraph()
         return list(np.nonzero(np.ravel(self.graph[ind]))[0])
-
     ## Gets non-H atoms bonded to a specific atom
     #
     #  Otherwise identical to getBondedAtoms().
@@ -964,7 +1029,19 @@ class mol3D:
                     break
         return overlap
         
-        
+    ## Gets a matrix with bond orders from openbabel
+    #  @param self The object pointer
+    #  @return matrix of bond orders
+    def populateBOMatrix(self):
+        obiter = openbabel.OBMolBondIter(self.OBMol)
+        n = self.natoms
+        molBOMat = np.zeros((n,n))
+        for bond in  obiter:
+            these_inds = [bond.GetBeginAtomIdx(),bond.GetEndAtomIdx()]
+            this_order = bond.GetBondOrder()
+            molBOMat[these_inds[0]-1,these_inds[1]-1]=this_order
+            molBOMat[these_inds[1]-1,these_inds[0]-1]=this_order
+        return(molBOMat)
     ## Prints xyz coordinates to stdout
     # 
     #  To write to file (more common), use writexyz() instead.
