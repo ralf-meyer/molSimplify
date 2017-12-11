@@ -18,21 +18,27 @@ from operator import add
 from molSimplify.Scripts.periodic_QE import *
 
 ###############################
+## Main cell FF opt routine
+#
+#  optimize complexes placed on cell to avoid clashes. Will use UFF for speed 
+#
+#  @param ff Force field to use, available MMFF94, UFF, Ghemical, GAFF,
+#  @param mol mol3D of cell to be optimized
+#  @param frozenats List of frozen atom indicies, will usually be the cell 
+#  @return FF-calculated energy, mol3D of optimized cell
 def cell_ffopt(ff,mol,frozenats):
     ### FORCE FIELD OPTIMIZATION ##
     # INPUT
     #   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
     #   - mol: mol3D to be ff optimized
-    #   - connected: indices of connection atoms to metal
-    #   - constopt: flag for constrained optimization
     # OUTPUT
     #   - mol: force field optimized mol3D
     metals = range(21,31)+range(39,49)+range(72,81)
     ### check requested force field
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s' # force fields
     if ff.lower() not in ffav:
-        print 'Requested force field not available. Defaulting to MMFF94'
-        ff = 'mmff94'
+        print 'Requested force field not available. Defaulting to UFF'
+        ff = 'UFF'
     ### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
     backup_mol = mol3D()
     backup_mol.copymol3D(mol)
@@ -45,32 +51,33 @@ def cell_ffopt(ff,mol,frozenats):
     # convert metals to carbons for FF
     indmtls = []
     mtlsnums = []
-    for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+    for iiat,atom in enumerate(openbabel.OBMolAtomIter(mol.OBMol)):
         if atom.atomicnum in metals:
             indmtls.append(iiat)
             mtlsnums.append(atom.GetAtomicNum())
-            atom.OBAtom.SetAtomicNum(19)
+            atom.OBAtom.SetAtomicNum(6)
     for cat in frozenats:
         constr.AddAtomConstraint(cat+1) # indexing babel
     ### set up forcefield
     forcefield =openbabel.OBForceField.FindForceField(ff)
-    obmol = mol.OBMol
-    forcefield.Setup(obmol,constr)
+    forcefield.Setup(mol.OBMol,constr)
     ## force field optimize structure
     forcefield.ConjugateGradients(2500)
-    forcefield.GetCoordinates(obmol)
-    mol.OBmol = obmol
+    forcefield.GetCoordinates(mol.OBMol)
     # reset atomic number to metal
     for i,iiat in enumerate(indmtls):
         mol.OBMol.GetAtomById(iiat).SetAtomicNum(mtlsnums[i])
     mol.convert2mol3D()
-
     en = forcefield.Energy()
- 
-    del forcefield, constr, obmol
 
+    del forcefield, constr
     return mol,en
 ################################
+###############################
+## Import CIF to mol3D
+#
+#  @param fst string of  .cif file path
+#  @return mol3D of unit cell, cell vector
 def import_from_cif(fst):
     #INPUT:
     # fst:  filename of cif file
@@ -143,12 +150,19 @@ def import_from_cif(fst):
     else:
         return unit_cell,cell_vector
 ##################################
+## get center_of_sym CIF to mol3D
+#
+#  @param list_of_points list of points
+#  @return csym center of sym
 def center_of_sym(list_of_points):
     n = len(list_of_points)
 #    print('lop = ' + str(list_of_points))
     csym = [0,0,0];
     csym = [float(sum(x)/n) for x in zip(*list_of_points)]
     return csym
+## get sets min z coord of mol3D to zero
+#
+#  @param super_cell mol3D of cell
 def zero_z_csm(super_cell):
     # puts center of sym
     # at z = 0
