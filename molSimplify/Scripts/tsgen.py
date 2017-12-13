@@ -27,7 +27,7 @@ MXYang = 135
 ## Mode 1 (oxidative addition) MX sum cov rad coefficient
 MXdistcoeff = 0.9
 ## Mode 3 (abstraction) ABX angle
-ABXang = 170
+ABXang = 140
 
 ## Gets all possible substrate connecting points (X in A-B...X-Y).
 #  

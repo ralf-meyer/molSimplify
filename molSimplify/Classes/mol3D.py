@@ -544,7 +544,7 @@ class mol3D:
     #  @param idx Index of desired atom
     #  @return List of coordinates of desired atom
     def getAtomCoords(self,idx):
-        print(self.printxyz())
+        #print(self.printxyz())
         return self.atoms[idx].coords()
 
     ## Gets atoms bonded to a specific atom
