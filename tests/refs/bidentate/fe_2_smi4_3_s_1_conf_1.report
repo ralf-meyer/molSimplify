@@ -1,0 +1,12 @@
+Bad structure?, False
+Min_dist (A), 1000
+Was ANN used?, True
+ANN_gound_state, dgen [1, 5]
+ANN_bondl, 1.96800552083
+ANN_dist_to_train, 0.194248519482
+pred_split_ HS_LS, 4.68089882099
+ANN_slope, [-122.00117567]
+ANN_trust, high
+This spin, 1
+ANN_closest_train, fe(2)_ax_phen_eq_phen20
+ML-bl (database, A), 2.1

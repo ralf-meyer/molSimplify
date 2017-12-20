@@ -157,7 +157,7 @@ def jobdir(infile):
     mydir=homedir+'/Runs/'+name
     return mydir
 
-def parse4test(infile,tmpdir):
+def parse4test(infile,tmpdir,isMulti=False):
     name = jobname(infile)
     f=tmpdir.join(os.path.basename(infile))
     newname = f.dirname+"/"+os.path.basename(infile)
@@ -168,8 +168,18 @@ def parse4test(infile,tmpdir):
     for line in data:
         if not (("-jobdir" in line) or ("-name" in line)):
             newdata+=line
+        if ("-lig " in line) and (".smi" in line):#Need to parse the dir of smi file
+            smi = line.strip('\n').split()[1]
+            abs_smi = os.path.dirname(infile)+'/'+smi
+            newdata+="-lig "+abs_smi+"\n"
+            #fsmi = tmpdir.join(smi)
+            #oldsmi=os.path.dirname(infile)+"/"+smi
+            #smidata=open(oldsmi).read()
+            #fsmi.write(smidata)
+            #print "smi file is copied to the temporary running folder!"
     newdata+="-jobdir "+name+"\n"
-    newdata+="-name "+name+"\n"
+    if isMulti == False:
+      newdata+="-name "+name+"\n"
     print newdata
     f.write(newdata)
     print "Input file parsed for test is located: ",newname
@@ -222,6 +232,28 @@ def compare_report(report1,report2):
             Equal = (lines.strip() == data2[i].strip())
     return Equal
 
+
+#When generating multiple files from the 1 input file
+#Compare the test directory and reference directory for
+#Number of xyz file, xyz file names
+def checkMultiFileGen(myjobdir,refdir):
+    passMultiFileCheck=True
+    myfiles=[ i for i in os.listdir(myjobdir) if ".xyz" in i ]
+    reffiles=[ i for i in os.listdir(refdir) if ".xyz" in i ]
+    print "Generated ",len(myfiles)," files, expecting ",len(reffiles)
+    if len(myfiles) != len(reffiles):
+        passMultiFileCheck=False
+        print "Error! Numbers don't match!"
+    else:
+        for ref in reffiles:
+            if ref not in myfiles:
+              print "xyz file ",ref, " is missing in generated file folder"
+              passMultiFileCheck=False
+    return [passMultiFileCheck,myfiles]
+
+
+
+
 def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
     newinfile = parse4test(infile,tmpdir)
@@ -270,3 +302,36 @@ def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
         print "Reference xyz status: ", pass_xyz
         print "Reference report status: ", pass_report
     return [passNumAtoms, passMLBL, passLG, passOG, pass_report]
+
+def runtestMulti(tmpdir,name,threshMLBL,threshLG,threshOG):
+    infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
+    newinfile = parse4test(infile,tmpdir,True)
+    args =['main.py','-i', newinfile]
+    #Need to make the ligand file visible to the input file
+    startgen(args,False,False)
+    myjobdir=jobdir(infile)+"/"
+    print "Test input file: ", newinfile
+    print "Test output files are generated in ",myjobdir
+    refdir = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+"/")
+    [passMultiFileCheck,myfiles]=checkMultiFileGen(myjobdir,refdir)
+    pass_structures=[]
+    if passMultiFileCheck==False:
+        print "Test failed for checking number and names of generated files. Test ends"
+    else:
+        print "Checking each generated structure..."
+        for f in myfiles:
+            if ".xyz" in f:
+                r=f.replace(".xyz",".report")
+                output_xyz = output_xyz = myjobdir +f
+                ref_xyz = refdir+f
+                output_report = myjobdir+r
+                ref_report = refdir+r
+                print "Output xyz file: ", output_xyz
+                print "Reference xyz file: ", ref_xyz
+                print "Test report file: ", output_report
+                print "Reference report file: ", ref_report
+                pass_xyz=compareGeo(output_xyz,ref_xyz,threshMLBL,threshLG,threshOG)
+                [passNumAtoms,passMLBL,passLG,passOG] = pass_xyz
+                pass_report = compare_report(output_report,ref_report)
+        pass_structures.append([f,passNumAtoms, passMLBL, passLG, passOG, pass_report])
+    return [passMultiFileCheck,pass_structures]
