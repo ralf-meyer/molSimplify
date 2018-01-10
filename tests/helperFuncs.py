@@ -240,6 +240,10 @@ def checkMultiFileGen(myjobdir,refdir):
     passMultiFileCheck=True
     myfiles=[ i for i in os.listdir(myjobdir) if ".xyz" in i ]
     reffiles=[ i for i in os.listdir(refdir) if ".xyz" in i ]
+    print "Run directory:", myjobdir
+    print "Generated xyz:", myfiles
+    print "Reference directory:", refdir
+    print "Ref xyz:", reffiles
     print "Generated ",len(myfiles)," files, expecting ",len(reffiles)
     if len(myfiles) != len(reffiles):
         passMultiFileCheck=False
