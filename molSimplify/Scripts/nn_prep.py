@@ -408,7 +408,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ANN_attributes.update({'ANN_dist_to_train':train_dist} )
         ANN_attributes.update({'ANN_closest_train':best_row} )
         print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +"{0:.2f}".format(ANN_trust))
-        print(' with closest training row ' + best_row[:-2] + ' at HFX ' + str(best_row[-2:]) + '%')
+        print(' with closest training row ' + best_row[:-2] + ' at  ' + str(best_row[-2:]) + '% HFX')
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
@@ -438,7 +438,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                 print('warning, ANN predicts a low spin ground state for this complex')
             else:
                     print('warning, ANN predicts a near degenerate ground state for this complex')
-        print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol')
+        print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX')
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
         ## reparse to save attributes
         ANN_attributes.update({'This spin':spin})
