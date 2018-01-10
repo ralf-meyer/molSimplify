@@ -230,6 +230,9 @@ def compare_report(report1,report2):
     for i,lines in enumerate(data1):
         if Equal:
             Equal = (lines.strip() == data2[i].strip())
+            if not Equal:
+                print "Report compare failed for ",report1,report2
+                print "Failed on line ",i
     return Equal
 
 
