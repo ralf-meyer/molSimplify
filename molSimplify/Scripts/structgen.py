@@ -477,9 +477,9 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
         # freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel
-        if debug:
-            for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
-                print ('atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence()))
+        #if debug:
+        #    for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+        #        print ('atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence()))
         # set up forcefield
         s = forcefield.Setup(OBMol,constr)
         if s == False:

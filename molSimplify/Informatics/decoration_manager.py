@@ -57,7 +57,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         if args.debug:
             print(i)
             print(decoration_index)
-            merged_ligand.writexyz('basic.xyz')
+
             print(merged_ligand.getAtom(decoration_index[i]).symbol())
             print(merged_ligand.getAtom(decoration_index[i]).coords())
             merged_ligand.writexyz('basic.xyz')
@@ -66,6 +66,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         if len(Hs) > 0:
             dec.deleteatom(Hs[0])
             dec.charge = dec.charge - 1
+
         #dec.writexyz('dec_noH' + str(i) + '.xyz')
         
         dec.alignmol(dec.getAtom(0),merged_ligand.getAtom(decoration_index[i]))
@@ -143,9 +144,36 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
             totiters += 1
         dec = decb
         if args.debug:
-            dec.writexyz('dec_fin' + str(i) + '.xyz')
+            dec.writexyz('dec_aligned' + str(i) + '.xyz')
+        print('natoms before delete ' + str(merged_ligand.natoms))
+        print('obmol before delete at  ' + str(decoration_index[i]) + ' is '  + str(merged_ligand.OBMol.NumAtoms()))
+        ## store connectivity for deleted H
+        BO_mat = merged_ligand.populateBOMatrix()
+        row_deleted = BO_mat[decoration_index[i]]
+        bonds_to_add  = []
+        
+        # find where to put the new bonds
+        for j,els in enumerate(row_deleted):
+            if els > 0:
+                # if there is a bond with an atom number
+                # before the deleted atom, all is fine
+                # else, we subtract one as the row will be be removed
+                if j < decoration_index[i]:
+                    bond_partner = j
+                else:
+                    bond_partner = j -1
+                bonds_to_add.append((bond_partner,merged_ligand.natoms-1,els))
+        
+        ## perfrom delete
         merged_ligand.deleteatom(decoration_index[i])
-        merged_ligand.combine(dec)
+
+        merged_ligand.convert2OBMol()
+        if args.debug:
+            merged_ligand.writexyz('merged del ' + str(i) + '.xyz')
+        ## merge and bond
+        merged_ligand.combine(dec,bond_to_add=bonds_to_add)
+        merged_ligand.convert2OBMol()
+
         if args.debug:
             merged_ligand.writexyz('merged' + str(i) + '.xyz')
             merged_ligand.printxyz()
@@ -153,6 +181,8 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     
     merged_ligand.convert2OBMol()
     merged_ligand,emsg = molSimplify.Scripts.structgen.ffopt('MMFF94',merged_ligand,[],0,[],False,[],100)
+    BO_mat = merged_ligand.populateBOMatrix()
+    print(BO_mat)    
     if args.debug:
         merged_ligand.writexyz('merged_relaxed.xyz')
     return(merged_ligand)

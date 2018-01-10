@@ -207,11 +207,13 @@ class mol3D:
     #
     #  Required for performing openbabel operations on a molecule, such as FF optimizations.
     #  @param self The object pointer
-    def convert2OBMol(self):
+    #  @param force_clean bool force no bond info retentsion 
+    def convert2OBMol(self,force_clean=False):
         
         # get BO matrix if exits:
         repop  = False
-        if self.OBMol:
+        
+        if self.OBMol and not force_clean:
             BO_mat = self.populateBOMatrix()
             repop = True 
         
@@ -223,10 +225,12 @@ class mol3D:
 
         OBMol = openbabel.OBMol()
         obConversion.ReadFile(OBMol,'tempr.xyz')        
+        self.OBMol=  []
         self.OBMol = OBMol
+        
         os.remove('tempr.xyz')
         
-        if repop:
+        if repop and not force_clean:
             self.cleanBonds()
             for i in range(0,self.natoms):
                 for j in range(0,self.natoms):
@@ -274,6 +278,7 @@ class mol3D:
         # optional add additional bond(s)
         if bond_to_add:
             for bond_tuples in bond_to_add:
+                    print('adding bond ' + str(bond_tuples))
                     jointBOMat[bond_tuples[0],bond_tuples[1]] = bond_tuples[2]
                     jointBOMat[bond_tuples[1],bond_tuples[0]] = bond_tuples[2]
         # add mol3Ds
@@ -352,6 +357,8 @@ class mol3D:
     #  @param self The object pointer
     #  @param atomIdx Index of atom to be deleted
     def deleteatom(self,atomIdx):
+        self.convert2OBMol()
+        self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx+1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
         self.graph = []
