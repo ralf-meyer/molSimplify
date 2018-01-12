@@ -215,7 +215,9 @@ def parse4testNoFF(infile,tmpdir):
         print "Input file parsed for no FF test is located: ",fullnewname
     return fullnewname
 
-def compare_report(report1,report2):
+#compare the report, split key and values, do 
+# fuzzy comparison on the values
+def compare_report_new(report1,report2):
     data1=open(report1,'r').readlines()
     data2=open(report2,'r').readlines()
     if data1 and data2:
@@ -227,14 +229,26 @@ def compare_report(report1,report2):
             print('missing: ' + str(report1))
         if not data2:
             print('missing: ' + str(report2))
-    for i,lines in enumerate(data1):
+    for i in range(0,len(data1)):
         if Equal:
-            Equal = (lines.strip() == data2[i].strip())
-            if not Equal:
+            e1=data1[i].split(',')
+            [key1,val1]=e1[0:2]
+            e2=data2[i].split(',')
+            [key2,val2]=e2[0:2]
+            if key1 != key2:
+                Equal=False
                 print "Report compare failed for ",report1,report2
-                print "Failed on line ",i
+                print "keys don't match on line ",i
+            else:
+                #see whether the values are numbers or text
+                if val1.isalnum() and val2.isalnum():
+                    Equal = fuzzy_equal(val1,val2,1e-4)
+                else:
+                    Equal = (val1 ==val2)
+                if not Equal:
+                   print "Report compare failed for ",report1,report2
+                   print "Values don't match on line ",i
     return Equal
-
 
 #When generating multiple files from the 1 input file
 #Compare the test directory and reference directory for
@@ -276,7 +290,7 @@ def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     print "Output xyz file: ", output_xyz
     pass_xyz=compareGeo(output_xyz,ref_xyz,threshMLBL,threshLG,threshOG)
     [passNumAtoms,passMLBL,passLG,passOG] = pass_xyz
-    pass_report = compare_report(output_report,ref_report)
+    pass_report = compare_report_new(output_report,ref_report)
     print "Reference xyz file: ", ref_xyz
     print "Test report file: ", output_report
     print "Reference report file: ", ref_report
@@ -302,7 +316,7 @@ def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
         print "Output xyz file: ", output_xyz
         pass_xyz=compareGeo(output_xyz,ref_xyz,threshMLBL,threshLG,threshOG)
         [passNumAtoms,passMLBL,passLG,passOG] = pass_xyz
-        pass_report = compare_report(output_report,ref_report)
+        pass_report = compare_report_new(output_report,ref_report)
         print "Reference xyz file: ", ref_xyz
         print "Test report file: ", output_report
         print "Reference report file: ", ref_report
@@ -339,6 +353,6 @@ def runtestMulti(tmpdir,name,threshMLBL,threshLG,threshOG):
                 print "Reference report file: ", ref_report
                 pass_xyz=compareGeo(output_xyz,ref_xyz,threshMLBL,threshLG,threshOG)
                 [passNumAtoms,passMLBL,passLG,passOG] = pass_xyz
-                pass_report = compare_report(output_report,ref_report)
+                pass_report = compare_report_new(output_report,ref_report)
         pass_structures.append([f,passNumAtoms, passMLBL, passLG, passOG, pass_report])
     return [passMultiFileCheck,pass_structures]
