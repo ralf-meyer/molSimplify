@@ -359,9 +359,14 @@ def matchsmarts(smarts,outf,catoms):
     f = open(outf,'r')
     s = f.read().splitlines()
     f.close()
+    moll = openbabel.OBMol()
+    obConversion = openbabel.OBConversion()
+    obConversion.SetInAndOutFormats("smi","smi")
     f = open(outf,'w')
     for i,mol in enumerate(s):
-        sm.Match(mol)
+    	obConversion.ReadString(moll,mol)
+        sm.Match(moll)
+        # sm.Match(mol)
         smm = list(sm.GetUMapList())
         if len(smm) > 0:
             pmatch = smm[0]
