@@ -1,0 +1,27 @@
+# Input file generated from molSimplify at 11/29/2017 16:22
+-ligalign True
+-rundir /Users/Braltar/Runs
+-ccatoms 19
+-ffoption ba
+-distort 0
+-name example_3_noff
+-coord 6
+-nconfs 1
+-method b3lyp
+-core frank
+-ligocc 1
+-geometry oct
+-spin 1
+-bcharge 0
+-basis lacvps_ecp
+-calccharge True
+-jsched sge
+-replig True
+-rprompt True
+-oxstate 0
+-lig methyl
+-runtyp energy
+-qccode terachem
+-ff mmff94
+-keepHs True
+-jobdir example_3_noff

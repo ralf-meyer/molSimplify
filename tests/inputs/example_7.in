@@ -1,0 +1,5 @@
+-core Fe
+-lig pyridine pyridine pyridine chloride
+-ligocc 1 1 2 2
+-decoration Cl CO
+-decoration_index 7 9
