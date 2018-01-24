@@ -611,7 +611,6 @@ class mol3D:
         ratom = self.getAtom(ind)
         #print('called slow function...')
         # calculates adjacent number of atoms
-        debug = True 
         nats = []
         for i,atom in enumerate(self.atoms):
             valid = True # flag 
