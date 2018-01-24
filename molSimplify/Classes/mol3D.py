@@ -341,11 +341,15 @@ class mol3D:
         
     ## Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
-    def createMolecularGraph(self):
+    #  @oct flag to control  special oct-metal bonds
+    def createMolecularGraph(self,oct=True):
         index_set = range(0,self.natoms)
         A  = np.matrix(np.zeros((self.natoms,self.natoms)))
         for i in index_set:
-            this_bonded_atoms = self.getBondedAtomsOct(i,debug=False)
+            if oct:
+                this_bonded_atoms = self.getBondedAtomsOct(i,debug=False)
+            else:
+                this_bonded_atoms = self.getBondedAtoms(i,debug=False)
             for j in index_set:
                 if j in this_bonded_atoms:
                     A[i,j] = 1
@@ -564,13 +568,13 @@ class mol3D:
     #  @param self The object pointer
     #  @param ind Index of reference atom
     #  @return List of indices of bonded atoms
-    def getBondedAtoms(self,ind):
+    def getBondedAtoms(self,ind,debug=False):
         ratom = self.getAtom(ind)
         # calculates adjacent number of atoms
         nats = []
         for i,atom in enumerate(self.atoms):
             d = distance(ratom.coords(),atom.coords())
-            distance_max = 1.30*(atom.rad+ratom.rad) 
+            distance_max = 1.35*(atom.rad+ratom.rad) 
             if atom.symbol() == "C" and not ratom.symbol() == "H":
                 distance_max = min(2.8,distance_max)
             if ratom.symbol() == "C" and not atom.symbol() == "H":
@@ -607,6 +611,7 @@ class mol3D:
         ratom = self.getAtom(ind)
         #print('called slow function...')
         # calculates adjacent number of atoms
+        debug = True 
         nats = []
         for i,atom in enumerate(self.atoms):
             valid = True # flag 
@@ -619,7 +624,9 @@ class mol3D:
                     print('metal in  cat ' + str(atom.symbol()) + ' and rat ' +str(ratom.symbol()) )
                 ## one the atoms is a metal!
                 ## use a longer max for metals
-                distance_max = 1.30*(atom.rad+ratom.rad) 
+                distance_max = 1.35*(atom.rad+ratom.rad) 
+                if debug:
+                    print('maximum bonded distance is ' + str(distance_max) )
                 if d < distance_max and i!=ind:
                     ### trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
@@ -632,6 +639,7 @@ class mol3D:
                         if atom.symbol() == "C":           
                             ## in this case, atom might be intruder C!
                             possible_inds = self.getBondedAtomsnotH(ind) ## bonded to metal
+                            print('poss inds are' + str(possible_inds))
                             if len(possible_inds)>CN:
                                 metal_prox = sorted(possible_inds,key=lambda x: self.getDistToMetal(x,ind))
                                
@@ -689,10 +697,11 @@ class mol3D:
     #
     #  @param self The object pointer
     #  @param ind Index of reference atom
+    #  @param oct Flag to turn on special octahedral complex routines
     #  @return List of indices of bonded atoms
-    def getBondedAtomsSmart(self,ind):
+    def getBondedAtomsSmart(self,ind,oct=True):
         if not len(self.graph):
-            self.createMolecularGraph()
+            self.createMolecularGraph(oct=oct)
         return list(np.nonzero(np.ravel(self.graph[ind]))[0])
     ## Gets non-H atoms bonded to a specific atom
     #
@@ -708,7 +717,7 @@ class mol3D:
             d = distance(ratom.coords(),atom.coords())
             distance_max = 1.15*(atom.rad+ratom.rad)
             if atom.ismetal() or ratom.ismetal(): 
-                distance_max = 1.30*(atom.rad+ratom.rad) 
+                distance_max = 1.35*(atom.rad+ratom.rad) 
             else:
                 distance_max = 1.15*(atom.rad+ratom.rad)
             if (d < distance_max and i!=ind and atom.sym!='H'):
@@ -729,7 +738,7 @@ class mol3D:
             d = distance(ratom.coords(),atom.coords())
             distance_max = 1.15*(atom.rad+ratom.rad)
             if atom.ismetal() or ratom.ismetal(): 
-                distance_max = 1.30*(atom.rad+ratom.rad) 
+                distance_max = 1.35*(atom.rad+ratom.rad) 
             else:
                 distance_max = 1.15*(atom.rad+ratom.rad)
             if (d < distance_max and i!=ind and atom.sym=='H'):
