@@ -3,8 +3,6 @@
 -coord 6
 -lig tpp,imidazole,x
 -ligocc 1,1,1
--ffoption BA
+-ffoption no
 -spin 1
 -oxstate II
--jobdir example_1_noff
--name example_1_noff

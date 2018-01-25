@@ -1,15 +1,14 @@
 # Input file generated from molSimplify at 11/13/2017 17:24
 -ligalign True
--rundir /Users/Braltar/Runs 
--ccatoms 20
--ffoption ba
+-ccatoms 21
+-ffoption BA
 -qccode terachem
 -distort 0
 -coord 6
 -ff mmff94
 -method b3lyp
 -checkdirb True
--core frank
+-core ferrcore
 -ligocc 1
 -geometry oct
 -spin 1

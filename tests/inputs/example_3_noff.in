@@ -1,14 +1,13 @@
-# Input file generated from molSimplify at 11/29/2017 16:22
+# Input file generated from molSimplify at 11/13/2017 17:24
 -ligalign True
--rundir /Users/Braltar/Runs
--ccatoms 19
--ffoption ba
+-ccatoms 21
+-ffoption no
+-qccode terachem
 -distort 0
--name example_3_noff
 -coord 6
--nconfs 1
 -method b3lyp
--core frank
+-checkdirb True
+-core ferrcore
 -ligocc 1
 -geometry oct
 -spin 1
@@ -21,7 +20,4 @@
 -oxstate 0
 -lig methyl
 -runtyp energy
--qccode terachem
--ff mmff94
 -keepHs True
--jobdir example_3_noff

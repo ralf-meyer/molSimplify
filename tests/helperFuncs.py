@@ -15,6 +15,14 @@ from pkg_resources import resource_filename, Requirement
 def fuzzy_equal(x1,x2,thresh):
     return np.fabs(float(x1)-float(x2)) < thresh
 
+#check whether the string is a integral/float/scientific 
+def is_number(s):
+        try:
+          float(s)
+          return True
+        except ValueError:
+          return False
+
 def fuzzy_compare_xyz(xyz1,xyz2,thresh):
     fuzzyEqual=False
     mol1 = mol3D()
@@ -229,25 +237,30 @@ def compare_report_new(report1,report2):
             print('missing: ' + str(report1))
         if not data2:
             print('missing: ' + str(report2))
-    for i in range(0,len(data1)):
-        if Equal:
-            e1=data1[i].split(',')
-            [key1,val1]=e1[0:2]
-            e2=data2[i].split(',')
-            [key2,val2]=e2[0:2]
-            if key1 != key2:
-                Equal=False
-                print "Report compare failed for ",report1,report2
-                print "keys don't match on line ",i
-            else:
-                #see whether the values are numbers or text
-                if val1.isalnum() and val2.isalnum():
-                    Equal = fuzzy_equal(val1,val2,1e-4)
-                else:
-                    Equal = (val1 ==val2)
-                if not Equal:
+    if Equal:
+       for i in range(0,len(data1)):
+           if Equal:
+               e1=data1[i].split(',')
+               [key1,val1]=e1[0:2]
+               e2=data2[i].split(',')
+               [key2,val2]=e2[0:2]
+               val1=val1.strip('[]')
+               val2=val1.strip('[]')
+               if key1 != key2:
+                   Equal=False
                    print "Report compare failed for ",report1,report2
-                   print "Values don't match on line ",i
+                   print "keys don't match on line ",i
+               else:
+                   #see whether the values are numbers or text
+                   if is_number(val1) and is_number(val2):
+                       Equal = fuzzy_equal(val1,val2,1e-4)
+                   else:
+                       Equal = (val1 ==val2)
+                   if not Equal:
+                      print "Report compare failed for ",report1,report2
+                      print "Values don't match on line ",i+1
+           else:
+               break
     return Equal
 
 #When generating multiple files from the 1 input file
