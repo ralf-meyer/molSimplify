@@ -782,7 +782,7 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
         else:
             bridginggroup = subm
             if list(set(subm).intersection(lig3D.getBondedAtoms(catoms[n])))[0] not in anchoratoms:
-                anchoratoms.append(list(set(subm).intersection(lig3D.getBondedAtoms(catoms[n])))[0]) 
+                anchoratoms.append(list(set(subm).intersection(lig3D.getBondedAtoms(catoms[n])))[0])
     for atom in danglinggroup:
         confrag3D.addAtom(lig3D.getAtom(atom))
         confragatomlist.append(atom)
@@ -811,13 +811,13 @@ def rotate_catom_fix_Hs(lig3D,catoms,n,mcoords,core3D):
                     auxmol2 = mol3D()
                     auxmol2.copymol3D(confrag3Dtmp)
                     #objs.append(distance(mcoords,auxmol.centersym()))
-                    if auxmol2.natoms > 3: 
+                    if auxmol2.natoms > 3:
                         obj = auxmol2.mindisttopoint(mcoords)
                     else:
                         obj = distance(mcoords,auxmol1.centersym())
                     if obj > objopt:
                         objopt = obj
-                        thetaopt = theta    
+                        thetaopt = theta
                 #for i,obj in enumerate(objs):
                     #try:
                         #if objs[i] > objs[i-1] and objs[i] > objs[i+1]:
@@ -1051,7 +1051,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
     lig3D = rotate_around_axis(lig3D,r1,u,theta)
     lig3Db = rotate_around_axis(lig3Db,r1,u,theta-180)
     d1 = distance(lig3D.getAtom(catoms[1]).coords(),m3D.getAtom(batoms[1]).coords())
-    d2 = distance(lig3Db.getAtom(catoms[1]).coords(),m3D.getAtom(batoms[1]).coords())    
+    d2 = distance(lig3Db.getAtom(catoms[1]).coords(),m3D.getAtom(batoms[1]).coords())
     lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
     # flip if overlap
     r0l = lig3D.getAtom(catoms[0]).coords()
@@ -1107,7 +1107,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
         th0 = min(abs(th0),abs(180-th0))
         th1 = 180*arccos(dot(ub,ul1)/(norm(ub)*norm(ul1)))/pi
         th1 = min(abs(th1),abs(180-th1))
-        lig3D = lig3D if th0 < th1 else lig3Db    
+        lig3D = lig3D if th0 < th1 else lig3Db
     except:
         pass
     lig3D_aligned = mol3D()
@@ -1262,7 +1262,7 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     lig3D.alignmol(lig3D.getAtom(atom0),cpoint)
     r1 = lig3D.getAtom(atom0).coords()
     # Crude rotations to bring the 2nd connecting atom closer to its ideal location
-    lig3D,r1b = align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefcoords) 
+    lig3D,r1b = align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefcoords)
     ## get bond length
     bondl = get_MLdist(args,lig3D,atom0,ligand,coreref,MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
     MLoptbds.append(bondl)
@@ -1492,6 +1492,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     for i,ligand in enumerate(ligands):
         if not(ligand=='x' or ligand =='X'):
             # load ligand
+            lig,emsg = lig_load(ligand)
             # add decorations to ligand
             if args.decoration and args.decoration_index:
                 if len(args.decoration) > i and len(args.decoration_index) > i:
@@ -1499,8 +1500,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                         if args.debug:
                             print('decorating ' + str(ligand) + ' with ' +str(args.decoration[i]) + ' at sites '  + str(args.decoration_index))
                         lig = decorate_ligand(args,ligand,args.decoration[i],args.decoration_index[i])
-            else:
-                lig,emsg = lig_load(ligand)
+                    else:
+                        #keeps ligands that are not being decorated
+                        lig,emsg = lig_load(ligand)
             lig.convert2mol3D()
             # initialize ligand
             lig3D,rempi,ligpiatoms = init_ligand(args,lig,tcats,keepHs,i)
