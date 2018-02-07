@@ -110,6 +110,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ab7f86efbae768b9ed6edfeff4598616b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#ab7f86efbae768b9ed6edfeff4598616b">PointRotateAxis</a> (u, rp, r, theta)</td></tr>
 <tr class="memdesc:ab7f86efbae768b9ed6edfeff4598616b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotates point about axis defined by direction vector and point on axis.  <a href="#ab7f86efbae768b9ed6edfeff4598616b">More...</a><br /></td></tr>
 <tr class="separator:ab7f86efbae768b9ed6edfeff4598616b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c0a734cc984286ef7a9b58d61065a17"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#a6c0a734cc984286ef7a9b58d61065a17">PointRotateMat</a> (r, R)</td></tr>
+<tr class="memdesc:a6c0a734cc984286ef7a9b58d61065a17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotates point using arbitrary 3x3 rotation matrix.  <a href="#a6c0a734cc984286ef7a9b58d61065a17">More...</a><br /></td></tr>
+<tr class="separator:a6c0a734cc984286ef7a9b58d61065a17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad39ef08129915708a2ba644855c324ab"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#ad39ef08129915708a2ba644855c324ab">PointTranslateSph</a> (Rp, p0, D)</td></tr>
 <tr class="memdesc:ad39ef08129915708a2ba644855c324ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translates point in spherical coordinates.  <a href="#ad39ef08129915708a2ba644855c324ab">More...</a><br /></td></tr>
 <tr class="separator:ad39ef08129915708a2ba644855c324ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -125,6 +128,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a90caa7a6dc952df17fce36ea2711eff3"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#a90caa7a6dc952df17fce36ea2711eff3">rotate_around_axis</a> (mol, Rp, u, theta)</td></tr>
 <tr class="memdesc:a90caa7a6dc952df17fce36ea2711eff3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotates molecule about axis defined by direction vector and point on axis.  <a href="#a90caa7a6dc952df17fce36ea2711eff3">More...</a><br /></td></tr>
 <tr class="separator:a90caa7a6dc952df17fce36ea2711eff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ae4203ba9ba1f04d2f2ba23b0515a8b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#a9ae4203ba9ba1f04d2f2ba23b0515a8b">rotate_mat</a> (mol, R)</td></tr>
+<tr class="memdesc:a9ae4203ba9ba1f04d2f2ba23b0515a8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotates molecule using arbitrary rotation matrix.  <a href="#a9ae4203ba9ba1f04d2f2ba23b0515a8b">More...</a><br /></td></tr>
+<tr class="separator:a9ae4203ba9ba1f04d2f2ba23b0515a8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5df8aae5c4383cfebd5d9a62eef388a5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#a5df8aae5c4383cfebd5d9a62eef388a5">setPdistance</a> (mol, Rr, Rp, bond)</td></tr>
 <tr class="memdesc:a5df8aae5c4383cfebd5d9a62eef388a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translates molecule such that a given point in the molecule is at a given distance from a reference point.  <a href="#a5df8aae5c4383cfebd5d9a62eef388a5">More...</a><br /></td></tr>
 <tr class="separator:a5df8aae5c4383cfebd5d9a62eef388a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -575,7 +581,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Aligned mol3D </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Aligned mol3D, rotation matrix, translation vectors </dd></dl>
 
 </div>
 </div>
@@ -761,6 +767,44 @@ Functions</h2></td></tr>
     <tr><td class="paramname">rp</td><td>Reference point along axis </td></tr>
     <tr><td class="paramname">r</td><td>Point to be rotated </td></tr>
     <tr><td class="paramname">theta</td><td>Angle of rotation in RADIANS </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Rotated point </dd></dl>
+
+</div>
+</div>
+<a id="a6c0a734cc984286ef7a9b58d61065a17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c0a734cc984286ef7a9b58d61065a17">&#9670;&nbsp;</a></span>PointRotateMat()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def molSimplify.Scripts.geometry.PointRotateMat </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>R</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rotates point using arbitrary 3x3 rotation matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">r</td><td>Point to be rotated </td></tr>
+    <tr><td class="paramname">R</td><td>3x3 rotation matrix </td></tr>
   </table>
   </dd>
 </dl>
@@ -1134,6 +1178,45 @@ Functions</h2></td></tr>
     <tr><td class="paramname">mol</td><td>mol3D of molecule to be rotated </td></tr>
     <tr><td class="paramname">Rp</td><td>Reference point along axis </td></tr>
     <tr><td class="paramname">u</td><td>Direction vector of axis </td></tr>
+    <tr><td class="paramname">theta</td><td>Angle of rotation in DEGREES </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>mol3D of rotated molecule </dd></dl>
+
+</div>
+</div>
+<a id="a9ae4203ba9ba1f04d2f2ba23b0515a8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ae4203ba9ba1f04d2f2ba23b0515a8b">&#9670;&nbsp;</a></span>rotate_mat()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def molSimplify.Scripts.geometry.rotate_mat </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>mol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>R</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rotates molecule using arbitrary rotation matrix. </p>
+<p>Loops over <a class="el" href="namespacemolSimplify_1_1Scripts_1_1geometry.html#a6c0a734cc984286ef7a9b58d61065a17" title="Rotates point using arbitrary 3x3 rotation matrix. ">PointRotateMat()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mol</td><td>mol3D of molecule to be rotated </td></tr>
+    <tr><td class="paramname">R</td><td>Rotation matrix </td></tr>
     <tr><td class="paramname">theta</td><td>Angle of rotation in DEGREES </td></tr>
   </table>
   </dd>

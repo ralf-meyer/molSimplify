@@ -4,13 +4,13 @@
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_afa7cdfc8a30fd53f9784466e662d2aec}{cell\+\_\+ffopt} (ff, mol, frozenats)
-\item 
+\begin{DoxyCompactList}\small\item\em Main cell FF opt routine. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_af7e25ca0eee7ea70e3d886dfac1b77ff}{import\+\_\+from\+\_\+cif} (fst)
-\item 
+\begin{DoxyCompactList}\small\item\em Import C\+IF to mol3D. \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_af7ec418e4139cc025c32ac5a789ec8bd}{center\+\_\+of\+\_\+sym} (list\+\_\+of\+\_\+points)
-\item 
+\begin{DoxyCompactList}\small\item\em get center\+\_\+of\+\_\+sym C\+IF to mol3D \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a14494cd56f48f40e5437d8ca73f4b706}{zero\+\_\+z\+\_\+csm} (super\+\_\+cell)
-\item 
+\begin{DoxyCompactList}\small\item\em get sets min z coord of mol3D to zero \end{DoxyCompactList}\item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_aa581e15be1f5816ef35d571cc0477100}{xgcd} (b, n)
 \item 
 def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_ab9c8e3fbb8626a035c3b4d7b64f13e57}{distance\+\_\+zw} (r1, r2)
@@ -88,12 +88,42 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a52829c4cfe
 \subsubsection{\texorpdfstring{cell\+\_\+ffopt()}{cell\_ffopt()}}
 {\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+cellbuilder\+\_\+tools.\+cell\+\_\+ffopt (\begin{DoxyParamCaption}\item[{}]{ff,  }\item[{}]{mol,  }\item[{}]{frozenats }\end{DoxyParamCaption})}
 
+
+
+Main cell FF opt routine. 
+
+optimize complexes placed on cell to avoid clashes. Will use U\+FF for speed
+
+
+\begin{DoxyParams}{Parameters}
+{\em ff} & Force field to use, available M\+M\+F\+F94, U\+FF, Ghemical, G\+A\+FF, \\
+\hline
+{\em mol} & mol3D of cell to be optimized \\
+\hline
+{\em frozenats} & List of frozen atom indicies, will usually be the cell \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+F\+F-\/calculated energy, mol3D of optimized cell 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_af7ec418e4139cc025c32ac5a789ec8bd}\label{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_af7ec418e4139cc025c32ac5a789ec8bd}} 
 \index{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools@{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools}!center\+\_\+of\+\_\+sym@{center\+\_\+of\+\_\+sym}}
 \index{center\+\_\+of\+\_\+sym@{center\+\_\+of\+\_\+sym}!mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools@{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools}}
 \subsubsection{\texorpdfstring{center\+\_\+of\+\_\+sym()}{center\_of\_sym()}}
 {\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+cellbuilder\+\_\+tools.\+center\+\_\+of\+\_\+sym (\begin{DoxyParamCaption}\item[{}]{list\+\_\+of\+\_\+points }\end{DoxyParamCaption})}
 
+
+
+get center\+\_\+of\+\_\+sym C\+IF to mol3D 
+
+
+\begin{DoxyParams}{Parameters}
+{\em list\+\_\+of\+\_\+points} & list of points \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+csym center of sym 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a188141938d45da5b263a09ad3b5606cd}\label{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a188141938d45da5b263a09ad3b5606cd}} 
 \index{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools@{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools}!change\+\_\+basis@{change\+\_\+basis}}
 \index{change\+\_\+basis@{change\+\_\+basis}!mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools@{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools}}
@@ -184,6 +214,18 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a52829c4cfe
 \subsubsection{\texorpdfstring{import\+\_\+from\+\_\+cif()}{import\_from\_cif()}}
 {\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+cellbuilder\+\_\+tools.\+import\+\_\+from\+\_\+cif (\begin{DoxyParamCaption}\item[{}]{fst }\end{DoxyParamCaption})}
 
+
+
+Import C\+IF to mol3D. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fst} & string of .cif file path \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+mol3D of unit cell, cell vector 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a85ce62198b383899fe614d5d32cfc59d}\label{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a85ce62198b383899fe614d5d32cfc59d}} 
 \index{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools@{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools}!mdistance@{mdistance}}
 \index{mdistance@{mdistance}!mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools@{mol\+Simplify\+::\+Scripts\+::cellbuilder\+\_\+tools}}
@@ -286,3 +328,12 @@ def \hyperlink{namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools_a52829c4cfe
 \subsubsection{\texorpdfstring{zero\+\_\+z\+\_\+csm()}{zero\_z\_csm()}}
 {\footnotesize\ttfamily def mol\+Simplify.\+Scripts.\+cellbuilder\+\_\+tools.\+zero\+\_\+z\+\_\+csm (\begin{DoxyParamCaption}\item[{}]{super\+\_\+cell }\end{DoxyParamCaption})}
 
+
+
+get sets min z coord of mol3D to zero 
+
+
+\begin{DoxyParams}{Parameters}
+{\em super\+\_\+cell} & mol3D of cell \\
+\hline
+\end{DoxyParams}

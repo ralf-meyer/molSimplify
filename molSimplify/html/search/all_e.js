@@ -1,5 +1,8 @@
 var searchData=
 [
+  ['n_5fone',['n_one',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a85ba7bb05563f6cffe5f1fa520f9536b',1,'molSimplify::Classes::mol3D::mol3D']]],
+  ['n_5ftot',['n_tot',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a7ed8c7afdf881581c5d10c9989c1f25c',1,'molSimplify::Classes::mol3D::mol3D']]],
+  ['n_5ftwo',['n_two',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#afe514a4cc67fbbaaed3126a567d9a760',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['name',['name',['../classmolSimplify_1_1Classes_1_1dft__obs_1_1dft__observation.html#ac6d6bb5f8bab62c015d503390b3266b1',1,'molSimplify.Classes.dft_obs.dft_observation.name()'],['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a06cc059cb532fb64b3e9faa84ae1f8c9',1,'molSimplify.Classes.mol3D.mol3D.name()']]],
   ['name_5fcomplex',['name_complex',['../namespacemolSimplify_1_1Scripts_1_1io.html#a64818a07711beacbd714d2c843c51862',1,'molSimplify.Scripts.io.name_complex()'],['../namespacemolSimplify_1_1Scripts_1_1namegen.html#a04787b6890c4712d75d85cfba2ecfbda',1,'molSimplify.Scripts.namegen.name_complex()']]],
   ['name_5fts',['name_TS',['../namespacemolSimplify_1_1Scripts_1_1io.html#a11b47a571bc01ae75ddbb581dc577349',1,'molSimplify::Scripts::io']]],

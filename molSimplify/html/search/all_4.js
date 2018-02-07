@@ -25,7 +25,7 @@ var searchData=
   ['deleteatoms',['deleteatoms',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a98613e0d849dd341b6cec837877e214b',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['deletehs',['deleteHs',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a91e56cc05405772f174a4eda98d86f41',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['deloc',['deloc',['../namespacemolSimplify_1_1Scripts_1_1postmwfn.html#a3d06d34a3a564ff309a955f7a30a1f96',1,'molSimplify::Scripts::postmwfn']]],
-  ['deltametric',['deltametric',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a4ea8024a494f24167169a734fc29987b',1,'molSimplify::Informatics::autocorrelation']]],
+  ['deltametric',['deltametric',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a351621ccecd9fc04206081cb22e12dfd',1,'molSimplify::Informatics::autocorrelation']]],
   ['dent',['dent',['../classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#aba886d417452a3657a9c6d5e091af3d1',1,'molSimplify::Classes::ligand::ligand']]],
   ['denticity',['denticity',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a5bdeed75bc96b42a06b2ea277b431739',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['descriptor_5fnames',['descriptor_names',['../classmolSimplify_1_1Classes_1_1dft__obs_1_1dft__observation.html#aed3ee129ea960b5c9dd47c67cf2ee9ea',1,'molSimplify::Classes::dft_obs::dft_observation']]],

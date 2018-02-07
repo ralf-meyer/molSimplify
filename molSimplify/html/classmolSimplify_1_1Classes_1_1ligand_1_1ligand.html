@@ -77,10 +77,13 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ab9c068d82f0bb9b6494a734558930984"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#ab9c068d82f0bb9b6494a734558930984">__init__</a> (self, <a class="el" href="classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#a4789951476ce69aa2b606b97ac535f41">master_mol</a>, <a class="el" href="classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#ab9dfcb555aa0d747bf5e824c70149684">index_list</a>, <a class="el" href="classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#aba886d417452a3657a9c6d5e091af3d1">dent</a>)</td></tr>
+<tr class="memdesc:ab9c068d82f0bb9b6494a734558930984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#ab9c068d82f0bb9b6494a734558930984">More...</a><br /></td></tr>
 <tr class="separator:ab9c068d82f0bb9b6494a734558930984"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a17875db54ebc0308065d8efdcdd736c4"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#a17875db54ebc0308065d8efdcdd736c4">obtain_mol3d</a> (self)</td></tr>
+<tr class="memdesc:a17875db54ebc0308065d8efdcdd736c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the ligand from the complex <a class="el" href="namespacemolSimplify_1_1Classes_1_1mol3D.html">mol3D</a> object.  <a href="#a17875db54ebc0308065d8efdcdd736c4">More...</a><br /></td></tr>
 <tr class="separator:a17875db54ebc0308065d8efdcdd736c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26d131235b504f894e47e483f105fbfd"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmolSimplify_1_1Classes_1_1ligand_1_1ligand.html#a26d131235b504f894e47e483f105fbfd">obtain_truncation</a> (self, con_atoms, hops)</td></tr>
+<tr class="memdesc:a26d131235b504f894e47e483f105fbfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Truncate ligand about connecting atoms.  <a href="#a26d131235b504f894e47e483f105fbfd">More...</a><br /></td></tr>
 <tr class="separator:a26d131235b504f894e47e483f105fbfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -139,6 +142,16 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The object pointer </td></tr>
+    <tr><td class="paramname">master_mol</td><td>A <a class="el" href="namespacemolSimplify_1_1Classes_1_1mol3D.html">mol3D</a> complex to extract ligand from </td></tr>
+    <tr><td class="paramname">index_list</td><td>A list of indices of the ligand atoms  dent The denticity of the ligand </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -157,6 +170,14 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Obtain the ligand from the complex <a class="el" href="namespacemolSimplify_1_1Classes_1_1mol3D.html">mol3D</a> object. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The object pointer </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -191,6 +212,17 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Truncate ligand about connecting atoms. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The object pointer </td></tr>
+    <tr><td class="paramname">con_atoms</td><td>The connection atom indices </td></tr>
+    <tr><td class="paramname">hops</td><td>Number of bonds to truncate after </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Truncated <a class="el" href="namespacemolSimplify_1_1Classes_1_1mol3D.html">mol3D</a> object </dd></dl>
 
 </div>
 </div>

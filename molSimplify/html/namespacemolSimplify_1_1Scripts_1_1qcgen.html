@@ -75,7 +75,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a94d2464e1bb9c7d8af5d714a947d6994"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate multiple terachem runs if multiple methods requested.  <a href="#a94d2464e1bb9c7d8af5d714a947d6994">More...</a><br /></td></tr>
 <tr class="separator:a94d2464e1bb9c7d8af5d714a947d6994"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7bd72c4230e61a3db1f2162a04c3e77"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1qcgen.html#aa7bd72c4230e61a3db1f2162a04c3e77">tcgen</a> (args, strfiles, method)</td></tr>
-<tr class="memdesc:aa7bd72c4230e61a3db1f2162a04c3e77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate terachem input files.  <a href="#aa7bd72c4230e61a3db1f2162a04c3e77">More...</a><br /></td></tr>
+<tr class="memdesc:aa7bd72c4230e61a3db1f2162a04c3e77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate ORCA input files (limited support)  <a href="#aa7bd72c4230e61a3db1f2162a04c3e77">More...</a><br /></td></tr>
 <tr class="separator:aa7bd72c4230e61a3db1f2162a04c3e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67aee71c611a98c744c92e8670b6ebeb"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1qcgen.html#a67aee71c611a98c744c92e8670b6ebeb">xyz2gxyz</a> (filename)</td></tr>
 <tr class="memdesc:a67aee71c611a98c744c92e8670b6ebeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts normal xyz file to gxyz (GAMESS format) file.  <a href="#a67aee71c611a98c744c92e8670b6ebeb">More...</a><br /></td></tr>
@@ -378,7 +378,22 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Generate terachem input files. </p>
+<p>Generate ORCA input files (limited support) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">args</td><td>Namespace of arguments </td></tr>
+    <tr><td class="paramname">strfiles</td><td>List of xyz files produced </td></tr>
+    <tr><td class="paramname">method</td><td>Method (e.g. b3lyp) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>List of job directories def orcgen(args,strfiles,method): get global variables globs = globalvars() jobdirs = [] coordfs = [] Initialize the jobparams dictionary with mandatory/useful keywords. jobparams={'UNRESTRICTED': 'true', 'BASIS': 'def2-SVP', 'JOBTYPE': 'Opt', 'METHOD': 'B3LYP', 'MAX_SCF_CYCLES': '2000', 'GEOM_OPT_MAX_CYCLES': '500', 'CHARGE':'1', 'SPIN':'1', } Overwrite plus add any new dictionary keys from commandline input. for xyzf in strfiles: rdir = xyzf.rsplit('/',1)[0] xyzft = xyzf.rsplit('/',1)[-1] xyzf += '.xyz' coordfs.append(xyzf.rsplit('/',1)[-1]) coordname = xyzft Setting jobname for files + truncated name for queue. if len(coordname) &gt; 10: nametrunc=coordname[0:6]+coordname[-4:] else: nametrunc=coordname if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir: os.mkdir(rdir+'/'+nametrunc) mdir = rdir+'/'+nametrunc if method: mmd = '/'+method mdir = rdir+'/'+nametrunc+mmd if not os.path.exists(mdir): os.mkdir(mdir) Check for existence of basis and sanitize name if args.basis and len(args.basis) &gt; 1: jobparams['BASIS']=args.basis if method and len(method) &gt; 1: jobparams['METHOD']=method if not args.unrestricted: jobparams['UNRESTRICTED']='false' if (args.runtyp and 'en' in args.runtyp.lower()): jobparams['run'] = 'SP' elif (args.runtyp and 'ts' in args.runtyp.lower()): jobparams['run'] = 'OptTS' Just carry over spin and charge keywords if they're set. Could do checks, none for now. if args.spin: jobparams['SPIN']=args.spin if args.charge: jobparams['CHARGE']=args.charge Now we're ready to start building the input file and the job script for i,jobd in enumerate(jobdirs): jobparams['coordinates'] = coordfs[i] output=open(jobd+'/orca.in','w') write header line output.write('! ') if jobparams['UNRESTRICTED']: output.write('UKS ') output.write(jobparams['METHOD']+' ') output.write(jobparams['BASIS']+' ') use RIJCOSX for hybrid functionals/default RIJ otherwise if 'def2' in jobparams['BASIS']: output.write('def2/J ') if 'B3LYP' in jobparams['METHOD'].upper(): output.write('RIJCOSX ') output.write(jobparams['run']+'<br />
+') maxcore output.write('maxcore 4400<br />
+') SCF block output.write('scf<br />
+') output.write('maxiter '+jobparams['MAX_SCF_CYCLES']) output.write('end<br />
+') geometry block if 'opt' in jobparams['run'].lower(): output.write('geom<br />
+') output.write('maxiter '+jobparams['GEOM_OPT_MAX_CYCLES']+'<br />
+') if 'optts' in jobparams['run'].lower(): output.write(' coordinates output.write('* xyzfile '+jobparams['CHARGE']+' '+jobparams['SPIN']+' '+jobparams['coordinates']) output.close() return jobdirs Generate terachem input files </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">args</td><td>Namespace of arguments </td></tr>

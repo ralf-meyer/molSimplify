@@ -20,11 +20,13 @@ def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ac2341892da1c133380
 \begin{DoxyCompactList}\small\item\em Computes coordinates of center of mass of molecule. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a0e4c145ac4c16e7be70cec1a3e03f6b7}{centersym} (self)
 \begin{DoxyCompactList}\small\item\em Computes coordinates of center of symmetry of molecule. \end{DoxyCompactList}\item 
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_af3406e507c8ccdd33996a7b6f5e3ddfe}{clean\+Bonds} (self)
+\begin{DoxyCompactList}\small\item\em remove all openbabel bond order indo \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a10ce42207cd8291c685640438f8de1a8}{convert2mol3D} (self)
 \begin{DoxyCompactList}\small\item\em Converts O\+B\+Mol to \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D}. \end{DoxyCompactList}\item 
-def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_acc86e8896c87c6287cfe504321ec8b11}{convert2\+O\+B\+Mol} (self)
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a92d25b3e6fd4e17228b9b49cdab64c51}{convert2\+O\+B\+Mol} (self, force\+\_\+clean=False)
 \begin{DoxyCompactList}\small\item\em Converts \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} to O\+B\+Mol. \end{DoxyCompactList}\item 
-def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a8c96247d4d06ac9d1b241af45e79d94a}{combine} (self, mol)
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a8d6c548c5001b97eca53b4193eadd1ba}{combine} (self, mol, bond\+\_\+to\+\_\+add=\mbox{[}$\,$\mbox{]})
 \begin{DoxyCompactList}\small\item\em Combines two molecules. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a551393e5c2417086b3b7855be3cf5957}{coords} (self)
 \begin{DoxyCompactList}\small\item\em Prints coordinates of all atoms in molecule. \end{DoxyCompactList}\item 
@@ -32,7 +34,7 @@ def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a305748724bd9be10c3
 \begin{DoxyCompactList}\small\item\em Returns coordinates of all atoms in molecule as a list of lists. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a09b722d1243e562169a88a591812a2ed}{copymol3D} (self, mol0)
 \begin{DoxyCompactList}\small\item\em Copies properties and atoms of another existing \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} object into current \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} object. \end{DoxyCompactList}\item 
-def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afa77b09b79aeb68ed3b50b51987c61dc}{create\+Molecular\+Graph} (self)
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a0199a2e25288c8624acfb67733cb699f}{create\+Molecular\+Graph} (self, oct=True)
 \begin{DoxyCompactList}\small\item\em Create molecular graph (connectivity matrix) from \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} info. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6838664445a9896c703e0ffe2542ceef}{deleteatom} (self, atom\+Idx)
 \begin{DoxyCompactList}\small\item\em Deletes specific atom from molecule. \end{DoxyCompactList}\item 
@@ -64,14 +66,16 @@ def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a53c044279fd5d0dace
 \begin{DoxyCompactList}\small\item\em Gets number of unique elements in molecule. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a67307accd49f78a076a0139591fdefb7}{get\+Atom\+Coords} (self, idx)
 \begin{DoxyCompactList}\small\item\em Gets coordinates of atom with specified index. \end{DoxyCompactList}\item 
-def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a394c680ec3eddbcc22ebcec76d211218}{get\+Bonded\+Atoms} (self, ind)
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aac602cfe9499277393a3d23b55f71db0}{get\+Bonded\+Atoms} (self, ind, debug=False)
 \begin{DoxyCompactList}\small\item\em Gets atoms bonded to a specific atom. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a054076c86f015de56353017cc391ba4c}{get\+Bonded\+Atoms\+Oct} (self, ind, CN=6, debug=False)
 \begin{DoxyCompactList}\small\item\em Gets atoms bonded to a specific atom specialized for octahedral complexes. \end{DoxyCompactList}\item 
-def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afa8b020ddc30de3b82be2568be20aaa5}{get\+Bonded\+Atoms\+Smart} (self, ind)
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae7410bc8f46e8d0d3ab6ba5baa5cdb5c}{get\+Bonded\+Atoms\+Smart} (self, ind, oct=True)
 \begin{DoxyCompactList}\small\item\em Gets atoms bonded to a specific atom using the molecular graph, or creates it. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_acda82e48cde5996f32a55e0acbdf052e}{get\+Bonded\+AtomsnotH} (self, ind)
 \begin{DoxyCompactList}\small\item\em Gets non-\/H atoms bonded to a specific atom. \end{DoxyCompactList}\item 
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ac8ef262050d0ef901688e7c282448fa6}{get\+Bonded\+AtomsH} (self, ind)
+\begin{DoxyCompactList}\small\item\em Gets H atoms bonded to a specific atom. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae4d631214022274b00b853768706d55a}{getfar\+Atomdir} (self, uP)
 \begin{DoxyCompactList}\small\item\em Gets atom that is furthest from the molecule C\+OM along a given direction and returns the corresponding distance. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a5b27778bb5e730b3911e0fe9192a4c0e}{get\+Hs} (self)
@@ -110,6 +114,8 @@ def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aab1e703e70f941dfc7
 \begin{DoxyCompactList}\small\item\em Checks for overlap with another molecule. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a52aafa6742ea7f501a30b286bedfc4f4}{overlapcheckh} (self, mol)
 \begin{DoxyCompactList}\small\item\em Checks for overlap with another molecule with increased tolerance. \end{DoxyCompactList}\item 
+def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a1566e9bd358aa20e095e4bb9d07d2174}{populate\+B\+O\+Matrix} (self)
+\begin{DoxyCompactList}\small\item\em Gets a matrix with bond orders from openbabel. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae6f619f46f387b2b609807fe06a6876a}{printxyz} (self)
 \begin{DoxyCompactList}\small\item\em Prints xyz coordinates to stdout. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a693d0fb9d44650a500c91cac47e93a80}{readfromxyz} (self, filename)
@@ -156,7 +162,24 @@ def \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ac5a779ac0e20d07b60
 \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a606148a9c1137fcad6528b1e5c34a5c4}{ident}
 \begin{DoxyCompactList}\small\item\em Identifier. \end{DoxyCompactList}\item 
 \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6f203eafd5348c5bd650356edda9b84a}{globs}
-\begin{DoxyCompactList}\small\item\em Holder for global variables. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Holder for global variables. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6082942a23525bf058199ac963f8fb3f}{cmol} = self
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a85ba7bb05563f6cffe5f1fa520f9536b}{n\+\_\+one} = cmol.\+natoms
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afe514a4cc67fbbaaed3126a567d9a760}{n\+\_\+two} = mol.\+natoms
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}{n\+\_\+tot} = \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a85ba7bb05563f6cffe5f1fa520f9536b}{n\+\_\+one} + \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afe514a4cc67fbbaaed3126a567d9a760}{n\+\_\+two}
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a396404adf257258babdac3667d0b245f}{joint\+B\+O\+Mat} = np.\+zeros(\mbox{[}\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}{n\+\_\+tot},\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}{n\+\_\+tot}\mbox{]})
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_abc6a798a634ff50738051588f9c95c10}{con\+\_\+mat\+\_\+one} = cmol.\+populate\+B\+O\+Matrix()
+\item 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a79b378686db3c193cdab193283248b75}{con\+\_\+mat\+\_\+two} = mol.\+populate\+B\+O\+Matrix()
+\item 
 \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aa14392db397618bd85a06f44f43360a2}{graph}
 \begin{DoxyCompactList}\small\item\em Holder for molecular graph. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
@@ -297,11 +320,26 @@ Identical to centermass, but not weighted by atomic masses.
 \begin{DoxyReturn}{Returns}
 List of center of symmetry coordinates 
 \end{DoxyReturn}
-\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a8c96247d4d06ac9d1b241af45e79d94a}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a8c96247d4d06ac9d1b241af45e79d94a}} 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_af3406e507c8ccdd33996a7b6f5e3ddfe}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_af3406e507c8ccdd33996a7b6f5e3ddfe}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!clean\+Bonds@{clean\+Bonds}}
+\index{clean\+Bonds@{clean\+Bonds}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{clean\+Bonds()}{cleanBonds()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+clean\+Bonds (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+remove all openbabel bond order indo 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & The object pointer \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a8d6c548c5001b97eca53b4193eadd1ba}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a8d6c548c5001b97eca53b4193eadd1ba}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!combine@{combine}}
 \index{combine@{combine}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
 \subsubsection{\texorpdfstring{combine()}{combine()}}
-{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+combine (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{mol }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+combine (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{mol,  }\item[{}]{bond\+\_\+to\+\_\+add = {\ttfamily \mbox{[}\mbox{]}} }\end{DoxyParamCaption})}
 
 
 
@@ -313,9 +351,11 @@ Each atom in the second molecule is appended to the first while preserving order
 \hline
 {\em mol} & \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} containing molecule to be added \\
 \hline
+{\em list} & of tuples (ind1,ind2,order) bonds to add (optional) \\
+\hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} contaning combined molecule 
+\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} contaning combined molecule def combine(self,mol)\+: cmol = self n\+\_\+one = cmol.\+natoms n\+\_\+two = mol.\+natoms for atom in mol.\+atoms\+: cmol.\+add\+Atom(atom) cmol.\+graph = \mbox{[}\mbox{]} return cmol 
 \end{DoxyReturn}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a10ce42207cd8291c685640438f8de1a8}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a10ce42207cd8291c685640438f8de1a8}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!convert2mol3D@{convert2mol3D}}
@@ -332,11 +372,11 @@ Generally used after openbabel operations, such as when initializing a molecule 
 {\em self} & The object pointer \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_acc86e8896c87c6287cfe504321ec8b11}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_acc86e8896c87c6287cfe504321ec8b11}} 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a92d25b3e6fd4e17228b9b49cdab64c51}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a92d25b3e6fd4e17228b9b49cdab64c51}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!convert2\+O\+B\+Mol@{convert2\+O\+B\+Mol}}
 \index{convert2\+O\+B\+Mol@{convert2\+O\+B\+Mol}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
 \subsubsection{\texorpdfstring{convert2\+O\+B\+Mol()}{convert2OBMol()}}
-{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+convert2\+O\+B\+Mol (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+convert2\+O\+B\+Mol (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{force\+\_\+clean = {\ttfamily False} }\end{DoxyParamCaption})}
 
 
 
@@ -345,6 +385,8 @@ Converts \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} to O\+
 Required for performing openbabel operations on a molecule, such as FF optimizations. 
 \begin{DoxyParams}{Parameters}
 {\em self} & The object pointer \\
+\hline
+{\em force\+\_\+clean} & bool force no bond info retentsion \\
 \hline
 \end{DoxyParams}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a551393e5c2417086b3b7855be3cf5957}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a551393e5c2417086b3b7855be3cf5957}} 
@@ -402,11 +444,11 @@ W\+A\+R\+N\+I\+NG\+: O\+N\+LY U\+SE ON A F\+R\+E\+SH I\+N\+S\+T\+A\+N\+CE OF M\+
 {\em mol0} & \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D}{mol3D} of molecule to be copied \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afa77b09b79aeb68ed3b50b51987c61dc}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afa77b09b79aeb68ed3b50b51987c61dc}} 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a0199a2e25288c8624acfb67733cb699f}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a0199a2e25288c8624acfb67733cb699f}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!create\+Molecular\+Graph@{create\+Molecular\+Graph}}
 \index{create\+Molecular\+Graph@{create\+Molecular\+Graph}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
 \subsubsection{\texorpdfstring{create\+Molecular\+Graph()}{createMolecularGraph()}}
-{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+create\+Molecular\+Graph (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+create\+Molecular\+Graph (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{oct = {\ttfamily True} }\end{DoxyParamCaption})}
 
 
 
@@ -414,7 +456,7 @@ Create molecular graph (connectivity matrix) from \hyperlink{classmolSimplify_1_
 
 
 \begin{DoxyParams}{Parameters}
-{\em self} & The object pointer \\
+{\em self} & The object pointer  flag to control special oct-\/metal bonds \\
 \hline
 \end{DoxyParams}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6838664445a9896c703e0ffe2542ceef}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6838664445a9896c703e0ffe2542ceef}} 
@@ -695,11 +737,11 @@ Gets number of unique elements in molecule.
 \begin{DoxyReturn}{Returns}
 List of symbols of unique elements in molecule 
 \end{DoxyReturn}
-\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a394c680ec3eddbcc22ebcec76d211218}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a394c680ec3eddbcc22ebcec76d211218}} 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aac602cfe9499277393a3d23b55f71db0}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aac602cfe9499277393a3d23b55f71db0}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!get\+Bonded\+Atoms@{get\+Bonded\+Atoms}}
 \index{get\+Bonded\+Atoms@{get\+Bonded\+Atoms}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
 \subsubsection{\texorpdfstring{get\+Bonded\+Atoms()}{getBondedAtoms()}}
-{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+get\+Bonded\+Atoms (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{ind }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+get\+Bonded\+Atoms (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{ind,  }\item[{}]{debug = {\ttfamily False} }\end{DoxyParamCaption})}
 
 
 
@@ -719,6 +761,26 @@ For pure organics, the O\+B\+Mol class provides better functionality.
 \begin{DoxyReturn}{Returns}
 List of indices of bonded atoms 
 \end{DoxyReturn}
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ac8ef262050d0ef901688e7c282448fa6}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ac8ef262050d0ef901688e7c282448fa6}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!get\+Bonded\+AtomsH@{get\+Bonded\+AtomsH}}
+\index{get\+Bonded\+AtomsH@{get\+Bonded\+AtomsH}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{get\+Bonded\+Atoms\+H()}{getBondedAtomsH()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+get\+Bonded\+AtomsH (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{ind }\end{DoxyParamCaption})}
+
+
+
+Gets H atoms bonded to a specific atom. 
+
+Otherwise identical to \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aac602cfe9499277393a3d23b55f71db0}{get\+Bonded\+Atoms()}. 
+\begin{DoxyParams}{Parameters}
+{\em self} & The object pointer \\
+\hline
+{\em ind} & Index of reference atom \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+List of indices of bonded atoms 
+\end{DoxyReturn}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_acda82e48cde5996f32a55e0acbdf052e}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_acda82e48cde5996f32a55e0acbdf052e}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!get\+Bonded\+AtomsnotH@{get\+Bonded\+AtomsnotH}}
 \index{get\+Bonded\+AtomsnotH@{get\+Bonded\+AtomsnotH}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
@@ -729,7 +791,7 @@ List of indices of bonded atoms
 
 Gets non-\/H atoms bonded to a specific atom. 
 
-Otherwise identical to \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a394c680ec3eddbcc22ebcec76d211218}{get\+Bonded\+Atoms()}. 
+Otherwise identical to \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aac602cfe9499277393a3d23b55f71db0}{get\+Bonded\+Atoms()}. 
 \begin{DoxyParams}{Parameters}
 {\em self} & The object pointer \\
 \hline
@@ -749,7 +811,7 @@ List of indices of bonded atoms
 
 Gets atoms bonded to a specific atom specialized for octahedral complexes. 
 
-More sophisticated version of \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a394c680ec3eddbcc22ebcec76d211218}{get\+Bonded\+Atoms()}, written by JP.
+More sophisticated version of \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_aac602cfe9499277393a3d23b55f71db0}{get\+Bonded\+Atoms()}, written by JP.
 
 This method specifically forbids \char`\"{}intruder\char`\"{} C and H atoms that would otherwise be within the distance cutoff in tightly bound complexes.
 
@@ -767,11 +829,11 @@ It also limits bonding atoms to the CN closest atoms (CN = coordination number).
 \begin{DoxyReturn}{Returns}
 List of indices of bonded atoms 
 \end{DoxyReturn}
-\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afa8b020ddc30de3b82be2568be20aaa5}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afa8b020ddc30de3b82be2568be20aaa5}} 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae7410bc8f46e8d0d3ab6ba5baa5cdb5c}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae7410bc8f46e8d0d3ab6ba5baa5cdb5c}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!get\+Bonded\+Atoms\+Smart@{get\+Bonded\+Atoms\+Smart}}
 \index{get\+Bonded\+Atoms\+Smart@{get\+Bonded\+Atoms\+Smart}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
 \subsubsection{\texorpdfstring{get\+Bonded\+Atoms\+Smart()}{getBondedAtomsSmart()}}
-{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+get\+Bonded\+Atoms\+Smart (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{ind }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+get\+Bonded\+Atoms\+Smart (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{ind,  }\item[{}]{oct = {\ttfamily True} }\end{DoxyParamCaption})}
 
 
 
@@ -782,6 +844,8 @@ Gets atoms bonded to a specific atom using the molecular graph, or creates it.
 {\em self} & The object pointer \\
 \hline
 {\em ind} & Index of reference atom \\
+\hline
+{\em oct} & Flag to turn on special octahedral complex routines \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
@@ -1164,6 +1228,24 @@ Compares pairwise atom distances to 1$\ast$sum of covalent radii
 \begin{DoxyReturn}{Returns}
 Flag for overlap 
 \end{DoxyReturn}
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a1566e9bd358aa20e095e4bb9d07d2174}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a1566e9bd358aa20e095e4bb9d07d2174}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!populate\+B\+O\+Matrix@{populate\+B\+O\+Matrix}}
+\index{populate\+B\+O\+Matrix@{populate\+B\+O\+Matrix}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{populate\+B\+O\+Matrix()}{populateBOMatrix()}}
+{\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+populate\+B\+O\+Matrix (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Gets a matrix with bond orders from openbabel. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & The object pointer \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+matrix of bond orders 
+\end{DoxyReturn}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae6f619f46f387b2b609807fe06a6876a}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_ae6f619f46f387b2b609807fe06a6876a}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!printxyz@{printxyz}}
 \index{printxyz@{printxyz}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
@@ -1362,6 +1444,24 @@ List of connection atoms.
 
 Charge of molecule. 
 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6082942a23525bf058199ac963f8fb3f}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a6082942a23525bf058199ac963f8fb3f}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!cmol@{cmol}}
+\index{cmol@{cmol}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{cmol}{cmol}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+cmol = self\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_abc6a798a634ff50738051588f9c95c10}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_abc6a798a634ff50738051588f9c95c10}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!con\+\_\+mat\+\_\+one@{con\+\_\+mat\+\_\+one}}
+\index{con\+\_\+mat\+\_\+one@{con\+\_\+mat\+\_\+one}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{con\+\_\+mat\+\_\+one}{con\_mat\_one}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+con\+\_\+mat\+\_\+one = cmol.\+populate\+B\+O\+Matrix()\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a79b378686db3c193cdab193283248b75}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a79b378686db3c193cdab193283248b75}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!con\+\_\+mat\+\_\+two@{con\+\_\+mat\+\_\+two}}
+\index{con\+\_\+mat\+\_\+two@{con\+\_\+mat\+\_\+two}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{con\+\_\+mat\+\_\+two}{con\_mat\_two}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+con\+\_\+mat\+\_\+two = mol.\+populate\+B\+O\+Matrix()\hspace{0.3cm}{\ttfamily [static]}}
+
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a5bdeed75bc96b42a06b2ea277b431739}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a5bdeed75bc96b42a06b2ea277b431739}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!denticity@{denticity}}
 \index{denticity@{denticity}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
@@ -1396,7 +1496,7 @@ Holder for global variables.
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!graph@{graph}}
 \index{graph@{graph}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
 \subsubsection{\texorpdfstring{graph}{graph}}
-{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+graph}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+graph\hspace{0.3cm}{\ttfamily [static]}}
 
 
 
@@ -1412,6 +1512,12 @@ Holder for molecular graph.
 
 Identifier. 
 
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a396404adf257258babdac3667d0b245f}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a396404adf257258babdac3667d0b245f}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!joint\+B\+O\+Mat@{joint\+B\+O\+Mat}}
+\index{joint\+B\+O\+Mat@{joint\+B\+O\+Mat}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{joint\+B\+O\+Mat}{jointBOMat}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+joint\+B\+O\+Mat = np.\+zeros(\mbox{[}\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}{n\+\_\+tot},\hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}{n\+\_\+tot}\mbox{]})\hspace{0.3cm}{\ttfamily [static]}}
+
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_abd8025bde323e199207f372539fc0ceb}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_abd8025bde323e199207f372539fc0ceb}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!mass@{mass}}
 \index{mass@{mass}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
@@ -1421,6 +1527,24 @@ Identifier.
 
 
 Mass of molecule. 
+
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a85ba7bb05563f6cffe5f1fa520f9536b}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a85ba7bb05563f6cffe5f1fa520f9536b}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!n\+\_\+one@{n\+\_\+one}}
+\index{n\+\_\+one@{n\+\_\+one}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{n\+\_\+one}{n\_one}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+n\+\_\+one = cmol.\+natoms\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a7ed8c7afdf881581c5d10c9989c1f25c}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!n\+\_\+tot@{n\+\_\+tot}}
+\index{n\+\_\+tot@{n\+\_\+tot}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{n\+\_\+tot}{n\_tot}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+n\+\_\+tot = \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a85ba7bb05563f6cffe5f1fa520f9536b}{n\+\_\+one} + \hyperlink{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afe514a4cc67fbbaaed3126a567d9a760}{n\+\_\+two}\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afe514a4cc67fbbaaed3126a567d9a760}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_afe514a4cc67fbbaaed3126a567d9a760}} 
+\index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!n\+\_\+two@{n\+\_\+two}}
+\index{n\+\_\+two@{n\+\_\+two}!mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}}
+\subsubsection{\texorpdfstring{n\+\_\+two}{n\_two}}
+{\footnotesize\ttfamily mol\+Simplify.\+Classes.\+mol3\+D.\+mol3\+D.\+n\+\_\+two = mol.\+natoms\hspace{0.3cm}{\ttfamily [static]}}
 
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a06cc059cb532fb64b3e9faa84ae1f8c9}\label{classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D_a06cc059cb532fb64b3e9faa84ae1f8c9}} 
 \index{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D@{mol\+Simplify\+::\+Classes\+::mol3\+D\+::mol3D}!name@{name}}

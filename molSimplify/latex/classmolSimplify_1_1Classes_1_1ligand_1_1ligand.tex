@@ -9,11 +9,11 @@ Ligand class for postprocessing D\+FT results by measuring ligand properties.
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_ab9c068d82f0bb9b6494a734558930984}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, \hyperlink{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a4789951476ce69aa2b606b97ac535f41}{master\+\_\+mol}, \hyperlink{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_ab9dfcb555aa0d747bf5e824c70149684}{index\+\_\+list}, \hyperlink{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_aba886d417452a3657a9c6d5e091af3d1}{dent})
-\item 
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a17875db54ebc0308065d8efdcdd736c4}{obtain\+\_\+mol3d} (self)
-\item 
+\begin{DoxyCompactList}\small\item\em Obtain the ligand from the complex \hyperlink{namespacemolSimplify_1_1Classes_1_1mol3D}{mol3D} object. \end{DoxyCompactList}\item 
 def \hyperlink{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a26d131235b504f894e47e483f105fbfd}{obtain\+\_\+truncation} (self, con\+\_\+atoms, hops)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Truncate ligand about connecting atoms. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
@@ -43,6 +43,19 @@ Ligand class for postprocessing D\+FT results by measuring ligand properties.
 
 
 
+Constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & The object pointer \\
+\hline
+{\em master\+\_\+mol} & A \hyperlink{namespacemolSimplify_1_1Classes_1_1mol3D}{mol3D} complex to extract ligand from \\
+\hline
+{\em index\+\_\+list} & A list of indices of the ligand atoms  dent The denticity of the ligand \\
+\hline
+\end{DoxyParams}
+
+
 \subsection{Member Function Documentation}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a17875db54ebc0308065d8efdcdd736c4}\label{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a17875db54ebc0308065d8efdcdd736c4}} 
 \index{mol\+Simplify\+::\+Classes\+::ligand\+::ligand@{mol\+Simplify\+::\+Classes\+::ligand\+::ligand}!obtain\+\_\+mol3d@{obtain\+\_\+mol3d}}
@@ -50,12 +63,37 @@ Ligand class for postprocessing D\+FT results by measuring ligand properties.
 \subsubsection{\texorpdfstring{obtain\+\_\+mol3d()}{obtain\_mol3d()}}
 {\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+ligand.\+ligand.\+obtain\+\_\+mol3d (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
 
+
+
+Obtain the ligand from the complex \hyperlink{namespacemolSimplify_1_1Classes_1_1mol3D}{mol3D} object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & The object pointer \\
+\hline
+\end{DoxyParams}
 \mbox{\Hypertarget{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a26d131235b504f894e47e483f105fbfd}\label{classmolSimplify_1_1Classes_1_1ligand_1_1ligand_a26d131235b504f894e47e483f105fbfd}} 
 \index{mol\+Simplify\+::\+Classes\+::ligand\+::ligand@{mol\+Simplify\+::\+Classes\+::ligand\+::ligand}!obtain\+\_\+truncation@{obtain\+\_\+truncation}}
 \index{obtain\+\_\+truncation@{obtain\+\_\+truncation}!mol\+Simplify\+::\+Classes\+::ligand\+::ligand@{mol\+Simplify\+::\+Classes\+::ligand\+::ligand}}
 \subsubsection{\texorpdfstring{obtain\+\_\+truncation()}{obtain\_truncation()}}
 {\footnotesize\ttfamily def mol\+Simplify.\+Classes.\+ligand.\+ligand.\+obtain\+\_\+truncation (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{con\+\_\+atoms,  }\item[{}]{hops }\end{DoxyParamCaption})}
 
+
+
+Truncate ligand about connecting atoms. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & The object pointer \\
+\hline
+{\em con\+\_\+atoms} & The connection atom indices \\
+\hline
+{\em hops} & Number of bonds to truncate after \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Truncated \hyperlink{namespacemolSimplify_1_1Classes_1_1mol3D}{mol3D} object 
+\end{DoxyReturn}
 
 
 \subsection{Member Data Documentation}

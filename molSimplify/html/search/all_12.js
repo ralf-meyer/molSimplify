@@ -26,6 +26,7 @@ var searchData=
   ['rotate_5faround_5faxis',['rotate_around_axis',['../namespacemolSimplify_1_1Scripts_1_1geometry.html#a90caa7a6dc952df17fce36ea2711eff3',1,'molSimplify::Scripts::geometry']]],
   ['rotate_5fcatom_5ffix_5fhs',['rotate_catom_fix_Hs',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#a9c4c45a6c8757db294e57137c875b848',1,'molSimplify::Scripts::structgen']]],
   ['rotate_5fcatoms_5ffix_5fhs',['rotate_catoms_fix_Hs',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#acef75ef9f8bfc225c6b2bd327c3a2bed',1,'molSimplify::Scripts::structgen']]],
+  ['rotate_5fmat',['rotate_mat',['../namespacemolSimplify_1_1Scripts_1_1geometry.html#a9ae4203ba9ba1f04d2f2ba23b0515a8b',1,'molSimplify::Scripts::geometry']]],
   ['rotate_5fmlaxis_5fminimize_5fsteric',['rotate_MLaxis_minimize_steric',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#aed8e7b09083ade40bbfd8001f18bd0a2',1,'molSimplify::Scripts::structgen']]],
   ['rotateref',['rotateRef',['../namespacemolSimplify_1_1Scripts_1_1geometry.html#ac0753e6f8d4fa1b2193cdbf99e3d1c8b',1,'molSimplify::Scripts::geometry']]],
   ['rotation_5fparams',['rotation_params',['../namespacemolSimplify_1_1Scripts_1_1geometry.html#a3571c84ff85925ce0a23c08efddf5e1a',1,'molSimplify::Scripts::geometry']]],

@@ -72,12 +72,16 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:afa7cdfc8a30fd53f9784466e662d2aec"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#afa7cdfc8a30fd53f9784466e662d2aec">cell_ffopt</a> (ff, mol, frozenats)</td></tr>
+<tr class="memdesc:afa7cdfc8a30fd53f9784466e662d2aec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main cell FF opt routine.  <a href="#afa7cdfc8a30fd53f9784466e662d2aec">More...</a><br /></td></tr>
 <tr class="separator:afa7cdfc8a30fd53f9784466e662d2aec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7e25ca0eee7ea70e3d886dfac1b77ff"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#af7e25ca0eee7ea70e3d886dfac1b77ff">import_from_cif</a> (fst)</td></tr>
+<tr class="memdesc:af7e25ca0eee7ea70e3d886dfac1b77ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Import CIF to mol3D.  <a href="#af7e25ca0eee7ea70e3d886dfac1b77ff">More...</a><br /></td></tr>
 <tr class="separator:af7e25ca0eee7ea70e3d886dfac1b77ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7ec418e4139cc025c32ac5a789ec8bd"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#af7ec418e4139cc025c32ac5a789ec8bd">center_of_sym</a> (list_of_points)</td></tr>
+<tr class="memdesc:af7ec418e4139cc025c32ac5a789ec8bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">get center_of_sym CIF to mol3D  <a href="#af7ec418e4139cc025c32ac5a789ec8bd">More...</a><br /></td></tr>
 <tr class="separator:af7ec418e4139cc025c32ac5a789ec8bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14494cd56f48f40e5437d8ca73f4b706"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#a14494cd56f48f40e5437d8ca73f4b706">zero_z_csm</a> (super_cell)</td></tr>
+<tr class="memdesc:a14494cd56f48f40e5437d8ca73f4b706"><td class="mdescLeft">&#160;</td><td class="mdescRight">get sets min z coord of mol3D to zero  <a href="#a14494cd56f48f40e5437d8ca73f4b706">More...</a><br /></td></tr>
 <tr class="separator:a14494cd56f48f40e5437d8ca73f4b706"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa581e15be1f5816ef35d571cc0477100"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#aa581e15be1f5816ef35d571cc0477100">xgcd</a> (b, n)</td></tr>
 <tr class="separator:aa581e15be1f5816ef35d571cc0477100"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -203,6 +207,18 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Main cell FF opt routine. </p>
+<p>optimize complexes placed on cell to avoid clashes. Will use UFF for speed</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ff</td><td>Force field to use, available MMFF94, UFF, Ghemical, GAFF, </td></tr>
+    <tr><td class="paramname">mol</td><td>mol3D of cell to be optimized </td></tr>
+    <tr><td class="paramname">frozenats</td><td>List of frozen atom indicies, will usually be the cell </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>FF-calculated energy, mol3D of optimized cell </dd></dl>
+
 </div>
 </div>
 <a id="af7ec418e4139cc025c32ac5a789ec8bd"></a>
@@ -220,6 +236,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>get center_of_sym CIF to mol3D </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">list_of_points</td><td>list of points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>csym center of sym </dd></dl>
 
 </div>
 </div>
@@ -624,6 +649,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Import CIF to mol3D. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fst</td><td>string of .cif file path </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>mol3D of unit cell, cell vector </dd></dl>
 
 </div>
 </div>
@@ -1064,6 +1098,14 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>get sets min z coord of mol3D to zero </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">super_cell</td><td>mol3D of cell </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

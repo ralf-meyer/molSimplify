@@ -8,7 +8,7 @@ var searchData=
   ['deleteatoms',['deleteatoms',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a98613e0d849dd341b6cec837877e214b',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['deletehs',['deleteHs',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a91e56cc05405772f174a4eda98d86f41',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['deloc',['deloc',['../namespacemolSimplify_1_1Scripts_1_1postmwfn.html#a3d06d34a3a564ff309a955f7a30a1f96',1,'molSimplify::Scripts::postmwfn']]],
-  ['deltametric',['deltametric',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a4ea8024a494f24167169a734fc29987b',1,'molSimplify::Informatics::autocorrelation']]],
+  ['deltametric',['deltametric',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a351621ccecd9fc04206081cb22e12dfd',1,'molSimplify::Informatics::autocorrelation']]],
   ['dirload',['dirload',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#abde11108b135baabcf9009d005bdc717',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['disableffinput',['disableffinput',['../classmolSimplify_1_1Classes_1_1mGUI_1_1mGUI.html#ad6ae299b232bb0d39d36ee43fd676c5c',1,'molSimplify::Classes::mGUI::mGUI']]],
   ['dissim',['dissim',['../namespacemolSimplify_1_1Scripts_1_1dbinteract.html#ad7cec45df1ee9f3e74f2959ca6c5b1e2',1,'molSimplify::Scripts::dbinteract']]],

@@ -574,6 +574,8 @@ def parseinputfile(args):
             if (l[0]=='-dbsim'):
                 args.dbsearch = True
                 args.dbsim = l[1]
+            if (l[0]=='-dbsearch'):
+                args.dbsearch = True
             if (l[0]=='-dbresults'):
                 args.dbresults = l[1]
             if (l[0]=='-dbdissim'):

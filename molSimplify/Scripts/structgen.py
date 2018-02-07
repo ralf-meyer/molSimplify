@@ -1285,7 +1285,79 @@ def align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,ML
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned,frozenats,MLoptbds
 
-# Tries to break a tridentate ligand at the middle connecting atom into the middle fragment and two bidentate ligands which are then aligned separately.
+def align_dent3_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i):
+    atom0 = catoms[1]
+    corerefcoords = coreref.coords()
+    # align molecule according to connection atom and shadow atom
+    lig3D.alignmol(lig3D.getAtom(atom0),m3D.getAtom(batoms[1]))
+    # 1. align ligand connection atoms center of symmetry
+    auxm = mol3D()
+    auxm.addAtom(lig3D.getAtom(catoms[0]))
+    auxm.addAtom(lig3D.getAtom(catoms[2]))
+    r0 = core3D.getAtom(0).coords()
+    lig3Db = mol3D()
+    lig3Db.copymol3D(lig3D)
+    theta,urot = rotation_params(r0,lig3D.getAtom(atom0).coords(),auxm.centersym())
+    lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,theta)
+    # 2. align with correct plane
+    rl0,rl1,rl2 = lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),lig3D.getAtom(catoms[2]).coords()
+    rc0,rc1,rc2 = m3D.getAtom(batoms[0]).coords(),m3D.getAtom(batoms[1]).coords(),m3D.getAtom(batoms[2]).coords()
+    theta0,ul = rotation_params(rl0,rl1,rl2)
+    theta1,uc = rotation_params(rc0,rc1,rc2)
+    urot = vecdiff(rl1,corerefcoords)
+    theta = vecangle(ul,uc)
+    lig3Db = mol3D()
+    lig3Db.copymol3D(lig3D)
+    lig3D = rotate_around_axis(lig3D,rl1,urot,theta)
+    lig3Db = rotate_around_axis(lig3Db,rl1,urot,180-theta)
+    rl0,rl1,rl2 = lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),lig3D.getAtom(catoms[2]).coords()
+    rl0b,rl1b,rl2b = lig3Db.getAtom(catoms[0]).coords(),lig3Db.getAtom(catoms[1]).coords(),lig3Db.getAtom(catoms[2]).coords()
+    rc0,rc1,rc2 = m3D.getAtom(batoms[0]).coords(),m3D.getAtom(batoms[1]).coords(),m3D.getAtom(batoms[2]).coords()
+    theta,ul = rotation_params(rl0,rl1,rl2)
+    theta,ulb = rotation_params(rl0b,rl1b,rl2b)
+    theta,uc = rotation_params(rc0,rc1,rc2)
+    d1 = norm(cross(ul,uc))
+    d2 = norm(cross(ulb,uc))
+    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+    # 3. correct if not symmetric
+    theta0,urotaux = rotation_params(lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
+    theta1,urotaux = rotation_params(lig3D.getAtom(catoms[2]).coords(),lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
+    dtheta = 0.5*(theta1-theta0)
+    if abs(dtheta) > 0.5:
+        lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,dtheta)
+    # 4. flip for correct stereochemistry
+    urot = vecdiff(lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
+    lig3Db = mol3D()
+    lig3Db.copymol3D(lig3D)
+    lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)
+    d1 = min(distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
+    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
+    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
+    # 5. flip to align 1st and 3rd connection atoms
+    lig3Db = mol3D()
+    lig3Db.copymol3D(lig3D)
+    theta,urot = rotation_params(lig3Db.getAtom(catoms[0]).coords(),lig3Db.getAtom(catoms[1]).coords(),lig3Db.getAtom(catoms[2]).coords())
+    lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)
+    d1 = min(distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
+    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
+    lig3D = lig3D if d1 < d2 else lig3Db
+    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
+    for iib in range(0,3):
+        MLoptbds.append(bondl)
+    # set correct distance
+    setPdistance(lig3D, lig3D.getAtom(atom0).coords(), m3D.getAtom(0).coords(), bondl)
+    # rotate connecting atoms to align Hs properly
+    lig3D = rotate_catoms_fix_Hs(lig3D,[catoms[0],catoms[1],catoms[2]],m3D.getAtom(0).coords(),core3D)
+    # freeze local geometry
+    lats = lig3D.getBondedAtoms(catoms[0])+lig3D.getBondedAtoms(catoms[1])
+    for lat in list(set(lats)):
+        frozenats.append(lat+core3D.natoms)
+    lig3D_aligned = mol3D()
+    lig3D_aligned.copymol3D(lig3D)
+    return lig3D_aligned,frozenats,MLoptbds    
+    
+## Test function, not used anywhere
+#  Tries to break a tridentate ligand at the middle connecting atom into the middle fragment and two bidentate ligands which are then aligned separately.
 #
 #  Will fail if there are no suitable rotatable bonds, such as in a polycyclic aromatic ligand, and return a flag indicating as such.
 #  @param lig3D mol3D of tridentate ligand
@@ -1531,97 +1603,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 elif (denticity == 2):
                     lig3D,frozenats,MLoptbds = align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 3):
-                    atom0 = catoms[1]
-                    # align molecule according to connection atom and shadow atom
-                    lig3D.alignmol(lig3D.getAtom(atom0),m3D.getAtom(batoms[1]))
-                    # 1. align ligand connection atoms center of symmetry
-                    auxm = mol3D()
-                    auxm.addAtom(lig3D.getAtom(catoms[0]))
-                    auxm.addAtom(lig3D.getAtom(catoms[2]))
-                    r0 = core3D.getAtom(0).coords()
-                    lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)
-                    theta,urot = rotation_params(r0,lig3D.getAtom(atom0).coords(),auxm.centersym())
-                    lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,theta)
-                    # 2. align with correct plane
-                    rl0,rl1,rl2 = lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),lig3D.getAtom(catoms[2]).coords()
-                    rc0,rc1,rc2 = m3D.getAtom(batoms[0]).coords(),m3D.getAtom(batoms[1]).coords(),m3D.getAtom(batoms[2]).coords()
-                    theta0,ul = rotation_params(rl0,rl1,rl2)
-                    theta1,uc = rotation_params(rc0,rc1,rc2)
-                    urot = vecdiff(rl1,mcoords)
-                    theta = vecangle(ul,uc)
-                    lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)
-                    lig3D = rotate_around_axis(lig3D,rl1,urot,theta)
-                    lig3Db = rotate_around_axis(lig3Db,rl1,urot,180-theta)
-                    rl0,rl1,rl2 = lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),lig3D.getAtom(catoms[2]).coords()
-                    rl0b,rl1b,rl2b = lig3Db.getAtom(catoms[0]).coords(),lig3Db.getAtom(catoms[1]).coords(),lig3Db.getAtom(catoms[2]).coords()
-                    rc0,rc1,rc2 = m3D.getAtom(batoms[0]).coords(),m3D.getAtom(batoms[1]).coords(),m3D.getAtom(batoms[2]).coords()
-                    theta,ul = rotation_params(rl0,rl1,rl2)
-                    theta,ulb = rotation_params(rl0b,rl1b,rl2b)
-                    theta,uc = rotation_params(rc0,rc1,rc2)
-                    d1 = norm(cross(ul,uc))
-                    d2 = norm(cross(ulb,uc))
-                    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
-                    # 3. correct if not symmetric
-                    theta0,urotaux = rotation_params(lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
-                    theta1,urotaux = rotation_params(lig3D.getAtom(catoms[2]).coords(),lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
-                    dtheta = 0.5*(theta1-theta0)
-                    if abs(dtheta) > 0.5:
-                        lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,dtheta)
-                    # 4. flip for correct stereochemistry
-                    urot = vecdiff(lig3D.getAtom(catoms[1]).coords(),core3D.getAtom(0).coords())
-                    lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)
-                    lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)
-                    d1 = min(distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
-                    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
-                    lig3D = lig3D if (d1 < d2)  else lig3Db # pick best one
-                    # 5. flip to align 1st and 3rd connection atoms
-                    lig3Db = mol3D()
-                    lig3Db.copymol3D(lig3D)
-                    theta,urot = rotation_params(lig3Db.getAtom(catoms[0]).coords(),lig3Db.getAtom(catoms[1]).coords(),lig3Db.getAtom(catoms[2]).coords())
-                    lig3Db = rotate_around_axis(lig3Db,lig3Db.getAtom(catoms[1]).coords(),urot,180)
-                    d1 = min(distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
-                    d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[2]).coords()),distance(lig3Db.getAtom(catoms[2]).coords(),m3D.getAtom(batoms[0]).coords()))
-                    lig3D = lig3D if d1 < d2 else lig3Db
-
-
-                    ### rotate around secondary axis ###
-                    #auxm = mol3D()
-                    #auxm.addAtom(lig3D.getAtom(catoms[0]))
-                    #auxm.addAtom(lig3D.getAtom(catoms[2]))
-                    #theta,urot0 = rotation_params(core3D.getAtom(0).coords(),lig3D.getAtom(atom0).coords(),auxm.centersym())
-                    #theta0,urot = rotation_params(lig3D.getAtom(catoms[0]).coords(),lig3D.getAtom(catoms[1]).coords(),lig3D.getAtom(catoms[2]).coords())
-                    ## change angle if > 90
-                    #if theta > 90:
-                        #theta -= 180
-                    #lig3Db = mol3D()
-                    #lig3Db.copymol3D(lig3D)
-                    #lig3D = rotate_around_axis(lig3D,lig3D.getAtom(atom0).coords(),urot,theta)
-                    #lig3Db = rotate_around_axis(lig3Db,lig3D.getAtom(atom0).coords(),urot,180-theta)
-                    #d1 = distance(lig3D.getAtom(catoms[0]).coords(),m3D.getAtom(batoms[0]).coords())
-                    #d2 = distance(lig3Db.getAtom(catoms[0]).coords(),m3D.getAtom(batoms[0]).coords())
-                    #print d1
-                    #print d2
-                    #lig3D = lig3D if (d1 < d2) else lig3Db
-
-                    # if overlap flip
-                    #dm0 = distance(lig3D.getAtom(catoms[0]).coords(),m3D.getAtom(0).coords())
-                    #dm1 = distance(lig3D.getAtom(catoms[1]).coords(),m3D.getAtom(0).coords())
-                    #dm2 = distance(lig3D.getAtom(catoms[2]).coords(),m3D.getAtom(0).coords())
-                    #mind = min([dm0,dm1,dm2])
-                    #for iiat,atom in enumerate(lig3D.atoms):
-                        #if iiat not in catoms and atom.sym != 'H' and distance(atom.coords(),m3D.getAtom(0).coords()) < min([dm0,dm1,dm2]):
-                            #lig3D = rotate_around_axis(lig3D,rc1,uc,180)
-                            #break
-                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
-                    for iib in range(0,3):
-                        MLoptbds.append(bondl)
-                    # set correct distance
-                    setPdistance(lig3D, lig3D.getAtom(atom0).coords(), m3D.getAtom(0).coords(), bondl)
-                    # rotate connecting atoms to align Hs properly
-                    lig3D = rotate_catoms_fix_Hs(lig3D,[catoms[0],catoms[1],catoms[2]],m3D.getAtom(0).coords(),core3D)
+                    lig3D,frozenats,MLoptbds = align_dent3_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 4):
 					# note: catoms for ligand should be specified clockwise
                     # connection atoms in backbone

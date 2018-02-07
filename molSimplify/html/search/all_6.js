@@ -9,8 +9,8 @@ var searchData=
   ['find_5feu_5fdist',['find_eu_dist',['../namespacemolSimplify_1_1python__nn_1_1ANN.html#aba3e52cd134cd43f5cee66ff48dc0564',1,'molSimplify::python_nn::ANN']]],
   ['find_5fextents',['find_extents',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#aa0a1eea3e38c7c7adc6f2c908a314ff9',1,'molSimplify.Scripts.cellbuilder_tools.find_extents()'],['../namespacemolSimplify_1_1Scripts_1_1chains.html#a8a149ce0ce2729024f8d8707beb53ec3',1,'molSimplify.Scripts.chains.find_extents()']]],
   ['find_5fextents_5fcv',['find_extents_cv',['../namespacemolSimplify_1_1Scripts_1_1cellbuilder__tools.html#a52829c4cfef8850b9d12fd7e8ec8be29',1,'molSimplify::Scripts::cellbuilder_tools']]],
-  ['find_5fligand_5fautocorrelations_5foct',['find_ligand_autocorrelations_oct',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a4f518bc9b803f94507f31f1512773a35',1,'molSimplify::Informatics::autocorrelation']]],
-  ['find_5fligand_5fdeltametrics_5foct',['find_ligand_deltametrics_oct',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a6552646bebf9c1b28cd7953ed797aff9',1,'molSimplify::Informatics::autocorrelation']]],
+  ['find_5fligand_5fautocorrelations_5foct',['find_ligand_autocorrelations_oct',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a96ebcf9906e8f54bcc36bd49b97b6c95',1,'molSimplify::Informatics::autocorrelation']]],
+  ['find_5fligand_5fdeltametrics_5foct',['find_ligand_deltametrics_oct',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a546b2f7fde3825cfd7a2c505f77d7315',1,'molSimplify::Informatics::autocorrelation']]],
   ['find_5frotate_5frotatable_5fbond',['find_rotate_rotatable_bond',['../namespacemolSimplify_1_1Scripts_1_1structgen.html#ae544f12f83f1b924270e798011a4dfc3',1,'molSimplify::Scripts::structgen']]],
   ['find_5fterm_5fheavy',['find_term_heavy',['../namespacemolSimplify_1_1Scripts_1_1chains.html#acf0a4747439fc42723d541a1b86fb33e',1,'molSimplify::Scripts::chains']]],
   ['findatomsbysymbol',['findAtomsbySymbol',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#adb95387b07a9714c03db4975a192e08c',1,'molSimplify::Classes::mol3D::mol3D']]],
@@ -26,5 +26,5 @@ var searchData=
   ['freezeatom',['freezeatom',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a3d0541772724aa1a54e8cb6c8de77ea7',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['freezeatoms',['freezeatoms',['../classmolSimplify_1_1Classes_1_1mol3D_1_1mol3D.html#a629f2ff84af7df7a809fe5e8f879f6a3',1,'molSimplify::Classes::mol3D::mol3D']]],
   ['frozen',['frozen',['../classmolSimplify_1_1Classes_1_1atom3D_1_1atom3D.html#a90f40a8ff8075e053e123ebb8b7003dc',1,'molSimplify::Classes::atom3D::atom3D']]],
-  ['full_5fautocorrelation',['full_autocorrelation',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a1dd2acfd794b1c0cba8c16567b39552d',1,'molSimplify::Informatics::autocorrelation']]]
+  ['full_5fautocorrelation',['full_autocorrelation',['../namespacemolSimplify_1_1Informatics_1_1autocorrelation.html#a4d4d5475abc8e3d06214bb02184f0f48',1,'molSimplify::Informatics::autocorrelation']]]
 ];
