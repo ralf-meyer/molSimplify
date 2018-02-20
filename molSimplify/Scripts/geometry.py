@@ -33,7 +33,7 @@ def normalize(u):
     d = norm(u)
     un = []
     if d > 1.0e-13:
-        un.append(u/d)
+        [un.append(ui/d) for ui in u]
     return un
 
 ## Euclidean distance between points
