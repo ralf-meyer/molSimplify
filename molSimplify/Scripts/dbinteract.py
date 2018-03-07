@@ -355,7 +355,12 @@ def dissim(outf,n):
 #  @param catoms Connection atoms of SMARTS string
 def matchsmarts(smarts,outf,catoms):
     sm = openbabel.OBSmartsPattern()
+    print('---Test for developer version----')
     sm.Init(smarts)
+    print('smart is:', smarts)
+    current_path = os.getcwd()
+    print('current path:', current_path)
+    print('file open:', outf)
     f = open(outf,'r')
     s = f.read().splitlines()
     f.close()
@@ -363,11 +368,25 @@ def matchsmarts(smarts,outf,catoms):
     obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats("smi","smi")
     f = open(outf,'w')
+    # print('in file is:', s)
+    moll = openbabel.OBMol() # add
+    obConversion = openbabel.OBConversion() #add
+    obConversion.SetInAndOutFormats("smi", "smi")#add
     for i,mol in enumerate(s):
+<<<<<<< Updated upstream
     	obConversion.ReadString(moll,mol)
         sm.Match(moll)
         # sm.Match(mol)
+=======
+    	print('mol current:', mol)
+    	obConversion.ReadString(moll, mol)#add
+        sm.Match(moll)
+>>>>>>> Stashed changes
         smm = list(sm.GetUMapList())
+        print('#:',i)
+        print('mol current:', mol)
+        print('smm current', smm)
+        print('catoms:', catoms)
         if len(smm) > 0:
             pmatch = smm[0]
             cc = ''
