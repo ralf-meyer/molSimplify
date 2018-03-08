@@ -267,7 +267,7 @@ def cleaninput(args):
 #  @return CLIinput.inp (file name)
 def parseCLI(args):
     cliargs = ' '.join(args)
-    s = filter(None,cliargs.split('-'))
+    s = filter(None,cliargs.split(' -'))
     fname = 'CLIinput.inp'
     f = open(fname,'w')
     f.write('# molSimplify input file generated from CLI input\n')
