@@ -14,62 +14,7 @@ from molSimplify.Classes.mol3D import*
 from molSimplify.Classes.globalvars import globalvars
 from math import sqrt
 from math import floor
-def chain_ffopt(ff,mol,frozenats):
-		### FORCE FIELD OPTIMIZATION ##
-		# INPUT
-		#   - ff: force field to use, available MMFF94, UFF< Ghemical, GAFF
-		#   - mol: mol3D to be ff optimized
-		#   - connected: indices of connection atoms to metal
-		#   - constopt: flag for constrained optimization
-		# OUTPUT
-		#   - mol: force field optimized mol3D
-		metals = range(21,31)+range(39,49)+range(72,81)
-		### check requested force field
-		ffav = 'mmff94, uff, ghemical, gaff, mmff94s' # force fields
-		if ff.lower() not in ffav:
-			print 'Requested force field not available. Defaulting to MMFF94'
-			ff = 'mmff94'
-		### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
-		backup_mol = mol3D()
-		backup_mol.copymol3D(mol)
-		#   print('bck ' + str(backup_mol.getAtom(0).coords()))
-		#   print('mol_ibf ' + str(mol.getAtom(0).coords()))
-		mol.convert2OBMol()
-		### initialize constraints
-		constr = openbabel.OBFFConstraints()
-		### openbabel indexing starts at 1 ### !!!
-		# convert metals to carbons for FF
-		indmtls = []
-		mtlsnums = []
-		for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
-			if atom.atomicnum in metals:
-				indmtls.append(iiat)
-				mtlsnums.append(atom.GetAtomicNum())
-				atom.OBAtom.SetAtomicNum(19)
-		for cat in frozenats:
-			constr.AddAtomConstraint(cat+1) # indexing babel
-		### set up forcefield
-		forcefield = openbabel.OBForceField.FindForceField(ff)
-		OBMol = mol.OBMol
-		forcefield.Setup(obmol,constr)
-		## force field optimize structure
-		forcefield.ConjugateGradients(2500)
-		forcefield.GetCoordinates(OBMol)
-		mol.OBMol = OBMol
-
-# reset atomic number to metal
-		for i,iiat in enumerate(indmtls):
-			mol.OBMol.GetAtomById(iiat).SetAtomicNum(mtlsnums[i])
-		mol.convert2mol3D()
-
-		en = forcefield.Energy()
-		#   print(str(mol.OBmol.atoms[1].OBAtom.GetVector().GetZ()))
-		#    print(str(forcefield.Validate()))
-		# print('mol_af ' + str(mol.getAtom(0).coords()))
-
-		#  print('ff delta = ' + str(backup_mol.rmsd(mol)))
-		del forcefield, constr, OBMol
-		return mol,en
+import numpy as np
 
 def mdistance(r1,r2):
 	dx = r1[0] - r2[0]
@@ -107,7 +52,7 @@ def interatomic_dist(mol,ind1,ind2):
 def find_term_heavy(mol,reference_point):
 		min_dist  = 1000
 		min_ind = 0
-	#    print('reference_point',reference_point)
+		print('reference_point',reference_point)
 		for inds,atoms in enumerate(mol.getAtoms()):
 	 #           print('inds,atoms')
 	  #          print('this ind is ',inds)
@@ -119,7 +64,7 @@ def find_term_heavy(mol,reference_point):
 					   if this_dist < min_dist:
 							   min_dist = this_dist
 							   min_ind = inds
-							   print('accepting')
+							   #print('accepting')
 		return min_ind
 def trim_H(mol,reference_point):
 		trimmed_mol = mol3D()
@@ -170,6 +115,12 @@ def zero_y(mol):
 						ymin = coords[1]
 		zeroed_mol.translate([0,-1*ymin,0])
 		return zeroed_mol
+def zero_1st(mol):
+		zeroed_mol = mol3D()
+		zeroed_mol.copymol3D(mol)
+                coord_to_zero = zeroed_mol.getAtom(0).coords()
+		zeroed_mol.translate([-1*i for i in coord_to_zero])
+		return zeroed_mol                
 def remove_closest_h(mol,other_mol):
 	new_mol = mol3D()
 	new_mol.copymol3D(mol);
@@ -187,30 +138,41 @@ def remove_closest_h(mol,other_mol):
 	return new_mol
 	
 
-def grow_linear_step(chain,new_unit,dim,interv):
+def grow_linear_step(chain,new_unit,dim,interv,conatom,freezhead):
 		combined_mol = mol3D()
 		combined_mol.copymol3D(chain)
+                combined_mol.convert2OBMol()
 		add_mol = mol3D()
 		add_mol.copymol3D(new_unit)
+                add_mol.convert2OBMol()
 		add_mol = zero_dim(new_unit,dim)
+
 		chain_inds = range(0,chain.natoms)
 		print('chain_inds',chain_inds)
+                print('freezehead is '+str(freezhead))
+                print('freezehead is '+str(freezhead))
 		basic_lengths = find_extents(chain)
-	   # print(basic_lengths)
+                print('extents are ' + str(basic_lengths))
 		basic_dist  = basic_lengths[dim]
 		tv =[0,0,0]
 		tv[dim] = basic_dist
-#        add_mol.translate(tv)
+
 		print('translating',tv)
 
 		add_mol.translate(interv)
 		
                 add_mol.writexyz('precut.xyz')
-                add_mol = remove_closest_h(add_mol,combined_mol)
+                #add_mol = remove_closest_h(add_mol,combined_mol)
                 add_mol.writexyz('postcut.xyz')
-		combined_mol = combined_mol.combine(add_mol)
-		#combined_mol,en = chain_ffopt('',combined_mol,[])       
-
+                #combined_mol.printxyz()
+                #add_mol.printxyz()
+		combined_mol = combined_mol.combine(add_mol,bond_to_add=[(conatom,combined_mol.natoms,1)])
+		
+                #ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=False):
+                combined_mol,en = ffopt('MMFF94',mol=combined_mol,connected=[],constopt=0,
+                                        frozenats=range(0,freezhead+1),frozenangles=[],
+                                        mlbonds=[],nsteps=200,debug=False)
+                combined_mol.convert2mol3D()
 		combined_mol.writexyz('pre.xyz')
 
 		combined_mol.writexyz('post.xyz')
@@ -225,36 +187,93 @@ def chain_builder_supervisor(args,rundir):
 
 		print(args.chain)
 		print(args.chain_units)
-
+                
+                print('loading monomer')
 		monomer = mol3D()
-		monomer.OBmol = monomer.getOBmol(args.chain,'smi')
-		monomer.OBmol.make3D('mmff94',0)
+		monomer.OBMol = monomer.getOBMol(args.chain,convtype='smistring')
+#		monomer.OBMol.make3D('mmff94',0)
 		monomer.convert2mol3D()
+                monomer.writexyz('mono_nozero.xyz')
+                monomer =zero_1st(monomer)
+                monomer.writexyz('mono_zero_z.xyz')
+                
+                
+                conatom = len(args.chain)-1
+                print('connection atom is '+monomer.getAtom(conatom).symbol())
+                
+                
+                old_pos = monomer.getAtom(conatom).coords()
+                idist = 1.25*mdistance(old_pos,[0,0,0])
+                print('currently at located at ' + str(old_pos))
+                target = [0,0,-1*mdistance(old_pos,[0,0,0])]
+                
+                print('target located at ' + str(target) )
+                vec1 = vecdiff([0,0,0],old_pos)
+                print('vecdiff is ' + str(vec1) )
+                vec2 = [0,0,1]
+                
+                thetaold = vecangle(vec1,vec2)
+                
+                
+                print('thetaold is ' + str(thetaold) )
+                
+                myu = np.cross(vec1,vec2)
+
+                theta,u = rotation_params(target,[0,0,0],old_pos)
+                print('rot params are ' + str([theta, u]) +' my way '  + str(thetaold) + ' my norm '  + str(myu)) 
+                
+                
+                monomer = rotate_around_axis(monomer,[0,0,0],u,theta)
+                        # rotate_around_axis(mol,         Rp,u,theta):
+                #  Loops over PointRotateAxis().
+                #  @param mol mol3D of molecule to be rotated
+                #  @param Rp Reference point along axis
+                #  @param u Direction vector of axis
+                #  @param theta Angle of rotation in DEGREES
+                #  @return mol3D of rotated molecule
+                
+                monomer.writexyz('mono_rotate.xyz')
+                new_coords = monomer.getAtom(conatom).coords()
+
+
+                print('now located at ' + str(new_coords))
+                print('target located at ' + str(target))
+                print('\n\n\n')
+
+
 
 		monomer.writexyz('mono.xyz')
-		dimer = mol3D()
-		dimer.OBmol = dimer.getOBmol(args.chain+args.chain,'smi')
-		dimer.OBmol.make3D('mmff94',0)
-		dimer.convert2mol3D()
-		dimer.printxyz()
-		dimer.writexyz('di.xyz')
-                interd,interv = interatomic_dist(dimer,len(args.chain),0)
-		print('interv is')
-		print(interv)
                 
-		trimer = mol3D()
-		trimer.OBmol = trimer.getOBmol(args.chain+args.chain + args.chain,'smi')
-		trimer.OBmol.make3D('mmff94',0)
-		trimer.convert2mol3D()
-		trimer.printxyz()
-		trimer.writexyz('tri.xyz')
+                
+                
+                
+
+                
+                
+                
+#		dimer = mol3D()
+#		dimer.OBMol = dimer.getOBMol(args.chain+args.chain,'smistring')
+#		dimer.OBMol.make3D('mmff94',0)
+#		dimer.convert2mol3D()
+#		#dimer.printxyz()
+#		dimer.writexyz('di.xyz')
+#               interd,interv = interatomic_dist(dimer,len(args.chain),0)
+#		print('interv is')
+#		print(interv)
+                interv = [0,0,idist]
+		#trimer = mol3D()
+		#trimer.OBMol = trimer.getOBMol(args.chain+args.chain + args.chain,'smistring')
+#		trimer.OBMol.make3D('mmff94',0)
+		#trimer.convert2mol3D()
+		#trimer.printxyz()
+		#trimer.writexyz('tri.xyz')#
 
 		my_dim = mol3D()
 		my_dim.copymol3D(monomer)
 		my_dim.writexyz('prestart.xyz')
                 
 		my_dim = trim_H(my_dim,monomer.getAtom(len(args.chain)-1).coords())
-		my_dim = zero_x(my_dim)
+		#my_dim = zero_x(my_dim)
 		basic_lengths = find_extents(my_dim)
 
 		basic_x  = basic_lengths[0]
@@ -266,15 +285,27 @@ def chain_builder_supervisor(args,rundir):
 		middle = mol3D()
 		middle.copymol3D(monomer)
                 print('connection atom is '+monomer.getAtom(len(args.chain)-1).symbol())
+                conatom = len(args.chain)-1
 		middle = trim_H(middle,monomer.getAtom(len(args.chain)-1).coords())
 
-		middle =zero_x(middle)
+		#middle =zero_x(middle)
 		middle = trim_H(middle,[0,0,0])
 
+                print('loading end')
 		end = mol3D()
-		end.copymol3D(monomer)
-		end =zero_x(end)
-		end = trim_H(end,[0,0,0])
+		end.OBMol = end.getOBMol("CC1COC(=O)O1",convtype='smistring')
+#		monomer.OBMol.make3D('mmff94',0)
+		end.convert2mol3D()
+                end.writexyz('endi.xyz')
+                end =zero_1st(end)
+                end.writexyz('end_zero_z.xyz')
+                conatome = 4
+                print('connection atom is '+end.getAtom(conatome).symbol())
+                end_pos = end.getAtom(conatome).coords()
+                target_end = [0,0,-1*mdistance(end_pos,[0,0,0])]
+                theta,u = rotation_params(target_end,[0,0,0],end_pos)
+                end = rotate_around_axis(end,[0,0,0],u,theta)
+                end = trim_H(end,[0,0,0])
 
 		middle.writexyz('middle.xyz')
 		end.writexyz('end.xyz')
@@ -282,7 +313,7 @@ def chain_builder_supervisor(args,rundir):
 
 
 		repu = mol3D()
-		repu.copymol3D(my_dim)
+		repu.copymol3D(middle)
 
 
 
@@ -291,14 +322,26 @@ def chain_builder_supervisor(args,rundir):
 
 
 		interv0 = interv
+                old_nat = my_dim.natoms 
+                
 		for i in range(0,int(args.chain_units)-1):
-				my_dim = grow_linear_step(my_dim,repu,0,interv)
-				interv = [interv[i] + interv0[i] for i in [0,1,2]]
-		my_dim = grow_linear_step(my_dim,end,0,interv)
-
+                        
+                        locked_atoms = my_dim.natoms -1
+                        my_dim = grow_linear_step(my_dim,repu,0,interv,conatom,freezhead = locked_atoms)
+                        interv = [interv[i] + interv0[i] for i in [0,1,2]]
+                        print('con is '+ str(conatom))
+                        print('old nat is '+ str(old_nat))
+                        conatom = conatom + old_nat  
+                        old_nat =  repu.natoms +1
+                        if not i%2:
+                                old_nat -=1
+                print('build start')
+                locked_atoms = my_dim.natoms -1
+		my_dim = grow_linear_step(my_dim,end,0,interv,conatom-1,freezhead = locked_atoms)
 #        my_dim.printxyz()
 		my_dim.writexyz('poly.xyz')
-		my_dim,en = chain_ffopt('',my_dim,[])       
+		#my_dim,en = chain_ffopt('',my_dim,[])   
+                my_dim,en = ffopt('MMFF94',my_dim,[],0,[],mlbonds=[],frozenangles=[],nsteps=200,debug=False)
 		my_dim.writexyz('polyf.xyz')
 
 

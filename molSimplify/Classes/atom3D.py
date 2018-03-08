@@ -14,7 +14,8 @@ class atom3D:
     #  @param self The object pointer    
     #  @param Sym Element symbol
     #  @param xyz List of coordinates
-    def __init__(self,Sym='C',xyz=[0.0,0.0,0.0]): 
+    #  @param name optional unique identifier
+    def __init__(self,Sym='C',xyz=[0.0,0.0,0.0],name=False): 
 		## Element symbol
         self.sym = Sym
         globs = globalvars()
@@ -33,9 +34,15 @@ class atom3D:
             self.rad = amass[Sym][2]
         ## Flag for freezing in optimization
         self.frozen =  False
+        ## Flag for atom name 
+        if name:
+            self.name = name
+        else:
+            self.name = Sym
+            
         ## Coordinates
         self.__xyz = xyz
-            
+        
     ## Get coordinates
     #  @param self The object pointer
     #  @return List of coordinates
