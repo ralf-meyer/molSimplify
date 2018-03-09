@@ -1,4 +1,5 @@
 ## @file globalvars.py
+## @file globalvars.py
 #  Contains useful constants used throughout the code.
 #  
 #  Written by Tim Ioannidis for HJK Group
@@ -189,7 +190,14 @@ class globalvars:
     #  @return Electronegativity dictionary        
     def endict(self):
         return endict
-        
+
+    def vdwrad(self):
+        return vdwrad
+
+    def metalslist(self):
+        return metalslist
+
+
     ## Record custom path in ~/.molSimplify file
     #  @param self The object pointer
     #  @param path Custom path 
