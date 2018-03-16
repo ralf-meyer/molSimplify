@@ -73,7 +73,8 @@ def ligand_breakdown(mol):
 	# this function takes an octahedral 
 	# complex and returns ligands
 	metal_index = mol.findMetal()[0]
-	bondedatoms = mol.getBondedAtomsOct(metal_index,CN=6,debug=False)
+	# bondedatoms = mol.getBondedAtomsOct(metal_index,CN=6,debug=False)
+	bondedatoms = mol.getBondedAtomsSmart(metal_index)
 #	print('from get oct' + str(bondedatoms))
 #	print('***\n')
 	bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]              
