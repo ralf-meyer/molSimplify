@@ -120,7 +120,7 @@ def loop_target_angle_arr(input_arr, target_arr):
     output_arr = []
     sum_del = []
     catoms_arr = []
-    max_del_sig_angle_arr= []
+    max_del_sig_angle_arr = []
     for idx, ele in enumerate(target_arr):
         output_angle, del_angle, catoms, max_del_sig_angle = comp_angle_pick_one_best(input_arr, ele)
         output_arr.append(output_angle)
@@ -148,7 +148,7 @@ def get_num_coord_metal(file_in):
     metal_coord = my_mol.getAtomCoords(metal_ind)
     # print('metal index:', metal_ind)
     print('metal coordinate:', metal_coord)
-    catoms = my_mol.getBondedAtoms(ind=metal_ind)
+    catoms = my_mol.getBondedAtomsOct(ind=metal_ind)
     print('coordinations: ', catoms, len(catoms))
     ## standard 1: number of coordination for metal.
     num_coord_metal = len(catoms)
@@ -319,7 +319,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref):
 ##         flag_list: if structure is bad, which test it fails
 ##         dict_oct_info: values for each metric we check.
 def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
-          std_not_use = []):
+          std_not_use=[], angle_ref=oct_angle_ref):
     num_coord_metal, catoms = get_num_coord_metal(file_in)
 
     if file_init_geo != None:
@@ -327,7 +327,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     else:
         rmsd_max, atom_dist_max = -1, -1
     if num_coord_metal >= 6:
-        oct_angle_devi, oct_dist_del, max_del_sig_angle = oct_comp(file_in)
+        oct_angle_devi, oct_dist_del, max_del_sig_angle = oct_comp(file_in, angle_ref)
     else:
         oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
     dict_oct_info = {}
@@ -365,9 +365,9 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
                 flag_list.append(key)
     ## Case when the num_coord_metal > 6 but still forms a octahedral.
     if ('num_coord_metal' in flag_list) and (not 'oct_angle_devi_max' in flag_list) and \
-            (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and  \
+            (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and \
             (not 'dist_del_eq_ax' in flag_list):
-        num_coord_metal = 5
+        num_coord_metal = 6
         flag_list.remove('num_coord_metal')
 
     if not len(flag_list):
@@ -379,6 +379,54 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         print('------bad structure!-----')
         print('flag_list:', flag_list)
     return flag_oct, flag_list, dict_oct_info
+
+
+def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
+                std_not_use=[], angle_ref=oct_angle_ref, num_coord=6):
+    num_coord_metal, catoms = get_num_coord_metal(file_in)
+
+    if file_init_geo != None:
+        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo)
+    else:
+        rmsd_max, atom_dist_max = -1, -1
+    if num_coord_metal >= num_coord:
+        struct_angle_devi, struct_dist_del, max_del_sig_angle = oct_comp(file_in, angle_ref)
+    else:
+        struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
+    dict_struct_info = {}
+    dict_struct_info['num_coord_metal'] = num_coord_metal
+    dict_struct_info['rmsd_max'] = rmsd_max
+    dict_struct_info['atom_dist_max'] = atom_dist_max
+    dict_struct_info['struct_angle_devi_max'] = max(struct_angle_devi)
+    dict_struct_info['max_del_sig_angle'] = max_del_sig_angle
+    dict_struct_info['dist_del_eq'] = struct_dist_del[0]
+    dict_struct_info['dist_del_ax'] = struct_dist_del[1]
+    dict_struct_info['dist_del_eq_ax'] = struct_dist_del[2]
+    print('dict_struct_info', dict_struct_info)
+    for ele in std_not_use:
+        dict_struct_info[ele] = 'banned_by_user'
+    flag_list = []
+
+    for key, values in dict_check.items():
+        if not dict_struct_info[key] == 'banned_by_user':
+            if dict_struct_info[key] > values:
+                flag_list.append(key)
+    ## Case when the num_coord_metal > 6 but still forms a structahedral.
+    if ('num_coord_metal' in flag_list) and (not 'struct_angle_devi_max' in flag_list) and \
+            (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and \
+            (not 'dist_del_eq_ax' in flag_list):
+        num_coord_metal = num_coord
+        flag_list.remove('num_coord_metal')
+
+    if not len(flag_list):
+        flag_struct = 1  # good structure
+        flag_list = 'None'
+    else:
+        flag_struct = 0
+        flag_list = ', '.join(flag_list)
+        print('------bad structure!-----')
+        print('flag_list:', flag_list)
+    return flag_struct, flag_list, dict_struct_info
 
 
 ## input: _path: path for opt geo
@@ -431,7 +479,6 @@ def gen_file_with_name(path_init_geo, name_opt):
     name_opt = '_'.join(name_opt[:len(name_opt) - 1])
     name_init = '%s/%s_mols.xyz' % (path_init_geo, name_opt)
     return name_init
-
 
 ###------------DEMO-------------------
 ## ---batch processing----

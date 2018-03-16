@@ -626,7 +626,10 @@ class mol3D:
                     print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
                 ## one the atoms is a metal!
                 ## use a longer max for metals
-                distance_max = min(2.75, 1.35 * (atom.rad + ratom.rad))
+                # distance_max = min(2.75, 1.35 * (atom.rad + ratom.rad))
+                ### ------cutoff changed by chenru
+                distance_max = min(3, 1.5 * (atom.rad + ratom.rad))
+                # print('distance max:', distance_max)
                 if debug:
                     print('maximum bonded distance is ' + str(distance_max))
                 if d < distance_max and i != ind:
