@@ -255,13 +255,15 @@ def match_lig_list(file_in, file_init_geo):
 ##         for the metal. A metric for the distance deviation from the
 ##         pefect Oct, including the diff in eq ligands, ax ligands and
 ##         eq-ax ligands.
-def oct_comp(file_in, angle_ref=oct_angle_ref):
+def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
     my_mol = create_mol_with_xyz(_file_in=file_in)
     num_coord_metal, catoms = get_num_coord_metal(file_in=file_in)
     # metal_ind = my_mol.findMetal()[0]
     metal_coord = my_mol.getAtomCoords(my_mol.findMetal()[0])
     catom_coord = []
-    # angle_ref = [[90, 90, 90, 90, 180] for x in range(6)]
+    if not catoms_arr == None:
+        catoms = catoms_arr
+        num_coord_metal = len(catoms_arr)
     theta_arr, oct_dist = [], []
     for atom in catoms:
         coord = my_mol.getAtomCoords(atom)
@@ -320,8 +322,12 @@ def oct_comp(file_in, angle_ref=oct_angle_ref):
 ##         flag_list: if structure is bad, which test it fails
 ##         dict_oct_info: values for each metric we check.
 def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
-          std_not_use=[], angle_ref=oct_angle_ref, flag_catoms=False):
+          std_not_use=[], angle_ref=oct_angle_ref, flag_catoms=False,
+          catoms_arr=None):
     num_coord_metal, catoms = get_num_coord_metal(file_in)
+    if not catoms_arr == None:
+        catoms = catoms_arr
+        num_coord_metal = len(catoms_arr)
 
     if file_init_geo != None:
         rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo)
@@ -329,7 +335,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         rmsd_max, atom_dist_max = -1, -1
     if num_coord_metal >= 6:
         num_coord_metal = 6
-        oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref)
+        oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
     else:
         oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
         catoms_arr = catoms
