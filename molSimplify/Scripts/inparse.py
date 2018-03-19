@@ -266,7 +266,9 @@ def cleaninput(args):
 #  @param args Namespace of arguments
 #  @return CLIinput.inp (file name)
 def parseCLI(args):
+    print(args)
     cliargs = ' '.join(args)
+    cliargs = ' ' + cliargs   
     s = filter(None,cliargs.split(' -'))
     fname = 'CLIinput.inp'
     f = open(fname,'w')
@@ -298,6 +300,7 @@ def parseinputfile(args):
         li = line.strip()
         li = li.replace('\n','')
         line = line.replace('\n','')
+        print(line)
         if not li.startswith("#") and len(li)>0: # ignore comments/empty lines
             # split arguments on whitespace, commas (this breaks smarts)
             l = filter(None,re.split(' |\t|,|&',li))
