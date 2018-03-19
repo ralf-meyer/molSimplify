@@ -17,12 +17,12 @@ from molSimplify.Scripts.geometry import vecangle, distance
 dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
                         'num_coord_metal': 6, 'oct_angle_devi_max': 15,
                         'dist_del_eq': 0.45, 'dist_del_ax': 0.6,
-                        'dist_del_eq_ax': 1.2, 'max_del_sig_angle': 18}
+                        'dist_del_eq_ax': 0.8, 'max_del_sig_angle': 18}
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.5,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
                      'dist_del_eq': 0.35, 'dist_del_ax': 0.4,
-                     'dist_del_eq_ax': 0.8, 'max_del_sig_angle': 15}  # default cutoff
+                     'dist_del_eq_ax': 0.6, 'max_del_sig_angle': 15}  # default cutoff
 
 dict_staus = {'good': 1, 'bad': 0}
 
@@ -284,6 +284,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref):
     print('th:', th_output_arr)
     print('sum_del:', sum_del_angle)
     print('catoms_arr:', catoms_arr)
+    print('catoms_type:', [my_mol.getAtom(x).symbol() for x in catoms_arr])
     for idx, ele in enumerate(th_output_arr):
         theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
     # theta_arr.sort(key=sort_sec_ele)
@@ -311,7 +312,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref):
     dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
     oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax]
     print('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del)
-    return oct_angle_devi, oct_dist_del, max_del_sig_angle
+    return oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr
 
 
 ## See whether a complex is Oct or not.
@@ -319,7 +320,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref):
 ##         flag_list: if structure is bad, which test it fails
 ##         dict_oct_info: values for each metric we check.
 def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
-          std_not_use=[], angle_ref=oct_angle_ref):
+          std_not_use=[], angle_ref=oct_angle_ref, flag_catoms=False):
     num_coord_metal, catoms = get_num_coord_metal(file_in)
 
     if file_init_geo != None:
@@ -327,9 +328,11 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     else:
         rmsd_max, atom_dist_max = -1, -1
     if num_coord_metal >= 6:
-        oct_angle_devi, oct_dist_del, max_del_sig_angle = oct_comp(file_in, angle_ref)
+        num_coord_metal = 6
+        oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref)
     else:
         oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
+        catoms_arr = catoms
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
     dict_oct_info['rmsd_max'] = rmsd_max
@@ -378,7 +381,10 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         flag_list = ', '.join(flag_list)
         print('------bad structure!-----')
         print('flag_list:', flag_list)
-    return flag_oct, flag_list, dict_oct_info
+    if not flag_catoms:
+        return flag_oct, flag_list, dict_oct_info
+    else:
+        return flag_oct, flag_list, dict_oct_info, catoms_arr
 
 
 def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
@@ -390,7 +396,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     else:
         rmsd_max, atom_dist_max = -1, -1
     if num_coord_metal >= num_coord:
-        struct_angle_devi, struct_dist_del, max_del_sig_angle = oct_comp(file_in, angle_ref)
+        struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref)
     else:
         struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
     dict_struct_info = {}
