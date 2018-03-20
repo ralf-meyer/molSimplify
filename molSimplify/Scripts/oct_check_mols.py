@@ -67,28 +67,46 @@ def create_mol_with_xyz(_file_in):
 ## output: output_arr that is most similar to target_arr after filtering,
 ##         summation for the difference for output_arr and target_arr
 def comp_two_angle_array(input_angle, target_angle):
-    del_arr = []
-    for idx, ele in enumerate(input_angle[1]):
-        del_abs = []
-        # print('ele:', ele)
-        for _ele in target_angle:
-            del_abs.append(abs(ele - _ele))
-            # catoms.append(ele[0])
-        min_del = min(del_abs)
-        del_arr.append([min_del, idx])
-    del_arr.sort()
-    sum_del = 0
+    _i = input_angle[1][:]
+    # print('target_angle', _t)
+    del_act = []
     output_angle = []
-    max_del_angle = 0
-    for idx in range(len(target_angle)):
-        posi = del_arr[idx][1]
-        # print('posi:', posi)
-        sum_del += del_arr[idx][0]
-        if del_arr[idx][0] > max_del_angle:
-            max_del_angle = del_arr[idx][0]
-        output_angle.append(input_angle[1][posi])
-    output_angle.sort()
-    sum_del = sum_del / len(target_angle)
+    for idx, ele in enumerate(target_angle):
+        del_arr = []
+        for _idx, _ele in enumerate(_i):
+            del_arr.append([abs(ele-_ele), _idx, _ele])
+        del_arr.sort()
+        posi = del_arr[0][1]
+        _i.pop(posi)
+        # print('!!!input_a:', input_angle[1])
+        del_act.append(del_arr[0][0])
+        output_angle.append(del_arr[0][2])
+    max_del_angle = max(del_act)
+    sum_del = sum(del_act)/len(target_angle)
+    #### older version
+    # del_arr = []
+    # for idx, ele in enumerate(input_angle[1]):
+    #     del_abs = []
+    #     # print('ele:', ele)
+    #     _t =
+    #     for _ele in target_angle:
+    #         del_abs.append(abs(ele - _ele))
+    #         # catoms.append(ele[0])
+    #     min_del = min(del_abs)
+    #     del_arr.append([min_del, idx])
+    # del_arr.sort()
+    # sum_del = 0
+    # output_angle = []
+    # max_del_angle = 0
+    # for idx in range(len(target_angle)):
+    #     posi = del_arr[idx][1]
+    #     # print('posi:', posi)
+    #     sum_del += del_arr[idx][0]
+    #     if del_arr[idx][0] > max_del_angle:
+    #         max_del_angle = del_arr[idx][0]
+    #     output_angle.append(input_angle[1][posi])
+    # output_angle.sort()
+    # sum_del = sum_del / len(target_angle)
     return output_angle, sum_del, max_del_angle
 
 
@@ -102,14 +120,16 @@ def comp_two_angle_array(input_angle, target_angle):
 def comp_angle_pick_one_best(input_arr, target_angle):
     del_arr = []
     for ii, input_angle in enumerate(input_arr):
-        _, sum_del, max_del_angle = comp_two_angle_array(input_angle, target_angle)
-        del_arr.append([sum_del, ii, max_del_angle])
+        out_angle, sum_del, max_del_angle = comp_two_angle_array(input_angle, target_angle)
+        del_arr.append([sum_del, ii, max_del_angle, out_angle])
     del_arr.sort()
     posi = del_arr[0][1]
     del_angle = del_arr[0][0]
     output_angle = input_arr[posi][1]
     catoms = input_arr[posi][0]
     max_del_sig_angle = del_arr[0][2]
+    # print('!!!!posi', input_arr[posi])
+    # print('!!!!out:', del_angle, del_arr[0][3])
     input_arr.pop(posi)
     return output_angle, del_angle, catoms, max_del_sig_angle
 
