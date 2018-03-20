@@ -304,10 +304,19 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
         dist = distance(coord, metal_coord)
         oct_dist.append(dist)
     oct_dist.sort()
-    if (oct_dist[2] - oct_dist[1]) > (oct_dist[4] - oct_dist[3]):
-        dist_ax, dist_eq = oct_dist[:2], oct_dist[2:]  # ax dist is smaller
+    # print('!!!oct_dist:', oct_dist)
+    # if (oct_dist[2] - oct_dist[1]) > (oct_dist[4] - oct_dist[3]):
+    #     dist_ax, dist_eq = oct_dist[:2], oct_dist[2:]  # ax dist is smaller
+    # else:
+    #     dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
+    dist_del_arr = np.array([oct_dist[3]-oct_dist[0], oct_dist[4]-oct_dist[1], oct_dist[5]-oct_dist[2]])
+    min_posi = np.argmin(dist_del_arr)
+    if min_posi == 0:
+        dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
+    elif min_posi == 1:
+        dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
     else:
-        dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
+        dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
     print('dist:', dist_eq, dist_ax)
     dist_del_eq = max(dist_eq) - min(dist_eq)
     dist_del_ax = max(dist_ax) - min(dist_ax)
