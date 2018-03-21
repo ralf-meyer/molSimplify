@@ -447,7 +447,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     if num_coord_metal >= num_coord:
         struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref)
     else:
-        struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
+        struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
     dict_struct_info = {}
     dict_struct_info['num_coord_metal'] = num_coord_metal
     dict_struct_info['rmsd_max'] = rmsd_max
