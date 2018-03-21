@@ -17,12 +17,11 @@ from molSimplify.Scripts.geometry import vecangle, distance
 dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
                         'num_coord_metal': 6, 'oct_angle_devi_max': 15,
                         'dist_del_eq': 0.45, 'dist_del_ax': 0.6,
-                        'dist_del_eq_ax': 0.8, 'max_del_sig_angle': 18}
+                        'dist_del_eq_ax': 0.8, 'max_del_sig_angle': 27}
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.5,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
-                     'dist_del_eq': 0.35, 'dist_del_ax': 0.4,
-                     'dist_del_eq_ax': 0.6, 'max_del_sig_angle': 15}  # default cutoff
+                     'dist_del_eq': 0.35, 'dist_del_all': 1,'max_del_sig_angle': 22.5}  # default cutoff
 
 dict_staus = {'good': 1, 'bad': 0}
 
@@ -325,23 +324,26 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
         oct_dist.append(dist)
     oct_dist.sort()
     # print('!!!oct_dist:', oct_dist)
-    # if (oct_dist[2] - oct_dist[1]) > (oct_dist[4] - oct_dist[3]):
-    #     dist_ax, dist_eq = oct_dist[:2], oct_dist[2:]  # ax dist is smaller
-    # else:
-    #     dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
-    dist_del_arr = np.array([oct_dist[3]-oct_dist[0], oct_dist[4]-oct_dist[1], oct_dist[5]-oct_dist[2]])
-    min_posi = np.argmin(dist_del_arr)
-    if min_posi == 0:
-        dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
-    elif min_posi == 1:
-        dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
-    else:
-        dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
+    try:  ### For Oct
+        dist_del_arr = np.array([oct_dist[3]-oct_dist[0], oct_dist[4]-oct_dist[1], oct_dist[5]-oct_dist[2]])
+        min_posi = np.argmin(dist_del_arr)
+        if min_posi == 0:
+            dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
+        elif min_posi == 1:
+            dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
+        else:
+            dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
+    except IndexError: ## For one empty site
+            if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
+                dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]  # ax dist is smaller
+            else:
+                dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
+    dist_del_all = oct_dist[-1]-oct_dist[0]
     print('dist:', dist_eq, dist_ax)
     dist_del_eq = max(dist_eq) - min(dist_eq)
     dist_del_ax = max(dist_ax) - min(dist_ax)
     dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
-    oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax]
+    oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax, dist_del_all]
     print('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del)
     return oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr
 
@@ -358,16 +360,22 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         catoms = catoms_arr
         num_coord_metal = len(catoms_arr)
 
-    if file_init_geo != None:
-        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo)
-    else:
-        rmsd_max, atom_dist_max = -1, -1
+    # if file_init_geo != None and num_coord_metal>=6:
+    #     rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo)
+    # else:
+    #     rmsd_max, atom_dist_max = -1, -1
+    oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    rmsd_max, atom_dist_max = -1, -1
+    catoms_arr = catoms
     if num_coord_metal >= 6:
-        num_coord_metal = 6
-        oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
-    else:
-        oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1], -1
-        catoms_arr = catoms
+        if not file_init_geo == None:
+            rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo)
+        if not rmsd_max == 'lig_mismatch':
+            num_coord_metal = 6
+            oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
+        else:
+            num_coord_metal = -1
+            rmsd_max, atom_dist_max = -1, -1
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
     dict_oct_info['rmsd_max'] = rmsd_max
@@ -377,6 +385,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     dict_oct_info['dist_del_eq'] = oct_dist_del[0]
     dict_oct_info['dist_del_ax'] = oct_dist_del[1]
     dict_oct_info['dist_del_eq_ax'] = oct_dist_del[2]
+    dict_oct_info['dist_del_all'] = oct_dist_del[3]
     print('dict_oct_info', dict_oct_info)
     for ele in std_not_use:
         dict_oct_info[ele] = 'banned_by_user'
@@ -401,12 +410,17 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         if not dict_oct_info[key] == 'banned_by_user':
             if dict_oct_info[key] > values:
                 flag_list.append(key)
+    if num_coord_metal < 6:
+        flag_list.append('num_coord_metal')
+    # if num_coord_metal == -1:
+    #     flag_list.remove('rmsd_max')
+    #     flag_list.remove('atom_dist_max')
     ## Case when the num_coord_metal > 6 but still forms a octahedral.
-    if ('num_coord_metal' in flag_list) and (not 'oct_angle_devi_max' in flag_list) and \
-            (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and \
-            (not 'dist_del_eq_ax' in flag_list):
-        num_coord_metal = 6
-        flag_list.remove('num_coord_metal')
+    # if ('num_coord_metal' in flag_list) and (not 'oct_angle_devi_max' in flag_list) and \
+    #         (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and \
+    #         (not 'dist_del_eq_ax' in flag_list):
+    #     num_coord_metal = 6
+    #     flag_list.remove('num_coord_metal')
 
     if not len(flag_list):
         flag_oct = 1  # good structure
@@ -443,6 +457,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     dict_struct_info['dist_del_eq'] = struct_dist_del[0]
     dict_struct_info['dist_del_ax'] = struct_dist_del[1]
     dict_struct_info['dist_del_eq_ax'] = struct_dist_del[2]
+    dict_struct_info['dist_del_all'] = struct_dist_del[3]
     print('dict_struct_info', dict_struct_info)
     for ele in std_not_use:
         dict_struct_info[ele] = 'banned_by_user'

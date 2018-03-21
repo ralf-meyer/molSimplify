@@ -628,7 +628,7 @@ class mol3D:
                 ## use a longer max for metals
                 # distance_max = min(2.75, 1.35 * (atom.rad + ratom.rad))
                 ### ------cutoff changed by chenru
-                distance_max = min(3.5, 1.5 * (atom.rad + ratom.rad))
+                distance_max = min(2.9, 1.5 * (atom.rad + ratom.rad))
                 # print('distance max:', distance_max)
                 if debug:
                     print('maximum bonded distance is ' + str(distance_max))
