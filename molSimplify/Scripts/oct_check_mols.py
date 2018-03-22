@@ -21,7 +21,8 @@ dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.5,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
-                     'dist_del_eq': 0.35, 'dist_del_all': 1,'max_del_sig_angle': 22.5}  # default cutoff
+                     'dist_del_eq': 0.35, 'dist_del_all': 1, 'max_del_sig_angle': 22.5,
+                     'dist_del_ax': 0.5, 'dist_del_eq_ax': 0.6}  # default cutoff
 
 dict_staus = {'good': 1, 'bad': 0}
 
@@ -73,7 +74,7 @@ def comp_two_angle_array(input_angle, target_angle):
     for idx, ele in enumerate(target_angle):
         del_arr = []
         for _idx, _ele in enumerate(_i):
-            del_arr.append([abs(ele-_ele), _idx, _ele])
+            del_arr.append([abs(ele - _ele), _idx, _ele])
         del_arr.sort()
         posi = del_arr[0][1]
         _i.pop(posi)
@@ -81,7 +82,7 @@ def comp_two_angle_array(input_angle, target_angle):
         del_act.append(del_arr[0][0])
         output_angle.append(del_arr[0][2])
     max_del_angle = max(del_act)
-    sum_del = sum(del_act)/len(target_angle)
+    sum_del = sum(del_act) / len(target_angle)
     #### older version
     # del_arr = []
     # for idx, ele in enumerate(input_angle[1]):
@@ -180,8 +181,9 @@ def get_num_coord_metal(file_in):
 ## input: optimized and original xyz file.
 ## output: two scalar of maximum rmsd for ligands, and the
 ##         maximum distance change in ligands.
-def ligand_comp_org(file_in, file_init_geo):
-    liglist, liglist_init, flag_match = match_lig_list(file_in, file_init_geo)
+def ligand_comp_org(file_in, file_init_geo, flag_deleteH=True, flag_loose=False):
+    liglist, liglist_init, flag_match = match_lig_list(file_in, file_init_geo,
+                                                       flag_loose)
     print('lig_list:', liglist)
     print('lig_list_init:', liglist_init)
     if flag_match:
@@ -209,6 +211,9 @@ def ligand_comp_org(file_in, file_init_geo):
             tmp_mol = create_mol_with_xyz('tmp.xyz')
             tmp_org_mol = create_mol_with_xyz('tmp_org.xyz')
             print('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms))
+            if flag_deleteH:
+                tmp_mol.deleteHs()
+                tmp_org_mol.deleteHs()
             mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
             rmsd = tmp_mol.rmsd(tmp_org_mol)
             rmsd_arr.append(rmsd)
@@ -227,11 +232,12 @@ def ligand_comp_org(file_in, file_init_geo):
 ## useful for cases where the init geo and opt geo have the
 ## different ligands arrangement (when you only have the opt geo
 ## but still want init geo)
-def match_lig_list(file_in, file_init_geo):
+def match_lig_list(file_in, file_init_geo, flag_loose):
     flag_match = True
     my_mol = create_mol_with_xyz(_file_in=file_in)
     # print('natoms: ', my_mol.natoms)
-    liglist, ligdents, ligcons = ligand_breakdown(my_mol)
+    print('In match, flag_loose', flag_loose)
+    liglist, ligdents, ligcons = ligand_breakdown(my_mol, flag_loose)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
     liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol)
     liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
@@ -325,7 +331,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
     oct_dist.sort()
     # print('!!!oct_dist:', oct_dist)
     try:  ### For Oct
-        dist_del_arr = np.array([oct_dist[3]-oct_dist[0], oct_dist[4]-oct_dist[1], oct_dist[5]-oct_dist[2]])
+        dist_del_arr = np.array([oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
         min_posi = np.argmin(dist_del_arr)
         if min_posi == 0:
             dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
@@ -333,12 +339,12 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
             dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
         else:
             dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
-    except IndexError: ## For one empty site
-            if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
-                dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]  # ax dist is smaller
-            else:
-                dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
-    dist_del_all = oct_dist[-1]-oct_dist[0]
+    except IndexError:  ## For one empty site
+        if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
+            dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]  # ax dist is smaller
+        else:
+            dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
+    dist_del_all = oct_dist[-1] - oct_dist[0]
     print('dist:', dist_eq, dist_ax)
     dist_del_eq = max(dist_eq) - min(dist_eq)
     dist_del_ax = max(dist_ax) - min(dist_ax)
@@ -346,6 +352,54 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
     oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax, dist_del_all]
     print('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del)
     return oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr
+
+
+def Oct_imspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict_oct_check_st,
+                   std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True):
+    if catoms_arr == None:
+        print('Error, must have ctoms! If not, please use IsOct.')
+        quit()
+    elif len(catoms_arr) != 6:
+        print('Error, must have 6 connecting atoms for octahedral.')
+        quit()
+    num_coord_metal = 6
+    oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    rmsd_max, atom_dist_max = -1, -1
+    if not file_init_geo == None:
+        print('!!!Inspection,flag_loose:', flag_loose)
+        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, flag_loose=flag_loose)
+    if not rmsd_max == 'lig_mismatch':
+        oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
+    else:
+        num_coord_metal = -1
+        rmsd_max, atom_dist_max = -1, -1
+    dict_oct_info = {}
+    dict_oct_info['num_coord_metal'] = num_coord_metal
+    dict_oct_info['rmsd_max'] = rmsd_max
+    dict_oct_info['atom_dist_max'] = atom_dist_max
+    dict_oct_info['oct_angle_devi_max'] = max(oct_angle_devi)
+    dict_oct_info['max_del_sig_angle'] = max_del_sig_angle
+    dict_oct_info['dist_del_eq'] = oct_dist_del[0]
+    dict_oct_info['dist_del_ax'] = oct_dist_del[1]
+    dict_oct_info['dist_del_eq_ax'] = oct_dist_del[2]
+    dict_oct_info['dist_del_all'] = oct_dist_del[3]
+    print('dict_oct_info', dict_oct_info)
+    for ele in std_not_use:
+        dict_oct_info[ele] = 'banned_by_user'
+    flag_list = []
+    for key, values in dict_check.items():
+        if not dict_oct_info[key] == 'banned_by_user':
+            if dict_oct_info[key] > values:
+                flag_list.append(key)
+    if not len(flag_list):
+        flag_oct = 1  # good structure
+        flag_list = 'None'
+    else:
+        flag_oct = 0
+        flag_list = ', '.join(flag_list)
+        print('------bad structure!-----')
+        print('flag_list:', flag_list)
+    return flag_oct, flag_list, dict_oct_info
 
 
 ## See whether a complex is Oct or not.

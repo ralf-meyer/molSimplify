@@ -605,7 +605,7 @@ class mol3D:
     #  @param CN Coordination number of reference atom (default 6)
     #  @param debug Debug flag (default False)
     #  @return List of indices of bonded atoms
-    def getBondedAtomsOct(self, ind, CN=6, debug=False):
+    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False):
         # INPUT
         #   - ind: index of reference atom
         #   - CN: known coordination number of complex (default 6)
@@ -621,6 +621,7 @@ class mol3D:
             ## default interatomic radius
             ## for non-metalics
             distance_max = 1.15 * (atom.rad + ratom.rad)
+            # distance_max = 1.25 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
                 if debug:
                     print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
@@ -628,7 +629,10 @@ class mol3D:
                 ## use a longer max for metals
                 # distance_max = min(2.75, 1.35 * (atom.rad + ratom.rad))
                 ### ------cutoff changed by chenru
-                distance_max = min(2.9, 1.5 * (atom.rad + ratom.rad))
+                if flag_loose:
+                    distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
+                else:
+                    distance_max = min(2.9, 1.5 * (atom.rad + ratom.rad))
                 # print('distance max:', distance_max)
                 if debug:
                     print('maximum bonded distance is ' + str(distance_max))
@@ -1143,7 +1147,11 @@ class mol3D:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 rmsd += (atom0.distance(atom1)) ** 2
-            rmsd /= Nat0
+            N_nonH = Nat0- len(self.getHs())
+            if N_nonH:
+                rmsd /= Nat0
+            else:
+                rmsd = 0
             return sqrt(rmsd)
 
     def maxatomdist(self, mol2):
@@ -1158,6 +1166,35 @@ class mol3D:
                 dist = atom0.distance(atom1)
                 if dist > dist_max:
                     dist_max = dist
+            return dist_max
+
+    def rmsd_nonH(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            return NaN
+        else:
+            rmsd = 0
+            for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
+                if (not atom0.sym =='H') and (not atom1.sym =='H'):
+                    rmsd += (atom0.distance(atom1)) ** 2
+            rmsd /= Nat0
+            return sqrt(rmsd)
+
+    def maxatomdist_nonH(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        dist_max = 0
+        if (Nat0 != Nat1):
+            print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
+            return NaN
+        else:
+            for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
+                if (not atom0.sym =='H') and (not atom1.sym =='H'):
+                    dist = atom0.distance(atom1)
+                    if dist > dist_max:
+                        dist_max = dist
             return dist_max
 
     ## Checks for overlap within the molecule
