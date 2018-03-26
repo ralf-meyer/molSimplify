@@ -21,7 +21,8 @@ dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.5,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
-                     'dist_del_eq': 0.35, 'dist_del_all': 1, 'max_del_sig_angle': 22.5,
+                     'dist_del_eq': 0.35, 'dist_del_all': 1,
+                     'max_del_sig_angle': 22.5,
                      'dist_del_ax': 0.5, 'dist_del_eq_ax': 0.6}  # default cutoff
 
 dict_staus = {'good': 1, 'bad': 0}
