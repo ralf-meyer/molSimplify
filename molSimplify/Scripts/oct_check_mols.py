@@ -182,9 +182,10 @@ def get_num_coord_metal(file_in):
 ## input: optimized and original xyz file.
 ## output: two scalar of maximum rmsd for ligands, and the
 ##         maximum distance change in ligands.
-def ligand_comp_org(file_in, file_init_geo, flag_deleteH=True, flag_loose=False):
+def ligand_comp_org(file_in, file_init_geo, flag_deleteH=True, flag_loose=False,
+                    flag_lbd=True):
     liglist, liglist_init, flag_match = match_lig_list(file_in, file_init_geo,
-                                                       flag_loose)
+                                                       flag_loose, flag_lbd)
     print('lig_list:', liglist)
     print('lig_list_init:', liglist_init)
     if flag_match:
@@ -233,14 +234,17 @@ def ligand_comp_org(file_in, file_init_geo, flag_deleteH=True, flag_loose=False)
 ## useful for cases where the init geo and opt geo have the
 ## different ligands arrangement (when you only have the opt geo
 ## but still want init geo)
-def match_lig_list(file_in, file_init_geo, flag_loose):
+def match_lig_list(file_in, file_init_geo, flag_loose, flag_lbd=True):
     flag_match = True
     my_mol = create_mol_with_xyz(_file_in=file_in)
     # print('natoms: ', my_mol.natoms)
     print('In match, flag_loose', flag_loose)
-    liglist, ligdents, ligcons = ligand_breakdown(my_mol, flag_loose)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
     liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol)
+    if flag_lbd: ## Also do ligand breakdown for opt geo
+        liglist, ligdents, ligcons = ligand_breakdown(my_mol, flag_loose)
+    else: ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
+        liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
     liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
                     for ele in liglist]
     liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
@@ -355,8 +359,8 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None):
     return oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr
 
 
-def Oct_imspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict_oct_check_st,
-                   std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True):
+def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict_oct_check_st,
+                   std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True, flag_lbd=False):
     if catoms_arr == None:
         print('Error, must have ctoms! If not, please use IsOct.')
         quit()
@@ -368,7 +372,7 @@ def Oct_imspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
     rmsd_max, atom_dist_max = -1, -1
     if not file_init_geo == None:
         print('!!!Inspection,flag_loose:', flag_loose)
-        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, flag_loose=flag_loose)
+        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, flag_loose=flag_loose,flag_lbd=flag_lbd)
     if not rmsd_max == 'lig_mismatch':
         oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
     else:
