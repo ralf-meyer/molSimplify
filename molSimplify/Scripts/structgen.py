@@ -1441,7 +1441,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 else:
                     cats0.append(args.smicat[smilesligs])
             else:
-                cats0.append([1])
+                cats0.append([0])
             dent_i = len(cats0[-1])
             smilesligs += 1
         else:
