@@ -1115,7 +1115,7 @@ class mol3D:
                 if lm is not None:
                     symb = re.sub('\d+','',line_split[0])
                     number = lm.group()
-                    print('sym and number ' +str(symb) + ' ' + str(number))
+                  # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
                     atom = atom3D(symb,[float(line_split[1]),float(line_split[2]),float(line_split[3])],name=line_split[0])
                 elif line_split[0] in en_dict.keys():
