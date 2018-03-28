@@ -16,14 +16,13 @@ from molSimplify.Scripts.geometry import vecangle, distance
 
 dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
                         'num_coord_metal': 6, 'oct_angle_devi_max': 15,
-                        'dist_del_eq': 0.45, 'dist_del_ax': 0.6,
-                        'dist_del_eq_ax': 0.8, 'max_del_sig_angle': 27}
+                        'dist_del_eq': 0.45, 'max_del_sig_angle': 27,
+                        'del_dist_all':1.2}
 
-dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.5,
+dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.45,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
                      'dist_del_eq': 0.35, 'dist_del_all': 1,
-                     'max_del_sig_angle': 22.5,
-                     'dist_del_ax': 0.5, 'dist_del_eq_ax': 0.6}  # default cutoff
+                     'max_del_sig_angle': 22.5}  # default cutoff
 
 dict_staus = {'good': 1, 'bad': 0}
 
@@ -435,6 +434,8 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         else:
             num_coord_metal = -1
             rmsd_max, atom_dist_max = -1, -1
+            print('!!!!!Should always match. WRONG!!!!!')
+            quit()
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
     dict_oct_info['rmsd_max'] = rmsd_max
@@ -442,8 +443,6 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     dict_oct_info['oct_angle_devi_max'] = max(oct_angle_devi)
     dict_oct_info['max_del_sig_angle'] = max_del_sig_angle
     dict_oct_info['dist_del_eq'] = oct_dist_del[0]
-    dict_oct_info['dist_del_ax'] = oct_dist_del[1]
-    dict_oct_info['dist_del_eq_ax'] = oct_dist_del[2]
     dict_oct_info['dist_del_all'] = oct_dist_del[3]
     print('dict_oct_info', dict_oct_info)
     for ele in std_not_use:
@@ -514,8 +513,6 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     dict_struct_info['struct_angle_devi_max'] = max(struct_angle_devi)
     dict_struct_info['max_del_sig_angle'] = max_del_sig_angle
     dict_struct_info['dist_del_eq'] = struct_dist_del[0]
-    dict_struct_info['dist_del_ax'] = struct_dist_del[1]
-    dict_struct_info['dist_del_eq_ax'] = struct_dist_del[2]
     dict_struct_info['dist_del_all'] = struct_dist_del[3]
     print('dict_struct_info', dict_struct_info)
     for ele in std_not_use:
