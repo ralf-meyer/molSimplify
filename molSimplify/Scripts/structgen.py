@@ -618,10 +618,13 @@ def align_lig_centersym(corerefcoords,lig3D,atom0,core3D,EnableAutoLinearBend):
         if distance(auxmol.getAtomCoords(0),lig3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + lig3D.getAtom(atom0).rad) and EnableAutoLinearBend:
             print('bending of linear terminal ligand')
             ##warning: force field might overwrite this
-            r1 = lig3D.getAtom(atom0).coords()
-            r2 = auxmol.getAtom(0).coords()
-            theta,u = rotation_params([1,1,1],r1,r2)
-            lig3D = rotate_around_axis(lig3D,r1,u,globs.linearbentang)
+            ## warning: skipping this part because
+            ## we no longer understand it
+            if False:
+                r1 = lig3D.getAtom(atom0).coords()
+                r2 = auxmol.getAtom(0).coords()
+                theta,u = rotation_params([1,1,1],r1,r2)
+                lig3D = rotate_around_axis(lig3D,r1,u,-1*globs.linearbentang)
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned

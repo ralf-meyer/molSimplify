@@ -72,7 +72,7 @@ imine:imine.mol,imi,0,functionalize small,N
 iminodiacetic:iminodiacetic.mol,iminodiacetic,0 1,build bidentate, BA, -2
 isoleucine:isoleucine.mol,Ile,3,build functionalize aminoacid,BA,0
 isoleucineB:isoleucine.mol,Ile,3 21,build functionalize aminoacid,BA,0
-isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,BA
+isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,B
 leucine:leucine.mol,Leu,21,build functionalize aminoacid,BA,0
 leucineB:leucine.mol,Leu,3 21,build functionalize aminoacid,BA,0
 lysine:lysine.mol,Lys,3,build functionalize aminoacid,BA,1
@@ -140,7 +140,7 @@ terpy:terpy.mol,trpy,0 1 2,build tridentate,BA,-2
 terpyridine:terpy.mol,trpy,0 1 2,build tridentate,BA,0
 tetrahydrofuran:tetrahydrofuran.mol,tetrahydrofuran,0,build bulkymono,A,0
 thiane:thiane.mol,thiane,0,build,functionalize small,N,0
-thiocyanate:thiocyanate.mol,thcynt,0,build functionalize small,Ni,-1
+thiocyanate:thiocyanate.mol,thcynt,0,build functionalize small,N,-1
 thiol:thiol.mol,thil,0,build functionalize small,N,-1
 thiopyridine:thiopyridine.mol,thiopyrd,3,build organic,BA,0
 threonine:threonine.mol,Thr,3,build functionalize aminoacid,BA,0
