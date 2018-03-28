@@ -343,8 +343,21 @@ def init_ligand(args,lig,tcats,keepHs,i):
                 lig3D.charge = lig3D.charge - 1
     # Conformer search for multidentate SMILES ligands
     lig3D.convert2OBMol()
+    
+
+    
     if len(lig.cat) > 1 and tcats[i]:
-        lig3D = GetConf(lig3D,lig.cat)    # check if ligand should decorated
+        # loop  over conformation gen until success or break 
+        breaker = False
+        count = 0
+        while (not breaker) and count <= 5:
+            try:
+                lig3D = GetConf(lig3D,lig.cat)    # check if ligand should decorated
+                breaker = True
+            
+            except:
+                count += 1
+                print('lig conformer input failed ' + str(count)  + ' times, trying again...')
     return lig3D,rempi,ligpiatoms
 
 ## Distorts backbone according to user specified angles
@@ -1600,7 +1613,8 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 cpoint = m3D.getAtom(batoms[0])
                 # attach ligand depending on the denticity
                 # optimize geometry by minimizing steric effects
-                print batoms
+                if args.debug:
+                    print('backbone atoms: ' + str(batoms))
                 if (denticity == 1):
                     lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,i)
                 elif (denticity == 2):
