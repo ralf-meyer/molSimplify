@@ -524,7 +524,7 @@ def apply_plane_to_point(point,n):
     dplane = sum([n[i]*point[i] for i in [0,1,2]])
     return dplane
 ##############################
-def fractionate_points_by_plane(super_cell,n):
+def fractionate_points_by_plane(super_cell,n,tol=1E-8):
     vals = list()
     for i,atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
@@ -532,10 +532,11 @@ def fractionate_points_by_plane(super_cell,n):
         if len(vals)>0:
             ## compare to seen values
             these_dists = [abs(this_frac-j) for j in vals]
-            if max(these_dists)<1E-8:
+            if max(these_dists)<tol:
                 print('have this point')
             else:
                 vals.append(this_frac)
+                print('new point at '+ str(this_frac))
         else:
             vals.append(this_frac)
     return vals
