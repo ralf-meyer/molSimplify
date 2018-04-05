@@ -12,21 +12,33 @@ from molSimplify.Scripts.geometry import vecangle, distance
 ### Check whether the complex form an octahedral.
 ### Written by Chenru Duan
 ### upload: 3/7/2018
-### update: 3/16/2018
+### update: 4/5/2018
 
-dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
+dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.6,
                         'num_coord_metal': 6, 'oct_angle_devi_max': 15,
                         'dist_del_eq': 0.45, 'max_del_sig_angle': 27,
-                        'dist_delsd_all':1.2}
+                        'dist_del_all': 1.2}
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.45,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
                      'dist_del_eq': 0.35, 'dist_del_all': 1,
                      'max_del_sig_angle': 22.5}  # default cutoff
 
+dict_oneempty_check_st = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
+                          'num_coord_metal': 5, 'oct_angle_devi_max': 15,
+                          'dist_del_eq': 0.5, 'max_del_sig_angle': 18,
+                          'dist_del_all': 1}
+
+dict_oneempty_check_loose = {'rmsd_max': 0.6, 'atom_dist_max': 0.9,
+                          'num_coord_metal': 5, 'oct_angle_devi_max': 20,
+                          'dist_del_eq': 0.6, 'max_del_sig_angle': 27,
+                          'dist_del_all': 1.2}
+
 dict_staus = {'good': 1, 'bad': 0}
 
 oct_angle_ref = [[90, 90, 90, 90, 180] for x in range(6)]
+oneempty_angle_ref = [[90, 90, 90, 90], [180, 90, 90, 90], [180, 90, 90, 90],
+                      [180, 90, 90, 90], [180, 90, 90, 90]]
 
 
 ## input: a xyz file
@@ -240,9 +252,9 @@ def match_lig_list(file_in, file_init_geo, flag_loose, flag_lbd=True):
     print('In match, flag_loose', flag_loose)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
     liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol)
-    if flag_lbd: ## Also do ligand breakdown for opt geo
+    if flag_lbd:  ## Also do ligand breakdown for opt geo
         liglist, ligdents, ligcons = ligand_breakdown(my_mol, flag_loose)
-    else: ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
+    else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
         liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
     liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
                     for ele in liglist]
@@ -371,14 +383,14 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
     rmsd_max, atom_dist_max = -1, -1
     if not file_init_geo == None:
         print('!!!Inspection,flag_loose:', flag_loose)
-        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, flag_loose=flag_loose,flag_lbd=flag_lbd)
+        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, flag_loose=flag_loose, flag_lbd=flag_lbd)
     if not rmsd_max == 'lig_mismatch':
         oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
     else:
         num_coord_metal = -1
         rmsd_max, atom_dist_max = -1, -1
         print('!!!!!Should always match. WRONG!!!!!')
-        # quit()
+        quit()
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
     dict_oct_info['rmsd_max'] = rmsd_max
@@ -494,8 +506,8 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         return flag_oct, flag_list, dict_oct_info, catoms_arr
 
 
-def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
-                std_not_use=[], angle_ref=oct_angle_ref, num_coord=6):
+def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
+                std_not_use=[], angle_ref=oneempty_angle_ref, num_coord=5):
     num_coord_metal, catoms = get_num_coord_metal(file_in)
 
     if file_init_geo != None:
@@ -510,7 +522,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     dict_struct_info['num_coord_metal'] = num_coord_metal
     dict_struct_info['rmsd_max'] = rmsd_max
     dict_struct_info['atom_dist_max'] = atom_dist_max
-    dict_struct_info['struct_angle_devi_max'] = max(struct_angle_devi)
+    dict_struct_info['oct_angle_devi_max'] = max(struct_angle_devi)
     dict_struct_info['max_del_sig_angle'] = max_del_sig_angle
     dict_struct_info['dist_del_eq'] = struct_dist_del[0]
     dict_struct_info['dist_del_all'] = struct_dist_del[3]
@@ -524,7 +536,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
             if dict_struct_info[key] > values:
                 flag_list.append(key)
     ## Case when the num_coord_metal > 6 but still forms a structahedral.
-    if ('num_coord_metal' in flag_list) and (not 'struct_angle_devi_max' in flag_list) and \
+    if ('num_coord_metal' in flag_list) and (not 'oct_angle_devi_max' in flag_list) and \
             (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and \
             (not 'dist_del_eq_ax' in flag_list):
         num_coord_metal = num_coord
@@ -590,8 +602,6 @@ def gen_file_with_name(path_init_geo, name_opt):
     name_opt = name_opt.split('_')
     name_opt = '_'.join(name_opt[:len(name_opt) - 1])
     name_init = '%s/%s_mols.xyz' % (path_init_geo, name_opt)
-    return name_init
-
 ###------------DEMO-------------------
 ## ---batch processing----
 # _path = './fe_optimized_geometry'

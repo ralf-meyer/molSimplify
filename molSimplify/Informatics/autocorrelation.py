@@ -346,7 +346,7 @@ def find_ligand_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True):
     return ax_ligand_ac_con, eq_ligand_ac_con
 
 
-def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False):
+def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_name=False):
     result_ax_full = list()
     result_eq_full = list()
     result_ax_con = list()
@@ -368,14 +368,16 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False):
         result_eq_full.append(eq_ligand_ac_full)
         result_ax_con.append(ax_ligand_ac_con)
         result_eq_con.append(eq_ligand_ac_con)
-    # results_dictionary = {'colnames': colnames, 'result_ax_full_ac': result_ax_full, 'result_eq_full_ac': result_eq_full,
-    #                       'result_ax_con_ac': result_ax_con, 'result_eq_con_ac': result_eq_con}
-    results_dictionary = {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
-                          'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'result_ax_full_ac': result_ax_full, 'result_eq_full_ac': result_eq_full,
+                              'result_ax_con_ac': result_ax_con, 'result_eq_con_ac': result_eq_con}
+    else:
+        results_dictionary = {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
+                              'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
     return results_dictionary
 
 
-def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False):
+def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False, flag_name=False):
     result_ax_full = list()
     result_eq_full = list()
     result_ax_con = list()
@@ -391,12 +393,14 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False):
         colnames.append(this_colnames)
         result_ax_con.append(ax_ligand_ac_con)
         result_eq_con.append(eq_ligand_ac_con)
-    # results_dictionary = {'colnames': colnames, 'result_ax_con_del': result_ax_con, 'result_eq_con_del': result_eq_con}
-    results_dictionary = {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'result_ax_con_del': result_ax_con, 'result_eq_con_del': result_eq_con}
+    else:
+        results_dictionary = {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
     return results_dictionary
 
 
-def generate_metal_autocorrelations(mol, loud, depth=4, oct=True):
+def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
@@ -409,12 +413,14 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
         colnames.append(this_colnames)
         result.append(metal_ac)
-    # results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
-    results_dictionary = {'colnames': colnames, 'results': result}
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
+    else:
+        results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
 
-def generate_metal_deltametrics(mol, loud, depth=4, oct=True):
+def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
@@ -427,12 +433,14 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
         colnames.append(this_colnames)
         result.append(metal_ac)
-    # results_dictionary = {'colnames': colnames, 'results_mc_del': result}
-    results_dictionary = {'colnames': colnames, 'results': result}
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'results_mc_del': result}
+    else:
+        results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
 
-def generate_full_complex_autocorrelations(mol, loud, depth=4, oct=True):
+def generate_full_complex_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False):
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
@@ -444,8 +452,10 @@ def generate_full_complex_autocorrelations(mol, loud, depth=4, oct=True):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
         colnames.append(this_colnames)
         result.append(metal_ac)
-    # results_dictionary = {'colnames': colnames, 'results_f_all': result}
-    results_dictionary = {'colnames': colnames, 'results': result}
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'results_f_all': result}
+    else:
+        results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
 
