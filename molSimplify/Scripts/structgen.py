@@ -440,6 +440,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
     if ff.lower() not in ffav:
         print 'Requested force field not available. Defaulting to MMFF94'
         ff = 'mmff94'
+
     # perform constrained ff optimization if requested after #
     if (constopt > 0):
         # get metal
@@ -469,24 +470,31 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
-        bridgingatoms = []
-        # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
-        # these are immune to deletion
-        for i in range(mol.natoms):
-            nbondedmetals = len([idx for idx in range(len(mol.getBondedAtoms(i))) if mol.getAtom(mol.getBondedAtoms(i)[idx]).ismetal()])
-            if nbondedmetals > 1 or (nbondedmetals == 1 and len(mol.getBondedAtoms(i)) == 1):
-                bridgingatoms.append(i)
-        # ensure correct valences for FF setup
-        for m in indmtls:
+                
+        if not ff == "UFF":
+            bridgingatoms = []
+            # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
+            # these are immune to deletion
+            for i in range(mol.natoms):
+                nbondedmetals = len([idx for idx in range(len(mol.getBondedAtoms(i))) if mol.getAtom(mol.getBondedAtoms(i)[idx]).ismetal()])
+                if nbondedmetals > 1 or (nbondedmetals == 1 and len(mol.getBondedAtoms(i)) == 1):
+                    bridgingatoms.append(i)
+            # ensure correct valences for FF setup
+            deleted_bonds = 0
+            
+            for m in indmtls:
             # first delete all metal-ligand bonds excluding bridging atoms
-            for i in range(len(mol.getBondedAtoms(m))):
-                if OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1) is not None and mol.getBondedAtoms(m)[i] not in bridgingatoms:
-                    OBMol.DeleteBond(OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1))
-            # then add back one metal-ligand bond for FF
-            if OBMol.GetAtom(m+1).GetValence() == 0:
-                for i in mol.getBondedAtomsOct(m,1+len(bridgingatoms)):
-                    if OBMol.GetAtom(m+1).GetValence() < 1 and i not in bridgingatoms:
-                        OBMol.AddBond(m+1,i+1,1)
+                for i in range(len(mol.getBondedAtoms(m))):
+                    if OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1) is not None and mol.getBondedAtoms(m)[i] not in bridgingatoms:
+                        OBMol.DeleteBond(OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1))
+                        print('FFopt deleting bond')
+                        deleted_bonds += 1
+                print('FFopt deleted ' +str(deleted_bonds) + ' bonds')
+                # then add back one metal-ligand bond for FF
+                if OBMol.GetAtom(m+1).GetValence() == 0:
+                    for i in mol.getBondedAtoms(m):#getBondedAtomsOct(m,deleted_bonds+len(bridgingatoms)):
+                        if OBMol.GetAtom(m+1).GetValence() < 1 and i not in bridgingatoms:
+                            OBMol.AddBond(m+1,i+1,1)
         # freeze small ligands
         for cat in frozenats:
             constr.AddAtomConstraint(cat+1) # indexing babel

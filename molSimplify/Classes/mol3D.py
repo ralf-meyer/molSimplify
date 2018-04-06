@@ -646,6 +646,13 @@ class mol3D:
                         valid = False
                     if d < distance_max and i != ind and valid:
                         if atom.symbol() == "C":
+                            if debug:
+                                print('\n')
+                                self.printxyz()
+                                print('this atom in is ' + str(i))
+                                print('this atom sym is ' + str(atom.symbol()))
+                                print('this ratom in is ' + str(self.getAtom(i).symbol()))
+                                print('this ratom sym is ' + str(ratom.symbol()))
                             ## in this case, atom might be intruder C!
                             possible_inds = self.getBondedAtomsnotH(ind)  ## bonded to metal
                             if debug:
@@ -654,15 +661,19 @@ class mol3D:
                                 metal_prox = sorted(possible_inds, key=lambda x: self.getDistToMetal(x, ind))
 
                                 allowed_inds = metal_prox[0:CN]
+                                #if 
                                 if debug:
                                     print('ind: ' + str(ind))
-                                    print('metal prox:' + str(metal_prox))
-                                    print('trimmed to ' + str(allowed_inds))
+                                    print('metal prox: ' + str(metal_prox))
+                                    print('trimmed to: ' + str(allowed_inds))
                                     print(allowed_inds)
+                                    print('CN is ' +  str(CN))
+                                    
                                 if not i in allowed_inds:
                                     valid = False
                                     if debug:
                                         print('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds))
+                                        sardines
                                 else:
                                     if debug:
                                         print('Ok based on atom')

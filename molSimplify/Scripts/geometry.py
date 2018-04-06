@@ -131,11 +131,16 @@ def getPointu(Rr, dist, u):
 def rotation_params(r0,r1,r2):
     r10 = [a-b for a,b in zip(r1,r0)]
     r21 = [a-b for a,b in zip(r2,r1)]
-#    print('r10 is ' +str(r10) )
-#    print('r21 is ' +str(r21) )
+    print('r10 is ' +str(r10) )
+    print('r21 is ' +str(r21) )
     # angle between r10 and r21
+    print('arg to arcos  is ' +str(dot(r21,r10)/(norm(r21)*norm(r10))) )
+    arg = dot(r21,r10)/(norm(r21)*norm(r10))
     if(norm(r21)*norm(r10) > 1e-16):
-        theta = 180*arccos(dot(r21,r10)/(norm(r21)*norm(r10)))/pi
+        if arg < 0 :
+            theta = 180*arccos(max(-1,arg))/pi
+        else:
+            theta = 180*arccos(min(1,arg))/pi
     else:
         theta = 0.0
     # get normal vector to plane r0 r1 r2
