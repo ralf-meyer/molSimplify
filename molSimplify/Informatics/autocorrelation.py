@@ -415,6 +415,7 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
         result.append(metal_ac)
     if flag_name:
         results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
+        # print(results_dictionary)
     else:
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary

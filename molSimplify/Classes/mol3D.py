@@ -744,7 +744,7 @@ class mol3D:
     #  @param ind Index of reference atom
     #  @param oct Flag to turn on special octahedral complex routines
     #  @return List of indices of bonded atoms
-    def getBondedAtomsSmart(self, ind, oct=True, geo_check=True):
+    def getBondedAtomsSmart(self, ind, oct=True, geo_check=False):
         flag_current_check = False
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)

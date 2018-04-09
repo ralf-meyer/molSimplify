@@ -349,7 +349,8 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
         else:
             dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
     dist_del_all = oct_dist[-1] - oct_dist[0]
-    print('dist:', dist_eq, dist_ax)
+    if debug:
+        print('dist:', dist_eq, dist_ax)
     dist_del_eq = max(dist_eq) - min(dist_eq)
     dist_del_ax = max(dist_ax) - min(dist_ax)
     dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
