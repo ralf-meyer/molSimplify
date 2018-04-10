@@ -5,11 +5,21 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 import os, sys, re, string, shutil, time
 import openbabel
+
+def float_from_str(txt):
+    numeric_const_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+    rx = re.compile(numeric_const_pattern, re.VERBOSE)
+    float_arr = rx.findall(txt)
+    if not len(float_arr):
+        return txt
+    else:
+        return float_arr[0]
 
 
 ## Setup database
@@ -363,7 +373,7 @@ def dissim(outf, n):
 #  @param smarts SMARTS string
 #  @param outf Filename containing SMILES strings
 #  @param catoms Connection atoms of SMARTS string
-def matchsmarts(smarts, outf, catoms):
+def matchsmarts(smarts, outf, catoms, args):
     sm = openbabel.OBSmartsPattern()
     print('---Test for developer version----')
     sm.Init(smarts)
@@ -374,25 +384,23 @@ def matchsmarts(smarts, outf, catoms):
     f = open(outf, 'r')
     s = f.read().splitlines()
     f.close()
-    # moll = openbabel.OBMol()
-    # obConversion = openbabel.OBConversion()
-    # obConversion.SetInAndOutFormats("smi", "smi")
     f = open(outf, 'w')
     # print('in file is:', s)
     moll = openbabel.OBMol()  # add
     obConversion = openbabel.OBConversion()  # add
     obConversion.SetInAndOutFormats("smi", "smi")  # add
+    # print('!!!s:', s)
+    max_atoms = int(float_from_str(args.dbatoms))
     for i, mol in enumerate(s):
-        obConversion.ReadString(moll, mol)
+        obConversion.ReadString(moll, mol)  # add
         sm.Match(moll)
-        # sm.Match(mol)
-        # print('mol current:', mol)
         smm = list(sm.GetUMapList())
-        print('#:', i)
-        print('mol current:', mol)
-        print('smm current', smm)
-        print('catoms:', catoms)
-        if len(smm) > 0:
+        if 0 < len(smm) < max_atoms:
+            print('#:', i)
+            print('mol current:', mol)
+            print('smm current', smm, len(smm))
+            print('catoms:', catoms)
+            print('!!!dbatoms:', max_atoms)
             pmatch = smm[0]
             cc = ''
             for at in catoms:
@@ -400,11 +408,11 @@ def matchsmarts(smarts, outf, catoms):
                 cc += str(pmatch[att]) + ','
             # if i < nres:
             f.write(mol + ' ' + cc[:-1] + '\n')
-        # f.write(s[i]+'\n')
+            # f.write(s[i]+'\n')
         else:
             pass
-        f.close()
-        return 0
+    f.close()
+    return 0
 
 
 ## Main driver for database search
@@ -581,7 +589,7 @@ def dbsearch(rundir, args, globs):
     nres = 50 if not args.dbresults else int(args.dbresults)
     if args.dbsmarts or args.dbhuman:
         print('number of smiles strings BEFORE SMARTS filter: ' + mybash("cat " + outf + '| wc -l'))
-        flag = matchsmarts(smistr, outf, catoms)
+        flag = matchsmarts(smistr, outf, catoms, args)
         print('number of smiles strings AFTER SMARTS filter: ' + mybash("cat " + outf + '| wc -l'))
     if args.debug:
         print('outf is ' + str(outf))
