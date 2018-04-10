@@ -718,8 +718,10 @@ class mol3D:
                         print('Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def update_graph_check(self, oct=True):
+    def update_graph_check(self, oct=True): ####!!!!Works only for octahedral and one-empty site!!!!
         from molSimplify.Scripts.oct_check_mols import IsOct, IsStructure
+        if not len(self.graph):
+            self.createMolecularGraph(oct=oct)
         if oct:
             flag_oct, flag_list, dict_oct_info, catoms_arr = IsOct(file_in=self.xyzfile,
                                                                    flag_catoms=True)
@@ -745,12 +747,11 @@ class mol3D:
     #  @param oct Flag to turn on special octahedral complex routines
     #  @return List of indices of bonded atoms
     def getBondedAtomsSmart(self, ind, oct=True, geo_check=False):
-        flag_current_check = False
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        if (not self.updated):
-            self.update_graph_check()
-            flag_current_check = True
+        # if (not self.updated):
+        #     print('---------')
+        #     self.update_graph_check()
         if geo_check:  # Force check
             self.update_graph_check()
         return list(np.nonzero(np.ravel(self.graph[ind]))[0])
@@ -1144,6 +1145,7 @@ class mol3D:
     #  @param self The object pointer    
     #  @param filename Filename
     def readfromxyz(self, filename):
+        # print('!!!!', filename)
         globs = globalvars()
         en_dict = globs.endict()
         self.graph = []

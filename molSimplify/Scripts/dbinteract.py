@@ -395,7 +395,7 @@ def matchsmarts(smarts, outf, catoms, args):
         obConversion.ReadString(moll, mol)  # add
         sm.Match(moll)
         smm = list(sm.GetUMapList())
-        if 0 < len(smm) < max_atoms:
+        if 0 < len(smm) and len(mol)< max_atoms:
             print('#:', i)
             print('mol current:', mol)
             print('smm current', smm, len(smm))
