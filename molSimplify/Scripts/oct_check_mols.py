@@ -4,6 +4,8 @@ import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
 from molSimplify.Scripts.geometry import vecangle, distance
+import openbabel
+from molSimplify.Informatics.graph_analyze import obtain_truncation
 
 # from openpyxl import load_workbook
 # from openpyxl import Workbook
@@ -171,43 +173,61 @@ def get_num_coord_metal(file_in, debug=False):
 ## input: optimized and original xyz file.
 ## output: two scalar of maximum rmsd for ligands, and the
 ##         maximum distance change in ligands.
-def ligand_comp_org(file_in, file_init_geo, flag_deleteH=True, flag_loose=False,
-                    flag_lbd=True, debug=False):
+def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_loose=False,
+                    flag_lbd=True, debug=False, depth=3):
     liglist, liglist_init, flag_match = match_lig_list(file_in, file_init_geo,
-                                                       flag_loose, flag_lbd)
+                                                       catoms_arr,
+                                                       flag_loose, flag_lbd,
+                                                       debug=debug, depth=depth)
     if debug:
-        print('lig_list:', liglist)
-        print('lig_list_init:', liglist_init)
+        print('lig_list:', liglist, len(liglist))
+        print('lig_list_init:', liglist_init, len(liglist_init))
     if flag_match:
         rmsd_arr, max_atom_dist_arr = [], []
         for idx, lig in enumerate(liglist):
+            lig_init = liglist_init[idx]
             if debug:
                 print('----This is %d th piece of ligand.' % (idx + 1))
+                print('ligand is:', lig, lig_init)
             posi_shift = 2
-            start_posi = posi_shift + lig[0]
-            end_posi = posi_shift + lig[len(lig) - 1]
-            lig_init = liglist_init[idx]
-            start_posi_init = posi_shift + lig_init[0]
-            end_posi_init = posi_shift + lig_init[len(lig_init) - 1]
-            with open(file_in, 'r') as fo:
-                lines = fo.readlines()[start_posi:end_posi + 1]
+            # start_posi = posi_shift + lig[0]
+            # end_posi = posi_shift + lig[len(lig) - 1]
+            # lig_init = liglist_init[idx]
+            # start_posi_init = posi_shift + lig_init[0]
+            # end_posi_init = posi_shift + lig_init[len(lig_init) - 1]
+            with open('mymol_trunc_tmp.xyz', 'r') as fo:
                 with open('tmp.xyz', 'w') as foo:
                     foo.write('number of atoms not necessary\n')
                     foo.write('tmp file for ligands comparison\n')
-                    foo.write(''.join(lines))
-            with open(file_init_geo, 'r') as fo:
-                lines = fo.readlines()[start_posi_init:end_posi_init + 1]
+                    for ii, line in enumerate(fo):
+                        if (ii-posi_shift) in lig:
+                            if debug:
+                                print('line is', line)
+                            foo.write(line)
+            with open('init_trunc_tmp.xyz', 'r') as fo:
+                # lines = fo.readlines()[start_posi_init:end_posi_init + 1]
                 with open('tmp_org.xyz', 'w') as foo:
                     foo.write('number of atoms not necessary\n')
                     foo.write('tmp file for ligands comparison\n')
-                    foo.write(''.join(lines))
+                    for ii, line in enumerate(fo):
+                        if (ii-posi_shift) in lig_init:
+                            foo.write(line)
             tmp_mol = create_mol_with_xyz('tmp.xyz')
             tmp_org_mol = create_mol_with_xyz('tmp_org.xyz')
             if debug:
                 print('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms))
+                print('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()], [x.symbol() for x in tmp_org_mol.getAtoms()])
             if flag_deleteH:
                 tmp_mol.deleteHs()
                 tmp_org_mol.deleteHs()
+            # ---openbabel li
+            # tmp_org_mol.convert2OBMol()
+            # tmp_mol.convert2OBMol()
+            # OBAlign = openbabel.OBAlign(tmp_org_mol.OBMol,tmp_mol.OBMol)
+            # alignstatus = OBAlign.Align()
+            # print('did align succeed ' + str(alignstatus))
+            # rmsd = OBAlign.GetRMSD()
+            # print('RMSD is ' + str(rmsd))
             mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
             rmsd = tmp_mol.rmsd(tmp_org_mol)
             rmsd_arr.append(rmsd)
@@ -227,38 +247,36 @@ def ligand_comp_org(file_in, file_init_geo, flag_deleteH=True, flag_loose=False,
 ## useful for cases where the init geo and opt geo have the
 ## different ligands arrangement (when you only have the opt geo
 ## but still want init geo)
-def match_lig_list(file_in, file_init_geo, flag_loose,
-                   flag_lbd=True, debug=False):
+def match_lig_list(file_in, file_init_geo, catoms_arr,
+                   flag_loose, flag_lbd=True, debug=False,
+                   depth=3):
     flag_match = True
     my_mol = create_mol_with_xyz(_file_in=file_in)
     # print('natoms: ', my_mol.natoms)
     # print('In match, flag_loose', flag_loose)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
-    liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol)
+    my_mol_trunc = obtain_truncation(my_mol, catoms_arr, depth)
+    init_mol_trunc = obtain_truncation(init_mol, catoms_arr, depth)
+    my_mol_trunc.createMolecularGraph()
+    init_mol_trunc.createMolecularGraph()
+    init_mol_trunc.writexyz('init_trunc_tmp.xyz')
+    my_mol_trunc.writexyz('mymol_trunc_tmp.xyz')
+    liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol_trunc)
+    if debug:
+        print('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()])
+        print(liglist_init, ligdents_init, ligcons_init)
     if flag_lbd:  ## Also do ligand breakdown for opt geo
-        liglist, ligdents, ligcons = ligand_breakdown(my_mol, flag_loose)
+        liglist, ligdents, ligcons = ligand_breakdown(my_mol_trunc, flag_loose)
     else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
         liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
-    liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
+    liglist_atom = [[my_mol_trunc.getAtom(x).symbol() for x in ele]
                     for ele in liglist]
-    liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
+    liglist_init_atom = [[init_mol_trunc.getAtom(x).symbol() for x in ele]
                          for ele in liglist_init]
     if debug:
         print('ligand_list opt in symbols:', liglist_atom)
         print('ligand_list init in symbols: ', liglist_init_atom)
     liglist_shifted = []
-    ## --- match opt geo with init geo---
-    # for ele in liglist_atom:
-    #     try:
-    #         posi = liglist_init_atom.index(ele)
-    #         liglist_init_shifted.append(liglist_init[posi])
-    #         liglist_init_atom.pop(posi)
-    #         liglist_init.pop(posi)
-    #     except ValueError:
-    #         print('Ligands cannot match!')
-    #         flag_match = False
-
-    ## --- match init geo with opt geo---
     for ele in liglist_init_atom:
         try:
             posi = liglist_atom.index(ele)
@@ -269,6 +287,8 @@ def match_lig_list(file_in, file_init_geo, flag_loose,
             if debug:
                 print('Ligands cannot match!')
             flag_match = False
+    if debug:
+        print('!!!!!returns', liglist_shifted, liglist_init)
     return liglist_shifted, liglist_init, flag_match
 
 
@@ -431,7 +451,7 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
 def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
           std_not_use=[], angle_ref=oct_angle_ref, flag_catoms=False,
           catoms_arr=None, debug=False):
-    num_coord_metal, catoms = get_num_coord_metal(file_in)
+    num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
     if not catoms_arr == None:
         catoms = catoms_arr
         num_coord_metal = len(catoms_arr)
@@ -444,11 +464,12 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     rmsd_max, atom_dist_max = -1, -1
     catoms_arr = catoms
     if num_coord_metal >= 6:
-        if not file_init_geo == None:
-            rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo)
         if not rmsd_max == 'lig_mismatch':
             num_coord_metal = 6
-            oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref, catoms_arr)
+            oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
+                                                                                   catoms_arr, debug=debug)
+        if not file_init_geo == None:
+            rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
         else:
             num_coord_metal = -1
             rmsd_max, atom_dist_max = -1, -1
