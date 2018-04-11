@@ -470,8 +470,8 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
-                
-        if not ff == "UFF":
+        print('ff is '+ str(ff))        
+        if not ff.lower() == "uff":
             bridgingatoms = []
             # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
             # these are immune to deletion
