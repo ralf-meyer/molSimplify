@@ -82,6 +82,8 @@ class mol3D:
         self.globs = globalvars()
         ## Holder for molecular graph
         self.graph = []
+        self.xyzfile = 'undef'
+        self.updated = False
 
     ## Add atom to molecule
     #
@@ -222,9 +224,9 @@ class mol3D:
 
         if self.OBMol and not force_clean:
             BO_mat = self.populateBOMatrix()
-            repop = True 
-        # write temp xyz
-        self.writexyz('tempr.xyz',symbsonly=True)
+            repop = True
+            # write temp xyz
+        self.writexyz('tempr.xyz', symbsonly=True)
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInFormat("xyz")
@@ -330,10 +332,10 @@ class mol3D:
     #  WARNING: ONLY USE ON A FRESH INSTANCE OF MOL3D.
     #  @param self The object pointer
     #  @param mol0 mol3D of molecule to be copied
-    def copymol3D(self,mol0):
-		# copy atoms
-        for i,atom0 in enumerate(mol0.atoms):
-            self.addAtom(atom3D(atom0.sym,atom0.coords(),atom0.name))
+    def copymol3D(self, mol0):
+        # copy atoms
+        for i, atom0 in enumerate(mol0.atoms):
+            self.addAtom(atom3D(atom0.sym, atom0.coords(), atom0.name))
             if atom0.frozen:
                 self.getAtom(i).frozen = True
         # copy other attributes
@@ -661,14 +663,14 @@ class mol3D:
                                 metal_prox = sorted(possible_inds, key=lambda x: self.getDistToMetal(x, ind))
 
                                 allowed_inds = metal_prox[0:CN]
-                                #if 
+                                # if
                                 if debug:
                                     print('ind: ' + str(ind))
                                     print('metal prox: ' + str(metal_prox))
                                     print('trimmed to: ' + str(allowed_inds))
                                     print(allowed_inds)
-                                    print('CN is ' +  str(CN))
-                                    
+                                    print('CN is ' + str(CN))
+
                                 if not i in allowed_inds:
                                     valid = False
                                     if debug:
@@ -716,15 +718,42 @@ class mol3D:
                         print('Error, mol3D could not understand conenctivity in mol')
         return nats
 
+    def update_graph_check(self, oct=True): ####!!!!Works only for octahedral and one-empty site!!!!
+        from molSimplify.Scripts.oct_check_mols import IsOct, IsStructure
+        if not len(self.graph):
+            self.createMolecularGraph(oct=oct)
+        if oct:
+            flag_oct, flag_list, dict_oct_info, catoms_arr = IsOct(file_in=self.xyzfile,
+                                                                   flag_catoms=True)
+        else:
+            flag_oct, flag_list, dict_oct_info, catoms_arr = IsStructure(file_in=self.xyzfile,
+                                                                         flag_catoms=True)
+        self.graph[0, :] = 0
+        self.graph[:, 0] = 0
+        row = np.zeros(self.graph.shape[0])
+        np.put(row, np.array(catoms_arr), np.ones(len(catoms_arr)))
+        # print('!!!add', row)
+        self.graph[0, :] = row
+        col = np.zeros((self.graph.shape[1], 1))
+        np.put(col, catoms_arr, np.ones(self.graph.shape[0]))
+        self.graph[:, 0] = col
+        self.updated = True
+        # print(self.graph[0], self.graph[1])
+
     ## Gets atoms bonded to a specific atom using the molecular graph, or creates it
     #
     #  @param self The object pointer
     #  @param ind Index of reference atom
     #  @param oct Flag to turn on special octahedral complex routines
     #  @return List of indices of bonded atoms
-    def getBondedAtomsSmart(self, ind, oct=True):
+    def getBondedAtomsSmart(self, ind, oct=True, geo_check=False):
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
+        # if (not self.updated):
+        #     print('---------')
+        #     self.update_graph_check()
+        if geo_check:  # Force check
+            self.update_graph_check()
         return list(np.nonzero(np.ravel(self.graph[ind]))[0])
 
     ## Gets non-H atoms bonded to a specific atom
@@ -781,21 +810,23 @@ class mol3D:
             if d0 < dd:
                 dd = d0
                 atomc = atom.coords()
-        return distance(self.centermass(),atomc)
+        return distance(self.centermass(), atomc)
+
     ## Gets atom that is furthest from the given atom
     #  @param self The object pointer
     #  @param reference index of reference atom
     #  @return farIndex index of furthest atom
-    def getFarAtom(self,reference):
+    def getFarAtom(self, reference):
         referenceCoords = self.getAtom(reference).coords()
         dd = 0.00
         farIndex = reference
-        for ind,atom in enumerate(self.atoms):
-            d0 = distance(atom.coords(),referenceCoords)
+        for ind, atom in enumerate(self.atoms):
+            d0 = distance(atom.coords(), referenceCoords)
             if d0 > dd:
                 dd = d0
                 farIndex = ind
         return farIndex
+
     ## Gets H atoms in molecule
     #  @param self The object pointer
     #  @return List of atom3D objects of H atoms
@@ -1072,7 +1103,7 @@ class mol3D:
     ## Checks for overlap with another molecule with increased tolerance
     # 
     #  Compares pairwise atom distances to 1*sum of covalent radii
-        #  @param self The object pointer    
+    #  @param self The object pointer
     #  @param mol mol3D of second molecule
     #  @return Flag for overlap
     def overlapcheckh(self, mol):
@@ -1114,9 +1145,11 @@ class mol3D:
     #  @param self The object pointer    
     #  @param filename Filename
     def readfromxyz(self, filename):
+        # print('!!!!', filename)
         globs = globalvars()
         en_dict = globs.endict()
         self.graph = []
+        self.xyzfile = filename
         fname = filename.split('.xyz')[0]
         f = open(fname + '.xyz', 'r')
         s = f.read().splitlines()
@@ -1128,18 +1161,19 @@ class mol3D:
                 lm = re.search(r'\d+$', line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
                 if lm is not None:
-                    symb = re.sub('\d+','',line_split[0])
+                    symb = re.sub('\d+', '', line_split[0])
                     number = lm.group()
-                  # print('sym and number ' +str(symb) + ' ' + str(number))
+                    # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
-                    atom = atom3D(symb,[float(line_split[1]),float(line_split[2]),float(line_split[3])],name=line_split[0])
+                    atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
+                                  name=line_split[0])
                 elif line_split[0] in en_dict.keys():
-                    atom = atom3D(line_split[0],[float(line_split[1]),float(line_split[2]),float(line_split[3])])
+                    atom = atom3D(line_split[0], [float(line_split[1]), float(line_split[2]), float(line_split[3])])
                 else:
                     print('cannot find atom type')
                     sys.exit()
                 self.addAtom(atom)
-                
+
     ## Computes RMSD between two molecules
     # 
     #  Note that this routine does not perform translations or rotations to align molecules.
@@ -1158,7 +1192,7 @@ class mol3D:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 rmsd += (atom0.distance(atom1)) ** 2
-            N_nonH = Nat0- len(self.getHs())
+            N_nonH = Nat0 - len(self.getHs())
             if N_nonH:
                 rmsd /= Nat0
             else:
@@ -1188,7 +1222,7 @@ class mol3D:
         else:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
-                if (not atom0.sym =='H') and (not atom1.sym =='H'):
+                if (not atom0.sym == 'H') and (not atom1.sym == 'H'):
                     rmsd += (atom0.distance(atom1)) ** 2
             rmsd /= Nat0
             return sqrt(rmsd)
@@ -1202,7 +1236,7 @@ class mol3D:
             return NaN
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
-                if (not atom0.sym =='H') and (not atom1.sym =='H'):
+                if (not atom0.sym == 'H') and (not atom1.sym == 'H'):
                     dist = atom0.distance(atom1)
                     if dist > dist_max:
                         dist_max = dist
@@ -1258,15 +1292,16 @@ class mol3D:
     #  To print to stdout instead, use printxyz().
     #  @param self The object pointer   
     #  @param filename Filename  
-    def writexyz(self,filename,symbsonly=False):
-        ss = '' # initialize returning string       
-        ss += str(self.natoms)+"\n"+time.strftime('%m/%d/%Y %H:%M')+", XYZ structure generated by mol3D Class, "+self.globs.PROGRAM+"\n"
+    def writexyz(self, filename, symbsonly=False):
+        ss = ''  # initialize returning string
+        ss += str(self.natoms) + "\n" + time.strftime(
+            '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
         for atom in self.atoms:
             xyz = atom.coords()
             if symbsonly:
-                ss += "%s \t%f\t%f\t%f\n" % (atom.sym,xyz[0],xyz[1],xyz[2])
+                ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
             else:
-                ss += "%s \t%f\t%f\t%f\n" % (atom.name,xyz[0],xyz[1],xyz[2])
+                ss += "%s \t%f\t%f\t%f\n" % (atom.name, xyz[0], xyz[1], xyz[2])
         fname = filename.split('.xyz')[0]
         f = open(fname + '.xyz', 'w')
         f.write(ss)
