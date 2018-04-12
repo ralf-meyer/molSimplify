@@ -617,7 +617,7 @@ def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_autocorrelation(mol, properties, depth, atomIdx, oct=oct)
         this_colnames = []

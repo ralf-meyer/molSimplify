@@ -193,9 +193,9 @@ def chain_builder_supervisor(args,rundir):
 		monomer.OBMol = monomer.getOBMol(args.chain,convtype='smistring')
 #		monomer.OBMol.make3D('mmff94',0)
 		monomer.convert2mol3D()
-                monomer.writexyz('mono_nozero.xyz')
+#                monomer.writexyz('mono_nozero.xyz')
                 monomer =zero_1st(monomer)
-                monomer.writexyz('mono_zero_z.xyz')
+#                monomer.writexyz('mono_zero_z.xyz')
                 
                 
                 conatom = len(args.chain)-1
@@ -224,7 +224,7 @@ def chain_builder_supervisor(args,rundir):
                 
                 
                 monomer = rotate_around_axis(monomer,[0,0,0],u,theta)
-                        # rotate_around_axis(mol,         Rp,u,theta):
+                # rotate_around_axis(mol,         Rp,u,theta):
                 #  Loops over PointRotateAxis().
                 #  @param mol mol3D of molecule to be rotated
                 #  @param Rp Reference point along axis
@@ -232,7 +232,7 @@ def chain_builder_supervisor(args,rundir):
                 #  @param theta Angle of rotation in DEGREES
                 #  @return mol3D of rotated molecule
                 
-                monomer.writexyz('mono_rotate.xyz')
+#                monomer.writexyz('mono_rotate.xyz')
                 new_coords = monomer.getAtom(conatom).coords()
 
 
@@ -242,72 +242,59 @@ def chain_builder_supervisor(args,rundir):
 
 
 
-		monomer.writexyz('mono.xyz')
-                
-                
-                
-                
-
-                
-                
-                
-#		dimer = mol3D()
-#		dimer.OBMol = dimer.getOBMol(args.chain+args.chain,'smistring')
-#		dimer.OBMol.make3D('mmff94',0)
-#		dimer.convert2mol3D()
-#		#dimer.printxyz()
-#		dimer.writexyz('di.xyz')
-#               interd,interv = interatomic_dist(dimer,len(args.chain),0)
-#		print('interv is')
-#		print(interv)
+#                monomer.writexyz('mono.xyz')
                 interv = [0,0,idist]
-		#trimer = mol3D()
-		#trimer.OBMol = trimer.getOBMol(args.chain+args.chain + args.chain,'smistring')
-#		trimer.OBMol.make3D('mmff94',0)
-		#trimer.convert2mol3D()
-		#trimer.printxyz()
-		#trimer.writexyz('tri.xyz')#
-
-		my_dim = mol3D()
-		my_dim.copymol3D(monomer)
-		my_dim.writexyz('prestart.xyz')
                 
-		my_dim = trim_H(my_dim,monomer.getAtom(len(args.chain)-1).coords())
-		#my_dim = zero_x(my_dim)
-		basic_lengths = find_extents(my_dim)
+                my_dim = mol3D()
+                my_dim.copymol3D(monomer)
+#                my_dim.writexyz('prestart.xyz')
+                
+                my_dim = trim_H(my_dim,monomer.getAtom(len(args.chain)-1).coords())
 
-		basic_x  = basic_lengths[0]
-		basic_y  = basic_lengths[1]
+                basic_lengths = find_extents(my_dim)
+
+                basic_x  = basic_lengths[0]
+                basic_y  = basic_lengths[1]
 
 
-		my_dim.writexyz('start.xyz')
 
-		middle = mol3D()
-		middle.copymol3D(monomer)
+#                my_dim.writexyz('start.xyz')
+
+                middle = mol3D()
+                middle.copymol3D(monomer)
                 print('connection atom is '+monomer.getAtom(len(args.chain)-1).symbol())
                 conatom = len(args.chain)-1
-		middle = trim_H(middle,monomer.getAtom(len(args.chain)-1).coords())
+                middle = trim_H(middle,monomer.getAtom(len(args.chain)-1).coords())
 
-		#middle =zero_x(middle)
-		middle = trim_H(middle,[0,0,0])
+
+                middle = trim_H(middle,[0,0,0])
 
                 print('loading end')
-		end = mol3D()
-		end.OBMol = end.getOBMol("CC1COC(=O)O1",convtype='smistring')
+                end = mol3D()
+                print(args.chain_head)
+                if args.chain_head:
+                        end.OBMol = end.getOBMol(args.chain_head,convtype='smistring')
+                else:
+                        end.OBMol = end.getOBMol(args.chain,convtype='smistring')
+		#end.OBMol = end.getOBMol("CC1COC(=O)O1",convtype='smistring')
 #		monomer.OBMol.make3D('mmff94',0)
 		end.convert2mol3D()
                 end.writexyz('endi.xyz')
                 end =zero_1st(end)
                 end.writexyz('end_zero_z.xyz')
-                conatome = 4
-                print('connection atom is '+end.getAtom(conatome).symbol())
-                end_pos = end.getAtom(conatome).coords()
-                target_end = [0,0,-1*mdistance(end_pos,[0,0,0])]
-                theta,u = rotation_params(target_end,[0,0,0],end_pos)
-                end = rotate_around_axis(end,[0,0,0],u,theta)
+                conatom_end = 0
+                print('end connection atom is '+end.getAtom(conatom_end).symbol())
+                end_pos = end.getAtom(conatom_end).coords()
+                print('end target position is  '+str(end_pos))
+                target_displacement= mdistance(end_pos,[0,0,0])
+                end.printxyz()
+                if target_displacement>0.05:
+                        target_end = [0,0,-1*mdistance(end_pos,[0,0,0])]
+                        theta,u = rotation_params(target_end,[0,0,0],end_pos)
+                        end = rotate_around_axis(end,[0,0,0],u,theta)
                 end = trim_H(end,[0,0,0])
-
-		middle.writexyz('middle.xyz')
+                end.printxyz()
+#		middle.writexyz('middle.xyz')
 		end.writexyz('end.xyz')
 
 

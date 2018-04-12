@@ -742,6 +742,8 @@ def parseinputfile(args):
                 args.chain = l[1]
             if (l[0] == '-chain_units'):
                 args.chain_units = l[1]
+            if (l[0] == '-chain_head'):
+                args.chain_head = l[1]
 	    # parse analysis arguments
             if (l[0] == '-correlate'):
 		args.correlate = l[1]
@@ -897,6 +899,7 @@ def parseinputs_chainb(*p):
     parser = p[0]
     parser.add_argument('-chain', help = "SMILES string of monomer", action = "store_true") #0
     parser.add_argument('-chain_units', help = "int, number of monomers") #0    
+    parser.add_argument('-chain_head', help = "SMILEs of chain terminator") #0    
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
