@@ -471,7 +471,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         if not file_init_geo == None:
             rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
         else:
-            num_coord_metal = -1
+            # num_coord_metal = -1
             rmsd_max, atom_dist_max = -1, -1
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
@@ -492,6 +492,9 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
                 flag_list.append(key)
     if num_coord_metal < 6:
         flag_list.append('num_coord_metal')
+    # print(flag_list, dict_oct_info['num_coord_metal'])
+    if flag_list == ['num_coord_metal'] and dict_oct_info['num_coord_metal'] > 6:
+        flag_list.remove('num_coord_metal')
     if not len(flag_list):
         flag_oct = 1  # good structure
         flag_list = 'None'
@@ -511,16 +514,17 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
                 flag_catoms=False, debug=False):
     num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
 
-    if file_init_geo != None:
-        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo,
-                                                  debug=debug)
-    else:
-        rmsd_max, atom_dist_max = -1, -1
+
     if num_coord_metal >= num_coord:
         struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                      debug=debug)
     else:
         struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    if file_init_geo != None:
+        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo,catoms,
+                                                  debug=debug)
+    else:
+        rmsd_max, atom_dist_max = -1, -1
     dict_struct_info = {}
     dict_struct_info['num_coord_metal'] = num_coord_metal
     dict_struct_info['rmsd_max'] = rmsd_max
@@ -544,8 +548,11 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
     if ('num_coord_metal' in flag_list) and (not 'oct_angle_devi_max' in flag_list) and \
             (not 'dist_del_eq' in flag_list) and (not 'dist_del_ax' in flag_list) and \
             (not 'dist_del_eq_ax' in flag_list):
-        num_coord_metal = num_coord
+        dict_struct_info['num_coord_metal'] = num_coord
         flag_list.remove('num_coord_metal')
+
+    if debug:
+        print('dict:', dict_struct_info)
 
     if not len(flag_list):
         flag_struct = 1  # good structure

@@ -22,10 +22,10 @@ def obtain_truncation(mol, con_atoms, hops):
     #       con_atoms - index of atoms that connect to metal
     #       hops - int, number of hops to truncate
     trunc_mol = mol3D()
-    metal_ind = mol.findMetal()[0]
-    trunc_mol.addAtom(mol.getAtom(metal_ind))
+    # metal_ind = mol.findMetal()[0]
+    # trunc_mol.addAtom(mol.getAtom(metal_ind))
     added_list = list()
-    added_list.append(metal_ind)
+    # added_list.append(metal_ind)
     for connections in con_atoms:
         hopped = 0
         active_set = [connections]
