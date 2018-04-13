@@ -216,16 +216,18 @@ class mol3D:
     #
     #  Required for performing openbabel operations on a molecule, such as FF optimizations.
     #  @param self The object pointer
-    #  @param force_clean bool force no bond info retentsion 
+    #  @param force_clean bool force no bond info retention 
     def convert2OBMol(self, force_clean=False):
 
         # get BO matrix if exits:
         repop = False
 
-        if self.OBMol and not force_clean:
+        if not (self.OBMol== False) and not force_clean:
             BO_mat = self.populateBOMatrix()
+
             repop = True
             # write temp xyz
+            
         self.writexyz('tempr.xyz', symbsonly=True)
 
         obConversion = openbabel.OBConversion()
@@ -251,6 +253,7 @@ class mol3D:
     #  @param self The object pointer
     #  @param mol mol3D containing molecule to be added
     #  @param list of tuples (ind1,ind2,order) bonds to add (optional)
+    #  @param dirty bool set to true for straight addition, not bond safe
     #  @return mol3D contaning combined molecule
     # def combine(self,mol):
     #    cmol = self
@@ -261,44 +264,46 @@ class mol3D:
     #    cmol.graph = []
     #    return cmol
 
-    def combine(self, mol, bond_to_add=[]):
-        # BondSafe
+    def combine(self, mol, bond_to_add=[],dirty=False):
         cmol = self
-        cmol.convert2OBMol()
-        mol.convert2OBMol()
-        n_one = cmol.natoms
-        n_two = mol.natoms
-        n_tot = n_one + n_two
-        # allocate
-        jointBOMat = np.zeros([n_tot, n_tot])
-        # get individual mats 
-        con_mat_one = cmol.populateBOMatrix()
-        con_mat_two = mol.populateBOMatrix()
-        # combine mats
-        for i in range(0, n_one):
-            for j in range(0, n_one):
-                jointBOMat[i][j] = con_mat_one[i][j]
-        for i in range(0, n_two):
-            for j in range(0, n_two):
-                jointBOMat[i + n_one][j + n_one] = con_mat_two[i][j]
-        # optional add additional bond(s)
-        if bond_to_add:
-            for bond_tuples in bond_to_add:
-                print('adding bond ' + str(bond_tuples))
-                jointBOMat[bond_tuples[0], bond_tuples[1]] = bond_tuples[2]
-                jointBOMat[bond_tuples[1], bond_tuples[0]] = bond_tuples[2]
+        if not dirty:
+            # BondSafe
+            cmol.convert2OBMol()
+            mol.convert2OBMol()
+            n_one = cmol.natoms
+            n_two = mol.natoms
+            n_tot = n_one + n_two
+            # allocate
+            jointBOMat = np.zeros([n_tot, n_tot])
+            # get individual mats 
+            con_mat_one = cmol.populateBOMatrix()
+            con_mat_two = mol.populateBOMatrix()
+            # combine mats
+            for i in range(0, n_one):
+                for j in range(0, n_one):
+                    jointBOMat[i][j] = con_mat_one[i][j]
+            for i in range(0, n_two):
+                for j in range(0, n_two):
+                    jointBOMat[i + n_one][j + n_one] = con_mat_two[i][j]
+            # optional add additional bond(s)
+            if bond_to_add:
+                for bond_tuples in bond_to_add:
+                    print('adding bond ' + str(bond_tuples))
+                    jointBOMat[bond_tuples[0], bond_tuples[1]] = bond_tuples[2]
+                    jointBOMat[bond_tuples[1], bond_tuples[0]] = bond_tuples[2]
         # add mol3Ds
         for atom in mol.atoms:
             cmol.addAtom(atom)
-        cmol.convert2OBMol()
-        # clean all bonds
-        cmol.cleanBonds()
-        # restore bond info
-        for i in range(0, n_tot):
-            for j in range(0, n_tot):
-                if jointBOMat[i][j] > 0:
-                    cmol.OBMol.AddBond(i + 1, j + 1, int(jointBOMat[i][j]))
-        # reset graph
+        if not dirty:
+            cmol.convert2OBMol()
+            # clean all bonds
+            cmol.cleanBonds()
+            # restore bond info
+            for i in range(0, n_tot):
+                for j in range(0, n_tot):
+                    if jointBOMat[i][j] > 0:
+                        cmol.OBMol.AddBond(i + 1, j + 1, int(jointBOMat[i][j]))
+            # reset graph
         cmol.graph = []
         return cmol
 
