@@ -43,7 +43,7 @@ def get_bond_order(OBMol,connection_atoms,mol):
     return max_bo
 
 
-def .(ligs,batlist,dents,tcats):
+def check_ligands(ligs,batlist,dents,tcats):
     ## tests if ligand combination
     ## is compatiable with the ANN
     # INPUT:
