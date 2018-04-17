@@ -343,7 +343,7 @@ def find_ligand_autocorrelations_oct(mol, prop, loud, depth, name=False,
     ## in cases where 3D geo is not correct/formed 
     ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
     ##                                    ax_con_int_list ,eq_con_int_list
-    ## with types: eq/ax_ligands_list list of mol3D
+    ## with types: eq/ax_ligand_list list of mol3D
     ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
@@ -398,7 +398,7 @@ def find_ligand_autocorrelations_oct(mol, prop, loud, depth, name=False,
 def find_ligand_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True,custom_ligand_dict=False):
     ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
     ##                                    ax_con_int_list ,eq_con_int_list
-    ## with types: eq/ax_ligands_list list of mol3D
+    ## with types: eq/ax_ligand_list list of mol3D
     ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     ## this function takes a
     ## octahedral complex
@@ -526,7 +526,7 @@ def generate_mc_eq_ax_autocorrelation(mol, loud, depth=4, name=False,
 def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_name=False,custom_ligand_dict=False):
     ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
     ##                                    ax_con_int_list ,eq_con_int_list
-    ## with types: eq/ax_ligands_list list of mol3D
+    ## with types: eq/ax_ligand_list list of mol3D
     ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     result_ax_full = list()
     result_eq_full = list()
@@ -538,10 +538,11 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_na
     for ii, properties in enumerate(allowed_strings):
         ax_ligand_ac_full, eq_ligand_ac_full, ax_ligand_ac_con, eq_ligand_ac_con = find_ligand_autocorrelations_oct(mol,
                                                                                                                     properties,
-                                                                                                                    loud,
-                                                                                                                    depth,
-                                                                                                                    name,
-                                                                                                                    custom_ligand_dict)
+                                                                                                                    loud = loud,
+                                                                                                                    depth = depth,
+                                                                                                                    name =name,
+                                                                                                                    oct=True,
+                                                                                                                    custom_ligand_dict= custom_ligand_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -563,7 +564,7 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_na
 def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False, flag_name=False,custom_ligand_dict=False):
     ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
     ##                                    ax_con_int_list ,eq_con_int_list
-    ## with types: eq/ax_ligands_list list of mol3D
+    ## with types: eq/ax_ligand_list list of mol3D
     ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     result_ax_full = list()
     result_eq_full = list()
@@ -573,7 +574,7 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False, flag_name=F
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     for ii, properties in enumerate(allowed_strings):
-        ax_ligand_ac_con, eq_ligand_ac_con = find_ligand_deltametrics_oct(mol, properties, loud, depth, name,custom_ligand_dict)
+        ax_ligand_ac_con, eq_ligand_ac_con = find_ligand_deltametrics_oct(mol, properties, loud, depth, name,oct=True,custom_ligand_dict=custom_ligand_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
