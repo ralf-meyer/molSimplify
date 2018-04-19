@@ -72,13 +72,14 @@ class ligand:
 #  @return ligcons List of ligand connection indices (in mol)
 
 
-def ligand_breakdown(mol, flag_loose=False):
+def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
     # this function takes an octahedral
     # complex and returns ligands
     metal_index = mol.findMetal()[0]
-    # bondedatoms = mol.getBondedAtomsOct(metal_index, CN=6, debug=False, flag_loose=flag_loose)
-    # print('!!!!flagloose', flag_loose)
-    bondedatoms = mol.getBondedAtomsSmart(metal_index)
+    if BondedOct:
+        bondedatoms = mol.getBondedAtomsOct(metal_index, CN=6, debug=False, flag_loose=flag_loose)
+    else:
+        bondedatoms = mol.getBondedAtomsSmart(metal_index)
     # print('!!!!!boundatoms', bondedatoms)
     #	print('from get oct' + str(bondedatoms))
     #	print('***\n')

@@ -1179,6 +1179,32 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
+    def readfromtxt(self, txt):
+    # print('!!!!', filename)
+        globs = globalvars()
+        en_dict = globs.endict()
+        self.graph = []
+        for line in txt:
+            line_split = line.split()
+            if len(line_split) == 4 and line_split[0]:
+                # this looks for unique atom IDs in files
+                lm = re.search(r'\d+$', line_split[0])
+                # if the string ends in digits m will be a Match object, or None otherwise.
+                if lm is not None:
+                    symb = re.sub('\d+', '', line_split[0])
+                    # number = lm.group()
+                    # # print('sym and number ' +str(symb) + ' ' + str(number))
+                    # globs = globalvars()
+                    atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
+                                  name=line_split[0])
+                elif line_split[0] in en_dict.keys():
+                    atom = atom3D(line_split[0], [float(line_split[1]), float(line_split[2]), float(line_split[3])])
+                else:
+                    print('cannot find atom type')
+                    sys.exit()
+                self.addAtom(atom)
+
+
     ## Computes RMSD between two molecules
     # 
     #  Note that this routine does not perform translations or rotations to align molecules.
