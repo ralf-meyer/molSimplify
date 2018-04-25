@@ -475,15 +475,6 @@ def generate_mc_eq_ax_deltametrics(mol, loud, depth=4, name=False,
                                    func=deltametric_catoms):
     result_ax_mc = list()
     result_eq_mc = list()
-    if not custom_ligand_dict:
-        liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name)
-    else:
-        ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
-        eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
-        ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
-        eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
