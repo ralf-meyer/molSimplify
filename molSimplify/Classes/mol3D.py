@@ -1204,6 +1204,32 @@ class mol3D:
                 rmsd = 0
             return sqrt(rmsd)
 
+    ## Computes mean of absolute atom deviations 
+    # 
+    #  Like above, this routine does not perform translations or rotations to align molecules.
+    #  
+    #  Use mol3D objects that do not use hydrogens
+    #
+    #  To do so, use geometry.kabsch().
+    #  @param self The object pointer  
+    #  @param mol2 mol3D of second molecule
+    #  @return sum of absolute deviations of atoms between molecules, NaN if molecules have different numbers of atoms
+    def meanabsdev(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
+            return NaN
+        else:
+            dev = 0
+            for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
+                dev += abs((atom0.distance(atom1)))
+            if Nat0 == 0:
+                dev = 0
+            else:
+                dev /= Nat0
+            return dev
+
     def maxatomdist(self, mol2):
         Nat0 = self.natoms
         Nat1 = mol2.natoms
