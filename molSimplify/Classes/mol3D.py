@@ -1179,6 +1179,32 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
+    def readfromtxt(self, txt):
+    # print('!!!!', filename)
+        globs = globalvars()
+        en_dict = globs.endict()
+        self.graph = []
+        for line in txt:
+            line_split = line.split()
+            if len(line_split) == 4 and line_split[0]:
+                # this looks for unique atom IDs in files
+                lm = re.search(r'\d+$', line_split[0])
+                # if the string ends in digits m will be a Match object, or None otherwise.
+                if lm is not None:
+                    symb = re.sub('\d+', '', line_split[0])
+                    # number = lm.group()
+                    # # print('sym and number ' +str(symb) + ' ' + str(number))
+                    # globs = globalvars()
+                    atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
+                                  name=line_split[0])
+                elif line_split[0] in en_dict.keys():
+                    atom = atom3D(line_split[0], [float(line_split[1]), float(line_split[2]), float(line_split[3])])
+                else:
+                    print('cannot find atom type')
+                    sys.exit()
+                self.addAtom(atom)
+
+
     ## Computes RMSD between two molecules
     # 
     #  Note that this routine does not perform translations or rotations to align molecules.
@@ -1197,12 +1223,37 @@ class mol3D:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 rmsd += (atom0.distance(atom1)) ** 2
-            N_nonH = Nat0 - len(self.getHs())
-            if N_nonH:
-                rmsd /= Nat0
-            else:
+            if Nat0 == 0:
                 rmsd = 0
+            else:
+                rmsd /= Nat0
             return sqrt(rmsd)
+
+    ## Computes mean of absolute atom deviations 
+    # 
+    #  Like above, this routine does not perform translations or rotations to align molecules.
+    #  
+    #  Use mol3D objects that do not use hydrogens
+    #
+    #  To do so, use geometry.kabsch().
+    #  @param self The object pointer  
+    #  @param mol2 mol3D of second molecule
+    #  @return sum of absolute deviations of atoms between molecules, NaN if molecules have different numbers of atoms
+    def meanabsdev(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
+            return NaN
+        else:
+            dev = 0
+            for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
+                dev += abs((atom0.distance(atom1)))
+            if Nat0 == 0:
+                dev = 0
+            else:
+                dev /= Nat0
+            return dev
 
     def maxatomdist(self, mol2):
         Nat0 = self.natoms
