@@ -530,15 +530,13 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
                 std_not_use=[], angle_ref=oneempty_angle_ref, num_coord=5,
                 flag_catoms=False, debug=False):
     num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
-
     if num_coord_metal >= num_coord:
         struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                      debug=debug)
     else:
         struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
     if file_init_geo != None:
-        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr,
-                                                  debug=debug)
+        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
     else:
         rmsd_max, atom_dist_max = -1, -1
     dict_struct_info = {}
