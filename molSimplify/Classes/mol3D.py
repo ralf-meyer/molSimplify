@@ -1223,11 +1223,10 @@ class mol3D:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 rmsd += (atom0.distance(atom1)) ** 2
-            N_nonH = Nat0 - len(self.getHs())
-            if N_nonH:
-                rmsd /= Nat0
-            else:
+            if Nat0 == 0:
                 rmsd = 0
+            else:
+                rmsd /= Nat0
             return sqrt(rmsd)
 
     def maxatomdist(self, mol2):
