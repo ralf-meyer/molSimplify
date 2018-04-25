@@ -13,12 +13,23 @@ from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.mol3D import*
 from molSimplify.Classes.ligand import *
 from molSimplify.Informatics.graph_analyze import *
-def generate_all_ligand_misc(mol,loud):
-	result_ax = list()
-	result_eq = list()
-	colnames = ['dent']
-	liglist,ligdents,ligcons = ligand_breakdown(mol)
-	ax_ligand_list,eq_ligand_list,ax_natoms_list,eq_natoms_list,ax_con_int_list,eq_con_int_list,ax_con_list,eq_con_list,built_ligand_list=ligand_assign(mol,liglist,ligdents,ligcons,loud,name=False)
+def generate_all_ligand_misc(mol,loud,custom_ligand_dict=False):
+        ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
+        ##                                    ax_con_int_list ,eq_con_int_list
+        ## with types: eq/ax_ligand_list list of mol3D
+        ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+        result_ax = list()
+        result_eq = list()
+        colnames = ['dent']
+        if not custom_ligand_dict:
+                liglist, ligdents, ligcons = ligand_breakdown(mol)
+                ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+                    mol, liglist, ligdents, ligcons, loud, name=False)
+        else:
+                ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
+                eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
+                ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
+                eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
 	## count ligands
 	n_ax = len(ax_ligand_list)
 	n_eq = len(eq_ligand_list)

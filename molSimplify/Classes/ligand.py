@@ -55,10 +55,10 @@ class ligand:
                 hopped += 1
                 new_active_set = list()
                 for this_atom in active_set:
-                    this_atoms_neighbors = self.master_mol.getBondedAtoms(this_atom)
+                    this_atoms_neighbors = self.master_mol.getBondedAtomsSmart(this_atom)
                     for bound_atoms in this_atoms_neighbors:
                         if (bound_atoms in self.index_list) and (bound_atoms not in added_list):
-                            self.trunc_mol.addAtom(self.master_mol.getAtom(bound_atoms))
+                            self.trunc_mol.addAtom(self.master_mol.getAtomSmart(bound_atoms))
                             added_list.append(bound_atoms)
                     [new_active_set.append(element) for element in this_atoms_neighbors]
                 active_set = new_active_set
@@ -72,13 +72,14 @@ class ligand:
 #  @return ligcons List of ligand connection indices (in mol)
 
 
-def ligand_breakdown(mol, flag_loose=False):
+def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
     # this function takes an octahedral
     # complex and returns ligands
     metal_index = mol.findMetal()[0]
-    # bondedatoms = mol.getBondedAtomsOct(metal_index, CN=6, debug=False, flag_loose=flag_loose)
-    # print('!!!!flagloose', flag_loose)
-    bondedatoms = mol.getBondedAtomsSmart(metal_index)
+    if BondedOct:
+        bondedatoms = mol.getBondedAtomsOct(metal_index, CN=6, debug=False, flag_loose=flag_loose)
+    else:
+        bondedatoms = mol.getBondedAtomsSmart(metal_index)
     # print('!!!!!boundatoms', bondedatoms)
     #	print('from get oct' + str(bondedatoms))
     #	print('***\n')
