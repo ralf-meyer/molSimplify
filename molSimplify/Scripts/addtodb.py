@@ -2,7 +2,7 @@
 #  Adds new molecules to database
 #  
 #  Written by Tim Ioannidis for HJK Group
-#  
+#  Modified by JP Janet
 #  Dpt of Chemical Engineering, MIT
 
 from geometry import *
@@ -68,6 +68,8 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
             shortname = sminame[0:3]+sminame[-2:]
         else:
             shortname = sminame
+        print("smimol is "+str(smimol))
+        print("sminame is "+str(sminame))
         # new entry for dictionary
         if '.mol' in smimol:
             shutil.copy2(smimol,ligands_folder + sminame+'.mol')
@@ -75,13 +77,14 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
         elif '.xyz' in smimol:
             shutil.copy2(smimol,ligands_folder + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
-        elif lig.OBmol: 
-            # write smiles file in Ligands directory
-            lig.OBmol.write('smi',ligands_folder + sminame+'.smi')
-            snew = sminame+':'+sminame+'.smi,'+shortname+','+css+','+grp+','+ffopt
+#        elif lig.OBMol: 
+#            # write smiles file in Ligands directory
+#            lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
+#            snew = sminame+':'+sminame+'.smi,'+shortname+','+css+','+grp+','+ffopt
         else:
             # write xyz file in Ligands directory
             lig.writexyz(ligands_folder+sminame+'.xyz') # write xyz file
+            snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
         # update dictionary
 
 

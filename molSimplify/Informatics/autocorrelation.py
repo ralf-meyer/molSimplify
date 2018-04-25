@@ -178,11 +178,11 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
 
 
 def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
-                               func=autocorrelation):
+                               func=autocorrelation,modifier=False):
     autocorrelation_vector = numpy.zeros(d)
     try:
         metal_ind = mol.findMetal()[0]
-        w = construct_property_vector(mol, prop, oct=oct)
+        w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
         autocorrelation_vector = func(mol, w, metal_ind, d, oct=oct,
                                       catoms=catoms)
     except:
@@ -191,10 +191,10 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
     return (autocorrelation_vector)
 
 
-def atom_only_deltametric(mol, prop, d, atomIdx, oct=True):
+def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
     ## atomIdx must b either a list of indcies
     ## or a single index
-    w = construct_property_vector(mol, prop, oct=oct)
+    w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
     deltametric_vector = numpy.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
@@ -269,16 +269,18 @@ def layer_density_in_3D(mol, prop_vec, orig, d, oct=True):
     return result_vector
 
 
-def construct_property_vector(mol, prop, oct=True):
+def construct_property_vector(mol, prop, oct=True,modifier = False):
     ## assigns the value of property
     ## for atom i (zero index) in mol
     ## to position i in returned vector
     ## can be used to create weighted
     ## graph representations
-    #	oct - bool, if complex is octahedral, will use better bond checks
-
-    # allowed_strings = ['electronegativity','nulcear_charge','ident','coord']
-    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size', 'vdwrad']
+    ## oct - bool, if complex is octahedral, will use better bond checks
+    ## modifier - dict, used to modify prop vector (e.g. for adding 
+    ##             ONLY used with  ox_nuclear_charge    ox or charge)
+    ##              {"Fe":2, "Co": 3} etc
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology',
+                        'ox_nuclear_charge', 'size', 'vdwrad']
     ## note that ident just codes every atom as one, this gives
     ## a purely toplogical index. coord gives the number of
     ## connecting atom to attom i (similar to Randic index)
@@ -304,6 +306,17 @@ def construct_property_vector(mol, prop, oct=True):
         for keys in at_keys:
             values = globs.amass()[keys][1]
             prop_dict.update({keys: values})
+    elif prop == 'ox_nuclear_charge':
+        if not modifier:
+            print('Error, must give modifier with ox_nuclear_charge')
+            return False
+        else:
+            at_keys = globs.amass().keys()
+            for keys in at_keys:
+                values = globs.amass()[keys][1]
+                if keys in modifier.keys():
+                    values += float(modifier[keys])
+                prop_dict.update({keys: values})
     elif prop == 'ident':
         at_keys = globs.amass().keys()
         for keys in at_keys:
@@ -609,6 +622,25 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+
+def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
+    ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
+    ##             ONLY used with  ox_nuclear_charge    ox or charge)
+    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal... 
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result = list()
+    colnames = []
+    allowed_strings = ['ox_nuclear_charge']
+    labels_strings = ['O']
+    for ii, properties in enumerate(allowed_strings):
+        metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct,modifier=oxmodifier)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(metal_ac)
+        results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
 
 def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
