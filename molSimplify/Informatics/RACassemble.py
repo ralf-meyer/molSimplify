@@ -71,7 +71,7 @@ def assemble_connectivity_from_parts(metal_mol, custom_ligand_dict):
 #  @param custom_ligand_dict optional dict defining ligands (see below)
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
-def get_descriptor_vector(this_complex,custom_ligand_dict=False):
+def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False):
         descriptor_names = []
         descriptors = []
         ## misc descriptors
@@ -114,6 +114,15 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False):
         results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+        ## ox-metal ACs, if ox available
+        if ox_modifier:
+            results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
+            descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
+                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+            results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False)
+            descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                           results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')    
+                                                           
         return descriptor_names, descriptors
 
 

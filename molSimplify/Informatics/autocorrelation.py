@@ -206,11 +206,11 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
 
 
 def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
-                           func=deltametric):
+                           func=deltametric, modifier=False):
     deltametric_vector = numpy.zeros(d)
     try:
         metal_ind = mol.findMetal()[0]
-        w = construct_property_vector(mol, prop, oct=oct)
+        w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
         deltametric_vector = func(mol, w, metal_ind, d, oct=oct,
                                   catoms=catoms)
     except:
@@ -621,16 +621,29 @@ def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, oct=True,
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
-    allowed_strings = ['ox_nuclear_charge']
-    labels_strings = ['O']
-    for ii, properties in enumerate(allowed_strings):
-        metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct,modifier=oxmodifier)
-        this_colnames = []
-        for i in range(0, depth + 1):
-            this_colnames.append(labels_strings[ii] + '-' + str(i))
-        colnames.append(this_colnames)
-        result.append(metal_ac)
-        results_dictionary = {'colnames': colnames, 'results': result}
+    metal_ox_ac = metal_only_autocorrelation(mol, 'ox_nuclear_charge', depth, oct=oct,modifier=oxmodifier)
+    this_colnames = []
+    for i in range(0, depth + 1):
+            this_colnames.append('O' + '-' + str(i))        
+    colnames.append(this_colnames)
+    result.append(metal_ox_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
+def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
+    ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
+    ##             ONLY used with  ox_nuclear_charge    ox or charge)
+    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal... 
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result = list()
+    colnames = []
+    metal_ox_ac = metal_only_deltametric(mol, 'ox_nuclear_charge', depth, oct=oct,modifier=oxmodifier)
+    this_colnames = []
+    for i in range(0, depth + 1):
+        this_colnames.append('O' + '-' + str(i))
+    colnames.append(this_colnames)
+    result.append(metal_ox_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
 def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
