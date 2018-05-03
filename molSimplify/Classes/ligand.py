@@ -226,7 +226,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         allowed = range(0, 6)
         not_eq = list()
         for j, built_ligs in enumerate(built_ligand_list):
-            this_z = built_ligs.mol.centermass()[2]
+            this_z = sum([mol.getAtom(ii).coords()[2] for ii in ligcons[j]])/len(ligcons[j])
             if this_z < minz:
                 minz = this_z
                 bot_lig = j
