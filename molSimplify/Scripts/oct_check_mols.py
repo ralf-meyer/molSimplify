@@ -17,25 +17,32 @@ from molSimplify.Classes.atom3D import *
 ### upload: 3/7/2018
 ### update: 4/5/2018
 
+
+### Need more tests for the cutoffs just added for the linear ligands oreintation:
+### 1) 'devi_linear_avrg', 2) 'devi_linear_max'
 dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.6,
                         'num_coord_metal': 6, 'oct_angle_devi_max': 15,
                         'dist_del_eq': 0.45, 'max_del_sig_angle': 27,
-                        'dist_del_all': 1.2}
+                        'dist_del_all': 1.2,
+                        'devi_linear_avrg': 15, 'devi_linear_max': 28}
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.45,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
                      'dist_del_eq': 0.35, 'dist_del_all': 1,
-                     'max_del_sig_angle': 22.5}  # default cutoff
+                     'max_del_sig_angle': 22.5,
+                     'devi_linear_avrg': 10, 'devi_linear_max': 20}  # default cutoff
 
 dict_oneempty_check_st = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
                           'num_coord_metal': 5, 'oct_angle_devi_max': 15,
                           'dist_del_eq': 0.5, 'max_del_sig_angle': 18,
-                          'dist_del_all': 1}
+                          'dist_del_all': 1,
+                          'devi_linear_avrg': 10, 'devi_linear_max': 20}
 
 dict_oneempty_check_loose = {'rmsd_max': 0.6, 'atom_dist_max': 0.9,
                              'num_coord_metal': 5, 'oct_angle_devi_max': 20,
                              'dist_del_eq': 0.6, 'max_del_sig_angle': 27,
-                             'dist_del_all': 1.2}
+                             'dist_del_all': 1.2,
+                             'devi_linear_avrg': 15, 'devi_linear_max': 28}
 
 dict_staus = {'good': 1, 'bad': 0}
 
@@ -287,9 +294,6 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
     flag_match = True
     my_mol = create_mol_with_xyz(_file_in=file_in)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
-    if debug:
-        print('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()])
-        print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
     if flag_lbd:  ## Also do ligand breakdown for opt geo
         my_mol_trunc = obtain_truncation(my_mol, catoms_arr, depth)
         init_mol_trunc = obtain_truncation(init_mol, catoms_arr, depth)
@@ -303,6 +307,9 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                         for ele in liglist]
         liglist_init_atom = [[init_mol_trunc.getAtom(x).symbol() for x in ele]
                              for ele in liglist_init]
+        if debug:
+            print('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()])
+            print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
     else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
         # _start = time.clock()
         if debug:
@@ -335,6 +342,67 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
     if debug:
         print('!!!!!returns', liglist_shifted, liglist_init)
     return liglist_shifted, liglist_init, flag_match
+
+
+def find_the_other_ind(arr, ind):
+    arr.pop(arr.index(ind))
+    return arr[0]
+
+## The linear ligand here ius defined as:
+## 1) ligands that contains only two atoms. For example CO
+## 2) ligands with more than two atoms and looks linear itself.
+## For example: A-B-C-.... with the angle of A-B and B-C larger than 170.
+def is_linear_ligand(mol, ind):
+    catoms = mol.getBondedAtomsSmart(ind)
+    metal_ind = mol.findMetal()[0]
+    flag = False
+    if metal_ind in catoms and len(catoms) == 2:
+        ind_next = find_the_other_ind(catoms[:], metal_ind)
+        _catoms = mol.getBondedAtomsSmart(ind_next)
+        if len(_catoms) == 1:
+            flag = True
+        elif len(_catoms) == 2:
+            ind_next2 = find_the_other_ind(_catoms[:], ind)
+            vec1 = np.array(mol.getAtomCoords(ind)) - np.array(mol.getAtomCoords(ind_next))
+            vec2 = np.array(mol.getAtomCoords(ind_next2)) - np.array(mol.getAtomCoords(ind_next))
+            ang = vecangle(vec1, vec2)
+            if ang > 170:
+                flag = True
+    print(flag, catoms)
+    return flag, catoms
+
+
+def get_linear_angle(mol, ind):
+    flag, catoms = is_linear_ligand(mol, ind)
+    if flag:
+        vec1 = np.array(mol.getAtomCoords(catoms[0])) - np.array(mol.getAtomCoords(ind))
+        vec2 = np.array(mol.getAtomCoords(catoms[1])) - np.array(mol.getAtomCoords(ind))
+        ang = vecangle(vec1, vec2)
+    else:
+        ang = 0
+    return flag, ang
+
+
+def check_angle_linear(file_in, catoms_arr):
+    mol = create_mol_with_xyz(file_in)
+    dict_angle_linear = {}
+    for ind in catoms_arr:
+        flag, ang = get_linear_angle(mol, ind)
+        dict_angle_linear[str(ind)] = [flag, ang]
+    dict_orientation = {}
+    devi_linear_avrg, devi_linear_max = 0, 0
+    count = 0
+    for key in dict_angle_linear:
+        [flag, ang] = dict_angle_linear[key]
+        if flag:
+            count += 1
+            devi_linear_avrg += 180 - ang
+            if (180 - ang) > devi_linear_max:
+                devi_linear_max = 180 - ang
+    devi_linear_avrg /= count
+    dict_orientation['devi_linear_avrg'] = devi_linear_avrg
+    dict_orientation['devi_linear_max'] = devi_linear_max
+    return dict_angle_linear, dict_orientation
 
 
 ## standard 3: catoms structure compared to a perfect octahedral.
@@ -436,7 +504,7 @@ def dict_check_processing(dict_info, dict_check, std_not_use,
         if not dict_info[key] == 'banned_by_user':
             if dict_info[key] > values:
                 flag_list.append(key)
-    if dict_info['num_coord_metal'] < 6:
+    if dict_info['num_coord_metal'] < num_coord:
         flag_list.append('num_coord_metal')
     if flag_list == ['num_coord_metal'] and \
             (dict_info['num_coord_metal'] == -1 or dict_info['num_coord_metal'] > num_coord):
@@ -552,6 +620,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     catoms_arr = catoms
+    dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if num_coord_metal >= 6:
         if not rmsd_max == 'lig_mismatch':
             num_coord_metal = 6
@@ -560,8 +629,15 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         if not file_init_geo == None:
             rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
         else:
-            num_coord_metal = -1
+            # num_coord_metal = -1
             rmsd_max, atom_dist_max = -1, -1
+        dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
+        if True:
+            print('-------This is for the linear ligand orientation test-----')
+            print('!!!catoms_arr:', catoms_arr)
+            print('!!!dict_angle_linear', dict_angle_linear)
+            print('!!!dict_orientation', dict_orientation)
+            print('---------orientation end.------------')
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
     dict_oct_info['rmsd_max'] = rmsd_max
@@ -570,6 +646,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
     dict_oct_info['max_del_sig_angle'] = max_del_sig_angle
     dict_oct_info['dist_del_eq'] = oct_dist_del[0]
     dict_oct_info['dist_del_all'] = oct_dist_del[3]
+    dict_oct_info.update(dict_orientation)
     flag_oct, flag_list, dict_oct_info = dict_check_processing(dict_oct_info, dict_check,
                                                                std_not_use, num_coord=6,
                                                                debug=debug)
@@ -583,15 +660,24 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
                 std_not_use=[], angle_ref=oneempty_angle_ref, num_coord=5,
                 flag_catoms=False, debug=False):
     num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
+
+    struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    rmsd_max, atom_dist_max = -1, -1
+    dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if num_coord_metal >= num_coord:
         struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                      debug=debug)
-    else:
-        struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
-    if file_init_geo != None:
-        rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
-    else:
-        rmsd_max, atom_dist_max = -1, -1
+        if file_init_geo != None:
+            rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
+        else:
+            rmsd_max, atom_dist_max = -1, -1
+        dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
+        if debug:
+            print('-------This is for the linear ligand orientation test-----')
+            print('!!!catoms_arr:', catoms_arr)
+            print('!!!dict_angle_linear', dict_angle_linear)
+            print('!!!dict_orientation', dict_orientation)
+            print('---------orientation end.------------')
     dict_struct_info = {}
     dict_struct_info['num_coord_metal'] = num_coord_metal
     dict_struct_info['rmsd_max'] = rmsd_max
@@ -600,6 +686,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
     dict_struct_info['max_del_sig_angle'] = max_del_sig_angle
     dict_struct_info['dist_del_eq'] = struct_dist_del[0]
     dict_struct_info['dist_del_all'] = struct_dist_del[3]
+    dict_struct_info.update(dict_orientation)
     flag_struct, flag_list, dict_struct_info = dict_check_processing(dict_struct_info, dict_check,
                                                                      std_not_use, num_coord=num_coord,
                                                                      debug=debug)
