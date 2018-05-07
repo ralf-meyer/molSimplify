@@ -399,7 +399,10 @@ def check_angle_linear(file_in, catoms_arr):
             devi_linear_avrg += 180 - ang
             if (180 - ang) > devi_linear_max:
                 devi_linear_max = 180 - ang
-    devi_linear_avrg /= count
+    if count:
+        devi_linear_avrg /= count
+    else:
+        devi_linear_avrg = 0
     dict_orientation['devi_linear_avrg'] = devi_linear_avrg
     dict_orientation['devi_linear_max'] = devi_linear_max
     return dict_angle_linear, dict_orientation
