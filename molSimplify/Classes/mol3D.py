@@ -973,6 +973,7 @@ class mol3D:
         return idx
 
     ## Initializes OBMol object from a file or SMILES string
+    
     #
     #  Uses the obConversion tool and for files containing 3D coordinates (xyz,mol) and the OBBuilder tool otherwise (smiles).
     #  @param self The object pointer    
@@ -981,6 +982,8 @@ class mol3D:
     #  @param ffclean Flag for FF cleanup of generated structure (default False)
     #  @return OBMol object
     def getOBMol(self, fst, convtype, ffclean=False):
+#        print('fst  ' + str(fst))
+#        print('conversion type ' + str(convtype))
         obConversion = openbabel.OBConversion()
         OBMol = openbabel.OBMol()
         if convtype == 'smistring':

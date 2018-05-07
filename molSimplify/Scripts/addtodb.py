@@ -63,13 +63,15 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
         if emsg:
             return emsg
         lig.convert2mol3D() # convert to mol3D
-        # create shortname
-        if len(sminame) > 5:
-            shortname = sminame[0:3]+sminame[-2:]
-        else:
-            shortname = sminame
+        
+        shortname = sminame
         print("smimol is "+str(smimol))
         print("sminame is "+str(sminame))
+        # sanitize ff options:
+        if not ffopt in ["A","B","BA"]:
+            print('warning: incompatible ffopt choice. Options are ' + str(["A","B","BA","N"]))
+            sys.exit(1)
+            
         # new entry for dictionary
         if '.mol' in smimol:
             shutil.copy2(smimol,ligands_folder + sminame+'.mol')
