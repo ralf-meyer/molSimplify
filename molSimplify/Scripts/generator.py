@@ -34,6 +34,7 @@ from molSimplify.Scripts.postproc import *
 from molSimplify.Scripts.cellbuilder import*
 from molSimplify.Scripts.chains import*
 from molSimplify.Scripts.findcorrelations import*
+from molSimplify.Scripts.addtodb import*
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
@@ -93,10 +94,13 @@ def startgen(argv,flag,gui):
     if args.i:
         parseinputfile(args)
     if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
+        
         # check input arguments
         print 'Checking input...'
         if args.tsgen:
-            emsg = checkinput_ts(args)
+            emsg = checkinput(args,calctype =  "tsgen")
+        elif args.ligadd:
+            emsg = checkinput(args,calctype =  "dbadd")
         else:
             emsg = checkinput(args)
         # check before cleaning input arguments and clean only if checked
@@ -158,8 +162,15 @@ def startgen(argv,flag,gui):
         emsg = chain_builder_supervisor(args,rundir)
     # correlation analysis
     elif (args.correlate):
+        
         print('analysis is looking for correlations')
         analysis_supervisor(args,rundir)
+    # add ligand to list 
+    elif (args.ligadd):
+        print('adding ' +str(args.ligadd)  + ' to ligand database  with name ' + args.ligname + ' and connection atom(s) ' + str(args.ligcon))
+        addtoldb(smimol=args.ligadd.decode('utf-8'),sminame=args.ligname.decode('utf-8'),smident = len(args.ligcon),smicat=str(args.ligcon).strip('[]').decode('utf-8'),smigrps ="custom",smictg="custom",ffopt=args.ligffopt)
+        
+
     # normal structure generation or transition state building
     else:
         args = copy.deepcopy(args0)

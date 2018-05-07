@@ -12,104 +12,110 @@ from pkg_resources import resource_filename, Requirement
 
 ## Checks input for correctness and uses defaults otherwise
 #  @param args Namespace of arguments
-def checkinput(args):
-	globs = globalvars()
-	emsg = False
-	# check core
-	if not args.core:
-	    print 'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()
-	    args.core = ['fe']
-	if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
-	    # convert to titlecase
-	    args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
-	    # check oxidation state
-	    if not args.oxstate:
-	        try:
-	            print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
-	            args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-	        except:
-	            print 'WARNING: No oxidation state specified. Defaulting to 2'
-	            args.oxstate = '2'
-	    # check spin state (doesn't work for custom cores)
-	    if not args.spin:
-	        if args.oxstate in romans.keys():
-	            oxstatenum = romans[args.oxstate]
-	        else:
-	            oxstatenum = args.oxstate
-	        if args.core[0].lower() in mtlsdlist:
-	            if mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2) in defaultspins:
-	                defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2)]
-	                print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
-	                print 'Please check this against our ANN output (where available)'
-	            else:
-	                print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
-	                defaultspinstate = '1'
-	        else:
-	            defaultspinstate = '1'
-	            print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
-	        args.spin = defaultspinstate
-	    # check ligands
-	    if not args.lig and not args.rgen:
-	        if args.gui:
-	            from Classes.mWidgets import mQDialogWarn
-	            qqb = mQDialogWarn('Warning','You specified no ligands.')
-	            qqb.setParent(args.gui.wmain)
-	        else:
-	            print 'WARNING: No ligands specified. Defaulting to water.'
-	        args.lig = ['water']
-	    # check coordination number and geometry
-	    if not args.coord and not args.geometry:
-	        if not args.gui:
-	            print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).'
-	            args.coord = 6
-	            args.geometry = 'oct'
-	    coords,geomnames,geomshorts,geomgroups = getgeoms()
-	    if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
-	        print 'WARNING: No or unknown coordination geometry specified. Defaulting to '+globs.defaultgeometry[int(args.coord)][1]
-	        args.geometry = globs.defaultgeometry[int(args.coord)][0]
-	    if args.geometry and not args.coord:
-	        if args.geometry not in geomnames and args.geometry not in geomshorts:
-	            print 'You have specified an invalid geometry. Available geometries are:'
-	            printgeoms()
-	            print 'Defaulting to octahedral (6)'
-	            args.geometry = 'oct'
-	            args.coord = 6
-	        else:
-	            try:
-	                args.coord = coords[geomnames.index(args.geometry)]
-	            except:
-	                args.coord = coords[geomshorts.index(args.geometry)]
-	            print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
-	    # check number of ligands
-	    if args.coord and not args.ligocc:
-	        print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.')
-	        args.ligocc = [args.coord]
-	        for lig in args.lig[1:]:
-	            args.ligocc.append(0)
-
-## Checks TS builder input for correctness and uses defaults otherwise
-#  @param args Namespace of arguments
-def checkinput_ts(args):
+def checkinput(args,calctype="base"):
     globs = globalvars()
     emsg = False
-    # check core
-    if not args.core:
-        print 'WARNING: No core specified. Defaulting to Fe(II)(N4Py). Available cores are: '+getcores()
-        args.core = ['fen4py']
-    # check substrate
-    if not args.substrate:
-        print 'WARNING: No substrate specified. Defaulting to methane.'
-        args.substrate = ['methane']
-    # reacting atoms will be checked later because defaults can only be determined after structures are loaded
-    # check charge
-    if not args.charge:
-        print 'WARNING: Charge not specified. calccharge does not work for custom cores. Defaulting to 0.'
-        args.charge = '0'
-    # check spin state
-    if not args.spin:
-        print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
-        args.spin = '1'
-        
+    if calctype == "base":
+        # check core
+        if not args.core:
+            print 'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()
+            args.core = ['fe']
+        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
+            # convert to titlecase
+            args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
+            # check oxidation state
+            if not args.oxstate:
+                try:
+                    print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
+                    args.oxstate = globs.defaultoxstate[args.core[0].lower()]
+                except:
+                    print 'WARNING: No oxidation state specified. Defaulting to 2'
+                    args.oxstate = '2'
+            # check spin state (doesn't work for custom cores)
+            if not args.spin:
+                if args.oxstate in romans.keys():
+                    oxstatenum = romans[args.oxstate]
+                else:
+                    oxstatenum = args.oxstate
+                if args.core[0].lower() in mtlsdlist:
+                    if mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2) in defaultspins:
+                        defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2)]
+                        print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
+                        print 'Please check this against our ANN output (where available)'
+                    else:
+                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
+                        defaultspinstate = '1'
+                else:
+                    defaultspinstate = '1'
+                    print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+                args.spin = defaultspinstate
+            # check ligands
+            if not args.lig and not args.rgen:
+                if args.gui:
+                    from Classes.mWidgets import mQDialogWarn
+                    qqb = mQDialogWarn('Warning','You specified no ligands.')
+                    qqb.setParent(args.gui.wmain)
+                else:
+                    print 'WARNING: No ligands specified. Defaulting to water.'
+                args.lig = ['water']
+            # check coordination number and geometry
+            if not args.coord and not args.geometry:
+                if not args.gui:
+                    print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).'
+                    args.coord = 6
+                    args.geometry = 'oct'
+            coords,geomnames,geomshorts,geomgroups = getgeoms()
+            if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
+                print 'WARNING: No or unknown coordination geometry specified. Defaulting to '+globs.defaultgeometry[int(args.coord)][1]
+                args.geometry = globs.defaultgeometry[int(args.coord)][0]
+            if args.geometry and not args.coord:
+                if args.geometry not in geomnames and args.geometry not in geomshorts:
+                    print 'You have specified an invalid geometry. Available geometries are:'
+                    printgeoms()
+                    print 'Defaulting to octahedral (6)'
+                    args.geometry = 'oct'
+                    args.coord = 6
+                else:
+                    try:
+                        args.coord = coords[geomnames.index(args.geometry)]
+                    except:
+                        args.coord = coords[geomshorts.index(args.geometry)]
+                    print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
+            # check number of ligands
+            if args.coord and not args.ligocc:
+                print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.')
+                args.ligocc = [args.coord]
+                for lig in args.lig[1:]:
+                    args.ligocc.append(0)
+    elif calctype == "tsgen":
+        if not args.core:
+            print 'WARNING: No core specified. Defaulting to Fe(II)(N4Py). Available cores are: '+getcores()
+            args.core = ['fen4py']
+        # check substrate
+        if not args.substrate:
+            print 'WARNING: No substrate specified. Defaulting to methane.'
+            args.substrate = ['methane']
+        # reacting atoms will be checked later because defaults can only be determined after structures are loaded
+        # check charge
+        if not args.charge:
+            print 'WARNING: Charge not specified. calccharge does not work for custom cores. Defaulting to 0.'
+            args.charge = '0'
+        # check spin state
+        if not args.spin:
+            print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+            args.spin = '1'
+    elif calctype == "dbadd":
+        if args.ligadd:
+            print('ligand addition function')
+            if not args.ligname:
+                args.ligname = os.path.splitext(os.path.basename(args.ligadd))[0]
+            if not args.ligcon:
+                args.ligcon = [0]
+            if not args.ligffopt:
+                args.ligffopt = "BA"
+                
+    return(emsg)
+            
 ## Check true or false
 #  @param arg String to be checked    
 #  @return bool
@@ -627,6 +633,32 @@ def parseinputfile(args):
                 args.dbvlinks = l[1]
             if (l[0]=='-dbfs'):
                 args.dbfs = True
+            if (l[0]=='-ligadd'):
+                print('adding a ligand')
+                args.ligadd = l[1]
+            if (l[0]=='-ligname'):
+                args.ligname = l[1]        
+            if (l[0]=='-ligcon'):
+                list_to_parse = (line.strip().split(' ')[1:])
+                list_to_add = list()
+                local_list = list()
+                if not isinstance(list_to_parse,basestring):
+                    for decor in list_to_parse:
+                        print('correcting string')
+                        decor = str(decor).strip().strip('[]').split(',')
+                        #print(decor)
+                        local_list = local_list + [str(i) for i in decor]
+                        #print(local_list)
+                        ### correct for 0 index
+                        list_to_add.append([int(i.strip('[]')) for i in decor]) 
+                        
+                else:
+                    ### correct for 0 index
+                    list_to_add = [int(list_to_parse.strip('[]'))-1]
+                args.decoration_index = list_to_add
+                args.ligcon = list_to_add[0]
+            if (l[0]=='-ligffopt'):
+                args.ffopt = l[1]   
             # parse postprocessing arguments
             if (l[0]=='-postp'):
                 args.postp = True
@@ -935,6 +967,11 @@ def parseinputs_db(*p):
     parser.add_argument("-dbhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbhuman)",action="store_true")
     parser.add_argument("-dblinks", help="number of linking atoms (requires dbhuman)",action="store_true")
     parser.add_argument("-dbfs", help="use fastsearch database if present",action="store_true") 
+    # add to DB commands
+    parser.add_argument("-ligadd", help=" add file/SMILES string to ligands available database ",action="store_true") 
+    parser.add_argument("-ligname", help="name of ligand to be added",action="store_true") 
+    parser.add_argument("-ligcon", help="list of connecting atoms for ligand to be added",action="store_true") 
+    parser.add_argument("-ligffopt", help="so we ff optimize the ligand before or (B), after (A) placement, never (N) or both (BA)",action="store_true") 
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args

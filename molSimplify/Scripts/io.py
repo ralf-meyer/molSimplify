@@ -447,7 +447,7 @@ def lig_load(userligand,licores=None):
     lig = mol3D() # initialize ligand molecule
     ### check if ligand exists in dictionary
     if userligand in licores.keys():
-        print('loading ligand from dictionary')
+        print('loading ligand from dictionary' +str(userligand))
         dbentry = licores[userligand]
         # load lig mol file (with hydrogens)
         if globs.custom_path:
@@ -455,6 +455,7 @@ def lig_load(userligand,licores=None):
         else:
             flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/" +dbentry[0])
         # check if ligand xyz/mol file exists
+        print('looking for '+flig)
         if not glob.glob(flig):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
             print emsg
@@ -464,6 +465,7 @@ def lig_load(userligand,licores=None):
         elif ('.mol' in flig):
             lig.OBMol = lig.getOBMol(flig,'molf')
         elif ('.smi' in flig):
+            print('SMILES conversion')
             lig.OBMol = lig.getOBMol(flig,'smif')
         ### modified the check for length,
         ### as it parsing string length instead of

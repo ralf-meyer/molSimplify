@@ -470,7 +470,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 constr.AddAtomConstraint(catom+1) # indexing babel
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
-        print('ff is '+ str(ff))        
+        #print('ff is '+ str(ff))        
         if not ff.lower() == "uff":
             bridgingatoms = []
             # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
@@ -487,7 +487,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 for i in range(len(mol.getBondedAtoms(m))):
                     if OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1) is not None and mol.getBondedAtoms(m)[i] not in bridgingatoms:
                         OBMol.DeleteBond(OBMol.GetBond(m+1,mol.getBondedAtoms(m)[i]+1))
-                        print('FFopt deleting bond')
+                        #print('FFopt deleting bond')
                         deleted_bonds += 1
                 print('FFopt deleted ' +str(deleted_bonds) + ' bonds')
                 # then add back one metal-ligand bond for FF
