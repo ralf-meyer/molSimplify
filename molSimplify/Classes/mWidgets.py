@@ -4,11 +4,13 @@
 #  Written by Tim Ioannidis for HJK Group
 #
 #  Dpt of Chemical Engineering, MIT
-
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtSvg import *
+try:
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtSvg import *
+except:
+    pass
 from molSimplify.Classes.globalvars import *
 from molSimplify.Scripts.io import *
 import os, imghdr, struct
