@@ -8,7 +8,10 @@
 from geometry import *
 from io import *
 from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.mWidgets import *
+try:
+    from molSimplify.Classes.mWidgets import *
+except:
+    pass
 import os, sys, subprocess, re, unicodedata
 import openbabel, random, shutil
 from pkg_resources import resource_filename, Requirement
