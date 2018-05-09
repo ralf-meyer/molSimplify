@@ -84,6 +84,7 @@ class mol3D:
         self.graph = []
         self.xyzfile = 'undef'
         self.updated = False
+        self.needsconformer = False
 
     ## Add atom to molecule
     #
