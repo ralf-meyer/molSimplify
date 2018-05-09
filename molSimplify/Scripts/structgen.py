@@ -294,7 +294,6 @@ def init_ligand(args,lig,tcats,keepHs,i):
             lig.cat = [lig.natoms]
         else:
             lig.cat = tcats[i]
-
     # change name
     lig3D = mol3D()
     lig3D.copymol3D(lig)
@@ -313,6 +312,7 @@ def init_ligand(args,lig,tcats,keepHs,i):
     if args.ff and 'b' in args.ffoption and not rempi:
         if 'b' in lig.ffopt.lower():
             print 'FF optimizing ligand'
+            lig3D.convert2mol3D()
             lig3D,enl = ffopt(args.ff,lig3D,lig3D.cat,0,[],False,[],100,args.debug)
     # skip hydrogen removal for pi-coordinating ligands
     if not rempi:
@@ -344,17 +344,19 @@ def init_ligand(args,lig,tcats,keepHs,i):
     # Conformer search for multidentate SMILES ligands
     lig3D.convert2OBMol()
     
+    if lig.needsconformer:
+        tcats[i] = True
+        print('getting conformers for ' + str(lig.ident))
 
-    
     if len(lig.cat) > 1 and tcats[i]:
+        print('generating conformations')
         # loop  over conformation gen until success or break 
         breaker = False
         count = 0
         while (not breaker) and count <= 5:
             try:
                 lig3D = GetConf(lig3D,lig.cat)    # check if ligand should decorated
-                breaker = True
-            
+                breaker = True            
             except:
                 count += 1
                 print('lig conformer input failed ' + str(count)  + ' times, trying again...')
@@ -439,8 +441,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s' # force fields
     if ff.lower() not in ffav:
         print 'Requested force field not available. Defaulting to MMFF94'
-        ff = 'mmff94'
-
+        ff = 'uff'
     # perform constrained ff optimization if requested after #
     if (constopt > 0):
         # get metal
@@ -1114,6 +1115,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
             objopt = obj
             lig3Dopt = mol3D()
             lig3Dopt.copymol3D(lig3D_tmp)
+
     lig3D = mol3D()
     lig3D.copymol3D(lig3Dopt)
     tmp3D = mol3D()
@@ -1125,6 +1127,7 @@ def align_dent2_catom2_coarse(args,lig3D,core3D,catoms,r1,r0,m3D,batoms,corerefc
     #lig3D = rotate_around_axis(lig3D,r1,urot,theta)
     #lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
     # select best
+
     try:
         rm0,rm1 = lig3D.centermass(),lig3Db.centermass()
         theta,ul0 = rotation_params(rm0,r0l,r1l)
@@ -1907,8 +1910,13 @@ def structgen(args,rootdir,ligands,ligoc,globs,sernum):
 
     strfiles = []
 
-    if args.smicat:
+    #for ligs in ligands:
+        #print(ligs)
+        #sad
+
+    if args.smicat: #or True:
         if sum([len(i)>1 for i in args.smicat]) > 0:
+        #if True:
             print('You have specified multidentate SMILES ligand(s).')
             print('We will automatically find suitable conformer(s) for coordination.')
             for n in range(1,int(args.nconfs)+1):

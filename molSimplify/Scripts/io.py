@@ -426,6 +426,7 @@ def substr_load(usersubstrate,subcores=None):
 #  @param licores Ligands dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
 #  @return mol3D of ligand, error messages
 def lig_load(userligand,licores=None):
+    
     if licores == None:
         licores = getlicores()
         #@licores.pop("x", None)
@@ -445,6 +446,7 @@ def lig_load(userligand,licores=None):
         userligand = userligand.replace('~',homedir)
     emsg = False
     lig = mol3D() # initialize ligand molecule
+    lig.needsconformer = False
     ### check if ligand exists in dictionary
     if userligand in licores.keys():
         print('loading ligand from dictionary: ' +str(userligand))
@@ -455,7 +457,7 @@ def lig_load(userligand,licores=None):
         else:
             flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/" +dbentry[0])
         # check if ligand xyz/mol file exists
-        print('looking for '+flig)
+        #print('looking for '+flig)
         if not glob.glob(flig):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
             print emsg
@@ -467,7 +469,7 @@ def lig_load(userligand,licores=None):
         elif ('.smi' in flig):
             print('SMILES conversion')
             lig.OBMol = lig.getOBMol(flig,'smif')
-            lig.ident = 'smi'
+            lig.needsconformer = True
 
         ### modified the check for length,
         ### as it parsing string length instead of
@@ -530,6 +532,7 @@ def lig_load(userligand,licores=None):
             print emsg
             return False,emsg
         lig.ident = 'smi'
+        lig.needsconformer = True
     lig.name = userligand
     return lig,emsg
 

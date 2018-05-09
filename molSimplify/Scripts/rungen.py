@@ -255,7 +255,7 @@ def checkmultilig(ligs):
     tcats = []
     multidx = -1
     # loop over ligands
-    print(ligs)
+
     for i,lig in enumerate(ligs):
         connatoms = []
         if '.smi' in lig:
@@ -294,8 +294,7 @@ def checkmultilig(ligs):
             for l1 in l0:
                 loclist.append(l1)
             llist.append(loclist)
-    print(llist)
-    print(tcats)
+
     return llist,tcats,multidx
 
 ## Draw mode supervisor

@@ -294,11 +294,11 @@ def GetConf(mol,catoms=[]):
     x = np.reshape(X,3*natoms)
     res1 = optimize.fmin_cg(DistErr,x,fprime=DistErrGrad,gtol=0.1,args=(LB,UB,natoms),disp=0)
     Opt = time.time()
-    print('Optimize',str(Opt-start))
+    #print('Optimize',str(Opt-start))
     X = np.reshape(res1,(natoms,3))
     conf3D = SaveConf(X,mol,True,catoms)
     ff = time.time()
-    print('FF',str(ff-Opt))
+    #print('FF',str(ff-Opt))
     return conf3D
 
 # for testing

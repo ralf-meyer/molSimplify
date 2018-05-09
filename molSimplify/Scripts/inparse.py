@@ -845,7 +845,7 @@ def parseinputs_advanced(*p):
     #parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
     parser.add_argument("-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument("-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default=True)
-    parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='mmff94')
+    parser.add_argument("-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical",default='uff')
     parser.add_argument("-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
     parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
     parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default=False)

@@ -79,10 +79,14 @@ def addtoldb(smimol,sminame,smident,smicat,smigrps,smictg,ffopt):
         elif '.xyz' in smimol:
             shutil.copy2(smimol,ligands_folder + sminame+'.xyz')
             snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
-#        elif lig.OBMol: 
-#            # write smiles file in Ligands directory
-#            lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
-#            snew = sminame+':'+sminame+'.smi,'+shortname+','+css+','+grp+','+ffopt
+        elif lig.OBMol: 
+            # write smiles file in Ligands directory
+            obConversion = openbabel.OBConversion()
+            obConversion.SetOutFormat("smi")
+            red = obConversion.Read(lig.OBMol)
+            obConversion.WriteFile(lig.OBMol,ligands_folder + sminame+'.smi')
+            #lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
+            snew = sminame+':'+sminame+'.smi,'+shortname+','+css+','+grp+','+ffopt
         else:
             # write xyz file in Ligands directory
             lig.writexyz(ligands_folder+sminame+'.xyz') # write xyz file
