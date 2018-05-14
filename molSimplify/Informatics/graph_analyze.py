@@ -47,6 +47,39 @@ def obtain_truncation(mol, con_atoms, hops):
             active_set = new_active_set
     return trunc_mol
 
+def obtain_truncation_metal(mol, hops):
+    ## this function truncates a ligand to a certain number of
+    ## hops from the core
+    # Inputs:
+    #       mol - mol3D class to truncate
+    #       con_atoms - index of atoms that connect to metal
+    #       hops - int, number of hops to truncate
+    trunc_mol = mol3D()
+    metal_ind = mol.findMetal()[0]
+    trunc_mol.addAtom(mol.getAtom(metal_ind))
+    added_list = list()
+    added_list.append(metal_ind)
+    hopped = 0
+    active_set = [metal_ind]
+    while hopped < hops:
+        hopped += 1
+        new_active_set = list()
+        for this_atom in active_set:
+            ## add all connection atoms
+            if this_atom not in added_list:
+                trunc_mol.addAtom(mol.getAtom(this_atom))
+                added_list.append(this_atom)
+            ## prepare all atoms attached to this connection
+            this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom)
+            for bound_atoms in this_atoms_neighbors:
+                if (bound_atoms not in added_list):
+                    trunc_mol.addAtom(mol.getAtom(bound_atoms))
+                    added_list.append(bound_atoms)
+                [new_active_set.append(element) for element in this_atoms_neighbors]
+        active_set = new_active_set
+    return trunc_mol
+
+
 
 def create_graph(mol):
     ## create connectivity matrix from mol3D information

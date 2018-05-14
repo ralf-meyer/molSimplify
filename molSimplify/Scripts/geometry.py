@@ -12,6 +12,7 @@ import copy
 from numpy import arccos, cross, dot, pi, transpose
 from numpy import sin, cos, mat, array, arctan2
 from numpy.linalg import det, svd
+import numpy as np
 from math import pi ,sin, cos, sqrt
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
@@ -100,7 +101,8 @@ def checkplanar(R1,R2,R3,R4):
 #  @return Angle between vectors in degrees
 def vecangle(r1,r2):
     if(norm(r2)*norm(r1) > 1e-16):
-        theta = 180*arccos(dot(r2,r1)/(norm(r2)*norm(r1)))/pi
+        inner_prod = np.round(dot(r2,r1)/(norm(r2)*norm(r1)), 10)
+        theta = 180*arccos(inner_prod)/pi
     else:
         theta = 0.0
     return theta

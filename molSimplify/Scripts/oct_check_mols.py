@@ -5,7 +5,7 @@ from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
 from molSimplify.Scripts.geometry import vecangle, distance
 import openbabel
-from molSimplify.Informatics.graph_analyze import obtain_truncation
+from molSimplify.Informatics.graph_analyze import obtain_truncation, obtain_truncation_metal
 from molSimplify.Classes.atom3D import *
 
 # from openpyxl import load_workbook
@@ -24,13 +24,13 @@ dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.6,
                         'num_coord_metal': 6, 'oct_angle_devi_max': 15,
                         'dist_del_eq': 0.45, 'max_del_sig_angle': 27,
                         'dist_del_all': 1.2,
-                        'devi_linear_avrg': 15, 'devi_linear_max': 28}
+                        'devi_linear_avrg': 35, 'devi_linear_max': 40}
 
 dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.45,
                      'num_coord_metal': 6, 'oct_angle_devi_max': 12,
                      'dist_del_eq': 0.35, 'dist_del_all': 1,
                      'max_del_sig_angle': 22.5,
-                     'devi_linear_avrg': 10, 'devi_linear_max': 20}  # default cutoff
+                     'devi_linear_avrg': 20, 'devi_linear_max': 28}  # default cutoff
 
 dict_oneempty_check_st = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
                           'num_coord_metal': 5, 'oct_angle_devi_max': 15,
@@ -110,30 +110,6 @@ def comp_two_angle_array(input_angle, target_angle):
         output_angle.append(del_arr[0][2])
     max_del_angle = max(del_act)
     sum_del = sum(del_act) / len(target_angle)
-    #### older version
-    # del_arr = []
-    # for idx, ele in enumerate(input_angle[1]):
-    #     del_abs = []
-    #     # print('ele:', ele)
-    #     _t =
-    #     for _ele in target_angle:
-    #         del_abs.append(abs(ele - _ele))
-    #         # catoms.append(ele[0])
-    #     min_del = min(del_abs)
-    #     del_arr.append([min_del, idx])
-    # del_arr.sort()
-    # sum_del = 0
-    # output_angle = []
-    # max_del_angle = 0
-    # for idx in range(len(target_angle)):
-    #     posi = del_arr[idx][1]
-    #     # print('posi:', posi)
-    #     sum_del += del_arr[idx][0]
-    #     if del_arr[idx][0] > max_del_angle:
-    #         max_del_angle = del_arr[idx][0]
-    #     output_angle.append(input_angle[1][posi])
-    # output_angle.sort()
-    # sum_del = sum_del / len(target_angle)
     return output_angle, sum_del, max_del_angle
 
 
@@ -246,7 +222,7 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
             with open(initmol_xyz, 'r') as fo:
                 foo = []
                 for ii, line in enumerate(fo):
-                    if (ii - posi_shift) in lig:
+                    if (ii - posi_shift) in lig_init:
                         if debug:
                             print('line is', line)
                         foo.append(line)
@@ -261,14 +237,6 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
             if flag_deleteH:
                 tmp_mol.deleteHs()
                 tmp_org_mol.deleteHs()
-            # ---openbabel alignment
-            # tmp_org_mol.convert2OBMol()
-            # tmp_mol.convert2OBMol()
-            # OBAlign = openbabel.OBAlign(tmp_org_mol.OBMol,tmp_mol.OBMol)
-            # alignstatus = OBAlign.Align()
-            # print('did align succeed ' + str(alignstatus))
-            # rmsd = OBAlign.GetRMSD()
-            # print('RMSD is ' + str(rmsd))
             mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
             rmsd = tmp_mol.rmsd(tmp_org_mol)
             rmsd_arr.append(rmsd)
@@ -295,14 +263,14 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
     my_mol = create_mol_with_xyz(_file_in=file_in)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
     if flag_lbd:  ## Also do ligand breakdown for opt geo
-        my_mol_trunc = obtain_truncation(my_mol, catoms_arr, depth)
-        init_mol_trunc = obtain_truncation(init_mol, catoms_arr, depth)
+        my_mol_trunc = obtain_truncation_metal(my_mol, depth)
+        init_mol_trunc = obtain_truncation_metal(init_mol, depth)
         my_mol_trunc.createMolecularGraph()
         init_mol_trunc.createMolecularGraph()
         init_mol_trunc.writexyz('init_trunc_tmp.xyz')
         my_mol_trunc.writexyz('mymol_trunc_tmp.xyz')
         liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol_trunc)
-        liglist, ligdents, ligcons = ligand_breakdown(my_mol_trunc, flag_loose)
+        liglist, ligdents, ligcons = ligand_breakdown(my_mol_trunc)
         liglist_atom = [[my_mol_trunc.getAtom(x).symbol() for x in ele]
                         for ele in liglist]
         liglist_init_atom = [[init_mol_trunc.getAtom(x).symbol() for x in ele]
@@ -310,6 +278,7 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
         if debug:
             print('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()])
             print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
+            # print('liglist, ligdents, ligcons', liglist, ligdents, ligcons)
     else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
         # _start = time.clock()
         if debug:
@@ -330,14 +299,27 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
         print('ligand_list init in symbols: ', liglist_init_atom)
     liglist_shifted = []
     for ele in liglist_init_atom:
+        # posi = liglist_atom.index(ele)
+        # liglist_shifted.append(liglist[posi])
+        # liglist_atom.pop(posi)
         try:
-            posi = liglist_atom.index(ele)
+            _flag = False
+            for idx, _ele in enumerate(liglist_atom):
+                if set(ele) == set(_ele) and len(ele) == len(_ele):
+                    if debug:
+                        print('fragment in liglist_init', ele)
+                        print('fragment in liglist', _ele)
+                    posi = idx
+                    _flag = True
             liglist_shifted.append(liglist[posi])
             liglist_atom.pop(posi)
             liglist.pop(posi)
-        except ValueError:
-            if debug:
-                print('Ligands cannot match!')
+            if not _flag:
+                if debug:
+                    print('Ligands cannot match!')
+                flag_match = False
+        except:
+            print('Ligands cannot match!')
             flag_match = False
     if debug:
         print('!!!!!returns', liglist_shifted, liglist_init)
