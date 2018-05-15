@@ -3,7 +3,7 @@ import glob, os, time, re, sys
 import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
-from molSimplify.Scripts.geometry import vecangle, distance
+from molSimplify.Scripts.geometry import vecangle, distance, kabsch
 from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \

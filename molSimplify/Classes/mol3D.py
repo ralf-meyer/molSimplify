@@ -104,6 +104,10 @@ class mol3D:
         self.my_mol_trunc = False
         self.flag_oct = -1
         self.flag_list = list()
+        self.dict_lig_distort = dict()
+        self.dict_catoms_shape = dict()
+        self.dict_orientation = dict()
+        self.dict_angle_linear = dict()
 
     ## Add atom to molecule
     #
@@ -1483,10 +1487,19 @@ class mol3D:
                 ss += method + '\n'
         return ss
 
+    ## Initialize the geometry check dictionary according to the dict_oct_check_st.
     def geo_dict_initialization(self):
         for key in self.dict_oct_check_st:
             self.geo_dict[key] = -1
+        self.dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
+        self.dict_catoms_shape = {'oct_angle_devi_max': -1,
+                             'max_del_sig_angle': -1,
+                             'dist_del_eq': -1,
+                             'dist_del_all': -1}
+        self.dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
 
+    ## Get the coordination number of the metal from getBondedOct, a distance check.
+    ## num_coord_metal and the list of indexs of the connecting atoms are stored in mol3D
     def get_num_coord_metal(self, debug):
         metal_ind = self.findMetal()[0]
         metal_coord = self.getAtomCoords(metal_ind)
@@ -1497,6 +1510,10 @@ class mol3D:
         self.num_coord_metal = len(catoms)
         self.catoms = catoms
 
+    ## Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
+    ## Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
+    ## catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
+    ## Output: shape_check dictionary
     def oct_comp(self, angle_ref=oct_angle_ref, catoms_arr=None,
                  debug=False):
         from molSimplify.Scripts.oct_check_mols import loop_target_angle_arr
@@ -1521,7 +1538,10 @@ class mol3D:
                     theta = vecangle(delr1, delr2)
                     theta_tmp.append(theta)
             th_input_arr.append([self.catoms[idx1], theta_tmp])
+        ## This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
+        ## When we have the customized catoms_arr, it will not change anything.
         th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
+        self.catoms = catoms_arr
         if debug:
             print('th:', th_output_arr)
             print('sum_del:', sum_del_angle)
@@ -1570,11 +1590,21 @@ class mol3D:
         dict_catoms_shape['max_del_sig_angle'] = max_del_sig_angle
         dict_catoms_shape['dist_del_eq'] = oct_dist_del[0]
         dict_catoms_shape['dist_del_all'] = oct_dist_del[3]
+        self.dict_catoms_shape = dict_catoms_shape
         return dict_catoms_shape, catoms_arr
 
+    ## Match the ligands of mol and init_mol by calling ligand_breakdown
+    ## Input: init_mol: a mol3D object of the initial geometry
+    ##        flag_loose and BondedOct: default as False. Only used in Oct_inspection, not in geo_check.
+    ##        flag_lbd: Whether to apply ligand_breakdown for the optimized geometry. If False, we assume the
+    ##                  indexing of the initial and optimized xyz file is the same.
+    ##        depth: The bond depth in obtaining the truncated mol.
+    ## Output: liglist_shifted, liglist_init: list of list for each ligands, with one-to-one correspandance between
+    ##         initial and optimized mol.
+    ##         flag_match: A flag about whether the ligands of initial and optimized mol are exactly the same.
     def match_lig_list(self, init_mol,
-                       flag_loose, flag_lbd=True, debug=False,
-                       depth=3, BondedOct=False):
+                       flag_loose=False, BondedOct=False,
+                       flag_lbd=True, debug=False, depth=3):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         flag_match = True
         if flag_lbd:  ## Also do ligand breakdown for opt geo
@@ -1631,15 +1661,24 @@ class mol3D:
             print('!!!!!returns', liglist_shifted, liglist_init)
         return liglist_shifted, liglist_init, flag_match
 
+    ## Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
+    ## Input: init_mol: a mol3D object of the initial geometry
+    ##        flag_loose and BondedOct: default as False. Only used in Oct_inspection, not in geo_check.
+    ##        flag_deleteH: whether to delete the hydrogen atoms in ligands comparison.
+    ##        flag_lbd: Whether to apply ligand_breakdown for the optimized geometry. If False, we assume the
+    ##                  indexing of the initial and optimized xyz file is the same.
+    ##        depth: The bond depth in obtaining the truncated mol.
+    ## Output: dict_lig_distort: rmsd_max and atom_dist_max
     def ligand_comp_org(self, init_mol, catoms_arr=None,
                         flag_deleteH=True, flag_loose=False,
                         flag_lbd=True, debug=False, depth=3,
                         BondedOct=False):
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         liglist, liglist_init, flag_match = self.match_lig_list(init_mol,
-                                                                flag_loose, flag_lbd,
-                                                                debug=debug, depth=depth,
-                                                                BondedOct=BondedOct)
+                                                                flag_loose=flag_loose,
+                                                                BondedOct=BondedOct,
+                                                                flag_lbd=flag_lbd,
+                                                                debug=debug, depth=depth)
         if debug:
             print('lig_list:', liglist, len(liglist))
             print('lig_list_init:', liglist_init, len(liglist_init))
@@ -1692,12 +1731,15 @@ class mol3D:
         else:
             rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
         dict_lig_distort = {'rmsd_max': rmsd_max, 'atom_dist_max': atom_dist_max}
+        self.dict_lig_distort = dict_lig_distort
         return dict_lig_distort
 
     def find_the_other_ind(self, arr, ind):
         arr.pop(arr.index(ind))
         return arr[0]
 
+    ## To check whether a ligand is linear:
+    ## The input ind should be one of the connecting atoms for the metal.
     def is_linear_ligand(self, ind):
         catoms = self.getBondedAtomsSmart(ind)
         metal_ind = self.findMetal()[0]
@@ -1727,6 +1769,10 @@ class mol3D:
             ang = 0
         return flag, ang
 
+    ## Get the ligand orientation for those are linear.
+    ## Output: dict_angle_linear. For each ligand, whether they are linear or not and if it is, what the deviation from
+    ##         180 degree is.
+    ##         dict_orientation: devi_linear_avrg and devi_linear_max
     def check_angle_linear(self, catoms_arr=None):
         dict_angle_linear = {}
         if not catoms_arr == None:
@@ -1752,10 +1798,21 @@ class mol3D:
             devi_linear_avrg = 0
         dict_orientation['devi_linear_avrg'] = devi_linear_avrg
         dict_orientation['devi_linear_max'] = devi_linear_max
+        self.dict_angle_linear = dict_angle_linear
+        self.dict_orientation = dict_orientation
         return dict_angle_linear, dict_orientation
 
+    ## Process the self.geo_dict to get the flag_oct and flag_list, setting dict_check as the cutoffs.
+    ## Input: dict_check. The cutoffs of each geo_check metrics we have. A dictionary.
+    ##        num_coord: Expected coordination number.
+    ## Output: flag_oct: good (1) or bad (0) structure.
+    ##         flag_list: metrics that are failed from being a good geometry.
     def dict_check_processing(self, dict_check,
                               num_coord=6, debug=False):
+        self.geo_dict['num_coord_metal'] = self.num_coord_metal
+        self.geo_dict.update(self.dict_lig_distort)
+        self.geo_dict.update(self.dict_catoms_shape)
+        self.geo_dict.update(self.dict_orientation)
         if debug:
             print('dict_oct_info', self.geo_dict)
         for ele in self.std_not_use:
@@ -1779,8 +1836,40 @@ class mol3D:
             flag_list = ', '.join(flag_list)
             print('------bad structure!-----')
             print('flag_list:', flag_list)
+        self.flag_oct = flag_oct
+        self.flag_list = flag_list
         return flag_oct, flag_list, self.geo_dict
 
+    ## Print the geo_dict after the check.
+    def print_geo_dict(self):
+        print('========Geo_check_results========')
+        print('--------coordination_check-----')
+        print('num_coord_metal:', self.num_coord_metal)
+        print('catoms_arr:', self.catoms)
+        print('-------catoms_shape_check-----')
+        _dict = self.dict_catoms_shape
+        self.print_dict(_dict)
+        print('-------individual_ligand_distortion_check----')
+        _dict = self.dict_lig_distort
+        self.print_dict(_dict)
+        print('-------linear_ligand_orientation_check-----')
+        _dict = self.dict_orientation
+        self.print_dict(_dict)
+        print('=======End of printing geo_check_results========')
+
+    def print_dict(self, _dict):
+        for key, value in _dict.items():
+            print('%s: '%key, value)
+
+    ## Final geometry check call for octahedral structures.
+    ## Input: init_mol. mol3D object for the inital geometry.
+    ##        dict_check, The cutoffs of each geo_check metrics we have. A dictionary.
+    ##        angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
+    ##        flag_catoms: whether or not to return the catoms arr. Default as False. True for the Oct_inspection
+    ##        catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
+    ## Output: flag_oct: good (1) or bad (0) structure.
+    ##         flag_list: metrics that are failed from being a good geometry.
+    ##         dict_oct_info: self.geo_dict
     def IsOct(self, init_mol=None, dict_check=dict_oct_check_st,
               angle_ref=oct_angle_ref, flag_catoms=False,
               catoms_arr=None, debug=False):
@@ -1790,12 +1879,7 @@ class mol3D:
         if not catoms_arr == None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
-        dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
-        dict_catoms_shape = {'oct_angle_devi_max': -1,
-                             'max_del_sig_angle': -1,
-                             'dist_del_eq': -1,
-                             'dist_del_all': -1}
-        dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
+        self.geo_dict_initialization()
         if self.num_coord_metal >= 6:
             # if not rmsd_max == 'lig_mismatch':
             if True:
@@ -1806,36 +1890,23 @@ class mol3D:
                 dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
             dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
-                print('-------This is for the linear ligand orientation test-----')
-                print('!!!catoms_arr:', catoms_arr)
-                print('!!!dict_angle_linear', dict_angle_linear)
-                print('!!!dict_orientation', dict_orientation)
-                print('---------orientation end.------------')
-        self.geo_dict_initialization()
-        self.geo_dict['num_coord_metal'] = self.num_coord_metal
-        self.geo_dict.update(dict_lig_distort)
-        self.geo_dict.update(dict_catoms_shape)
-        self.geo_dict.update(dict_orientation)
+                self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
                                                                         num_coord=6,
                                                                         debug=debug)
-        self.flag_oct = flag_oct
-        self.flag_list = flag_list
         if not flag_catoms:
             return flag_oct, flag_list, dict_oct_info
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
+    ## Final geometry check call for customerized structures. Once we have the custumed dict_check and angle_ref.
+    ## Currently support one-site-empty octahedral.
+    ## Inputs and outputs are the same as IsOct.
     def IsStructure(self, init_mol=None, dict_check=dict_oneempty_check_st,
                     angle_ref=oneempty_angle_ref, num_coord=5,
                     flag_catoms=False, debug=False):
         self.get_num_coord_metal(debug=debug)
-        dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
-        dict_catoms_shape = {'oct_angle_devi_max': -1,
-                             'max_del_sig_angle': -1,
-                             'dist_del_eq': -1,
-                             'dist_del_all': -1}
-        dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
+        self.geo_dict_initialization()
         if self.num_coord_metal >= num_coord:
             if True:
                 self.num_coord_metal = num_coord
@@ -1845,26 +1916,17 @@ class mol3D:
                 dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
             dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
-                print('-------This is for the linear ligand orientation test-----')
-                print('!!!catoms_arr:', catoms_arr)
-                print('!!!dict_angle_linear', dict_angle_linear)
-                print('!!!dict_orientation', dict_orientation)
-                print('---------orientation end.------------')
-        self.geo_dict_initialization()
-        self.geo_dict['num_coord_metal'] = self.num_coord_metal
-        self.geo_dict.update(dict_lig_distort)
-        self.geo_dict.update(dict_catoms_shape)
-        self.geo_dict.update(dict_orientation)
+                self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
                                                                         num_coord=num_coord,
                                                                         debug=debug)
-        self.flag_oct = flag_oct
-        self.flag_list = flag_list
         if not flag_catoms:
             return flag_oct, flag_list, dict_oct_info
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
+    ## Used to track down the changing geo_check metrics in a DFT geometry optimization.
+    ## With the catoms_arr always specified.
     def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=dict_oct_check_st,
                        std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True, flag_lbd=False,
                        dict_check_loose=dict_oct_check_loose, BondedOct=True, debug=False):
@@ -1875,12 +1937,7 @@ class mol3D:
             print('Error, must have 6 connecting atoms for octahedral.')
             quit()
         self.num_coord_metal = 6
-        dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
-        dict_catoms_shape = {'oct_angle_devi_max': -1,
-                             'max_del_sig_angle': -1,
-                             'dist_del_eq': -1,
-                             'dist_del_all': -1}
-        dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
+        self.geo_dict_initialization()
         if not init_mol == None:
             dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                     flag_loose=flag_loose,
@@ -1897,16 +1954,7 @@ class mol3D:
             quit()
         dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
         if debug:
-            print('-------This is for the linear ligand orientation test-----')
-            print('!!!catoms_arr:', catoms_arr)
-            print('!!!dict_angle_linear', dict_angle_linear)
-            print('!!!dict_orientation', dict_orientation)
-            print('---------orientation end.------------')
-        self.geo_dict_initialization()
-        self.geo_dict['num_coord_metal'] = self.num_coord_metal
-        self.geo_dict.update(dict_lig_distort)
-        self.geo_dict.update(dict_catoms_shape)
-        self.geo_dict.update(dict_orientation)
+            self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
                                                                         num_coord=6, debug=debug)
         flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
