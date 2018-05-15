@@ -4,9 +4,11 @@ import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
 from molSimplify.Scripts.geometry import vecangle, distance
-import openbabel
-from molSimplify.Informatics.graph_analyze import obtain_truncation, obtain_truncation_metal
+from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
 from molSimplify.Classes.atom3D import *
+from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
+    dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
+
 
 # from openpyxl import load_workbook
 # from openpyxl import Workbook
@@ -16,39 +18,6 @@ from molSimplify.Classes.atom3D import *
 ### Written by Chenru Duan
 ### upload: 3/7/2018
 ### update: 4/5/2018
-
-
-### Need more tests for the cutoffs just added for the linear ligands oreintation:
-### 1) 'devi_linear_avrg', 2) 'devi_linear_max'
-dict_oct_check_loose = {'rmsd_max': 0.4, 'atom_dist_max': 0.6,
-                        'num_coord_metal': 6, 'oct_angle_devi_max': 15,
-                        'dist_del_eq': 0.45, 'max_del_sig_angle': 27,
-                        'dist_del_all': 1.2,
-                        'devi_linear_avrg': 35, 'devi_linear_max': 40}
-
-dict_oct_check_st = {'rmsd_max': 0.3, 'atom_dist_max': 0.45,
-                     'num_coord_metal': 6, 'oct_angle_devi_max': 12,
-                     'dist_del_eq': 0.35, 'dist_del_all': 1,
-                     'max_del_sig_angle': 22.5,
-                     'devi_linear_avrg': 20, 'devi_linear_max': 28}  # default cutoff
-
-dict_oneempty_check_st = {'rmsd_max': 0.4, 'atom_dist_max': 0.7,
-                          'num_coord_metal': 5, 'oct_angle_devi_max': 15,
-                          'dist_del_eq': 0.5, 'max_del_sig_angle': 18,
-                          'dist_del_all': 1,
-                          'devi_linear_avrg': 10, 'devi_linear_max': 20}
-
-dict_oneempty_check_loose = {'rmsd_max': 0.6, 'atom_dist_max': 0.9,
-                             'num_coord_metal': 5, 'oct_angle_devi_max': 20,
-                             'dist_del_eq': 0.6, 'max_del_sig_angle': 27,
-                             'dist_del_all': 1.2,
-                             'devi_linear_avrg': 15, 'devi_linear_max': 28}
-
-dict_staus = {'good': 1, 'bad': 0}
-
-oct_angle_ref = [[90, 90, 90, 90, 180] for x in range(6)]
-oneempty_angle_ref = [[90, 90, 90, 90], [180, 90, 90, 90], [180, 90, 90, 90],
-                      [180, 90, 90, 90], [180, 90, 90, 90]]
 
 
 ## input: a xyz file
@@ -329,6 +298,7 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
 def find_the_other_ind(arr, ind):
     arr.pop(arr.index(ind))
     return arr[0]
+
 
 ## The linear ligand here ius defined as:
 ## 1) ligands that contains only two atoms. For example CO

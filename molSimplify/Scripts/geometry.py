@@ -14,8 +14,8 @@ from numpy import sin, cos, mat, array, arctan2
 from numpy.linalg import det, svd
 import numpy as np
 from math import pi ,sin, cos, sqrt
-from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.atom3D import atom3D
+# from molSimplify.Classes.mol3D import mol3D
+# from molSimplify.Classes.atom3D import atom3D
 
 ## Euclidean norm
 #  @param u Vector

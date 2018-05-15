@@ -13,6 +13,10 @@ import openbabel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile, re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
+from molSimplify.Scripts.geometry import vecangle, distance, kabsch
+from molSimplify.Classes.ligand import ligand_breakdown
+from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
+    dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
 
 try:
     import PyQt5
@@ -85,6 +89,21 @@ class mol3D:
         self.xyzfile = 'undef'
         self.updated = False
         self.needsconformer = False
+
+        # ---geo_check------
+        self.dict_oct_check_loose = dict_oct_check_loose
+        self.dict_oct_check_st = dict_oct_check_st
+        self.dict_oneempty_check_loose = dict_oneempty_check_loose
+        self.dict_oneempty_check_st = dict_oneempty_check_st
+        self.geo_dict = dict()
+        self.std_not_use = list()
+
+        self.num_coord_metal = -1
+        self.catoms = list()
+        self.init_mol_trunc = False
+        self.my_mol_trunc = False
+        self.flag_oct = -1
+        self.flag_list = list()
 
     ## Add atom to molecule
     #
@@ -219,30 +238,29 @@ class mol3D:
     #  @param self The object pointer
     #  @param force_clean bool force no bond info retention 
     #  @param ignoreX bool skip "X" atoms in mol3D conversion 
-    def convert2OBMol(self, force_clean=False,ignoreX=False):
+    def convert2OBMol(self, force_clean=False, ignoreX=False):
 
         # get BO matrix if exits:
         repop = False
 
-        if not (self.OBMol== False) and not force_clean:
+        if not (self.OBMol == False) and not force_clean:
             BO_mat = self.populateBOMatrix()
 
             repop = True
             # write temp xyz
-        fd, tempf = tempfile.mkstemp(suffix=".xyz")       
+        fd, tempf = tempfile.mkstemp(suffix=".xyz")
         os.close(fd)
-        #self.writexyz('tempr.xyz', symbsonly=True)
-        self.writexyz(tempf, symbsonly=True,ignoreX=ignoreX)
+        # self.writexyz('tempr.xyz', symbsonly=True)
+        self.writexyz(tempf, symbsonly=True, ignoreX=ignoreX)
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInFormat("xyz")
-        
+
         OBMol = openbabel.OBMol()
         obConversion.ReadFile(OBMol, tempf)
-        
+
         self.OBMol = []
         self.OBMol = OBMol
-        
 
         os.remove(tempf)
 
@@ -252,7 +270,7 @@ class mol3D:
                 for j in range(0, self.natoms):
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
-        
+
     ## Combines two molecules
     #
     #  Each atom in the second molecule is appended to the first while preserving orders.
@@ -270,13 +288,13 @@ class mol3D:
     #    cmol.graph = []
     #    return cmol
 
-    def combine(self, mol, bond_to_add=[],dirty=False):
+    def combine(self, mol, bond_to_add=[], dirty=False):
         cmol = self
-        
+
         if not dirty:
             # BondSafe
-            cmol.convert2OBMol(force_clean=False,ignoreX=True)            
-            mol.convert2OBMol(force_clean=False,ignoreX=True)
+            cmol.convert2OBMol(force_clean=False, ignoreX=True)
+            mol.convert2OBMol(force_clean=False, ignoreX=True)
 
             n_one = cmol.natoms
             n_two = mol.natoms
@@ -638,13 +656,13 @@ class mol3D:
             distance_max = 1.15 * (atom.rad + ratom.rad)
             # distance_max = 1.25 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
-                dist_allowed = {"C":2.8,"H":2.0,"N":2.8,"P":3.0,"I":3.5,"O":2.8}
+                dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
                 if atom.symbol() in dist_allowed.keys():
-                    max_pos_distance  = dist_allowed[atom.symbol()]
+                    max_pos_distance = dist_allowed[atom.symbol()]
                 elif ratom.symbol() in dist_allowed.keys():
-                    max_pos_distance  = dist_allowed[ratom.symbol()]
+                    max_pos_distance = dist_allowed[ratom.symbol()]
                 else:
-                    max_pos_distance  = 2.9 
+                    max_pos_distance = 2.9
                 if debug:
                     print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
                 ## one the atoms is a metal!
@@ -738,7 +756,7 @@ class mol3D:
                         print('Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def update_graph_check(self, oct=True): ####!!!!Works only for octahedral and one-empty site!!!!
+    def update_graph_check(self, oct=True):  ####!!!!Works only for octahedral and one-empty site!!!!
         from molSimplify.Scripts.oct_check_mols import IsOct, IsStructure
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
@@ -981,7 +999,7 @@ class mol3D:
         return idx
 
     ## Initializes OBMol object from a file or SMILES string
-    
+
     #
     #  Uses the obConversion tool and for files containing 3D coordinates (xyz,mol) and the OBBuilder tool otherwise (smiles).
     #  @param self The object pointer    
@@ -1196,7 +1214,7 @@ class mol3D:
                 self.addAtom(atom)
 
     def readfromtxt(self, txt):
-    # print('!!!!', filename)
+        # print('!!!!', filename)
         globs = globalvars()
         en_dict = globs.endict()
         self.graph = []
@@ -1219,7 +1237,6 @@ class mol3D:
                     print('cannot find atom type')
                     sys.exit()
                 self.addAtom(atom)
-
 
     ## Computes RMSD between two molecules
     # 
@@ -1364,12 +1381,12 @@ class mol3D:
     #  To print to stdout instead, use printxyz().
     #  @param self The object pointer   
     #  @param filename Filename  
-    def writexyz(self, filename, symbsonly=False,ignoreX=False):
+    def writexyz(self, filename, symbsonly=False, ignoreX=False):
         ss = ''  # initialize returning string
         natoms = self.natoms
         if ignoreX:
             natoms -= sum([1 for i in self.atoms if i.sym == "X"])
-        
+
         ss += str(natoms) + "\n" + time.strftime(
             '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
         for atom in self.atoms:
@@ -1465,3 +1482,433 @@ class mol3D:
             if callable(getattr(self, method)):
                 ss += method + '\n'
         return ss
+
+    def geo_dict_initialization(self):
+        for key in self.dict_oct_check_st:
+            self.geo_dict[key] = -1
+
+    def get_num_coord_metal(self, debug):
+        metal_ind = self.findMetal()[0]
+        metal_coord = self.getAtomCoords(metal_ind)
+        catoms = self.getBondedAtomsOct(ind=metal_ind)
+        if debug:
+            print('metal coordinate:', metal_coord)
+            print('coordinations: ', catoms, len(catoms))
+        self.num_coord_metal = len(catoms)
+        self.catoms = catoms
+
+    def oct_comp(self, angle_ref=oct_angle_ref, catoms_arr=None,
+                 debug=False):
+        from molSimplify.Scripts.oct_check_mols import loop_target_angle_arr
+        metal_coord = self.getAtomCoords(self.findMetal()[0])
+        catom_coord = []
+        ## Note that use this only when you wanna specify the metal connecting atoms.
+        ## This will change the attributes of mol3D.
+        if not catoms_arr == None:
+            self.catoms = catoms_arr
+            self.num_coord_metal = len(catoms_arr)
+        theta_arr, oct_dist = [], []
+        for atom in self.catoms:
+            coord = self.getAtomCoords(atom)
+            catom_coord.append(coord)
+        th_input_arr = []
+        for idx1, coord1 in enumerate(catom_coord):
+            delr1 = (np.array(coord1) - np.array(metal_coord)).tolist()
+            theta_tmp = []
+            for idx2, coord2 in enumerate(catom_coord):
+                if idx2 != idx1:
+                    delr2 = (np.array(coord2) - np.array(metal_coord)).tolist()
+                    theta = vecangle(delr1, delr2)
+                    theta_tmp.append(theta)
+            th_input_arr.append([self.catoms[idx1], theta_tmp])
+        th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
+        if debug:
+            print('th:', th_output_arr)
+            print('sum_del:', sum_del_angle)
+            print('catoms_arr:', catoms_arr)
+            print('catoms_type:', [self.getAtom(x).symbol() for x in catoms_arr])
+        for idx, ele in enumerate(th_output_arr):
+            theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
+        theta_trunc_arr = theta_arr
+        theta_trunc_arr_T = list(map(list, zip(*theta_trunc_arr)))
+        oct_catoms = theta_trunc_arr_T[0]
+        oct_angle_devi = theta_trunc_arr_T[1]
+        oct_angle_all = theta_trunc_arr_T[2]
+        if debug:
+            print('Summation of deviation angle for catoms:', oct_angle_devi)
+            print('Angle for catoms:', oct_angle_all)
+        for atom in oct_catoms:
+            coord = catom_coord[self.catoms.index(atom)]
+            dist = distance(coord, metal_coord)
+            oct_dist.append(dist)
+        oct_dist.sort()
+        try:  ### For Oct
+            dist_del_arr = np.array([oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
+            min_posi = np.argmin(dist_del_arr)
+            if min_posi == 0:
+                dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
+            elif min_posi == 1:
+                dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
+            else:
+                dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
+        except IndexError:  ## For one empty site
+            if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
+                dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]  # ax dist is smaller
+            else:
+                dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
+        dist_del_all = oct_dist[-1] - oct_dist[0]
+        if debug:
+            print('dist:', dist_eq, dist_ax)
+        dist_del_eq = max(dist_eq) - min(dist_eq)
+        dist_del_ax = max(dist_ax) - min(dist_ax)
+        dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
+        oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax, dist_del_all]
+        if debug:
+            print('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del)
+        dict_catoms_shape = dict()
+        dict_catoms_shape['oct_angle_devi_max'] = max(oct_angle_devi)
+        dict_catoms_shape['max_del_sig_angle'] = max_del_sig_angle
+        dict_catoms_shape['dist_del_eq'] = oct_dist_del[0]
+        dict_catoms_shape['dist_del_all'] = oct_dist_del[3]
+        return dict_catoms_shape, catoms_arr
+
+    def match_lig_list(self, init_mol,
+                       flag_loose, flag_lbd=True, debug=False,
+                       depth=3, BondedOct=False):
+        from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        flag_match = True
+        if flag_lbd:  ## Also do ligand breakdown for opt geo
+            self.my_mol_trunc = obtain_truncation_metal(self, depth)
+            self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+            self.my_mol_trunc.createMolecularGraph()
+            self.init_mol_trunc.createMolecularGraph()
+            liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
+            liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
+            liglist_atom = [[self.my_mol_trunc.getAtom(x).symbol() for x in ele]
+                            for ele in liglist]
+            liglist_init_atom = [[self.init_mol_trunc.getAtom(x).symbol() for x in ele]
+                                 for ele in liglist_init]
+            if debug:
+                print('!!!!init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()])
+                print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
+        else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
+            if debug:
+                print('Just inherit the ligand list from init structure.')
+            liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol,
+                                                                         flag_loose=flag_loose,
+                                                                         BondedOct=BondedOct)
+            liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
+            liglist_atom = [[self.getAtom(x).symbol() for x in ele]
+                            for ele in liglist]
+            liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
+                                 for ele in liglist_init]
+
+        if debug:
+            print('ligand_list opt in symbols:', liglist_atom)
+            print('ligand_list init in symbols: ', liglist_init_atom)
+        liglist_shifted = []
+        for ele in liglist_init_atom:
+            try:
+                _flag = False
+                for idx, _ele in enumerate(liglist_atom):
+                    if set(ele) == set(_ele) and len(ele) == len(_ele):
+                        if debug:
+                            print('fragment in liglist_init', ele)
+                            print('fragment in liglist', _ele)
+                        posi = idx
+                        _flag = True
+                liglist_shifted.append(liglist[posi])
+                liglist_atom.pop(posi)
+                liglist.pop(posi)
+                if not _flag:
+                    if debug:
+                        print('Ligands cannot match!')
+                    flag_match = False
+            except:
+                print('Ligands cannot match!')
+                flag_match = False
+        if debug:
+            print('!!!!!returns', liglist_shifted, liglist_init)
+        return liglist_shifted, liglist_init, flag_match
+
+    def ligand_comp_org(self, init_mol, catoms_arr=None,
+                        flag_deleteH=True, flag_loose=False,
+                        flag_lbd=True, debug=False, depth=3,
+                        BondedOct=False):
+        from molSimplify.Scripts.oct_check_mols import readfromtxt
+        liglist, liglist_init, flag_match = self.match_lig_list(init_mol,
+                                                                flag_loose, flag_lbd,
+                                                                debug=debug, depth=depth,
+                                                                BondedOct=BondedOct)
+        if debug:
+            print('lig_list:', liglist, len(liglist))
+            print('lig_list_init:', liglist_init, len(liglist_init))
+        if flag_lbd:
+            mymol_xyz = self.my_mol_trunc
+            initmol_xyz = self.init_mol_trunc
+        else:
+            mymol_xyz = self.copy()
+            initmol_xyz = init_mol
+        if flag_match:
+            rmsd_arr, max_atom_dist_arr = [], []
+            for idx, lig in enumerate(liglist):
+                lig_init = liglist_init[idx]
+                if debug:
+                    print('----This is %d th piece of ligand.' % (idx + 1))
+                    print('ligand is:', lig, lig_init)
+                foo = []
+                for ii, atom in enumerate(mymol_xyz.atoms):
+                    if ii in lig:
+                        xyz = atom.coords()
+                        line = '%s \t%f\t%f\t%f\n' % (atom.sym, xyz[0], xyz[1], xyz[2])
+                        foo.append(line)
+                tmp_mol = mol3D()
+                tmp_mol = readfromtxt(tmp_mol, foo)
+                foo = []
+                for ii, atom in enumerate(initmol_xyz.atoms):
+                    if ii in lig_init:
+                        xyz = atom.coords()
+                        line = '%s \t%f\t%f\t%f\n' % (atom.sym, xyz[0], xyz[1], xyz[2])
+                        foo.append(line)
+                tmp_org_mol = mol3D()
+                tmp_org_mol = readfromtxt(tmp_org_mol, foo)
+                if debug:
+                    print('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms))
+                    print('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()],
+                          [x.symbol() for x in tmp_org_mol.getAtoms()])
+                if flag_deleteH:
+                    tmp_mol.deleteHs()
+                    tmp_org_mol.deleteHs()
+                mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
+                rmsd = tmp_mol.rmsd(tmp_org_mol)
+                rmsd_arr.append(rmsd)
+                atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
+                max_atom_dist_arr.append(atom_dist_max)
+                if debug:
+                    print('rmsd:', rmsd)
+                    print('atom_dist_max', atom_dist_max)
+            rmsd_max = max(rmsd_arr)
+            atom_dist_max = max(max_atom_dist_arr)
+        else:
+            rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
+        dict_lig_distort = {'rmsd_max': rmsd_max, 'atom_dist_max': atom_dist_max}
+        return dict_lig_distort
+
+    def find_the_other_ind(self, arr, ind):
+        arr.pop(arr.index(ind))
+        return arr[0]
+
+    def is_linear_ligand(self, ind):
+        catoms = self.getBondedAtomsSmart(ind)
+        metal_ind = self.findMetal()[0]
+        flag = False
+        if metal_ind in catoms and len(catoms) == 2:
+            ind_next = self.find_the_other_ind(catoms[:], metal_ind)
+            _catoms = self.getBondedAtomsSmart(ind_next)
+            if len(_catoms) == 1:
+                flag = True
+            elif len(_catoms) == 2:
+                ind_next2 = self.find_the_other_ind(_catoms[:], ind)
+                vec1 = np.array(self.getAtomCoords(ind)) - np.array(self.getAtomCoords(ind_next))
+                vec2 = np.array(self.getAtomCoords(ind_next2)) - np.array(self.getAtomCoords(ind_next))
+                ang = vecangle(vec1, vec2)
+                if ang > 170:
+                    flag = True
+        # print(flag, catoms)
+        return flag, catoms
+
+    def get_linear_angle(self, ind):
+        flag, catoms = self.is_linear_ligand(ind)
+        if flag:
+            vec1 = np.array(self.getAtomCoords(catoms[0])) - np.array(self.getAtomCoords(ind))
+            vec2 = np.array(self.getAtomCoords(catoms[1])) - np.array(self.getAtomCoords(ind))
+            ang = vecangle(vec1, vec2)
+        else:
+            ang = 0
+        return flag, ang
+
+    def check_angle_linear(self, catoms_arr=None):
+        dict_angle_linear = {}
+        if not catoms_arr == None:
+            pass
+        else:
+            catoms_arr = self.catoms
+        for ind in catoms_arr:
+            flag, ang = self.get_linear_angle(ind)
+            dict_angle_linear[str(ind)] = [flag, ang]
+        dict_orientation = {}
+        devi_linear_avrg, devi_linear_max = 0, 0
+        count = 0
+        for key in dict_angle_linear:
+            [flag, ang] = dict_angle_linear[key]
+            if flag:
+                count += 1
+                devi_linear_avrg += 180 - ang
+                if (180 - ang) > devi_linear_max:
+                    devi_linear_max = 180 - ang
+        if count:
+            devi_linear_avrg /= count
+        else:
+            devi_linear_avrg = 0
+        dict_orientation['devi_linear_avrg'] = devi_linear_avrg
+        dict_orientation['devi_linear_max'] = devi_linear_max
+        return dict_angle_linear, dict_orientation
+
+    def dict_check_processing(self, dict_check,
+                              num_coord=6, debug=False):
+        if debug:
+            print('dict_oct_info', self.geo_dict)
+        for ele in self.std_not_use:
+            self.geo_dict[ele] = 'banned_by_user'
+        flag_list = []
+        for key, values in dict_check.items():
+            if not self.geo_dict[key] == 'banned_by_user':
+                if self.geo_dict[key] > values:
+                    flag_list.append(key)
+        if self.geo_dict['num_coord_metal'] < num_coord:
+            flag_list.append('num_coord_metal')
+        if flag_list == ['num_coord_metal'] and \
+                (self.geo_dict['num_coord_metal'] == -1 or self.geo_dict['num_coord_metal'] > num_coord):
+            self.geo_dict['num_coord_metal'] = num_coord
+            flag_list.remove('num_coord_metal')
+        if not len(flag_list):
+            flag_oct = 1  # good structure
+            flag_list = 'None'
+        else:
+            flag_oct = 0
+            flag_list = ', '.join(flag_list)
+            print('------bad structure!-----')
+            print('flag_list:', flag_list)
+        return flag_oct, flag_list, self.geo_dict
+
+    def IsOct(self, init_mol=None, dict_check=dict_oct_check_st,
+              angle_ref=oct_angle_ref, flag_catoms=False,
+              catoms_arr=None, debug=False):
+        self.get_num_coord_metal(debug=debug)
+        ## Note that use this only when you wanna specify the metal connecting atoms.
+        ## This will change the attributes of mol3D.
+        if not catoms_arr == None:
+            self.catoms = catoms_arr
+            self.num_coord_metal = len(catoms_arr)
+        dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
+        dict_catoms_shape = {'oct_angle_devi_max': -1,
+                             'max_del_sig_angle': -1,
+                             'dist_del_eq': -1,
+                             'dist_del_all': -1}
+        dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
+        if self.num_coord_metal >= 6:
+            # if not rmsd_max == 'lig_mismatch':
+            if True:
+                self.num_coord_metal = 6
+                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                              catoms_arr, debug=debug)
+            if not init_mol == None:
+                dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
+            dict_angle_linear, dict_orientation = self.check_angle_linear()
+            if debug:
+                print('-------This is for the linear ligand orientation test-----')
+                print('!!!catoms_arr:', catoms_arr)
+                print('!!!dict_angle_linear', dict_angle_linear)
+                print('!!!dict_orientation', dict_orientation)
+                print('---------orientation end.------------')
+        self.geo_dict_initialization()
+        self.geo_dict['num_coord_metal'] = self.num_coord_metal
+        self.geo_dict.update(dict_lig_distort)
+        self.geo_dict.update(dict_catoms_shape)
+        self.geo_dict.update(dict_orientation)
+        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
+                                                                        num_coord=6,
+                                                                        debug=debug)
+        self.flag_oct = flag_oct
+        self.flag_list = flag_list
+        if not flag_catoms:
+            return flag_oct, flag_list, dict_oct_info
+        else:
+            return flag_oct, flag_list, dict_oct_info, catoms_arr
+
+    def IsStructure(self, init_mol=None, dict_check=dict_oneempty_check_st,
+                    angle_ref=oneempty_angle_ref, num_coord=5,
+                    flag_catoms=False, debug=False):
+        self.get_num_coord_metal(debug=debug)
+        dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
+        dict_catoms_shape = {'oct_angle_devi_max': -1,
+                             'max_del_sig_angle': -1,
+                             'dist_del_eq': -1,
+                             'dist_del_all': -1}
+        dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
+        if self.num_coord_metal >= num_coord:
+            if True:
+                self.num_coord_metal = num_coord
+                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                              debug=debug)
+            if not init_mol == None:
+                dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
+            dict_angle_linear, dict_orientation = self.check_angle_linear()
+            if debug:
+                print('-------This is for the linear ligand orientation test-----')
+                print('!!!catoms_arr:', catoms_arr)
+                print('!!!dict_angle_linear', dict_angle_linear)
+                print('!!!dict_orientation', dict_orientation)
+                print('---------orientation end.------------')
+        self.geo_dict_initialization()
+        self.geo_dict['num_coord_metal'] = self.num_coord_metal
+        self.geo_dict.update(dict_lig_distort)
+        self.geo_dict.update(dict_catoms_shape)
+        self.geo_dict.update(dict_orientation)
+        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
+                                                                        num_coord=num_coord,
+                                                                        debug=debug)
+        self.flag_oct = flag_oct
+        self.flag_list = flag_list
+        if not flag_catoms:
+            return flag_oct, flag_list, dict_oct_info
+        else:
+            return flag_oct, flag_list, dict_oct_info, catoms_arr
+
+    def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=dict_oct_check_st,
+                       std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True, flag_lbd=False,
+                       dict_check_loose=dict_oct_check_loose, BondedOct=True, debug=False):
+        if catoms_arr == None:
+            print('Error, must have ctoms! If not, please use IsOct.')
+            quit()
+        elif len(catoms_arr) != 6:
+            print('Error, must have 6 connecting atoms for octahedral.')
+            quit()
+        self.num_coord_metal = 6
+        dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
+        dict_catoms_shape = {'oct_angle_devi_max': -1,
+                             'max_del_sig_angle': -1,
+                             'dist_del_eq': -1,
+                             'dist_del_all': -1}
+        dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
+        if not init_mol == None:
+            dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                    flag_loose=flag_loose,
+                                                    flag_lbd=flag_lbd,
+                                                    catoms_arr=catoms_arr,
+                                                    debug=debug,
+                                                    BondedOct=BondedOct)
+        if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
+            dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
+                                                          debug=debug)
+        else:
+            self.num_coord_metal = -1
+            print('!!!!!Should always match. WRONG!!!!!')
+            quit()
+        dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
+        if debug:
+            print('-------This is for the linear ligand orientation test-----')
+            print('!!!catoms_arr:', catoms_arr)
+            print('!!!dict_angle_linear', dict_angle_linear)
+            print('!!!dict_orientation', dict_orientation)
+            print('---------orientation end.------------')
+        self.geo_dict_initialization()
+        self.geo_dict['num_coord_metal'] = self.num_coord_metal
+        self.geo_dict.update(dict_lig_distort)
+        self.geo_dict.update(dict_catoms_shape)
+        self.geo_dict.update(dict_orientation)
+        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+                                                                        num_coord=6, debug=debug)
+        flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+                                                                         num_coord=6, debug=debug)
+        return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
