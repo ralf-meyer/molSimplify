@@ -14,7 +14,6 @@ import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
-from molSimplify.Classes.ligand import ligand_breakdown
 from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
     dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
 
@@ -1493,9 +1492,9 @@ class mol3D:
             self.geo_dict[key] = -1
         self.dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
         self.dict_catoms_shape = {'oct_angle_devi_max': -1,
-                             'max_del_sig_angle': -1,
-                             'dist_del_eq': -1,
-                             'dist_del_all': -1}
+                                  'max_del_sig_angle': -1,
+                                  'dist_del_eq': -1,
+                                  'dist_del_all': -1}
         self.dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
 
     ## Get the coordination number of the metal from getBondedOct, a distance check.
@@ -1606,10 +1605,14 @@ class mol3D:
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        from molSimplify.Classes.ligand import ligand_breakdown
         flag_match = True
         if flag_lbd:  ## Also do ligand breakdown for opt geo
             self.my_mol_trunc = obtain_truncation_metal(self, depth)
             self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+            ## write truncated xyz file
+            # self.init_mol_trunc.writexyz('init_mol_trunc.xyz')
+            # self.my_mol_trunc.writexyz('my_mol_trunc.xyz')
             self.my_mol_trunc.createMolecularGraph()
             self.init_mol_trunc.createMolecularGraph()
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
@@ -1647,6 +1650,7 @@ class mol3D:
                             print('fragment in liglist', _ele)
                         posi = idx
                         _flag = True
+                        break
                 liglist_shifted.append(liglist[posi])
                 liglist_atom.pop(posi)
                 liglist.pop(posi)
@@ -1686,7 +1690,7 @@ class mol3D:
             mymol_xyz = self.my_mol_trunc
             initmol_xyz = self.init_mol_trunc
         else:
-            mymol_xyz = self.copy()
+            mymol_xyz = self
             initmol_xyz = init_mol
         if flag_match:
             rmsd_arr, max_atom_dist_arr = [], []
@@ -1747,15 +1751,18 @@ class mol3D:
         if metal_ind in catoms and len(catoms) == 2:
             ind_next = self.find_the_other_ind(catoms[:], metal_ind)
             _catoms = self.getBondedAtomsSmart(ind_next)
-            if len(_catoms) == 1:
-                flag = True
-            elif len(_catoms) == 2:
-                ind_next2 = self.find_the_other_ind(_catoms[:], ind)
-                vec1 = np.array(self.getAtomCoords(ind)) - np.array(self.getAtomCoords(ind_next))
-                vec2 = np.array(self.getAtomCoords(ind_next2)) - np.array(self.getAtomCoords(ind_next))
-                ang = vecangle(vec1, vec2)
-                if ang > 170:
+            if not self.atoms[ind_next].sym == 'H':
+                if len(_catoms) == 1:
                     flag = True
+                elif len(_catoms) == 2:
+                    ind_next2 = self.find_the_other_ind(_catoms[:], ind)
+                    vec1 = np.array(self.getAtomCoords(ind)) - np.array(self.getAtomCoords(ind_next))
+                    vec2 = np.array(self.getAtomCoords(ind_next2)) - np.array(self.getAtomCoords(ind_next))
+                    ang = vecangle(vec1, vec2)
+                    if ang > 170:
+                        flag = True
+            else:
+                print('Hydrogen not count for linear!')
         # print(flag, catoms)
         return flag, catoms
 
@@ -1859,7 +1866,7 @@ class mol3D:
 
     def print_dict(self, _dict):
         for key, value in _dict.items():
-            print('%s: '%key, value)
+            print('%s: ' % key, value)
 
     ## Final geometry check call for octahedral structures.
     ## Input: init_mol. mol3D object for the inital geometry.
@@ -1872,7 +1879,9 @@ class mol3D:
     ##         dict_oct_info: self.geo_dict
     def IsOct(self, init_mol=None, dict_check=dict_oct_check_st,
               angle_ref=oct_angle_ref, flag_catoms=False,
-              catoms_arr=None, debug=False):
+              catoms_arr=None, debug=False,
+              flag_loose=True, flag_lbd=True, BondedOct=True
+              ):
         self.get_num_coord_metal(debug=debug)
         ## Note that use this only when you wanna specify the metal connecting atoms.
         ## This will change the attributes of mol3D.
@@ -1887,7 +1896,12 @@ class mol3D:
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
                                                               catoms_arr, debug=debug)
             if not init_mol == None:
-                dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
+                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                        flag_loose=flag_loose,
+                                                        flag_lbd=flag_lbd,
+                                                        catoms_arr=catoms_arr,
+                                                        debug=debug,
+                                                        BondedOct=BondedOct)
             dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
