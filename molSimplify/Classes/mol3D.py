@@ -835,14 +835,25 @@ class mol3D:
     ## Gets atom that is furthest from the given atom
     #  @param self The object pointer
     #  @param reference index of reference atom
+    #  @param symbol type of atom to return
     #  @return farIndex index of furthest atom
-    def getFarAtom(self, reference):
+    
+    def getFarAtom(self, reference,atomtype=False):
         referenceCoords = self.getAtom(reference).coords()
         dd = 0.00
         farIndex = reference
         for ind, atom in enumerate(self.atoms):
+            allow = False
+            if atomtype:
+                if atom.sym == atomtype:
+                    allow = True
+                else:
+                    allow = False
+                
+            else:
+                allow = True
             d0 = distance(atom.coords(), referenceCoords)
-            if d0 > dd:
+            if d0 > dd and allow:
                 dd = d0
                 farIndex = ind
         return farIndex
