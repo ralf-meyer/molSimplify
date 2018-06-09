@@ -1265,7 +1265,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1291,7 +1291,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             dev = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1308,7 +1308,7 @@ class mol3D:
         dist_max = 0
         if (Nat0 != Nat1):
             print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 dist = atom0.distance(atom1)
@@ -1321,7 +1321,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1336,7 +1336,7 @@ class mol3D:
         dist_max = 0
         if (Nat0 != Nat1):
             print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 if (not atom0.sym == 'H') and (not atom1.sym == 'H'):
