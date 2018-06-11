@@ -1472,6 +1472,27 @@ class mol3D:
         f.write(ss)
         f.close()
 
+    def closest_H_2_metal(self, delta=0):
+        min_dist_H = 3.0
+        min_dist_nonH = 3.0
+        for i, atom in enumerate(self.atoms):
+            if atom.ismetal():
+                metal_atom = atom
+                break
+        metal_coord = metal_atom.coords()
+        for atom1 in self.atoms:
+            if atom1.sym == 'H':
+                if distance(atom1.coords(), metal_coord) < min_dist_H:
+                    min_dist_H = distance(atom1.coords(), metal_coord)
+            elif not atom1.ismetal():
+                if distance(atom1.coords(), metal_coord) < min_dist_nonH:
+                    min_dist_nonH = distance(atom1.coords(), metal_coord)
+        if min_dist_H <= (min_dist_nonH-delta):
+            flag = True
+        else:
+            flag = False
+        return (flag, min_dist_H, min_dist_nonH)
+
     ## Print methods
     #  @param self The object pointer   
     #  @return String with methods
@@ -1748,21 +1769,22 @@ class mol3D:
         catoms = self.getBondedAtomsSmart(ind)
         metal_ind = self.findMetal()[0]
         flag = False
-        if metal_ind in catoms and len(catoms) == 2:
-            ind_next = self.find_the_other_ind(catoms[:], metal_ind)
-            _catoms = self.getBondedAtomsSmart(ind_next)
-            if not self.atoms[ind_next].sym == 'H':
-                if len(_catoms) == 1:
-                    flag = True
-                elif len(_catoms) == 2:
-                    ind_next2 = self.find_the_other_ind(_catoms[:], ind)
-                    vec1 = np.array(self.getAtomCoords(ind)) - np.array(self.getAtomCoords(ind_next))
-                    vec2 = np.array(self.getAtomCoords(ind_next2)) - np.array(self.getAtomCoords(ind_next))
-                    ang = vecangle(vec1, vec2)
-                    if ang > 170:
+        if not self.atoms[ind].sym == 'O':
+            if metal_ind in catoms and len(catoms) == 2:
+                ind_next = self.find_the_other_ind(catoms[:], metal_ind)
+                _catoms = self.getBondedAtomsSmart(ind_next)
+                if not self.atoms[ind_next].sym == 'H':
+                    if len(_catoms) == 1:
                         flag = True
-            else:
-                print('Hydrogen not count for linear!')
+                    elif len(_catoms) == 2:
+                        ind_next2 = self.find_the_other_ind(_catoms[:], ind)
+                        vec1 = np.array(self.getAtomCoords(ind)) - np.array(self.getAtomCoords(ind_next))
+                        vec2 = np.array(self.getAtomCoords(ind_next2)) - np.array(self.getAtomCoords(ind_next))
+                        ang = vecangle(vec1, vec2)
+                        if ang > 170:
+                            flag = True
+                else:
+                    print('Hydrogen not count for linear!')
         # print(flag, catoms)
         return flag, catoms
 
