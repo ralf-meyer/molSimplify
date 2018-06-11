@@ -361,7 +361,7 @@ def find_ligand_autocorrelations_oct(mol, prop, loud, depth, name=False,
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name)
+            mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -420,7 +420,7 @@ def find_ligand_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True,cu
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name)
+            mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -456,7 +456,7 @@ def find_mc_eq_ax_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True,
     # Calculate mc/ax, mc/eq deltametrics.
     liglist, ligdents, ligcons = ligand_breakdown(mol)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-        mol, liglist, ligdents, ligcons, loud, name)
+        mol, liglist, ligdents, ligcons, loud, name=False)
     ## shape reduce
     ax_con_list = [x[0] for x in ax_con_list]
     eq_con_list = [x[0] for x in eq_con_list]
@@ -473,7 +473,7 @@ def find_mc_eq_ax_autocorrelation_oct(mol, prop, loud, depth, name=False, oct=Tr
     # Calculate mc/ax, mc/eq deltametrics.
     liglist, ligdents, ligcons = ligand_breakdown(mol)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-        mol, liglist, ligdents, ligcons, loud, name)
+        mol, liglist, ligdents, ligcons, loud, name=False)
     ## shape reduce
     ax_con_list = [x[0] for x in ax_con_list]
     eq_con_list = [x[0] for x in eq_con_list]

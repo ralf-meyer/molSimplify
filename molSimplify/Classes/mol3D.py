@@ -856,14 +856,25 @@ class mol3D:
     ## Gets atom that is furthest from the given atom
     #  @param self The object pointer
     #  @param reference index of reference atom
+    #  @param symbol type of atom to return
     #  @return farIndex index of furthest atom
-    def getFarAtom(self, reference):
+    
+    def getFarAtom(self, reference,atomtype=False):
         referenceCoords = self.getAtom(reference).coords()
         dd = 0.00
         farIndex = reference
         for ind, atom in enumerate(self.atoms):
+            allow = False
+            if atomtype:
+                if atom.sym == atomtype:
+                    allow = True
+                else:
+                    allow = False
+                
+            else:
+                allow = True
             d0 = distance(atom.coords(), referenceCoords)
-            if d0 > dd:
+            if d0 > dd and allow:
                 dd = d0
                 farIndex = ind
         return farIndex
@@ -1254,7 +1265,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1280,7 +1291,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             dev = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1297,7 +1308,7 @@ class mol3D:
         dist_max = 0
         if (Nat0 != Nat1):
             print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 dist = atom0.distance(atom1)
@@ -1310,7 +1321,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             rmsd = 0
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1325,7 +1336,7 @@ class mol3D:
         dist_max = 0
         if (Nat0 != Nat1):
             print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
-            return NaN
+            return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
                 if (not atom0.sym == 'H') and (not atom1.sym == 'H'):

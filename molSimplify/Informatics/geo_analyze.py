@@ -14,13 +14,8 @@ def getOctBondDistances(mol):
     ## This function gets
     ## ax and equitorial 
     ## min and max bond lengths
-    print('getting lig assignment')
     liglist,ligdents,ligcons = ligand_breakdown(mol)
-    ax_ligand_list,eq_ligand_list,ax_natoms_list,eq_natoms_list,ax_con_int_list,eq_con_int_list,ax_con_list,eq_con_list,built_ligand_list=ligand_assign(mol,
-                                                                                                                                                        liglist,
-                                                                                                                                                        ligdents,
-                                                                                                                                                        ligcons,
-                                                                                                                                                        False,'g')
+    ax_ligand_list,eq_ligand_list,ax_natoms_list,eq_natoms_list,ax_con_int_list,eq_con_int_list,ax_con_list,eq_con_list,built_ligand_list=ligand_assign(mol,liglist,ligdents,ligcons, False,False)
     ax_dist = list()
     eq_dist = list()
     for ax_ligs in ax_con_list:
@@ -33,8 +28,6 @@ def getOctBondDistances(mol):
         for conatms in eq_ligs:
             tempList.append(distance(mol.getAtom(mol.findMetal()[0]).coords(),mol.getAtom(conatms).coords()))
         eq_dist.append(tempList)
-    print(ax_dist)
-    print(eq_dist)
     return ax_dist, eq_dist
 def maximum_ML_dist(mol):
     core = mol.getAtom(mol.findMetal()[0]).coords()
