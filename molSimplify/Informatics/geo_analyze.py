@@ -29,6 +29,19 @@ def getOctBondDistances(mol):
             tempList.append(distance(mol.getAtom(mol.findMetal()[0]).coords(),mol.getAtom(conatms).coords()))
         eq_dist.append(tempList)
     return ax_dist, eq_dist
+def getLigFormulae(mol):
+    ## This function gets
+    ## ax and equitorial 
+    ## ligand names for octahedral complexes 
+    axnames = []
+    eqnames = []
+    liglist,ligdents,ligcons = ligand_breakdown(mol)
+    ax_ligand_list,eq_ligand_list,ax_natoms_list,eq_natoms_list,ax_con_int_list,eq_con_int_list,ax_con_list,eq_con_list,built_ligand_list=ligand_assign(mol,liglist,ligdents,ligcons, False,False)
+    for axl in ax_ligand_list:
+        axnames.append(axl.mol.make_formula())
+    for eql in eq_ligand_list:
+        eqnames.append(eql.mol.make_formula())
+    return axnames, eqnames
 def maximum_ML_dist(mol):
     core = mol.getAtom(mol.findMetal()[0]).coords()
     max_dist = 0

@@ -2024,9 +2024,7 @@ class mol3D:
         skeys = sorted(unique_symbols.keys(), key = lambda x: (self.globs.elementsbynum().index(x)))
         skeys = skeys[::-1]
         for sk in skeys:
-            print(sk)
-            print(unique_symbols[sk])
-            retstr +=  sk + '_{' +str(int(unique_symbols[sk]))+'}'
+            retstr +=  '\\textrm{' +sk + '}_{' +str(int(unique_symbols[sk]))+'}'
         return retstr
         
     
