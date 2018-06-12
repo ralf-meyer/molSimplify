@@ -87,8 +87,8 @@ romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5', 'VI': '6', 'VII'
 ###---Geo_Check_Metrics------
 dict_oct_check_loose = {'num_coord_metal': 6,
                         'rmsd_max': 0.4, 'atom_dist_max': 0.6,
-                        'oct_angle_devi_max': 15, 'max_del_sig_angle': 27,
-                        'dist_del_eq': 0.45, 'dist_del_all': 1.2,
+                        'oct_angle_devi_max': 16, 'max_del_sig_angle': 27,
+                        'dist_del_eq': 0.45, 'dist_del_all': 1.25,
                         'devi_linear_avrg': 35, 'devi_linear_max': 40}
 
 dict_oct_check_st = {'num_coord_metal': 6,
