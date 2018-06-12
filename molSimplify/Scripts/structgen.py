@@ -20,7 +20,7 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
 import os, sys
 from pkg_resources import resource_filename, Requirement
-import openbabel, random, itertools
+import openbabel, random, itertools, numpy
 from numpy import log, arccos, cross, dot, pi
 numpy.seterr(all='raise')
 

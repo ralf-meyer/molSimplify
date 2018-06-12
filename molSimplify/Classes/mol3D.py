@@ -1985,3 +1985,26 @@ class mol3D:
         flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
                                                                          num_coord=6, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
+    
+    ## Writes a psueduo-chemical formula
+    #
+    #  @param self The object pointer   
+    def make_formula(self):
+        retstr = ""
+        atomorder  = self.globs.elementsbynum()
+        unique_symbols = dict()
+        for atoms in self.getAtoms():
+            if atoms.symbol() in atomorder:
+                if not atoms.symbol() in unique_symbols.keys():
+                    unique_symbols[atoms.symbol()] = 1
+                else:
+                    unique_symbols[atoms.symbol()] = unique_symbols[atoms.symbol()] + 1
+        skeys = sorted(unique_symbols.keys(), key = lambda x: (self.globs.elementsbynum().index(x)))
+        skeys = skeys[::-1]
+        for sk in skeys:
+            print(sk)
+            print(unique_symbols[sk])
+            retstr +=  sk + '_{' +str(int(unique_symbols[sk]))+'}'
+        return retstr
+        
+    

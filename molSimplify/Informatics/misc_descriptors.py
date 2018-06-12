@@ -8,6 +8,7 @@ import random
 import string
 import numpy
 from molSimplify.Scripts.geometry import *
+from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.mol3D import*
@@ -120,3 +121,91 @@ def get_lig_EN(mol,connection_atoms):
 		#temp_mol.getOBmol()
 		#temp_mol.OBmol.Obmol.
 		#return max_EN
+def get_con_at_all(mol,connection_atoms):
+    this_type = ""
+    been_set = False
+    valid = True
+    ## test if the ligand is pi-bonded
+    if 'pi' in connection_atoms:
+        print('ANN cannot handle Pi bonding (yet)')
+        valid = False
+        this_type='pi'
+    else:
+        for atoms in connection_atoms:
+            this_symbol = mol.getAtom(atoms).symbol()
+            if not (this_symbol == this_type):
+                if not been_set:
+                    this_type = this_symbol
+                else:
+                    print('different connection atoms in one ligand')
+                    valid = False
+        if not this_type in ['C','O','Cl','N','S']:
+            valid = False
+            print('untrained atom type: ',this_type)
+    return valid,this_type
+    
+def get_lig_MCDL(mol,connection_atoms):
+     ## this function fetches the most hard-to-derive
+     ## components of MCDL-25 for a given ligand   
+     ## use at own risk, charges from obmol are a bit dodgy            
+     lig_EN = get_lig_EN(mol,connection_atoms)
+     lig.convert2OBMol()
+     lig_kier = get_truncated_kier(mol,connection_atoms)
+     lig_BO = get_bond_order(mol.OBmol,connection_atoms,mol)
+     lig_charge =  mol.OBMol.GetTotalCharge()
+     return lig_EN, lig_kier, lig_BO, lig_charge
+        
+def find_ligand_MCDL(mol, oct=True):
+    ## this function fetches the most hard-to-derive
+    ## components of MCDL-25 for a given mol
+    ## use at own risk, charges from obmol are a bit dodgy 
+    ## this function takes a
+    ## symmetric (axial == axial,
+    ## equatorial == equatorial)
+    ## octahedral complex
+    
+    
+    liglist, ligdents, ligcons = ligand_breakdown(mol)
+    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+                                                                                                                mol, liglist, ligdents, ligcons, loud, name=False)
+    
+    ## count ligands
+    n_ax = len(ax_ligand_list)
+    n_eq = len(eq_ligand_list)
+    ## get full ligand AC
+    ax_ligand_ac_full = []
+    eq_ligand_ac_full = []
+    for i in range(0, n_ax):
+        if not list(ax_ligand_ac_full):
+            ax_ligand_ac_full = full_autocorrelation(ax_ligand_list[i].mol, prop, depth)
+        else:
+            ax_ligand_ac_full += full_autocorrelation(ax_ligand_list[i].mol, prop, depth)
+    ax_ligand_ac_full = np.divide(ax_ligand_ac_full, n_ax)
+    for i in range(0, n_eq):
+        if not list(eq_ligand_ac_full):
+            eq_ligand_ac_full = full_autocorrelation(eq_ligand_list[i].mol, prop, depth)
+        else:
+            eq_ligand_ac_full += full_autocorrelation(eq_ligand_list[i].mol, prop, depth)
+    eq_ligand_ac_full = np.divide(eq_ligand_ac_full, n_eq)
+
+    ## get partial ligand AC
+    ax_ligand_ac_con = []
+    eq_ligand_ac_con = []
+
+    for i in range(0, n_ax):
+        if not list(ax_ligand_ac_con):
+            ax_ligand_ac_con = atom_only_autocorrelation(ax_ligand_list[i].mol, prop, depth, ax_con_int_list[i])
+        else:
+            ax_ligand_ac_con += atom_only_autocorrelation(ax_ligand_list[i].mol, prop, depth, ax_con_int_list[i])
+    ax_ligand_ac_con = np.divide(ax_ligand_ac_con, n_ax)
+    for i in range(0, n_eq):
+        if not list(eq_ligand_ac_con):
+            eq_ligand_ac_con = atom_only_autocorrelation(eq_ligand_list[i].mol, prop, depth, eq_con_int_list[i])
+        else:
+            eq_ligand_ac_con += atom_only_autocorrelation(eq_ligand_list[i].mol, prop, depth, eq_con_int_list[i])
+    eq_ligand_ac_con = np.divide(eq_ligand_ac_con, n_eq)
+
+    # ax_ligand_ac_con = atom_only_autocorrelation(ax_ligand.mol,prop,depth,ax_con_int)
+    # eq_ligand_ac_con = atom_only_autocorrelation(eq_ligand.mol,prop,depth,eq_con_int)
+    return ax_ligand_ac_full, eq_ligand_ac_full, ax_ligand_ac_con, eq_ligand_ac_con
+     
