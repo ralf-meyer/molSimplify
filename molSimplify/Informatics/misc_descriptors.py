@@ -68,6 +68,7 @@ def generate_all_ligand_misc(mol,loud,custom_ligand_dict=False):
                 result_ax_ki = np.divide(result_ax_ki,n_ax)
                 result_ax_tki = np.divide(result_ax_tki,n_ax)
                 result_ax_charge = np.divide(result_ax_charge,n_ax) 
+                
 	## loop over eq ligands
         if n_eq > 0:
                 for i in range(0,n_eq):
@@ -89,17 +90,20 @@ def generate_all_ligand_misc(mol,loud,custom_ligand_dict=False):
                 result_eq_maxdelen = np.divide(result_eq_maxdelen,n_eq)
                 result_eq_ki = np.divide(result_eq_ki,n_eq)
                 result_eq_tki = np.divide(result_eq_tki,n_eq)
+                result_eq_charge = np.divide(result_eq_charge,n_eq) 
                 ## save the results        
 	result_ax.append(result_ax_dent)
 	result_ax.append(result_ax_maxdelen)
 	result_ax.append(result_ax_ki)
 	result_ax.append(result_ax_tki)
         result_ax.append(result_ax_charge)
+        
 	result_eq.append(result_eq_dent)
 	result_eq.append(result_eq_maxdelen)
 	result_eq.append(result_eq_ki)
 	result_eq.append(result_eq_tki)
-        result_ax.append(result_eq_charge)
+        result_eq.append(result_eq_charge)
+        
 	results_dictionary={'colnames':colnames,'result_ax':result_ax,'result_eq':result_eq}
 	return  results_dictionary
 
