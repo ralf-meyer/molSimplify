@@ -99,6 +99,7 @@ def generate_all_ligand_misc(mol,loud,custom_ligand_dict=False):
 	result_eq.append(result_eq_maxdelen)
 	result_eq.append(result_eq_ki)
 	result_eq.append(result_eq_tki)
+        result_ax.append(result_eq_charge)
 	results_dictionary={'colnames':colnames,'result_ax':result_ax,'result_eq':result_eq}
 	return  results_dictionary
 
