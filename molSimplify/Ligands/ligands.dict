@@ -72,7 +72,7 @@ imine:imine.mol,imi,0,functionalize small,N
 iminodiacetic:iminodiacetic.mol,iminodiacetic,0 1,build bidentate, BA, -2
 isoleucine:isoleucine.mol,Ile,3,build functionalize aminoacid,BA,0
 isoleucineB:isoleucine.mol,Ile,3 21,build functionalize aminoacid,BA,0
-isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,B
+isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,N
 leucine:leucine.mol,Leu,21,build functionalize aminoacid,BA,0
 leucineB:leucine.mol,Leu,3 21,build functionalize aminoacid,BA,0
 lysine:lysine.mol,Lys,3,build functionalize aminoacid,BA,1
