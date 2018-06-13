@@ -46,49 +46,50 @@ def generate_all_ligand_misc(mol,loud,custom_ligand_dict=False):
         result_ax_charge = False
         result_eq_charge = False
 	## loop over axial ligands
-	for i in range(0,n_ax):
-                ax_ligand_list[i].mol.convert2OBMol()
-		if not (i==0):
-			result_ax_dent += ax_ligand_list[i].dent
-			result_ax_maxdelen += get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
-			result_ax_ki += kier(ax_ligand_list[i].mol)
-			result_ax_tki += get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
-                        result_ax_charge += ax_ligand_list[i].mol.OBMol.GetTotalCharge()
-		else:
-                        
-			result_ax_dent = ax_ligand_list[i].dent
-			result_ax_maxdelen = get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
-			result_ax_ki = kier(ax_ligand_list[i].mol)
-			result_ax_tki = get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
-                        result_ax_charge = ax_ligand_list[i].mol.OBMol.GetTotalCharge()
-	## average axial results
-	result_ax_dent = np.divide(result_ax_dent,n_ax)
-	result_ax_maxdelen = np.divide(result_ax_maxdelen,n_ax)
-	result_ax_ki = np.divide(result_ax_ki,n_ax)
-	result_ax_tki = np.divide(result_ax_tki,n_ax)
-        result_ax_charge = np.divide(result_ax_charge,n_ax) 
+        if n_ax > 0:
+                for i in range(0,n_ax):
+                        ax_ligand_list[i].mol.convert2OBMol()
+                        if not (i==0):
+                                result_ax_dent += ax_ligand_list[i].dent
+                                result_ax_maxdelen += get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
+                                result_ax_ki += kier(ax_ligand_list[i].mol)
+                                result_ax_tki += get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
+                                result_ax_charge += ax_ligand_list[i].mol.OBMol.GetTotalCharge()
+                        else:
+                                
+                                result_ax_dent = ax_ligand_list[i].dent
+                                result_ax_maxdelen = get_lig_EN(ax_ligand_list[i].mol,ax_con_int_list[i])
+                                result_ax_ki = kier(ax_ligand_list[i].mol)
+                                result_ax_tki = get_truncated_kier(ax_ligand_list[i].mol,ax_con_int_list[i])
+                                result_ax_charge = ax_ligand_list[i].mol.OBMol.GetTotalCharge()
+                ## average axial results
+                result_ax_dent = np.divide(result_ax_dent,n_ax)
+                result_ax_maxdelen = np.divide(result_ax_maxdelen,n_ax)
+                result_ax_ki = np.divide(result_ax_ki,n_ax)
+                result_ax_tki = np.divide(result_ax_tki,n_ax)
+                result_ax_charge = np.divide(result_ax_charge,n_ax) 
 	## loop over eq ligands
-	for i in range(0,n_eq):
-                eq_ligand_list[i].mol.convert2OBMol()
-		if not (i==0):
-			result_eq_dent += eq_ligand_list[i].dent
-			result_eq_maxdelen += get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
-			result_eq_ki += kier(eq_ligand_list[i].mol)
-			result_eq_tki += get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
-                        result_eq_charge += eq_ligand_list[i].mol.OBMol.GetTotalCharge()
-		else:
-			result_eq_dent = eq_ligand_list[i].dent
-			result_eq_maxdelen = get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
-			result_eq_ki = kier(eq_ligand_list[i].mol)
-			result_eq_tki = get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
-                        result_eq_charge = eq_ligand_list[i].mol.OBMol.GetTotalCharge()
-	## average eq results
-	result_eq_dent = np.divide(result_eq_dent,n_eq)
-	result_eq_maxdelen = np.divide(result_eq_maxdelen,n_eq)
-	result_eq_ki = np.divide(result_eq_ki,n_eq)
-	result_eq_tki = np.divide(result_eq_tki,n_eq)
-	## save the results
-        
+        if n_eq > 0:
+                for i in range(0,n_eq):
+                        eq_ligand_list[i].mol.convert2OBMol()
+                        if not (i==0):
+                                result_eq_dent += eq_ligand_list[i].dent
+                                result_eq_maxdelen += get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
+                                result_eq_ki += kier(eq_ligand_list[i].mol)
+                                result_eq_tki += get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
+                                result_eq_charge += eq_ligand_list[i].mol.OBMol.GetTotalCharge()
+                        else:
+                                result_eq_dent = eq_ligand_list[i].dent
+                                result_eq_maxdelen = get_lig_EN(eq_ligand_list[i].mol,eq_con_int_list[i])
+                                result_eq_ki = kier(eq_ligand_list[i].mol)
+                                result_eq_tki = get_truncated_kier(eq_ligand_list[i].mol,eq_con_int_list[i])
+                                result_eq_charge = eq_ligand_list[i].mol.OBMol.GetTotalCharge()
+                ## average eq results
+                result_eq_dent = np.divide(result_eq_dent,n_eq)
+                result_eq_maxdelen = np.divide(result_eq_maxdelen,n_eq)
+                result_eq_ki = np.divide(result_eq_ki,n_eq)
+                result_eq_tki = np.divide(result_eq_tki,n_eq)
+                ## save the results        
 	result_ax.append(result_ax_dent)
 	result_ax.append(result_ax_maxdelen)
 	result_ax.append(result_ax_ki)

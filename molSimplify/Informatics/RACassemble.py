@@ -77,9 +77,9 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         ## misc descriptors
         results_dictionary = generate_all_ligand_misc(this_complex,loud=False,custom_ligand_dict=custom_ligand_dict)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           [results_dictionary['colnames'][0]],[results_dictionary['result_ax'][0]],'misc','ax')
+                                                           results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           [results_dictionary['colnames'][0]],[results_dictionary['result_eq'][0]],'misc','eq')
+                                                           results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
         
         ## full ACs
         results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False)
