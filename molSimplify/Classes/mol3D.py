@@ -14,8 +14,8 @@ import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
-from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
-    dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
+#from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
+#    dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
 
 try:
     import PyQt5
@@ -90,10 +90,10 @@ class mol3D:
         self.needsconformer = False
 
         # ---geo_check------
-        self.dict_oct_check_loose = dict_oct_check_loose
-        self.dict_oct_check_st = dict_oct_check_st
-        self.dict_oneempty_check_loose = dict_oneempty_check_loose
-        self.dict_oneempty_check_st = dict_oneempty_check_st
+        self.dict_oct_check_loose = self.globs.geo_check_dictionary()["dict_oct_check_loose"]
+        self.dict_oct_check_st = self.globs.geo_check_dictionary()["dict_oct_check_st"]
+        self.dict_oneempty_check_loose = self.globs.geo_check_dictionary()["dict_oneempty_check_loose"]
+        self.dict_oneempty_check_st = self.globs.geo_check_dictionary()["dict_oneempty_check_st"]
         self.geo_dict = dict()
         self.std_not_use = list()
 
@@ -1532,15 +1532,22 @@ class mol3D:
     ## Get the coordination number of the metal from getBondedOct, a distance check.
     ## num_coord_metal and the list of indexs of the connecting atoms are stored in mol3D
     def get_num_coord_metal(self, debug):
-        metal_ind = self.findMetal()[0]
-        metal_coord = self.getAtomCoords(metal_ind)
-        catoms = self.getBondedAtomsOct(ind=metal_ind)
+        metal_list = self.findMetal()
+        if len(self.findMetal()) >  0 :
+            metal_ind = self.findMetal()[0]
+            metal_coord = self.getAtomCoords(metal_ind)
+            catoms = self.getBondedAtomsOct(ind=metal_ind)
+        else:
+            metal_ind = []
+            metal_coord = []
+            catoms = []
+        
         if debug:
             print('metal coordinate:', metal_coord)
             print('coordinations: ', catoms, len(catoms))
-        self.num_coord_metal = len(catoms)
+        
         self.catoms = catoms
-
+        self.num_coord_metal = len(catoms)
     ## Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
     ## Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
     ## catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
@@ -1654,7 +1661,7 @@ class mol3D:
             liglist_init_atom = [[self.init_mol_trunc.getAtom(x).symbol() for x in ele]
                                  for ele in liglist_init]
             if debug:
-                print('!!!!init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()])
+                print('init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()])
                 print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
         else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
             if debug:
@@ -1694,7 +1701,7 @@ class mol3D:
                 print('Ligands cannot match!')
                 flag_match = False
         if debug:
-            print('!!!!!returns', liglist_shifted, liglist_init)
+            print('returning: ', liglist_shifted, liglist_init)
         return liglist_shifted, liglist_init, flag_match
 
     ## Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.

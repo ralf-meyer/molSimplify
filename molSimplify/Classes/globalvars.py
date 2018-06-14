@@ -114,7 +114,13 @@ dict_staus = {'good': 1, 'bad': 0}
 oct_angle_ref = [[90, 90, 90, 90, 180] for x in range(6)]
 oneempty_angle_ref = [[90, 90, 90, 90], [180, 90, 90, 90], [180, 90, 90, 90],
                       [180, 90, 90, 90], [180, 90, 90, 90]]
-
+geo_check_dictionary= {"dict_oct_check_loose":dict_oct_check_loose,
+                       "dict_oct_check_st": dict_oct_check_st,
+                       "dict_oneempty_check_st":dict_oneempty_check_st,
+                       "dict_oneempty_check_loose":dict_oneempty_check_loose,
+                       "dict_staus":dict_staus,
+                       "oct_angle_ref":oct_angle_ref,
+                       "oneempty_angle_ref":oneempty_angle_ref}
 
 ## Module for running bash commands
 #  @param cmd String containing command to be run
@@ -244,12 +250,25 @@ class globalvars:
     #  @return Electronegativity dictionary        
     def endict(self):
         return endict
-
+        
+    ## Returns electronegativity dictionary
+    #  @param self The object pointer
+    #  @return Electronegativity dictionary 
     def vdwrad(self):
         return vdwrad
-
+        
+    ## Returns list of metals dictionary
+    #  @param self The object pointer
+    #  @return metals dictionary 
     def metalslist(self):
         return metalslist
+        
+    ## Returns list of geo check objects dictionary
+    #  @param self The object pointer
+    #  @return geo check objection  dictionary 
+    def geo_check_dictionary(self):
+        return geo_check_dictionary
+
 
     ## Record custom path in ~/.molSimplify file
     #  @param self The object pointer
