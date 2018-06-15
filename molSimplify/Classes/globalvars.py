@@ -156,12 +156,15 @@ class globalvars:
         self.about = s
         ###### GET INFORMATION ######
         runfromcmd, Linux, OSX = False, False, False
+	try:
         ### check if running through commandline ###
-        if sys.stdin.isatty():
-            ## running through command line
-            runfromcmd = True
-        else:
-            runfromcmd = False
+		if sys.stdin.isatty():
+		    ## running through command line
+		    runfromcmd = True
+		else:
+		    runfromcmd = False
+	except:
+		runfromcmd = True
         ### get running os ###
         if platform.system().lower() in 'linux':
             Linux = True
