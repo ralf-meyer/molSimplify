@@ -95,6 +95,7 @@ class mol3D:
         self.dict_oneempty_check_loose = self.globs.geo_check_dictionary()["dict_oneempty_check_loose"]
         self.dict_oneempty_check_st = self.globs.geo_check_dictionary()["dict_oneempty_check_st"]
         self.oct_angle_ref = self.globs.geo_check_dictionary()["oct_angle_ref"]
+        self.oneempty_angle_ref = self.globs.geo_check_dictionary()["oneempty_angle_ref"]
         self.geo_dict = dict()
         self.std_not_use = list()
 
