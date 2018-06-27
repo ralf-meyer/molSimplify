@@ -316,3 +316,15 @@ class globalvars:
                                   [1, 2, 3], [3, 6, 5],
                                   [2, 3], [2, 5], [5, 6], [6, 4], [4, 1], [1], [2], [3], [4], [5], [6]]
         return bbcombs_mononuc
+        
+    # Tests for keras/TF avail
+    #  @return if keras/TF is avail
+    def testTF(self):
+        try:
+            os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+            from keras.models import Model
+            from tensorflow.python.keras.models import Sequential
+            return True
+        except:
+            return False
+            
