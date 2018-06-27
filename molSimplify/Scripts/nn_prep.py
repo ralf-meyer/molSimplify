@@ -458,7 +458,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             r = r_hs
 
         print('ANN bond length is predicted to be: '+"{0:.2f}".format(float(r)) + ' angstrom')
-        ANN_attributes.update({'ANN_bondl':r[0]})
+        ANN_attributes.update({'ANN_bondl': len(batslist)*[r[0]]})
         print('ANN low spin bond length is predicted to be: '+"{0:.2f}".format(float(r_ls)) + ' angstrom')
         print('ANN high spin bond length is predicted to be: '+"{0:.2f}".format(float(r_hs)) + ' angstrom')
         

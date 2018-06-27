@@ -59,8 +59,6 @@ def simple_network_builder(layers,partial_path):
 
 
 
-
-
 def csv_loader(path):
     #print('in csv loader')
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
@@ -101,7 +99,6 @@ def simple_splitting_ann(excitation):
     #print(excitation)
     result = n.activate(excitation)
 
-    
     #print('result is ' + str(result))
     result = (result*sp_shift) + sp_center
     #print('result is ' + str(result))
