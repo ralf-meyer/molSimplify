@@ -126,6 +126,54 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         return descriptor_names, descriptors
 
 
+## utility to add one-hot encoded oxidation state
+## and d-electron count to some descriptors
+#  @param descriptor_names RAC names, will be appended to
+#  @param descriptors RAC, will be appended to
+#  @param list_of_names names, will be added
+#  @param list_of_props types of RACs
+#  @param prefix RAC prefix
+#  @param suffix RAC suffix
+#  @return descriptor_names updated names
+#  @return descriptors updated RACs
+def create_OHE(descriptor_names,descriptors, metal,oxidation_state):
+    # fucntion to append OHE encoding of oxidation state
+    # and d-electron countst
+    OHE_names = ['ox2','ox3','d3','d4','d5','d6','d7','d8']
+    OHE_values = [   0,    0,   0,   0,   0,   0,    0, 0]
+    #print(OHE_values)
+    if int(oxidation_state) == 2:
+        OHE_values[0]+=1
+    #    print(OHE_values)
+    elif int(oxidation_state) == 3:
+        OHE_values[1]+=1
+    if metal == "Cr" and int(oxidation_state) == 2:
+        OHE_values[OHE_names.index("d4")]+=1
+    elif metal == "Cr" and int(oxidation_state) == 3:
+        OHE_values[OHE_names.index("d3")]+=1
+    elif metal == "Mn" and int(oxidation_state) == 2:
+        OHE_values[OHE_names.index("d5")]+=1
+    elif metal == "Mn" and int(oxidation_state) == 3:
+        OHE_values[OHE_names.index("d4")]+=1
+    elif metal == "Fe" and int(oxidation_state) == 2:
+        OHE_values[OHE_names.index("d6")]+=1
+    elif metal == "Fe" and int(oxidation_state) == 3:
+        OHE_values[OHE_names.index("d5")]+=1
+    elif metal == "Co" and int(oxidation_state) == 2:
+        OHE_values[OHE_names.index("d7")]+=1
+    elif metal == "Co" and int(oxidation_state) == 2:
+        OHE_values[OHE_names.index("d6")]+=1        
+    elif metal == "Ni" and int(oxidation_state) == 2:
+        OHE_values[OHE_names.index("d8")]+=1        
+    else:
+        print('Error: unknown metal and oxidation state '+ str(metal) +'/' +str(oxidation_state)) 
+        return False
+
+    descriptor_names = descriptor_names + OHE_names
+    descriptors = descriptors +  OHE_values
+        
+    return descriptor_names,descriptors
+
 
 ## utility to build standardly formated RACS
 #  @param descriptor_names RAC names, will be appended to

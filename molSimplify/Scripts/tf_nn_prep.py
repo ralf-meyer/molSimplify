@@ -17,39 +17,45 @@ import time
 #import numpy
 #import openbabel
 
-def create_OHE(metal,oxidation_state):
-    # fucntion to append OHE encoding of oxidation state
-    # and d-electron countst
-    OHE_names = ['ox2','ox3','d3','d4','d5','d6','d7','d8']
-    OHE_values = [   0,    0,   0,   0,   0,   0,    0, 0]
-    #print(OHE_values)
-    if int(oxidation_state) == 2:
-        OHE_values[0]+=1
-    #    print(OHE_values)
-    elif int(oxidation_state) == 3:
-        OHE_values[1]+=1
-    if metal == "Cr" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d4")]+=1
-    elif metal == "Cr" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d3")]+=1
-    elif metal == "Mn" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d5")]+=1
-    elif metal == "Mn" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d4")]+=1
-    elif metal == "Fe" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d6")]+=1
-    elif metal == "Fe" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d5")]+=1
-    elif metal == "Co" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d7")]+=1
-    elif metal == "Co" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d6")]+=1        
-    elif metal == "Ni" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d8")]+=1        
-    else:
-        print('Error: unknown metal and oxidation state '+ str(metal) +'/' +str(oxidation_state)) 
+## wrapper to get AN predictions from a known mol3D()
+## generally unsfae
+def invoke_ANNs_from_mol3d(mol,oxidation_state,alpha=0.2):
+    # check input
+    if not oxidation_state == 2 and not oxidation_state == 3:
+        print('Error, oxidation state must be 2 or 3')
         return False
-    return OHE_names,OHE_values
+    
+    # find the metal from RACs 
+    metal = mol.getAtom(mol.findMetal()[0]).symbol()
+    ox_modifier = {metal:oxidation_state}
+    # get RACs
+    descriptor_names, descriptors = get_descriptor_vector(mol,ox_modifier=ox_modifier)
+    # get one-hot-encoding (OHE)
+    descriptor_names,descriptors = create_OHE(descriptor_names,descriptors, metal,oxidation_state)
+    # set exchange fraction
+    descriptor_names += ['alpha']
+    descriptors += [alpha]
+
+    # call ANN for splitting
+    delta = ANN_supervisor('split',descriptors,descriptor_names)[0]
+
+    # call ANN for bond lenghts
+    if oxidation_state == 2:
+        r_ls  = ANN_supervisor('ls_ii',descriptors,descriptor_names)
+        r_hs  = ANN_supervisor('hs_ii',descriptors,descriptor_names)
+    elif oxidation_state == 3:
+        r_ls  = ANN_supervisor('ls_iii',descriptors,descriptor_names)
+        r_hs  = ANN_supervisor('hs_iii',descriptors,descriptor_names)
+
+    # ANN distance for splitting
+    train_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
+
+    # compile results and return
+    results_dictionary = {"ls_bl":r_ls,
+                         "hs_bl":r_hs,
+                         "split":delta,
+                         "distance":train_dist }
+    return(results_dictionary)
             
 
 def tf_check_ligands(ligs,batlist,dents,tcats,occs,debug):
@@ -370,7 +376,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                                   "eq_con_int_list":[h.mol.cat  for h in eq_ligands_list],
                                   "ax_con_int_list":[h.mol.cat  for h in ax_ligands_list]}
             
-            ox_modifer = {metal:ox}
+            ox_modifier = {metal:ox}
             this_complex = assemble_connectivity_from_parts(metal_mol,custom_ligand_dict)
             
     
@@ -388,12 +394,10 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if valid:
         ## build RACs without geo
         con_mat  = this_complex.graph  
-        descriptor_names, descriptors = get_descriptor_vector(this_complex,custom_ligand_dict,ox_modifer)
+        descriptor_names, descriptors = get_descriptor_vector(this_complex,custom_ligand_dict,ox_modifier)
         
         ## get one-hot-encoding (OHE)
-        OHE_names,OHE_values = create_OHE(metal,oxidation_state)
-        descriptor_names += OHE_names
-        descriptors += OHE_values
+        descriptor_names,descriptors = create_OHE(descriptor_names,descriptors, metal,oxidation_state)
         
         # get alpha
         alpha = 0.2 # default for B3LYP

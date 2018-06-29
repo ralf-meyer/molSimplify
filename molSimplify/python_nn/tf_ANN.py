@@ -110,7 +110,7 @@ def load_keras_ann(predictor):
     loaded_model.compile(loss="mse",optimizer='adam',
               metrics=['mse', 'mae', 'mape'])
     
-    #print("Keras/tf model loaded for " + str(predictor) + " from disk")
+    print("Keras/tf model loaded for " + str(predictor) + " from disk")
     return(loaded_model)
 
 
@@ -123,7 +123,7 @@ def tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names):
     
     ## get variable names
     target_names = load_ANN_variables(predictor)
-    #print('model requires ' +  str(len(target_names)) + ' descriptors, attempting match')
+    print('model requires ' +  str(len(target_names)) + ' descriptors, attempting match')
     excitation = []
     valid = True
     for var_name in target_names:
@@ -140,22 +140,22 @@ def tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names):
     return excitation
 
 def ANN_supervisor(predictor,descriptors,descriptor_names):
-    print('ANN activated for ' + str(predictor) +  ', recieved ' + str(len(descriptors)) + ' descriptors') 
+    print('ANN activated for ' + str(predictor)) 
     
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names)
 
 
-    #print('excitation is ' + str(excitation.shape))
-    #print('fetching non-dimensionalization data... ')
+    print('excitation is ' + str(excitation.shape))
+    print('fetching non-dimensionalization data... ')
     train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
-    #print('rescaling input excitation...')
+    print('rescaling input excitation...')
     excitation = data_normalize(excitation,train_mean_x,train_var_x)
 
     ## fetch ANN
     loaded_model = load_keras_ann(predictor)
     
-    #print('calling ANN model...')
+    print('calling ANN model...')
     result = data_rescale(loaded_model.predict(excitation),train_mean_y,train_var_y)
     
     return result
