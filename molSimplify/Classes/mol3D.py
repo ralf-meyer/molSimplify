@@ -1761,7 +1761,10 @@ class mol3D:
                 if flag_deleteH:
                     tmp_mol.deleteHs()
                     tmp_org_mol.deleteHs()
-                mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
+                try:
+                    mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
+                except:
+                     print('Kabsch failed')
                 rmsd = tmp_mol.rmsd(tmp_org_mol)
                 rmsd_arr.append(rmsd)
                 atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
