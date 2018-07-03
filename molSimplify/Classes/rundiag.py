@@ -28,6 +28,7 @@ class run_diag:
                                      # predicted properties
         self.dict_bondl = False # stores the ML-dict bond dist
         self.mol = False # stores a mol3D representation of the mol.
+        
     ########################################
     ### class methods needed to populate ###
     ########################################

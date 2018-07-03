@@ -18,7 +18,7 @@ from molSimplify.Classes.rundiag import *
 from molSimplify.Classes import globalvars
 from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
-import os, sys
+import os, sys, time 
 from pkg_resources import resource_filename, Requirement
 import openbabel, random, itertools, numpy
 from numpy import log, arccos, cross, dot, pi
@@ -102,28 +102,44 @@ def getsmident(args,indsmi):
 #  @param licores Ligand dictionary
 #  @return ANN flag, predicted BL and other attributes
 def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
+    
+    
     # initialize ANN
     ANN_attributes = dict()
+    globs = globalvars()
     if args.skipANN:
          print('Skipping ANN')
          ANN_flag = False
-         ANN_bondl = 0
+         ANN_bondl = len([item for items in batslist for item in items])*[False] ## there needs to be 1 length per possible lig
          ANN_reason = 'ANN skipped by user'
     else:
          try:
-             ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
-             if ANN_flag:
+            if args.oldANN:
+                print('using old ANN by request')
+                ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
+            else:
+                if globs.testTF():
+                    ## new RACs-ANN
+                    from molSimplify.Scripts.tf_nn_prep import tf_ANN_preproc
+                    ANN_flag,ANN_reason,ANN_attributes = tf_ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
+                else:
+                    # old MCDL-25
+                    print('using old ANN because tensorflow/keras import failed')
+                    ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
+            if ANN_flag:
                  ANN_bondl = ANN_attributes['ANN_bondl']
-             else:
-                 ANN_bondl = 0
+                 print('ANN bond length is ' + str(ANN_bondl))
+            else:
+                 ANN_bondl = len([item for items in batslist for item in items])*[False] ## there needs to be 1 length per possible lig
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
          except:
              print("ANN call rejected")
              ANN_reason = 'uncaught exception'
              ANN_flag = False
-             ANN_bondl = 0
+             ANN_bondl =  len([item for items in batslist for item in items])*[False]
     return ANN_flag,ANN_bondl,ANN_reason,ANN_attributes
+    
 
 ## Initializes core and template mol3Ds and properties
 #  @param args Namespace of arguments
@@ -1580,6 +1596,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     batslist[comb][i] = m3D.natoms - coord + 1
     # initialize ANN
     ANN_flag,ANN_bondl,ANN_reason,ANN_attributes = init_ANN(args,ligands,occs,dents,batslist,tcats,licores)
+    
+    
+    
     this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
 
     # freeze core
@@ -1589,9 +1608,11 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     # loop over ligands and begin functionalization
     # loop over ligands
     totlig = 0  # total number of ligands added
-    ligsused = 0
+    ligsused = 0 # total number of ligands used
+    loopcount = 0 # this counts the site occupations (I think?)
     for i,ligand in enumerate(ligands):
         if not(ligand=='x' or ligand =='X'):
+            
             # load ligand
             lig,emsg = lig_load(ligand)
             # add decorations to ligand
@@ -1610,7 +1631,13 @@ def mcomplex(args,ligs,ligoc,licores,globs):
             if emsg:
                 return False,emsg
         for j in range(0,occs[i]):
+            if args.debug:
+                print('loading copy '+str(j) + ' of ligand ' + ligand + ' with dent ' + str(dents[i]))
+                print('totlig is ' + str(totlig))
+                print('target BL is ' + str(ANN_bondl[totlig]))
+                print('******')
             denticity = dents[i]
+            
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
                 # add atoms to connected atoms list
                 catoms = lig.cat # connection atoms
@@ -1629,11 +1656,11 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 if args.debug:
                     print('backbone atoms: ' + str(batoms))
                 if (denticity == 1):
-                    lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,i)
+                    lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,i)
                 elif (denticity == 2):
-                    lig3D,frozenats,MLoptbds = align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i)
+                    lig3D,frozenats,MLoptbds = align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 3):
-                    lig3D,frozenats,MLoptbds = align_dent3_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl,this_diag,MLbonds,MLoptbds,frozenats,i)
+                    lig3D,frozenats,MLoptbds = align_dent3_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 4):
 					# note: catoms for ligand should be specified clockwise
                     # connection atoms in backbone
@@ -1710,7 +1737,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     ## rotate around axis and get both images
                     #lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
 
-                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl,this_diag,MLbonds)
+                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds)
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
                 elif (denticity == 5):

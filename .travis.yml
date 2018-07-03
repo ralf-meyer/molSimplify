@@ -25,6 +25,7 @@ install:
   - source activate test-environment
   - conda config --add channels hjkgroup
   - conda build --python $TRAVIS_PYTHON_VERSION conda-recipe
+  - conda install keras
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
   - conda install pytest

@@ -94,6 +94,8 @@ class mol3D:
         self.dict_oct_check_st = self.globs.geo_check_dictionary()["dict_oct_check_st"]
         self.dict_oneempty_check_loose = self.globs.geo_check_dictionary()["dict_oneempty_check_loose"]
         self.dict_oneempty_check_st = self.globs.geo_check_dictionary()["dict_oneempty_check_st"]
+        self.oct_angle_ref = self.globs.geo_check_dictionary()["oct_angle_ref"]
+        self.oneempty_angle_ref = self.globs.geo_check_dictionary()["oneempty_angle_ref"]
         self.geo_dict = dict()
         self.std_not_use = list()
 
@@ -1552,9 +1554,12 @@ class mol3D:
     ## Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
     ## catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
     ## Output: shape_check dictionary
-    def oct_comp(self, angle_ref=oct_angle_ref, catoms_arr=None,
+    def oct_comp(self, angle_ref=False, catoms_arr=None,
                  debug=False):
+        if not angle_ref:
+            angle_ref=self.oct_angle_ref
         from molSimplify.Scripts.oct_check_mols import loop_target_angle_arr
+
         metal_coord = self.getAtomCoords(self.findMetal()[0])
         catom_coord = []
         ## Note that use this only when you wanna specify the metal connecting atoms.
@@ -1805,7 +1810,7 @@ class mol3D:
                         if ang > 170:
                             flag = True
                 else:
-                    print('Hydrogen not count for linear!')
+                    print('Hydrogens do not count for linear ligand check!')
         # print(flag, catoms)
         return flag, catoms
 
@@ -1920,11 +1925,15 @@ class mol3D:
     ## Output: flag_oct: good (1) or bad (0) structure.
     ##         flag_list: metrics that are failed from being a good geometry.
     ##         dict_oct_info: self.geo_dict
-    def IsOct(self, init_mol=None, dict_check=dict_oct_check_st,
-              angle_ref=oct_angle_ref, flag_catoms=False,
+    def IsOct(self, init_mol=None, dict_check=False,
+              angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True
               ):
+        if not dict_check:
+            dict_check=self.dict_oct_check_st
+        if not angle_ref:
+            angle_ref=self.oct_angle_ref
         self.get_num_coord_metal(debug=debug)
         ## Note that use this only when you wanna specify the metal connecting atoms.
         ## This will change the attributes of mol3D.
@@ -1959,11 +1968,16 @@ class mol3D:
     ## Final geometry check call for customerized structures. Once we have the custumed dict_check and angle_ref.
     ## Currently support one-site-empty octahedral.
     ## Inputs and outputs are the same as IsOct.
-    def IsStructure(self, init_mol=None, dict_check=dict_oneempty_check_st,
-                    angle_ref=oneempty_angle_ref, num_coord=5,
+    def IsStructure(self, init_mol=None, dict_check=False,
+                    angle_ref=False, num_coord=5,
                     flag_catoms=False, debug=False):
+        if not dict_check:
+            dict_check=self.dict_oneempty_check_st
+        if not angle_ref:
+            angle_ref=self.oneempty_angle_ref
         self.get_num_coord_metal(debug=debug)
         self.geo_dict_initialization()
+        
         if self.num_coord_metal >= num_coord:
             if True:
                 self.num_coord_metal = num_coord
@@ -1984,9 +1998,16 @@ class mol3D:
 
     ## Used to track down the changing geo_check metrics in a DFT geometry optimization.
     ## With the catoms_arr always specified.
-    def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=dict_oct_check_st,
-                       std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True, flag_lbd=False,
-                       dict_check_loose=dict_oct_check_loose, BondedOct=True, debug=False):
+    def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=False,
+                       std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
+                       dict_check_loose=False, BondedOct=True, debug=False):
+        if not dict_check:
+             dict_check=self.dict_oct_check_st
+        if not angle_ref:
+          angle_ref=self.oct_angle_ref
+        if not dict_check_loose:
+            dict_check_loose=self.dict_oct_check_loose
+
         if catoms_arr == None:
             print('Error, must have ctoms! If not, please use IsOct.')
             quit()

@@ -289,6 +289,7 @@ def parseinputfile(args):
     #### arguments that don't match with  inparse name and
     ### are not automatically initialized go here:
     args.skipANN = False
+    args.oldANN = False
     args.dbvdent = False
     args.dbvconns = False
     args.dbvhyb = False
@@ -332,6 +333,8 @@ def parseinputfile(args):
                 args.name =l[1]
             if (l[0]=='-skipANN'):
                 args.skipANN = True
+            if (l[0]=='-oldANN'):
+                args.oldANN = True
             if (l[0]=='-jobdir'):
                 if (len(l) > 1):
                     args.jobdir =l[1]
@@ -825,6 +828,7 @@ def parseinputs_basic(*p):
     parser.add_argument("-ligocc", help="number of corresponding ligands",action="store_true") # e.g. 1,2,1
     parser.add_argument("-spin", help="Spin multiplicity (e.g., 1 for singlet)")
     parser.add_argument("-keepHs", help="force keep hydrogens, default auto for each ligand") # specified in cleaninput
+    parser.add_argument("-skipANN", help="skip attempting ANN predictions") 
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
@@ -856,6 +860,7 @@ def parseinputs_advanced(*p):
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
     parser.add_argument("-langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
     parser.add_argument("-pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
+    parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions") 
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args

@@ -8,7 +8,7 @@ import random
 import string
 import numpy
 from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.nn_prep import *
+#from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.mol3D import*
