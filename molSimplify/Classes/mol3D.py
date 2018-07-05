@@ -1888,7 +1888,7 @@ class mol3D:
             flag_list = 'None'
         else:
             flag_oct = 0
-            flag_list = ', '.join(flag_list)
+            flag_list = '; '.join(flag_list)
             print('------bad structure!-----')
             print('flag_list:', flag_list)
         self.flag_oct = flag_oct
