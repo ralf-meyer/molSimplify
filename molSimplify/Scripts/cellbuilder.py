@@ -153,7 +153,7 @@ def unit_to_super(unit_cell,cell_vector,duplication_vector):
                     dy = 0 + i*a[1] + j*b[1] + k*c[1]
                     dz = 0 + i*a[2] + j*b[2] + k*c[2]
                     trans_vect =(dx,dy,dz)
-                    new_atom =atom3D(atoms.symbol(),atoms.coords())
+                    new_atom =atom3D(atoms.symbol(),atoms.coords(),atoms.name)
                     new_atom.translate(trans_vect)
                     super_cell.addAtom(new_atom)
     return super_cell
