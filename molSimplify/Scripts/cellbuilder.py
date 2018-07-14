@@ -141,13 +141,13 @@ def unit_to_super(unit_cell,cell_vector,duplication_vector):
     a = cell_vector[0]
     b = cell_vector[1]
     c = cell_vector[2]
-    for atoms in unit_cell.getAtoms():
 #        print('.......................................')
 #        print(atoms.symbol())
 #        print(atoms.coords())
-        for i in range(0,acell):
-            for j in range(0,bcell):
-                for k in range(0,ccell):
+    for i in range(0,acell):
+        for j in range(0,bcell):
+            for k in range(0,ccell):
+                for atoms in unit_cell.getAtoms():
 #                    print(str(i) + str(j) + str(k))
                     dx = 0 + i*a[0] + j*b[0] + k*c[0]
                     dy = 0 + i*a[1] + j*b[1] + k*c[1]
