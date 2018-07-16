@@ -1868,15 +1868,16 @@ class mol3D:
         self.geo_dict.update(self.dict_lig_distort)
         self.geo_dict.update(self.dict_catoms_shape)
         self.geo_dict.update(self.dict_orientation)
+        banned_sign = 'banned_by_user'
         if debug:
             print('dict_oct_info', self.geo_dict)
         for ele in self.std_not_use:
-            self.geo_dict[ele] = 'banned_by_user'
+            self.geo_dict[ele] = banned_sign
+        self.geo_dict['atom_dist_max'] = banned_sign
         flag_list = []
         for key, values in dict_check.items():
-            if not self.geo_dict[key] == 'banned_by_user':
-                if self.geo_dict[key] > values:
-                    flag_list.append(key)
+            if (self.geo_dict[key] > values) and (not self.geo_dict[key] == banned_sign):
+                flag_list.append(key)
         if self.geo_dict['num_coord_metal'] < num_coord:
             flag_list.append('num_coord_metal')
         if flag_list == ['num_coord_metal'] and \
