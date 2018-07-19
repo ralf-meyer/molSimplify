@@ -43,8 +43,8 @@ def generate_all_ligand_misc(mol,loud,custom_ligand_dict=False):
 	result_eq_ki = False
 	result_ax_tki = False
 	result_eq_tki = False
-        result_ax_charge = False
-        result_eq_charge = False
+	result_ax_charge = False
+	result_eq_charge = False
 	## loop over axial ligands
         if n_ax > 0:
                 for i in range(0,n_ax):

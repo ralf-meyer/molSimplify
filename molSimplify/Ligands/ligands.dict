@@ -1,6 +1,8 @@
 # ligand name, ligand structure file, abbreviation (unique), connection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), formal charge
 # if connecting atoms 
 acac:acac.mol,acac,0 5,build functionalize bidentate,BA,-1
+acacen:acacen.mol,acacen, 9 3 14 5,build tetradentate,N,0
+ethylesteracac:ethylesteracac.mol,ethylesteracac,0 5,build functionalize bidentate,BA,-1
 antipyrine:Antipyrine.mol,antipyrine,4,build bulky,BA,0
 acetonitrile:acetonitrile.mol,actnt,1,build small,N,0
 acetylacetone:acac.mol,acac,0 5,build functionalize bidentate,BA,-1
@@ -121,6 +123,7 @@ proline:proline.mol,Pro,3,build functionalize aminoacid,BA,0
 prolineB:proline.mol,Pro,3 15,build functionalize aminoacid,BA,0
 propdiol:propdiol.mol,propdiol,0 4,build functionalize bidentate,BA,-1
 pyr:pyridine.mol,pyrd,3,build organic,BA,0
+pyrrole:pyrrole.mol,pyrl,0,build organic,BA,-1
 pyridine:pyridine.mol,pyrd,3,build organic,BA,0
 pyrimidone:pyrimidone.mol,pyrimidone,0, build monodentate,A,0
 quinoxalinedithiol:quinoxalinedithiol.mol,quinoxaline,0 7,build functionalize bidentate,BA,-1
