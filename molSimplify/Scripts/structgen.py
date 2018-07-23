@@ -1,4 +1,4 @@
-## @file structgen.py
+## file structgen.py
 #  Main structure generation routine
 #
 #  Written by Tim Ioannidis for HJK Group
@@ -1646,8 +1646,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
             if args.debug:
                 print('loading copy '+str(j) + ' of ligand ' + ligand + ' with dent ' + str(dents[i]))
                 print('totlig is ' + str(totlig))
-                print('target BL is ' + str(ANN_bondl[totlig]))
-                
+                print('ligused is ' + str(ligsused))
+                print('target BL is ' + str(ANN_bondl[ligsused]))
+                print('******')
             denticity = dents[i]
             
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
@@ -1668,15 +1669,15 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 if args.debug:
                     print('backbone atoms: ' + str(batoms))
                 if (denticity == 1):
-                    lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,i)
+                    lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl[ligsused],this_diag,MLbonds,MLoptbds,i)
                     if args.debug:
                         print('adding monodentate at distance: ' + str(ANN_bondl[totlig]) + '/'+str(MLb)+ '/'+' at catoms ' + str(catoms))                    
                         print('printing ligand information')                    
                         print(lig3D.printxyz())
                 elif (denticity == 2):
-                    lig3D,frozenats,MLoptbds = align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,frozenats,i)
+                    lig3D,frozenats,MLoptbds = align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[ligsused],this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 3):
-                    lig3D,frozenats,MLoptbds = align_dent3_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,frozenats,i)
+                    lig3D,frozenats,MLoptbds = align_dent3_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[ligsused],this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 4):
 					# note: catoms for ligand should be specified clockwise
                     # connection atoms in backbone
@@ -1753,7 +1754,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     ## rotate around axis and get both images
                     #lig3D = rotate_around_axis(lig3D,mcoords,ul,theta)
 
-                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds)
+                    bondl = get_MLdist(args,lig3D,atom0,ligand,m3D.getAtom(0),MLb,i,ANN_flag,ANN_bondl[ligsused],this_diag,MLbonds)
                     for iib in range(0,4):
                         MLoptbds.append(bondl)
                 elif (denticity == 5):
