@@ -455,9 +455,12 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
     metals = range(21,31)+range(39,49)+range(72,81)
     ### check requested force field
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s' # force fields
+
     if ff.lower() not in ffav:
         print 'Requested force field not available. Defaulting to MMFF94'
         ff = 'uff'
+    if debug:
+        print('using ff: ' + ff)
     # perform constrained ff optimization if requested after #
     if (constopt > 0):
         # get metal
@@ -483,8 +486,11 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
             constr.AddAtomConstraint(midxm+1) # indexing babel
         # add coordinating atom constraints
         for ii,catom in enumerate(connected):
+            
             if constopt==1 or frozenangles:
                 constr.AddAtomConstraint(catom+1) # indexing babel
+                if debug:
+                    print('using connnected opt to freeze atom number: ' + str(catom))
             else:
                 constr.AddDistanceConstraint(midx+1,catom+1,mlbonds[ii]) # indexing babel
         #print('ff is '+ str(ff))        
@@ -514,6 +520,8 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                             OBMol.AddBond(m+1,i+1,1)
         # freeze small ligands
         for cat in frozenats:
+            if debug:
+                print('using frozenats to freeze atom number: ' + str(cat))
             constr.AddAtomConstraint(cat+1) # indexing babel
         #if debug:
         #    for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
@@ -1013,6 +1021,7 @@ def get_MLdist(args,lig3D,atom0,ligand,metal,MLb,i,ANN_flag,ANN_bondl,this_diag,
             print('using exact M-L match from DB')
         else:
             print('Warning: ANN not active and exact M-L match not found in DB, distance may not be accurate')
+            print('using DB distance of '+str(bondl))
     return bondl
 
 ## Loads M-L bond length from database and reports if compound is in DB
@@ -1611,6 +1620,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     ligsused = 0 # total number of ligands used
     loopcount = 0 # this counts the site occupations (I think?)
     for i,ligand in enumerate(ligands):
+        if args.debug:
+                print('************')
+                print('loading ligand '+str(ligand) + ', number  ' + str(i) + ' of ' + str(len(ligands)))
         if not(ligand=='x' or ligand =='X'):
             
             # load ligand
@@ -1635,7 +1647,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 print('loading copy '+str(j) + ' of ligand ' + ligand + ' with dent ' + str(dents[i]))
                 print('totlig is ' + str(totlig))
                 print('target BL is ' + str(ANN_bondl[totlig]))
-                print('******')
+                
             denticity = dents[i]
             
             if not(ligand=='x' or ligand =='X') and (totlig-1+denticity < coord):
@@ -1657,6 +1669,10 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     print('backbone atoms: ' + str(batoms))
                 if (denticity == 1):
                     lig3D,MLoptbds = align_dent1_lig(args,cpoint,core3D,coreref,ligand,lig3D,catoms,rempi,ligpiatoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,i)
+                    if args.debug:
+                        print('adding monodentate at distance: ' + str(ANN_bondl[totlig]) + '/'+str(MLb)+ '/'+' at catoms ' + str(catoms))                    
+                        print('printing ligand information')                    
+                        print(lig3D.printxyz())
                 elif (denticity == 2):
                     lig3D,frozenats,MLoptbds = align_dent2_lig(args,cpoint,batoms,m3D,core3D,coreref,ligand,lig3D,catoms,MLb,ANN_flag,ANN_bondl[totlig],this_diag,MLbonds,MLoptbds,frozenats,i)
                 elif (denticity == 3):
@@ -1821,7 +1837,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 auxm.copymol3D(lig3D)
                 complex3D.append(auxm)
                 if 'a' not in lig.ffopt.lower():
+                    
                     for latdix in range(0,lig3D.natoms):
+                        print('a is not ff.lower, so adding ' + str(latdix+core3D.natoms)+  'to freeze')
                         frozenats.append(latdix+core3D.natoms)
                 # combine molecules
                 core3D = core3D.combine(lig3D)
@@ -1833,10 +1851,29 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 if args.calccharge:
                     core3D.charge += lig3D.charge
                 # perform FF optimization if requested
+                if args.debug:
+                    print('saving a copy of the complex named complex_'+str(i)+'_'+str(j) + '.xyz')
+                    core3D.writexyz('complex_'+str(i)+'_'+str(j) + '.xyz')
 
                 if 'a' in args.ffoption:
                     print('FF optimizing molecule after placing ligand')
-                    core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
+                    print('in the a relax, passing connected as ' + str(connected))
+                    #(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=False):
+                    core3D,enc = ffopt(ff=args.ff,\
+                                        mol=core3D,\
+                                        connected=connected,\
+                                        constopt=1,\
+                                        frozenats=frozenats,\
+                                        frozenangles=freezeangles,\
+                                        mlbonds=MLoptbds,\
+                                        nsteps='Adaptive',\
+                                        debug=args.debug)
+                    if args.debug:
+                        print('saving a copy of the complex named complex_'+str(i)+'_'+str(j) + '_ff.xyz')
+                        core3D.writexyz('complex_'+str(i)+'_'+str(j) + '_ff.xyz')
+                if args.debug:
+                    print('done with pair of inds '+str(i)+' and '+str(j))
+                    print('**************************')
             totlig += denticity
             ligsused += 1
     # perform FF optimization if requested
