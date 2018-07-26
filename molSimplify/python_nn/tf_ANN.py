@@ -11,6 +11,7 @@
 ## import 
 import keras
 from keras.models import model_from_json
+from keras.optimizers import Adam
 import numpy as np
 import csv
 from pkg_resources import resource_filename, Requirement
@@ -26,6 +27,7 @@ def data_rescale(scaled_dat,train_mean,train_var):
     dat = (np.multiply(scaled_dat.T,np.sqrt(train_var),)+train_mean).T
     return(dat)
 def data_normalize(data,train_mean,train_var):
+    data = data.astype(float) #Make sure the data is always in float form
     d = np.shape(train_mean)[0]
     #print('normalizing with number of dimensions = ' +str(d))
     scaled_dat = np.divide((data.T - train_mean),np.sqrt(train_var),).T
@@ -55,17 +57,20 @@ def load_normalization_data(name):
     with open(path_to_file,'r') as f:
         for lines in f.readlines():
             train_var_y.append([float(lines.strip().strip('[]'))])
+
     train_mean_x = np.array(train_mean_x)
     train_var_x = np.array(train_var_x)
     train_mean_y = np.array(train_mean_y)
     train_var_y = np.array(train_var_y)
-    
+
     return train_mean_x,train_mean_y,train_var_x,train_var_y
     
     
 def load_ANN_variables(predictor):
     if predictor in ['ls_ii','hs_ii','ls_iii','hs_iii']:
         key = 'geos/'+predictor+ '_vars'
+    elif predictor in ['homo','gap']:
+        key = 'homolumo/'+predictor+ '_vars'
     else:
         key = predictor+ '/'+predictor+ '_vars'
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key +'.csv')
@@ -78,6 +83,8 @@ def load_ANN_variables(predictor):
 def load_training_data(predictor):
     if predictor in ['ls_ii','hs_ii','ls_iii','hs_iii']:
         key = 'geos/'+predictor+ '_bl_x'
+    elif predictor in ['homo','gap']:
+        key = 'homolumo/'+predictor+'_train_x'
     elif predictor == "split":
         key = predictor+ '/'+predictor+ '_x_41_OHE'
     else:
@@ -96,6 +103,8 @@ def load_keras_ann(predictor):
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
     if predictor in ['ls_ii','hs_ii','ls_iii','hs_iii']:
         key = 'geos/'+predictor+ '_model'
+    elif predictor in ['homo','gap']:
+        key = 'homolumo/'+predictor +'_model'
     else:
         key = predictor+ '/model'
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key + '.json')
@@ -107,10 +116,18 @@ def load_keras_ann(predictor):
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key+ '.h5')
     loaded_model.load_weights(path_to_file)
     # complile model
-    loaded_model.compile(loss="mse",optimizer='adam',
+    if predictor == 'homo':
+        loaded_model.compile(loss="mse",optimizer=Adam(beta_2 = 1-0.0016204733101599046, beta_1 =  0.8718839135783554, decay = 7.770243145972892e-05, lr = 0.0004961686075897741),
+              metrics=['mse', 'mae', 'mape'])
+    elif predictor == 'gap':
+        loaded_model.compile(loss="mse",optimizer=Adam(beta_2 = 1-0.00010929248596488832, beta_1 =  0.8406735969305784, decay = 0.00011224350434148253, lr = 0.0006759924688701965),
+              metrics=['mse', 'mae', 'mape'])
+    else:
+        loaded_model.compile(loss="mse",optimizer='adam',
               metrics=['mse', 'mae', 'mape'])
     
     print("Keras/tf model loaded for " + str(predictor) + " from disk")
+
     return(loaded_model)
 
 
@@ -150,6 +167,7 @@ def ANN_supervisor(predictor,descriptors,descriptor_names):
     print('fetching non-dimensionalization data... ')
     train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
     print('rescaling input excitation...')
+
     excitation = data_normalize(excitation,train_mean_x,train_var_x)
 
     ## fetch ANN
@@ -166,7 +184,7 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names)
-    
+    excitation = excitation.astype(float) #ensure that the excitation is a float, and not strings
     ## getting train matrix info
     mat = load_training_data(predictor)
     train_mat = np.array(mat,dtype='float64')
