@@ -326,7 +326,7 @@ class globalvars:
         try:
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
             from keras.models import Model
-            from tensorflow.python.keras.models import Sequential
+            from keras.models import Sequential
             return True
         except:
             return False
