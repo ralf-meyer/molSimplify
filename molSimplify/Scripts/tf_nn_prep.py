@@ -411,6 +411,10 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                 print('cannot case exchange argument as a float, using 20%')
         descriptor_names += ['alpha']
         descriptors += [alpha]
+        descriptor_names += ['ox']
+        descriptors += [ox]
+        descriptor_names += ['spin']
+        descriptors += [spin]
         if args.debug:
             current_time =  time.time()
             rac_check_time  = current_time - last_time
@@ -444,6 +448,20 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('GEO ANN took ' +  "{0:.2f}".format(GEO_ANN_time)+ ' seconds')
 
+        homo_val = ANN_supervisor('homo',descriptors,descriptor_names)[0]
+        if args.debug:
+            current_time =  time.time()
+            homo_ANN_time  = current_time - last_time
+            last_time = current_time
+            print('homo ANN took ' +  "{0:.2f}".format(homo_ANN_time) + ' seconds')
+
+        gap_val = ANN_supervisor('gap',descriptors,descriptor_names)[0]
+        if args.debug:
+            current_time =  time.time()
+            gap_ANN_time  = current_time - last_time
+            last_time = current_time
+            print('gap ANN took ' +  "{0:.2f}".format(gap_ANN_time) + ' seconds')
+
         ## get minimum distance to train (for splitting)
         
         train_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
@@ -453,6 +471,12 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('min dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
         
+        homo_train_dist = find_true_min_eu_dist("homo",descriptors,descriptor_names)
+        if args.debug:
+            current_time =  time.time()
+            min_dist_time  = current_time - last_time
+            last_time = current_time
+            print('min HOMO dist took ' +  "{0:.2f}".format(homo_train_dist)+ ' seconds')
 
         ## save attributes for return
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
@@ -464,6 +488,10 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             ANN_attributes.update({'ANN_ground_state':spin_ops[0]})
         else:
             ANN_attributes.update({'ANN_gound_state':'dgen ' + str(spin_ops)})
+
+        ANN_attributes.update({'pred_HOMO':homo_val[0]})
+        ANN_attributes.update({'pred_GAP':gap_val[0]})
+        ANN_attributes.update({'ANN_dist_to_train_HOMO_and_GAP':homo_train_dist} )
         
         ## now that we have bond predictions, we need to map these
         ## back to a length of equal size as the original ligand request
@@ -487,6 +515,23 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         ANN_attributes.update({'ANN_bondl':4*[r[2]]+[r[0],r[1]]})
         
+        HOMO_ANN_trust = 'not set'
+        HOMO_ANN_trust_message = ""
+        print(homo_train_dist)
+        if float(homo_train_dist/3)< 0.25: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+            HOMO_ANN_trust_message = 'ANN results should be trustworthy for this complex '
+            HOMO_ANN_trust = 'high'
+        elif float(homo_train_dist/3)< 0.75:
+            HOMO_ANN_trust_message = 'ANN results are probably useful for this complex '
+            HOMO_ANN_trust  = 'medium'
+        elif float(homo_train_dist/3)< 1.0:
+            HOMO_ANN_trust_message = 'ANN results are fairly far from training data, be cautious '
+            HOMO_ANN_trust = 'low'
+        elif float(homo_train_dist/3)> 1.0:
+            HOMO_ANN_trust_message = 'ANN results are too far from training data, be cautious '
+            HOMO_ANN_trust = 'very low'
+        ANN_attributes.update({'HOMO_GAP_ANN_trust':HOMO_ANN_trust})
+
         ANN_trust = 'not set'
         ANN_trust_message = ""
         if float(train_dist/3)< 0.25:
@@ -529,9 +574,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         print('ANN high spin bond length (ax1/ax2/eq) is predicted to be: '+" /".join(["{0:.2f}".format(float(i)) for i in r_hs[0]]) + ' angstrom')
         print('distance to training data is ' + "{0:.2f}".format(train_dist) )
         print(ANN_trust_message)
+        print("ANN predicts a HOMO value of " + "{0:.2f}".format(float(homo_val[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
+        print("ANN predicts a LUMO-HOMO energetic gap value of " + "{0:.2f}".format(float(gap_val[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
+        print(HOMO_ANN_trust_message)
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
+        from keras import backend as K
+        K.clear_session() #This is done to get rid of the attribute error that is a bug in tensorflow.
         
     if not valid and not ANN_reason:
         ANN_reason = ' uncaught rejection (see sdout/stderr)'
