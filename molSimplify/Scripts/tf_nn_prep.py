@@ -97,6 +97,7 @@ def tf_check_ligands(ligs,batlist,dents,tcats,occs,debug):
         triple_bidentate = True
         unique_ligs = []
         ucats = []
+        unique_dict = {}
         if not(n_ligs) == 3:
                 ## something unexpected happened!
                 valid = False 
@@ -107,29 +108,33 @@ def tf_check_ligands(ligs,batlist,dents,tcats,occs,debug):
             this_occs = occs[i]
             ## mulitple points
             if not (this_lig in unique_ligs):
-                    unique_ligs.append(this_lig)
-                    ucats.append(tcats[i])
+                unique_ligs.append(this_lig)
+                ucats.append(tcats[i])
+                unique_dict.update({this_lig: 1})
             elif (this_lig in unique_ligs):
-                if not (this_lig in equitorial_ligs) :
-                    equitorial_ligs.append(this_lig)
-                    eq_dent = this_dent
-                    eq_tcat = tcats[i]
-                    eq_occs.append(this_occs)
-                else:
-                    eq_occs[equitorial_ligs.index(this_lig)] += 1
+                unique_dict.update({this_lig:unique_dict[this_lig]+1})
                    
         if len(unique_ligs) == 1:
-            axial_ligs.append(equitorial_ligs[0])
+            axial_ligs.append(ligs[0])
             ax_dent  = 2
-            ax_tcat = eq_tcat
-            ax_occs.append(this_occs)
+            ax_tcat = tcats[0]
+            ax_occs.append(1)
+            equitorial_ligs.append(ligs[0])
+            eq_dent  = 2
+            eq_tcat = tcats[0]
+            eq_occs.append(2)
         elif len(unique_ligs) == 2:
-            for i,uligs in enumerate(unique_ligs):
-                if not (uligs in equitorial_ligs): #only occured once
-                    axial_ligs.append(uligs)
+            for key in unique_dict.keys():
+                if unique_dict[key] == 1:
+                    axial_ligs.append(key)
                     ax_dent = 2
-                    ax_tcat = ucats[i]
-                    ax_occs = occs[i]
+                    ax_occs.append(1)
+                    ax_tcat = tcats[ligs.index(key)]
+                elif unique_dict[key] == 2:
+                    equitorial_ligs.append(key)
+                    eq_dent = 2
+                    eq_occs.append(2)
+                    eq_tcat = tcats[ligs.index(key)]
         else:
             valid = False
     else:
@@ -425,7 +430,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
 
         ## get spin splitting:
-        delta = ANN_supervisor('split',descriptors,descriptor_names)[0]
+        split = ANN_supervisor('split',descriptors,descriptor_names)[0]
         if args.debug:
             current_time =  time.time()
             split_ANN_time  = current_time - last_time
@@ -450,14 +455,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('GEO ANN took ' +  "{0:.2f}".format(GEO_ANN_time)+ ' seconds')
 
-        homo_val = ANN_supervisor('homo',descriptors,descriptor_names)[0]
+        homo = ANN_supervisor('homo',descriptors,descriptor_names)[0]
         if args.debug:
             current_time =  time.time()
             homo_ANN_time  = current_time - last_time
             last_time = current_time
             print('homo ANN took ' +  "{0:.2f}".format(homo_ANN_time) + ' seconds')
 
-        gap_val = ANN_supervisor('gap',descriptors,descriptor_names)[0]
+        gap = ANN_supervisor('gap',descriptors,descriptor_names)[0]
         if args.debug:
             current_time =  time.time()
             gap_ANN_time  = current_time - last_time
@@ -466,14 +471,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         ## get minimum distance to train (for splitting)
         
-        train_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
+        split_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
             last_time = current_time
             print('min dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
         
-        homo_train_dist = find_true_min_eu_dist("homo",descriptors,descriptor_names)
+        homo_dist = find_true_min_eu_dist("homo",descriptors,descriptor_names)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -481,19 +486,20 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min HOMO dist took ' +  "{0:.2f}".format(homo_train_dist)+ ' seconds')
 
         ## save attributes for return
-        ANN_attributes.update({'pred_split_HS_LS':delta[0]})
-        ANN_attributes.update({'ANN_dist_to_train':train_dist} )
+        ANN_attributes.update({'split':split[0]})
+        ANN_attributes.update({'split_dist':split_dist} )
         ANN_attributes.update({'This spin':spin})
-        if delta[0] < 0 and (abs(delta[0]) > 5):
+        if split[0] < 0 and (abs(split[0]) > 5):
             ANN_attributes.update({'ANN_ground_state':spin_ops[1]})
-        elif delta[0] > 0 and (abs(delta[0]) > 5):
+        elif split[0] > 0 and (abs(split[0]) > 5):
             ANN_attributes.update({'ANN_ground_state':spin_ops[0]})
         else:
-            ANN_attributes.update({'ANN_gound_state':'dgen ' + str(spin_ops)})
+            ANN_attributes.update({'ANN_ground_state':'dgen ' + str(spin_ops)})
 
-        ANN_attributes.update({'pred_HOMO':homo_val[0]})
-        ANN_attributes.update({'pred_GAP':gap_val[0]})
-        ANN_attributes.update({'ANN_dist_to_train_HOMO_and_GAP':homo_train_dist} )
+        ANN_attributes.update({'homo':homo[0]})
+        ANN_attributes.update({'gap':gap[0]})
+        ANN_attributes.update({'homo_dist':homo_dist} )
+        ANN_attributes.update({'gap_dist':homo_dist} ) #This is just because the homo_dist and gap_dist are the same (same training data)
         
         ## now that we have bond predictions, we need to map these
         ## back to a length of equal size as the original ligand request
@@ -519,36 +525,36 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         
         HOMO_ANN_trust = 'not set'
         HOMO_ANN_trust_message = ""
-        print(homo_train_dist)
-        if float(homo_train_dist)< 3: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+        if float(homo_dist)< 3: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
             HOMO_ANN_trust_message = 'ANN results should be trustworthy for this complex '
             HOMO_ANN_trust = 'high'
-        elif float(homo_train_dist)< 5:
+        elif float(homo_dist)< 5:
             HOMO_ANN_trust_message = 'ANN results are probably useful for this complex '
             HOMO_ANN_trust  = 'medium'
-        elif float(homo_train_dist)<= 10:
+        elif float(homo_dist)<= 10:
             HOMO_ANN_trust_message = 'ANN results are fairly far from training data, be cautious '
             HOMO_ANN_trust = 'low'
-        elif float(homo_train_dist)> 10:
+        elif float(homo_dist)> 10:
             HOMO_ANN_trust_message = 'ANN results are too far from training data, be cautious '
             HOMO_ANN_trust = 'very low'
-        ANN_attributes.update({'HOMO_GAP_ANN_trust':HOMO_ANN_trust})
+        ANN_attributes.update({'homo_trust':HOMO_ANN_trust})
+        ANN_attributes.update({'gap_trust':HOMO_ANN_trust})
 
         ANN_trust = 'not set'
         ANN_trust_message = ""
-        if float(train_dist/3)< 0.25:
+        if float(split_dist/3)< 0.25:
             ANN_trust_message = 'ANN results should be trustworthy for this complex '
             ANN_trust = 'high'
-        elif float(train_dist/3)< 0.75:
+        elif float(split_dist/3)< 0.75:
             ANN_trust_message = 'ANN results are probably useful for this complex '
             ANN_trust  = 'medium'
-        elif float(train_dist/3)< 1.0:
+        elif float(split_dist/3)< 1.0:
             ANN_trust_message = 'ANN results are fairly far from training data, be cautious '
             ANN_trust = 'low'
-        elif float(train_dist/3)> 1.0:
+        elif float(split_dist/3)> 1.0:
             ANN_trust_message = 'ANN results are too far from training data, be cautious '
             ANN_trust = 'very low'
-        ANN_attributes.update({'ANN_trust':ANN_trust})
+        ANN_attributes.update({'split_trust':ANN_trust})
         
         ## print text to std out
         print("******************************************************************")
@@ -560,26 +566,26 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         else:
             print('You have selected a low-spin state, s = ' + str(spin))
         ## report to stdout
-        if delta[0] < 0 and not high_spin:
-            if abs(delta[0]) > 5:
+        if split[0] < 0 and not high_spin:
+            if abs(split[0]) > 5:
                 print('warning, ANN predicts a high spin ground state for this complex')
             else:
                 print('warning, ANN predicts a near degenerate ground state for this complex')
-        elif delta[0] >= 0 and high_spin:
-            if abs(delta[0]) > 5:
+        elif split[0] >= 0 and high_spin:
+            if abs(split[0]) > 5:
                 print('warning, ANN predicts a low spin ground state for this complex')
             else:
                 print('warning, ANN predicts a near degenerate ground state for this complex')
-        print('delta is' ,delta[0],' spin is ',high_spin)
-        print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX')
+        print('delta is' ,split[0],' spin is ',high_spin)
+        print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(split[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print('ANN low spin bond length (ax1/ax2/eq) is predicted to be: '+" /".join(["{0:.2f}".format(float(i)) for i in r_ls[0]]) + ' angstrom')
         print('ANN high spin bond length (ax1/ax2/eq) is predicted to be: '+" /".join(["{0:.2f}".format(float(i)) for i in r_hs[0]]) + ' angstrom')
-        print('distance to training data is ' + "{0:.2f}".format(train_dist) )
+        print('distance to training data is ' + "{0:.2f}".format(split_dist) )
         print(ANN_trust_message)
-        print("ANN predicts a HOMO value of " + "{0:.2f}".format(float(homo_val[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
-        print("ANN predicts a LUMO-HOMO energetic gap value of " + "{0:.2f}".format(float(gap_val[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
+        print("ANN predicts a HOMO value of " + "{0:.2f}".format(float(homo[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
+        print("ANN predicts a LUMO-HOMO energetic gap value of " + "{0:.2f}".format(float(gap[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print(HOMO_ANN_trust_message)
-        print('distance to HOMO / GAP training data is ' + "{0:.2f}".format(homo_train_dist) )
+        print('distance to HOMO / GAP training data is ' + "{0:.2f}".format(homo_dist) )
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
