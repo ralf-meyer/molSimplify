@@ -185,11 +185,12 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names)
     excitation = excitation.astype(float) #ensure that the excitation is a float, and not strings
+
     ## getting train matrix info
     mat = load_training_data(predictor)
     train_mat = np.array(mat,dtype='float64')
     ## loop over rows
-    min_dist = 1000
+    min_dist = 100000
     min_ind = 0
     for i,rows in enumerate(train_mat):
         this_dist = np.linalg.norm(np.subtract(rows,np.array(excitation)))
@@ -198,18 +199,18 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
             min_ind = i
             #best_row = rownames[i]
             min_row = rows
-    
+
     # flatten min row
     min_row = np.reshape(min_row, excitation.shape) 
-    
     #print('min dist is ' +str(min_dist) + ' at  ' + str(min_ind))
     
     # need to get normalized distances 
+
     train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
+
     scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x)
     scaled_row = data_normalize(min_row,train_mean_x,train_var_x)
     min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
-    
     return(min_dist)
     
     
