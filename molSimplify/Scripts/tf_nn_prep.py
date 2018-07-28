@@ -265,6 +265,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if valid:
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(this_metal,oxidation_state)
+
         ## generate key in descriptor space
         ox = int(oxidation_state)
         spin = args.spin
@@ -290,6 +291,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
     if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat,axial_ind_list,equitorial_ind_list,ax_occs,eq_occs = tf_check_ligands(ligs,batslist,dents,tcats,occs,args.debug)
+
         if args.debug:
 
             print("ligand validity is  "+str(valid))
@@ -518,16 +520,16 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         HOMO_ANN_trust = 'not set'
         HOMO_ANN_trust_message = ""
         print(homo_train_dist)
-        if float(homo_train_dist/3)< 0.25: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+        if float(homo_train_dist)< 3: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
             HOMO_ANN_trust_message = 'ANN results should be trustworthy for this complex '
             HOMO_ANN_trust = 'high'
-        elif float(homo_train_dist/3)< 0.75:
+        elif float(homo_train_dist)< 5:
             HOMO_ANN_trust_message = 'ANN results are probably useful for this complex '
             HOMO_ANN_trust  = 'medium'
-        elif float(homo_train_dist/3)< 1.0:
+        elif float(homo_train_dist)<= 10:
             HOMO_ANN_trust_message = 'ANN results are fairly far from training data, be cautious '
             HOMO_ANN_trust = 'low'
-        elif float(homo_train_dist/3)> 1.0:
+        elif float(homo_train_dist)> 10:
             HOMO_ANN_trust_message = 'ANN results are too far from training data, be cautious '
             HOMO_ANN_trust = 'very low'
         ANN_attributes.update({'HOMO_GAP_ANN_trust':HOMO_ANN_trust})
@@ -577,6 +579,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         print("ANN predicts a HOMO value of " + "{0:.2f}".format(float(homo_val[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print("ANN predicts a LUMO-HOMO energetic gap value of " + "{0:.2f}".format(float(gap_val[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print(HOMO_ANN_trust_message)
+        print('distance to HOMO / GAP training data is ' + "{0:.2f}".format(homo_train_dist) )
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
