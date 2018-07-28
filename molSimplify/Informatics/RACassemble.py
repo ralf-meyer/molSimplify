@@ -161,7 +161,7 @@ def create_OHE(descriptor_names,descriptors, metal,oxidation_state):
         OHE_values[OHE_names.index("d5")]+=1
     elif metal == "Co" and int(oxidation_state) == 2:
         OHE_values[OHE_names.index("d7")]+=1
-    elif metal == "Co" and int(oxidation_state) == 2:
+    elif metal == "Co" and int(oxidation_state) == 3:
         OHE_values[OHE_names.index("d6")]+=1        
     elif metal == "Ni" and int(oxidation_state) == 2:
         OHE_values[OHE_names.index("d8")]+=1        
