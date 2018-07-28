@@ -479,7 +479,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min HOMO dist took ' +  "{0:.2f}".format(homo_train_dist)+ ' seconds')
 
         ## save attributes for return
-        ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
+        ANN_attributes.update({'pred_split_HS_LS':delta[0]})
         ANN_attributes.update({'ANN_dist_to_train':train_dist} )
         ANN_attributes.update({'This spin':spin})
         if delta[0] < 0 and (abs(delta[0]) > 5):
