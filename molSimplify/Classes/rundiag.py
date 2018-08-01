@@ -20,12 +20,15 @@ class run_diag:
         self.ANN_is_set = False
         self.bl_is_set = False
         self.mol_is_set = False
+        self.catalysis_is_set = False
         self.sanity  = False
         self.min_dist = False
         self.ANN_flag = False # ANN value has been set?
         self.ANN_reason = " not set" # Reason ANN not set
         self.ANN_attributes = dict() # placeholder for
                                      # predicted properties
+        self.catalysis_flag = False
+        self.catalysis_reason = " not activated"
         self.dict_bondl = False # stores the ML-dict bond dist
         self.mol = False # stores a mol3D representation of the mol.
         
@@ -38,7 +41,7 @@ class run_diag:
             self.sanity_is_set = True
         self.sanity = sanity
         self.min_dist = min_distance
-    def set_ANN(self,ANN_flag,ANN_reason =  False,ANN_dict = False):
+    def set_ANN(self,ANN_flag,ANN_reason =  False,ANN_dict = False, catalysis_flag = False, catalysis_reason = False):
         if not self.ANN_is_set:
             self.ANN_is_set = True
         self.ANN_flag = ANN_flag
@@ -46,6 +49,14 @@ class run_diag:
             self.ANN_reason = ANN_reason
         elif ANN_flag:
             self.ANN_attributes = ANN_dict
+        if not self.catalysis_is_set:
+            self.catalysis_is_set = True
+        self.catalysis_flag = catalysis_flag
+        if not catalysis_flag:
+            self.catalysis_reason = catalysis_reason
+        elif catalysis_flag:
+            self.ANN_attributes = ANN_dict
+
     def set_dict_bl(self,dict_bl):
         if not self.bl_is_set:
             self.bl_is_set = True
@@ -71,6 +82,13 @@ class run_diag:
                 report.append('Was ANN used?, '+str(self.ANN_flag))
                 if not self.ANN_flag:
                     report.append('ANN reason, ' + str(self.ANN_reason))
+                else:
+                    for keys in self.ANN_attributes.keys():
+                        report.append(str(keys) + ', '+ str(self.ANN_attributes[keys]))
+            if self.catalysis_is_set:
+                report.append('Was Catalytic ANN used?, '+str(self.catalysis_flag))
+                if not self.catalysis_flag:
+                    report.append('Catalytic ANN reason, ' + str(self.catalysis_reason))
                 else:
                     for keys in self.ANN_attributes.keys():
                         report.append(str(keys) + ', '+ str(self.ANN_attributes[keys]))
