@@ -23,6 +23,12 @@ Co	3	3	O	water		1.97	# tpss def2TZVP
 Co	3	5	O	water		2.01	# tpss def2TZVP
 Co	-	-	N	hydrocyanide	2.14
 Co	-	-	N	bipy		2.09
+Co	4	2	O	oxo		1.65
+Co	4	4	O	oxo		1.65
+Co	4	6	O	oxo		1.65
+Co	5	1	O	oxo		1.65
+Co	5	3	O	oxo		1.65
+Co	5	5	O	oxo		1.65
 Cr	-	-	N	-		2.20
 Cr	-	-	C	-		2.09
 Cr	-	-	O	-		2.09
@@ -44,6 +50,9 @@ Cr	2	3	O	water		2.09	# tpss def2TZVP
 Cr	2	5	O	water		2.19	# tpss def2TZVP
 Cr	3	2	O	water		1.99	# tpss def2TZVP
 Cr	3	4	O	water		2.00	# tpss def2TZVP
+Cr	4	1	O	oxo		1.65
+Cr	4	3	O	oxo		1.65
+Cr	5	2	O	oxo		1.65
 Cu	-	-	N	-		2.14
 Cu	-	-	C	-		2.12
 Cu	-	-	O	-		2.28
@@ -100,7 +109,12 @@ Fe	2	1	N	bipy		2.02	# b3lyp lacvps
 Fe	2	5	N	bipy		2.23	# b3lyp lacvps
 Fe	3	2	N	bipy		2.00	# b3lyp lacvps
 Fe	3	6	N	bipy		2.15	# b3lyp lacvps
-Fe  2   5   O   oxo         1.61
+Fe	2	5	O	oxo		1.61
+Fe	4	1	O	oxo		1.65
+Fe	4	3	O	oxo		1.65
+Fe	4	5	O	oxo		1.65
+Fe	5	2	O	oxo		1.65
+Fe	5	4	O	oxo		1.65
 Fe	-	-	N	isothiocyanate	2.06	
 Mn	-	-	N	-		2.19
 Mn	-	-	C	-		2.01
@@ -125,6 +139,10 @@ Mn	2	6	O	water		2.18	# tpss def2TZVP
 Mn	3	1	O	water		1.97	# tpss def2TZVP	
 Mn	3	3	O	water		1.95	# tpss def2TZVP	
 Mn	3	5	O	water		2.02	# tpss def2TZVP	
+Mn	4	2	O	oxo		1.65
+Mn	4	4	O	oxo		1.65
+Mn	5	1	O	oxo		1.65
+Mn	5	3	O	oxo		1.65
 Mo	0	7	O	water		2.40	# b3lyp lacvps
 Mo	2	5	O	water		2.20	# b3lyp lacvps
 Mo	2	5	O	hydroxyl	2.10	# b3lyp lacvps
