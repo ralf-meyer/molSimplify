@@ -107,6 +107,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
     # initialize ANN
     ANN_attributes = dict()
     globs = globalvars()
+    catalysis_flag = False
     if args.skipANN:
          print('Skipping ANN')
          ANN_flag = False
@@ -121,7 +122,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                 if globs.testTF():
                     ## new RACs-ANN
                     from molSimplify.Scripts.tf_nn_prep import tf_ANN_preproc
-                    ANN_flag,ANN_reason,ANN_attributes = tf_ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
+                    ANN_flag,ANN_reason,ANN_attributes, catalysis_flag = tf_ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
                 else:
                     # old MCDL-25
                     print('using old ANN because tensorflow/keras import failed')
@@ -138,7 +139,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
              ANN_reason = 'uncaught exception'
              ANN_flag = False
              ANN_bondl =  len([item for items in batslist for item in items])*[False]
-    return ANN_flag,ANN_bondl,ANN_reason,ANN_attributes
+    return ANN_flag,ANN_bondl,ANN_reason,ANN_attributes, catalysis_flag
     
 
 ## Initializes core and template mol3Ds and properties
@@ -1604,11 +1605,11 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 if i == 1:
                     batslist[comb][i] = m3D.natoms - coord + 1
     # initialize ANN
-    ANN_flag,ANN_bondl,ANN_reason,ANN_attributes = init_ANN(args,ligands,occs,dents,batslist,tcats,licores)
+    ANN_flag,ANN_bondl,ANN_reason,ANN_attributes, catalysis_flag = init_ANN(args,ligands,occs,dents,batslist,tcats,licores)
     
     
     
-    this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes)
+    this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes, catalysis_flag)
 
     # freeze core
     for i in range(0,core3D.natoms):
