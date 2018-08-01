@@ -14,6 +14,7 @@ from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.RACassemble import *
 from molSimplify.python_nn.tf_ANN import *
 import time
+from sets import Set
 #import numpy
 #import openbabel
 
@@ -226,6 +227,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     r = 0
     emsg = list()
     valid = True 
+    catalysis = False
     metal = args.core
     this_metal = metal.lower()
     if len(this_metal) >2 :
@@ -270,19 +272,23 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if valid:
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(this_metal,oxidation_state)
-
+        if int(oxidation_state) in [3, 4, 5]:
+            catalytic_moieties = ['oxo','x','hydroxyl']
+            print(set(ligs).intersection(set(catalytic_moieties)))
+            if len(set(ligs).intersection(set(catalytic_moieties))) > 0:
+                catalysis = True
         ## generate key in descriptor space
         ox = int(oxidation_state)
         spin = args.spin
         if args.debug:
             print('metal is '+ str(this_metal))
             print('metal validity',valid)
-    if not valid:
+    if not valid and not catalysis:
             emsg.append("\n Oxidation state not available for this metal")
             ANN_reason = 'ox state not avail for metal'
     if valid:
         high_spin,spin_ops = spin_classify(this_metal,spin,ox)
-    if not valid:
+    if not valid and not catalysis:
             emsg.append("\n this spin state not available for this metal")
             ANN_reason = 'spin state not availble for metal'
     if emsg:
@@ -294,11 +300,10 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     last_time = current_time
     print('checking metal/ox took  ' +  "{0:.2f}".format(metal_check_time) + ' seconds' )
 
-    if valid:
+    if valid or catalysis:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat,axial_ind_list,equitorial_ind_list,ax_occs,eq_occs = tf_check_ligands(ligs,batslist,dents,tcats,occs,args.debug)
 
         if args.debug:
-
             print("ligand validity is  "+str(valid))
             print('Occs',occs)
             print('Ligands',ligs)
@@ -308,15 +313,19 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('ax ligs',axial_ligs)
             print('eq ligs',equitorial_ligs)
             print('spin is',spin)
-    if not valid:
+        if catalysis:
+            valid = False
+    if (not valid) and (not catalysis):
         ANN_reason  = 'found incorrect ligand symmetry'
+    elif not valid and catalysis:
+        ANN_reason = 'catalytic structure presented'
 
     
     ## placeholder for metal    
     metal_mol = mol3D()
     metal_mol.addAtom(atom3D(metal))     
 
-    if valid:
+    if valid or catalysis:
             if args.debug:
                 print('loading axial ligands')
             ax_ligands_list = list()
@@ -483,7 +492,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             current_time =  time.time()
             min_dist_time  = current_time - last_time
             last_time = current_time
-            print('min HOMO dist took ' +  "{0:.2f}".format(homo_train_dist)+ ' seconds')
+            print('min HOMO dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
+
+        gap_dist = find_true_min_eu_dist("gap",descriptors,descriptor_names)
+        if args.debug:
+            current_time =  time.time()
+            min_dist_time  = current_time - last_time
+            last_time = current_time
+            print('min GAP dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
 
         ## save attributes for return
         ANN_attributes.update({'split':split[0]})
@@ -498,8 +514,8 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         ANN_attributes.update({'homo':homo[0]})
         ANN_attributes.update({'gap':gap[0]})
-        ANN_attributes.update({'homo_dist':homo_dist} )
-        ANN_attributes.update({'gap_dist':homo_dist} ) #This is just because the homo_dist and gap_dist are the same (same training data)
+        ANN_attributes.update({'homo_dist':homo_dist})
+        ANN_attributes.update({'gap_dist':gap_dist}) 
         
         ## now that we have bond predictions, we need to map these
         ## back to a length of equal size as the original ligand request
@@ -585,22 +601,101 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         print("ANN predicts a HOMO value of " + "{0:.2f}".format(float(homo[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print("ANN predicts a LUMO-HOMO energetic gap value of " + "{0:.2f}".format(float(gap[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print(HOMO_ANN_trust_message)
-        print('distance to HOMO / GAP training data is ' + "{0:.2f}".format(homo_dist) )
+        print('distance to HOMO training data is ' + "{0:.2f}".format(homo_dist) )
+        print('distance to GAP training data is ' + "{0:.2f}".format(gap_dist) )
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
         from keras import backend as K
         K.clear_session() #This is done to get rid of the attribute error that is a bug in tensorflow.
         
-    if not valid and not ANN_reason:
-        ANN_reason = ' uncaught rejection (see sdout/stderr)'
-        
     if valid:    
         current_time =  time.time()
         total_ANN_time  = current_time - start_time
         last_time = current_time
         print('Total ML functions took ' +  "{0:.2f}".format(total_ANN_time) + ' seconds') 
-    return valid,ANN_reason,ANN_attributes
+
+    if catalysis:
+        ## build RACs without geo
+        con_mat  = this_complex.graph  
+        descriptor_names, descriptors = get_descriptor_vector(this_complex,custom_ligand_dict,ox_modifier)
+        
+        # get alpha
+        alpha = 0.2 # default for B3LYP
+        if args.exchange:
+            try:
+                if float(args.exchange) > 1:
+                    alpha = float(args.exchange)/100 # if given as %
+                elif float(args.exchange) <= 1:
+                    alpha = float(args.exchange)
+            except:
+                print('cannot case exchange argument as a float, using 20%')
+        descriptor_names += ['alpha']
+        descriptors += [alpha]
+        descriptor_names += ['ox']
+        descriptors += [ox]
+        descriptor_names += ['spin']
+        descriptors += [spin]
+        if args.debug:
+            current_time =  time.time()
+            rac_check_time  = current_time - last_time
+            last_time = current_time
+            print('getting RACs took ' +  "{0:.2f}".format(rac_check_time) + ' seconds')
+        oxo = ANN_supervisor('oxo',descriptors,descriptor_names)[0] #REMEMBER TO CHANGE THIS FREOM HOMO
+        if args.debug:
+            current_time =  time.time()
+            split_ANN_time  = current_time - last_time
+            last_time = current_time
+            print('oxo ANN took ' +  "{0:.2f}".format(split_ANN_time) + ' seconds')
+
+        oxo_dist = find_true_min_eu_dist("oxo",descriptors,descriptor_names)
+        if args.debug:
+            current_time =  time.time()
+            min_dist_time  = current_time - last_time
+            last_time = current_time
+            print('min oxo dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
+
+        ANN_attributes.update({'oxo':oxo[0]})
+        ANN_attributes.update({'oxo_dist':oxo_dist})
+
+        Oxo_ANN_trust = 'not set'
+        Oxo_ANN_trust_message = ""
+        if float(oxo_dist)< 3: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+            Oxo_ANN_trust_message = 'Oxo ANN results should be trustworthy for this complex '
+            Oxo_ANN_trust = 'high'
+        elif float(oxo_dist)< 5:
+            Oxo_ANN_trust_message = 'Oxo ANN results are probably useful for this complex '
+            Oxo_ANN_trust  = 'medium'
+        elif float(oxo_dist)<= 10:
+            Oxo_ANN_trust_message = 'Oxo ANN results are fairly far from training data, be cautious '
+            Oxo_ANN_trust = 'low'
+        elif float(oxo_dist)> 10:
+            Oxo_ANN_trust_message = 'Oxo ANN results are too far from training data, be cautious '
+            Oxo_ANN_trust = 'very low'
+        ANN_attributes.update({'oxo_trust':Oxo_ANN_trust})
+        print("******************************************************************")
+        print("**************       CATALYTIC ANN ACTIVATED!      ***************")
+        print("************** Currently advising on oxo formation ***************")
+        print("******************************************************************")
+        print("ANN predicts a oxo formation energy of " + "{0:.2f}".format(float(oxo[0])) + ' kcal/mol at '+"{0:.2f}".format(100*alpha) + '% HFX')
+        print(Oxo_ANN_trust_message)
+        print('Distance to oxo training data is ' + "{0:.2f}".format(oxo_dist) )
+        print("*******************************************************************")
+        print("************** ANN complete, saved in record file *****************")
+        print("*******************************************************************")
+        from keras import backend as K
+        K.clear_session() #This is done to get rid of the attribute error that is a bug in tensorflow.
+
+    if catalysis:    
+        current_time =  time.time()
+        total_ANN_time  = current_time - start_time
+        last_time = current_time
+        print('Total Catalysis ML functions took ' +  "{0:.2f}".format(total_ANN_time) + ' seconds')
+
+    if not valid and not ANN_reason and not catalysis:
+        ANN_reason = ' uncaught rejection (see sdout/stderr)'
+
+    return valid,ANN_reason,ANN_attributes, catalysis
 
         
             
