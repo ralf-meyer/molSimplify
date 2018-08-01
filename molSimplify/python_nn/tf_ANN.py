@@ -71,6 +71,8 @@ def load_ANN_variables(predictor):
         key = 'geos/'+predictor+ '_vars'
     elif predictor in ['homo','gap']:
         key = 'homolumo/'+predictor+ '_vars'
+    elif predictor in ['oxo','hat']:
+        key = 'oxocatalysis/'+predictor+ '_vars'
     else:
         key = predictor+ '/'+predictor+ '_vars'
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key +'.csv')
@@ -85,6 +87,8 @@ def load_training_data(predictor):
         key = 'geos/'+predictor+ '_bl_x'
     elif predictor in ['homo','gap']:
         key = 'homolumo/'+predictor+'_train_x'
+    elif predictor in ['oxo','hat']:
+        key = 'oxocatalysis/'+predictor+ '_train_x'    
     elif predictor == "split":
         key = predictor+ '/'+predictor+ '_x_41_OHE'
     else:
@@ -105,6 +109,8 @@ def load_keras_ann(predictor):
         key = 'geos/'+predictor+ '_model'
     elif predictor in ['homo','gap']:
         key = 'homolumo/'+predictor +'_model'
+    elif predictor in ['oxo','hat']:
+        key = 'oxocatalysis/'+predictor +'_model'
     else:
         key = predictor+ '/model'
     path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key + '.json')
