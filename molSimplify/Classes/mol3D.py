@@ -14,7 +14,8 @@ import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
-#from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
+
+# from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
 #    dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
 
 try:
@@ -860,8 +861,8 @@ class mol3D:
     #  @param reference index of reference atom
     #  @param symbol type of atom to return
     #  @return farIndex index of furthest atom
-    
-    def getFarAtom(self, reference,atomtype=False):
+
+    def getFarAtom(self, reference, atomtype=False):
         referenceCoords = self.getAtom(reference).coords()
         dd = 0.00
         farIndex = reference
@@ -872,7 +873,7 @@ class mol3D:
                     allow = True
                 else:
                     allow = False
-                
+
             else:
                 allow = True
             d0 = distance(atom.coords(), referenceCoords)
@@ -1500,7 +1501,7 @@ class mol3D:
             elif not atom1.ismetal():
                 if distance(atom1.coords(), metal_coord) < min_dist_nonH:
                     min_dist_nonH = distance(atom1.coords(), metal_coord)
-        if min_dist_H <= (min_dist_nonH-delta):
+        if min_dist_H <= (min_dist_nonH - delta):
             flag = True
         else:
             flag = False
@@ -1535,7 +1536,7 @@ class mol3D:
     ## num_coord_metal and the list of indexs of the connecting atoms are stored in mol3D
     def get_num_coord_metal(self, debug):
         metal_list = self.findMetal()
-        if len(self.findMetal()) >  0 :
+        if len(self.findMetal()) > 0:
             metal_ind = self.findMetal()[0]
             metal_coord = self.getAtomCoords(metal_ind)
             catoms = self.getBondedAtomsOct(ind=metal_ind)
@@ -1543,13 +1544,14 @@ class mol3D:
             metal_ind = []
             metal_coord = []
             catoms = []
-        
+
         if debug:
             print('metal coordinate:', metal_coord)
             print('coordinations: ', catoms, len(catoms))
-        
+
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
+
     ## Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
     ## Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
     ## catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
@@ -1557,7 +1559,7 @@ class mol3D:
     def oct_comp(self, angle_ref=False, catoms_arr=None,
                  debug=False):
         if not angle_ref:
-            angle_ref=self.oct_angle_ref
+            angle_ref = self.oct_angle_ref
         from molSimplify.Scripts.oct_check_mols import loop_target_angle_arr
 
         metal_coord = self.getAtomCoords(self.findMetal()[0])
@@ -1590,6 +1592,7 @@ class mol3D:
             print('sum_del:', sum_del_angle)
             print('catoms_arr:', catoms_arr)
             print('catoms_type:', [self.getAtom(x).symbol() for x in catoms_arr])
+            print('catoms_coord:', [self.getAtom(x).coords() for x in catoms_arr])
         for idx, ele in enumerate(th_output_arr):
             theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
         theta_trunc_arr = theta_arr
@@ -1601,8 +1604,8 @@ class mol3D:
             print('Summation of deviation angle for catoms:', oct_angle_devi)
             print('Angle for catoms:', oct_angle_all)
         for atom in oct_catoms:
-            coord = catom_coord[self.catoms.index(atom)]
-            dist = distance(coord, metal_coord)
+            coord = self.getAtom(atom).coords()
+            dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
             oct_dist.append(dist)
         oct_dist.sort()
         try:  ### For Oct
@@ -1769,7 +1772,7 @@ class mol3D:
                 try:
                     mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
                 except:
-                     print('Kabsch failed')
+                    print('Kabsch failed')
                 rmsd = tmp_mol.rmsd(tmp_org_mol)
                 rmsd_arr.append(rmsd)
                 atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
@@ -1932,9 +1935,9 @@ class mol3D:
               flag_loose=True, flag_lbd=True, BondedOct=True
               ):
         if not dict_check:
-            dict_check=self.dict_oct_check_st
+            dict_check = self.dict_oct_check_st
         if not angle_ref:
-            angle_ref=self.oct_angle_ref
+            angle_ref = self.oct_angle_ref
         self.get_num_coord_metal(debug=debug)
         ## Note that use this only when you wanna specify the metal connecting atoms.
         ## This will change the attributes of mol3D.
@@ -1973,12 +1976,12 @@ class mol3D:
                     angle_ref=False, num_coord=5,
                     flag_catoms=False, debug=False):
         if not dict_check:
-            dict_check=self.dict_oneempty_check_st
+            dict_check = self.dict_oneempty_check_st
         if not angle_ref:
-            angle_ref=self.oneempty_angle_ref
+            angle_ref = self.oneempty_angle_ref
         self.get_num_coord_metal(debug=debug)
         self.geo_dict_initialization()
-        
+
         if self.num_coord_metal >= num_coord:
             if True:
                 self.num_coord_metal = num_coord
@@ -2003,11 +2006,11 @@ class mol3D:
                        std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                        dict_check_loose=False, BondedOct=True, debug=False):
         if not dict_check:
-             dict_check=self.dict_oct_check_st
+            dict_check = self.dict_oct_check_st
         if not angle_ref:
-          angle_ref=self.oct_angle_ref
+            angle_ref = self.oct_angle_ref
         if not dict_check_loose:
-            dict_check_loose=self.dict_oct_check_loose
+            dict_check_loose = self.dict_oct_check_loose
 
         if catoms_arr == None:
             print('Error, must have ctoms! If not, please use IsOct.')
@@ -2039,13 +2042,13 @@ class mol3D:
         flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
                                                                          num_coord=6, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
-    
+
     ## Writes a psueduo-chemical formula
     #
     #  @param self The object pointer   
     def make_formula(self):
         retstr = ""
-        atomorder  = self.globs.elementsbynum()
+        atomorder = self.globs.elementsbynum()
         unique_symbols = dict()
         for atoms in self.getAtoms():
             if atoms.symbol() in atomorder:
@@ -2053,10 +2056,8 @@ class mol3D:
                     unique_symbols[atoms.symbol()] = 1
                 else:
                     unique_symbols[atoms.symbol()] = unique_symbols[atoms.symbol()] + 1
-        skeys = sorted(unique_symbols.keys(), key = lambda x: (self.globs.elementsbynum().index(x)))
+        skeys = sorted(unique_symbols.keys(), key=lambda x: (self.globs.elementsbynum().index(x)))
         skeys = skeys[::-1]
         for sk in skeys:
-            retstr +=  '\\textrm{' +sk + '}_{' +str(int(unique_symbols[sk]))+'}'
+            retstr += '\\textrm{' + sk + '}_{' + str(int(unique_symbols[sk])) + '}'
         return retstr
-        
-    
