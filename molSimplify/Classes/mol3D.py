@@ -89,6 +89,8 @@ class mol3D:
         self.xyzfile = 'undef'
         self.updated = False
         self.needsconformer = False
+        ## Holder for molecular group
+        self.grps = False
 
         # ---geo_check------
         self.dict_oct_check_loose = self.globs.geo_check_dictionary()["dict_oct_check_loose"]
