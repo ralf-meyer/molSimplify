@@ -29,7 +29,7 @@ def data_rescale(scaled_dat,train_mean,train_var):
 def data_normalize(data,train_mean,train_var):
     data = data.astype(float) #Make sure the data is always in float form
     d = np.shape(train_mean)[0]
-    #print('normalizing with number of dimensions = ' +str(d))
+    # print('normalizing with number of dimensions = ' +str(d))
     scaled_dat = np.divide((data.T - train_mean),np.sqrt(train_var),).T
     return(scaled_dat)
     
@@ -187,11 +187,12 @@ def ANN_supervisor(predictor,descriptors,descriptor_names):
 def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
-    
+    train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
+
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names)
     excitation = excitation.astype(float) #ensure that the excitation is a float, and not strings
-
+    scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x) #normalize the excitation
     ## getting train matrix info
     mat = load_training_data(predictor)
     train_mat = np.array(mat,dtype='float64')
@@ -199,7 +200,9 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     min_dist = 100000
     min_ind = 0
     for i,rows in enumerate(train_mat):
-        this_dist = np.linalg.norm(np.subtract(rows,np.array(excitation)))
+        test = (rows - train_mean_x)/np.sqrt(train_var_x)
+        scaled_row = np.squeeze(data_normalize(rows, train_mean_x.T, train_var_x.T)) #Normalizing the row before finding the distance
+        this_dist = np.linalg.norm(np.subtract(scaled_row,np.array(scaled_excitation)))
         if this_dist < min_dist:
             min_dist = this_dist
             min_ind = i
@@ -208,15 +211,29 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
 
     # flatten min row
     min_row = np.reshape(min_row, excitation.shape) 
-    #print('min dist is ' +str(min_dist) + ' at  ' + str(min_ind))
-    
+    print('min dist is ' +str(min_dist) + ' at  ' + str(min_ind))
+    if predictor in ['oxo','hat','homo','gap']:
+        if predictor in ['homo','gap']:
+            key = 'homolumo/'+predictor+'_train_names'
+        elif predictor in ['oxo','hat']:
+            key = 'oxocatalysis/'+predictor+ '_train_names'    
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key +'.csv')
+        with open(path_to_file, "r") as f:
+            csv_lines = list(csv.reader(f))
+            print('Closest Structure: ',csv_lines[min_ind])
     # need to get normalized distances 
 
-    train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
+    ########################################################################################
+    # Changed by Aditya on 08/13/2018. Previously, nearest neighbor was being found in the #
+    # unnormalized space, and then that was normalized. This was resulting in bad nearest  #
+    # neighbor candidate structures. Now routine normalizes before finding the distance.   #
+    ########################################################################################
+    
+    # train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
 
-    scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x)
-    scaled_row = data_normalize(min_row,train_mean_x,train_var_x)
-    min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
+    # scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x)
+    # scaled_row = data_normalize(min_row,train_mean_x,train_var_x)
+    # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
     return(min_dist)
     
     
