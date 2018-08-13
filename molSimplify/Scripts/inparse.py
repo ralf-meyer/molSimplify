@@ -87,23 +87,115 @@ def checkinput(args,calctype="base"):
                 args.ligocc = [args.coord]
                 for lig in args.lig[1:]:
                     args.ligocc.append(0)
-    elif calctype == "tsgen":
+    # elif calctype == "tsgen":
+    #     if not args.core:
+    #         print 'WARNING: No core specified. Defaulting to Fe(II)(N4Py). Available cores are: '+getcores()
+    #         args.core = ['fen4py']
+    #     # check substrate
+    #     if not args.substrate:
+    #         print 'WARNING: No substrate specified. Defaulting to methane.'
+    #         args.substrate = ['methane']
+    #     # reacting atoms will be checked later because defaults can only be determined after structures are loaded
+    #     # check charge
+    #     if not args.charge:
+    #         print 'WARNING: Charge not specified. calccharge does not work for custom cores. Defaulting to 0.'
+    #         args.charge = '0'
+    #     # check spin state
+    #     if not args.spin:
+    #         print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+    #         args.spin = '1'
+    elif calctype == "tsgen2":
+        # check core
         if not args.core:
-            print 'WARNING: No core specified. Defaulting to Fe(II)(N4Py). Available cores are: '+getcores()
-            args.core = ['fen4py']
-        # check substrate
-        if not args.substrate:
-            print 'WARNING: No substrate specified. Defaulting to methane.'
-            args.substrate = ['methane']
-        # reacting atoms will be checked later because defaults can only be determined after structures are loaded
-        # check charge
-        if not args.charge:
-            print 'WARNING: Charge not specified. calccharge does not work for custom cores. Defaulting to 0.'
-            args.charge = '0'
-        # check spin state
-        if not args.spin:
-            print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
-            args.spin = '1'
+            print 'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores()
+            args.core = ['fe']
+        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
+            # convert to titlecase
+            args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
+            # check oxidation state
+            if not args.oxstate:
+                try:
+                    print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
+                    args.oxstate = globs.defaultoxstate[args.core[0].lower()]
+                except:
+                    print 'WARNING: No oxidation state specified. Defaulting to 2'
+                    args.oxstate = '2'
+            # check spin state (doesn't work for custom cores)
+            if not args.spin:
+                if args.oxstate in romans.keys():
+                    oxstatenum = romans[args.oxstate]
+                else:
+                    oxstatenum = args.oxstate
+                if args.core[0].lower() in mtlsdlist:
+                    if mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2) in defaultspins:
+                        defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2)]
+                        print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
+                        print 'Please check this against our ANN output (where available)'
+                    else:
+                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
+                        defaultspinstate = '1'
+                else:
+                    defaultspinstate = '1'
+                    print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+                args.spin = defaultspinstate
+            # check ligands
+            if not args.lig and not args.rgen:
+                if args.gui:
+                    from Classes.mWidgets import mQDialogWarn
+                    qqb = mQDialogWarn('Warning','You specified no ligands.')
+                    qqb.setParent(args.gui.wmain)
+                else:
+                    print 'WARNING: No ligands specified. Defaulting to water.'
+                args.lig = ['water']
+            # check coordination number and geometry
+            if not args.coord and not args.geometry:
+                if not args.gui:
+                    print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).'
+                    args.coord = 6
+                    args.geometry = 'oct'
+            coords,geomnames,geomshorts,geomgroups = getgeoms()
+            if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
+                print 'WARNING: No or unknown coordination geometry specified. Defaulting to '+globs.defaultgeometry[int(args.coord)][1]
+                args.geometry = globs.defaultgeometry[int(args.coord)][0]
+            if args.geometry and not args.coord:
+                if args.geometry not in geomnames and args.geometry not in geomshorts:
+                    print 'You have specified an invalid geometry. Available geometries are:'
+                    printgeoms()
+                    print 'Defaulting to octahedral (6)'
+                    args.geometry = 'oct'
+                    args.coord = 6
+                else:
+                    try:
+                        args.coord = coords[geomnames.index(args.geometry)]
+                    except:
+                        args.coord = coords[geomshorts.index(args.geometry)]
+                    print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
+            # check number of ligands
+            if args.coord and not args.ligocc:
+                print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.')
+                args.ligocc = [args.coord]
+                for lig in args.lig[1:]:
+                    args.ligocc.append(0)
+            # check substrate 
+            if not args.substrate:
+                print('WARNING: Transition state generation is request without the specification of a substrate. Defaulting to methane.')
+                args.substrate = 'methane'
+            # check substrate connecting atom
+            if args.substrate and not args.subcatoms:
+                print('WARNING: A substrate is specified for TS generation without the specification of a connection point in the substrate. Defaulting to atom index 0.')
+                args.subcatoms = 0
+            # check mcomplex connecting ligand to the substrate
+            if args.substrate and not args.mlig:
+                print('WARNING: A substrate is specified for TS generation without the specification of a ligand in the metal complex to connect with. Defaulting to ligand index 0.')
+                args.mlig = args.lig[0]
+            # check mlig connecting point if the ligand has more than one atom
+            if args.mlig and not args.mligcatoms:
+                sub,emsg = substr_load(args.mlig)
+                if sub.natoms is 1:
+                    args.mligcatoms = 0
+                else:
+                    print('WARNING: A ligand in the metal complex is specified to connect with the substrate for TS generation without the specification of a connection point in the ligand. Defaulting to atom index 0.')
+                    args.mligcatoms = 0    
     elif calctype == "dbadd":
         if args.ligadd:
             print('ligand addition function')
@@ -717,19 +809,32 @@ def parseinputfile(args):
                 args.expose_type = l[1]
             if (l[0]=='-shave_extra_layers'):#9
                 args.shave_extra_layers = int(l[1])
-            # parse TS generation arguments
-            if (l[0]=='-tsgen'):
-                args.tsgen = True
+            # # parse TS generation arguments
+            # if (l[0]=='-tsgen'):
+            #     args.tsgen = True
+            # if (l[0]=='-substrate'):
+            #     args.substrate = l[1:]
+            # if (l[0]=='-compreact'):
+            #     args.compreact = l[1:]
+            # if (l[0]=='-substreact'):
+            #     args.substreact = l[1:]
+            # if (l[0]=='-drawmode'):
+            #     args.drawmode = True 
+            # if (l[0]=='-substplaceff'):
+            #     args.substplaceff = True
+            # parse TS generation 2 arguments
+            if (l[0]=='-tsgen2'):
+                args.tsgen2 = True
             if (l[0]=='-substrate'):
                 args.substrate = l[1:]
-            if (l[0]=='-compreact'):
-                args.compreact = l[1:]
-            if (l[0]=='-substreact'):
-                args.substreact = l[1:]
-            if (l[0]=='-drawmode'):
-                args.drawmode = True 
-            if (l[0]=='-substplaceff'):
-                args.substplaceff = True                                                      
+            if (l[0]=='-subcatoms'):
+                args.subcatoms = l[1:]
+            if (l[0]=='-mlig'):
+                args.mlig = l[1:]
+            if (l[0]=='-mligcatoms'):
+                args.mligcatoms = l[1:]
+            if (l[0]=='-conformer'):
+                args.conformer = True                                                           
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -811,7 +916,8 @@ def parseall(parser):
     parseinputs_postproc(parser,args)
     parseinputs_random(parser,args)
     parseinputs_binding(parser,args)
-    parseinputs_tsgen(parser,args)
+    # parseinputs_tsgen(parser,args)
+    parseinputs_tsgen2(parser,args)
     parseinputs_customcore(parser,args)
     parseinputs_naming(parser,args)
     return args
@@ -1093,16 +1199,34 @@ def parseinputs_binding(*p):
         parser.parse_args(namespace=args)
     return 0 
 
-## Parses transition state building options and prints help
+# ## Parses transition state building options and prints help
+# #  @param *p Parser pointer
+# def parseinputs_tsgen(*p):
+#     parser = p[0]
+#     parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
+#     parser.add_argument("-substrate", help="small molecule substrate")
+#     parser.add_argument("-compreact", help="index of reacting atom in core")
+#     parser.add_argument("-substreact", help="index of reacting atom(s) in substrate")
+#     parser.add_argument("-drawmode", help="flag for enabling draw mode (NOTE: this cancels TS generation)",action="store_true")
+#     parser.add_argument("-substplaceff", help="full FF opt at each possible connecting point (default False - uses empirically estimated sterics)",default=False)
+#     if len(p) == 1: # only one input, printing help only
+#         args = parser.parse_args()
+#         return args
+#     elif len(p) == 2: # two inputs, normal parsing
+#         args = p[1]
+#         parser.parse_args(namespace=args)
+#     return 0 
+
+## Parses transition state building version 2 options and prints help
 #  @param *p Parser pointer
-def parseinputs_tsgen(*p):
+def parseinputs_tsgen2(*p):
     parser = p[0]
-    parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
+    parser.add_argument("-tsgen2", help="flag for enabling TS generation mode",action="store_true",default=False)
     parser.add_argument("-substrate", help="small molecule substrate")
-    parser.add_argument("-compreact", help="index of reacting atom in core")
-    parser.add_argument("-substreact", help="index of reacting atom(s) in substrate")
-    parser.add_argument("-drawmode", help="flag for enabling draw mode (NOTE: this cancels TS generation)",action="store_true")
-    parser.add_argument("-substplaceff", help="full FF opt at each possible connecting point (default False - uses empirically estimated sterics)",default=False)
+    parser.add_argument("-subcatoms", help="index of the connecting atom in substrate")
+    parser.add_argument("-mlig", help="ligand name in the metal complex that the substrate connects with")
+    parser.add_argument("-mligcatoms", help="index of the connecting atom in the specified ligand in the metal complex",action="store_true")
+    parser.add_argument("-conformers", help="flag for requesting metal-substrate TS conformation search",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
