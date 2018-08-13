@@ -254,6 +254,29 @@ def loaddata(path):
     f.close()
     return d
 
+## Load M-L bond length dictionary from data
+#  @param path to data file
+#  @return M-L bond length dictionary
+def loaddata_ts(path):
+    globs = globalvars()
+        # loads ML data from ML.dat file and
+        # store to dictionary
+    if globs.custom_path: # test if a custom path is used:
+        fname = str(globs.custom_path).rstrip('/')  + path
+    else:
+        fname = resource_filename(Requirement.parse("molSimplify"),"molSimplify"+path)
+    d = dict()
+
+    f = open(fname)
+    txt = f.read()
+    lines = filter(None,txt.splitlines())
+    for line in lines[1:]:
+        if '#'!=line[0]: # skip comments
+            l = filter(None,line.split(None))
+            d[(l[0],l[1],l[2])] = l[3:] # read dictionary
+    f.close()
+    return d
+
 ## Load backbone coordinates
 #  @param coord Name of coordination geometry
 #  @return List of backbone coordinates
@@ -352,7 +375,7 @@ def core_load(usercore,mcores=None):
 #  @param usersubstrate Name of substrate
 #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
 #  @return mol3D of substrate, error messages
-def substr_load(usersubstrate,subcores=None):
+def substr_load(args,usersubstrate,sub_i,subcatoms,subcores=None):
     if subcores == None:
         subcores = getsubcores()
     globs = globalvars()
@@ -360,29 +383,86 @@ def substr_load(usersubstrate,subcores=None):
         homedir = os.path.expanduser("~")
         usersubstrate = usersubstrate.replace('~',homedir)
     emsg = False
-    substrate = mol3D() # initialize core molecule
-    ### check if core exists in dictionary
-    if usersubstrate.lower() in subcores.keys():
+    sub = mol3D() # initialize core molecule
+    ### check if substrate exists in dictionary
+    if usersubstrate.lower() in [i.subname for i in subcores.keys()]:
         print('loading substrate from dictionary')
-        dbentry = subcores[usersubstrate.lower()]
-        # load substrate mol file (with hydrogens
+        # create a list for each item column in the dictionary
+        var_list = []
+        for var in [subcores[i][0:] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+            var_list.append(var)
+        var_list = sorted(var_list)
+        var_list_sub_i = var_list[sub_i]
+        # xyz_list = []
+        # for xyz in [subcores[i][0] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+        #     xyz_list.append(xyz)
+        # xyz_list = sorted(xyz_list)
+        # ident_list = []
+        # for ident in [subcores[i][1] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+        #     ident_list.append(ident)
+        # ident_list = sorted(ident_list)
+        # subcatom_list = []
+        # for subcatom in [subcores[i][2] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+        #     subcatom_list.append(subcatom)
+        # subcatom_list = sorted(subcatom_list)
+        # grp_list = []
+        # for grp in [subcores[i][3] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+        #     grp_list.append(grp)
+        # grp_list = sorted(grp_list)
+        # ffopt_list = []
+        # for ffopt in [subcores[i][4] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+        #     ffopt_list.append(ffopt)
+        # ffopt_list = sorted(ffopt_list)
+        # charge_list = []
+        # for charge in [subcores[i][5] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
+        #     charge_list.append(charge)
+        # charge_list = sorted(charge_list)
+        # load substrate mol file (with hydrogens)
         if globs.custom_path:
-            fsubst = globs.custom_path + "/Substrates/" +dbentry[0]
+            fsubst = globs.custom_path + "/Substrates/" + var_list_sub_i[0]
         else:
-            fsubst = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/" +dbentry[0])
-
+            fsubst = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/" + var_list_sub_i[0])
         # check if substrate xyz/mol file exists
         if not glob.glob(fsubst):
             emsg ="We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
             print emsg
             return False,emsg
         if ('.xyz' in fsubst):
-            substrate.OBMol = substrate.getOBMol(fsubst,'xyzf')
+            sub.OBMol = sub.getOBMol(fsubst,'xyzf')
         elif ('.mol' in fsubst):
-            substrate.OBMol = substrate.getOBMol(fsubst,'molf')
+            sub.OBMol = sub.getOBMol(fsubst,'molf')
         elif ('.smi' in fsubst):
-            substrate.OBMol = substrate.getOBMol(fsubst,'smif')
-        substrate.ident = dbentry[1]
+            sub.OBMol = sub.getOBMol(fsubst,'smif')
+        # Parsing substrate denticity
+        ### modified the check for length,
+        ### as it parsing string length instead of
+        ### list length!
+        if isinstance(var_list_sub_i[2], (str, unicode)):
+           sub.denticity = 1
+        else:
+           sub.denticity = len(var_list_sub_i[2])
+        # Parsing substrate identity
+        sub.ident = var_list_sub_i[1]
+        # Parsing substrate charge
+        sub.charge = sub.OBMol.GetTotalCharge()
+        # Parsing substrate connection atoms
+        if 'pi' in var_list_sub_i[2]:
+            sub.denticity = 1
+            sub.cat = [int(l) for l in var_list_sub_i[2][:-1]]
+            sub.cat.append('pi')
+        else:
+            if sub.denticity == 1:
+                sub.cat = [int(var_list_sub_i[2])]
+            else:
+                sub.cat = [int(l) for l in var_list_sub_i[2]]
+        if 'all' not in str(args.subcatoms):
+            subcatoms = sub.cat
+        if args.debug:
+            print('subcatoms after substr_load is ' + str(subcatoms))
+        # Parsing substrate group
+        sub.grps = var_list_sub_i[3]
+        if len(var_list_sub_i[4]) > 0:
+            sub.ffopt = var_list_sub_i[4]
     ### load from file
     elif ('.mol' in usersubstrate or '.xyz' in usersubstrate or '.smi' in usersubstrate):
         if glob.glob(usersubstrate):
@@ -390,14 +470,14 @@ def substr_load(usersubstrate,subcores=None):
             print('Substrate is a '+ftype+' file')
             # try and catch error if conversion doesn't work
             try:
-                substrate.OBMol = substrate.getOBMol(usersubstrate,ftype+'f') # convert from file
+                sub.OBMol = sub.getOBMol(usersubstrate,ftype+'f') # convert from file
                 print('Substrate successfully converted to OBMol')
             except IOError:
                 emsg = 'Failed converting file ' +usersubstrate+' to molecule..Check your file.\n'
                 print emsg
                 return False,emsg
-            substrate.ident = usersubstrate.split('.')[0]
-            substrate.ident = substrate.ident.rsplit('/')[-1]
+            sub.ident = usersubstrate.split('.')[0]
+            sub.ident = sub.ident.rsplit('/')[-1]
         else:
             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
             print emsg
@@ -408,7 +488,7 @@ def substr_load(usersubstrate,subcores=None):
         usersubstrate = checkTMsmiles(usersubstrate)
         # try and catch error if conversion doesn't work
         try:
-            substrate.OBMol = substrate.getOBMol(usersubstrate,'smistring',True) # convert from smiles
+            sub.OBMol = sub.getOBMol(usersubstrate,'smistring',True) # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
@@ -416,10 +496,83 @@ def substr_load(usersubstrate,subcores=None):
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print emsg
             return False,emsg
-        substrate.cat = [0]
-        substrate.denticity = 1
-        substrate.ident = 'substrate'
-    return substrate,emsg
+        sub.cat = [0]
+        sub.denticity = 1
+        sub.ident = 'substrate'
+    return sub,subcatoms,emsg
+
+# ## Load substrate and convert to mol3D
+# #  @param usersubstrate Name of substrate
+# #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+# #  @return mol3D of substrate, error messages
+# def substr_load(usersubstrate,subcores=None):
+#     if subcores == None:
+#         subcores = getsubcores()
+#     globs = globalvars()
+#     if '~' in usersubstrate:
+#         homedir = os.path.expanduser("~")
+#         usersubstrate = usersubstrate.replace('~',homedir)
+#     emsg = False
+#     substrate = mol3D() # initialize core molecule
+#     ### check if core exists in dictionary
+#     if usersubstrate.lower() in subcores.keys():
+#         print('loading substrate from dictionary')
+#         dbentry = subcores[usersubstrate.lower()]
+#         # load substrate mol file (with hydrogens
+#         if globs.custom_path:
+#             fsubst = globs.custom_path + "/Substrates/" +dbentry[0]
+#         else:
+#             fsubst = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/" +dbentry[0])
+
+#         # check if substrate xyz/mol file exists
+#         if not glob.glob(fsubst):
+#             emsg ="We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
+#             print emsg
+#             return False,emsg
+#         if ('.xyz' in fsubst):
+#             substrate.OBMol = substrate.getOBMol(fsubst,'xyzf')
+#         elif ('.mol' in fsubst):
+#             substrate.OBMol = substrate.getOBMol(fsubst,'molf')
+#         elif ('.smi' in fsubst):
+#             substrate.OBMol = substrate.getOBMol(fsubst,'smif')
+#         substrate.ident = dbentry[1]
+#     ### load from file
+#     elif ('.mol' in usersubstrate or '.xyz' in usersubstrate or '.smi' in usersubstrate):
+#         if glob.glob(usersubstrate):
+#             ftype = usersubstrate.split('.')[-1]
+#             print('Substrate is a '+ftype+' file')
+#             # try and catch error if conversion doesn't work
+#             try:
+#                 substrate.OBMol = substrate.getOBMol(usersubstrate,ftype+'f') # convert from file
+#                 print('Substrate successfully converted to OBMol')
+#             except IOError:
+#                 emsg = 'Failed converting file ' +usersubstrate+' to molecule..Check your file.\n'
+#                 print emsg
+#                 return False,emsg
+#             substrate.ident = usersubstrate.split('.')[0]
+#             substrate.ident = substrate.ident.rsplit('/')[-1]
+#         else:
+#             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
+#             print emsg
+#             return False,emsg
+#     ### if not, try converting from SMILES
+#     else:
+#         # check for transition metals
+#         usersubstrate = checkTMsmiles(usersubstrate)
+#         # try and catch error if conversion doesn't work
+#         try:
+#             substrate.OBMol = substrate.getOBMol(usersubstrate,'smistring',True) # convert from smiles
+#             print('Substrate successfully interpreted as smiles')
+#         except IOError:
+#             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
+#             emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
+#             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
+#             print emsg
+#             return False,emsg
+#         substrate.cat = [0]
+#         substrate.denticity = 1
+#         substrate.ident = 'substrate'
+#     return substrate,emsg
    
 ## Load ligand and convert to mol3D
 #  @param userligand Name of ligand
@@ -722,45 +875,114 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,nconf=False,sanity=False,bi
                     name += "_" + +args.nambsmi[0:2]
     return name
 
-## Generate transition state name
+## Generate complex name (this is actually used instead of namegen.py)
 #  @param rootdir Root directory
 #  @param core mol3D of core
-#  @param subst mol3D of substrate
+#  @param ligs List of ligand names
+#  @param ligoc List of ligand occurrences
+#  @param sernum Complex serial number
 #  @param args Namespace of arguments
 #  @param bind Flag for binding species (default False)
 #  @param bsmi Flag for SMILES binding species (default False)
-#  @return Transition state name
-def name_TS(rootdir,core,subst,args,bind= False,bsmi=False):
+#  @return Complex name
+def name_ts_complex(rootdir,core,ligs,ligoc,substrate,subcatoms,mlig,mligcatoms,sernum,args,nconf=False,sanity=False,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
-    globs = globalvars()
     if args.name: # if set externerally
         name = rootdir+'/'+args.name
     else:
+        center = ''
+        if sanity:
+            center += 'badjob_'
         try:
-            center = core.getAtom(0).symbol().lower()
+            center += core.getAtom(0).symbol().lower()
         except:
-            center = str(core).lower()
+            if ('.xyz' in core):
+                core = core.split('.')[0]
+            center += str(core).lower()
         name = rootdir + '/' + center
-        #if args.oxstate:
-            #if args.oxstate in romans.keys():
-                #ox = str(romans[args.oxstate])
-            #else:
-                #ox = str(args.oxstate)
-        #else:
-            #ox = "0"
-        #name += "_" + str(ox)
+        if args.oxstate:
+            if args.oxstate in romans.keys():
+                ox = str(romans[args.oxstate])
+            else:
+                ox = str(args.oxstate)
+        else:
+            ox = "0"
+        name += "_" + str(ox)
+        licores = getlicores()
+        sminum = 0
+        for i,lig in enumerate(ligs):
+            if not lig in licores:
+                lig = lig.split('\t')[0]
+                sminum += 1
+                name += '_smi' +str(int(sernum)+int(sminum)) + '_' + str(ligoc[i])
+            else:
+                name += '_' + str(lig) + '_' + str(ligoc[i])
+        # for i,sub in enumerate(substrate):
+        #     name += "_" + str(sub)
+        #     for i,subcatom in enumerate(str(subcatoms))):
+        #         name += "_" + str(subcatom)
+        name += "_" + str(substrate[0])
+        for subcatom in subcatoms:
+            name += "_" + str(subcatom)
+        # for i,mlig_i in enumerate(mlig):
+        #     name += "_" + str(mlig)
+        #     for j,mligcatom in enumerate(mligcatoms):
+        #         name += "_" + str(mligcatom)
+        name += "_" + str(mlig[0])
+        name += "_" + str(mligcatoms[0])
         if args.spin:
             spin = str(args.spin)
         else:
             spin = "0"
         name += "_s_"+str(spin)
-        name += "_" + str(subst.ident) + "_TS"
+        if nconf and args.nconfs > 1:
+            name += "_conf_"+str(nconf)
         if args.bind:
             if bsmi:
                 if args.nambsmi: # if name specified use it in file
                     name += "_" + +args.nambsmi[0:2]
     return name
+
+# ## Generate transition state name
+# #  @param rootdir Root directory
+# #  @param core mol3D of core
+# #  @param subst mol3D of substrate
+# #  @param args Namespace of arguments
+# #  @param bind Flag for binding species (default False)
+# #  @param bsmi Flag for SMILES binding species (default False)
+# #  @return Transition state name
+# def name_TS(rootdir,core,subst,args,bind= False,bsmi=False):
+#     ## new version of the above, designed to 
+#     ## produce more human and machine-readable formats
+#     globs = globalvars()
+#     if args.name: # if set externerally
+#         name = rootdir+'/'+args.name
+#     else:
+#         try:
+#             center = core.getAtom(0).symbol().lower()
+#         except:
+#             center = str(core).lower()
+#         name = rootdir + '/' + center
+#         #if args.oxstate:
+#             #if args.oxstate in romans.keys():
+#                 #ox = str(romans[args.oxstate])
+#             #else:
+#                 #ox = str(args.oxstate)
+#         #else:
+#             #ox = "0"
+#         #name += "_" + str(ox)
+#         if args.spin:
+#             spin = str(args.spin)
+#         else:
+#             spin = "0"
+#         name += "_s_"+str(spin)
+#         name += "_" + str(subst.ident) + "_TS"
+#         if args.bind:
+#             if bsmi:
+#                 if args.nambsmi: # if name specified use it in file
+#                     name += "_" + +args.nambsmi[0:2]
+#     return name
 
 ## Copies ligands, binding species and cores to user-specified path
 def copy_to_custom_path():
