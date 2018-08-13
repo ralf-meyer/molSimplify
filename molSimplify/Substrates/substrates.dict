@@ -1,19 +1,10 @@
-# substrate name, substrate structure file, abbreviation (unique)
-methane:Me.xyz,Me
-ethane:Et.xyz,Et
-propane:Pr.xyz,Pr
-isopropyl:iPr.xyz,iPr
-tbu:tBu.xyz,tBu
-methanol:MeOH.xyz,MeOH
-methylamine:MeNH2.xyz,MeNH2
-ether:MeOMe.xyz,MeOMe
-ester:HCOOMe.xyz,HCOOMe
-vinyl:vinyl.xyz,vinyl
-benzyl:benzyl.xyz,Bz
-acetaldehyde:MeCHO.xyz,MeCHO
-acetonitrile:MeCN.xyz,MeCN 
-water:H2O.xyz,H2O
-oxo:O.xyz,O
-hydroxo:OH.xyz,OH
-nitrous:N2O.xyz,N2O
-oxygen:O2.xyz,O2
+#
+# Substrate name, substrate structure file, abbreviation (unique), connection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), charge
+methane:methane.xyz,ch4,1,hat,N,0
+estrogen:estrogen.xyz,estrogen,33,hat,N,0
+ethylene:ethylene.xyz,c2h4,0 1 pi,pi,N,0
+propane:propane.xyz,c3h8,2,hat,N,0
+propane:propane.xyz,c3h8,9,hat,N,0
+cyclohexene:cyclohexene.xyz,c6h10,2 3 pi,pi,N,0
+cyclohexene:cyclohexene.xyz,c6h10,8,hat,N,0
+cyclohexene:cyclohexene.xyz,c6h10,9,hat,N,0
