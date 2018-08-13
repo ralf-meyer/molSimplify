@@ -93,12 +93,13 @@ def startgen(argv,flag,gui):
         # parse input file
     if args.i:
         parseinputfile(args)
-    if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
-        
+    # if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
+    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
+
         # check input arguments
         print 'Checking input...'
-        if args.tsgen:
-            emsg = checkinput(args,calctype =  "tsgen")
+        if args.tsgen2:
+            emsg = checkinput(args,calctype =  "tsgen2")
         elif args.ligadd:
             emsg = checkinput(args,calctype =  "dbadd")
         else:
@@ -177,7 +178,9 @@ def startgen(argv,flag,gui):
         # add gui flag
         args.gui = gui
         corests=args.core
-        if args.tsgen: # goes through multigenruns for maximum interoperability
+        # if args.tsgen: # goes through multigenruns for maximum interoperability
+        #     print('building a transition state')
+        if args.tsgen2: # goes through multigenruns for maximum interoperability
             print('building a transition state')
         else:
             print('building an equilibrium complex')
