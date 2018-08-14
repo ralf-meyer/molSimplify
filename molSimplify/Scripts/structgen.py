@@ -2770,6 +2770,7 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,mligcatoms_ext):
 def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     # load ligand dictionary
     licores = getlicores()
+    subcores = getsubcores()
     # build structure
     sanity = False
     this_diag = run_diag()
