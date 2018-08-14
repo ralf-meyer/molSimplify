@@ -2093,6 +2093,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     totlig = 0  # total number of ligands added
     ligsused = 0 # total number of ligands used
     loopcount = 0 # this counts the site occupations (I think?)
+    mligcatoms_ext = 0
     for i,ligand in enumerate(ligands):
         if args.debug:
                 print('************')
@@ -2774,7 +2775,7 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     sanity = False
     this_diag = run_diag()
     if (ligands):
-        core3D,complex3D,emsg,this_diag = mcomplex(args,ligands,ligoc,licores,globs)
+        core3D,complex3D,emsg,this_diag,mligcatoms_ext = mcomplex(args,ligands,ligoc,licores,globs)
         name_core = args.core
         if emsg:
             return False,emsg
