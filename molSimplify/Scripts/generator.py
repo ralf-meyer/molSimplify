@@ -152,8 +152,8 @@ def startgen(argv,flag,gui):
                 print emsg
                 del args
                 return emsg
-    elif args.drawmode:
-        emsg = draw_supervisor(args,rundir)            
+    #elif args.drawmode:
+    #    emsg = draw_supervisor(args,rundir)            
     # slab/place on slab?
     elif (args.slab_gen or args.place_on_slab):
         emsg = slab_module_supervisor(args,rundir)
