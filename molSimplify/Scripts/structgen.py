@@ -2315,7 +2315,6 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 auxm.copymol3D(lig3D)
                 complex3D.append(auxm)
                 if 'a' not in lig.ffopt.lower():
-                    
                     for latdix in range(0,lig3D.natoms):
                         print('a is not ff.lower, so adding ' + str(latdix+core3D.natoms)+  'to freeze')
                         frozenats.append(latdix+core3D.natoms)
@@ -2398,22 +2397,22 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,mligcatoms_ext):
     # load substrate
     for i,subname in enumerate(substrate):
         # if not in cores -> smiles/file
-        if subname not in [i.subname for i in subcores.keys()]:
-            if args.smicat and len(args.smicat)>= (smilessub+1):
-                if 'pi' in args.smicat[smilessub]:
-                    cats0.append(['c'])
-                else:
-                    cats0.append(args.smicat[smilessub])
-            else:
-                cats0.append([0])
-            dent_i = len(cats0[-1])
-            smilessub += 1        
-        else:    
-            sub,subcatoms,emsg = substr_load(args,subname,sub_i,subcatoms)
-            sub.convert2mol3D()
-            # calculate occurrences, denticities etc for all ligands
-            dent_i = sub.denticity
-            rxn_type = sub.grps[0]
+        # if subname not in [i.subname for i in subcores.keys()]:
+        #     if args.smicat and len(args.smicat)>= (smilessub+1):
+        #         if 'pi' in args.smicat[smilessub]:
+        #             cats0.append(['c'])
+        #         else:
+        #             cats0.append(args.smicat[smilessub])
+        #     else:
+        #         cats0.append([0])
+        #     dent_i = len(cats0[-1])
+        #     smilessub += 1        
+        # else:    
+        sub,subcatoms,emsg = substr_load(args,subname,sub_i,subcatoms)
+        sub.convert2mol3D()
+        # calculate occurrences, denticities etc for all ligands
+        dent_i = sub.denticity
+        rxn_type = sub.grps[0]
         # for j in range(0,1):
         #     # get correct atoms
         #     bats,backbatoms = getnupdateb(backbatoms,1)
