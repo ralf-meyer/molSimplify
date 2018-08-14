@@ -91,6 +91,36 @@ def readdict(fname):
             d[key] = vv
     return d 
 
+## Read data into dictionary for substrate
+#  @param fname Filename containing dictionary data
+#  @return Dictionary
+def readdict_sub(fname):
+    ## Constructor
+    #  @param self The object pointer
+    #  @param subname The name of the substrate
+    class substrate:
+        def __init__(self,subname):
+            self.subname = subname
+    d = dict()
+    f = open(fname,'r')
+    txt = f.read()
+    lines = filter(None,txt.splitlines())
+    f.close()
+    for line in lines:
+        if (line[0]!='#'):
+            key = filter(None,line.split(':')[0])
+            val = filter(None,line.split(':')[1])
+            vals = filter(None,re.split(',',val))
+            vv = []
+            for i,val in enumerate(vals):
+                vvs = (filter(None,val.split(' ')))
+                if len(vvs) > 1 or i > 2:
+                    vv.append(vvs)
+                else:
+                    vv += vvs
+            d[substrate(key)] = vv # dict keys are instances of the substrate class
+    return d 
+
 ## Get ligands in dictionary
 #  @return List of ligands in dictionary
 def getligs():
@@ -228,7 +258,7 @@ def getsubcores():
          subcores = str(globs.custom_path).rstrip('/') + "/Substrates/substrates.dict"
     else:
         subcores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/substrates.dict")
-    subcores = readdict(subcores)
+    subcores = readdict_sub(subcores)
     return subcores
     
 ## Load M-L bond length dictionary from data
