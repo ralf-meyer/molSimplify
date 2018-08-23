@@ -9,7 +9,7 @@ from math import sqrt
 import numpy as np
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import openbabel, pybel
+import openbabel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile, re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
@@ -1412,8 +1412,9 @@ class mol3D:
 
     def calccharges(self,method='QEq'):
         self.convert2OBMol()
-        pymol = pybel.Molecule(self.OBMol)
-        self.partialcharges = pymol.calccharges(method)
+        charge = openbabel.OBChargeModel.FindType(method)
+        charge.ComputeCharges(self.OBMol)
+        self.partialcharges = charge.GetPartialCharges()
 
     ## Checks for overlap within the molecule
     # 
