@@ -9,7 +9,7 @@ from math import sqrt
 import numpy as np
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import openbabel
+import openbabel, pybel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile, re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
@@ -91,6 +91,8 @@ class mol3D:
         self.needsconformer = False
         ## Holder for molecular group
         self.grps = False
+        ## Holder for partial charge for each atom
+        self.partialcharges = []
 
         # ---geo_check------
         self.dict_oct_check_loose = self.globs.geo_check_dictionary()["dict_oct_check_loose"]
@@ -602,6 +604,42 @@ class mol3D:
     def getAtomCoords(self, idx):
         # print(self.printxyz())
         return self.atoms[idx].coords()
+
+    ## Gets atoms bonded to a specific atom
+    #
+    #  This is determined based on BOMatrix..
+    #
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsBOMatrix(self, ind, debug=False):
+        ratom = self.getAtom(ind)
+        self.convert2OBMol()
+        OBMatrix = self.populateBOMatrix()
+        # calculates adjacent number of atoms
+        nats = []
+        for i in range(len(OBMatrix[ind])):
+            if OBMatrix[ind][i] > 0:
+                nats.append(i)
+        return nats
+
+    ## Gets atoms bonded to a specific atom
+    #
+    #  This is determined based on augmented BOMatrix.
+    #
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsBOMatrixAug(self, ind, debug=False):
+        ratom = self.getAtom(ind)
+        self.convert2OBMol()
+        OBMatrix = self.populateBOMatrixAug()
+        # calculates adjacent number of atoms
+        nats = []
+        for i in range(len(OBMatrix[ind])):
+            if OBMatrix[ind][i] > 0:
+                nats.append(i)
+        return nats
 
     ## Gets atoms bonded to a specific atom
     #
@@ -1187,6 +1225,28 @@ class mol3D:
             molBOMat[these_inds[1] - 1, these_inds[0] - 1] = this_order
         return (molBOMat)
 
+    ## Gets a matrix with bond orders from openbabel augmented with molecular graph
+    #  @param self The object pointer
+    #  @return matrix of bond orders
+    def populateBOMatrixAug(self):
+        obiter = openbabel.OBMolBondIter(self.OBMol)
+        n = self.natoms
+        molBOMat = np.zeros((n, n))
+        for bond in obiter:
+            these_inds = [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]
+            this_order = bond.GetBondOrder()
+            molBOMat[these_inds[0] - 1, these_inds[1] - 1] = this_order
+            molBOMat[these_inds[1] - 1, these_inds[0] - 1] = this_order
+        self.convert2mol3D()
+        self.createMolecularGraph()
+        molgraph = self.graph
+        error_mat = molBOMat - molgraph
+        error_idx = np.where( error_mat < 0 )
+        for i in range(len(error_idx)):
+            if len(error_idx[i]) > 0:
+                molBOMat[error_idx[i].tolist()[0],error_idx[i].tolist()[1]] = 1
+        return (molBOMat)
+
     ## Prints xyz coordinates to stdout
     # 
     #  To write to file (more common), use writexyz() instead.
@@ -1349,6 +1409,11 @@ class mol3D:
                     if dist > dist_max:
                         dist_max = dist
             return dist_max
+
+    def calccharges(self,method='QEq'):
+        self.convert2OBMol()
+        pymol = pybel.Molecule(self.OBMol)
+        self.partialcharges = pymol.calccharges(method)
 
     ## Checks for overlap within the molecule
     # 
