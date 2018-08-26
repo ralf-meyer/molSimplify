@@ -98,8 +98,8 @@ def startgen(argv,flag,gui):
 
         # check input arguments
         print 'Checking input...'
-        if args.tsgen2:
-            emsg = checkinput(args,calctype =  "tsgen2")
+        if args.tsgen:
+            emsg = checkinput(args,calctype =  "tsgen")
         elif args.ligadd:
             emsg = checkinput(args,calctype =  "dbadd")
         else:
@@ -180,7 +180,7 @@ def startgen(argv,flag,gui):
         corests=args.core
         # if args.tsgen: # goes through multigenruns for maximum interoperability
         #     print('building a transition state')
-        if args.tsgen2: # goes through multigenruns for maximum interoperability
+        if args.tsgen: # goes through multigenruns for maximum interoperability
             print('building a transition state')
         else:
             print('building an equilibrium complex')
