@@ -104,7 +104,7 @@ def checkinput(args,calctype="base"):
     #     if not args.spin:
     #         print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
     #         args.spin = '1'
-    elif calctype == "tsgen2":
+    elif calctype == "tsgen":
         # check core
         if not args.core:
             print 'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores()
@@ -150,12 +150,49 @@ def checkinput(args,calctype="base"):
             # check coordination number and geometry
             if not args.coord and not args.geometry:
                 if not args.gui:
-                    print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).'
-                    args.coord = 6
-                    args.geometry = 'oct'
-            coords,geomnames,geomshorts,geomgroups = getgeoms()
+                    # calculate occurrences, denticities etc for all ligands
+                    licores = getlicores()
+                    toccs = 0
+                    occs0 = []
+                    dentl = []
+                    cats0 = []
+                    ligoc = args.ligocc
+                    for i,ligname in enumerate(args.lig):
+                        # if not in cores -> smiles/file
+                        if ligname not in licores.keys():
+                            if args.smicat and len(args.smicat)>= (smilesligs+1):
+                                if 'pi' in args.smicat[smilesligs]:
+                                    cats0.append(['c'])
+                                else:
+                                    cats0.append(args.smicat[smilesligs])
+                            else:
+                                cats0.append([0])
+                            dent_i = len(cats0[-1])
+                            smilesligs += 1
+                        else:
+                            cats0.append(False)
+                        # otherwise get denticity from ligands dictionary
+                            if 'pi' in licores[ligname][2]:
+                                dent_i = 1
+                            else:
+                                if isinstance(licores[ligname][2], (str, unicode)):
+                                    dent_i = 1
+                                else:
+                                    dent_i = int(len(licores[ligname][2]))
+                        # get occurrence for each ligand if specified (default 1)
+                        oc_i = int(ligoc[i]) if i < len(ligoc) else 1
+                        occs0.append(0)         # initialize occurrences list
+                        dentl.append(dent_i)    # append denticity to list
+                        # loop over occurrence of ligand i to check for max coordination
+                        for j in range(0,oc_i):
+                            occs0[i] += 1
+                            toccs += dent_i
+                    if args.core[0].lower() in args.mlig:
+                        toccs += 1
+                    print('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.')
+                    args.coord = toccs
             if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
-                print 'WARNING: No or unknown coordination geometry specified. Defaulting to '+globs.defaultgeometry[int(args.coord)][1]
+                print 'WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: '+globs.defaultgeometry[int(args.coord)][1]
                 args.geometry = globs.defaultgeometry[int(args.coord)][0]
             if args.geometry and not args.coord:
                 if args.geometry not in geomnames and args.geometry not in geomshorts:
@@ -823,8 +860,8 @@ def parseinputfile(args):
             # if (l[0]=='-substplaceff'):
             #     args.substplaceff = True
             # parse TS generation 2 arguments
-            if (l[0]=='-tsgen2'):
-                args.tsgen2 = True
+            if (l[0]=='-tsgen'):
+                args.tsgen = True
             if (l[0]=='-substrate'):
                 args.substrate = l[1:]
             if (l[0]=='-subcatoms'):
@@ -917,7 +954,7 @@ def parseall(parser):
     parseinputs_random(parser,args)
     parseinputs_binding(parser,args)
     # parseinputs_tsgen(parser,args)
-    parseinputs_tsgen2(parser,args)
+    parseinputs_tsgen(parser,args)
     parseinputs_customcore(parser,args)
     parseinputs_naming(parser,args)
     return args
@@ -1219,9 +1256,9 @@ def parseinputs_binding(*p):
 
 ## Parses transition state building version 2 options and prints help
 #  @param *p Parser pointer
-def parseinputs_tsgen2(*p):
+def parseinputs_tsgen(*p):
     parser = p[0]
-    parser.add_argument("-tsgen2", help="flag for enabling TS generation mode",action="store_true",default=False)
+    parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true",default=False)
     parser.add_argument("-substrate", help="small molecule substrate")
     parser.add_argument("-subcatoms", help="index of the connecting atom in substrate")
     parser.add_argument("-mlig", help="ligand name in the metal complex that the substrate connects with")
