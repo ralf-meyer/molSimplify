@@ -1,10 +1,51 @@
 #
 # Substrate name, substrate structure file, abbreviation (unique), connection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), charge
-methane:methane.xyz,ch4,1,hat,N,0
-estrogen:estrogen.xyz,estrogen,33,hat,N,0
-ethylene:ethylene.xyz,c2h4,0 1 pi,pi,N,0
+# alkanes
+methane:methane.xyz,ch4,1,hat,N,0 # BDH = 104.9(0.1)
+ethane:ethane.xyz,c2h6,2,hat,B,0 # BDH = 101.1(0.4)
 propane:propane.xyz,c3h8,2,hat,N,0
-propane:propane.xyz,c3h8,9,hat,N,0
+propane:propane.xyz,c3h8,9,hat,N,0 # BDH = 98.6(0.4)
+tert-butane:tert-butane.xyz,tbuH,13,hat,N,0 # BDH = 96.5(0.4)
+# alkenes
+ethylene:ethylene.xyz,c2h4,0 1 pi,pi,N,0
+ethylene:ethylene.xyz,c2h4,2,hat,N,0 # vinyl C-H
+ethene:ethylene.xyz,c2h4,0 1 pi,pi,N,0 # the alternative name for ethylene
+ethene:ethylene.xyz,c2h4,2,hat,N,0 # the alternative name for ethylene, vinyl C-H
+propylene:propylene.xyz,c3h6,1 2 pi,pi,N,0
+propylene:propylene.xyz,c3h6,7,hat,N,0 # allylic C-H
+propene:propylene.xyz,c3h6,1 2 pi,pi,N,0 # the alternative name for propylene
+propene:propylene.xyz,c3h6,7,hat,N,0 # the alternative name for propylene
 cyclohexene:cyclohexene.xyz,c6h10,2 3 pi,pi,N,0
 cyclohexene:cyclohexene.xyz,c6h10,8,hat,N,0
 cyclohexene:cyclohexene.xyz,c6h10,9,hat,N,0
+# alkynes
+acetylene:acetylene.xyz,hcch,2,hat,N,0 # BDH=133.32(0.07)
+propyne:propyene.xyz,ch3cch,4,4,4,4,hat,N,0 # BDE=86.3(1.5)
+# aryls
+benzene:benzene.xyz,c6h6,6,hat,B,0 # aryl C-H BDH=112.9(0.5)
+benzene:benzene.xyz,c6h6,0 1 pi,pi,B,0
+bromobenzene:bromobenzene.xyz,phbr,0 11 pi,oa,B,0
+iodobenzene:iodobenzene.xyz,phi,0 11 pi,oa,N,0
+toluene:toluene.xyz,c6h5ch3,12,hat,B,0 # benzylic C-H
+diphenylmethane:diphenylmethane.xyz,ph2ch2,23,hat,B,0 # BDE=84(2)
+xanthene:xanthene.xyz,xanthene,22,hat,B,0 # BDE=76(2)
+dha:DHA.xyz,dha,18,hat,B,0 # BDE=78(2)
+fluorene:fluorene.xyz,fluorene,21,hat,B,0 # BDE=80(2)
+cumene:cumene.xyz,cumene,20,hat,B,0 # BDE=85(2)
+# alcohols
+methanol:methanol.xyz,ch3o3,2,hat,N,0 # O-H # 104.6(0.7)
+methanol:methanol.xyz,ch3oh,4,hat,N,0 # C-H # 96.1(0.3)
+# aldehydes
+formaldehyde:formaldehyde.xyz,h2co,2,hat,N,0 # BDH=88.0(0.2)
+methanal:formaldehyde.xyz,h2co,2,hat,N,0 # the alternative name for formaldehyde BDH=88.0(0.2)
+acetaldehyde:acetaldehyde.xyz,hcoch3,3,hat,N,0 # alpha-C-H BDH=89.4(0.3)
+ethanal:acetaldehyde.xyz,hcoch3,3,hat,N,0 # the alternative name for acetaldehyde BDH=89.4(0.3)
+# carboxylic acids
+formicacid:formicacid.xyz,hcooh,2,hat,N,0 # O-H BDE=112(3)
+formicacid:formicacid.xyz,hcooh,4,hat,N,0 # C-H BDE=96(1)
+methanoicacid:formicacid.xyz,hcooh,2,hat,N,0 # the alternative name for formic acid O-H BDE=112(3)
+methanoicacid:formicacid.xyz,hcooh,4,hat,N,0 # the alternative name for formic acid C-H BDE=96(1)
+# azides
+methylazide:methylazide.xyz,ch3n3,1 3 pi,click,N,0
+# natural products
+estrogen:estrogen.xyz,estrogen,33,hat,N,0
