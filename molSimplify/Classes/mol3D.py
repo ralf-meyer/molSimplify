@@ -657,7 +657,7 @@ class mol3D:
         nats = []
         for i, atom in enumerate(self.atoms):
             d = distance(ratom.coords(), atom.coords())
-            distance_max = 1.35 * (atom.rad + ratom.rad)
+            distance_max = 1.15 * (atom.rad + ratom.rad)
             if atom.symbol() == "C" and not ratom.symbol() == "H":
                 distance_max = min(2.75, distance_max)
             if ratom.symbol() == "C" and not atom.symbol() == "H":
