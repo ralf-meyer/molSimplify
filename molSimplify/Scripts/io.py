@@ -307,6 +307,37 @@ def loaddata_ts(path):
     f.close()
     return d
 
+## Load a chemdraw cdxml file and write out xyz
+# @param cdxml a cdxml file
+# return fname the xyz fname for the read-in cdxml
+def loadcdxml(cdxml):
+    import pybel
+    obconv = openbabel.OBConversion() # ob Class
+    obmol = openbabel.OBMol() # ob Class
+    obconv.SetInFormat('cdxml') # ob Method to set cdxml
+    obconv.ReadFile(obmol,cdxml) # ob Method to reaad cdxml into a OBMol()
+    obmol.NumAtoms()
+    idx_list = []
+    atno_list = []
+    for idx in range(obmol.NumAtoms()):
+        if obmol.GetAtom(idx+1).GetAtomicNum() == 26:
+            idx_list.append(idx)
+            atno_list.append(obmol.GetAtom(idx+1).GetAtomicNum())
+            obmol.GetAtom(idx+1).SetAtomicNum(14)
+
+    pymol = pybel.Molecule(obmol)
+    pymol.make3D()
+    pymol.localopt()
+    for i in range(len(idx_list)):
+        idx = idx_list[i]
+        atno = atno_list[i]
+        obmol.GetAtom(idx+1).SetAtomicNum(atno)
+
+    fname = re.sub(r'.cdxml','.xyz',cdxml) # file name for the new xyz
+    obconv.WriteFile(obmol,fname)
+    
+    return fname
+
 ## Load backbone coordinates
 #  @param coord Name of coordination geometry
 #  @return List of backbone coordinates
@@ -423,31 +454,6 @@ def substr_load(args,usersubstrate,sub_i,subcatoms,subcores=None):
             var_list.append(var)
         var_list = sorted(var_list)
         var_list_sub_i = var_list[sub_i]
-        # xyz_list = []
-        # for xyz in [subcores[i][0] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
-        #     xyz_list.append(xyz)
-        # xyz_list = sorted(xyz_list)
-        # ident_list = []
-        # for ident in [subcores[i][1] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
-        #     ident_list.append(ident)
-        # ident_list = sorted(ident_list)
-        # subcatom_list = []
-        # for subcatom in [subcores[i][2] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
-        #     subcatom_list.append(subcatom)
-        # subcatom_list = sorted(subcatom_list)
-        # grp_list = []
-        # for grp in [subcores[i][3] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
-        #     grp_list.append(grp)
-        # grp_list = sorted(grp_list)
-        # ffopt_list = []
-        # for ffopt in [subcores[i][4] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
-        #     ffopt_list.append(ffopt)
-        # ffopt_list = sorted(ffopt_list)
-        # charge_list = []
-        # for charge in [subcores[i][5] for i in subcores.keys() if i.subname == usersubstrate.lower()]:
-        #     charge_list.append(charge)
-        # charge_list = sorted(charge_list)
-        # load substrate mol file (with hydrogens)
         if globs.custom_path:
             fsubst = globs.custom_path + "/Substrates/" + var_list_sub_i[0]
         else:
@@ -485,7 +491,7 @@ def substr_load(args,usersubstrate,sub_i,subcatoms,subcores=None):
                 sub.cat = [int(var_list_sub_i[2])]
             else:
                 sub.cat = [int(l) for l in var_list_sub_i[2]]
-        if 'all' not in str(args.subcatoms):
+        if not args.subcatoms:
             subcatoms = sub.cat
         if args.debug:
             print('subcatoms after substr_load is ' + str(subcatoms))
