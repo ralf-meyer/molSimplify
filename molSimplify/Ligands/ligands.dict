@@ -166,4 +166,16 @@ co2:co2.mol,co2,0,all small,N,-1
 phenphen:phenphen.mol,phenphen,9 12 26,build,BA,0
 thiophene:thiophene.mol,thip,0,build,BA,0
 phosphorine:phosphorine.mol,phob,3,build,BA,0
+hydrocarboxyacetylide:hydrocarboxyacetylide.xyz,cccooh,2,build small,BA,0
+o-pyridylphenyl:o-pyridylphenylanion.xyz,o-pyphanion,4 12,build small,BA,-1
+o-pyridylbenzene:o-pyridylbenzene.xyz,o-pyph,4,build small,BA,0
+e2acetate:acetate.xyz,acetate,2 3,build small,BA,-1
+acetate:acetate.xyz,acetate,2,build small,BA,-1
+methanol:methanol.xyz,ch3oh,1,build small,BA,0
+e6benzene:benzene_pi.mol,bnp,0 1 2 3 4 5 pi,build small organometallic,N,0
+N-quinolinylbutyramidate:N-quinolinylbutyramidate.xyz,n-qnbuam,9 2,build small,BA,-1
+N-quinolinylmethylmethinylacetamidate:N-quinolinylmethylmethinylacetamidate.xyz,n-qnbuam3-,9 2 20,build small,BA,-2
+iodobenzene:iodobenzene.xyz,phi,0 11 pi,build small,BA,0
+iodide:iodide.mol,i,0,build functionalize small,N,-1
+formamidate:formamidate.xyz,hconh,1,build small,BA,-1
 test:test.xyz,test,10 14,build,BA,-1
