@@ -152,6 +152,7 @@ def checkinput(args,calctype="base"):
                 if not args.gui:
                     # calculate occurrences, denticities etc for all ligands
                     licores = getlicores()
+                    smilesligs = 0
                     toccs = 0
                     occs0 = []
                     dentl = []
