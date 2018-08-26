@@ -198,20 +198,9 @@ def features(xyzf):
     for i in range(i_size):
         b = np.array(prop_list[i])
         a = np.append(a,b)
-    b = np.reshape(a,(i_size,j_size))
-    c = b.T[a[:i_size].argsort()].T
-    feature_list = c.tolist()
-    feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
+        b = np.reshape(a,(i_size,j_size))
+        c = b.T[a[:j_size].argsort()].T
+        feature_list = c.tolist()
+        feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
 
     return feature_list
-
-with open('chenru_features_include_Q2.txt','a') as f:
-    for xyzf in glob.glob('*xyz'):
-        feature_list = features(xyzf)
-        xyz3D = mol3D()
-        xyz3D.readfromxyz(xyzf)
-        msym = xyz3D.getAtom(xyz3D.findMetal()[0]).sym
-        ref = xyzf.split('_')[0]
-        feature_list.insert(0,[msym])
-        feature_list.insert(0,[ref])
-        f.write(str(feature_list) + '\n')
