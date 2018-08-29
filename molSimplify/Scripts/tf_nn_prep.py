@@ -38,24 +38,24 @@ def invoke_ANNs_from_mol3d(mol,oxidation_state,alpha=0.2):
     descriptors += [alpha]
 
     # call ANN for splitting
-    delta = ANN_supervisor('split',descriptors,descriptor_names)[0]
+    split, latent_split = ANN_supervisor('split',descriptors,descriptor_names)
 
     # call ANN for bond lenghts
     if oxidation_state == 2:
-        r_ls  = ANN_supervisor('ls_ii',descriptors,descriptor_names)
-        r_hs  = ANN_supervisor('hs_ii',descriptors,descriptor_names)
+        r_ls, latent_r_ls = ANN_supervisor('ls_ii',descriptors,descriptor_names)
+        r_hs, latent_r_hs = ANN_supervisor('hs_ii',descriptors,descriptor_names)
     elif oxidation_state == 3:
-        r_ls  = ANN_supervisor('ls_iii',descriptors,descriptor_names)
-        r_hs  = ANN_supervisor('hs_iii',descriptors,descriptor_names)
+        r_ls, latent_r_ls = ANN_supervisor('ls_iii',descriptors,descriptor_names)
+        r_hs, latent_r_hs = ANN_supervisor('hs_iii',descriptors,descriptor_names)
 
     # ANN distance for splitting
-    train_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
+    split_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
 
     # compile results and return
     results_dictionary = {"ls_bl":r_ls,
                          "hs_bl":r_hs,
-                         "split":delta,
-                         "distance":train_dist }
+                         "split":split,
+                         "distance":split_dist }
     return(results_dictionary)
             
 
@@ -159,7 +159,8 @@ def tf_check_ligands(ligs,batlist,dents,tcats,occs,debug):
                             print('adding ' + str(this_lig) + ' to axial')
                         axial_ligs.append(this_lig)
                         ax_dent = this_dent
-                        ax_tcat = tcats[i]
+                        if this_lig not in ['x','oxo','hydroxyl']:
+                            ax_tcat = tcats[i]
                         ax_occs.append(occs[i])
                     else:
                         ax_occs[axial_ligs.index(this_lig)] += 1
@@ -259,7 +260,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     dents = newdents
     tcats = newcats 
     occs = newoccs
-      
+    print('FINISHED PREPPING LIGANDS')  
    
     if not args.geometry == "oct":
         emsg.append("[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
@@ -273,7 +274,8 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(this_metal,oxidation_state)
         if int(oxidation_state) in [3, 4, 5]:
-            catalytic_moieties = ['oxo','x','hydroxyl']
+            catalytic_moieties = ['oxo','x','hydroxyl','[O--]','[OH-]']
+            print('THE LIGANDS ARE',ligs)
             print(set(ligs).intersection(set(catalytic_moieties)))
             if len(set(ligs).intersection(set(catalytic_moieties))) > 0:
                 catalysis = True
@@ -318,6 +320,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if (not valid) and (not catalysis):
         ANN_reason  = 'found incorrect ligand symmetry'
     elif not valid and catalysis:
+        print('THIS IS CATALYTIC!')
         ANN_reason = 'catalytic structure presented'
 
     
@@ -439,7 +442,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
 
         ## get spin splitting:
-        split = ANN_supervisor('split',descriptors,descriptor_names)[0]
+        split, latent_split = ANN_supervisor('split',descriptors,descriptor_names)
         if args.debug:
             current_time =  time.time()
             split_ANN_time  = current_time - last_time
@@ -448,11 +451,11 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         
         ## get bond lengths:
         if oxidation_state == '2':
-            r_ls  = ANN_supervisor('ls_ii',descriptors,descriptor_names)
-            r_hs  = ANN_supervisor('hs_ii',descriptors,descriptor_names)
+            r_ls, latent_r_ls  = ANN_supervisor('ls_ii',descriptors,descriptor_names)
+            r_hs, latent_r_hs  = ANN_supervisor('hs_ii',descriptors,descriptor_names)
         elif oxidation_state == '3':
-            r_ls  = ANN_supervisor('ls_iii',descriptors,descriptor_names)
-            r_hs  = ANN_supervisor('hs_iii',descriptors,descriptor_names)
+            r_ls, latent_r_ls  = ANN_supervisor('ls_iii',descriptors,descriptor_names)
+            r_hs, latent_r_hs  = ANN_supervisor('hs_iii',descriptors,descriptor_names)
         if not high_spin:
             r = r_ls[0]
         else:
@@ -464,14 +467,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('GEO ANN took ' +  "{0:.2f}".format(GEO_ANN_time)+ ' seconds')
 
-        homo = ANN_supervisor('homo',descriptors,descriptor_names)[0]
+        homo, latent_homo = ANN_supervisor('homo',descriptors,descriptor_names)
         if args.debug:
             current_time =  time.time()
             homo_ANN_time  = current_time - last_time
             last_time = current_time
             print('homo ANN took ' +  "{0:.2f}".format(homo_ANN_time) + ' seconds')
 
-        gap = ANN_supervisor('gap',descriptors,descriptor_names)[0]
+        gap, latent_gap = ANN_supervisor('gap',descriptors,descriptor_names)
         if args.debug:
             current_time =  time.time()
             gap_ANN_time  = current_time - last_time
@@ -619,14 +622,13 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ## build RACs without geo
         con_mat  = this_complex.graph  
         descriptor_names, descriptors = get_descriptor_vector(this_complex,custom_ligand_dict,ox_modifier)
-        
         # get alpha
-        alpha = 0.2 # default for B3LYP
+        alpha = 20 # default for B3LYP
         if args.exchange:
             try:
-                if float(args.exchange) > 1:
-                    alpha = float(args.exchange)/100 # if given as %
-                elif float(args.exchange) <= 1:
+                if float(args.exchange) < 1:
+                    alpha = float(args.exchange)*100 # if given as %
+                elif float(args.exchange) >= 1:
                     alpha = float(args.exchange)
             except:
                 print('cannot case exchange argument as a float, using 20%')
@@ -641,14 +643,13 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             rac_check_time  = current_time - last_time
             last_time = current_time
             print('getting RACs took ' +  "{0:.2f}".format(rac_check_time) + ' seconds')
-        oxo = ANN_supervisor('oxo',descriptors,descriptor_names)[0] #REMEMBER TO CHANGE THIS FREOM HOMO
+        oxo, latent_oxo = ANN_supervisor('oxo',descriptors,descriptor_names)
         if args.debug:
             current_time =  time.time()
             split_ANN_time  = current_time - last_time
             last_time = current_time
             print('oxo ANN took ' +  "{0:.2f}".format(split_ANN_time) + ' seconds')
-
-        oxo_dist = find_true_min_eu_dist("oxo",descriptors,descriptor_names)
+        oxo_dist = find_ANN_latent_dist("oxo",latent_oxo)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -657,6 +658,23 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
         ANN_attributes.update({'oxo':oxo[0]})
         ANN_attributes.update({'oxo_dist':oxo_dist})
+
+        hat, latent_hat = ANN_supervisor('hat',descriptors,descriptor_names)
+        if args.debug:
+            current_time =  time.time()
+            split_ANN_time  = current_time - last_time
+            last_time = current_time
+            print('HAT ANN took ' +  "{0:.2f}".format(split_ANN_time) + ' seconds')
+
+        hat_dist = find_ANN_latent_dist("hat",latent_hat)
+        if args.debug:
+            current_time =  time.time()
+            min_dist_time  = current_time - last_time
+            last_time = current_time
+            print('min hat dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
+
+        ANN_attributes.update({'hat':hat[0]})
+        ANN_attributes.update({'hat_dist':hat_dist})
 
         Oxo_ANN_trust = 'not set'
         Oxo_ANN_trust_message = ""
@@ -673,13 +691,33 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             Oxo_ANN_trust_message = 'Oxo ANN results are too far from training data, be cautious '
             Oxo_ANN_trust = 'very low'
         ANN_attributes.update({'oxo_trust':Oxo_ANN_trust})
-        print("******************************************************************")
-        print("**************       CATALYTIC ANN ACTIVATED!      ***************")
-        print("************** Currently advising on oxo formation ***************")
-        print("******************************************************************")
-        print("ANN predicts a oxo formation energy of " + "{0:.2f}".format(float(oxo[0])) + ' kcal/mol at '+"{0:.2f}".format(100*alpha) + '% HFX')
+
+
+        HAT_ANN_trust = 'not set'
+        HAT_ANN_trust_message = ""
+        if float(hat_dist)< 3: #Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+            HAT_ANN_trust_message = 'HAT ANN results should be trustworthy for this complex '
+            HAT_ANN_trust = 'high'
+        elif float(hat_dist)< 5:
+            HAT_ANN_trust_message = 'HAT ANN results are probably useful for this complex '
+            HAT_ANN_trust  = 'medium'
+        elif float(hat_dist)<= 10:
+            HAT_ANN_trust_message = 'HAT ANN results are fairly far from training data, be cautious '
+            HAT_ANN_trust = 'low'
+        elif float(hat_dist)> 10:
+            HAT_ANN_trust_message = 'HAT ANN results are too far from training data, be cautious '
+            HAT_ANN_trust = 'very low'
+        ANN_attributes.update({'hat_trust':HAT_ANN_trust})
+        print("*******************************************************************")
+        print("**************       CATALYTIC ANN ACTIVATED!      ****************")
+        print("*********** Currently advising on Oxo and HAT energies ************")
+        print("*******************************************************************")
+        print("ANN predicts a oxo formation energy of " + "{0:.2f}".format(float(oxo[0])) + ' kcal/mol at '+"{0:.2f}".format(alpha) + '% HFX')
         print(Oxo_ANN_trust_message)
-        print('Distance to oxo training data is ' + "{0:.2f}".format(oxo_dist) )
+        print('Distance to oxo training data in the latent space is ' + "{0:.2f}".format(oxo_dist) )
+        print("ANN predicts a HAT energy of " + "{0:.2f}".format(float(hat[0])) + ' kcal/mol at '+"{0:.2f}".format(alpha) + '% HFX')
+        print(HAT_ANN_trust_message)
+        print('Distance to HAT training data in the latent space is ' + "{0:.2f}".format(hat_dist) )
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
