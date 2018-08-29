@@ -10,6 +10,7 @@
 
 ## import 
 import keras
+from keras import backend as K
 from keras.models import model_from_json
 from keras.optimizers import Adam
 import numpy as np
@@ -128,6 +129,9 @@ def load_keras_ann(predictor):
     elif predictor == 'gap':
         loaded_model.compile(loss="mse",optimizer=Adam(beta_2 = 1-0.00010929248596488832, beta_1 =  0.8406735969305784, decay = 0.00011224350434148253, lr = 0.0006759924688701965),
               metrics=['mse', 'mae', 'mape'])
+    elif predictor in ['oxo','hat']:
+        loaded_model.compile(loss="mse",optimizer=Adam(beta_2 = 0.9637165412871632, beta_1 = 0.7560951483268549, decay = 0.0006651401379502965, lr = 0.0007727366541920176),
+              metrics=['mse', 'mae', 'mape'])
     else:
         loaded_model.compile(loss="mse",optimizer='adam',
               metrics=['mse', 'mae', 'mape'])
@@ -168,7 +172,6 @@ def ANN_supervisor(predictor,descriptors,descriptor_names):
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor,descriptors,descriptor_names)
 
-
     print('excitation is ' + str(excitation.shape))
     print('fetching non-dimensionalization data... ')
     train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
@@ -178,11 +181,13 @@ def ANN_supervisor(predictor,descriptors,descriptor_names):
 
     ## fetch ANN
     loaded_model = load_keras_ann(predictor)
-    
+    print('LOADED MODEL HAS '+str(len(loaded_model.layers))+' layers, so latent space measure will be from first '+str(len(loaded_model.layers)-1)+' layers')
+    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()], [loaded_model.layers[len(loaded_model.layers)-2].output])
+    latent_space_vector = get_outputs([excitation, 0]) #Using test phase.
+
     print('calling ANN model...')
     result = data_rescale(loaded_model.predict(excitation),train_mean_y,train_var_y)
-    
-    return result
+    return result, latent_space_vector
          
 def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     # returns scaled euclidean distance to nearest trainning 
@@ -197,10 +202,9 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     mat = load_training_data(predictor)
     train_mat = np.array(mat,dtype='float64')
     ## loop over rows
-    min_dist = 100000
+    min_dist = 100000000
     min_ind = 0
     for i,rows in enumerate(train_mat):
-        test = (rows - train_mean_x)/np.sqrt(train_var_x)
         scaled_row = np.squeeze(data_normalize(rows, train_mean_x.T, train_var_x.T)) #Normalizing the row before finding the distance
         this_dist = np.linalg.norm(np.subtract(scaled_row,np.array(scaled_excitation)))
         if this_dist < min_dist:
@@ -220,7 +224,7 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
         path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key +'.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Structure: ',csv_lines[min_ind])
+            print('Closest Structure: ',csv_lines[min_ind+1])
     # need to get normalized distances 
 
     ########################################################################################
@@ -236,6 +240,58 @@ def find_true_min_eu_dist(predictor,descriptors,descriptor_names):
     # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
     return(min_dist)
     
+def find_ANN_latent_dist(predictor,latent_space_vector):
+    # returns scaled euclidean distance to nearest trainning 
+    # vector in desciptor space
+    train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
+
+    ## getting train matrix info
+    mat = load_training_data(predictor)
+    train_mat = np.array(mat,dtype='float64')
+    ## loop over rows
+    min_dist = 100000000
+    min_ind = 0
+
+    loaded_model = load_keras_ann(predictor)
+    print('MEASURING LATENT SPACE DISTANCE!')
+    print('LOADED MODEL HAS '+str(len(loaded_model.layers))+' layers, so latent space measure will be from first '+str(len(loaded_model.layers)-1)+' layers')
+    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()], [loaded_model.layers[len(loaded_model.layers)-2].output])
+
+    for i,rows in enumerate(train_mat):
+        scaled_row = np.squeeze(data_normalize(rows, train_mean_x.T, train_var_x.T)) #Normalizing the row before finding the distance
+        latent_train_row = get_outputs([np.array([scaled_row]), 0])
+        this_dist = np.linalg.norm(np.subtract(np.squeeze(latent_train_row),np.squeeze(latent_space_vector)))
+        # print(this_dist)
+        if this_dist < min_dist:
+            min_dist = this_dist
+            min_ind = i
+            #best_row = rownames[i]
+            min_row = rows
+
+    # flatten min row
+    print('min dist is ' +str(min_dist) + ' at  ' + str(min_ind))
+    if predictor in ['oxo','hat','homo','gap']:
+        if predictor in ['homo','gap']:
+            key = 'homolumo/'+predictor+'_train_names'
+        elif predictor in ['oxo','hat']:
+            key = 'oxocatalysis/'+predictor+ '_train_names'  
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/tf_nn/" +key +'.csv')
+        with open(path_to_file, "r") as f:
+            csv_lines = list(csv.reader(f))
+            print('Closest Structure: ',csv_lines[min_ind+1])
+    # need to get normalized distances 
+
+    ########################################################################################
+    # Changed by Aditya on 08/13/2018. Previously, nearest neighbor was being found in the #
+    # unnormalized space, and then that was normalized. This was resulting in bad nearest  #
+    # neighbor candidate structures. Now routine normalizes before finding the distance.   #
+    ########################################################################################
     
+    # train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
+
+    # scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x)
+    # scaled_row = data_normalize(min_row,train_mean_x,train_var_x)
+    # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
+    return(min_dist)
     
     
