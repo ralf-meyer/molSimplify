@@ -491,6 +491,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
         
         homo_dist = find_true_min_eu_dist("homo",descriptors,descriptor_names)
+        homo_dist = find_ANN_latent_dist("homo",latent_homo)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -505,18 +506,18 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min GAP dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
 
         ## save attributes for return
-        ANN_attributes.update({'split':split[0]})
+        ANN_attributes.update({'split':split[0][0]})
         ANN_attributes.update({'split_dist':split_dist} )
         ANN_attributes.update({'This spin':spin})
-        if split[0] < 0 and (abs(split[0]) > 5):
+        if split[0][0] < 0 and (abs(split[0]) > 5):
             ANN_attributes.update({'ANN_ground_state':spin_ops[1]})
-        elif split[0] > 0 and (abs(split[0]) > 5):
+        elif split[0][0] > 0 and (abs(split[0]) > 5):
             ANN_attributes.update({'ANN_ground_state':spin_ops[0]})
         else:
             ANN_attributes.update({'ANN_ground_state':'dgen ' + str(spin_ops)})
 
-        ANN_attributes.update({'homo':homo[0]})
-        ANN_attributes.update({'gap':gap[0]})
+        ANN_attributes.update({'homo':homo[0][0]})
+        ANN_attributes.update({'gap':gap[0][0]})
         ANN_attributes.update({'homo_dist':homo_dist})
         ANN_attributes.update({'gap_dist':gap_dist}) 
         
@@ -656,7 +657,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('min oxo dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
 
-        ANN_attributes.update({'oxo':oxo[0]})
+        ANN_attributes.update({'oxo':oxo[0][0]})
         ANN_attributes.update({'oxo_dist':oxo_dist})
 
         hat, latent_hat = ANN_supervisor('hat',descriptors,descriptor_names)
@@ -673,7 +674,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('min hat dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
 
-        ANN_attributes.update({'hat':hat[0]})
+        ANN_attributes.update({'hat':hat[0][0]})
         ANN_attributes.update({'hat_dist':hat_dist})
 
         Oxo_ANN_trust = 'not set'
