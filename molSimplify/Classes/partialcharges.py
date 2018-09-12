@@ -129,11 +129,11 @@ def fvalency(xyzf):
     
     return fvalency_list    
 
-def fcharge(xyzf):
+def fcharge(xyzf,charge):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
-    xyz.calccharges()
+    xyz.calccharges(charge)
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
     fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
@@ -144,11 +144,11 @@ def fcharge(xyzf):
     
     return fcharge_list
 
-def scharge_ave(xyzf):
+def scharge_ave(xyzf,charge):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
-    xyz.calccharges()
+    xyz.calccharges(charge)
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
     fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
@@ -181,19 +181,19 @@ def fdistance(xyzf):
     
     return fdistance_list
 
-def all_prop(xyzf):
+def all_prop(xyzf,charge):
     fprio_list = fpriority(xyzf)
     # fsym_list = fsym(xyzf)
     fva_list = fvalency(xyzf)
-    fq_list = fcharge(xyzf)
-    sq_ave_list = scharge_ave(xyzf)
+    fq_list = fcharge(xyzf,charge)
+    sq_ave_list = scharge_ave(xyzf,charge)
     fd_list = fdistance(xyzf)
     prop_list = [fprio_list,fq_list,sq_ave_list,fva_list,fd_list]
 
     return prop_list
 
-def features(xyzf):
-    prop_list = all_prop(xyzf)
+def features(xyzf,charge):
+    prop_list = all_prop(xyzf,charge)
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     midx = xyz.findMetal()[0]
@@ -204,8 +204,8 @@ def features(xyzf):
     feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
     feature = []
     feature.append(manto)
-    for i in feature_list:
-        for j in feature_list[j]:
+    for i in range(len(feature_list)):
+        for j in range(len(feature_list[i])):
             feature.append(feature_list[i][j])
 
     return feature
