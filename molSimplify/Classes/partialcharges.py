@@ -23,7 +23,7 @@ def fpriority(xyzf):
     fidx_list.append(xyz.findMetal())
     for i in range(len(fidx_list)):
         for fidx in fidx_list[i]:
-            for sidx in xyz.getBondedAtomsBOMatrix(fidx):
+            for sidx in xyz.getBondedAtoms(fidx):
                 sidx_list.append([sidx])
 
     for i in range(len(fidx_list)):
@@ -31,6 +31,8 @@ def fpriority(xyzf):
             for j in range(len(sidx_list)):
                 for sidx in sidx_list[j]:
                     BO = int(BOMatrix[fidx][sidx])
+                    if BO == 0:
+                        BO = 1
                     satno_str = str(xyz.getAtom(sidx).atno)
                     satno_list.append(int(BO * satno_str))
 
@@ -55,7 +57,7 @@ def fpriority(xyzf):
         for i in s_sel_list:
             t_list = []
             for sidx in sidx_list[i]:
-                for tidx in xyz.getBondedAtomsBOMatrix(sidx):
+                for tidx in xyz.getBondedAtoms(sidx):
                     if tidx not in ref_list:
                         t_list.append(tidx)
             tidx_list[i] = t_list
@@ -105,7 +107,7 @@ def fsym(xyzf):
     xyz.readfromxyz(xyzf)
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtomsBOMatrix(midx) # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
     fsym_list = []
     for idx in fidx_list:
         sym = xyz.getAtom(idx).sym
@@ -119,10 +121,10 @@ def fvalency(xyzf):
     xyz.readfromxyz(xyzf)
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtomsBOMatrix(midx) # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
     fvalency_list = []
     for idx in fidx_list:
-        valency = len(xyz.getBondedAtomsBOMatrix(idx)) - 1
+        valency = len(xyz.getBondedAtoms(idx)) - 1
         fvalency_list.append(valency)
     
     return fvalency_list    
@@ -134,7 +136,7 @@ def fcharge(xyzf):
     xyz.calccharges()
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtomsBOMatrix(midx) # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
     fcharge_list = []
     for idx in fidx_list:
         charge = xyz.partialcharges[idx]
@@ -149,8 +151,8 @@ def scharge_ave(xyzf):
     xyz.calccharges()
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtomsBOMatrix(midx) # list of idx of the first-coord sphere
-    sidx_list = [xyz.getBondedAtomsBOMatrix(fidx) for fidx in fidx_list]
+    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
+    sidx_list = [xyz.getBondedAtoms(fidx) for fidx in fidx_list]
     scharge_ave_list = []
     for i in range(len(sidx_list)):
         charge = 0
@@ -170,7 +172,7 @@ def fdistance(xyzf):
     # getting idxs of interest
     midx = xyz.findMetal()[0] # monometallic complexes
     mcoord = xyz.getAtom(midx).coords()
-    fidx_list = xyz.getBondedAtomsBOMatrix(midx) # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
     fdistance_list = []
     for idx in fidx_list:
         fcoord = xyz.getAtom(idx).coords()
@@ -181,7 +183,7 @@ def fdistance(xyzf):
 
 def all_prop(xyzf):
     fprio_list = fpriority(xyzf)
-    fsym_list = fsym(xyzf)
+    # fsym_list = fsym(xyzf)
     fva_list = fvalency(xyzf)
     fq_list = fcharge(xyzf)
     sq_ave_list = scharge_ave(xyzf)
@@ -192,15 +194,18 @@ def all_prop(xyzf):
 
 def features(xyzf):
     prop_list = all_prop(xyzf)
-    a = np.array([])
-    i_size = len(prop_list)
-    j_size = len(prop_list[0])
-    for i in range(i_size):
-        b = np.array(prop_list[i])
-        a = np.append(a,b)
-        b = np.reshape(a,(i_size,j_size))
-        c = b.T[a[:j_size].argsort()].T
-        feature_list = c.tolist()
-        feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
+    xyz = mol3D()
+    xyz.readfromxyz(xyzf)
+    midx = xyz.findMetal()[0]
+    manto = xyz.getAtom(midx).atno
+    a = np.array(prop_list)
+    b = a.T[a[0].argsort()].T
+    feature_list = b.tolist()
+    feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
+    feature = []
+    feature.append(manto)
+    for i in feature_list:
+        for j in feature_list[j]:
+            feature.append(feature_list[i][j])
 
-    return feature_list
+    return feature
