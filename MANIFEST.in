@@ -8,6 +8,7 @@ include molSimplify/Informatics/*
 include molSimplify/icons/*
 include molSimplify/icons/geoms/*
 include molSimplify/icons/geoms_labels/*
+include molSimplify/Substrates/*
 include tests/inputs/*
 include tests/refs/*
 include tests/refs/*/*
