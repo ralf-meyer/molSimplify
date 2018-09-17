@@ -43,8 +43,9 @@ def ensemble_maker(predictor, num=10):
     mat = np.array(mat, dtype='float64')
     train_mat = data_normalize(mat, train_mean_x, train_var_x)
     labels = load_training_labels(predictor)
-    labels = np.array(labels, dtype='float64')
-    labels = data_normalize(labels, train_mean_y, train_var_y)
+    if not 'clf' in predictor:
+        labels = np.array(labels, dtype='float64')
+        labels = data_normalize(labels, train_mean_y, train_var_y)
     train_mat, labels = shuffle(train_mat, labels)
     train_mat = np.array_split(train_mat, num, axis=0)
     labels = np.array_split(labels, num, axis=0)
@@ -66,15 +67,8 @@ def ensemble_maker(predictor, num=10):
         save_model(current_model, predictor, ii)
 
 
-def ensemble_uq(predictor, descriptors, descriptor_names):
-    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
-        key = 'geos/'
-    elif predictor in ['homo', 'gap']:
-        key = 'homolumo/'
-    elif predictor in ['oxo', 'hat']:
-        key = 'oxocatalysis/'
-    else:
-        key = predictor
+def ensemble_uq(predictor, descriptors, descriptor_names, suffix=False):
+    key = get_key(predictor, suffix)
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     base_path = base_path + 'ensemble_models'
     if not os.path.exists(base_path):
@@ -126,7 +120,7 @@ def mc_dropout_uq(predictor, descriptors, descriptor_names, num=100):
     # mat = load_training_data(predictor)
     # mat = np.array(mat, dtype='float64')
     # train_mat = data_normalize(mat, train_mean_x, train_var_x)
-    excitation = np.array(train_mat)
+    # excitation = np.array(train_mat)
     print('excitation is ' + str(excitation.shape))
     print('fetching non-dimensionalization data... ')
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -160,7 +154,7 @@ def mc_dropout_uq(predictor, descriptors, descriptor_names, num=100):
 
 
 ###########
-predictor = 'homo'
-# ensemble_maker(predictor, num=3)
-ensemble_uq(predictor)
+predictor = 'geo_static_clf'
+ensemble_maker(predictor, num=3)
+# ensemble_uq(predictor)
 # mc_dropout_uq(predictor)
