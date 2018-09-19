@@ -169,7 +169,7 @@ def mc_dropout_uq(predictor, descriptors=False, descriptor_names=False, num=500)
     return result_mean, result_std, error_for_mean
 
 
-def latent_space_uq(predictor, descriptors=False, descriptor_names=False, entropy=False):
+def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_names=False, entropy=False):
     key = get_key(predictor, suffix=False)
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     base_path = base_path + 'ensemble_models'
@@ -219,7 +219,9 @@ def latent_space_uq(predictor, descriptors=False, descriptor_names=False, entrop
         get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                                  [loaded_model.layers[-1].output])
         get_latent = K.function([loaded_model.layers[0].input, K.learning_phase()],
-                                [loaded_model.layers[-4].output])
+                                [loaded_model.layers[layer_index].output])
+        print('NOTE: you are choosing:', loaded_model.layers[layer_index], loaded_model.layers[layer_index].name,
+              'for the latence space!')
         if not 'clf' in predictor:
             results = data_rescale(np.array(get_outputs([excitation_test, 0])), train_mean_y,
                                    train_var_y)[0]
@@ -256,13 +258,12 @@ def latent_space_uq(predictor, descriptors=False, descriptor_names=False, entrop
     error_for_mean = np.abs(labels - result_mean)
     return result_mean, latent_dist, error_for_mean
 
-
 ###########
 # predictor = 'geo_static_clf'
 # ensemble_maker(predictor, num=10)
 # _result_mean, _result_std, _error_for_mean = ensemble_uq(predictor)
 # result_mean, result_std, error_for_mean = mc_dropout_uq(predictor)
-# result_mean, latent_dist, error_for_mean = latent_space_uq(predictor, entropy=True)
+# result_mean, latent_dist, error_for_mean = latent_space_uq(predictor, layer_index=-4, entropy=True)
 
 # stds = [0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.3, 0.35]  # for variance
 # stds = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.8]  # for latent distances
