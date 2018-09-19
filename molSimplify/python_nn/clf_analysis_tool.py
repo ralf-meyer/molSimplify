@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics.pairwise import pairwise_distances
 
 
 def plot_scatter(x, y,
@@ -19,6 +20,30 @@ def plot_scatter(x, y,
     plt.tight_layout()
     if show:
         plt.show()
+    if figname:
+        fig.savefig(figname)
+
+
+def plot_scatter_colored(x_axis, y_axis, c_axis,
+                         xlabel, ylabel,
+                         legend=None,
+                         figname='tmp.pdf'):
+    try:
+        plt.style.use('myline')
+    except:
+        pass
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.scatter(x_axis, y_axis, c=c_axis,
+                alpha=0.5, cmap='cool')
+    cb = plt.colorbar()
+    cb.set_label('Error')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if not legend == None:
+        plt.legend(legend)
+    plt.tight_layout()
+    plt.show()
     if figname:
         fig.savefig(figname)
 
@@ -117,3 +142,75 @@ def plot_dist_err(pred_std, pred_err, stds, label_x=False, label_y=False,
                      legend=None,
                      figname=figname,
                      show=True)
+
+
+def plot_metrics_correlation(metric1, metric2, pred_err,
+                             xlabel=False, ylabel=False, figname='dist_relations.pdf'):
+    match = [0 if x < 0.5 else 1 for x in pred_err]
+    plot_scatter_colored(x_axis=metric1, y_axis=metric2, c_axis=match,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         legend=None,
+                         figname=figname)
+
+
+def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1, just_nn=True):
+    dist_mat = pairwise_distances(fmat1, fmat2)
+    dist_mat = dist_mat * 1.0 / dist_ref
+    dist_avrg, dist_list, labels_list = [], [], []
+    # print('shape of dist_mat:', dist_mat.shape)
+    for ele in dist_mat:
+        dist_arr = np.round(np.array(ele), 4)
+        if not dist_ref == 1:
+            _count = (dist_arr < 10).sum()
+            _count = l if _count < l else _count
+            _count = _count if _count < 500 else 500
+            # print (_count)
+        else:
+            _count = l
+        if just_nn:
+            _count = l
+        ind = dist_arr.argsort()[:_count]
+        _dist = dist_arr[ind]
+        dist_list.append(_dist)
+        _labels = np.array([labels[x] for x in ind])
+        labels_list.append(_labels)
+        if _dist.all() > 1e-4:
+            dist_avrg.append(np.mean(_dist[:l]))
+        else:
+            dist_avrg.append(np.mean(_dist[:l]) * float(l) / (l - 1))
+    # print('-----mean: %f, std: %f---' % (np.mean(dist_avrg), np.std(dist_avrg)))
+    dist_avrg = np.array(dist_avrg)
+    dist_list = np.array(dist_list)
+    labels_list = np.array(labels_list)
+    return dist_avrg, dist_list, labels_list
+
+
+def dist_penalty(d):
+    return np.exp(-1 * d)
+
+
+def get_entropy(dists, neighbor_targets):
+    p0, p1 = dist_penalty(2), dist_penalty(2)
+    # p0, p1 = 0, 0
+    for idx, tar in enumerate(neighbor_targets):
+        tar = int(tar)
+        d = dists[idx]
+        if d <= 10:
+            if d != 0:
+                if tar == 0:
+                    p0 += dist_penalty(d)
+                elif tar == 1:
+                    p1 += dist_penalty(d)
+            else:
+                if tar == 0:
+                    p0 += 100
+                elif tar == 1:
+                    p1 += 100
+        _sum = p0 + p1
+    p0 = p0 / _sum
+    p1 = p1 / _sum
+    if p1 == 0 or p0 == 0:
+        return 0
+    else:
+        return -(p0 * np.log(p0) + p1 * np.log(p1))
