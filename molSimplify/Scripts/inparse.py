@@ -14,100 +14,12 @@ from pkg_resources import resource_filename, Requirement
 #  @param args Namespace of arguments
 def checkinput(args,calctype="base"):
     globs = globalvars()
+    coords,geomnames,geomshorts,geomgroups = getgeoms()
     emsg = False
     if calctype == "base":
         # check core
         if not args.core:
             print 'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()
-            args.core = ['fe']
-        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
-            # convert to titlecase
-            args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
-            # check oxidation state
-            if not args.oxstate:
-                try:
-                    print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
-                    args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-                except:
-                    print 'WARNING: No oxidation state specified. Defaulting to 2'
-                    args.oxstate = '2'
-            # check spin state (doesn't work for custom cores)
-            if not args.spin:
-                if args.oxstate in romans.keys():
-                    oxstatenum = romans[args.oxstate]
-                else:
-                    oxstatenum = args.oxstate
-                if args.core[0].lower() in mtlsdlist:
-                    if mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2) in defaultspins:
-                        defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2)]
-                        print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
-                        print 'Please check this against our ANN output (where available)'
-                    else:
-                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
-                        defaultspinstate = '1'
-                else:
-                    defaultspinstate = '1'
-                    print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
-                args.spin = defaultspinstate
-            # check ligands
-            if not args.lig and not args.rgen:
-                if args.gui:
-                    from Classes.mWidgets import mQDialogWarn
-                    qqb = mQDialogWarn('Warning','You specified no ligands.')
-                    qqb.setParent(args.gui.wmain)
-                else:
-                    print 'WARNING: No ligands specified. Defaulting to water.'
-                args.lig = ['water']
-            # check coordination number and geometry
-            if not args.coord and not args.geometry:
-                if not args.gui:
-                    print 'WARNING: No geometry and coordination number specified. Defaulting to octahedral (6).'
-                    args.coord = 6
-                    args.geometry = 'oct'
-            coords,geomnames,geomshorts,geomgroups = getgeoms()
-            if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
-                print 'WARNING: No or unknown coordination geometry specified. Defaulting to '+globs.defaultgeometry[int(args.coord)][1]
-                args.geometry = globs.defaultgeometry[int(args.coord)][0]
-            if args.geometry and not args.coord:
-                if args.geometry not in geomnames and args.geometry not in geomshorts:
-                    print 'You have specified an invalid geometry. Available geometries are:'
-                    printgeoms()
-                    print 'Defaulting to octahedral (6)'
-                    args.geometry = 'oct'
-                    args.coord = 6
-                else:
-                    try:
-                        args.coord = coords[geomnames.index(args.geometry)]
-                    except:
-                        args.coord = coords[geomshorts.index(args.geometry)]
-                    print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
-            # check number of ligands
-            if args.coord and not args.ligocc:
-                print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.')
-                args.ligocc = [args.coord]
-                for lig in args.lig[1:]:
-                    args.ligocc.append(0)
-    # elif calctype == "tsgen":
-    #     if not args.core:
-    #         print 'WARNING: No core specified. Defaulting to Fe(II)(N4Py). Available cores are: '+getcores()
-    #         args.core = ['fen4py']
-    #     # check substrate
-    #     if not args.substrate:
-    #         print 'WARNING: No substrate specified. Defaulting to methane.'
-    #         args.substrate = ['methane']
-    #     # reacting atoms will be checked later because defaults can only be determined after structures are loaded
-    #     # check charge
-    #     if not args.charge:
-    #         print 'WARNING: Charge not specified. calccharge does not work for custom cores. Defaulting to 0.'
-    #         args.charge = '0'
-    #     # check spin state
-    #     if not args.spin:
-    #         print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
-    #         args.spin = '1'
-    elif calctype == "tsgen":
-        # check core
-        if not args.core:
-            print 'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores()
             args.core = ['fe']
         if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
             # convert to titlecase
@@ -188,8 +100,6 @@ def checkinput(args,calctype="base"):
                         for j in range(0,oc_i):
                             occs0[i] += 1
                             toccs += dent_i
-                    if args.core[0].lower() in args.mlig:
-                        toccs += 1
                     print('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.')
                     args.coord = toccs
             if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
@@ -214,26 +124,158 @@ def checkinput(args,calctype="base"):
                 args.ligocc = [args.coord]
                 for lig in args.lig[1:]:
                     args.ligocc.append(0)
+    elif calctype == "tsgen":
+        # load substrate for reference
+        sub,subcatoms,emsg = substr_load(args.substrate[0],0,args.subcatoms)
+        # check core
+        if not args.core:
+            print 'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores()
+            args.core = ['fe']
+        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
+            # convert to titlecase
+            args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
+            # check oxidation state
+            if not args.oxstate:
+                try:
+                    print 'WARNING: No oxidation state specified. Defaulting to '+globs.defaultoxstate[args.core[0].lower()]
+                    args.oxstate = globs.defaultoxstate[args.core[0].lower()]
+                except:
+                    print 'WARNING: No oxidation state specified. Defaulting to 2'
+                    args.oxstate = '2'
+            # check spin state (doesn't work for custom cores)
+            if not args.spin:
+                if args.oxstate in romans.keys():
+                    oxstatenum = romans[args.oxstate]
+                else:
+                    oxstatenum = args.oxstate
+                if args.core[0].lower() in mtlsdlist:
+                    if mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2) in defaultspins:
+                        defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower()]-max(0,int(oxstatenum)-2)]
+                        print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
+                        print 'Please check this against our ANN output (where available)'
+                    else:
+                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
+                        defaultspinstate = '1'
+                else:
+                    defaultspinstate = '1'
+                    print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
+                args.spin = defaultspinstate
+            # check ligands
+            if not args.lig and not args.rgen:
+                if args.gui:
+                    from Classes.mWidgets import mQDialogWarn
+                    qqb = mQDialogWarn('Warning','You specified no ligands.')
+                    qqb.setParent(args.gui.wmain)
+                else:
+                    print 'WARNING: No ligands specified. Substrate is placed to core.'
+                args.lig = ['']
+            # if True in [True for i in args.lig if i in args.substrate]:
+            #     print('at least one of the ligans is present in the substrate list.')
+            #     idx_list = []
+            #     for i,ligand in enumerate(args.lig):
+            #         if ligand in args.substrate:
+            #             idx_list.append(i)
+            #     for i in sorted(idx_list,reverse=True):
+            #         del args.lig[i]
+            #         del args.ligocc[i]
+            # if True in [True for i in args.core if i.lower() in args.mlig]:
+            #     print('args.core is in args.mlig.')
+            #     args.lig.append('x')
+            #     args.ligocc.append(1)
+            # check coordination number and geometry
+            if not args.coord and not args.geometry:
+                if not args.gui:
+                    # calculate occurrences, denticities etc for all ligands
+                    licores = getlicores()
+                    smilesligs = 0
+                    toccs = 0
+                    occs0 = []
+                    dentl = []
+                    cats0 = []
+                    ligoc = args.ligocc
+                    for i,ligname in enumerate(args.lig):
+                        # if not in cores -> smiles/file
+                        if ligname not in licores.keys():
+                            if args.smicat and len(args.smicat)>= (smilesligs+1):
+                                if 'pi' in args.smicat[smilesligs]:
+                                    cats0.append(['c'])
+                                else:
+                                    cats0.append(args.smicat[smilesligs])
+                            else:
+                                cats0.append([0])
+                            dent_i = len(cats0[-1])
+                            smilesligs += 1
+                        else:
+                            cats0.append(False)
+                        # otherwise get denticity from ligands dictionary
+                            if 'pi' in licores[ligname][2]:
+                                dent_i = 1
+                            else:
+                                if isinstance(licores[ligname][2], (str, unicode)):
+                                    dent_i = 1
+                                else:
+                                    dent_i = int(len(licores[ligname][2]))
+                        # get occurrence for each ligand if specified (default 1)
+                        oc_i = int(ligoc[i]) if i < len(ligoc) else 1
+                        occs0.append(0)         # initialize occurrences list
+                        dentl.append(dent_i)    # append denticity to list
+                        # loop over occurrence of ligand i to check for max coordination
+                        for j in range(0,oc_i):
+                            occs0[i] += 1
+                            toccs += dent_i
+                    if args.core[0].lower() in args.mlig and ('x' not in args.lig):
+                        for i,substrate in enumerate(args.substrate):
+                            if 'pi' in subcatoms:
+                                suboc_i = 1
+                            else:
+                                suboc_i = len(subcatoms)
+                            for j in range(suboc_i):
+                                toccs += 1
+                    print('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.')
+                    args.coord = toccs
+            if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
+                print 'WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: '+globs.defaultgeometry[int(args.coord)][1]
+                args.geometry = globs.defaultgeometry[int(args.coord)][0]
+            if args.geometry and not args.coord:
+                coords,geomnames,geomshorts,geomgroups = getgeoms()
+                if args.geometry not in geomnames and args.geometry not in geomshorts:
+                    print 'You have specified an invalid geometry. Available geometries are:'
+                    printgeoms()
+                    print 'Defaulting to octahedral (6)'
+                    args.geometry = 'oct'
+                    args.coord = 6
+                else:
+                    try:
+                        args.coord = coords[geomnames.index(args.geometry)]
+                    except:
+                        args.coord = coords[geomshorts.index(args.geometry)]
+                    print 'WARNING: No coordination number specified. Defaulting to '+str(args.coord)
+            # check number of ligands
+            if args.coord and not args.ligocc:
+                print('WARNING: No ligand numbers specified. Defaulting to '+str(args.coord)+' of the first ligand and 0 of all others.')
+                args.ligocc = [args.coord]
+                for lig in args.lig[1:]:
+                    args.ligocc.append(0)
             # check substrate 
             if not args.substrate:
                 print('WARNING: Transition state generation is request without the specification of a substrate. Defaulting to methane.')
                 args.substrate = 'methane'
             # check substrate connecting atom
             if args.substrate and not args.subcatoms:
-                print('WARNING: A substrate is specified for TS generation without the specification of a connection point in the substrate. Defaulting to atom index 0.')
-                args.subcatoms = 0
+                print('WARNING: A substrate is specified for TS generation without the specification of a connection point in the substrate. Defaulting to the numbers stored in the dictionary: ' + str(subcatoms))
+                args.subcatoms = subcatoms
             # check mcomplex connecting ligand to the substrate
             if args.substrate and not args.mlig:
                 print('WARNING: A substrate is specified for TS generation without the specification of a ligand in the metal complex to connect with. Defaulting to ligand index 0.')
                 args.mlig = args.lig[0]
             # check mlig connecting point if the ligand has more than one atom
             if args.mlig and not args.mligcatoms:
-                sub,emsg = substr_load(args.mlig)
+                sub,subcatoms,emsg = substr_load(args.mlig,0,subcatoms)
                 if sub.natoms is 1:
-                    args.mligcatoms = 0
+                    args.mligcatoms = [0]
                 else:
                     print('WARNING: A ligand in the metal complex is specified to connect with the substrate for TS generation without the specification of a connection point in the ligand. Defaulting to atom index 0.')
-                    args.mligcatoms = 0    
+                    args.mligcatoms = [0]  
     elif calctype == "dbadd":
         if args.ligadd:
             print('ligand addition function')
@@ -405,6 +447,7 @@ def parseCLI(args):
     cliargs = ' '.join(args)
     cliargs = ' ' + cliargs   
     s = filter(None,cliargs.split(' -'))
+    # fname = args.core[0] + '.inp'
     fname = 'CLIinput.inp'
     f = open(fname,'w')
     f.write('# molSimplify input file generated from CLI input\n')

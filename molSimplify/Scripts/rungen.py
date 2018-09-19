@@ -344,12 +344,13 @@ def rungen(rundir,args,chspfname,globs):
     ligocc = []
     # check for files specified for multiple ligands
     mligs,catoms = [False],[False]
-    if '.smi' in args.lig[0]:
-        ligfilename = args.lig[0].split('.')[0]
-    if args.lig:
-        mligs,catoms,multidx = checkmultilig(args.lig)
-    if args.debug:
-        print('after checking for mulitple ligs, we found  ' + str(multidx) + ' ligands' )
+    if args.lig is not None:
+        if '.smi' in args.lig[0]:
+            ligfilename = args.lig[0].split('.')[0]
+        if args.lig:
+            mligs,catoms,multidx = checkmultilig(args.lig)
+        if args.debug:
+            print('after checking for mulitple ligs, we found  ' + str(multidx) + ' ligands' )
     # save initial
     smicat0 = [ss for ss in args.smicat] if args.smicat else False    
     # loop over ligands
