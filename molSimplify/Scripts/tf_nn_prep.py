@@ -499,6 +499,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min HOMO dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
 
         gap_dist = find_true_min_eu_dist("gap",descriptors,descriptor_names)
+        gap_dist = find_ANN_latent_dist("gap",latent_gap)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -656,7 +657,6 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             min_dist_time  = current_time - last_time
             last_time = current_time
             print('min oxo dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
-
         ANN_attributes.update({'oxo':oxo[0][0]})
         ANN_attributes.update({'oxo_dist':oxo_dist})
 
