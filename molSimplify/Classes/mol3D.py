@@ -14,6 +14,7 @@ import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
+# from molSimplify.Scripts.structgen import ffopt
 
 # from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
 #    dict_oneempty_check_loose, oct_angle_ref, oneempty_angle_ref
@@ -163,6 +164,31 @@ class mol3D:
             if i != idx2:
                 self.getAtom(i).translate(dR)
         self.getAtom(idx1).translate(dR)
+
+    ## Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
+    #
+    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
+    #
+    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+    #  @param self The object pointer
+    #  @param idx1 Index of bonded atom containing submolecule to be moved
+    #  @param idx2 Index of anchor atom
+    #  @param d New bond length in Angstroms
+    def BCM_opt(self, idx1, idx2, d):
+        self.convert2OBMol()
+        OBMol = self.OBMol
+        ff = openbabel.OBForceField.FindForceField('mmff94')
+        constr = openbabel.OBFFConstraints()
+        constr.AddDistanceConstraint(idx1+1,idx2+1,d)
+        s = ff.Setup(OBMol,constr)
+        if s is not True:
+            print('forcefield setup failed.')
+            exit()
+        else:
+            ff.SteepestDescent(500)
+            ff.GetCoordinates(OBMol)
+        self.OBMol = OBMol
+        self.convert2mol3D()
 
     ## Computes coordinates of center of mass of molecule
     #  @param self The object pointer
@@ -1410,8 +1436,9 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calccharges(self,method='QEq'):
+    def calccharges(self,charge=0,method='QEq'):
         self.convert2OBMol()
+        self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)
         charge.ComputeCharges(self.OBMol)
         self.partialcharges = charge.GetPartialCharges()
