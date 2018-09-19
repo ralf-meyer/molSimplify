@@ -199,10 +199,12 @@ def load_test_data(predictor):
         key = 'oxocatalysis/' + predictor + '_test_x'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_x_41_OHE'  # Note, this test data is not available, will return train
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_test_x'
     else:
         key = predictor + '/' + predictor + '_x_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
-    with open(path_to_file, "r") as f:
+    with open(path_to_file, "rU") as f:
         csv_lines = list(csv.reader(f))
         # row_names = [row[0] for row in csv_lines]
         mat = [row for row in csv_lines[1:]]
@@ -224,6 +226,27 @@ def load_training_labels(predictor):
         key = predictor + '/' + predictor + '_y_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "r") as f:
+        csv_lines = list(csv.reader(f))
+        # row_names = [row[0] for row in csv_lines]
+        mat = [row for row in csv_lines[1:]]
+    return mat
+
+
+def load_test_labels(predictor):
+    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
+        key = 'geos/' + predictor + '_bl_y'
+    elif predictor in ['homo', 'gap']:
+        key = 'homolumo/' + predictor + '_test_y'
+    elif predictor in ['oxo', 'hat']:
+        key = 'oxocatalysis/' + predictor + '_test_y'
+    elif predictor == "split":
+        key = predictor + '/' + predictor + '_y_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_test_y'
+    else:
+        key = predictor + '/' + predictor + '_y_OHE'
+    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
+    with open(path_to_file, "rU") as f:
         csv_lines = list(csv.reader(f))
         # row_names = [row[0] for row in csv_lines]
         mat = [row for row in csv_lines[1:]]
