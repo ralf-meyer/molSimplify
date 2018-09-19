@@ -1,0 +1,15 @@
+# Default data for bond lengths (in A) between metal, connection atom and ligand
+# keys are metal, ox state, spin multiplicity, N-N BL, N-O BL,O-M BL
+Co - - - 1.14 1.55 1.87
+Co 4 2 - 1.15 1.50 1.90
+Co 4 4 - 1.13 1.60 1.85
+Cr - - - 1.14 1.61 1.96
+Cr 4 3 - 1.14 1.61 1.96
+Fe - - - 1.16 1.60 1.83
+Fe 4 3 - 1.14 1.52 1.90
+Fe 4 5 - 1.25 1.60 1.88
+Fe 5 2 - 1.11 1.62 1.77
+Fe 5 4 - 1.13 1.65 1.88
+Mn - - - 1.13 1.50 1.87
+Mn 4 4 - 1.11 1.55 1.80
+Mn 5 3 - 1.15 1.45 1.94
