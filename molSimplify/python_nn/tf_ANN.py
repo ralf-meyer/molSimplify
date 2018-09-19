@@ -60,19 +60,21 @@ def data_rescale(scaled_dat, train_mean, train_var):
 def data_normalize(data, train_mean, train_var):
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
+
     # print('normalizing with number of dimensions = ' +str(d))
     ### double check the variance in the training data
     delete_ind = list()
-    for idx, var in enumerate(train_var):
+    # print(train_var)
+    for idx, var in enumerate(np.squeeze(train_var)):
         if var < 1e-16:
             delete_ind.append(idx)
-    if len(delete_ind):
+    if len(delete_ind)>0:
         print('!NOTE: There are %d features with a variance smaller than 1e-16.' % len(delete_ind))
         print('Please double check your input data if this number is not what you expect...')
         data = np.delete(data, delete_ind, axis=1)
         train_mean = np.delete(train_mean, delete_ind, axis=0)
         train_var = np.delete(train_var, delete_ind, axis=0)
-    print(data.shape, train_mean.shape, train_var.shape)
+    # print(data.shape, train_mean.shape, train_var.shape)
     scaled_dat = np.divide((data.T - train_mean), np.sqrt(train_var), ).T
     return (scaled_dat)
 
@@ -243,6 +245,7 @@ def load_keras_ann(predictor, suffix='model'):
     # disable TF output text to reduce console spam
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     key = get_key(predictor, suffix)
+    # print('THIS IS THE KEY',key)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
     json_file = open(path_to_file, 'r')
     loaded_model_json = json_file.read()
@@ -320,6 +323,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names):
     excitation = data_normalize(excitation, train_mean_x, train_var_x)
 
     ## fetch ANN
+    # print('This is the predictor......',predictor)
     loaded_model = load_keras_ann(predictor)
     print('LOADED MODEL HAS ' + str(
         len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
@@ -369,7 +373,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Structure: ', csv_lines[min_ind + 1])
+            print('Closest Euc Dist Structure: ', csv_lines[min_ind ], 'for predictor ',predictor)
     # need to get normalized distances 
 
     ########################################################################################
@@ -405,11 +409,12 @@ def find_ANN_latent_dist(predictor, latent_space_vector):
         len(loaded_model.layers) - 1) + ' layers')
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
-
     for i, rows in enumerate(train_mat):
-        scaled_row = np.squeeze(
-            data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
+        # print('row',rows)
+        scaled_row = np.squeeze(data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
+        # print('scaled_row',scaled_row)
         latent_train_row = get_outputs([np.array([scaled_row]), 0])
+        # print('LATENT TRAIN ROW', latent_train_row)
         this_dist = np.linalg.norm(np.subtract(np.squeeze(latent_train_row), np.squeeze(latent_space_vector)))
         # print(this_dist)
         if this_dist < min_dist:
@@ -428,20 +433,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Structure: ', csv_lines[min_ind + 1])
-    # need to get normalized distances 
-
-    ########################################################################################
-    # Changed by Aditya on 08/13/2018. Previously, nearest neighbor was being found in the #
-    # unnormalized space, and then that was normalized. This was resulting in bad nearest  #
-    # neighbor candidate structures. Now routine normalizes before finding the distance.   #
-    ########################################################################################
-
-    # train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
-
-    # scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x)
-    # scaled_row = data_normalize(min_row,train_mean_x,train_var_x)
-    # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
+            print('Closest Latent Dist Structure: ', csv_lines[min_ind ], 'for predictor ',predictor)
     return (min_dist)
 
 
