@@ -160,13 +160,14 @@ uthiolme2:uthiolme2.mol,uthilme2,0,build functionalize small,N,0
 valine:valine.mol,Val,3,build functionalize aminoacid,BA,0
 valineB:valine.mol,Val,3 17,build functionalize aminoacid,BA,0
 water:water.mol,wat,0,build small,N,0
+h2o:water.mol,wat,0,build small,N,0
 x:x.mol,x,0,all small,N,-1
 ooh:ooh.xyz,ooh,0,all small,N,-1
 co2:co2.mol,co2,0,all small,N,-1
 phenphen:phenphen.mol,phenphen,9 12 26,build,BA,0
 thiophene:thiophene.mol,thip,0,build,BA,0
 phosphorine:phosphorine.mol,phob,3,build,BA,0
-hydrocarboxyacetylide:hydrocarboxyacetylide.xyz,cccooh,2,build small,BA,0
+hydrocarboxyacetylide:hydrocarboxyacetylide.xyz,cccooh,2,build small,BA,-1
 o-pyridylphenyl:o-pyridylphenylanion.xyz,o-pyphanion,4 12,build small,BA,-1
 o-pyridylbenzene:o-pyridylbenzene.xyz,o-pyph,4,build small,BA,0
 e2acetate:acetate.xyz,acetate,2 3,build small,BA,-1
@@ -178,4 +179,14 @@ N-quinolinylmethylmethinylacetamidate:N-quinolinylmethylmethinylacetamidate.xyz,
 iodobenzene:iodobenzene.xyz,phi,0 11 pi,build small,BA,0
 iodide:iodide.mol,i,0,build functionalize small,N,-1
 formamidate:formamidate.xyz,hconh,1,build small,BA,-1
+phenyl:benzene.mol,ph,4,build small organic,BA,-1
+trimethylphosphine:PMe3.xyz,pme3,0,build small organic,BA,0
+pme3:PMe3.xyz,pme3,0,build small organic,BA,0
+nme2:NMe2_-1.xyz,nme2,0,build small organic,BA,-1
+dimethylamide:NMe2_-1.xyz,nme2,0,build small organic,BA,-1
+triazole:1-4-dimethyl-1-2-3-triazole.xyz,triazole,0,build small organic,B,0
+methylazide:methylazide.xyz,men3,1,build small organic,B,-1
+methylacetylide:methylacetylide.xyz,mecc-,1,build small organic,N,-1
+e2o2:o2.xyz,e2o2,0 1 pi, build small inorganic,BA,0
+o2:o2.xyz,o2,0, build small inorganic,B,0
 test:test.xyz,test,10 14,build,BA,-1

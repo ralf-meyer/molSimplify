@@ -8,6 +8,7 @@ import glob
 import numpy as np
 import scipy as sp
 import math
+from clf_analysis_tool import plot_scatter, plot_dist_err, plot_metrics_correlation, dist_neighbor, get_entropy
 
 
 def reset_weights(model):
@@ -68,8 +69,9 @@ def ensemble_maker(predictor, num=10):
     mat = np.array(mat, dtype='float64')
     train_mat = data_normalize(mat, train_mean_x, train_var_x)
     labels = load_training_labels(predictor)
-    labels = np.array(labels, dtype='float64')
-    labels = data_normalize(labels, train_mean_y, train_var_y)
+    if not "clf" in predictor:
+        labels = np.array(labels, dtype='float64')
+        labels = data_normalize(labels, train_mean_y, train_var_y)
     info_dict = load_train_info(predictor)
     model_list = ensemble_maker_inner(train_mat=train_mat,
                                       labels=labels,
@@ -79,42 +81,36 @@ def ensemble_maker(predictor, num=10):
         save_model(current_model, predictor, ii)
 
 
-def ensemble_uq(predictor, descriptors, descriptor_names):
-    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
-        key = 'geos/'
-    elif predictor in ['homo', 'gap']:
-        key = 'homolumo/'
-    elif predictor in ['oxo', 'hat']:
-        key = 'oxocatalysis/'
-    else:
-        key = predictor
+def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=False):
+    key = get_key(predictor, suffix)
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     base_path = base_path + 'ensemble_models'
     if not os.path.exists(base_path):
         print('Ensemble models do not exist now, training...')
         ensemble_maker(predictor)
     print('ANN activated for ' + str(predictor))
-
-    ## form the excitation in the corrrect order/variables
-    # excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
-
     model_list = glob.glob(base_path + '/*.h5')
 
+    labels = load_test_labels(predictor)
+    if not 'clf' in predictor:
+        labels = np.array(labels, dtype='float64')
+    else:
+        labels = np.array(labels, dtype='int')
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
-    excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
-    excitation = data_normalize(excitation, train_mean_x, train_var_x)
+    if (descriptors and descriptor_names):
+        excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
+        excitation = data_normalize(excitation, train_mean_x, train_var_x)
+    else:
+        mat = load_test_data(predictor)
+        mat = np.array(mat, dtype='float64')
+        train_mat = data_normalize(mat, train_mean_x, train_var_x)
+        excitation = np.array(train_mat)
     print('excitation is ' + str(excitation.shape))
-    print('fetching non-dimensionalization data... ')
-    train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
-    print('rescaling input excitation...')
-    labels = load_training_labels(predictor)
-    labels = np.array(labels, dtype='float64')
-    print('actrual label:', labels[:3])
-
-    excitation = data_normalize(excitation, train_mean_x, train_var_x)
+    print('actual label:', labels[:3])
     results_list = []
+    # print('models', model_list)
     for idx, model in enumerate(model_list):
-        _base = model.strip('.h5')
+        _base = model.split('.')[0]
         json_file = open(_base + '.json', 'r')
         loaded_model_json = json_file.read()
         json_file.close()
@@ -124,30 +120,37 @@ def ensemble_uq(predictor, descriptors, descriptor_names):
         # complile model
         loaded_model.compile(loss="mse", optimizer='adam',
                              metrics=['mse', 'mae', 'mape'])
-        result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
+        if not 'clf' in predictor:
+            result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
+        else:
+            result = loaded_model.predict(excitation)
+            result = np.squeeze(result, axis=1)
         results_list.append(result)
-    results_list = np.array(results_list)
-    result_mean, result_std = np.mean(results_list, axis=0), np.std(results_list, axis=0)
-    return result_mean, result_std
+    results_list = np.transpose(np.array(results_list))
+    # print(results_list.shape)
+    result_mean, result_std = np.mean(results_list, axis=1), np.std(results_list, axis=1)
+    labels = np.squeeze(labels, axis=1)
+    print(labels.shape, result_mean.shape)
+    error_for_mean = np.abs(labels - result_mean)
+    return result_mean, result_std, error_for_mean
 
 
-def mc_dropout_uq(predictor, descriptors, descriptor_names, num=100):
-    excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
-    labels = load_training_labels(predictor)
-    labels = np.array(labels, dtype='float64')
-    # train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
-    # mat = load_training_data(predictor)
-    # mat = np.array(mat, dtype='float64')
-    # train_mat = data_normalize(mat, train_mean_x, train_var_x)
-    excitation = np.array(train_mat)
-    print('excitation is ' + str(excitation.shape))
-    print('fetching non-dimensionalization data... ')
+def mc_dropout_uq(predictor, descriptors=False, descriptor_names=False, num=500):
+    labels = load_test_labels(predictor)
+    if not 'clf' in predictor:
+        labels = np.array(labels, dtype='float64')
+    else:
+        labels = np.array(labels, dtype='int')
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
-    print('rescaling input excitation...')
-
-    excitation = data_normalize(excitation, train_mean_x, train_var_x)
-
-    ## fetch ANN
+    if (descriptors and descriptor_names):
+        excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
+        excitation = data_normalize(excitation, train_mean_x, train_var_x)
+    else:
+        mat = load_test_data(predictor)
+        mat = np.array(mat, dtype='float64')
+        train_mat = data_normalize(mat, train_mean_x, train_var_x)
+        excitation = np.array(train_mat)
+    print('excitation is ' + str(excitation.shape))
     loaded_model = load_keras_ann(predictor)
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[-1].output])
@@ -157,23 +160,131 @@ def mc_dropout_uq(predictor, descriptors, descriptor_names, num=100):
     results_list = []
     err_list = []
     for ii in range(num):
-        results = data_rescale(np.array(get_outputs([excitation, 1])), train_mean_y,
-                               train_var_y)[0]
+        if not np.mod(ii, int(num / 10)):
+            print('%d / %d' % (ii, num))
+        if not 'clf' in predictor:
+            results = data_rescale(np.array(get_outputs([excitation, 1])), train_mean_y,
+                                   train_var_y)[0]
+        else:
+            results = np.array(get_outputs([excitation, 1]))[0]
         results = results.squeeze(axis=1)
         err = np.linalg.norm(labels - results) ** 2
         results_list.append(results)
         err_list.append(err)
-    results_list = np.array(results_list)
+    results_list = np.transpose(np.array(results_list))
     f = lambda tau: mc_dropout_logp(tau, np.array(err_list))
     tau = sp.optimize.minimize(f, 10).x
-    result_mean, result_std = np.mean(results_list, axis=0), np.std(results_list, axis=0)
+    result_mean, result_std = np.mean(results_list, axis=1), np.std(results_list, axis=1)
     result_std = np.sqrt(1 / tau + result_std ** 2)
-    print(result_std[:3])
-    return result_mean, result_std
+    # print(tau, result_std[:3])
+    labels = np.squeeze(labels, axis=1)
+    error_for_mean = np.abs(labels - result_mean)
+    return result_mean, result_std, error_for_mean
 
+
+def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_names=False, entropy=False):
+    key = get_key(predictor, suffix=False)
+    base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
+    base_path = base_path + 'ensemble_models'
+    if not os.path.exists(base_path):
+        print('Ensemble models do not exist now, training...')
+        ensemble_maker(predictor)
+    print('ANN activated for ' + str(predictor))
+    model_list = glob.glob(base_path + '/*.h5')
+    train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
+    if (descriptors and descriptor_names):
+        excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
+        excitation = data_normalize(excitation, train_mean_x, train_var_x)
+    else:
+        mat = load_training_data(predictor)
+        mat = np.array(mat, dtype='float64')
+        train_mat = data_normalize(mat, train_mean_x, train_var_x)
+        excitation = np.array(train_mat)
+    ### load test data
+    if (descriptors and descriptor_names):
+        excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
+        excitation_test = data_normalize(excitation, train_mean_x, train_var_x)
+    else:
+        mat = load_test_data(predictor)
+        mat = np.array(mat, dtype='float64')
+        test_mat = data_normalize(mat, train_mean_x, train_var_x)
+        excitation_test = np.array(test_mat)
+    labels = load_test_labels(predictor)
+    labels_train = load_training_labels(predictor)
+    if not 'clf' in predictor:
+        labels = np.array(labels, dtype='float64')
+        labels_train = np.array(labels_train, dtype='float64')
+    else:
+        labels = np.array(labels, dtype='int')
+        labels_train = np.array(labels_train, dtype='int')
+    results_list = []
+    err_list = []
+    dist_list = []
+    for model in model_list:
+        _base = model.split('.')[0]
+        json_file = open(_base + '.json', 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = model_from_json(loaded_model_json)
+        loaded_model.load_weights(model)
+        loaded_model.compile(loss="mse", optimizer='adam',
+                             metrics=['mse', 'mae', 'mape'])
+        get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                                 [loaded_model.layers[-1].output])
+        get_latent = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                                [loaded_model.layers[layer_index].output])
+        print('NOTE: you are choosing:', loaded_model.layers[layer_index], loaded_model.layers[layer_index].name,
+              'for the latence space!')
+        if not 'clf' in predictor:
+            results = data_rescale(np.array(get_outputs([excitation_test, 0])), train_mean_y,
+                                   train_var_y)[0]
+        else:
+            results = np.array(get_outputs([excitation_test, 0]))[0]
+        ## get latent dist
+        training_latent_distance = np.array(get_latent([excitation, 0]))[0]
+        nn_latent_dist_train, _, __ = dist_neighbor(training_latent_distance, training_latent_distance, labels_train,
+                                                    l=5, dist_ref=1, just_nn=True)
+        nn_dist_avrg_train = np.mean(nn_latent_dist_train)
+        # print(nn_dist_avrg_train)
+        test_latent_distance = np.array(get_latent([excitation_test, 0]))[0]
+        nn_latent_dist_test, nn_dists, nn_labels = dist_neighbor(test_latent_distance, training_latent_distance,
+                                                                 labels_train,
+                                                                 l=5, dist_ref=nn_dist_avrg_train, just_nn=False)
+        if not entropy:
+            # print(nn_latent_dist_test.shape)
+            # print(min(nn_latent_dist_test), max(nn_latent_dist_test))
+            dist_list.append(nn_latent_dist_test)
+        else:
+            entropy = []
+            for idx, _dists in enumerate(nn_dists):
+                entropy.append(get_entropy(_dists, nn_labels[idx]))
+            dist_list.append(np.array(entropy))
+        results = results.squeeze(axis=1)
+        err = np.linalg.norm(labels - results) ** 2
+        results_list.append(results)
+        err_list.append(err)
+    dist_list = np.transpose(np.array(dist_list))
+    results_list = np.transpose(np.array(results_list))
+    result_mean, result_std = np.mean(results_list, axis=1), np.std(results_list, axis=1)
+    latent_dist = np.mean(dist_list, axis=1)
+    labels = np.squeeze(labels, axis=1)
+    error_for_mean = np.abs(labels - result_mean)
+    return result_mean, latent_dist, error_for_mean
 
 ###########
-predictor = 'homo'
-# ensemble_maker(predictor, num=3)
-ensemble_uq(predictor)
-# mc_dropout_uq(predictor)
+# predictor = 'geo_static_clf'
+# ensemble_maker(predictor, num=10)
+# _result_mean, _result_std, _error_for_mean = ensemble_uq(predictor)
+# result_mean, result_std, error_for_mean = mc_dropout_uq(predictor)
+# result_mean, latent_dist, error_for_mean = latent_space_uq(predictor, layer_index=-4, entropy=True)
+
+# stds = [0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.3, 0.35]  # for variance
+# stds = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.8]  # for latent distances
+# stds = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.125, 0.15, 0.175, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7]  # for entropy
+# plot_scatter(latent_dist, error_for_mean, xlabel='entropy', ylabel='prediction error',
+#              figname='entropy_err.pdf')
+# plot_dist_err(pred_std=latent_dist, pred_err=error_for_mean, stds=stds,
+#               label_x='entropy', label_y='accuracy',
+#               lable_y2='ratio of data', figname='entropy_acc_ratio.pdf')
+# plot_metrics_correlation(metric1=latent_dist, metric2=_result_std, pred_err=error_for_mean,
+#                          xlabel='entropy', ylabel='ensemble std', figname='dist_relations_entropy_ensemblestd.pdf')

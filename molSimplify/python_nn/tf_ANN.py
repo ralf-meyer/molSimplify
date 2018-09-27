@@ -20,9 +20,36 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.python_nn.ANN import matrix_loader
 import sys, os
 import json
+import pandas as pd
 
 
 ## Functions
+def get_key(predictor, suffix=False):
+    if suffix:
+        if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
+            key = 'geos/' + predictor + '_%s' % suffix
+        elif predictor in ['homo', 'gap']:
+            key = 'homolumo/' + predictor + '_%s' % suffix
+        elif predictor in ['oxo', 'hat']:
+            key = 'oxocatalysis/' + predictor + '_%s' % suffix
+        elif predictor in ['geo_static_clf', 'sc_static_clf']:
+            key = 'static_clf/' + predictor + '_%s' % suffix
+        else:
+            key = predictor + '/' + predictor + '_%s' % suffix
+    else:
+        if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
+            key = 'geos/'
+        elif predictor in ['homo', 'gap']:
+            key = 'homolumo/'
+        elif predictor in ['oxo', 'hat']:
+            key = 'oxocatalysis/'
+        elif predictor in ['geo_static_clf', 'sc_static_clf']:
+            key = 'static_clf/' + predictor + '_%s' % suffix
+        else:
+            key = predictor
+    return key
+
+
 def data_rescale(scaled_dat, train_mean, train_var):
     d = np.shape(train_mean)[0]
     # print('unnormalizing with number of dimensions = ' +str(d))
@@ -33,7 +60,21 @@ def data_rescale(scaled_dat, train_mean, train_var):
 def data_normalize(data, train_mean, train_var):
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
+
     # print('normalizing with number of dimensions = ' +str(d))
+    ### double check the variance in the training data
+    delete_ind = list()
+    # print(train_var)
+    for idx, var in enumerate(np.squeeze(train_var)):
+        if var < 1e-16:
+            delete_ind.append(idx)
+    if len(delete_ind)>0:
+        print('!NOTE: There are %d features with a variance smaller than 1e-16.' % len(delete_ind))
+        print('Please double check your input data if this number is not what you expect...')
+        data = np.delete(data, delete_ind, axis=1)
+        train_mean = np.delete(train_mean, delete_ind, axis=0)
+        train_var = np.delete(train_var, delete_ind, axis=0)
+    # print(data.shape, train_mean.shape, train_var.shape)
     scaled_dat = np.divide((data.T - train_mean), np.sqrt(train_var), ).T
     return (scaled_dat)
 
@@ -42,30 +83,33 @@ def load_normalization_data(name):
     train_mean_x = list()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),
                                      "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_mean_x.csv')
-    with open(path_to_file, 'r') as f:
-        for lines in f.readlines():
-            train_mean_x.append([float(lines.strip().strip('[]'))])
+    if os.path.isfile(path_to_file):
+        with open(path_to_file, 'r') as f:
+            for lines in f.readlines():
+                train_mean_x.append([float(lines.strip().strip('[]'))])
 
-    train_var_x = list()
-    path_to_file = resource_filename(Requirement.parse("molSimplify"),
-                                     "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_var_x.csv')
-    with open(path_to_file, 'r') as f:
-        for lines in f.readlines():
-            train_var_x.append([float(lines.strip().strip('[]'))])
+        train_var_x = list()
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),
+                                         "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_var_x.csv')
+        with open(path_to_file, 'r') as f:
+            for lines in f.readlines():
+                train_var_x.append([float(lines.strip().strip('[]'))])
 
-    train_mean_y = list()
-    path_to_file = resource_filename(Requirement.parse("molSimplify"),
-                                     "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_mean_y.csv')
-    with open(path_to_file, 'r') as f:
-        for lines in f.readlines():
-            train_mean_y.append([float(lines.strip().strip('[]'))])
-    train_var_y = list()
-    path_to_file = resource_filename(Requirement.parse("molSimplify"),
-                                     "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_var_y.csv')
-    with open(path_to_file, 'r') as f:
-        for lines in f.readlines():
-            train_var_y.append([float(lines.strip().strip('[]'))])
-
+        train_mean_y = list()
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),
+                                         "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_mean_y.csv')
+        with open(path_to_file, 'r') as f:
+            for lines in f.readlines():
+                train_mean_y.append([float(lines.strip().strip('[]'))])
+        train_var_y = list()
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),
+                                         "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_var_y.csv')
+        with open(path_to_file, 'r') as f:
+            for lines in f.readlines():
+                train_var_y.append([float(lines.strip().strip('[]'))])
+    else:
+        print('---Mean and Variance information do not exist. Calculate from training data...---')
+        train_mean_x, train_mean_y, train_var_x, train_var_y = get_data_mean_std(predictor=name)
     train_mean_x = np.array(train_mean_x)
     train_var_x = np.array(train_var_x)
     train_mean_y = np.array(train_mean_y)
@@ -74,15 +118,49 @@ def load_normalization_data(name):
     return train_mean_x, train_mean_y, train_var_x, train_var_y
 
 
-def load_ANN_variables(predictor):
+def get_data_mean_std(predictor):
     if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
-        key = 'geos/' + predictor + '_vars'
+        key = 'geos/' + predictor + '_bl_x'
     elif predictor in ['homo', 'gap']:
-        key = 'homolumo/' + predictor + '_vars'
+        key = 'homolumo/' + predictor + '_train_x'
     elif predictor in ['oxo', 'hat']:
-        key = 'oxocatalysis/' + predictor + '_vars'
+        key = 'oxocatalysis/' + predictor + '_train_x'
+    elif predictor == "split":
+        key = predictor + '/' + predictor + '_x_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_train_x'
     else:
-        key = predictor + '/' + predictor + '_vars'
+        key = predictor + '/' + predictor + '_x_OHE'
+    path_to_feature_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
+    df_feature = pd.read_csv(path_to_feature_file)
+    train_mean_x, train_var_x = list(), list()
+    for col in df_feature:
+        train_mean_x.append([np.mean(np.array(df_feature[col]))])
+        train_var_x.append([np.var(np.array(df_feature[col]))])
+    ### labels
+    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
+        key = 'geos/' + predictor + '_bl_y'
+    elif predictor in ['homo', 'gap']:
+        key = 'homolumo/' + predictor + '_train_y'
+    elif predictor in ['oxo', 'hat']:
+        key = 'oxocatalysis/' + predictor + '_train_y'
+    elif predictor == "split":
+        key = predictor + '/' + predictor + '_y_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_train_y'
+    else:
+        key = predictor + '/' + predictor + '_y_OHE'
+    path_to_label_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
+    df_label = pd.read_csv(path_to_label_file)
+    train_mean_y, train_var_y = list(), list()
+    for col in df_label:
+        train_mean_y.append([np.mean(np.array(df_label[col]))])
+        train_var_y.append([np.var(np.array(df_label[col]))])
+    return train_mean_x, train_mean_y, train_var_x, train_var_y
+
+
+def load_ANN_variables(predictor, suffix='vars'):
+    key = get_key(predictor, suffix)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     names = []
     with open(path_to_file, 'r') as f:
@@ -100,10 +178,33 @@ def load_training_data(predictor):
         key = 'oxocatalysis/' + predictor + '_train_x'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_x_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_train_x'
     else:
         key = predictor + '/' + predictor + '_x_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "r") as f:
+        csv_lines = list(csv.reader(f))
+        # row_names = [row[0] for row in csv_lines]
+        mat = [row for row in csv_lines[1:]]
+    return mat
+
+
+def load_test_data(predictor):
+    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
+        key = 'geos/' + predictor + '_bl_x'  # Note, this test data is not available, will return train.
+    elif predictor in ['homo', 'gap']:
+        key = 'homolumo/' + predictor + '_test_x'
+    elif predictor in ['oxo', 'hat']:
+        key = 'oxocatalysis/' + predictor + '_test_x'
+    elif predictor == "split":
+        key = predictor + '/' + predictor + '_x_41_OHE'  # Note, this test data is not available, will return train
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_test_x'
+    else:
+        key = predictor + '/' + predictor + '_x_OHE'
+    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
+    with open(path_to_file, "rU") as f:
         csv_lines = list(csv.reader(f))
         # row_names = [row[0] for row in csv_lines]
         mat = [row for row in csv_lines[1:]]
@@ -119,6 +220,8 @@ def load_training_labels(predictor):
         key = 'oxocatalysis/' + predictor + '_train_y'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_y_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_train_y'
     else:
         key = predictor + '/' + predictor + '_y_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
@@ -129,16 +232,29 @@ def load_training_labels(predictor):
     return mat
 
 
-def load_train_info(predictor):
+def load_test_labels(predictor):
     if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
-        key = 'geos/' + predictor + '_info'
+        key = 'geos/' + predictor + '_bl_y'
     elif predictor in ['homo', 'gap']:
-        key = 'homolumo/' + predictor + '_info'
+        key = 'homolumo/' + predictor + '_test_y'
     elif predictor in ['oxo', 'hat']:
-        key = 'oxocatalysis/' + predictor + '_info'
+        key = 'oxocatalysis/' + predictor + '_test_y'
+    elif predictor == "split":
+        key = predictor + '/' + predictor + '_y_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_test_y'
     else:
-        print('!!!!! checkout!!!!!')
-        key = predictor + '/model'
+        key = predictor + '/' + predictor + '_y_OHE'
+    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
+    with open(path_to_file, "rU") as f:
+        csv_lines = list(csv.reader(f))
+        # row_names = [row[0] for row in csv_lines]
+        mat = [row for row in csv_lines[1:]]
+    return mat
+
+
+def load_train_info(predictor, suffix='info'):
+    key = get_key(predictor, suffix)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
     json_file = open(path_to_file, 'r')
     loaded_info_dict = json.loads(json_file.read())
@@ -146,19 +262,13 @@ def load_train_info(predictor):
     return loaded_info_dict
 
 
-def load_keras_ann(predictor):
+def load_keras_ann(predictor, suffix='model'):
     ## this function loads the ANN for property
     ## "predcitor" 
     # disable TF output text to reduce console spam
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
-        key = 'geos/' + predictor + '_model'
-    elif predictor in ['homo', 'gap']:
-        key = 'homolumo/' + predictor + '_model'
-    elif predictor in ['oxo', 'hat']:
-        key = 'oxocatalysis/' + predictor + '_model'
-    else:
-        key = predictor + '/model'
+    key = get_key(predictor, suffix)
+    # print('THIS IS THE KEY',key)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
     json_file = open(path_to_file, 'r')
     loaded_model_json = json_file.read()
@@ -180,6 +290,13 @@ def load_keras_ann(predictor):
         loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
                                                         decay=0.0006651401379502965, lr=0.0007727366541920176),
                              metrics=['mse', 'mae', 'mape'])
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        loaded_model.compile(loss='binary_crossentropy',
+                             optimizer=Adam(lr=0.0001,
+                                            beta_1=0.95,
+                                            beta_2=0.999,
+                                            decay=0.0001),
+                             metrics=['accuracy'])
     else:
         loaded_model.compile(loss="mse", optimizer='adam',
                              metrics=['mse', 'mae', 'mape'])
@@ -229,6 +346,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names):
     excitation = data_normalize(excitation, train_mean_x, train_var_x)
 
     ## fetch ANN
+    # print('This is the predictor......',predictor)
     loaded_model = load_keras_ann(predictor)
     print('LOADED MODEL HAS ' + str(
         len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
@@ -278,7 +396,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Structure: ', csv_lines[min_ind + 1])
+            print('Closest Euc Dist Structure: ', csv_lines[min_ind ], 'for predictor ',predictor)
     # need to get normalized distances 
 
     ########################################################################################
@@ -314,11 +432,12 @@ def find_ANN_latent_dist(predictor, latent_space_vector):
         len(loaded_model.layers) - 1) + ' layers')
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
-
     for i, rows in enumerate(train_mat):
-        scaled_row = np.squeeze(
-            data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
+        # print('row',rows)
+        scaled_row = np.squeeze(data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
+        # print('scaled_row',scaled_row)
         latent_train_row = get_outputs([np.array([scaled_row]), 0])
+        # print('LATENT TRAIN ROW', latent_train_row)
         this_dist = np.linalg.norm(np.subtract(np.squeeze(latent_train_row), np.squeeze(latent_space_vector)))
         # print(this_dist)
         if this_dist < min_dist:
@@ -337,32 +456,12 @@ def find_ANN_latent_dist(predictor, latent_space_vector):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Structure: ', csv_lines[min_ind + 1])
-    # need to get normalized distances 
-
-    ########################################################################################
-    # Changed by Aditya on 08/13/2018. Previously, nearest neighbor was being found in the #
-    # unnormalized space, and then that was normalized. This was resulting in bad nearest  #
-    # neighbor candidate structures. Now routine normalizes before finding the distance.   #
-    ########################################################################################
-
-    # train_mean_x,train_mean_y,train_var_x,train_var_y = load_normalization_data(predictor)
-
-    # scaled_excitation = data_normalize(excitation,train_mean_x,train_var_x)
-    # scaled_row = data_normalize(min_row,train_mean_x,train_var_x)
-    # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
+            print('Closest Latent Dist Structure: ', csv_lines[min_ind ], 'for predictor ',predictor)
     return (min_dist)
 
 
-def save_model(model, predictor, num=None):
-    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
-        key = 'geos/'
-    elif predictor in ['homo', 'gap']:
-        key = 'homolumo/'
-    elif predictor in ['oxo', 'hat']:
-        key = 'oxocatalysis/'
-    else:
-        key = predictor
+def save_model(model, predictor, num=None, suffix=False):
+    key = get_key(predictor, suffix)
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     base_path = base_path + 'ensemble_models'
     if not os.path.exists(base_path):

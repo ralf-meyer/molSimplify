@@ -303,7 +303,7 @@ def loaddata_ts(path):
     for line in lines[1:]:
         if '#'!=line[0]: # skip comments
             l = filter(None,line.split(None))
-            d[(l[0],l[1],l[2])] = l[3:] # read dictionary
+            d[(l[0],l[1],l[2],l[3])] = l[4:] # read dictionary
     f.close()
     return d
 
@@ -436,7 +436,7 @@ def core_load(usercore,mcores=None):
 #  @param usersubstrate Name of substrate
 #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
 #  @return mol3D of substrate, error messages
-def substr_load(args,usersubstrate,sub_i,subcatoms,subcores=None):
+def substr_load(usersubstrate,sub_i,subcatoms,subcores=None):
     if subcores == None:
         subcores = getsubcores()
     globs = globalvars()
@@ -491,10 +491,8 @@ def substr_load(args,usersubstrate,sub_i,subcatoms,subcores=None):
                 sub.cat = [int(var_list_sub_i[2])]
             else:
                 sub.cat = [int(l) for l in var_list_sub_i[2]]
-        if not args.subcatoms:
+        if not subcatoms:
             subcatoms = sub.cat
-        if args.debug:
-            print('subcatoms after substr_load is ' + str(subcatoms))
         # Parsing substrate group
         sub.grps = var_list_sub_i[3]
         if len(var_list_sub_i[4]) > 0:
@@ -879,6 +877,8 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,nconf=False,sanity=False,bi
         try:
             center += core.getAtom(0).symbol().lower()
         except:
+            if ('.xyz' in core):
+                core = core.split('.')[0]
             center += str(core).lower()
         name = rootdir + '/' + center
         if args.oxstate:
