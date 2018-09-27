@@ -373,7 +373,7 @@ def core_load(usercore,mcores=None):
     core = mol3D() # initialize core molecule
     ### check if core exists in dictionary
     if usercore.lower() in mcores.keys():
-        print('loading core from dictionary')
+        #print('loading core from dictionary')
         dbentry = mcores[usercore.lower()]
         # load core mol file (with hydrogens
         if globs.custom_path:
