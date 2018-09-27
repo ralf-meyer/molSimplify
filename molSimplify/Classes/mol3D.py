@@ -1256,7 +1256,16 @@ class mol3D:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
             print ss
-
+    ## returns string of xyz coordinates 
+    # 
+    #  To write to file (more common), use writexyz() instead.
+    #  @param self The object pointer
+    def returnxyz(self):
+        ss=''
+        for atom in self.atoms:
+            xyz = atom.coords()
+            ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+        return(ss)
     ## Load molecule from xyz file
     # 
     #  Consider using getOBMol, which is more general, instead.
