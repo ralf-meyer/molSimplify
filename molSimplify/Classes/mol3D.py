@@ -1712,7 +1712,8 @@ class mol3D:
             dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
             oct_dist.append(dist)
         oct_dist.sort()
-        try:  ### For Oct
+        print('oct_dist', oct_dist)
+        if len(oct_dist) == 6:  ### For Oct
             dist_del_arr = np.array([oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
             min_posi = np.argmin(dist_del_arr)
             if min_posi == 0:
@@ -1721,25 +1722,24 @@ class mol3D:
                 dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
             else:
                 dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
-        except IndexError:  ## For one empty site
+            dist_del_eq = max(dist_eq) - min(dist_eq)
+        elif len(oct_dist) == 5:  ## For one empty site
             if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
                 dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]  # ax dist is smaller
             else:
                 dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
+            dist_del_eq = max(dist_eq) - min(dist_eq)
+        else:
+            dist_eq, dist_ax = -1, -1
+            dist_del_eq = -1
         dist_del_all = oct_dist[-1] - oct_dist[0]
         if debug:
             print('dist:', dist_eq, dist_ax)
-        dist_del_eq = max(dist_eq) - min(dist_eq)
-        dist_del_ax = max(dist_ax) - min(dist_ax)
-        dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
-        oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax, dist_del_all]
-        if debug:
-            print('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del)
         dict_catoms_shape = dict()
-        dict_catoms_shape['oct_angle_devi_max'] = max(oct_angle_devi)
-        dict_catoms_shape['max_del_sig_angle'] = max_del_sig_angle
-        dict_catoms_shape['dist_del_eq'] = oct_dist_del[0]
-        dict_catoms_shape['dist_del_all'] = oct_dist_del[3]
+        dict_catoms_shape['oct_angle_devi_max'] = float(max(oct_angle_devi))
+        dict_catoms_shape['max_del_sig_angle'] = float(max_del_sig_angle)
+        dict_catoms_shape['dist_del_eq'] = float(dist_del_eq)
+        dict_catoms_shape['dist_del_all'] = float(dist_del_all)
         self.dict_catoms_shape = dict_catoms_shape
         return dict_catoms_shape, catoms_arr
 
@@ -1888,7 +1888,10 @@ class mol3D:
             atom_dist_max = max(max_atom_dist_arr)
         else:
             rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
-        dict_lig_distort = {'rmsd_max': rmsd_max, 'atom_dist_max': atom_dist_max}
+        try:
+            dict_lig_distort = {'rmsd_max': float(rmsd_max), 'atom_dist_max': float(atom_dist_max)}
+        except:
+            dict_lig_distort = {'rmsd_max': rmsd_max, 'atom_dist_max': atom_dist_max}
         self.dict_lig_distort = dict_lig_distort
         return dict_lig_distort
 
@@ -1958,8 +1961,8 @@ class mol3D:
             devi_linear_avrg /= count
         else:
             devi_linear_avrg = 0
-        dict_orientation['devi_linear_avrg'] = devi_linear_avrg
-        dict_orientation['devi_linear_max'] = devi_linear_max
+        dict_orientation['devi_linear_avrg'] = float(devi_linear_avrg)
+        dict_orientation['devi_linear_max'] = float(devi_linear_max)
         self.dict_angle_linear = dict_angle_linear
         self.dict_orientation = dict_orientation
         return dict_angle_linear, dict_orientation
@@ -1971,7 +1974,7 @@ class mol3D:
     ##         flag_list: metrics that are failed from being a good geometry.
     def dict_check_processing(self, dict_check,
                               num_coord=6, debug=False):
-        self.geo_dict['num_coord_metal'] = self.num_coord_metal
+        self.geo_dict['num_coord_metal'] = int(self.num_coord_metal)
         self.geo_dict.update(self.dict_lig_distort)
         self.geo_dict.update(self.dict_catoms_shape)
         self.geo_dict.update(self.dict_orientation)
