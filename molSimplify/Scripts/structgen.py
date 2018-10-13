@@ -114,7 +114,9 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
          ANN_bondl = len([item for items in batslist for item in items])*[False] ## there needs to be 1 length per possible lig
          ANN_reason = 'ANN skipped by user'
     else:
+         
          try:
+         #if True:
             if args.oldANN:
                 print('using old ANN by request')
                 ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
@@ -135,6 +137,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
          except:
+         #else:
              print("ANN call rejected")
              ANN_reason = 'uncaught exception'
              ANN_flag = False
@@ -2607,7 +2610,8 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 complex3D.append(auxm)
                 if 'a' not in lig.ffopt.lower():
                     for latdix in range(0,lig3D.natoms):
-                        print('a is not ff.lower, so adding ' + str(latdix+core3D.natoms)+  'to freeze')
+                        if args.debug:
+                            print('a is not ff.lower, so adding atom:  ' + str(latdix+core3D.natoms)+  ' to freeze')
                         frozenats.append(latdix+core3D.natoms)
                 # combine molecules
                 core3D = core3D.combine(lig3D)
@@ -2624,8 +2628,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     core3D.writexyz('complex_'+str(i)+'_'+str(j) + '.xyz')
 
                 if 'a' in args.ffoption:
-                    print('FF optimizing molecule after placing ligand')
-                    print('in the a relax, passing connected as ' + str(connected))
+                    if args.debug:
+                        print('FF optimizing molecule after placing ligand')
+                        print('in the relax function, passing connected atoms list: ' + str(connected))
                     #(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=False):
                     core3D,enc = ffopt(ff=args.ff,\
                                         mol=core3D,\
@@ -2866,7 +2871,8 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     this_diag = run_diag()
     if (ligands):
         core3D,complex3D,emsg,this_diag,subcatoms_ext,mligcatoms_ext = mcomplex(args,ligands,ligoc,licores,globs)
-        print('subcatoms_ext are ' + str(subcatoms_ext))
+        if args.debug:
+            print('subcatoms_ext are ' + str(subcatoms_ext))
         name_core = args.core
         if emsg:
             return False,emsg

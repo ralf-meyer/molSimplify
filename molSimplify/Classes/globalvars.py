@@ -55,6 +55,21 @@ metalslist = ['Sc', 'SC', 'scandium', 'Ti', 'TI', 'titanium', 'V', 'vanadium', '
               'RE', 'rhenium', 'Os', 'OS', 'osmium',
               'Ir', 'IR', 'iridium', 'Pt', 'PT', 'platinum', 'Au', 'AU', 'gold', 'Hg', 'HG', 'mercury']
 
+metals_conv = {'scandium':'Sc', 'titanium':'Ti', 'vanadium':'V',  'chromium':'Cr', 
+              'manganese':'Mn',  'iron':'Fe',
+              'cobalt': 'Co',  'nickel':'Ni',  'copper':'Cu',  'zinc':'Zn',
+              'yttrium': 'Y', 'zirconium':'Zr', 
+               'niobium': 'Nb', 'molybdenum':'Mo',
+               'technetium':'Tc', 'ruthenium':'Ru',
+               'rhodium': 'Rh', 'palladium':'Pd',
+               'silver':'Ag',  'cadmium':'Cd',
+               'lanthanum':'La',  'hafnium':'Hf',
+               'tantalum':'Ta', 'tungsten':'W', 
+               'rhenium':'Re', 'osmium':'Os',
+               'iridium':'Ir', 'platinum':'Pt',
+               'gold': 'Au',  'mercury':'Hg'}
+              
+              
 ## d-electron counts of transition metals
 mtlsdlist = {'sc': 1, 'ti': 2, 'v': 3, 'cr': 4, 'mn': 5, 'fe': 6, 'ni': 7, 'co': 8, 'cu': 9, 'zn': 10, 'y': 1, 'zr': 2,
              'nb': 3,

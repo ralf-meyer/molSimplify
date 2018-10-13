@@ -1034,6 +1034,7 @@ def copy_to_custom_path():
     li_dir = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands")
     bind_dir = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Bind"))
     data_dir = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Data"))
+    subs_dir = (resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates"))
     if os.path.exists(str(globs.custom_path).rstrip("/")+"/Cores"):
         print('Note: removing old molSimplify data')
         shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Cores")
@@ -1046,10 +1047,14 @@ def copy_to_custom_path():
     if os.path.exists(str(globs.custom_path).rstrip("/")+"/Data"):
         print('Note: removing old molSimplify data')
         shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Data")
+    if os.path.exists(str(globs.custom_path).rstrip("/")+"/Substrates"):
+        print('Note: removing old molSimplify data')
+        shutil.rmtree(str(globs.custom_path).rstrip("/")+"/Substrates")
 
     shutil.copytree(core_dir,str(globs.custom_path).rstrip("/")+"/Cores")
     shutil.copytree(li_dir,str(globs.custom_path).rstrip("/")+"/Ligands")
     shutil.copytree(bind_dir,str(globs.custom_path).rstrip("/")+"/Bind")
     shutil.copytree(data_dir,str(globs.custom_path).rstrip("/")+"/Data")
+    shutil.copytree(subs_dir,str(globs.custom_path).rstrip("/")+"/Substrates")
     
 

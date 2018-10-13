@@ -20,7 +20,7 @@ from sets import Set
 
 ## wrapper to get AN predictions from a known mol3D()
 ## generally unsfae
-def invoke_ANNs_from_mol3d(mol,oxidation_state,alpha=0.2):
+def invoke_ANNs_from_mol3d(mol,oxidation_state,alpha=0.2,debug=False):
     # check input
     if not oxidation_state == 2 and not oxidation_state == 3:
         print('Error, oxidation state must be 2 or 3')
@@ -38,15 +38,15 @@ def invoke_ANNs_from_mol3d(mol,oxidation_state,alpha=0.2):
     descriptors += [alpha]
 
     # call ANN for splitting
-    split, latent_split = ANN_supervisor('split',descriptors,descriptor_names)
+    split, latent_split = ANN_supervisor('split',descriptors,descriptor_names,debug)
 
     # call ANN for bond lenghts
     if oxidation_state == 2:
-        r_ls, latent_r_ls = ANN_supervisor('ls_ii',descriptors,descriptor_names)
-        r_hs, latent_r_hs = ANN_supervisor('hs_ii',descriptors,descriptor_names)
+        r_ls, latent_r_ls = ANN_supervisor('ls_ii',descriptors,descriptor_names,debug)
+        r_hs, latent_r_hs = ANN_supervisor('hs_ii',descriptors,descriptor_names,debug)
     elif oxidation_state == 3:
-        r_ls, latent_r_ls = ANN_supervisor('ls_iii',descriptors,descriptor_names)
-        r_hs, latent_r_hs = ANN_supervisor('hs_iii',descriptors,descriptor_names)
+        r_ls, latent_r_ls = ANN_supervisor('ls_iii',descriptors,descriptor_names,debug)
+        r_hs, latent_r_hs = ANN_supervisor('hs_iii',descriptors,descriptor_names,debug)
 
     # ANN distance for splitting
     split_dist = find_true_min_eu_dist("split",descriptors,descriptor_names)
@@ -260,7 +260,8 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     dents = newdents
     tcats = newcats 
     occs = newoccs
-    print('FINISHED PREPPING LIGANDS')  
+    if args.debug:
+        print('tf_nn has finisihed prepping ligands')  
    
     if not args.geometry == "oct":
         emsg.append("[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
@@ -275,8 +276,9 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         valid, oxidation_state = check_metal(this_metal,oxidation_state)
         if int(oxidation_state) in [3, 4, 5]:
             catalytic_moieties = ['oxo','x','hydroxyl','[O--]','[OH-]']
-            print('THE LIGANDS ARE',ligs)
-            print(set(ligs).intersection(set(catalytic_moieties)))
+            if args.debug:
+                print('the ligands are',ligs)
+                print(set(ligs).intersection(set(catalytic_moieties)))
             if len(set(ligs).intersection(set(catalytic_moieties))) > 0:
                 catalysis = True
         ## generate key in descriptor space
@@ -300,7 +302,8 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     current_time =  time.time()
     metal_check_time  = current_time - last_time
     last_time = current_time
-    print('checking metal/ox took  ' +  "{0:.2f}".format(metal_check_time) + ' seconds' )
+    if args.debug:
+        print('checking metal/ox took  ' +  "{0:.2f}".format(metal_check_time) + ' seconds' )
 
     if valid or catalysis:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat,axial_ind_list,equitorial_ind_list,ax_occs,eq_occs = tf_check_ligands(ligs,batslist,dents,tcats,occs,args.debug)
@@ -320,7 +323,8 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
     if (not valid) and (not catalysis):
         ANN_reason  = 'found incorrect ligand symmetry'
     elif not valid and catalysis:
-        print('THIS IS CATALYTIC!')
+        if args.debug:
+            print('tf_nn detects catalytic')
         ANN_reason = 'catalytic structure presented'
 
     
@@ -427,7 +431,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                 elif float(args.exchange) <= 1:
                     alpha = float(args.exchange)
             except:
-                print('cannot case exchange argument as a float, using 20%')
+                print('cannot cast exchange argument as a float, using 20%')
         descriptor_names += ['alpha']
         descriptors += [alpha]
         descriptor_names += ['ox']
@@ -442,7 +446,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 
 
         ## get spin splitting:
-        split, latent_split = ANN_supervisor('split',descriptors,descriptor_names)
+        split, latent_split = ANN_supervisor('split',descriptors,descriptor_names,args.debug)
         if args.debug:
             current_time =  time.time()
             split_ANN_time  = current_time - last_time
@@ -451,11 +455,11 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         
         ## get bond lengths:
         if oxidation_state == '2':
-            r_ls, latent_r_ls  = ANN_supervisor('ls_ii',descriptors,descriptor_names)
-            r_hs, latent_r_hs  = ANN_supervisor('hs_ii',descriptors,descriptor_names)
+            r_ls, latent_r_ls  = ANN_supervisor('ls_ii',descriptors,descriptor_names,args.debug)
+            r_hs, latent_r_hs  = ANN_supervisor('hs_ii',descriptors,descriptor_names,args.debug)
         elif oxidation_state == '3':
-            r_ls, latent_r_ls  = ANN_supervisor('ls_iii',descriptors,descriptor_names)
-            r_hs, latent_r_hs  = ANN_supervisor('hs_iii',descriptors,descriptor_names)
+            r_ls, latent_r_ls  = ANN_supervisor('ls_iii',descriptors,descriptor_names,args.debug)
+            r_hs, latent_r_hs  = ANN_supervisor('hs_iii',descriptors,descriptor_names,args.debug)
         if not high_spin:
             r = r_ls[0]
         else:
@@ -467,14 +471,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             last_time = current_time
             print('GEO ANN took ' +  "{0:.2f}".format(GEO_ANN_time)+ ' seconds')
 
-        homo, latent_homo = ANN_supervisor('homo',descriptors,descriptor_names)
+        homo, latent_homo = ANN_supervisor('homo',descriptors,descriptor_names,args.debug)
         if args.debug:
             current_time =  time.time()
             homo_ANN_time  = current_time - last_time
             last_time = current_time
             print('homo ANN took ' +  "{0:.2f}".format(homo_ANN_time) + ' seconds')
 
-        gap, latent_gap = ANN_supervisor('gap',descriptors,descriptor_names)
+        gap, latent_gap = ANN_supervisor('gap',descriptors,descriptor_names,args.debug)
         if args.debug:
             current_time =  time.time()
             gap_ANN_time  = current_time - last_time
@@ -491,7 +495,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
         
         homo_dist = find_true_min_eu_dist("homo",descriptors,descriptor_names)
-        homo_dist = find_ANN_latent_dist("homo",latent_homo)
+        homo_dist = find_ANN_latent_dist("homo",latent_homo,args.debug)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -499,7 +503,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print('min HOMO dist took ' +  "{0:.2f}".format(min_dist_time)+ ' seconds')
 
         gap_dist = find_true_min_eu_dist("gap",descriptors,descriptor_names)
-        gap_dist = find_ANN_latent_dist("gap",latent_gap)
+        gap_dist = find_ANN_latent_dist("gap",latent_gap,args.debug)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -601,7 +605,7 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(split[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print('ANN low spin bond length (ax1/ax2/eq) is predicted to be: '+" /".join(["{0:.2f}".format(float(i)) for i in r_ls[0]]) + ' angstrom')
         print('ANN high spin bond length (ax1/ax2/eq) is predicted to be: '+" /".join(["{0:.2f}".format(float(i)) for i in r_hs[0]]) + ' angstrom')
-        print('distance to training data is ' + "{0:.2f}".format(split_dist) )
+        print('distance to splitting energy training data is ' + "{0:.2f}".format(split_dist) )
         print(ANN_trust_message)
         print("ANN predicts a HOMO value of " + "{0:.2f}".format(float(homo[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
         print("ANN predicts a LUMO-HOMO energetic gap value of " + "{0:.2f}".format(float(gap[0])) + ' eV at '+"{0:.0f}".format(100*alpha) + '% HFX')
@@ -645,13 +649,13 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             rac_check_time  = current_time - last_time
             last_time = current_time
             print('getting RACs took ' +  "{0:.2f}".format(rac_check_time) + ' seconds')
-        oxo, latent_oxo = ANN_supervisor('oxo',descriptors,descriptor_names)
+        oxo, latent_oxo = ANN_supervisor('oxo',descriptors,descriptor_names,args.debug,args.debug)
         if args.debug:
             current_time =  time.time()
             split_ANN_time  = current_time - last_time
             last_time = current_time
             print('oxo ANN took ' +  "{0:.2f}".format(split_ANN_time) + ' seconds')
-        oxo_dist = find_ANN_latent_dist("oxo",latent_oxo)
+        oxo_dist = find_ANN_latent_dist("oxo",latent_oxo,args.debug)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time
@@ -660,14 +664,14 @@ def tf_ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ANN_attributes.update({'oxo':oxo[0][0]})
         ANN_attributes.update({'oxo_dist':oxo_dist})
 
-        hat, latent_hat = ANN_supervisor('hat',descriptors,descriptor_names)
+        hat, latent_hat = ANN_supervisor('hat',descriptors,descriptor_names,args.debug)
         if args.debug:
             current_time =  time.time()
             split_ANN_time  = current_time - last_time
             last_time = current_time
             print('HAT ANN took ' +  "{0:.2f}".format(split_ANN_time) + ' seconds')
 
-        hat_dist = find_ANN_latent_dist("hat",latent_hat)
+        hat_dist = find_ANN_latent_dist("hat",latent_hat,args.debug)
         if args.debug:
             current_time =  time.time()
             min_dist_time  = current_time - last_time

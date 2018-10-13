@@ -21,7 +21,11 @@ def checkinput(args,calctype="base"):
         if not args.core:
             print 'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()
             args.core = ['fe']
-        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
+        # convert full element name to symbol for cores:
+        if args.core[0].lower() in metals_conv.keys(): 
+            print('swithcing core from ' + str(args.core) + ' to ' + str(metals_conv[args.core[0].lower()]))
+            args.core = [metals_conv[args.core[0].lower()]]
+        if (args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum):    
             # convert to titlecase
             args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
             # check oxidation state
@@ -50,17 +54,9 @@ def checkinput(args,calctype="base"):
                     defaultspinstate = '1'
                     print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
                 args.spin = defaultspinstate
-            # check ligands
-            if not args.lig and not args.rgen:
-                if args.gui:
-                    from Classes.mWidgets import mQDialogWarn
-                    qqb = mQDialogWarn('Warning','You specified no ligands.')
-                    qqb.setParent(args.gui.wmain)
-                else:
-                    print 'WARNING: No ligands specified. Defaulting to water.'
-                args.lig = ['water']
-            # check coordination number and geometry
-            if not args.coord and not args.geometry:
+            
+             # check coordination number and geometry from ligands if given
+            if (not args.coord) and (not args.geometry) and args.lig:
                 if not args.gui:
                     # calculate occurrences, denticities etc for all ligands
                     licores = getlicores()
@@ -93,7 +89,10 @@ def checkinput(args,calctype="base"):
                                 else:
                                     dent_i = int(len(licores[ligname][2]))
                         # get occurrence for each ligand if specified (default 1)
-                        oc_i = int(ligoc[i]) if i < len(ligoc) else 1
+                        if ligloc:
+                            oc_i = int(ligoc[i]) if i < len(ligoc) else 1
+                        else:
+                            oc_i = 1
                         occs0.append(0)         # initialize occurrences list
                         dentl.append(dent_i)    # append denticity to list
                         # loop over occurrence of ligand i to check for max coordination
@@ -102,6 +101,21 @@ def checkinput(args,calctype="base"):
                             toccs += dent_i
                     print('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.')
                     args.coord = toccs
+            # set default coord if nothing given 
+            if (not args.coord) and (not args.geometry) and (not args.lig):
+                print('WARNING: No coord/geo is specified. Defaulting to 6-coord/octahedral')
+                args.coord = 6
+                args.geometry = 'oct'
+            # default ligand if none given
+            if not args.lig and not args.rgen:
+                if args.gui:
+                    from Classes.mWidgets import mQDialogWarn
+                    qqb = mQDialogWarn('Warning','You specified no ligands.')
+                    qqb.setParent(args.gui.wmain)
+                else:
+                    print 'WARNING: No ligands specified. Defaulting to water.'
+                args.lig = ['water']
+
             if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
                 print 'WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: '+globs.defaultgeometry[int(args.coord)][1]
                 args.geometry = globs.defaultgeometry[int(args.coord)][0]
