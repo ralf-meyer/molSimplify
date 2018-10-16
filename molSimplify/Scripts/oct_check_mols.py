@@ -64,7 +64,7 @@ def readfromtxt(mol, txt):
 ##         summation for the difference for output_arr and target_arr
 def comp_two_angle_array(input_angle, target_angle):
     _i = input_angle[1][:]
-    # print('target_angle', _t)
+    # print('target_angle', input_angle, target_angle)
     del_act = []
     output_angle = []
     for idx, ele in enumerate(target_angle):
@@ -680,21 +680,3 @@ def gen_file_with_name(path_init_geo, name_opt):
     name_opt = name_opt.split('_')
     name_opt = '_'.join(name_opt[:len(name_opt) - 1])
     name_init = '%s/%s_mols.xyz' % (path_init_geo, name_opt)
-###------------DEMO-------------------
-## ---batch processing----
-# _path = './fe_optimized_geometry'
-# path_init_geo = './fe_init_geo'
-# loop_structure(_path, path_init_geo)
-
-## --For single complex-----
-# file_in = './tests/co_3_acac_2_ammonia_1_oxo_1_s_1_opt.xyz' # good case for number of coorf and ligand mismatch
-# file_org = './tests/co_3_acac_2_ammonia_1_oxo_1_s_1.xyz'
-# file_in = './tests/fe_3_ox_2_isothiocyanate_1_hydroxyl_1_s_5_opt.xyz' # remind me to add oct_angle_sig_max
-# file_org = './tests/fe_3_ox_2_isothiocyanate_1_hydroxyl_1_s_5.xyz'
-# file_in = './tests/mn_2_acac_2_ammonia_1_hydroxyl_1_s_1_opt.xyz' # remind me to add oct_angle_sig_max
-# file_org = './tests/mn_2_acac_2_ammonia_1_hydroxyl_1_s_1.xyz'
-# flag_oct, flag_list, dict_oct_info = IsOct(file_in, file_org)
-# print('=====molecule: %s, flag_oct: %d' % (file_in, flag_oct))
-# if not flag_oct:
-#     print('=====flag_list:', flag_list)
-#     print('=====dict_oct_info:', dict_oct_info)

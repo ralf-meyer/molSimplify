@@ -36,7 +36,32 @@ def mc_dropout_logp(tau, err):
     logp -= 0.5 * np.log(np.power(tau, -1))
     logp -= 0.5 * np.log(2 * math.pi)
     return (logp)
-
+    
+def ensemble_maker_inner(train_mat,labels,model_gen_function, info_dict,num=10):
+    ## contains core functions to make ensemble models
+    ## from training data and labels
+    ## model_gen_function is a functiont that takes NO arguments and returns a keras model
+    ## info_dict is a dictionary of training info 
+    train_mat, labels = shuffle(train_mat, labels)
+    train_mat = np.array_split(train_mat, num, axis=0)
+    labels = np.array_split(labels, num, axis=0)
+    earlystop = EarlyStopping(monitor=info_dict['monitor'], min_delta=info_dict['min_delta'],
+                              patience=info_dict['patience'],
+                              verbose=0,
+                              mode='auto')
+    callbacks_list = [earlystop]
+    model_list = []
+    for ii in range(num):
+        train_feature = array_stack(train_mat, ii)
+        train_labels = array_stack(labels, ii)
+        loaded_model = model_gen_function() # note the call to gen new model
+        current_model = reset_weights(loaded_model)
+        history = current_model.fit(train_feature, train_labels,
+                                    epochs=info_dict['epochs'], verbose=0,
+                                    batch_size=info_dict['batch_size'],
+                                    callbacks=callbacks_list)
+        model_list.append(current_model)
+    return(model_list)
 
 def ensemble_maker(predictor, num=10):
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -44,27 +69,15 @@ def ensemble_maker(predictor, num=10):
     mat = np.array(mat, dtype='float64')
     train_mat = data_normalize(mat, train_mean_x, train_var_x)
     labels = load_training_labels(predictor)
-    if not 'clf' in predictor:
+    if not "clf" in predictor:
         labels = np.array(labels, dtype='float64')
         labels = data_normalize(labels, train_mean_y, train_var_y)
-    train_mat, labels = shuffle(train_mat, labels)
-    train_mat = np.array_split(train_mat, num, axis=0)
-    labels = np.array_split(labels, num, axis=0)
     info_dict = load_train_info(predictor)
-    earlystop = EarlyStopping(monitor=info_dict['monitor'], min_delta=info_dict['min_delta'],
-                              patience=info_dict['patience'],
-                              verbose=1,
-                              mode='auto')
-    callbacks_list = [earlystop]
-    for ii in range(num):
-        train_feature = array_stack(train_mat, ii)
-        train_labels = array_stack(labels, ii)
-        loaded_model = load_keras_ann(predictor)
-        current_model = reset_weights(loaded_model)
-        history = current_model.fit(train_feature, train_labels,
-                                    epochs=info_dict['epochs'], verbose=1,
-                                    batch_size=info_dict['batch_size'],
-                                    callbacks=callbacks_list)
+    model_list = ensemble_maker_inner(train_mat=train_mat,
+                                      labels=labels,
+                                      model_gen_function = lambda : load_keras_ann(predictor),
+                                      info_dict = info_dict,num=num)
+    for ii,current_model in enumerate(model_list):
         save_model(current_model, predictor, ii)
 
 

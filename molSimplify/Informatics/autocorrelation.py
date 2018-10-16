@@ -190,6 +190,16 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
         return False
     return (autocorrelation_vector)
 
+def multimetal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
+                               func=autocorrelation,modifier=False):
+    autocorrelation_vector = numpy.zeros(d+1)
+    n_met = len(mol.findMetal())
+    w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
+    for metal_ind in mol.findMetal():
+        autocorrelation_vector =+ func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
+    autocorrelation_vector = np.divide(autocorrelation_vector, n_met)
+    return (autocorrelation_vector)
+    
 
 def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
     ## atomIdx must b either a list of indcies
@@ -207,7 +217,7 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
 
 def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
                            func=deltametric, modifier=False):
-    deltametric_vector = numpy.zeros(d)
+    deltametric_vector = numpy.zeros(d+1)
     try:
         metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
@@ -218,7 +228,19 @@ def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
         return False
     return (deltametric_vector)
 
+def multimetal_only_deltametric(mol, prop, d, oct=True, catoms=None,
+                           func=deltametric, modifier=False):
+    deltametric_vector = numpy.zeros(d+1)
+    n_met = len(mol.findMetal())
 
+    w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
+    for metal_ind in mol.findMetal():      
+        deltametric_vector += func(mol, w, metal_ind, d, oct=oct,
+                                  catoms=catoms)
+    deltametric_vector = np.divide(deltametric_vector, n_met)
+    return (deltametric_vector)
+    
+    
 def metal_only_layer_density(mol, prop, d, oct=True):
     density_vector = numpy.zeros(d)
     try:
@@ -613,6 +635,25 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False):
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result = list()
+    colnames = []
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    for ii, properties in enumerate(allowed_strings):
+        metal_ac = multimetal_only_autocorrelation(mol, properties, depth, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(metal_ac)
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
+        # print(results_dictionary)
+    else:
+        results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
 
 def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
     ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
@@ -654,6 +695,25 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     for ii, properties in enumerate(allowed_strings):
         metal_ac = metal_only_deltametric(mol, properties, depth, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(metal_ac)
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'results_mc_del': result}
+    else:
+        results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+    
+def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result = list()
+    colnames = []
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    for ii, properties in enumerate(allowed_strings):
+        metal_ac = multimetal_only_deltametric(mol, properties, depth, oct=oct)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))

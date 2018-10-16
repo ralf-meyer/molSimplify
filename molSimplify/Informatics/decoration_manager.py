@@ -145,8 +145,8 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         dec = decb
         if args.debug:
             dec.writexyz('dec_aligned' + str(i) + '.xyz')
-        print('natoms before delete ' + str(merged_ligand.natoms))
-        print('obmol before delete at  ' + str(decoration_index[i]) + ' is '  + str(merged_ligand.OBMol.NumAtoms()))
+            print('natoms before delete ' + str(merged_ligand.natoms))
+            print('obmol before delete at  ' + str(decoration_index[i]) + ' is '  + str(merged_ligand.OBMol.NumAtoms()))
         ## store connectivity for deleted H
         BO_mat = merged_ligand.populateBOMatrix()
         row_deleted = BO_mat[decoration_index[i]]
@@ -182,8 +182,8 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     merged_ligand.convert2OBMol()
     merged_ligand,emsg = molSimplify.Scripts.structgen.ffopt('MMFF94',merged_ligand,[],0,[],False,[],100)
     BO_mat = merged_ligand.populateBOMatrix()
-    print(BO_mat)    
     if args.debug:
         merged_ligand.writexyz('merged_relaxed.xyz')
+        print(BO_mat)    
     return(merged_ligand)
     
