@@ -1949,7 +1949,7 @@ class mol3D:
             catoms_arr = self.catoms
         for ind in catoms_arr:
             flag, ang = self.get_linear_angle(ind)
-            dict_angle_linear[str(ind)] = [flag, ang]
+            dict_angle_linear[str(ind)] = [flag, float(ang)]
         dict_orientation = {}
         devi_linear_avrg, devi_linear_max = 0, 0
         count = 0
