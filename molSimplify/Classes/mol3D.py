@@ -585,6 +585,7 @@ class mol3D:
         if atomN in conatoms:
             conatoms.remove(atomN)  # check for atomN and remove
         subm += conatoms  # add to submolecule
+        # print('conatoms', conatoms)
         while len(conatoms) > 0:  # while list of atoms to check loop
             for atidx in subm:  # loop over initial connected atoms
                 if atidx != atomN:  # check for separation atom
@@ -694,6 +695,8 @@ class mol3D:
             if atom.symbol() == "H" and ratom.ismetal:
                 ## tight cutoff for metal-H bonds
                 distance_max = 1.1 * (atom.rad + ratom.rad)
+            if atom.symbol() == "I" or ratom.symbol() == "I":
+                 distance_max = 1.05 * (atom.rad + ratom.rad)
             if (d < distance_max and i != ind):
                 nats.append(i)
         return nats
@@ -1712,7 +1715,7 @@ class mol3D:
             dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
             oct_dist.append(dist)
         oct_dist.sort()
-        print('oct_dist', oct_dist)
+        # print('oct_dist', oct_dist)
         if len(oct_dist) == 6:  ### For Oct
             dist_del_arr = np.array([oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
             min_posi = np.argmin(dist_del_arr)

@@ -93,6 +93,8 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
         # print('conection number ' + str(atom) + " of " + str(bondedatoms))
         fragment = mol.findsubMol(atom, metal_index)
         this_cons = [x for x in fragment if (x in bondedatoms)]
+        # print('fragment',fragment)
+        # print('this_cons',this_cons)
         unique = True
         for i, unique_ligands in enumerate(liglist):
             if fragment == unique_ligands:
