@@ -400,7 +400,7 @@ def rungen(rundir,args,chspfname,globs):
             lig = ''
             ligocc = ''
     ##### fetch smart name
-        fname = name_complex(rundir,args.core,ligands,ligocc,mcount,args,nconf=False,sanity=False,bind=args.bind,bsmi=args.nambsmi)
+        fname = name_complex(rundir,args.core,args.geometry,ligands,ligocc,mcount,args,nconf=False,sanity=False,bind=args.bind,bsmi=args.nambsmi)
         if args.tsgen:
             substrate = args.substrate
             subcatoms = ['multiple']

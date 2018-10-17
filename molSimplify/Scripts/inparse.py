@@ -237,8 +237,9 @@ def checkinput(args,calctype="base"):
                         for j in range(0,oc_i):
                             occs0[i] += 1
                             toccs += dent_i
-                    if args.core[0].lower() in args.mlig and ('x' not in args.lig):
-                        for i,substrate in enumerate(args.substrate):
+                    
+                    for i,substrate in enumerate(args.substrate):
+                        if args.core[0].lower() not in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
                             if 'pi' in subcatoms:
                                 suboc_i = 1
                             else:
@@ -904,20 +905,6 @@ def parseinputfile(args):
                 args.expose_type = l[1]
             if (l[0]=='-shave_extra_layers'):#9
                 args.shave_extra_layers = int(l[1])
-            # # parse TS generation arguments
-            # if (l[0]=='-tsgen'):
-            #     args.tsgen = True
-            # if (l[0]=='-substrate'):
-            #     args.substrate = l[1:]
-            # if (l[0]=='-compreact'):
-            #     args.compreact = l[1:]
-            # if (l[0]=='-substreact'):
-            #     args.substreact = l[1:]
-            # if (l[0]=='-drawmode'):
-            #     args.drawmode = True 
-            # if (l[0]=='-substplaceff'):
-            #     args.substplaceff = True
-            # parse TS generation 2 arguments
             if (l[0]=='-tsgen'):
                 args.tsgen = True
             if (l[0]=='-substrate'):

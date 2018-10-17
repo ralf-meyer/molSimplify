@@ -7,15 +7,15 @@ propane:propane.xyz,c3h8,2,inter,N,0
 propane:propane.xyz,c3h8,9,inter,N,0 # BDH = 98.6(0.4)
 tert-butane:tert-butane.xyz,tbuH,13,inter,N,0 # BDH = 96.5(0.4)
 # alkenes
-ethylene:ethylene.xyz,c2h4,0 1 pi,inter,N,0
+ethylene:ethylene.xyz,c2h4,0 1 pi,pi,N,0
 ethylene:ethylene.xyz,c2h4,2,inter,N,0 # vinyl C-H
-ethene:ethylene.xyz,c2h4,0 1 pi,inter,N,0 # the alternative name for ethylene
+ethene:ethylene.xyz,c2h4,0 1 pi,pi,N,0 # the alternative name for ethylene
 ethene:ethylene.xyz,c2h4,2,inter,N,0 # the alternative name for ethylene, vinyl C-H
-propylene:propylene.xyz,c3h6,1 2 pi,inter,N,0
+propylene:propylene.xyz,c3h6,1 2 pi,pi,N,0
 propylene:propylene.xyz,c3h6,7,inter,N,0 # allylic C-H
-propene:propylene.xyz,c3h6,1 2 pi,inter,N,0 # the alternative name for propylene
+propene:propylene.xyz,c3h6,1 2 pi,pi,N,0 # the alternative name for propylene
 propene:propylene.xyz,c3h6,7,inter,N,0 # the alternative name for propylene
-cyclohexene:cyclohexene.xyz,c6h10,2 3 pi,inter,N,0
+cyclohexene:cyclohexene.xyz,c6h10,2 3 pi,pi,N,0
 cyclohexene:cyclohexene.xyz,c6h10,8,inter,N,0
 cyclohexene:cyclohexene.xyz,c6h10,9,inter,N,0
 # alkynes
@@ -24,7 +24,7 @@ propyne:propyene.xyz,ch3cch,4,inter,N,0 # BDE=86.3(1.5)
 # aryls
 phenyl:benzene.mol,c6h5,4,re,N,-1
 benzene:benzene.xyz,c6h6,6,inter,B,0 # aryl C-H BDH=112.9(0.5)
-benzene:benzene.xyz,c6h6,0 1 pi,inter,B,0
+benzene:benzene.xyz,c6h6,0 1 pi,pi,B,0
 bromobenzene:bromobenzene.xyz,phbr,0 11 pi,oa,B,0
 iodobenzene:iodobenzene.xyz,phi,0 11 pi,oa,N,0
 toluene:toluene.xyz,c6h5ch3,12,inter,B,0 # benzylic C-H
@@ -53,7 +53,8 @@ methylazide:methylazide.xyz,ch3n3,3,click,N,0
 # triazoles
 triazole:1-4-dimethyl-1-2-3-triazole.xyz,1-4-dimethyl-1-2-3-triazole,0 4,oa,N,-1
 # amides/amidates
-n-quinolinylbutyramidate:N-quinolinylbutyramidate.xyz,N-quinolinylbutyramidate,25 20,intra intra2,N,-1
+n-quinolinylbutyramidate:N-quinolinylbutyramidate.xyz,N-quinolinylbutyramidate,26,cdm,N,-1
+n-quinolinylbutyramidate:N-quinolinylbutyramidate.xyz,N-quinolinylbutyramidate,27,cdm,N,-1
 # natural products
 estrogen:estrogen.xyz,estrogen,33,inter,N,0
 # inorganic
