@@ -334,7 +334,7 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     return excitation
 
 
-def ANN_supervisor(predictor, descriptors, descriptor_names,debug=True):
+def ANN_supervisor(predictor, descriptors, descriptor_names,debug=False):
     print('ANN activated for ' + str(predictor))
 
     ## form the excitation in the corrrect order/variables

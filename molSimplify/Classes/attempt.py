@@ -1097,6 +1097,8 @@ import numpy as np
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn import tree
 from sklearn.feature_selection import SelectFromModel
+import pandas as pd
+import graphviz
 # X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
 # Y = np.array([1, 1, 2, 2])
 # Data
@@ -1105,35 +1107,43 @@ x = []
 y = []
 z = []
 fin2 = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/bond length project/all_oct_1TM_features_with_label.txt'
-f2 = open(fin2,'r')
-for i,line in enumerate(f2.readlines()):
-    line_ = line.rstrip('\r\n')
-    line_ls = line_.split(',')
-    if i == 0:
-        header = line_ls[2:feature_depth]
-    if i > 0:
-        atno = int(line_ls[2])
-        if atno > 21:
-            x.append([float(i) for i in line_ls[2:feature_depth]])
-            if str(line_ls[1]) == 'hs':
-                y.append(int(1))
-            else:
-                y.append(int(0))
-            z.append(line_ls[0])
+data_ = pd.read_csv(fin2)
+data_ = data_.iloc[:,0:9]
+data_ = pd.get_dummies(data_,columns=['mato','fatno_1','fatno_2','fatno_3','fatno_4','fatno_5','fatno_6'])
+#,'fval_1','fval_2','fval_3','fval_4','fval_5','fval_6'])
+headers = data_.columns[2:].values
+labels = data_['ss'].values
+data = data_.iloc[:,2:].values
+
+# f2 = open(fin2,'r')
+# for i,line in enumerate(f2.readlines()):
+#     line_ = line.rstrip('\r\n')
+#     line_ls = line_.split(',')
+#     if i == 0:
+#         header = line_ls[2:feature_depth]
+#     if i > 0:
+#         atno = int(line_ls[2])
+#         if atno > 21:
+#             x.append([float(i) for i in line_ls[2:feature_depth]])
+#             if str(line_ls[1]) == 'hs':
+#                 y.append(int(1))
+#             else:
+#                 y.append(int(0))
+#             z.append(line_ls[0])
 
 # data = normalize(np.asarray(x).T).T
-data = np.asarray(x)
-labels = np.asarray(y)
-data.shape
+# data = np.asarray(x)
+# labels = np.asarray(y)
+# data.shape
 
-clf = ExtraTreesClassifier(n_estimators=50)
-clf = clf.fit(data,labels)
-clf.feature_importances_
-model = SelectFromModel(clf,prefit=True)
-data_new = model.transform(data)
+# clf = ExtraTreesClassifier(n_estimators=50)
+# clf = clf.fit(data,labels)
+# clf.feature_importances_
+# model = SelectFromModel(clf,prefit=True)
+# data_new = model.transform(data)
 # data_new.shape
 
-clf = tree.DecisionTreeClassifier(criterion='entropy',max_depth=5,min_samples_split=0.2)
+clf = tree.DecisionTreeClassifier(criterion='entropy',max_depth=5)
 clf.fit(data, labels)
 # Graph
 dot_data = tree.export_graphviz(clf, out_file=None)
