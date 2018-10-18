@@ -1,5 +1,7 @@
 Bad structure?, False
 Min_dist (A), 1000
 Was ANN used?, False
-ANN reason, ox state not avail for metal
+ANN reason, found incorrect ligand symmetry
+Was Catalytic ANN used?, False
+Catalytic ANN reason, False
 ML-bl (database, A), 1.54

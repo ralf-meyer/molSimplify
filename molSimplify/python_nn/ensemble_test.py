@@ -8,7 +8,6 @@ import glob
 import numpy as np
 import scipy as sp
 import math
-from clf_analysis_tool import plot_scatter, plot_dist_err, plot_metrics_correlation, dist_neighbor, get_entropy
 
 
 def reset_weights(model):
