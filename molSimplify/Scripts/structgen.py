@@ -2369,7 +2369,10 @@ def mcomplex(args,ligs,ligoc,licores,globs):
     ligsused = 0 # total number of ligands used
     loopcount = 0 # this counts the site occupations (I think?)
     subcatoms_ext = []
-    mligcatoms_ext = [0 for i in range(len(args.mligcatoms))]
+    mligcatoms_ext = []
+    if args.mligcatoms:
+        for i in range(len(args.mligcatoms)):
+            mligcatoms_ext.append(0)
     initatoms = core3D.natoms # initial number of atoms in core3D
     if args.tsgen and (args.core.lower() in args.mlig):
         mligcatoms_ext[args.mlig.index(args.core.lower())] = 0
