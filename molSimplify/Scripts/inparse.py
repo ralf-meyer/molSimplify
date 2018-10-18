@@ -89,7 +89,7 @@ def checkinput(args,calctype="base"):
                                 else:
                                     dent_i = int(len(licores[ligname][2]))
                         # get occurrence for each ligand if specified (default 1)
-                        if ligloc:
+                        if ligoc:
                             oc_i = int(ligoc[i]) if i < len(ligoc) else 1
                         else:
                             oc_i = 1
