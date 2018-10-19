@@ -1,7 +1,18 @@
 Bad structure?, False
 Min_dist (A), 1000
-Was ANN used?, False
-ANN reason, uncaught exception
+Was ANN used?, True
+gap_trust, high
+split_trust, medium
+This spin, 1
+homo_trust, high
+gap_dist, 0.7637347
+ANN_bondl, [2.008276685068755, 2.008276685068755, 2.008276685068755, 2.008276685068755, 2.011768045992645, 2.002466991855221]
+split_dist, 0.9601678412525619
+homo, -15.103058037984185
+split, 7.949419034999048
+ANN_ground_state, 1
+gap, 5.489600395097655
+homo_dist, 0.6096306
 Was Catalytic ANN used?, False
 Catalytic ANN reason, False
 ML-bl (database, A), 2.1
