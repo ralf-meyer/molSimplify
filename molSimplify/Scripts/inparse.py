@@ -812,15 +812,17 @@ def parseinputfile(args):
             if (l[0]=='-dbhuman'):
                 args.dbsearch = True
                 args.dbhuman = True
-            if (l[0]=='-dbdent'):
+            if (l[0]=='-dbvdent'):
                 args.dbvdent = l[1]
-            if (l[0]=='-dbconns'):
-                ll = filter(None,re.split(' |,|\t',l[1]))
+            if (l[0]=='-dbvconns'):
+                ll= [x for x in l[1:]]
+                #ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvconns = ll
-            if (l[0]=='-dbhyb'):
-                ll = filter(None,re.split(' |,|\t',l[1]))
+            if (l[0]=='-dbvhyb'):
+                ll= [x for x in l[1:]]
+                #ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvhyb = ll
-            if (l[0]=='-dblinks'):
+            if (l[0]=='-dbvlinks'):
                 args.dbvlinks = l[1]
             if (l[0]=='-dbfs'):
                 args.dbfs = True
