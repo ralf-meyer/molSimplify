@@ -14,6 +14,7 @@ import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
+
 # from molSimplify.Scripts.structgen import ffopt
 
 # from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_st, dict_oneempty_check_st, \
@@ -181,8 +182,8 @@ class mol3D:
         OBMol = self.OBMol
         ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
-        constr.AddDistanceConstraint(idx1+1,idx2+1,d)
-        s = ff.Setup(OBMol,constr)
+        constr.AddDistanceConstraint(idx1 + 1, idx2 + 1, d)
+        s = ff.Setup(OBMol, constr)
         if s is not True:
             print('forcefield setup failed.')
             exit()
@@ -700,8 +701,11 @@ class mol3D:
             if atom.symbol() == "H" and ratom.ismetal:
                 ## tight cutoff for metal-H bonds
                 distance_max = 1.1 * (atom.rad + ratom.rad)
+            if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
+                distance_max = 1.05 * (atom.rad + ratom.rad)
+                # print(distance_max)
             if atom.symbol() == "I" or ratom.symbol() == "I":
-                 distance_max = 1.05 * (atom.rad + ratom.rad)
+                distance_max = 0
             if (d < distance_max and i != ind):
                 nats.append(i)
         return nats
@@ -1275,10 +1279,10 @@ class mol3D:
         self.createMolecularGraph()
         molgraph = self.graph
         error_mat = molBOMat - molgraph
-        error_idx = np.where( error_mat < 0 )
+        error_idx = np.where(error_mat < 0)
         for i in range(len(error_idx)):
             if len(error_idx[i]) > 0:
-                molBOMat[error_idx[i].tolist()[0],error_idx[i].tolist()[1]] = 1
+                molBOMat[error_idx[i].tolist()[0], error_idx[i].tolist()[1]] = 1
         return (molBOMat)
 
     ## Prints xyz coordinates to stdout
@@ -1290,16 +1294,18 @@ class mol3D:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
             print ss
-    ## returns string of xyz coordinates 
+
+    ## returns string of xyz coordinates
     # 
     #  To write to file (more common), use writexyz() instead.
     #  @param self The object pointer
     def returnxyz(self):
-        ss=''
+        ss = ''
         for atom in self.atoms:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-        return(ss)
+        return (ss)
+
     ## Load molecule from xyz file
     # 
     #  Consider using getOBMol, which is more general, instead.
@@ -1453,7 +1459,7 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calccharges(self,charge=0,method='QEq'):
+    def calccharges(self, charge=0, method='QEq'):
         self.convert2OBMol()
         self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)

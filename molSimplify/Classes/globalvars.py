@@ -38,31 +38,60 @@ amassdict = {'X': (1.0, 0, 0.77), 'H': (1.0079, 1, 0.37), 'He': (4.002602, 2, 0.
              'Os': (190.2, 76, 1.28), 'Ir': (192.2, 77, 1.37), 'Pt': (195.1, 78, 1.23), 'Au': (197.0, 79, 1.24),
              'Hg': (200.6, 80, 1.49),
              'Tl': (204.38, 81, 1.44), 'Pb': (207.2, 82, 1.44), 'Bi': (208.9804, 83, 1.51),
-             'Ac': (277, 89, 1.86), 'Th': (232.0377, 90, 1.75), 'U': (238.02891, 92, 1.70)}
+             'Ra': (226.03, 88, 2.01), 'Ac': (277, 89, 1.86), 'Th': (232.0377, 90, 1.75), 'U': (238.02891, 92, 1.70)}
 
 ## van der Waals radii for commmon elements
 # Data from http://www.webelements.com/ (last accessed May 13th 2015)
 vdwrad = {'H': 1.2, 'C': 1.7, 'N': 1.55, 'O': 1.52, 'F': 1.47, 'P': 1.8, 'S': 1.8, 'Cl': 1.75, 'Br': 1.85, 'I': 1.98}
 
-## Metals
-metalslist = ['Sc', 'SC', 'scandium', 'Ti', 'TI', 'titanium', 'V', 'vanadium', 'Cr', 'CR', 'chromium', 'Mn', 'MN',
-              'manganese', 'Fe', 'FE', 'iron', 'Co', 'CO',
-              'cobalt', 'Ni', 'NI', 'nickel', 'Cu', 'CU', 'copper', 'Zn', 'ZN', 'zinc', 'Y', 'yttrium', 'Zr', 'ZR',
-              'zirconium', 'Nb', 'NB', 'niobium', 'Mo', 'MO',
-              'molybdenum', 'Tc', 'TC', 'technetium', 'Ru', 'RU', 'ruthenium', 'Rh', 'RH', 'rhodium', 'Pd', 'PD',
-              'palladium', 'Ag', 'AG', 'silver', 'Cd', 'CD',
-              'cadmium', 'La', 'LA', 'lanthanum', 'Hf', 'HF', 'hafnium', 'Ta', 'TA', 'tantalum', 'W', 'tungsten', 'Re',
-              'RE', 'rhenium', 'Os', 'OS', 'osmium',
-              'Ir', 'IR', 'iridium', 'Pt', 'PT', 'platinum', 'Au', 'AU', 'gold', 'Hg', 'HG', 'mercury']
+## Metals (includes alkali, alkaline earth, and transition metals)
+metalslist = ['Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
+              'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
+              'Al', 'al', 'AL', 'aluminum', 'aluminium',
+              'K', 'k', 'potassium', 'Ca', 'ca', 'CA', 'calcium',
+              'Rb', 'rb', 'RB', 'rubidium', 'Sr', 'sr', 'SR', 'strontium',
+              'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
+              'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium', 
+              'Sc', 'sc', 'SC', 'scandium', 'Ti', 'ti', 'TI', 'titanium', 
+              'V', 'v', 'vanadium', 'Cr', 'cr', 'CR', 'chromium', 
+              'Mn', 'mn', 'MN','manganese', 'Fe', 'fe', 'FE', 'iron', 
+              'Co', 'co', 'CO', 'cobalt', 'Ni', 'ni', 'NI', 'nickel', 
+              'Cu', 'cu', 'CU', 'copper', 'Zn', 'zn', 'ZN', 'zinc', 
+              'Ga', 'ga', 'GA', 'gallium',
+              'Y', 'y', 'yttrium', 'Zr', 'zr', 'ZR', 'zirconium', 
+              'Nb', 'nb', 'NB', 'niobium', 'Mo', 'mo', 'MO', 'molybdenum', 
+              'Tc', 'tc', 'TC', 'technetium', 'Ru', 'ru', 'RU', 'ruthenium', 
+              'Rh', 'rh', 'RH', 'rhodium', 'Pd', 'pd', 'PD', 'palladium', 
+              'Ag', 'ag', 'AG', 'silver', 'Cd', 'cd', 'CD', 'cadmium', 
+              'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
+              'Hf', 'hf', 'HF', 'hafnium', 'Ta', 'ta', 'TA', 'tantalum', 
+              'W', 'w', 'tungsten', 'Re','re', 'RE', 'rhenium', 
+              'Os', 'os', 'OS', 'osmium', 'Ir', 'ir', 'IR', 'iridium', 
+              'Pt', 'pt', 'PT', 'platinum', 'Au', 'au', 'AU', 'gold', 
+              'Hg', 'hg', 'HG', 'mercury', 
+              'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead', 
+              'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium',
+              'La', 'la', 'LA', 'lanthanum',
+              'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
+              'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
+              'Sm', 'sm', 'SM', 'samarium', 'Eu', 'eu', 'EU', 'europium',
+              'Gd', 'gd', 'GD', 'gadolinium','Tb', 'tb', 'TB', 'terbium',
+              'Dy', 'dy', 'DY', 'dysprosium', 'Ho', 'ho', 'HO', 'holmium',
+              'Er', 'er', 'ER', 'erbium', 'Tm', 'tm', 'TM', 'thulium',
+              'Yb', 'yb', 'YB', 'ytterbium', 'Lu', 'lu', 'LU', 'lutetium',
+              'Ac', 'ac', 'AC', 'actinium','Th', 'th', 'TH', 'thorium',
+              'Pa', 'pa', 'PA', 'proactinium', 'U', 'u', 'uranium',
+              'Np', 'np', 'NP', 'neptunium', 'Pu', 'pu','PU', 'plutonium',
+              'Am', 'am', 'AM', 'americium', 'Cu', 'cu', 'CU', 'curium',
+              'Bk', 'bk', 'BK', 'berkelium', 'Cf', 'cf', 'CF', 'californium',
+              'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
+              'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
+              'Lr', 'lr', 'LR', 'lawrencium']
 
-metals_conv = {'scandium':'Sc', 'titanium':'Ti', 'vanadium':'V',  'chromium':'Cr', 
-              'manganese':'Mn',  'iron':'Fe',
-              'cobalt': 'Co',  'nickel':'Ni',  'copper':'Cu',  'zinc':'Zn',
-              'yttrium': 'Y', 'zirconium':'Zr', 
-               'niobium': 'Nb', 'molybdenum':'Mo',
-               'technetium':'Tc', 'ruthenium':'Ru',
-               'rhodium': 'Rh', 'palladium':'Pd',
-               'silver':'Ag',  'cadmium':'Cd',
+metals_conv = {'scandium':'Sc', 'titanium':'Ti', 'vanadium':'V', 'chromium':'Cr', 'manganese':'Mn',
+               'iron':'Fe', 'cobalt': 'Co',  'nickel':'Ni',  'copper':'Cu',  'zinc':'Zn',
+               'yttrium': 'Y', 'zirconium':'Zr', 'niobium': 'Nb', 'molybdenum':'Mo', 'technetium':'Tc', 
+               'ruthenium':'Ru','rhodium': 'Rh', 'palladium':'Pd', 'silver':'Ag',  'cadmium':'Cd',
                'lanthanum':'La',  'hafnium':'Hf',
                'tantalum':'Ta', 'tungsten':'W', 
                'rhenium':'Re', 'osmium':'Os',
@@ -71,36 +100,41 @@ metals_conv = {'scandium':'Sc', 'titanium':'Ti', 'vanadium':'V',  'chromium':'Cr
               
               
 ## d-electron counts of transition metals
-mtlsdlist = {'sc': 1, 'ti': 2, 'v': 3, 'cr': 4, 'mn': 5, 'fe': 6, 'ni': 7, 'co': 8, 'cu': 9, 'zn': 10, 'y': 1, 'zr': 2,
-             'nb': 3,
-             'mo': 4, 'tc': 5, 'ru': 6, 'rh': 7, 'pd': 8, 'ag': 9, 'cd': 10, 'hf': 1, 'ta': 2, 'w': 3, 're': 4, 'os': 5,
-             'ir': 6,
-             'pt': 8, 'au': 9, 'hg': 10}
+mtlsdlist = {'sc': 1, 'ti': 2, 'v': 3, 'cr': 4, 'mn': 5, 'fe': 6, 'ni': 7, 'co': 8, 'cu': 9, 'zn': 10, 
+             'y': 1, 'zr': 2, 'nb': 3, 'mo': 4, 'tc': 5, 'ru': 6, 'rh': 7, 'pd': 8, 'ag': 9, 'cd': 10, 
+                     'hf': 2, 'ta': 3, 'w': 4, 're': 5, 'os': 6, 'ir': 7, 'pt': 8, 'au': 9, 'hg': 10}
 
 ## Default spins for each d-electron count (make this metal/oxidation state specific)
 defaultspins = {0: '1', 1: '2', 2: '3', 3: '4', 4: '5', 5: '6', 6: '5', 7: '4', 8: '3', 9: '2', 10: '1'}
 
 ## Elements sorted by atomic number
-elementsbynum = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar',
+elementsbynum = ['H', 'He', 
+                 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 
+                 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar',
                  'K', 'Ca',
                  'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr',
-                 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I',
-                 'Xe',
+                 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe',
                  'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu',
-                 'Hf',
-                 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac',
-                 'Th',
-                 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh',
-                 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'Uut', 'Fl', 'Uup', 'Lv', 'Uus', 'Uuo']
+                 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 
+                 'Fr', 'Ra', 'Ac','Th','Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 
+                 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'Uut', 'Fl', 'Uup', 'Lv', 'Uus', 'Uuo']
 
 ## Electronegativity (Pauling) by atom symbol
-endict = {"H": 2.20, "Li": 0.98, "Be": 1.57, "B": 2.04, "C": 2.55, "N": 3.04, "O": 3.44,
-          "F": 3.98, "Na": 0.93, "Mg": 1.31, "Al": 1.61, "Si": 1.90, "P": 2.19, "S": 2.58,
-          "Cl": 3.16, "K": 0.82, "Ca": 1.00, "Sc": 1.36, "Ti": 1.54, "V": 1.63, "Cr": 1.66,
-          "Mn": 1.55, "Fe": 1.83, "Co": 1.88, "Ni": 1.91, "Cu": 1.90, "Zn": 1.65, "Ga": 1.81,
-          "Ge": 2.01, "As": 2.18, "Se": 2.55, "Br": 2.96, "Mo": 2.16, "Tc": 2.10, "Rh": 2.28,
-          "Pd": 2.20, "Ag": 1.93, "Cd": 1.69, "In": 1.78, "Sb": 2.05, "I": 2.66, "Cs": 0.79,
-          "Y": 1.22, "Zr": 1.33, "Nb": 1.60, "Ru": 2.20, "La": 1.10, "Hf": 1.30, "Ta": 1.50, "W": 2.36, "Re": 1.90}
+endict = {"H": 2.20, 
+          "Li": 0.98, "Be": 1.57, "B": 2.04, "C": 2.55, "N": 3.04, "O": 3.44, "F": 3.98, 
+          "Na": 0.93, "Mg": 1.31, "Al": 1.61, "Si": 1.90, "P": 2.19, "S": 2.58, "Cl": 3.16, 
+          "K": 0.82, "Ca": 1.00, "Sc": 1.36, "Ti": 1.54, "V": 1.63, "Cr": 1.66,
+          "Mn": 1.55, "Fe": 1.83, "Co": 1.88, "Ni": 1.91, "Cu": 1.90, "Zn": 1.65, "Ga": 1.81, 
+          "Ge": 2.01, "As": 2.18, "Se": 2.55, "Br": 2.96, "Rb": 0.82, "Sr": 0.95, "Y": 1.22,
+          "Zr": 1.33, "Nb": 1.60, "Mo": 2.16, "Tc": 2.10, "Ru": 2.20, "Rh": 2.28,
+          "Pd": 2.20, "Ag": 1.93, "Cd": 1.69, "In": 1.78, "Sn": 1.96, "Sb": 2.05, "I": 2.66, 
+          "Cs": 0.79, "Ba": 0.89, "Hf": 1.30, "Ta": 1.50, "W": 2.36, "Re": 1.90, "Ir": 2.20,
+          "Pt": 2.28, "Au": 2.54, "Hg": 2.00, "Tl": 1.62, "Pb": 2.33, "Bi": 2.02,
+          "La": 1.10, "Ce": 1.12, "Pr": 1.13, "Nd": 1.14, "Sm": 1.17,
+          "Gd": 1.20, "Dy": 1.22, "Ho": 1.23, "Er": 1.24, "Tm": 1.25, "Lu": 1.27,
+          "Fr": 0.7, "Ra": 0.9, "Ac": 1.1, "Th": 1.3, "Pa": 1.5, "U": 1.38, "Np": 1.36, "Pu": 1.28,
+          "Am": 1.3, "Cm": 1.3, "Bk": 1.3, "Cf": 1.3, "Es": 1.3, "Fm": 1.3, "Md": 1.3, "No": 1.3 }
+          
 
 ## Roman numerals
 romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5', 'VI': '6', 'VII': '7', 'VIII': '8'}

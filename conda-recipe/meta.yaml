@@ -22,6 +22,7 @@ requirements:
     - setuptools
     - openbabel
     - numpy
+    - python 
     - scikit-learn
     - scipy
     

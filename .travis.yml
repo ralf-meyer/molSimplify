@@ -26,6 +26,8 @@ install:
   - conda config --add channels hjkgroup
   - conda build --python $TRAVIS_PYTHON_VERSION conda-recipe
   - conda install keras
+  - conda install pandas
+  - conda install -c hjkgroup openbabel
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
   - conda install pytest
@@ -34,4 +36,6 @@ script:
   # Your test script goes here
   - python setup.py test
   - molsimplify -h
-  
+
+notifications:
+          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO  

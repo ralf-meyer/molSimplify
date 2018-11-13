@@ -204,7 +204,7 @@ def load_test_data(predictor):
     else:
         key = predictor + '/' + predictor + '_x_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
-    with open(path_to_file, "rU") as f:
+    with open(path_to_file, "r") as f:
         csv_lines = list(csv.reader(f))
         # row_names = [row[0] for row in csv_lines]
         mat = [row for row in csv_lines[1:]]
@@ -330,11 +330,12 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
             valid = False
             break
     excitation = np.array(excitation)
+    # print('SHAPE IN EXCITATION PREPARE', excitation.shape)
     excitation = np.reshape(excitation, (1, len(target_names)))
     return excitation
 
 
-def ANN_supervisor(predictor, descriptors, descriptor_names,debug=True):
+def ANN_supervisor(predictor, descriptors, descriptor_names,debug=False):
     print('ANN activated for ' + str(predictor))
 
     ## form the excitation in the corrrect order/variables

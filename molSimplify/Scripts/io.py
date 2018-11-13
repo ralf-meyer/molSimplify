@@ -476,7 +476,7 @@ def substr_load(usersubstrate,sub_i,subcatoms,subcores=None):
         if isinstance(var_list_sub_i[2], (str, unicode)):
            sub.denticity = 1
         else:
-           sub.denticity = len(var_list_sub_i[2])
+           sub.denticity = len(var_list_sub_i[2])/len(var_list_sub_i[3])
         # Parsing substrate identity
         sub.ident = var_list_sub_i[1]
         # Parsing substrate charge
@@ -487,14 +487,11 @@ def substr_load(usersubstrate,sub_i,subcatoms,subcores=None):
             sub.cat = [int(l) for l in var_list_sub_i[2][:-1]]
             sub.cat.append('pi')
         else:
-            if sub.denticity == 1:
-                sub.cat = [int(var_list_sub_i[2])]
-            else:
-                sub.cat = [int(l) for l in var_list_sub_i[2]]
+            sub.cat = [int(l) for l in var_list_sub_i[2]]
         if not subcatoms:
             subcatoms = sub.cat
         # Parsing substrate group
-        sub.grps = var_list_sub_i[3]
+        sub.grps = [l for l in var_list_sub_i[3]]
         if len(var_list_sub_i[4]) > 0:
             sub.ffopt = var_list_sub_i[4]
     ### load from file
@@ -865,7 +862,7 @@ def plugin_defs():
 #  @param bind Flag for binding species (default False)
 #  @param bsmi Flag for SMILES binding species (default False)
 #  @return Complex name
-def name_complex(rootdir,core,ligs,ligoc,sernum,args,nconf=False,sanity=False,bind= False,bsmi=False):
+def name_complex(rootdir,core,geometry,ligs,ligoc,sernum,args,nconf=False,sanity=False,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
     if args.name: # if set externerally
@@ -888,6 +885,7 @@ def name_complex(rootdir,core,ligs,ligoc,sernum,args,nconf=False,sanity=False,bi
                 ox = str(args.oxstate)
         else:
             ox = "0"
+        name += "_" + str(geometry)
         name += "_" + str(ox)
         if args.spin:
             spin = str(args.spin)

@@ -1,10 +1,18 @@
 Bad structure?, False
 Min_dist (A), 1000
 Was ANN used?, True
-ANN_bondl, [2.0039539976980443, 2.0039539976980443, 2.0039539976980443, 2.0039539976980443, 2.0323831140008268, 2.0134948567952957]
-ANN_dist_to_train, 5.04892893415
-pred_split_ HS_LS, 7.19549102778
-ANN_ground_state, 2
-ANN_trust, very low
+gap_trust, high
+split_trust, medium
 This spin, 2
+homo_trust, high
+gap_dist, 0.32417762
+ANN_bondl, [2.0039539722366224, 2.0039539722366224, 2.0039539722366224, 2.0039539722366224, 2.0323831238149084, 2.0134948854356005]
+split_dist, 1.38100027103657
+homo, -16.108805172272547
+split, 7.19548952105076
+ANN_ground_state, 2
+gap, 3.8926499110455914
+homo_dist, 0.5508994
+Was Catalytic ANN used?, False
+Catalytic ANN reason, False
 ML-bl (database, A), 2.1

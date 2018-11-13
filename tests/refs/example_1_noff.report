@@ -1,5 +1,18 @@
 Bad structure?, False
 Min_dist (A), 1000
-Was ANN used?, False
-ANN reason, found incorrect ligand symmetry
+Was ANN used?, True
+gap_trust, high
+split_trust, very low
+This spin, 1
+homo_trust, high
+gap_dist, 2.1653712
+ANN_bondl, [2.0697388775063694, 2.0697388775063694, 2.0697388775063694, 2.0697388775063694, 2.1248459376682574, 2.2875841474517533]
+split_dist, 3.098922968885062
+homo, -13.014234478586683
+split, -1.458384524487456
+ANN_ground_state, dgen [2, 4]
+gap, 6.1519986359902905
+homo_dist, 2.390155
+Was Catalytic ANN used?, False
+Catalytic ANN reason, False
 ML-bl (database, A), 2.15

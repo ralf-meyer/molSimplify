@@ -503,8 +503,10 @@ def dbsearch(rundir, args, globs):
             smistr = '[#' + str(amassdict[coordatoms[0]][1]) + '^' + hyb[0] + ';!+]'
             for i in range(int(nlinks)):
                 smistr = smistr + '[#6;R0]'
+            print(coordatoms, hyb)
             smistr = smistr + '[#' + str(amassdict[coordatoms[1]][1]) + '^' + hyb[1] + ';!+]'
         print('setting smistr from dbhuman ' + smistr)
+
     # else:
     ## get database
     # [dbsdf,dbfs] = setupdb(args.dbbase)
