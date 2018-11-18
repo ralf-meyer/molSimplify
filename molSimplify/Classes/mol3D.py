@@ -599,7 +599,7 @@ class mol3D:
                             subm.append(newat)
                 if atidx in conatoms:
                     conatoms.remove(atidx)  # remove from list to check
-        subm.sort()
+        # subm.sort()
         return subm
 
     ## Gets an atom with specified index

@@ -239,7 +239,7 @@ def checkinput(args,calctype="base"):
                             toccs += dent_i
                     
                     for i,substrate in enumerate(args.substrate):
-                        if args.core[0].lower() not in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
+                        if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
                             if 'pi' in subcatoms:
                                 suboc_i = 1
                             else:
