@@ -705,6 +705,72 @@ class mol3D:
                 nats.append(i)
         return nats
 
+    ## Gets atoms bonded to a specific atom with a given threshold
+    #
+    #  This is determined based on user-specific distance cutoffs.
+    #  
+    #  This method is ideal for metals because bond orders are ill-defined.
+    #
+    #  For pure organics, the OBMol class provides better functionality.
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @param threshold multiplier for the sum of covalent radii cut-off
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsByThreshold(self, ind, threshold, debug=False):
+        ratom = self.getAtom(ind)
+        # calculates adjacent number of atoms
+        nats = []
+        for i, atom in enumerate(self.atoms):
+            d = distance(ratom.coords(), atom.coords())
+            distance_max = threshold * (atom.rad + ratom.rad)
+            if atom.symbol() == "C" and not ratom.symbol() == "H":
+                distance_max = min(2.75, distance_max)
+            if ratom.symbol() == "C" and not atom.symbol() == "H":
+                distance_max = min(2.75, distance_max)
+            if ratom.symbol() == "H" and atom.ismetal:
+                ## tight cutoff for metal-H bonds
+                distance_max = 1.1 * (atom.rad + ratom.rad)
+            if atom.symbol() == "H" and ratom.ismetal:
+                ## tight cutoff for metal-H bonds
+                distance_max = 1.1 * (atom.rad + ratom.rad)
+            if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
+                distance_max = 1.05 * (atom.rad + ratom.rad)
+                # print(distance_max)
+            if atom.symbol() == "I" or ratom.symbol() == "I":
+                distance_max = 0
+            if (d < distance_max and i != ind):
+                nats.append(i)
+        return nats
+
+    ## Gets a user-specified number of atoms bonded to a specific atom
+    #
+    #  This is determined based on adjusting the threshold until the number of atoms specified is reached.
+    #  
+    #  This method is ideal for metals because bond orders are ill-defined.
+    #
+    #  For pure organics, the OBMol class provides better functionality.
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @param CoordNo the number of atoms specified
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsByCoordNo(self, ind, CoordNo, debug=False):
+        ratom = self.getAtom(ind)
+        # calculates adjacent number of atoms
+        nats = []
+        thresholds = [1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8]
+        for i, threshold in enumerate(thresholds):
+            nats = self.getBondedAtomsByThreshold(ind,threshold)
+            if len(nats) == CoordNo:
+                break
+        if len(nats) != CoordNo:
+            print('Could not find the number of bonded atoms specified coordinated to the atom specified.')
+            print('Please either adjust the number of bonded atoms or the index of the center atom.')
+            print('A list of bonded atoms is still returned. Be cautious with the list')
+
+        return nats
+
+
+
     ## Gets atoms bonded to a specific atom specialized for octahedral complexes
     #
     #  More sophisticated version of getBondedAtoms(), written by JP.
