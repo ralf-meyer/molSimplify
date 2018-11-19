@@ -2114,12 +2114,18 @@ class mol3D:
     def IsOct(self, init_mol=None, dict_check=False,
               angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
-              flag_loose=True, flag_lbd=True, BondedOct=True
+              flag_loose=True, flag_lbd=True, BondedOct=True,
+              skip=False
               ):
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
             angle_ref = self.oct_angle_ref
+        if not skip:
+            skip = list()
+        else:
+            print("Warning: your are skipping following geometry checks:")
+            print(skip)
         self.get_num_coord_metal(debug=debug)
         ## Note that use this only when you wanna specify the metal connecting atoms.
         ## This will change the attributes of mol3D.
@@ -2131,16 +2137,19 @@ class mol3D:
             # if not rmsd_max == 'lig_mismatch':
             if True:
                 self.num_coord_metal = 6
-                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                              catoms_arr, debug=debug)
+                if not 'FCS' in skip:
+                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                  catoms_arr, debug=debug)
             if not init_mol == None:
-                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                        flag_loose=flag_loose,
-                                                        flag_lbd=flag_lbd,
-                                                        catoms_arr=catoms_arr,
-                                                        debug=debug,
-                                                        BondedOct=BondedOct)
-            dict_angle_linear, dict_orientation = self.check_angle_linear()
+                if not 'lig_distort' in skip:
+                    dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                            flag_loose=flag_loose,
+                                                            flag_lbd=flag_lbd,
+                                                            catoms_arr=catoms_arr,
+                                                            debug=debug,
+                                                            BondedOct=BondedOct)
+            if not 'lig_linear' in skip:
+                dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
@@ -2156,22 +2165,30 @@ class mol3D:
     ## Inputs and outputs are the same as IsOct.
     def IsStructure(self, init_mol=None, dict_check=False,
                     angle_ref=False, num_coord=5,
-                    flag_catoms=False, debug=False):
+                    flag_catoms=False, debug=False,
+                    skip=False):
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
         if not angle_ref:
             angle_ref = self.oneempty_angle_ref
+        if not skip:
+            skip = list()
+        else:
+            print("Warning: your are skipping following geometry checks:")
+            print(skip)
         self.get_num_coord_metal(debug=debug)
         self.geo_dict_initialization()
-
         if self.num_coord_metal >= num_coord:
             if True:
                 self.num_coord_metal = num_coord
-                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                              debug=debug)
+                if not 'FCS' in skip:
+                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                  debug=debug)
             if not init_mol == None:
-                dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
-            dict_angle_linear, dict_orientation = self.check_angle_linear()
+                 if not 'lig_distort' in skip:
+                    dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
+            if not 'lig_linear' in skip:
+                dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
@@ -2195,7 +2212,7 @@ class mol3D:
             dict_check_loose = self.dict_oct_check_loose
 
         if catoms_arr == None:
-            print('Error, must have ctoms! If not, please use IsOct.')
+            print('Error, must have connecting atoms as inputs! If not, please use IsOct.')
             quit()
         elif len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
@@ -2215,7 +2232,7 @@ class mol3D:
         else:
             self.num_coord_metal = -1
             print('!!!!!Should always match. WRONG!!!!!')
-            quit()
+            # quit()
         dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
         if debug:
             self.print_geo_dict()
