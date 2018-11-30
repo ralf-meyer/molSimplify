@@ -1777,7 +1777,7 @@ class mol3D:
             th_input_arr.append([self.catoms[idx1], theta_tmp])
         ## This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
         ## When we have the customized catoms_arr, it will not change anything.
-        print("!!!!!", th_input_arr)
+        # print("!!!!!", th_input_arr)
         th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
         self.catoms = catoms_arr
         if debug:

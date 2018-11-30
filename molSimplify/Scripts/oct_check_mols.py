@@ -91,7 +91,7 @@ def comp_two_angle_array(input_angle, target_angle):
 ##              the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle):
     del_arr = []
-    print(input_arr)
+    # print(input_arr)
     for ii, input_angle in enumerate(input_arr):
         out_angle, sum_del, max_del_angle = comp_two_angle_array(input_angle, target_angle)
         del_arr.append([sum_del, ii, max_del_angle, out_angle])
