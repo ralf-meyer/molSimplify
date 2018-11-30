@@ -32,11 +32,14 @@ class ligand:
         this_mol = mol3D()
         this_ext_int_dict = dict()
         j = 0
-        for i in range(0, self.master_mol.natoms):
-            if i in self.index_list:
-                this_mol.addAtom(self.master_mol.getAtom(i))
-                this_ext_int_dict.update({i: j})
-                j += 1  # keep count of how many are added
+        ## the old routine where all atoms in the master_mol are gone through from 0 to natoms-1 
+        # for i in range(0, self.master_mol.natoms):
+        #     if i in self.index_list:
+        ## the new rountine where the indices are taken out directly. This way the order of atoms is preserved
+        for i in self.index_list:
+            this_mol.addAtom(self.master_mol.getAtom(i))
+            this_ext_int_dict.update({i: j})
+            j += 1  # keep count of how many are added
         self.mol = this_mol
         self.ext_int_dict = this_ext_int_dict
 
@@ -97,7 +100,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
         # print('this_cons',this_cons)
         unique = True
         for i, unique_ligands in enumerate(liglist):
-            if fragment == unique_ligands:
+            if sorted(fragment) == sorted(unique_ligands):
                 unique = False
                 matched = i
         if unique:
