@@ -91,10 +91,12 @@ def comp_two_angle_array(input_angle, target_angle):
 ##              the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle):
     del_arr = []
+    print(input_arr)
     for ii, input_angle in enumerate(input_arr):
         out_angle, sum_del, max_del_angle = comp_two_angle_array(input_angle, target_angle)
         del_arr.append([sum_del, ii, max_del_angle, out_angle])
     del_arr.sort()
+    # print("del_arr", del_arr)
     posi = del_arr[0][1]
     del_angle = del_arr[0][0]
     output_angle = input_arr[posi][1]
@@ -393,10 +395,6 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
                 theta = vecangle(delr1, delr2)
                 theta_tmp.append(theta)
         th_input_arr.append([catoms[idx1], theta_tmp])
-        # print('For idx %d, theta array is:'%idx1, theta_tmp)
-        # out_theta, sum_del = comp_angle_arr(input_arr=theta_tmp, target_arr=angle_ref)
-        # print('The adjusted array is: ', out_theta)
-        # theta_arr.append([catoms[idx1], sum_del, out_theta])
     th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
     if debug:
         print('th:', th_output_arr)
