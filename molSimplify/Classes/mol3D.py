@@ -2276,7 +2276,7 @@ class mol3D:
 
         if len(catoms_arr) != num_coord:
             print('Error, must have %d connecting atoms for octahedral.' % num_coord)
-            print('Please DO CHECK what happens!!!!')d_metal = num_coord
+            print('Please DO CHECK what happens!!!!')
         self.geo_dict_initialization()
         if not init_mol == None:
             dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
