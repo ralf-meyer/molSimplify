@@ -2233,29 +2233,39 @@ class mol3D:
         if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
             print('Please DO CHECK what happens!!!!')
-        self.num_coord_metal = 6
-        self.geo_dict_initialization()
-        if not init_mol == None:
-            dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                    flag_loose=flag_loose,
-                                                    flag_lbd=flag_lbd,
-                                                    catoms_arr=catoms_arr,
-                                                    debug=debug,
-                                                    BondedOct=BondedOct)
-        if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
-            dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                          debug=debug)
+            flag_oct = 0
+            flag_list = ["num_coord_metal"]
+            dict_oct_info = {'num_coord_metal': len(catoms_arr)}
+            geo_metrics= ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max','max_del_sig_angle',
+                          'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
+            for metric in geo_metrics:
+                dict_oct_info.update({metric: "NA"})
+            flag_oct_loose = 0
+            flag_list_loose = ["num_coord_metal"]
         else:
-            self.num_coord_metal = -1
-            print('!!!!!Should always match. WRONG!!!!!')
+            self.num_coord_metal = 6
+            self.geo_dict_initialization()
+            if not init_mol == None:
+                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                        flag_loose=flag_loose,
+                                                        flag_lbd=flag_lbd,
+                                                        catoms_arr=catoms_arr,
+                                                        debug=debug,
+                                                        BondedOct=BondedOct)
+            if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
+                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
+                                                              debug=debug)
+            else:
+                self.num_coord_metal = -1
+                print('!!!!!Should always match. WRONG!!!!!')
 
-        dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
-        if debug:
-            self.print_geo_dict()
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
-                                                                        num_coord=6, debug=debug)
-        flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
-                                                                         num_coord=6, debug=debug)
+            dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
+            if debug:
+                self.print_geo_dict()
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+                                                                            num_coord=6, debug=debug)
+            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+                                                                             num_coord=6, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
     ## Used to track down the changing geo_check metrics in a DFT geometry optimization.
@@ -2277,28 +2287,38 @@ class mol3D:
         if len(catoms_arr) != num_coord:
             print('Error, must have %d connecting atoms for octahedral.' % num_coord)
             print('Please DO CHECK what happens!!!!')
-        self.geo_dict_initialization()
-        if not init_mol == None:
-            dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                    flag_loose=flag_loose,
-                                                    flag_lbd=flag_lbd,
-                                                    catoms_arr=catoms_arr,
-                                                    debug=debug,
-                                                    BondedOct=BondedOct)
-        if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
-            dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                          debug=debug)
+            flag_oct = 0
+            flag_list = ["num_coord_metal"]
+            dict_oct_info = {'num_coord_metal': len(catoms_arr)}
+            geo_metrics= ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max','max_del_sig_angle',
+                          'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
+            for metric in geo_metrics:
+                dict_oct_info.update({metric: "NA"})
+            flag_oct_loose = 0
+            flag_list_loose = ["num_coord_metal"]
         else:
-            self.num_coord_metal = -1
-            print('!!!!!Should always match. WRONG!!!!!')
+            self.geo_dict_initialization()
+            if not init_mol == None:
+                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                        flag_loose=flag_loose,
+                                                        flag_lbd=flag_lbd,
+                                                        catoms_arr=catoms_arr,
+                                                        debug=debug,
+                                                        BondedOct=BondedOct)
+            if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
+                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
+                                                              debug=debug)
+            else:
+                self.num_coord_metal = -1
+                print('!!!!!Should always match. WRONG!!!!!')
 
-        dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
-        if debug:
-            self.print_geo_dict()
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
-                                                                        num_coord=num_coord, debug=debug)
-        flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
-                                                                         num_coord=num_coord, debug=debug)
+            dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
+            if debug:
+                self.print_geo_dict()
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+                                                                            num_coord=num_coord, debug=debug)
+            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+                                                                             num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
     ## Writes a psueduo-chemical formula
