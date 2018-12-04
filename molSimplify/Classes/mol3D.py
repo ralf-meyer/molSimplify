@@ -1762,6 +1762,7 @@ class mol3D:
         else:
             self.get_num_coord_metal(debug=debug)
         theta_arr, oct_dist = [], []
+        # print("!!!!catoms", self.catoms, catoms_arr)
         for atom in self.catoms:
             coord = self.getAtomCoords(atom)
             catom_coord.append(coord)
@@ -1777,7 +1778,7 @@ class mol3D:
             th_input_arr.append([self.catoms[idx1], theta_tmp])
         ## This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
         ## When we have the customized catoms_arr, it will not change anything.
-        # print("!!!!!", th_input_arr)
+        # print("!!!th_input_arr", th_input_arr)
         th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
         self.catoms = catoms_arr
         if debug:
@@ -2226,8 +2227,7 @@ class mol3D:
         if not dict_check_loose:
             dict_check_loose = self.dict_oct_check_loose
 
-        metal_ind = init_mol.findMetal()[0]
-        catoms_arr = init_mol.getBondedAtoms(metal_ind)
+        _, catoms_arr = init_mol.oct_comp(debug=debug)
         print("connecting atoms are,", catoms_arr)
 
         if len(catoms_arr) != 6:
@@ -2236,8 +2236,8 @@ class mol3D:
             flag_oct = 0
             flag_list = ["num_coord_metal"]
             dict_oct_info = {'num_coord_metal': len(catoms_arr)}
-            geo_metrics= ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max','max_del_sig_angle',
-                          'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
+            geo_metrics = ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max', 'max_del_sig_angle',
+                           'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
             for metric in geo_metrics:
                 dict_oct_info.update({metric: "NA"})
             flag_oct_loose = 0
@@ -2290,8 +2290,8 @@ class mol3D:
             flag_oct = 0
             flag_list = ["num_coord_metal"]
             dict_oct_info = {'num_coord_metal': len(catoms_arr)}
-            geo_metrics= ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max','max_del_sig_angle',
-                          'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
+            geo_metrics = ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max', 'max_del_sig_angle',
+                           'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
             for metric in geo_metrics:
                 dict_oct_info.update({metric: "NA"})
             flag_oct_loose = 0
