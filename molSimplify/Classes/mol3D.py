@@ -1077,6 +1077,19 @@ class mol3D:
                 cdist = ds
         return idx
 
+    def getClosestAtomlist(self, atom_idx, cdist=3):
+        # INPUT
+        #   - atom_index: reference atom index
+        #   - cdist: cutoff of neighbor distance
+        # OUTPUT
+        #   - neighbor_list: index of close atom to atom0 from molecule
+        neighbor_list = []
+        for iat, atom in enumerate(self.atoms):
+            ds = atom.distance(self.atoms[atom_idx])
+            if (ds < cdist):
+                neighbor_list.append(neighbor_list)
+        return neighbor_list
+
     ## Gets point that corresponds to mask
     #  @param self The object pointer    
     #  @param mask Identifier for atoms
@@ -2227,9 +2240,12 @@ class mol3D:
         if not dict_check_loose:
             dict_check_loose = self.dict_oct_check_loose
 
-        _, catoms_arr = init_mol.oct_comp(debug=debug)
+        if catoms_arr == None:
+            init_mol.get_num_coord_metal(debug=debug)
+            catoms_arr = init_mol.catoms
+            if len(catoms_arr) > 6:
+                _, catoms_arr = init_mol.oct_comp(debug=debug)
         print("connecting atoms are,", catoms_arr)
-
         if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
             print('Please DO CHECK what happens!!!!')
@@ -2280,10 +2296,12 @@ class mol3D:
         if not dict_check_loose:
             dict_check_loose = self.dict_oneempty_check_loose
 
-        print(angle_ref)
-        _, catoms_arr = init_mol.oct_comp(angle_ref=angle_ref, debug=True)
+        if catoms_arr == None:
+            init_mol.get_num_coord_metal(debug=debug)
+            catoms_arr = init_mol.catoms
+            if len(catoms_arr) > num_coord:
+                _, catoms_arr = init_mol.oct_comp(angle_ref=angle_ref, debug=debug)
         print("connecting atoms are,", catoms_arr)
-
         if len(catoms_arr) != num_coord:
             print('Error, must have %d connecting atoms for octahedral.' % num_coord)
             print('Please DO CHECK what happens!!!!')
@@ -2297,6 +2315,7 @@ class mol3D:
             flag_oct_loose = 0
             flag_list_loose = ["num_coord_metal"]
         else:
+            self.num_coord_metal = num_coord
             self.geo_dict_initialization()
             if not init_mol == None:
                 dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
