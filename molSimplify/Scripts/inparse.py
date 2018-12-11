@@ -285,7 +285,7 @@ def checkinput(args,calctype="base"):
                 args.mlig = args.lig[0]
             # check mlig connecting point if the ligand has more than one atom
             if args.mlig and not args.mligcatoms:
-                sub,subcatoms,emsg = substr_load(args.mlig,0,subcatoms)
+                sub,subcatoms,emsg = substr_load(args.mlig[0],0,subcatoms)
                 if sub.natoms is 1:
                     args.mligcatoms = [0]
                 else:
