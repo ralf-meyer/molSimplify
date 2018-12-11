@@ -1541,7 +1541,7 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calccharges(self, charge=0, bond=False, method='QEq'):
+    def calcCharges(self, charge=0, bond=False, method='QEq'):
         self.convert2OBMol()
         self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)
