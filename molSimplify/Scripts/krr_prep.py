@@ -13,7 +13,8 @@ from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.globalvars import *
 from sklearn.kernel_ridge import KernelRidge
 import numpy as np
-import pandas as pd
+# import pandas as pd
+import csv
 import time, re
 from sets import Set
 
@@ -24,6 +25,8 @@ from sets import Set
 #  KRR accuracies for bondl_core3D: 98.2% (training score) and 47.6 (test score)
 #  KRR accuracies for bondl_m3D: 99.5% (training score) and 51.1 (test score)
 def invoke_KRR_from_mol3d_dQ(mol,charge):
+    X_train = []
+    y_train = []
     # # find the metal from RACs 
     # metal = mol.getAtom(mol.findMetal()[0]).symbol()
     # ox_modifier = {metal:oxidation_state}
@@ -43,8 +46,16 @@ def invoke_KRR_from_mol3d_dQ(mol,charge):
     else:
         X_train_csv = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_krr/X_train_TS.csv")
         y_train_csv = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_krr/y_train_TS.csv")
-    X_train = pd.read_csv(X_train_csv,header=None)
-    y_train = pd.read_csv(y_train_csv,header=None)
+    f = open(X_train_csv,'r')
+    for line in csv.reader(f):
+        X_train.append([float(i) for i in line])
+    X_train = np.array(X_train)
+    f = open(y_train_csv,'r')
+    for line in csv.reader(f):
+        y_train.append([float(i) for i in line])
+    y_train = np.array(y_train)
+    # X_train = pd.read_csv(X_train_csv,header=None)
+    # y_train = pd.read_csv(y_train_csv,header=None)
     kernel = 'rbf'
     keys = []
     bondls = []
