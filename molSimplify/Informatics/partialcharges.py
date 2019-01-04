@@ -9,6 +9,7 @@ def fpriority(mol):
     sidx_list = []
     satno_list = []
     ref_list = []
+    fd_list = []
     exit_signal = True
     # getting bond-order matrix
     mol.convert2OBMol()
@@ -31,7 +32,7 @@ def fpriority(mol):
                     satno_str = str(mol.getAtom(sidx).atno)
                     satno_list.append(int(BO * satno_str))
 
-    for satno in sorted(set(satno_list)):
+    for satno in set(satno_list):
         satnocount = satno_list.count(satno)
         if satnocount > 1:
             s_sel_list = [i for i,atno in enumerate(satno_list) if atno is satno]
@@ -92,9 +93,17 @@ def fpriority(mol):
         else:
             atno_list.append(tatno_list[i][0])
         a = '.'.join(atno_list)
-        fpriority_list.append(float(a))   
+        fpriority_list.append(float(a))
+
+    idx = np.argsort(np.array(fpriority_list))[-1]
+    sidx_list = mol.getBondedAtoms(fidx_list[0][0])
+    refcoord = mol.getAtom(sidx_list[idx]).coords()
+    for sidx in sidx_list:
+        sxyz = mol.getAtom(sidx).coords()
+        dist = distance(refcoord,sxyz)
+        fd_list.append(dist)
         
-    return fpriority_list
+    return fpriority_list, fd_list
 
 def fsym(mol):
     # getting idxs of interest
@@ -149,38 +158,63 @@ def scharge_ave(mol,charge,bond=False):
 
     return scharge_ave_list
 
-def fdistance(mol):
-    # getting idxs of interest
-    midx = mol.findMetal()[0] # monometallic complexes
-    mcoord = mol.getAtom(midx).coords()
-    fidx_list = mol.getBondedAtoms(midx) # list of idx of the first-coord sphere
-    fdistance_list = []
-    for idx in fidx_list:
-        fcoord = mol.getAtom(idx).coords()
-        d = distance(mcoord,fcoord)
-        fdistance_list.append(float(d))
+# def fdistance(mol):
+#     # getting idxs of interest
+#     midx = mol.findMetal()[0] # monometallic complexes
+#     mcoord = mol.getAtom(midx).coords()
+#     fidx_list = mol.getBondedAtoms(midx) # list of idx of the first-coord sphere
+#     fdistance_list = []
+#     for idx in fidx_list:
+#         fcoord = mol.getAtom(idx).coords()
+#         d = distance(mcoord,fcoord)
+#         fdistance_list.append(float(d))
     
-    return fdistance_list
+#     return fdistance_list
+
+def fidx(fprio_list, fd_list):
+    idx0 = np.argsort(fd_list)[0]
+    idx5 = np.argsort(fd_list)[-1]
+    idx1_4 = np.argsort(np.array(fprio_list))[::-1].tolist()
+    idx1_4.remove(idx5)
+    idx1_4.remove(idx0)
+    idx_list = [idx0] + idx1_4 + [idx5]
+
+    return idx_list
 
 def all_prop(mol,charge,bond=False):
-    fprio_list = fpriority(mol)
+    fprio_list, fd_list = fpriority(mol)
     # fsym_list = fsym(mol)
     fva_list = fvalency(mol)
     fq_list = fcharge(mol,charge,bond)
     sq_ave_list = scharge_ave(mol,charge,bond)
-    fd_list = fdistance(mol)
-    prop_list = [fprio_list,fq_list,sq_ave_list,fva_list,fd_list]
+    # fd_list = fdistance(mol)
+    fd_list = np.array(fd_list)
+    idx_list = fidx(fprio_list, fd_list)
+    # rearranging
+    fprio_list = [fprio_list[idx] for idx in idx_list]
+    fq_list = [fq_list[idx] for idx in idx_list]
+    sq_ave_list = [sq_ave_list[idx] for idx in idx_list]
+    fva_list = [fva_list[idx] for idx in idx_list]
+    fd_list = [fd_list[idx] for idx in idx_list]
+
+    prop_list = fprio_list + fq_list + sq_ave_list + fva_list + fd_list
 
     return prop_list
 
 def f_prop(mol,charge,bond=False):
-    fprio_list = fpriority(mol)
+    fprio_list, fd_list = fpriority(mol)
     # fsym_list = fsym(mol)
     fva_list = fvalency(mol)
     fq_list = fcharge(mol,charge,bond)
     sq_ave_list = scharge_ave(mol,charge,bond)
-    fd_list = fdistance(mol)
-    prop_list = [fprio_list,fq_list,fva_list]
+    # fd_list = fdistance(mol)
+    idx_list = fidx(fprio_list, fd_list)
+    # rearranging
+    fprio_list = [fprio_list[idx] for idx in idx_list]
+    fq_list = [fq_list[idx] for idx in idx_list]
+    fva_list = [fva_list[idx] for idx in idx_list]
+
+    prop_list = fprio_list + fq_list + fva_list
 
     return prop_list
 
@@ -190,14 +224,17 @@ def features(mol,charge,bond=False):
     prop_list = all_prop(mol,charge,bond)
     midx = mol.findMetal()[0]
     manto = mol.getAtom(midx).atno
-    a = np.array(prop_list)
-    b = a.T[a[0].argsort()].T
-    feature_list = b.tolist()
-    feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
+    # a = np.array(prop_list)
+    # b = a.T[a[0].argsort()].T
+    # feature_list = b.tolist()
+    fatno_list = [int(str(i).split('.')[0]) for i in prop_list[:6]]
     feature.append(manto)
-    for i in range(len(feature_list)):
-        for j in range(len(feature_list[i])):
-            feature.append(feature_list[i][j])
+    for i in range(len(fatno_list)):
+        prop_list[i] = fatno_list[i]
+    feature += prop_list
+    # for i in range(len(feature_list)):
+    #     for j in range(len(feature_list[i])):
+    #         feature.append(feature_list[i][j])
     feature_names = ['mato','fatno_1','fatno_2','fatno_3','fatno_4','fatno_5','fatno_6','fq_1','fq_2','fq_3','fq_4',
     'fq_5','fq_6','sqave_1','sqave_2','sqave_3','sqave_4','sqave_5','sqave_6','fval_1','fval_2','fval_3','fval_4',
     'fval_5','fval_6','bl_1','bl_2','bl_3','bl_4','bl_5','bl_6']
@@ -211,14 +248,19 @@ def ffeatures(mol,charge,bond=False):
     prop_list = f_prop(mol,charge,bond)
     midx = mol.findMetal()[0]
     manto = mol.getAtom(midx).atno
-    a = np.array(prop_list)
-    b = a.T[a[0].argsort()].T
-    feature_list = b.tolist()
-    feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
+    fatno_list = [int(str(i).split('.')[0]) for i in prop_list[:6]]
     feature.append(manto)
-    for i in range(len(feature_list)):
-        for j in range(len(feature_list[i])):
-            feature.append(feature_list[i][j])
+    for i in range(len(fatno_list)):
+        prop_list[i] = fatno_list[i]
+    feature += prop_list
+    # a = np.array(prop_list)
+    # b = a.T[a[0].argsort()].T
+    # feature_list = b.tolist()
+    # feature_list[0] = [int(str(i).split('.')[0]) for i in feature_list[0]]
+    # feature.append(manto)
+    # for i in range(len(feature_list)):
+    #     for j in range(len(feature_list[i])):
+    #         feature.append(feature_list[i][j])
     feature_names = ['mato','fatno_1','fatno_2','fatno_3','fatno_4','fatno_5','fatno_6','fq_1','fq_2','fq_3','fq_4',
     'fq_5','fq_6','fval_1','fval_2','fval_3','fval_4','fval_5','fval_6']
 
