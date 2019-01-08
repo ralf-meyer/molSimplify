@@ -18,6 +18,7 @@ from molSimplify.Classes.rundiag import *
 from molSimplify.Classes import globalvars
 from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
+from molSimplify.Scripts.krr_prep import *
 import os, sys, time 
 from pkg_resources import resource_filename, Requirement
 import openbabel, random, itertools, numpy
@@ -2626,6 +2627,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     core3D.deleteatom(core3D.natoms-1)
                 if args.calccharge:
                     core3D.charge += lig3D.charge
+                    print('core3D charge is ' + str(core3D.charge))
                 # perform FF optimization if requested
                 if args.debug:
                     print('saving a copy of the complex named complex_'+str(i)+'_'+str(j) + '.xyz')
@@ -2694,6 +2696,11 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
     backbatoms = []
     batslist = []
     bats = []
+    charge = 0
+    if args.calccharge:
+        charge = core3D.charge
+    elif args.charge:
+        charge = args.charge[0]
     # load substrate
     sub,subcatoms,emsg = substr_load(substrate[0],sub_i,subcatoms)
     sub.convert2mol3D()
@@ -2709,11 +2716,22 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
         subcatomsym = sub.getAtom(int(subcatoms[rxn_type_i])).sym
         MLbonds = loaddata_ts('/Data/ML_bond_for_' + rxn_type + '.dat')
         MLSangles = loaddata_ts('/Data/MLS_angle_for_' + rxn_type + '.dat')
-        m_idx = core3D.findMetal() # list of metal indexes
-        metal = core3D.getAtom(m_idx[0]).symbol()
-        if not args.MLbonds:
-            bondl_core3D,bondl_m3D,bondl_sub,exact_match = get_ts_MLdist_database(args,metal,subcatomsym,MLbonds)
+        midxes = core3D.findMetal() # list of metal indexes
+        metal = core3D.getAtom(midxes[0]).symbol()
+        if subcatomsym == 'H' and args.mlig[0] == 'oxo' and charge:
+            bondl_dict = invoke_KRR_from_mol3d_dQ(core3D,charge)
+            bondl_core3D = bondl_dict['bondl_core3D']
+            bondl_m3D = bondl_dict['bondl_m3D']
+            bondl_sub = 1.3
             bangle_m3D,bangle_m3Dsub,exact_match = get_ts_MLSangle_database(args,metal,subcatomsym,MLSangles)
+        else:
+            MLbonds = loaddata_ts('/Data/ML_bond_for_' + rxn_type + '.dat')
+            MLSangles = loaddata_ts('/Data/MLS_angle_for_' + rxn_type + '.dat')
+            midxes = core3D.findMetal() # list of metal indexes
+            metal = core3D.getAtom(midxes[0]).symbol()
+            if not args.MLbonds:
+                bondl_core3D,bondl_m3D,bondl_sub,exact_match = get_ts_MLdist_database(args,metal,subcatomsym,MLbonds)
+                bangle_m3D,bangle_m3Dsub,exact_match = get_ts_MLSangle_database(args,metal,subcatomsym,MLSangles)
         print('subcatomsym is ' + str(subcatomsym))
         print(str(bondl_core3D) + ',' + str(bondl_m3D) + ',' + str(bondl_sub))
         MLoptbds = []
@@ -2763,7 +2781,7 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
                     # for at in catoms:
                     #     connected.append(initatoms+at)
                     # initialize variables
-                    mcoords = core3D.getAtom(m_idx[0]).coords() # metal c oordinates in backbone
+                    mcoords = core3D.getAtom(midxes[0]).coords() # metal c oordinates in backbone
                     atom0, r0, r1, r2, r3 = 0, mcoords, 0, 0, 0 # initialize variables
                     coreref = corerefatoms.getAtom(totsub)
                     # connecting point in backbone to align ligand to
@@ -2921,7 +2939,7 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
             core3D_i = mol3D()
             core3D_i.copymol3D(core3D)
             core3D_i,complex3D,subcatoms,emsg,this_diag = msubcomplex(args,core3D_i,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcatoms_ext)
-            fname = name_ts_complex(rootdir,name_core,ligands,ligoc,substrate,subcatoms,mlig,mligcatoms,sernum,args,nconf,sanity)
+            fname = name_ts_complex(rootdir,name_core,args.geometry,ligands,ligoc,substrate,subcatoms,mlig,mligcatoms,sernum,args,nconf,sanity)
             if args.debug:
                 print('fname is ' + str(fname))
             # write xyz file

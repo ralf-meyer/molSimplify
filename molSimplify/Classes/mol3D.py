@@ -13,7 +13,7 @@ import openbabel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile, re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
-from molSimplify.Scripts.geometry import vecangle, distance, kabsch
+from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis
 
 # from molSimplify.Scripts.structgen import ffopt
 
@@ -116,6 +116,39 @@ class mol3D:
         self.dict_catoms_shape = dict()
         self.dict_orientation = dict()
         self.dict_angle_linear = dict()
+
+    ## Performs angle centric manipulation 
+    #
+    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
+    #
+    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+    #  @param self The object pointer
+    #  @param idx1 Index of bonded atom containing submolecule to be moved
+    #  @param idx2 Index of anchor atom
+    #  @param d New bond angle in degree
+    def ACM(self, idx1, idx2, idx3, angle):
+        atidxs_to_move = self.findsubMol(idx1, idx2)
+        atidxs_anchor = self.findsubMol(idx2, idx1)
+        submol_to_move = mol3D()
+        submol_anchor = mol3D()
+        for atidx in atidxs_to_move:
+            atom = self.getAtom(atidx)
+            submol_to_move.addAtom(atom)
+        for atidx in atidxs_anchor:
+            atom = self.getAtom(atidx)
+            submol_anchor.addAtom(atom)
+        mol = mol3D()
+        mol.copymol3D(submol_anchor)
+        r0 = self.getAtom(idx1).coords()
+        r1 = self.getAtom(idx2).coords()
+        r2 = self.getAtom(idx3).coords()
+        theta, u = rotation_params(r2, r1, r0)
+        if theta < 90:
+            angle = 180 - angle
+        submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta-angle)
+        mol.copymol3D(submol_to_move)
+        self.deleteatoms(range(self.natoms))
+        self.copymol3D(mol)
 
     ## Add atom to molecule
     #
@@ -1558,7 +1591,7 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calccharges(self, charge=0, bond=False, method='QEq'):
+    def calcCharges(self, charge=0, bond=False, method='QEq'):
         self.convert2OBMol()
         self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)

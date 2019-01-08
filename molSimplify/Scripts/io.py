@@ -919,7 +919,7 @@ def name_complex(rootdir,core,geometry,ligs,ligoc,sernum,args,nconf=False,sanity
 #  @param bind Flag for binding species (default False)
 #  @param bsmi Flag for SMILES binding species (default False)
 #  @return Complex name
-def name_ts_complex(rootdir,core,ligs,ligoc,substrate,subcatoms,mlig,mligcatoms,sernum,args,nconf=False,sanity=False,bind= False,bsmi=False):
+def name_ts_complex(rootdir,core,geometry,ligs,ligoc,substrate,subcatoms,mlig,mligcatoms,sernum,args,nconf=False,sanity=False,bind= False,bsmi=False):
     ## new version of the above, designed to 
     ## produce more human and machine-readable formats
     if args.name: # if set externerally
@@ -942,6 +942,7 @@ def name_ts_complex(rootdir,core,ligs,ligoc,substrate,subcatoms,mlig,mligcatoms,
                 ox = str(args.oxstate)
         else:
             ox = "0"
+        name += "_" + str(geometry)
         name += "_" + str(ox)
         licores = getlicores()
         sminum = 0
