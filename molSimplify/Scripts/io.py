@@ -476,7 +476,7 @@ def substr_load(usersubstrate,sub_i,subcatoms,subcores=None):
         if isinstance(var_list_sub_i[2], (str, unicode)):
            sub.denticity = 1
         else:
-           sub.denticity = len(var_list_sub_i[2])/len(var_list_sub_i[3])
+           sub.denticity = len(var_list_sub_i[2])
         # Parsing substrate identity
         sub.ident = var_list_sub_i[1]
         # Parsing substrate charge
