@@ -18,7 +18,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.multioutput import MultiOutputRegressor
 import numpy as np
 import csv, glob, os
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def feature_prep(mol, idx):
     # setting up variables
@@ -488,53 +488,54 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4):
 
     return descriptor_names, descriptors
 
-def default_plot(x, y):
-    # defs for plt
-    # xlabel = r'% HF exchange'
-    # ylabel = r'${\rm \Delta}{\rm E}^{\rm X-HS}$'
-    colors = ['r', 'g', 'b', '.75', 'orange', 'k']
-    markers = ['o', 's', 'D', 'v', '^', '<', '>']
-    font = {'family': 'sans-serif',
-            # 'weight' : 'bold',
-            'size': 22}
-    # figure size
-    plt.figure(figsize=(7.5, 6))
-    # dealing with axes
-    # x = sorted(x)
-    # y = sorted(y)
-    # x_min = round(x[0],2)
-    # x_max = round(x[-1],2)
-    # plt.xlim(x_min, x_max)
-    # y_min = round(y[0],2)
-    # y_max = round(y[-1],2)
-    # plt.ylim(y_min, y_max)
-    # plt.xlabel(xlabel)
-    # plt.ylabel(ylabel)
-    # dealing with ticks
-    ax = plt.axes()
-    # ax.xaxis.set_major_locator(ticker.MultipleLocator((x_max - x_min) / 4))
-    # ax.xaxis.set_minor_locator(ticker.MultipleLocator((x_max - x_min) / 8))
-    # ax.yaxis.set_major_locator(ticker.MultipleLocator((y_max - y_min) / 4))
-    # ax.yaxis.set_minor_locator(ticker.MultipleLocator((y_max - y_min) / 8))
-    plt.tick_params(which='both', axis='both', direction='in', bottom=True, top=True, right=True, left=True)
-    plt.rcParams['axes.linewidth'] = 3
-    plt.rcParams['xtick.major.size'] = 10
-    plt.rcParams['xtick.major.width'] = 3
-    plt.rcParams['ytick.major.size'] = 10
-    plt.rcParams['ytick.major.width'] = 3
-    plt.rcParams['xtick.minor.size'] = 5
-    plt.rcParams['xtick.minor.width'] = 3
-    plt.rcParams['ytick.minor.size'] = 5
-    plt.rcParams['ytick.minor.width'] = 3
-    plt.tight_layout()
-
-    plt.rc('font', **font)
-    plt.plot(x, y, 'o', markeredgecolor='k')
-    # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
-    plt.show()
-# plt.imshow(data,interpolation='none')
-# # plt.imshow(data,interpolation='nearest')
-# plt.savefig('relative_energies_for_Fe-py4.eps',dpi=400)
+# commented out default_plot() as conda repo does not automatically conda install matplitlib
+# def default_plot(x, y):
+#     # defs for plt
+#     # xlabel = r'% HF exchange'
+#     # ylabel = r'${\rm \Delta}{\rm E}^{\rm X-HS}$'
+#     colors = ['r', 'g', 'b', '.75', 'orange', 'k']
+#     markers = ['o', 's', 'D', 'v', '^', '<', '>']
+#     font = {'family': 'sans-serif',
+#             # 'weight' : 'bold',
+#             'size': 22}
+#     # figure size
+#     plt.figure(figsize=(7.5, 6))
+#     # dealing with axes
+#     # x = sorted(x)
+#     # y = sorted(y)
+#     # x_min = round(x[0],2)
+#     # x_max = round(x[-1],2)
+#     # plt.xlim(x_min, x_max)
+#     # y_min = round(y[0],2)
+#     # y_max = round(y[-1],2)
+#     # plt.ylim(y_min, y_max)
+#     # plt.xlabel(xlabel)
+#     # plt.ylabel(ylabel)
+#     # dealing with ticks
+#     ax = plt.axes()
+#     # ax.xaxis.set_major_locator(ticker.MultipleLocator((x_max - x_min) / 4))
+#     # ax.xaxis.set_minor_locator(ticker.MultipleLocator((x_max - x_min) / 8))
+#     # ax.yaxis.set_major_locator(ticker.MultipleLocator((y_max - y_min) / 4))
+#     # ax.yaxis.set_minor_locator(ticker.MultipleLocator((y_max - y_min) / 8))
+#     plt.tick_params(which='both', axis='both', direction='in', bottom=True, top=True, right=True, left=True)
+#     plt.rcParams['axes.linewidth'] = 3
+#     plt.rcParams['xtick.major.size'] = 10
+#     plt.rcParams['xtick.major.width'] = 3
+#     plt.rcParams['ytick.major.size'] = 10
+#     plt.rcParams['ytick.major.width'] = 3
+#     plt.rcParams['xtick.minor.size'] = 5
+#     plt.rcParams['xtick.minor.width'] = 3
+#     plt.rcParams['ytick.minor.size'] = 5
+#     plt.rcParams['ytick.minor.width'] = 3
+#     plt.tight_layout()
+#
+#     plt.rc('font', **font)
+#     plt.plot(x, y, 'o', markeredgecolor='k')
+#     # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
+#     plt.show()
+# # plt.imshow(data,interpolation='none')
+# # # plt.imshow(data,interpolation='nearest')
+# # plt.savefig('relative_energies_for_Fe-py4.eps',dpi=400)
 
 
 
