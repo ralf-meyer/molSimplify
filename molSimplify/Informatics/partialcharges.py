@@ -1,15 +1,17 @@
 from molSimplify.Classes.mol3D import *
+from molSimplify.Scripts.geometry import rotation_params
 import numpy as np
 import glob
 
 def fpriority(mol):
     # setting up variables
-    fpriority_list = []
     fidx_list = []
     sidx_list = []
     satno_list = []
     ref_list = []
     fd_list = []
+    fa_list = []
+    idx_list = [0] * 6
     exit_signal = True
     # getting bond-order matrix
     mol.convert2OBMol()
@@ -50,6 +52,7 @@ def fpriority(mol):
         tatno_list.append([])
 
     while not exit_signal:
+        fpriority_list = []
         for i in s_sel_list:
             t_list = []
             for sidx in sidx_list[i]:
@@ -82,28 +85,93 @@ def fpriority(mol):
         test_list = []
         for i in range(len(sidx_list)):
             test_list.append([])
-        if tidx_list == test_list:
+        # get priorities
+        for i in range(len(satno_list)):
+            atno_list = []
+            atno_list.append(str(satno_list[i]))
+            if tatno_list[i] == []:
+                atno_list.append('')
+            else:
+                atno_list.append(tatno_list[i][0])
+            a = '.'.join(atno_list)
+            fpriority_list.append(float(a))
+        if tidx_list == test_list or len(set(fpriority_list)) == 6:
             exit_signal = True
-
-    for i in range(len(satno_list)):
-        atno_list = []
-        atno_list.append(str(satno_list[i]))
-        if tatno_list[i] == []:
-            atno_list.append('')
-        else:
-            atno_list.append(tatno_list[i][0])
-        a = '.'.join(atno_list)
-        fpriority_list.append(float(a))
-
+    # get distance
     idx = np.argsort(np.array(fpriority_list))[-1]
-    sidx_list = mol.getBondedAtoms(fidx_list[0][0])
+    sidx_list = mol.getBondedAtomsByCoordNo(fidx_list[0][0],6)
     refcoord = mol.getAtom(sidx_list[idx]).coords()
-    for sidx in sidx_list:
+    mcoord = mol.getAtom(fidx_list[0][0]).coords()
+    idx0 = 0
+    dist5 = 0
+    idx5 = 0
+    idx1_4 = []
+    fprio1_4 = []
+    sxyzs = []
+    ssd_list = []
+    for i, sidx in enumerate(sidx_list):
         sxyz = mol.getAtom(sidx).coords()
         dist = distance(refcoord,sxyz)
-        fd_list.append(dist)
-        
-    return fpriority_list, fd_list
+        if dist == 0:
+            idx0 = i
+        elif dist > dist5:
+            dist5 = dist
+            idx5 = i
+        idx1_4.append(i)
+        fprio1_4.append(fpriority_list[i])
+        sxyzs.append(sxyz)
+        ssd_list.append(dist)
+        fd_list.append(distance(mcoord,sxyz))
+    idx1_4.pop(idx0)
+    idx1_4.pop(idx5)
+    fprio1_4.pop(idx0)
+    fprio1_4.pop(idx5)
+    idx_list[0] = idx0
+    idx_list[5] = idx5
+    idx1 = idx1_4[np.argsort(np.array(fprio1_4))[3]]
+    sxyz1 = sxyzs[idx1]
+    idx2_ = idx1_4[np.argsort(np.array(fprio1_4))[2]]
+    sxyz2_ = sxyzs[idx2_]
+    idx3_ = idx1_4[np.argsort(np.array(fprio1_4))[1]]
+    sxyz3_ = sxyzs[idx3_]
+    idx4_ = idx1_4[np.argsort(np.array(fprio1_4))[0]]
+    sxyz4_ = sxyzs[idx4_]
+    fd1_4 = []
+    fd1_4.append(distance(sxyz1, sxyz1))
+    fd1_4.append(distance(sxyz1, sxyz2_))
+    fd1_4.append(distance(sxyz1, sxyz3_))
+    fd1_4.append(distance(sxyz1, sxyz4_))
+    idx3 = idx1_4[np.argsort(np.array(fd1_4))[-1]] + idx1 - 4
+    if idx3 == idx2_:
+        if fpriority_list[idx3_] > fpriority_list[idx4_]:
+            idx2 = idx3_
+            idx4 = idx4_
+        else:
+            idx2 = idx4_
+            idx4 = idx2_
+    elif idx3 == idx4_:
+        if fpriority_list[idx2_] > fpriority_list[idx3_]:
+            idx2 = idx2_
+            idx4 = idx3_
+        else:
+            idx2 = idx3_
+            idx4 = idx2_
+    else:
+        if fpriority_list[idx2_] > fpriority_list[idx4_]:
+            idx2 = idx2_
+            idx4 = idx4_
+        else:
+            idx2 = idx4_
+            idx4 = idx2_
+    # get ax, eq, ax idxes
+    idx_list[1] = idx1
+    idx_list[2] = idx2
+    idx_list[3] = idx3
+    idx_list[4] = idx4
+    fpriority_list = np.array(fpriority_list)[idx_list].tolist()
+    fd_list = np.array(fd_list)[idx_list].tolist()
+
+    return fpriority_list, fd_list, idx_list
 
 def fsym(mol):
     # getting idxs of interest
@@ -171,16 +239,6 @@ def scharge_ave(mol,charge,bond=False):
     
 #     return fdistance_list
 
-def fidx(fprio_list, fd_list):
-    idx0 = np.argsort(fd_list)[0]
-    idx5 = np.argsort(fd_list)[-1]
-    idx1_4 = np.argsort(np.array(fprio_list))[::-1].tolist()
-    idx1_4.remove(idx5)
-    idx1_4.remove(idx0)
-    idx_list = [idx0] + idx1_4 + [idx5]
-
-    return idx_list
-
 def all_prop(mol,charge,bond=False):
     fprio_list, fd_list = fpriority(mol)
     # fsym_list = fsym(mol)
@@ -189,7 +247,7 @@ def all_prop(mol,charge,bond=False):
     sq_ave_list = scharge_ave(mol,charge,bond)
     # fd_list = fdistance(mol)
     fd_list = np.array(fd_list)
-    idx_list = fidx(fprio_list, fd_list)
+    idx_list = idx_list(fprio_list, fd_list)
     # rearranging
     fprio_list = [fprio_list[idx] for idx in idx_list]
     fq_list = [fq_list[idx] for idx in idx_list]
@@ -208,7 +266,7 @@ def f_prop(mol,charge,bond=False):
     fq_list = fcharge(mol,charge,bond)
     sq_ave_list = scharge_ave(mol,charge,bond)
     # fd_list = fdistance(mol)
-    idx_list = fidx(fprio_list, fd_list)
+    idx_list = idx_list(fprio_list, fd_list)
     # rearranging
     fprio_list = [fprio_list[idx] for idx in idx_list]
     fq_list = [fq_list[idx] for idx in idx_list]
