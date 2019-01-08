@@ -122,14 +122,20 @@ class mol3D:
     #  Added atom is appended to the end of the list.
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
-    def addAtom(self, atom):
-        self.atoms.append(atom)
+    def addAtom(self, atom, index=None):
+        if index==None:
+            index = len(self.atoms)
+        # self.atoms.append(atom)
+        self.atoms.insert(index, atom)
         if atom.frozen:
-            self.atoms[-1].frozen = True
+            self.atoms[index].frozen = True
         self.natoms += 1
         self.mass += atom.mass
         self.size = self.molsize()
         self.graph = []
+
+    def changeAtomtype(self, atom_ind, atom_type):
+        self.atoms[atom_ind].sym = atom_type
 
     ## Aligns two molecules such that the coordinates of two atoms overlap.
     #
@@ -309,6 +315,17 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
 
+    def resetBondOBMol(self):
+        if self.OBMol:
+            BO_mat = self.populateBOMatrix()
+            self.cleanBonds()
+            for i in range(0, self.natoms):
+                for j in range(0, self.natoms):
+                    if BO_mat[i][j] > 0:
+                        self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
+        else:
+            print("OBmol not existed.")
+
     ## Combines two molecules
     #
     #  Each atom in the second molecule is appended to the first while preserving orders.
@@ -355,6 +372,9 @@ class mol3D:
                     print('adding bond ' + str(bond_tuples))
                     jointBOMat[bond_tuples[0], bond_tuples[1]] = bond_tuples[2]
                     jointBOMat[bond_tuples[1], bond_tuples[0]] = bond_tuples[2]
+                    # jointBOMat[bond_tuples[0], bond_tuples[1]+n_one] = bond_tuples[2]
+                    # jointBOMat[bond_tuples[1]+n_one, bond_tuples[0]] = bond_tuples[2]
+
         # add mol3Ds
         for atom in mol.atoms:
             cmol.addAtom(atom)
@@ -901,15 +921,12 @@ class mol3D:
         return nats
 
     def update_graph_check(self, oct=True):  ####!!!!Works only for octahedral and one-empty site!!!!
-        from molSimplify.Scripts.oct_check_mols import IsOct, IsStructure
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
         if oct:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = IsOct(file_in=self.xyzfile,
-                                                                   flag_catoms=True)
+            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsOct(flag_catoms=True)
         else:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = IsStructure(file_in=self.xyzfile,
-                                                                         flag_catoms=True)
+            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsStructure(flag_catoms=True)
         self.graph[0, :] = 0
         self.graph[:, 0] = 0
         row = np.zeros(self.graph.shape[0])
