@@ -1,5 +1,5 @@
 # Default data for bond lengths (in A) between metal, connection atom and ligand
-# keys are metal, ox state, spin multiplicity, reacting atom, bondl_m3D, bondl_sub, bondl_core3D
+# keys are metal, ox state, spin multiplicity, reacting atom, bondl_sub, bondl_m3D, bondl_core3D
 # hat, reacting atom = H
 Co - - H 1.30 1.20 1.80
 Co 4 2 H 1.32231 1.18636 1.81724
@@ -37,7 +37,7 @@ Co 4 4 C 1.36987 1.99042 1.70842
 Cr - - C 1.40 1.95 1.70
 Cr 4 3 C 1.37512 2.00213 1.77526
 Cr 5 2 C 1.43336 1.89547 1.63855
-Fe - - C 1.37 2.10 1.70
+Fe - - C 1.37 2.70 1.70
 Fe 4 3 C 1.37808 2.01685 1.71966
 Fe 4 5 C 1.36509 2.09892 1.77272
 Fe 5 2 C 1.38207 2.21715 1.67684
