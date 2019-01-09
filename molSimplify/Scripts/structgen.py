@@ -1845,8 +1845,8 @@ def align_intra_sub(args,core3D,subcatoms_ext,mligcatoms_ext,bondl_core3D,bondl_
 #  @param sub3D mol3D of substrate
 #  @param subcatoms List of substrate connecting atom indices
 #  @return mol3D of aligned ligand, updated lists of frozen atoms and M-L bond lengths
-def align_dent2_sub(args,cpoints,m3D,core3D,coreref,sub3D,subcatoms,bangle_m3Dsub):
-    corerefcoords = coreref.coords() # mlig coord
+def align_dent2_sub(args,cpoints,m3D,core3D,mligcatom,sub3D,subcatoms,bangle_m3Dsub):
+    corerefcoords = core3D.getAtom(mligcatom).coords()
     r0 = corerefcoords
     # get cis conformer by rotating rotatable bonds
     #lig3D = find_rotate_rotatable_bond(lig3D,catoms)
@@ -1867,6 +1867,29 @@ def align_dent2_sub(args,cpoints,m3D,core3D,coreref,sub3D,subcatoms,bangle_m3Dsu
         sub3D = rotate_around_axis(sub3D,r1,u,180-theta)
     else:
         sub3D = rotate_around_axis(sub3D, r1, u, theta)
+    # rotate the substrate around the M-mlig axis to reduce repulsion
+    mcoords = [core3D.getAtom(idx).coords() for idx in core3D.getBondedAtoms(mligcatom) if idx in core3D.findMetal()][0]
+    rmref = vecdiff(mcoords, corerefcoords)
+    dist0 = 0
+    dist = 0
+    theta0 = 0
+    while theta0 < 360:
+        dists = []
+        sub3D = rotate_around_axis(sub3D, corerefcoords, rmref, theta0)
+        for atom_sub in sub3D.atoms:
+            coord_sub = atom_sub.coords()
+            for atom_core3D in core3D.atoms:
+                coord_core3D = atom_core3D.coords()
+                dist = distance(coord_sub,coord_core3D)
+                dists.append(dist)
+        dist = min(dists)
+        if dist > dist0:
+            print('sub3D moved.')
+            dist0 = dist
+            sub3D_aligned = mol3D()
+            sub3D_aligned.copymol3D(sub3D)
+        theta0 += 5
+
     # # rotate the substrate to align with the rMS vector
     # r1 = sub3D.getAtom(atom0).coords() # atom0 coord
     # r2 = sub3D.getAtom(atom1).coords()  # atom1 coord
@@ -1881,8 +1904,6 @@ def align_dent2_sub(args,cpoints,m3D,core3D,coreref,sub3D,subcatoms,bangle_m3Dsu
     # else:
     #     sub3D = rotate_around_axis(sub3D, r1, r12, -theta_)
     # copy the aligned sub3D
-    sub3D_aligned = mol3D()
-    sub3D_aligned.copymol3D(sub3D)
     return sub3D_aligned
 
 ## Crude rotations to improve alignment of the 2nd connecting atom of a bidentate substrate
@@ -2874,7 +2895,7 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
                 if (denticity == 1):
                     sub3D = align_sub(args,cpoints,core3D,coreref,sub3D,subcatoms,mligcatoms_ext[0],bangle_m3Dsub,rempi,subpiatoms)
                 elif (denticity == 2):
-                    sub3D = align_dent2_sub(args,cpoints,m3D,core3D,coreref,sub3D,subcatoms,bangle_m3Dsub)
+                    sub3D = align_dent2_sub(args,cpoints,m3D,core3D,mligcatoms_ext[0],sub3D,subcatoms,bangle_m3Dsub)
                 auxm = mol3D()
                 auxm.copymol3D(sub3D)
                 complex3D.append(auxm)

@@ -350,7 +350,7 @@ def PointTranslateSphgivenr(Rp,p0,D,pref, r):
     p = [0,0,0]
     r0 = 0
     theta0 = 0
-    while abs(1 - r0 / r) > 0.01:
+    while abs(1 - r0 / r) > 0.01 and theta0 < 2 * pi:
         p[0] = (D[0])*sin(phi0+D[1])*cos(theta0) + Rp[0]
         p[1] = (D[0])*sin(phi0+D[1])*sin(theta0) + Rp[1]
         p[2] = (D[0])*cos(phi0+D[1]) + Rp[2]
