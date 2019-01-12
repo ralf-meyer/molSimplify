@@ -19,8 +19,8 @@ from sklearn.multioutput import MultiOutputRegressor
 from math import exp
 import numpy as np
 import csv, glob, os, copy, pickle
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+# import matplotlib.pyplot as plt
+# import matplotlib.ticker as ticker
 numpy.seterr(divide = 'ignore')
 
 csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'
