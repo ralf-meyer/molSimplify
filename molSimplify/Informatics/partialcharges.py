@@ -98,78 +98,88 @@ def fpriority(mol):
         if tidx_list == test_list or len(set(fpriority_list)) == 6:
             exit_signal = True
     # get distance
-    idx = np.argsort(np.array(fpriority_list))[-1]
-    sidx_list = mol.getBondedAtomsByCoordNo(fidx_list[0][0],6)
-    refcoord = mol.getAtom(sidx_list[idx]).coords()
-    mcoord = mol.getAtom(fidx_list[0][0]).coords()
-    idx0 = 0
-    dist5 = 0
-    idx5 = 0
-    idx1_4 = []
-    fprio1_4 = []
-    sxyzs = []
-    ssd_list = []
-    for i, sidx in enumerate(sidx_list):
-        sxyz = mol.getAtom(sidx).coords()
-        dist = distance(refcoord,sxyz)
-        if dist == 0:
-            idx0 = i
-        elif dist > dist5:
-            dist5 = dist
-            idx5 = i
-        idx1_4.append(i)
-        fprio1_4.append(fpriority_list[i])
-        sxyzs.append(sxyz)
-        ssd_list.append(dist)
-        fd_list.append(distance(mcoord,sxyz))
-    idx1_4.pop(idx0)
-    idx1_4.pop(idx5)
-    fprio1_4.pop(idx0)
-    fprio1_4.pop(idx5)
-    idx_list[0] = idx0
-    idx_list[5] = idx5
-    idx1 = idx1_4[np.argsort(np.array(fprio1_4))[3]]
-    sxyz1 = sxyzs[idx1]
-    idx2_ = idx1_4[np.argsort(np.array(fprio1_4))[2]]
-    sxyz2_ = sxyzs[idx2_]
-    idx3_ = idx1_4[np.argsort(np.array(fprio1_4))[1]]
-    sxyz3_ = sxyzs[idx3_]
-    idx4_ = idx1_4[np.argsort(np.array(fprio1_4))[0]]
-    sxyz4_ = sxyzs[idx4_]
-    fd1_4 = []
-    fd1_4.append(distance(sxyz1, sxyz1))
-    fd1_4.append(distance(sxyz1, sxyz2_))
-    fd1_4.append(distance(sxyz1, sxyz3_))
-    fd1_4.append(distance(sxyz1, sxyz4_))
-    idx3 = idx1_4[np.argsort(np.array(fd1_4))[-1]] + idx1 - 4
-    if idx3 == idx2_:
-        if fpriority_list[idx3_] > fpriority_list[idx4_]:
-            idx2 = idx3_
-            idx4 = idx4_
-        else:
-            idx2 = idx4_
-            idx4 = idx2_
-    elif idx3 == idx4_:
-        if fpriority_list[idx2_] > fpriority_list[idx3_]:
-            idx2 = idx2_
-            idx4 = idx3_
-        else:
-            idx2 = idx3_
-            idx4 = idx2_
-    else:
-        if fpriority_list[idx2_] > fpriority_list[idx4_]:
-            idx2 = idx2_
-            idx4 = idx4_
-        else:
-            idx2 = idx4_
-            idx4 = idx2_
-    # get ax, eq, ax idxes
-    idx_list[1] = idx1
-    idx_list[2] = idx2
-    idx_list[3] = idx3
-    idx_list[4] = idx4
+    fd_list = []
+    mcoord = mol.atoms[mol.findMetal()[0]].coords()
+    idx_list = np.argsort(np.array(fpriority_list))
     fpriority_list = np.array(fpriority_list)[idx_list].tolist()
-    fd_list = np.array(fd_list)[idx_list].tolist()
+    sidx_list = mol.getBondedAtoms(fidx_list[0][0])
+    for idx in idx_list:
+        scoord = mol.getAtom(sidx_list[idx]).coords()
+        r = distance(mcoord, scoord)
+        fd_list.append(r)
+
+    # idx = np.argsort(np.array(fpriority_list))[-1]
+    # sidx_list = mol.getBondedAtomsByCoordNo(fidx_list[0][0],6)
+    # refcoord = mol.getAtom(sidx_list[idx]).coords()
+    # mcoord = mol.getAtom(fidx_list[0][0]).coords()
+    # idx0 = 0
+    # dist5 = 0
+    # idx5 = 0
+    # idx1_4 = []
+    # fprio1_4 = []
+    # sxyzs = []
+    # ssd_list = []
+    # for i, sidx in enumerate(sidx_list):
+    #     sxyz = mol.getAtom(sidx).coords()
+    #     dist = distance(refcoord,sxyz)
+    #     if dist == 0:
+    #         idx0 = i
+    #     elif dist > dist5:
+    #         dist5 = dist
+    #         idx5 = i
+    #     idx1_4.append(i)
+    #     fprio1_4.append(fpriority_list[i])
+    #     sxyzs.append(sxyz)
+    #     ssd_list.append(dist)
+    #     fd_list.append(distance(mcoord,sxyz))
+    # idx1_4.pop(idx0)
+    # idx1_4.pop(idx5)
+    # fprio1_4.pop(idx0)
+    # fprio1_4.pop(idx5)
+    # idx_list[0] = idx0
+    # idx_list[5] = idx5
+    # idx1 = idx1_4[np.argsort(np.array(fprio1_4))[3]]
+    # sxyz1 = sxyzs[idx1]
+    # idx2_ = idx1_4[np.argsort(np.array(fprio1_4))[2]]
+    # sxyz2_ = sxyzs[idx2_]
+    # idx3_ = idx1_4[np.argsort(np.array(fprio1_4))[1]]
+    # sxyz3_ = sxyzs[idx3_]
+    # idx4_ = idx1_4[np.argsort(np.array(fprio1_4))[0]]
+    # sxyz4_ = sxyzs[idx4_]
+    # fd1_4 = []
+    # fd1_4.append(distance(sxyz1, sxyz1))
+    # fd1_4.append(distance(sxyz1, sxyz2_))
+    # fd1_4.append(distance(sxyz1, sxyz3_))
+    # fd1_4.append(distance(sxyz1, sxyz4_))
+    # idx3 = idx1_4[np.argsort(np.array(fd1_4))[-1]] + idx1 - 4
+    # if idx3 == idx2_:
+    #     if fpriority_list[idx3_] > fpriority_list[idx4_]:
+    #         idx2 = idx3_
+    #         idx4 = idx4_
+    #     else:
+    #         idx2 = idx4_
+    #         idx4 = idx2_
+    # elif idx3 == idx4_:
+    #     if fpriority_list[idx2_] > fpriority_list[idx3_]:
+    #         idx2 = idx2_
+    #         idx4 = idx3_
+    #     else:
+    #         idx2 = idx3_
+    #         idx4 = idx2_
+    # else:
+    #     if fpriority_list[idx2_] > fpriority_list[idx4_]:
+    #         idx2 = idx2_
+    #         idx4 = idx4_
+    #     else:
+    #         idx2 = idx4_
+    #         idx4 = idx2_
+    # # get ax, eq, ax idxes
+    # idx_list[1] = idx1
+    # idx_list[2] = idx2
+    # idx_list[3] = idx3
+    # idx_list[4] = idx4
+    # fpriority_list = np.array(fpriority_list)[idx_list].tolist()
+    # fd_list = np.array(fd_list)[idx_list].tolist()
 
     return fpriority_list, fd_list, idx_list
 

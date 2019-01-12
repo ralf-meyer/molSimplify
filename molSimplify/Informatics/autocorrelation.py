@@ -166,7 +166,7 @@ def full_autocorrelation(mol, prop, d, oct=oct):
 def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
     ## atomIdx must b either a list of indcies
     ## or a single index
-    w = construct_property_vector(mol, prop, oct=True)
+    w = construct_property_vector(mol, prop, oct)
     autocorrelation_vector = numpy.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
@@ -306,8 +306,8 @@ def construct_property_vector(mol, prop, oct=True,modifier = False):
     ## note that ident just codes every atom as one, this gives
     ## a purely toplogical index. coord gives the number of
     ## connecting atom to attom i (similar to Randic index)
-    if not oct:
-        print('NOT using octahedral bonding pattern')
+    # if not oct:
+    #     print('NOT using octahedral bonding pattern')
     globs = globalvars()
     prop_dict = dict()
     w = numpy.zeros(mol.natoms)

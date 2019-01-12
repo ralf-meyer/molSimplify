@@ -5,7 +5,7 @@
 #  
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Classes import mol3D
+from molSimplify.Classes import *
 from molSimplify.Informatics.autocorrelation import *
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.partialcharges import *
@@ -16,9 +16,17 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.multioutput import MultiOutputRegressor
+from math import exp
 import numpy as np
-import csv, glob, os
-# import matplotlib.pyplot as plt
+import csv, glob, os, copy, pickle
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+numpy.seterr(divide = 'ignore')
+
+csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'
+colnum_i_label = 1
+colnum_j_label = 2
+colnum_desc = 2
 
 def feature_prep(mol, idx):
     # setting up variables
@@ -120,80 +128,63 @@ def feature_prep(mol, idx):
     sidx_list = mol.getBondedAtomsByCoordNo(fidx_list[0][0], 6)
     refcoord = mol.getAtom(sidx_list[idx]).coords()
     mcoord = mol.getAtom(fidx_list[0][0]).coords()
-    idx0 = 0
-    dist5 = 0
-    idx5 = 0
-    idx1_4 = []
-    fprio1_4 = []
-    sxyzs = []
-    ssd_list = []
-    for i, sidx in enumerate(sidx_list):
-        sxyz = mol.getAtom(sidx).coords()
-        dist = distance(refcoord,sxyz)
-        if i == idx:
-            idx0 = i
-        elif dist > dist5:
-            dist5 = dist
-            idx5 = i
-        idx1_4.append(i)
-        fprio1_4.append(fpriority_list[i])
-        sxyzs.append(sxyz)
-        ssd_list.append(dist)
-        fd_list.append(distance(mcoord,sxyz))
-    idx1_4.pop(idx0)
-    idx1_4.pop(idx5)
-    fprio1_4.pop(idx0)
-    fprio1_4.pop(idx5)
-    idx_list[0] = idx0
-    idx_list[5] = idx5
-    idx1 = idx1_4[np.argsort(np.array(fprio1_4))[3]]
-    sxyz1 = sxyzs[idx1]
-    idx2_ = idx1_4[np.argsort(np.array(fprio1_4))[2]]
-    sxyz2_ = sxyzs[idx2_]
-    idx3_ = idx1_4[np.argsort(np.array(fprio1_4))[1]]
-    sxyz3_ = sxyzs[idx3_]
-    idx4_ = idx1_4[np.argsort(np.array(fprio1_4))[0]]
-    sxyz4_ = sxyzs[idx4_]
-    fd1_4 = []
-    fd1_4.append(distance(sxyz1, sxyz1))
-    fd1_4.append(distance(sxyz1, sxyz2_))
-    fd1_4.append(distance(sxyz1, sxyz3_))
-    fd1_4.append(distance(sxyz1, sxyz4_))
-    idx3 = idx1_4[np.argsort(np.array(fd1_4))[-1]] + idx1 - 4
-    if idx3 == idx2_:
-        if fpriority_list[idx3_] > fpriority_list[idx4_]:
-            idx2 = idx3_
-            idx4 = idx4_
-        else:
-            idx2 = idx4_
-            idx4 = idx2_
-    elif idx3 == idx4_:
-        if fpriority_list[idx2_] > fpriority_list[idx3_]:
-            idx2 = idx2_
-            idx4 = idx3_
-        else:
-            idx2 = idx3_
-            idx4 = idx2_
+    vMLs = [vecdiff(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
+    rMLs = [distance(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
+    idx0 = idx
+    vangs = [vecangle(vML, vMLs[idx0]) for vML in vMLs]
+    idxes = range(6)
+    idx5 = np.argsort(np.array(vangs))[-1]
+    idx1_4 = copy.deepcopy(idxes)
+    idx1_4.remove(idx0)
+    idx1_4.remove(idx5)
+    fprio1_4 = copy.deepcopy(fpriority_list)
+    vMLs1_4 = copy.deepcopy(vMLs)
+    rMLs1_4 = copy.deepcopy(rMLs)
+    if idx0 > idx5:
+        fprio1_4.pop(idx0)
+        fprio1_4.pop(idx5)
+        vMLs1_4.pop(idx0)
+        vMLs1_4.pop(idx5)
+        rMLs1_4.pop(idx0)
+        rMLs1_4.pop(idx5)
     else:
-        if fpriority_list[idx2_] > fpriority_list[idx4_]:
-            idx2 = idx2_
-            idx4 = idx4_
-        else:
-            idx2 = idx4_
-            idx4 = idx2_
+        fprio1_4.pop(idx5)
+        fprio1_4.pop(idx0)
+        vMLs1_4.pop(idx5)
+        vMLs1_4.pop(idx0)
+        rMLs1_4.pop(idx5)
+        rMLs1_4.pop(idx0)
     # get ax, eq, ax idxes
-    idx_list[1] = idx1
-    idx_list[2] = idx2
-    idx_list[3] = idx3
-    idx_list[4] = idx4
+    idx1_ = np.argsort(np.array(fprio1_4))[-1]
+    idx1 = idx1_4[idx1_]
+    vangs1_4 = [vecangle(vML, vMLs1_4[idx1_]) for vML in vMLs1_4]
+    idx2_ = np.argsort(np.array(vangs1_4))[-1]
+    idx2 = idx1_4[idx2_]
+    idx3_4 = copy.deepcopy(idx1_4)
+    fprio3_4 = copy.deepcopy(fprio1_4)
+    idx3_4.remove(idx1)
+    idx3_4.remove(idx2)
+    if idx1_ > idx2_:
+        fprio3_4.pop(idx1_)
+        fprio3_4.pop(idx2_)
+    else:
+        fprio3_4.pop(idx2_)
+        fprio3_4.pop(idx1_)
+    idx3 = idx3_4[np.argsort(np.array(fprio3_4))[-1]]
+    idx3_4.remove(idx3)
+    idx4 = idx3_4[0]
+    idx_list = [idx0,idx1,idx2,idx3,idx4,idx5]
     fpriority_list = np.array(fpriority_list)[idx_list].tolist()
-    fd_list = np.array(fd_list)[idx_list].tolist()
+    fd_list = np.array(rMLs)[idx_list].tolist()
 
     return fpriority_list, fd_list, idx_list
 
 def normalize(data, mean, std):
-    data_norm = (data - mean) / std
-    data_norm = np.nan_to_num(data_norm)
+    data = np.array(data)
+    mean = np.array(mean)
+    std = np.array(std)
+    data_norm = np.divide((data - mean), std, out=np.zeros_like(data - mean), where=std!=0)
+    # data_norm = np.nan_to_num(data_norm)
 
     return data_norm
 
@@ -202,15 +193,18 @@ def normalize(data, mean, std):
 #  @param colnum_label the column number for the label column
 #  @param colnum_desc the starting column number for the descriptor columns
 #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
-def ML_prediction_krr(csvf, colnum_label, colnum_desc):
+def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1):
     # read in desc and label
     f = open(csvf, 'r')
     fcsv = csv.reader(f)
-    headers = np.array(next(f, None).rstrip('\r\n').split(','))
+    headers = np.array(next(f, None).rstrip('\r\n').split(','))[colnum_desc:]
     X = []
     y = []
-    for line in fcsv:
-        if len(line) == 309:
+    lines = [line for line in fcsv]
+    lnums = [len(line) for line in lines]
+    count = max(set(lnums), key=lnums.count)
+    for line in lines:
+        if len(line) == count:
             descs = []
             for desc in line[colnum_desc:]:
                 descs.append(float(desc))
@@ -225,6 +219,14 @@ def ML_prediction_krr(csvf, colnum_label, colnum_desc):
     std_y = np.std(y, axis=0)
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
+    # stats
+    mean_X_dict = dict(zip(headers, mean_X))
+    std_X_dict = dict(zip(headers, std_X))
+    stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
+    stats = [mean_X_dict, std_X_dict, mean_y, std_y]
+    stat_dict = dict(zip(stat_names, stats))
+    X_norm = normalize(X, mean_X, std_X)
+    y_norm = normalize(y, mean_y, std_y)
     # split to train and test
     X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(X_norm, y_norm, test_size=0.2, random_state=0)
     ## end
@@ -232,26 +234,27 @@ def ML_prediction_krr(csvf, colnum_label, colnum_desc):
     selector = RandomForestRegressor(random_state=0, n_estimators=100)
     selector.fit(X_norm_train, y_norm_train)
     X_norm_train_impts = selector.feature_importances_
-    idxes = np.where(X_norm_train_impts > 0.01)[0]
+    idxes = np.where(X_norm_train_impts > 0.001)[0]
+    print(len(idxes))
+    importances = X_norm_train_impts[idxes]
     features_sel = headers[idxes]
+    # importance
+    impt_dict = dict(zip(features_sel, importances))
     X_norm_train_sel = X_norm_train.T[idxes].T
     X_norm_test_sel = X_norm_test.T[idxes].T
     ## training with krr
+    signal = True
     # krr parameters
     kernel = 'rbf'
-    gamma = 1
-    alpha = 1
-    factor_lower = 0.5
-    factor_higher = 2
-    gamma_lower = gamma * factor_lower
-    gamma_higher = gamma * factor_higher
-    alpha_lower = alpha * factor_lower
-    alpha_higher = alpha * factor_higher
-    lin = 9
+    factor_lower = -4
+    factor_higher = 4
+    gamma_lower = gamma * exp(factor_lower)
+    gamma_higher = gamma * exp(factor_higher)
+    alpha_lower = alpha * exp(factor_lower)
+    alpha_higher = alpha * exp(factor_higher)
+    lin = 7
     # optimize hyperparameters
-    while gamma == 1 or alpha == 1 or \
-            (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
-            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+    while gamma == 1 or alpha == 1 or signal == False:
         gammas = np.linspace(gamma_lower, gamma_higher, lin)
         alphas = np.linspace(alpha_lower, alpha_higher, lin)
         tuned_parameters = [{'kernel': [kernel], 'gamma': gammas, 'alpha': alphas}]
@@ -259,12 +262,18 @@ def ML_prediction_krr(csvf, colnum_label, colnum_desc):
         regr.fit(X_norm_train_sel, y_norm_train)
         gamma = regr.best_params_['gamma']
         alpha = regr.best_params_['alpha']
-        # factor_lower *= 2
-        # factor_higher *= 0.5
-        gamma_lower = gamma * factor_lower
-        gamma_higher = gamma * factor_higher
-        alpha_lower = alpha * factor_lower
-        alpha_higher = alpha * factor_higher
+        if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
+            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+            signal = False
+            factor_lower *= 0.5
+            factor_higher *= 0.5
+            gamma_lower = gamma * exp(factor_lower)
+            gamma_higher = gamma * exp(factor_higher)
+            alpha_lower = alpha * exp(factor_lower)
+            alpha_higher = alpha * exp(factor_higher)
+        else:
+            signal = True
+        print('gamma is: ', gamma, '. alpha is: ', alpha)
     # final model
     regr = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
     regr.fit(X_norm_train_sel, y_norm_train)
@@ -275,16 +284,27 @@ def ML_prediction_krr(csvf, colnum_label, colnum_desc):
     y_norm_test_pred = regr.predict(X_norm_test_sel)
     y_test_pred = y_norm_test_pred * std_y + mean_y
     y_test_data = y_norm_test * std_y + mean_y
+    # data
+    train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
+    X_norm_train_sel_names = features_sel
+    X_norm_train_sel_dict = dict(zip(X_norm_train_sel_names, X_norm_train_sel.T))
+    trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
+    train_dict = dict(zip(train_names, trains))
+    test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
+    X_norm_test_sel_names = features_sel
+    X_norm_test_sel_dict = dict(zip(X_norm_test_sel_names, X_norm_test_sel.T))
+    tests = [X_norm_test_sel_dict, y_test_data, y_test_pred]
+    test_dict = dict(zip(test_names, tests))
     # performance
     score_train = regr.score(X_norm_train_sel, y_norm_train)
     score_test = regr.score(X_norm_test_sel, y_norm_test)
     MAE_train = mean_absolute_error(y_train_data, y_train_pred)
     MAE_test = mean_absolute_error(y_test_data, y_test_pred)
-    stat_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
-    stats = [score_train, score_test, MAE_train, MAE_test]
-    stat_dict = dict(zip(stat_names, stats))
+    perm_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
+    perms = [score_train, score_test, MAE_train, MAE_test]
+    perm_dict = dict(zip(perm_names, perms))
 
-    return y_train_data, y_train_pred, y_test_data, y_test_pred, stat_dict
+    return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
 
 ## predict labels using gradient boosting regressor (GBR) with a given csv file
 #  @param csvf the csv file containing headers (first row), data, and label
@@ -292,15 +312,18 @@ def ML_prediction_krr(csvf, colnum_label, colnum_desc):
 #  @param colnum_j_label the ending column number for the label column + 1
 #  @param colnum_desc the starting column number for the descriptor columns
 #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
-def ML_prediction_gbr(csvf, colnum_i_label, colnum_j_label, colnum_desc):
+def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
     # read in desc and label
     f = open(csvf, 'r')
     fcsv = csv.reader(f)
-    headers = np.array(next(f, None).rstrip('\r\n').split(','))
+    headers = np.array(next(f, None).rstrip('\r\n').split(','))[colnum_desc:]
     X = []
     y = []
-    for line in fcsv:
-        if len(line) == 309:
+    lines = [line for line in fcsv]
+    lnums = [len(line) for line in lines]
+    count = max(set(lnums), key=lnums.count)
+    for line in lines:
+        if len(line) == count:
             descs = []
             labels = []
             for desc in line[colnum_desc:]:
@@ -316,41 +339,337 @@ def ML_prediction_gbr(csvf, colnum_i_label, colnum_j_label, colnum_desc):
     std_X = np.std(X, axis=0)
     mean_y = np.mean(y, axis=0)
     std_y = np.std(y, axis=0)
+    # stats
+    mean_X_dict = dict(zip(headers, mean_X))
+    std_X_dict = dict(zip(headers, std_X))
+    stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
+    stats = [mean_X_dict, std_X_dict, mean_y, std_y]
+    stat_dict = dict(zip(stat_names, stats))
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
     X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(X_norm, y_norm, test_size=0.2, random_state=0)
     ## end
     # feature selection
-    # selector = RandomForestRegressor(random_state=0, n_estimators=100)
-    # selector.fit(X_norm_train, y_norm_train)
-    # X_norm_train_impts = selector.feature_importances_
-    # idxes = np.where(X_norm_train_impts > 0.01)[0]
-    # features_sel = headers[idxes]
-    idxes = range(len(X_norm_train.T))
-    X_norm_train_sel = X_norm_train.T[idxes].T
-    X_norm_test_sel = X_norm_test.T[idxes].T
-    ## training with gbr
-    regr = MultiOutputRegressor(GradientBoostingRegressor(random_state=0))
-    # final model
-    regr.fit(X_norm_train_sel, y_norm_train)
-    # predictions
-    y_norm_train_pred = regr.predict(X_norm_train_sel)
-    y_train_pred = y_norm_train_pred * std_y + mean_y
-    y_train_data = y_norm_train * std_y + mean_y
-    y_norm_test_pred = regr.predict(X_norm_test_sel)
-    y_test_pred = y_norm_test_pred * std_y + mean_y
-    y_test_data = y_norm_test * std_y + mean_y
-    # performance
-    score_train = regr.score(X_norm_train_sel, y_norm_train)
-    score_test = regr.score(X_norm_test_sel, y_norm_test)
-    MAE_train = mean_absolute_error(y_train_data, y_train_pred)
-    MAE_test = mean_absolute_error(y_test_data, y_test_pred)
-    stat_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
-    stats = [score_train, score_test, MAE_train, MAE_test]
-    stat_dict = dict(zip(stat_names, stats))
+    selector = RandomForestRegressor(random_state=0, n_estimators=100)
+    selector.fit(X_norm_train, y_norm_train.T[0])
+    X_norm_train_impts = selector.feature_importances_
+    scores = []
+    results = []
+    thresholds = np.logspace(-2,-2,1)
+    for threshold in thresholds:
+        idxes = np.where(X_norm_train_impts > threshold)[0]
+        importances = X_norm_train_impts[idxes]
+        features_sel = headers[idxes]
+        # importance
+        impt_dict = dict(zip(features_sel, importances))
+        # idxes = range(len(X_norm_train.T))
+        X_norm_train_sel = X_norm_train.T[idxes].T
+        X_norm_test_sel = X_norm_test.T[idxes].T
+        ## training with gbr
+        regr = MultiOutputRegressor(GradientBoostingRegressor(random_state=0))
+        # final model
+        regr.fit(X_norm_train_sel, y_norm_train)
+        # predictions
+        y_norm_train_pred = regr.predict(X_norm_train_sel)
+        y_train_pred = y_norm_train_pred * std_y + mean_y
+        y_train_data = y_norm_train * std_y + mean_y
+        y_norm_test_pred = regr.predict(X_norm_test_sel)
+        y_test_pred = y_norm_test_pred * std_y + mean_y
+        y_test_data = y_norm_test * std_y + mean_y
+        # data
+        train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
+        X_norm_train_sel_names = features_sel
+        X_norm_train_sel_dict = dict(zip(X_norm_train_sel_names, X_norm_train_sel.T))
+        trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
+        train_dict = dict(zip(train_names, trains))
+        test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
+        X_norm_test_sel_names = features_sel
+        X_norm_test_sel_dict = dict(zip(X_norm_test_sel_names, X_norm_test_sel.T))
+        tests = [X_norm_test_sel_dict, y_test_data, y_test_pred]
+        test_dict = dict(zip(test_names, tests))
+        # performance
+        score_train = regr.score(X_norm_train_sel, y_norm_train)
+        score_test = regr.score(X_norm_test_sel, y_norm_test)
+        MAE_train = mean_absolute_error(y_train_data, y_train_pred)
+        MAE_test = mean_absolute_error(y_test_data, y_test_pred)
+        perm_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
+        perms = [score_train, score_test, MAE_train, MAE_test]
+        perm_dict = dict(zip(perm_names, perms))
+        scores.append(score_test)
+        results.append([stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr])
+    idx = np.argsort(np.array(scores))[-1]
+    stat_dict = results[idx][0]
+    impt_dict = results[idx][1]
+    train_dict = results[idx][2]
+    test_dict = results[idx][3]
+    perm_dict = results[idx][4]
+    regr = results[idx][5]
 
-    return y_train_data, y_train_pred, y_test_data, y_test_pred, stat_dict
+    return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
+
+## predict labels using a given regr
+#  @param core3D mol3D class of a molecule
+#  @param spin the spin multiplicity of the core3D
+#  @param train_dict th dictionary that contains the training data
+#  @param stat_dict the dictionary that contains the statistics of the training data (e.g. mean, std)
+#  @param impt_dict the dictionary that contains the important features
+#  @param regr the regression model
+#  @return bondl_dict, ds (a list of Euclidean distances)
+def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
+    bondl_keys = []
+    bondls = []
+    spin_ohe = [0] * 6
+    spin_ohe[spin - 1] = 1
+    mean_y = stat_dict['mean_y']
+    std_y = stat_dict['std_y']
+    mean_X_dict = stat_dict['mean_X_dict']
+    std_X_dict = stat_dict['std_X_dict']
+    midxes = core3D.findMetal()
+    Xs_train = train_dict['X_norm_sel_dict']
+    for midx in midxes:
+        matno = core3D.getAtom(midx).atno
+        fidxes = core3D.getBondedAtoms(midx)
+        for fidx_i, fidx in enumerate(fidxes):
+            fprio_list, fd_list, idx_list = feature_prep(core3D, fidx_i)
+            descs = []
+            desc_names = []
+            descs.append(matno)
+            desc_names.append('matno_0')
+            descs += spin_ohe
+            for i in range(len(spin_ohe)):
+                desc_names.append('spin' + str(i) + '_ohe')
+            for idx_i, idx in enumerate(idx_list):
+                fidx_ = fidxes[idx]
+                descriptor_names, descriptors = get_descriptor_vector_for_atidx(core3D, fidx_)
+                for descriptor_name in descriptor_names:
+                    desc_names.append(descriptor_name + '_' + str(idx_i))
+                descs += descriptors
+            desc_dict = dict(zip(desc_names, descs))
+            descs = []
+            Xs_train_sel = []
+            d2s = [0] * len(Xs_train.values()[0])
+            for key in impt_dict.keys():
+                desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key]!= 0)
+                descs.append(desc)
+                X_train = Xs_train[key]
+                Xs_train_sel.append(X_train.tolist())
+                # d2s = d2s + np.square(np.array(desc * len(X_train)) - np.array(X_train))
+            # print('The largest desc is ' + str(max(descs)))
+            # ds = np.sqrt(d2s)
+            ds = []
+            for i in range(len(Xs_train_sel[0])):
+                d = np.linalg.norm(np.array(descs) - np.array(Xs_train_sel).T[i])
+                ds.append(np.linalg.norm(d))
+            bondl = regr.predict([descs]) * std_y + mean_y
+            bondl_keys.append(fidx)
+            bondls.append(bondl)
+    bondl_dict = dict(zip(bondl_keys, bondls))
+
+    return bondl_dict, ds
+
+## predict labels using a given regr
+#  @param core3D mol3D class of a molecule
+#  @param spin the spin multiplicity of the core3D
+#  @param mligcaomt the external atom index of the mlig
+#  @return bondl_dict, ds (a list of Euclidean distances)
+def krr_model_predict(core3D, spin, mligcatom):
+    bondl_keys = []
+    bondls = []
+    spin_ohe = [0] * 6
+    spin_ohe[spin - 1] = 1
+    globs = globalvars()
+    if globs.custom_path: # test if a custom path is used:
+        fpath = str(globs.custom_path).rstrip('/') + "/python_krr"
+    else:
+        fpath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_krr")
+    # load model
+    f_model = fpath + '/hat_krr_model.pkl'
+    f = open(f_model,'rb')
+    regr = pickle.load(f)
+    Xs_train = regr.X_fit_
+    ## load stats
+    # y stats
+    f_stats = fpath + '/hat_y_mean_std.csv'
+    f = open(f_stats, 'r')
+    fcsv = csv.reader(f)
+    for i, line in enumerate(fcsv):
+        if i == 1:
+            mean_y = float(line[0])
+            std_y = float(line[1])
+    # x stats
+    f_stats = fpath + '/hat_X_mean_std.csv'
+    f = open(f_stats, 'r')
+    fcsv = csv.reader(f)
+    for i, line in enumerate(fcsv):
+        if i == 0:
+            feature_names = line
+        if i == 1:
+            mean_X = [float(ele) for ele in line]
+        if i == 2:
+            std_X = [float(ele) for ele in line]
+    mean_X_dict = dict(zip(feature_names, mean_X))
+    std_X_dict = dict(zip(feature_names, std_X))
+    # load feature names
+    f_stats = fpath + '/hat_feature_names.csv'
+    f = open(f_stats, 'r')
+    fcsv = csv.reader(f)
+    for i, line in enumerate(fcsv):
+        keys = line
+    ## rOH
+    # load model2
+    f_model = fpath + '/hat2_krr_model.pkl'
+    f = open(f_model,'rb')
+    regr2 = pickle.load(f)
+    X2s_train = regr2.X_fit_
+    ## load stats
+    # y2 stats
+    f_stats = fpath + '/hat2_y_mean_std.csv'
+    f = open(f_stats, 'r')
+    fcsv = csv.reader(f)
+    for i, line in enumerate(fcsv):
+        if i == 1:
+            mean_y2 = float(line[0])
+            std_y2 = float(line[1])
+    # x2 stats
+    f_stats = fpath + '/hat2_X_mean_std.csv'
+    f = open(f_stats, 'r')
+    fcsv = csv.reader(f)
+    for i, line in enumerate(fcsv):
+        if i == 0:
+            feature2_names = line
+        if i == 1:
+            mean_X2 = [float(ele) for ele in line]
+        if i == 2:
+            std_X2 = [float(ele) for ele in line]
+    mean_X2_dict = dict(zip(feature_names, mean_X))
+    std_X2_dict = dict(zip(feature_names, std_X))
+    # load feature2 names
+    f_stats = fpath + '/hat2_feature_names.csv'
+    f = open(f_stats, 'r')
+    fcsv = csv.reader(f)
+    for i, line in enumerate(fcsv):
+        keys2 = line
+    # # get train data
+    # Xs_train_sel = []
+    # f_X_train = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/hat_krr_X_train.csv'
+    # f = open(f_X_train, 'r')
+    # fcsv = csv.reader(f)
+    # for line in fcsv:
+    #     Xs_train.append([float(ele) for ele in line])
+    # # get kernel space coefs
+    # coefs = []
+    # f_coef = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/hat_krr_dual_coef.csv'
+    # f = open(f_coef, 'r')
+    # fcsv = csv.reader(f)
+    # for line in fcsv:
+    #     coefs = [float(ele) for ele in line]
+    # get features
+    midxes = core3D.findMetal()
+    for midx in midxes:
+        matno = core3D.getAtom(midx).atno
+        fidxes = core3D.getBondedAtoms(midx)
+        ds1 = []
+        for fidx_i, fidx in enumerate(fidxes):
+            fprio_list, fd_list, idx_list = feature_prep(core3D, fidx_i)
+            descs = []
+            desc_names = []
+            descs.append(matno)
+            desc_names.append('matno_0')
+            descs += spin_ohe
+            for i in range(len(spin_ohe)):
+                desc_names.append('spin' + str(i) + '_ohe')
+            for idx_i, idx in enumerate(idx_list):
+                fidx_ = fidxes[idx]
+                descriptor_names, descriptors = get_descriptor_vector_for_atidx(core3D, fidx_)
+                for descriptor_name in descriptor_names:
+                    desc_names.append(descriptor_name + '_' + str(idx_i))
+                descs += descriptors
+            desc_dict = dict(zip(desc_names, descs))
+            descs = []
+            Xs_train_sel = []
+            d2s = [0] * len(Xs_train[0])
+            for key in keys:
+                desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key]!= 0)
+                descs.append(desc)
+                # d2s = d2s + np.square(np.array(desc * len(X_train)) - np.array(X_train))
+            # print('The largest desc is ' + str(max(descs)))
+            # ds = np.sqrt(d2s)
+            ds = []
+            for i in range(len(Xs_train[0])):
+                d = np.linalg.norm(np.array(descs) - np.array(Xs_train)[i])
+                ds.append(d)
+            ds1.append(ds)
+            bondl = regr.predict([descs]) * std_y + mean_y
+            bondl_keys.append(fidx)
+            bondls.append(bondl)
+            if fidx == mligcatom:
+                descs = []
+                d2s = [0] * len(X2s_train[0])
+                for key in keys2:
+                    desc = np.divide((desc_dict[key] - mean_X2_dict[key]), std_X2_dict[key],
+                                     out=np.zeros_like(desc_dict[key] - mean_X2_dict[key]), where=std_X2_dict[key] != 0)
+                    descs.append(desc)
+                    # d2s = d2s + np.square(np.array(desc * len(X_train)) - np.array(X_train))
+                # print('The largest desc is ' + str(max(descs)))
+                # ds = np.sqrt(d2s)
+                ds2 = []
+                for i in range(len(X2s_train[0])):
+                    d2 = np.linalg.norm(np.array(descs) - np.array(X2s_train)[i])
+                    ds2.append(d2)
+                bondl2 = regr2.predict([descs]) * std_y2 + mean_y2
+
+    bondl_dict = dict(zip(bondl_keys, bondls))
+
+    return bondl_dict, bondl2, ds1, ds2
+
+# ## predict labels using gradient boosting regressor (GBR) with a given csv file
+# #  @param csvf the csv file containing headers (first row), data, and label
+# #  @param colnum_i_label the starting column number for the label column
+# #  @param colnum_j_label the ending column number for the label column + 1
+# #  @param colnum_desc the starting column number for the descriptor columns
+# #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
+# def krr_model_predict(core3D, spin, stat_dict, impt_dict, regr):
+#     bondl_keys = []
+#     bondls = []
+#     spin_ohe = [0] * 6
+#     spin_ohe[spin - 1] = 1
+#     mean_y = stat_dict['mean_y']
+#     std_y = stat_dict['std_y']
+#     mean_X = stat_dict['mean_X']
+#     std_X = stat_dict['std_X']
+#     midxes = core3D.findMetal()
+#     for midx in midxes:
+#         matno = core3D.getAtom(midx).atno
+#         fidxes = core3D.getBondedAtoms(midx)
+#         for fidx_i, fidx in enumerate(fidxes):
+#             fprio_list, fd_list, idx_list = feature_prep(core3D, fidx_i)
+#             descs = []
+#             desc_names = []
+#             descs.append(matno)
+#             desc_names.append('matno_0')
+#             descs += spin_ohe
+#             for i in range(len(spin_ohe)):
+#                 desc_names.append('spin' + str(i) + '_ohe')
+#             for idx_i, idx in enumerate(idx_list):
+#                 fidx_ = fidxes[idx]
+#                 descriptor_names, descriptors = get_descriptor_vector_for_atidx(core3D, fidx_)
+#                 for descriptor_name in descriptor_names:
+#                     desc_names.append(descriptor_name + '_' + str(idx_i))
+#                 descs += descriptors
+#             normalize(descs, mean_X, std_X)
+#             desc_dict = dict(zip(desc_names, descs))
+#             descs = []
+#             for key in impt_dict.keys():
+#                 desc = desc_dict[key]
+#                 descs.append(desc)
+#             regr.fit()
+#             bondl = regr.predict([descs]) * std_y + mean_y
+#             bondl_keys.append(fidx)
+#             bondls.append(bondl)
+#     bondl_dict = dict(zip(bondl_keys, bondls))
+#
+#     return bondl_dict
 
 ## wrapper to get KRR predictions for bondl_core3D, bondl_m3D, bondl_m3Dsub from a known mol3D using partial charges
 #  @param mol mol3D of the molecule
@@ -361,7 +680,7 @@ def ML_prediction_gbr(csvf, colnum_i_label, colnum_j_label, colnum_desc):
 def invoke_KRR_from_mol3d_dQ(mol,charge):
     X_norm_train = []
     y_norm_train = []
-    # # find the metal from RACs 
+    # # find the metal from RACs
     # metal = mol.getAtom(mol.findMetal()[0]).symbol()
     # ox_modifier = {metal:oxidation_state}
     # get partialQs
@@ -472,17 +791,18 @@ def invoke_KRR_from_mol3d_RACs(mol,charge):
 #  @param atidx the index of the atom of concern
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
-def get_descriptor_vector_for_atidx(mol, atidx, depth=4):
+def get_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
     descriptor_names = []
     descriptors = []
-    result_dictionary = generate_atomonly_autocorrelations(mol, atidx,False, depth)
+    result_dictionary = generate_atomonly_autocorrelations(mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         descriptor_names += colnames
     for results in result_dictionary['results']:
         descriptors += results.tolist()
-    result_dictionary = generate_atomonly_deltametrics(mol, atidx, False, depth)
+    result_dictionary = generate_atomonly_deltametrics(mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
-        descriptor_names += colnames
+        for colname in colnames:
+            descriptor_names.append('D_' + colname)
     for results in result_dictionary['results']:
         descriptors += results.tolist()
 
@@ -491,32 +811,33 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4):
 # commented out default_plot() as conda repo does not automatically conda install matplitlib
 # def default_plot(x, y):
 #     # defs for plt
-#     # xlabel = r'% HF exchange'
-#     # ylabel = r'${\rm \Delta}{\rm E}^{\rm X-HS}$'
+#     xlabel = r'distance / ${\rm \AA}$'
+#     ylabel = r'distance / ${\rm \AA}$'
 #     colors = ['r', 'g', 'b', '.75', 'orange', 'k']
 #     markers = ['o', 's', 'D', 'v', '^', '<', '>']
 #     font = {'family': 'sans-serif',
 #             # 'weight' : 'bold',
 #             'size': 22}
 #     # figure size
-#     plt.figure(figsize=(7.5, 6))
+#     plt.figure(figsize=(7, 6))
 #     # dealing with axes
-#     # x = sorted(x)
-#     # y = sorted(y)
-#     # x_min = round(x[0],2)
-#     # x_max = round(x[-1],2)
-#     # plt.xlim(x_min, x_max)
+#     x = np.array(x)
+#     y = np.array(y)
+#     x_min = float(format(np.amin(x),'.1f')) - 0.1
+#     x_max = float(format(np.amax(x), '.1f')) + 0.1
+#     # x_range = x_max - x_min
+#     plt.xlim(x_min, x_max)
 #     # y_min = round(y[0],2)
 #     # y_max = round(y[-1],2)
-#     # plt.ylim(y_min, y_max)
-#     # plt.xlabel(xlabel)
-#     # plt.ylabel(ylabel)
+#     plt.ylim(x_min, x_max)
+#     plt.xlabel(xlabel)
+#     plt.ylabel(ylabel)
 #     # dealing with ticks
 #     ax = plt.axes()
-#     # ax.xaxis.set_major_locator(ticker.MultipleLocator((x_max - x_min) / 4))
-#     # ax.xaxis.set_minor_locator(ticker.MultipleLocator((x_max - x_min) / 8))
-#     # ax.yaxis.set_major_locator(ticker.MultipleLocator((y_max - y_min) / 4))
-#     # ax.yaxis.set_minor_locator(ticker.MultipleLocator((y_max - y_min) / 8))
+#     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.4))
+#     ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.2))
+#     ax.yaxis.set_major_locator(ticker.MultipleLocator(0.4))
+#     ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.2))
 #     plt.tick_params(which='both', axis='both', direction='in', bottom=True, top=True, right=True, left=True)
 #     plt.rcParams['axes.linewidth'] = 3
 #     plt.rcParams['xtick.major.size'] = 10
@@ -531,6 +852,7 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4):
 #
 #     plt.rc('font', **font)
 #     plt.plot(x, y, 'o', markeredgecolor='k')
+#     plt.plot([x_min,x_max],[x_min,x_max],linestyle='dashed',color='k')
 #     # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
 #     plt.show()
 # # plt.imshow(data,interpolation='none')
