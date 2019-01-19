@@ -11,7 +11,7 @@
 ## import 
 import keras
 from keras import backend as K
-from keras.models import model_from_json
+from keras.models import model_from_json, load_model
 from keras.optimizers import Adam
 import numpy as np
 import csv
@@ -68,7 +68,7 @@ def data_normalize(data, train_mean, train_var):
     for idx, var in enumerate(np.squeeze(train_var)):
         if var < 1e-16:
             delete_ind.append(idx)
-    if len(delete_ind)>0:
+    if len(delete_ind) > 0:
         print('Note: There are %d features with a variance smaller than 1e-16.' % len(delete_ind))
         print('Please double check your input data if this number is not what you expect...')
         data = np.delete(data, delete_ind, axis=1)
@@ -269,14 +269,18 @@ def load_keras_ann(predictor, suffix='model'):
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     key = get_key(predictor, suffix)
     # print('THIS IS THE KEY',key)
-    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
-    json_file = open(path_to_file, 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = model_from_json(loaded_model_json)
-    # load weights into  model
-    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.h5')
-    loaded_model.load_weights(path_to_file)
+    if not "clf" in predictor:
+        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
+        json_file = open(path_to_file, 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = model_from_json(loaded_model_json)
+        # load weights into  model
+        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.h5')
+        loaded_model.load_weights(path_to_file)
+    if "clf" in predictor:
+        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.h5')
+        loaded_model = load_model(path_to_file)
     # complile model
     if predictor == 'homo':
         loaded_model.compile(loss="mse", optimizer=Adam(beta_2=1 - 0.0016204733101599046, beta_1=0.8718839135783554,
@@ -292,17 +296,15 @@ def load_keras_ann(predictor, suffix='model'):
                              metrics=['mse', 'mae', 'mape'])
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         loaded_model.compile(loss='binary_crossentropy',
-                             optimizer=Adam(lr=0.0001,
+                             optimizer=Adam(lr=0.00005,
                                             beta_1=0.95,
-                                            beta_2=0.999,
-                                            decay=0.0001),
+                                            decay=0.0001,
+                                            amsgrad=True),
                              metrics=['accuracy'])
     else:
         loaded_model.compile(loss="mse", optimizer='adam',
                              metrics=['mse', 'mae', 'mape'])
-
-    #print("Keras/tf model loaded for " + str(predictor) + " from disk")
-
+    # print("Keras/tf model loaded for " + str(predictor) + " from disk")
     return (loaded_model)
 
 
@@ -311,12 +313,11 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     ## names to match the expectations of the target ANN model.
     ## it does NOT perfrom standardization
 
-    
-
     ## get variable names
     target_names = load_ANN_variables(predictor)
     if len(target_names) > str(len(descriptors)):
-        print('Error: preparing features for ' + str(predictor) + ', recieved ' + str(len(descriptors)) + ' descriptors')    
+        print(
+            'Error: preparing features for ' + str(predictor) + ', recieved ' + str(len(descriptors)) + ' descriptors')
         print('model requires ' + str(len(target_names)) + ' descriptors, attempting match')
     excitation = []
     valid = True
@@ -335,7 +336,7 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     return excitation
 
 
-def ANN_supervisor(predictor, descriptors, descriptor_names,debug=False):
+def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     print('ANN activated for ' + str(predictor))
 
     ## form the excitation in the corrrect order/variables
@@ -360,7 +361,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names,debug=False):
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
     latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
     if debug:
-        print('calling ANN model...')   
+        print('calling ANN model...')
     result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
     return result, latent_space_vector
 
@@ -401,7 +402,8 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Euc Dist Structure:  '+str(csv_lines[min_ind]).strip('[]') +  ' for predictor '  + str(predictor))
+            print('Closest Euc Dist Structure:  ' + str(csv_lines[min_ind]).strip('[]') + ' for predictor ' + str(
+                predictor))
     # need to get normalized distances 
 
     ########################################################################################
@@ -418,7 +420,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
     return (min_dist)
 
 
-def find_ANN_latent_dist(predictor, latent_space_vector,debug=False):
+def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -440,7 +442,8 @@ def find_ANN_latent_dist(predictor, latent_space_vector,debug=False):
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
     for i, rows in enumerate(train_mat):
         # print('row',rows)
-        scaled_row = np.squeeze(data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
+        scaled_row = np.squeeze(
+            data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
         # print('scaled_row',scaled_row)
         latent_train_row = get_outputs([np.array([scaled_row]), 0])
         # print('LATENT TRAIN ROW', latent_train_row)
@@ -463,7 +466,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector,debug=False):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Latent Dist Structure: '  + str(csv_lines[min_ind ]) + ' for predictor ' + str(predictor))
+            print('Closest Latent Dist Structure: ' + str(csv_lines[min_ind]) + ' for predictor ' + str(predictor))
     return (min_dist)
 
 

@@ -116,8 +116,8 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
          ANN_reason = 'ANN skipped by user'
     else:
          
-         try:
-         #if True:
+         # try:
+         if True:
             if args.oldANN:
                 print('using old ANN by request')
                 ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
@@ -137,12 +137,12 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                  ANN_bondl = len([item for items in batslist for item in items])*[False] ## there needs to be 1 length per possible lig
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
-         except:
-         #else:
-             print("ANN call rejected")
-             ANN_reason = 'uncaught exception'
-             ANN_flag = False
-             ANN_bondl =  len([item for items in batslist for item in items])*[False]
+         # except:
+         # #else:
+         #     print("ANN call rejected")
+         #     ANN_reason = 'uncaught exception'
+         #     ANN_flag = False
+         #     ANN_bondl =  len([item for items in batslist for item in items])*[False]
     return ANN_flag,ANN_bondl,ANN_reason,ANN_attributes, catalysis_flag
     
 
