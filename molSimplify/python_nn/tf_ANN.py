@@ -16,11 +16,13 @@ from keras.optimizers import Adam
 import numpy as np
 import csv
 from pkg_resources import resource_filename, Requirement
+from clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
 from molSimplify.Classes.globalvars import *
 from molSimplify.python_nn.ANN import matrix_loader
 import sys, os
 import json
 import pandas as pd
+import glob
 
 
 ## Functions
@@ -33,7 +35,7 @@ def get_key(predictor, suffix=False):
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/' + predictor + '_%s' % suffix
         elif predictor in ['geo_static_clf', 'sc_static_clf']:
-            key = 'static_clf/' + predictor + '_%s' % suffix
+            key = predictor + '/' + predictor + '_%s' % suffix
         else:
             key = predictor + '/' + predictor + '_%s' % suffix
     else:
@@ -44,7 +46,7 @@ def get_key(predictor, suffix=False):
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/'
         elif predictor in ['geo_static_clf', 'sc_static_clf']:
-            key = 'static_clf/' + predictor + '_%s' % suffix
+            key = predictor + '/' + predictor + '_%s' % suffix
         else:
             key = predictor
     return key
@@ -179,7 +181,7 @@ def load_training_data(predictor):
     elif predictor == "split":
         key = predictor + '/' + predictor + '_x_41_OHE'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
-        key = 'static_clf/' + predictor + '_train_x'
+        key = predictor + '/' + predictor + '_train_x'
     else:
         key = predictor + '/' + predictor + '_x_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
@@ -200,7 +202,7 @@ def load_test_data(predictor):
     elif predictor == "split":
         key = predictor + '/' + predictor + '_x_41_OHE'  # Note, this test data is not available, will return train
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
-        key = 'static_clf/' + predictor + '_test_x'
+        key = predictor + '/' + predictor + '_test_x'
     else:
         key = predictor + '/' + predictor + '_x_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
@@ -221,7 +223,7 @@ def load_training_labels(predictor):
     elif predictor == "split":
         key = predictor + '/' + predictor + '_y_41_OHE'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
-        key = 'static_clf/' + predictor + '_train_y'
+        key = predictor + '/' + predictor + '_train_y'
     else:
         key = predictor + '/' + predictor + '_y_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
@@ -242,7 +244,7 @@ def load_test_labels(predictor):
     elif predictor == "split":
         key = predictor + '/' + predictor + '_y_41_OHE'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
-        key = 'static_clf/' + predictor + '_test_y'
+        key = predictor + '/' + predictor + '_test_y'
     else:
         key = predictor + '/' + predictor + '_y_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
@@ -363,6 +365,8 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     if debug:
         print('calling ANN model...')
     result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
+    if "clf" in predictor:
+        latent_space_vector = find_clf_lse(predictor, excitation, ensemble=False, modelname=False)
     return result, latent_space_vector
 
 
@@ -468,6 +472,63 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
             csv_lines = list(csv.reader(f))
             print('Closest Latent Dist Structure: ' + str(csv_lines[min_ind]) + ' for predictor ' + str(predictor))
     return (min_dist)
+
+
+def find_clf_lse(predictor, excitation, ensemble=False, modelname=False):
+    if modelname == False:
+        # print("Using models trained with spectro data for calculating LSE.")
+        modelname = "spectro"
+    key = get_key(predictor, suffix='')
+    base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
+    train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
+    fmat_train = load_training_data(predictor)
+    labels_train = np.array(load_training_labels(predictor), dtype='int')
+    fmat_train = np.array(fmat_train, dtype='float64')
+    fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x)
+    fmat_train = np.array(fmat_train)
+    if not ensemble:
+        model = base_path + 'model.h5'
+        loaded_model = load_model(model)
+        train_latent = get_layer_outputs(loaded_model, -4, fmat_train, training_flag=False)
+        test_latent = get_layer_outputs(loaded_model, -4, excitation, training_flag=False)
+        # pred_test = get_layer_outputs(loaded_model, -1, excitation, training_flag=False)
+        nn_latent_dist_train, _, __ = dist_neighbor(train_latent, train_latent, labels_train,
+                                                    l=5, dist_ref=1)
+        avrg_latent_dist = np.mean(nn_latent_dist_train)
+        nn_latent_dist_test, nn_dists, nn_labels = dist_neighbor(test_latent, train_latent, labels_train,
+                                                                 l=5, dist_ref=avrg_latent_dist)
+        lse = get_entropy(nn_dists, nn_labels)
+    else:
+        print("Using ensemble averaged LSE.")
+        base_path = base_path + 'ensemble_%s/' % modelname
+        model_list = sorted(glob.glob(base_path + '/*.h5'))
+        if len(model_list) != 10:
+            print(key)
+            print(base_path)
+            print(model_list)
+            print("Error: LSE cannot be calculated with modelname %s--The number of models is wrong." % modelname)
+            return -1
+        fmat_train = np.array_split(fmat_train, 10, axis=0)
+        labels_train = np.array_split(labels_train, 10, axis=0)
+        entropies_list = []
+        for model in model_list:
+            print(model)
+            loaded_model = load_model(model)
+            model_idx = int(model.split("/")[-1].split(".")[0].split("_")[-1])
+            _fmat_train = array_stack(fmat_train, model_idx)
+            _labels_train = array_stack(labels_train, model_idx)
+            train_latent = get_layer_outputs(loaded_model, -4, _fmat_train, training_flag=False)
+            test_latent = get_layer_outputs(loaded_model, -4, excitation, training_flag=False)
+            # pred_test = get_layer_outputs(loaded_model, -1, excitation, training_flag=False)
+            nn_latent_dist_train, _, __ = dist_neighbor(train_latent, train_latent, _labels_train,
+                                                        l=5, dist_ref=1)
+            avrg_latent_dist = np.mean(nn_latent_dist_train)
+            nn_latent_dist_test, nn_dists, nn_labels = dist_neighbor(test_latent, train_latent, _labels_train,
+                                                                     l=5, dist_ref=avrg_latent_dist)
+            entropies = get_entropy(nn_dists, nn_labels)
+            entropies_list.append(entropies)
+        lse = np.mean(np.array(entropies_list), axis=0)
+    return lse
 
 
 def save_model(model, predictor, num=None, suffix=False):

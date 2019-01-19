@@ -13,6 +13,7 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.RACassemble import *
 from molSimplify.python_nn.tf_ANN import *
+from molSimplify.python_nn.clf_analysis_tool import lse_trust
 import time
 from sets import Set
 
@@ -415,15 +416,23 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     if valid:
         ### =====Classifiers:=====
-        print("Using classifiers...")
-        # print("charge_lig: ", net_lig_charge)
         _descriptor_names = ["oxstate", "spinmult", "charge_lig"]
         _descriptors = [ox, spin, net_lig_charge]
         descriptor_names, descriptors = get_descriptor_vector(this_complex, custom_ligand_dict, ox_modifier)
         descriptor_names = _descriptor_names + descriptor_names
         descriptors = _descriptors + descriptors
-        flag_oct, _ = ANN_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
-        print("geo_label:", flag_oct)
+        flag_oct, geo_lse = ANN_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
+        sc_pred, sc_lse = ANN_supervisor("sc_static_clf", descriptors, descriptor_names, debug=False)
+        print("geo_label:", flag_oct, "LSE:", geo_lse)
+        print("sc_label:", sc_pred, "LSE:", sc_lse)
+        ANN_attributes.update({"geo_label": 0 if flag_oct[0, 0] <= 0.5 else 1,
+                               "geo_prob": flag_oct[0, 0],
+                               "geo_LSE": geo_lse[0],
+                               "geo_label_trust": lse_trust(geo_lse),
+                               "sc_label": 0 if sc_pred[0, 0] <= 0.5 else 1,
+                               "sc_prob": sc_pred[0, 0],
+                               "sc_LSE": sc_lse[0],
+                               "sc_label_trust": lse_trust(sc_lse),})
 
         ## build RACs without geo
         con_mat = this_complex.graph

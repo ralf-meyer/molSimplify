@@ -138,7 +138,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
          except:
-         # #else:
+         # else:
              print("ANN call rejected")
              ANN_reason = 'uncaught exception'
              ANN_flag = False
