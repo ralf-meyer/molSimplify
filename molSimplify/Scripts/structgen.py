@@ -117,7 +117,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
     else:
          
          try:
-         #if True:
+         # if True:
             if args.oldANN:
                 print('using old ANN by request')
                 ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
@@ -138,7 +138,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
          except:
-         #else:
+         # else:
              print("ANN call rejected")
              ANN_reason = 'uncaught exception'
              ANN_flag = False

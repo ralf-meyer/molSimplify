@@ -100,7 +100,7 @@ metals_conv = {'scandium':'Sc', 'titanium':'Ti', 'vanadium':'V', 'chromium':'Cr'
               
               
 ## d-electron counts of transition metals
-mtlsdlist = {'sc': 1, 'ti': 2, 'v': 3, 'cr': 4, 'mn': 5, 'fe': 6, 'ni': 7, 'co': 8, 'cu': 9, 'zn': 10, 
+mtlsdlist = {'sc': 1, 'ti': 2, 'v': 3, 'cr': 4, 'mn': 5, 'fe': 6, 'co': 7, 'ni': 8, 'cu': 9, 'zn': 10, 
              'y': 1, 'zr': 2, 'nb': 3, 'mo': 4, 'tc': 5, 'ru': 6, 'rh': 7, 'pd': 8, 'ag': 9, 'cd': 10, 
                      'hf': 2, 'ta': 3, 'w': 4, 're': 5, 'os': 6, 'ir': 7, 'pt': 8, 'au': 9, 'hg': 10}
 
