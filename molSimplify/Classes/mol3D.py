@@ -473,7 +473,7 @@ class mol3D:
     #  @oct flag to control  special oct-metal bonds
     def createMolecularGraph(self, oct=True):
         index_set = range(0, self.natoms)
-        A = np.matrix(np.zeros((self.natoms, self.natoms)))
+        A = np.zeros((self.natoms, self.natoms))
         for i in index_set:
             if oct:
                 this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
