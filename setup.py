@@ -9,4 +9,7 @@ setup(name='molSimplify',version="v1.2.7-alpha",packages=find_packages(),
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
       include_package_data = True,
+       extras_require={
+        'keras':  ["keras", "tensorflow","pandas"],
+       }
      )
