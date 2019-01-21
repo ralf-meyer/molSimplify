@@ -751,7 +751,7 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
     metals = range(21,31)+range(39,49)+range(72,81)
     ### check requested force field
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s' # force fields
-
+    
     if ff.lower() not in ffav:
         print 'Requested force field not available. Defaulting to MMFF94'
         ff = 'uff'
@@ -819,9 +819,9 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
             if debug:
                 print('using frozenats to freeze atom number: ' + str(cat))
             constr.AddAtomConstraint(cat+1) # indexing babel
-        #if debug:
-        #    for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
-        #        print ('atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence()))
+        if debug:
+            for iiat,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+                print (' atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence '+str(atom.GetValence())+ ' is fixed '+ str(constr.IsFixed(iiat+1)))
         # set up forcefield
         s = forcefield.Setup(OBMol,constr)
         if s == False:
@@ -843,6 +843,8 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
                 n = nsteps
             except:
                 n = 100
+            if debug:
+                print('running ' +str(n) + ' steps')
             forcefield.ConjugateGradients(n)
             forcefield.GetCoordinates(OBMol)
             mol.OBMol = OBMol
@@ -870,8 +872,10 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
         s = forcefield.Setup(OBMol,constr)
         # force field optimize structure
         if OBMol.NumHvyAtoms() > 10:
+            print('doing 50 steps')
             forcefield.ConjugateGradients(50)
         else:
+            print('doing 200 steps')
             forcefield.ConjugateGradients(200)
         forcefield.GetCoordinates(OBMol)
         en = forcefield.Energy()

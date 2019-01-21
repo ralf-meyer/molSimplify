@@ -96,7 +96,23 @@ class atom3D:
     #  @return Element symbol
     def symbol(self):
         return self.sym
-    
+
+    ## mutate
+    #  @param self The object pointer
+    #  @parm newType the new atom type
+    def mutate(self,newType):
+        globs = globalvars()
+        amass = globs.amass()
+        if newType not in amass.keys():
+           print('Error, unknown atom atom type transformation to ' + str(newType))
+           print('no changes made')
+        else:
+            self.mass = amass[newType][0]
+            self.atno = amass[newType][1]
+            self.rad = amass[newType][2]
+            self.name = newType
+            self.sym = newType
+
     ## Translate atom
     #  @param self The object pointer
     #  @param dxyz Distance vector to translate
@@ -115,3 +131,4 @@ class atom3D:
             if callable(getattr(self, method)):
                 ss += method +'\n'
         return ss
+    

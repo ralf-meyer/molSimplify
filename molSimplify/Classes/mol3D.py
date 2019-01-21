@@ -78,6 +78,8 @@ class mol3D:
         self.name = ''
         ## Holder for openbabel molecule
         self.OBMol = False
+        ## Holder for bond order matrix
+        self.BO_mat = False
         ## List of connection atoms
         self.cat = []
         ## Denticity
@@ -323,6 +325,9 @@ class mol3D:
         if not (self.OBMol == False) and not force_clean:
             BO_mat = self.populateBOMatrix()
 
+            repop = True
+        elif not (self.BO_mat == False) and not force_clean:
+            BO_mat =self.BO_mat
             repop = True
             # write temp xyz
         fd, tempf = tempfile.mkstemp(suffix=".xyz")
