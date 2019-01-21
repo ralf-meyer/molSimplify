@@ -1,6 +1,6 @@
 # file created with molSimplify
-levelshiftvalb 0.1
-levelshiftvala 1.0
+levelshiftvalb 0.25
+levelshiftvala 0.25
 run energy
 scf diis+a
 maxit 500

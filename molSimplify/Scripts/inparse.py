@@ -239,7 +239,7 @@ def checkinput(args,calctype="base"):
                             toccs += dent_i
                     
                     for i,substrate in enumerate(args.substrate):
-                        if args.core[0].lower() not in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
+                        if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
                             if 'pi' in subcatoms:
                                 suboc_i = 1
                             else:
@@ -285,7 +285,7 @@ def checkinput(args,calctype="base"):
                 args.mlig = args.lig[0]
             # check mlig connecting point if the ligand has more than one atom
             if args.mlig and not args.mligcatoms:
-                sub,subcatoms,emsg = substr_load(args.mlig,0,subcatoms)
+                sub,subcatoms,emsg = substr_load(args.mlig[0],0,subcatoms)
                 if sub.natoms is 1:
                     args.mligcatoms = [0]
                 else:

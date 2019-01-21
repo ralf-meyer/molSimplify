@@ -13,7 +13,7 @@ import openbabel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile, re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
-from molSimplify.Scripts.geometry import vecangle, distance, kabsch
+from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis
 
 # from molSimplify.Scripts.structgen import ffopt
 
@@ -119,19 +119,58 @@ class mol3D:
         self.dict_orientation = dict()
         self.dict_angle_linear = dict()
 
+    ## Performs angle centric manipulation 
+    #
+    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
+    #
+    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+    #  @param self The object pointer
+    #  @param idx1 Index of bonded atom containing submolecule to be moved
+    #  @param idx2 Index of anchor atom
+    #  @param d New bond angle in degree
+    def ACM(self, idx1, idx2, idx3, angle):
+        atidxs_to_move = self.findsubMol(idx1, idx2)
+        atidxs_anchor = self.findsubMol(idx2, idx1)
+        submol_to_move = mol3D()
+        submol_anchor = mol3D()
+        for atidx in atidxs_to_move:
+            atom = self.getAtom(atidx)
+            submol_to_move.addAtom(atom)
+        for atidx in atidxs_anchor:
+            atom = self.getAtom(atidx)
+            submol_anchor.addAtom(atom)
+        mol = mol3D()
+        mol.copymol3D(submol_anchor)
+        r0 = self.getAtom(idx1).coords()
+        r1 = self.getAtom(idx2).coords()
+        r2 = self.getAtom(idx3).coords()
+        theta, u = rotation_params(r2, r1, r0)
+        if theta < 90:
+            angle = 180 - angle
+        submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta-angle)
+        mol.copymol3D(submol_to_move)
+        self.deleteatoms(range(self.natoms))
+        self.copymol3D(mol)
+
     ## Add atom to molecule
     #
     #  Added atom is appended to the end of the list.
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
-    def addAtom(self, atom):
-        self.atoms.append(atom)
+    def addAtom(self, atom, index=None):
+        if index==None:
+            index = len(self.atoms)
+        # self.atoms.append(atom)
+        self.atoms.insert(index, atom)
         if atom.frozen:
-            self.atoms[-1].frozen = True
+            self.atoms[index].frozen = True
         self.natoms += 1
         self.mass += atom.mass
         self.size = self.molsize()
         self.graph = []
+
+    def changeAtomtype(self, atom_ind, atom_type):
+        self.atoms[atom_ind].sym = atom_type
 
     ## Aligns two molecules such that the coordinates of two atoms overlap.
     #
@@ -217,7 +256,8 @@ class mol3D:
             pmc[2] /= mmass
         else:
             pmc = False
-            print 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n'
+            print
+            'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n'
         return pmc
 
     ## Computes coordinates of center of symmetry of molecule
@@ -313,6 +353,17 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
 
+    def resetBondOBMol(self):
+        if self.OBMol:
+            BO_mat = self.populateBOMatrix()
+            self.cleanBonds()
+            for i in range(0, self.natoms):
+                for j in range(0, self.natoms):
+                    if BO_mat[i][j] > 0:
+                        self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
+        else:
+            print("OBmol not existed.")
+
     ## Combines two molecules
     #
     #  Each atom in the second molecule is appended to the first while preserving orders.
@@ -359,6 +410,9 @@ class mol3D:
                     print('adding bond ' + str(bond_tuples))
                     jointBOMat[bond_tuples[0], bond_tuples[1]] = bond_tuples[2]
                     jointBOMat[bond_tuples[1], bond_tuples[0]] = bond_tuples[2]
+                    # jointBOMat[bond_tuples[0], bond_tuples[1]+n_one] = bond_tuples[2]
+                    # jointBOMat[bond_tuples[1]+n_one, bond_tuples[0]] = bond_tuples[2]
+
         # add mol3Ds
         for atom in mol.atoms:
             cmol.addAtom(atom)
@@ -424,7 +478,7 @@ class mol3D:
     #  @oct flag to control  special oct-metal bonds
     def createMolecularGraph(self, oct=True):
         index_set = range(0, self.natoms)
-        A = np.matrix(np.zeros((self.natoms, self.natoms)))
+        A = np.zeros((self.natoms, self.natoms))
         for i in index_set:
             if oct:
                 this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
@@ -604,7 +658,7 @@ class mol3D:
                             subm.append(newat)
                 if atidx in conatoms:
                     conatoms.remove(atidx)  # remove from list to check
-        subm.sort()
+        # subm.sort()
         return subm
 
     ## Gets an atom with specified index
@@ -708,6 +762,70 @@ class mol3D:
                 distance_max = 0
             if (d < distance_max and i != ind):
                 nats.append(i)
+        return nats
+
+    ## Gets atoms bonded to a specific atom with a given threshold
+    #
+    #  This is determined based on user-specific distance cutoffs.
+    #  
+    #  This method is ideal for metals because bond orders are ill-defined.
+    #
+    #  For pure organics, the OBMol class provides better functionality.
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @param threshold multiplier for the sum of covalent radii cut-off
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsByThreshold(self, ind, threshold, debug=False):
+        ratom = self.getAtom(ind)
+        # calculates adjacent number of atoms
+        nats = []
+        for i, atom in enumerate(self.atoms):
+            d = distance(ratom.coords(), atom.coords())
+            distance_max = threshold * (atom.rad + ratom.rad)
+            if atom.symbol() == "C" and not ratom.symbol() == "H":
+                distance_max = min(2.75, distance_max)
+            if ratom.symbol() == "C" and not atom.symbol() == "H":
+                distance_max = min(2.75, distance_max)
+            if ratom.symbol() == "H" and atom.ismetal:
+                ## tight cutoff for metal-H bonds
+                distance_max = 1.1 * (atom.rad + ratom.rad)
+            if atom.symbol() == "H" and ratom.ismetal:
+                ## tight cutoff for metal-H bonds
+                distance_max = 1.1 * (atom.rad + ratom.rad)
+            if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
+                distance_max = 1.05 * (atom.rad + ratom.rad)
+                # print(distance_max)
+            if atom.symbol() == "I" or ratom.symbol() == "I":
+                distance_max = 0
+            if (d < distance_max and i != ind):
+                nats.append(i)
+        return nats
+
+    ## Gets a user-specified number of atoms bonded to a specific atom
+    #
+    #  This is determined based on adjusting the threshold until the number of atoms specified is reached.
+    #  
+    #  This method is ideal for metals because bond orders are ill-defined.
+    #
+    #  For pure organics, the OBMol class provides better functionality.
+    #  @param self The object pointer
+    #  @param ind Index of reference atom
+    #  @param CoordNo the number of atoms specified
+    #  @return List of indices of bonded atoms
+    def getBondedAtomsByCoordNo(self, ind, CoordNo, debug=False):
+        ratom = self.getAtom(ind)
+        # calculates adjacent number of atoms
+        nats = []
+        thresholds = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
+        for i, threshold in enumerate(thresholds):
+            nats = self.getBondedAtomsByThreshold(ind, threshold)
+            if len(nats) == CoordNo:
+                break
+        if len(nats) != CoordNo:
+            print('Could not find the number of bonded atoms specified coordinated to the atom specified.')
+            print('Please either adjust the number of bonded atoms or the index of the center atom.')
+            print('A list of bonded atoms is still returned. Be cautious with the list')
+
         return nats
 
     ## Gets atoms bonded to a specific atom specialized for octahedral complexes
@@ -841,15 +959,12 @@ class mol3D:
         return nats
 
     def update_graph_check(self, oct=True):  ####!!!!Works only for octahedral and one-empty site!!!!
-        from molSimplify.Scripts.oct_check_mols import IsOct, IsStructure
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
         if oct:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = IsOct(file_in=self.xyzfile,
-                                                                   flag_catoms=True)
+            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsOct(flag_catoms=True)
         else:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = IsStructure(file_in=self.xyzfile,
-                                                                         flag_catoms=True)
+            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsStructure(flag_catoms=True)
         self.graph[0, :] = 0
         self.graph[:, 0] = 0
         row = np.zeros(self.graph.shape[0])
@@ -1016,6 +1131,19 @@ class mol3D:
                 idx = iat
                 cdist = ds
         return idx
+
+    def getClosestAtomlist(self, atom_idx, cdist=3):
+        # INPUT
+        #   - atom_index: reference atom index
+        #   - cdist: cutoff of neighbor distance
+        # OUTPUT
+        #   - neighbor_list: index of close atom to atom0 from molecule
+        neighbor_list = []
+        for iat, atom in enumerate(self.atoms):
+            ds = atom.distance(self.atoms[atom_idx])
+            if (ds < cdist):
+                neighbor_list.append(neighbor_list)
+        return neighbor_list
 
     ## Gets point that corresponds to mask
     #  @param self The object pointer    
@@ -1228,9 +1356,12 @@ class mol3D:
                 if (distance(atom1.coords(), atom0.coords()) < 0.85 * (atom1.rad + atom0.rad)):
                     overlap = True
                     if not (silence):
-                        print "#############################################################"
-                        print "!!!Molecules might be overlapping. Increase distance!!!"
-                        print "#############################################################"
+                        print
+                        "#############################################################"
+                        print
+                        "!!!Molecules might be overlapping. Increase distance!!!"
+                        print
+                        "#############################################################"
                     break
         return overlap
 
@@ -1293,7 +1424,8 @@ class mol3D:
         for atom in self.atoms:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-            print ss
+            print
+            ss
 
     ## returns string of xyz coordinates
     # 
@@ -1378,7 +1510,8 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            print
+            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
             return float('NaN')
         else:
             rmsd = 0
@@ -1404,7 +1537,8 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
+            print
+            "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
             return float('NaN')
         else:
             dev = 0
@@ -1421,7 +1555,8 @@ class mol3D:
         Nat1 = mol2.natoms
         dist_max = 0
         if (Nat0 != Nat1):
-            print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
+            print
+            "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
             return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1434,7 +1569,8 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            print
+            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
             return float('NaN')
         else:
             rmsd = 0
@@ -1449,7 +1585,8 @@ class mol3D:
         Nat1 = mol2.natoms
         dist_max = 0
         if (Nat0 != Nat1):
-            print "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
+            print
+            "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
             return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1459,7 +1596,7 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calccharges(self, charge=0, method='QEq'):
+    def calcCharges(self, charge=0, bond=False, method='QEq'):
         self.convert2OBMol()
         self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)
@@ -1483,9 +1620,12 @@ class mol3D:
                     if distance(atom1.coords(), atom0.coords()) < mind:
                         mind = distance(atom1.coords(), atom0.coords())
                     if not (silence):
-                        print "#############################################################"
-                        print "!!!Molecules might be overlapping. Increase distance!!!"
-                        print "#############################################################"
+                        print
+                        "#############################################################"
+                        print
+                        "!!!Molecules might be overlapping. Increase distance!!!"
+                        print
+                        "#############################################################"
                     break
         return overlap, mind
 
@@ -1687,7 +1827,10 @@ class mol3D:
         if not catoms_arr == None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
+        else:
+            self.get_num_coord_metal(debug=debug)
         theta_arr, oct_dist = [], []
+        # print("!!!!catoms", self.catoms, catoms_arr)
         for atom in self.catoms:
             coord = self.getAtomCoords(atom)
             catom_coord.append(coord)
@@ -1703,6 +1846,7 @@ class mol3D:
             th_input_arr.append([self.catoms[idx1], theta_tmp])
         ## This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
         ## When we have the customized catoms_arr, it will not change anything.
+        # print("!!!th_input_arr", th_input_arr)
         th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
         self.catoms = catoms_arr
         if debug:
@@ -2053,12 +2197,18 @@ class mol3D:
     def IsOct(self, init_mol=None, dict_check=False,
               angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
-              flag_loose=True, flag_lbd=True, BondedOct=True
+              flag_loose=True, flag_lbd=True, BondedOct=True,
+              skip=False
               ):
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
             angle_ref = self.oct_angle_ref
+        if not skip:
+            skip = list()
+        else:
+            print("Warning: your are skipping following geometry checks:")
+            print(skip)
         self.get_num_coord_metal(debug=debug)
         ## Note that use this only when you wanna specify the metal connecting atoms.
         ## This will change the attributes of mol3D.
@@ -2070,16 +2220,19 @@ class mol3D:
             # if not rmsd_max == 'lig_mismatch':
             if True:
                 self.num_coord_metal = 6
-                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                              catoms_arr, debug=debug)
+                if not 'FCS' in skip:
+                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                  catoms_arr, debug=debug)
             if not init_mol == None:
-                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                        flag_loose=flag_loose,
-                                                        flag_lbd=flag_lbd,
-                                                        catoms_arr=catoms_arr,
-                                                        debug=debug,
-                                                        BondedOct=BondedOct)
-            dict_angle_linear, dict_orientation = self.check_angle_linear()
+                if not 'lig_distort' in skip:
+                    dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                            flag_loose=flag_loose,
+                                                            flag_lbd=flag_lbd,
+                                                            catoms_arr=catoms_arr,
+                                                            debug=debug,
+                                                            BondedOct=BondedOct)
+            if not 'lig_linear' in skip:
+                dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
@@ -2095,22 +2248,31 @@ class mol3D:
     ## Inputs and outputs are the same as IsOct.
     def IsStructure(self, init_mol=None, dict_check=False,
                     angle_ref=False, num_coord=5,
-                    flag_catoms=False, debug=False):
+                    flag_catoms=False, debug=False,
+                    skip=False):
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
         if not angle_ref:
             angle_ref = self.oneempty_angle_ref
+        if not skip:
+            skip = list()
+        else:
+            print("Warning: your are skipping following geometry checks:")
+            print(skip)
         self.get_num_coord_metal(debug=debug)
         self.geo_dict_initialization()
-
+        print(angle_ref)
         if self.num_coord_metal >= num_coord:
             if True:
                 self.num_coord_metal = num_coord
-                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                              debug=debug)
+                if not 'FCS' in skip:
+                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                  debug=debug)
             if not init_mol == None:
-                dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
-            dict_angle_linear, dict_orientation = self.check_angle_linear()
+                if not 'lig_distort' in skip:
+                    dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
+            if not 'lig_linear' in skip:
+                dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
@@ -2134,34 +2296,103 @@ class mol3D:
             dict_check_loose = self.dict_oct_check_loose
 
         if catoms_arr == None:
-            print('Error, must have ctoms! If not, please use IsOct.')
-            quit()
-        elif len(catoms_arr) != 6:
+            init_mol.get_num_coord_metal(debug=debug)
+            catoms_arr = init_mol.catoms
+            if len(catoms_arr) > 6:
+                _, catoms_arr = init_mol.oct_comp(debug=debug)
+        print("connecting atoms are,", catoms_arr)
+        if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
-            quit()
-        self.num_coord_metal = 6
-        self.geo_dict_initialization()
-        if not init_mol == None:
-            dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                    flag_loose=flag_loose,
-                                                    flag_lbd=flag_lbd,
-                                                    catoms_arr=catoms_arr,
-                                                    debug=debug,
-                                                    BondedOct=BondedOct)
-        if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
-            dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                          debug=debug)
+            print('Please DO CHECK what happens!!!!')
+            flag_oct = 0
+            flag_list = ["num_coord_metal"]
+            dict_oct_info = {'num_coord_metal': len(catoms_arr)}
+            geo_metrics = ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max', 'max_del_sig_angle',
+                           'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
+            for metric in geo_metrics:
+                dict_oct_info.update({metric: "NA"})
+            flag_oct_loose = 0
+            flag_list_loose = ["num_coord_metal"]
         else:
-            self.num_coord_metal = -1
-            print('!!!!!Should always match. WRONG!!!!!')
-            quit()
-        dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
-        if debug:
-            self.print_geo_dict()
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
-                                                                        num_coord=6, debug=debug)
-        flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
-                                                                         num_coord=6, debug=debug)
+            self.num_coord_metal = 6
+            self.geo_dict_initialization()
+            if not init_mol == None:
+                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                        flag_loose=flag_loose,
+                                                        flag_lbd=flag_lbd,
+                                                        catoms_arr=catoms_arr,
+                                                        debug=debug,
+                                                        BondedOct=BondedOct)
+            if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
+                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
+                                                              debug=debug)
+            else:
+                self.num_coord_metal = -1
+                print('!!!!!Should always match. WRONG!!!!!')
+
+            dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
+            if debug:
+                self.print_geo_dict()
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+                                                                            num_coord=6, debug=debug)
+            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+                                                                             num_coord=6, debug=debug)
+        return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
+
+    ## Used to track down the changing geo_check metrics in a DFT geometry optimization.
+    ## With the catoms_arr always specified.
+    def Structure_inspection(self, init_mol=None, catoms_arr=None, num_coord=5, dict_check=False,
+                             std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
+                             dict_check_loose=False, BondedOct=True, debug=False):
+        if not dict_check:
+            dict_check = self.dict_oneempty_check_st
+        if not angle_ref:
+            angle_ref = self.oneempty_angle_ref
+        if not dict_check_loose:
+            dict_check_loose = self.dict_oneempty_check_loose
+
+        if catoms_arr == None:
+            init_mol.get_num_coord_metal(debug=debug)
+            catoms_arr = init_mol.catoms
+            if len(catoms_arr) > num_coord:
+                _, catoms_arr = init_mol.oct_comp(angle_ref=angle_ref, debug=debug)
+        print("connecting atoms are,", catoms_arr)
+        if len(catoms_arr) != num_coord:
+            print('Error, must have %d connecting atoms for octahedral.' % num_coord)
+            print('Please DO CHECK what happens!!!!')
+            flag_oct = 0
+            flag_list = ["num_coord_metal"]
+            dict_oct_info = {'num_coord_metal': len(catoms_arr)}
+            geo_metrics = ['rmsd_max', 'atom_dist_max', 'oct_angle_devi_max', 'max_del_sig_angle',
+                           'dist_del_eq', 'dist_del_all', 'devi_linear_avrg', 'devi_linear_max']
+            for metric in geo_metrics:
+                dict_oct_info.update({metric: "NA"})
+            flag_oct_loose = 0
+            flag_list_loose = ["num_coord_metal"]
+        else:
+            self.num_coord_metal = num_coord
+            self.geo_dict_initialization()
+            if not init_mol == None:
+                dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                        flag_loose=flag_loose,
+                                                        flag_lbd=flag_lbd,
+                                                        catoms_arr=catoms_arr,
+                                                        debug=debug,
+                                                        BondedOct=BondedOct)
+            if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
+                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
+                                                              debug=debug)
+            else:
+                self.num_coord_metal = -1
+                print('!!!!!Should always match. WRONG!!!!!')
+
+            dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
+            if debug:
+                self.print_geo_dict()
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+                                                                            num_coord=num_coord, debug=debug)
+            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+                                                                             num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
     ## Writes a psueduo-chemical formula

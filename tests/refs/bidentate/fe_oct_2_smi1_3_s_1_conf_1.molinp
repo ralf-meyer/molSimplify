@@ -1,8 +1,9 @@
-# Input file generated from molSimplify at 10/18/2018 15:14
+# Input file generated from molSimplify at 01/19/2019 23:05
 -ffoption ba
 -distort 0
 -coord 6
 -nconfs 1
+-checkdirb True
 -method b3lyp
 -core Fe
 -ligocc 3
@@ -20,4 +21,4 @@
 -qccode terachem
 -ff mmff94
 -keepHs True
--jobdir bidentate
+-jobdir gen

@@ -408,7 +408,7 @@ def rungen(rundir,args,chspfname,globs):
                 subcatoms = args.subcatoms
             mlig = args.mlig
             mligcatoms = args.mligcatoms
-            fname = name_ts_complex(rundir,args.core,ligands,ligocc,substrate,subcatoms,mlig,mligcatoms,mcount,args,nconf=False,sanity=False,bind=args.bind,bsmi=args.nambsmi)
+            fname = name_ts_complex(rundir,args.core,args.geometry,ligands,ligocc,substrate,subcatoms,mlig,mligcatoms,mcount,args,nconf=False,sanity=False,bind=args.bind,bsmi=args.nambsmi)
         if globs.debug:
             print('fname is ' + str(fname))
         rootdir = fname

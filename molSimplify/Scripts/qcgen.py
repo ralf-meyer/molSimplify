@@ -148,9 +148,9 @@ def tcgen(args,strfiles,method):
        elif jobparams['levelshift'] != 'yes':
           print("Warning! You're doing an unrestricted calculation but have set levelshift = %s" %(jobparams['levelshift']))
        if not jobparams.has_key('levelshiftvala'):
-          jobparams['levelshiftvala']='1.0'
+          jobparams['levelshiftvala']='0.25'
        if not jobparams.has_key('levelshiftvalb'):
-          jobparams['levelshiftvalb']='0.1'
+          jobparams['levelshiftvalb']='0.25'
     # Now we're ready to start building the input file
     if not args.jobdir:
         for i,jobd in enumerate(jobdirs):
