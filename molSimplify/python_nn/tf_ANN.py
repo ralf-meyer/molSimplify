@@ -23,6 +23,7 @@ import sys, os
 import json
 import pandas as pd
 import glob
+import time
 
 
 ## Functions
@@ -319,7 +320,8 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     target_names = load_ANN_variables(predictor)
     if len(target_names) > str(len(descriptors)):
         print(
-            'Error: preparing features for ' + str(predictor) + ', recieved ' + str(len(descriptors)) + ' descriptors')
+                'Error: preparing features for ' + str(predictor) + ', recieved ' + str(
+            len(descriptors)) + ' descriptors')
         print('model requires ' + str(len(target_names)) + ' descriptors, attempting match')
     excitation = []
     valid = True
@@ -340,6 +342,7 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
 
 def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     print('ANN activated for ' + str(predictor))
+    # _start = time.time()
 
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
@@ -355,18 +358,21 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     ## fetch ANN
     # print('This is the predictor......',predictor)
     loaded_model = load_keras_ann(predictor)
-    if debug:
-        print('LOADED MODEL HAS ' + str(
-            len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
-            len(loaded_model.layers) - 1) + ' layers')
-    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
-                             [loaded_model.layers[len(loaded_model.layers) - 2].output])
-    latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
-    if debug:
-        print('calling ANN model...')
     result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
-    if "clf" in predictor:
-        latent_space_vector = find_clf_lse(predictor, excitation, ensemble=False, modelname=False)
+    if not "clf" in predictor:
+        if debug:
+            print('LOADED MODEL HAS ' + str(
+                len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
+                len(loaded_model.layers) - 1) + ' layers')
+        get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                                 [loaded_model.layers[len(loaded_model.layers) - 2].output])
+        latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
+        if debug:
+            print('calling ANN model...')
+    else:
+        latent_space_vector = find_clf_lse(predictor, excitation, loaded_model=loaded_model, ensemble=False,
+                                           modelname=False)
+    # print("Finished in %f s" % (time.time() - _start))
     return result, latent_space_vector
 
 
@@ -474,10 +480,16 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     return (min_dist)
 
 
-def find_clf_lse(predictor, excitation, ensemble=False, modelname=False):
+def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False):
     if modelname == False:
-        # print("Using models trained with spectro data for calculating LSE.")
         modelname = "spectro"
+        if predictor == "geo_static_clf":
+            avrg_latent_dist = 33.21736244173539
+        elif predictor == "sc_static_clf":
+            avrg_latent_dist = 38.276809428032685
+        else:
+            print("Unknown model type")
+            return -1
     key = get_key(predictor, suffix='')
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -487,14 +499,10 @@ def find_clf_lse(predictor, excitation, ensemble=False, modelname=False):
     fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x)
     fmat_train = np.array(fmat_train)
     if not ensemble:
-        model = base_path + 'model.h5'
-        loaded_model = load_model(model)
+        # model = base_path + 'model.h5'
+        # loaded_model = load_model(model)
         train_latent = get_layer_outputs(loaded_model, -4, fmat_train, training_flag=False)
         test_latent = get_layer_outputs(loaded_model, -4, excitation, training_flag=False)
-        # pred_test = get_layer_outputs(loaded_model, -1, excitation, training_flag=False)
-        nn_latent_dist_train, _, __ = dist_neighbor(train_latent, train_latent, labels_train,
-                                                    l=5, dist_ref=1)
-        avrg_latent_dist = np.mean(nn_latent_dist_train)
         nn_latent_dist_test, nn_dists, nn_labels = dist_neighbor(test_latent, train_latent, labels_train,
                                                                  l=5, dist_ref=avrg_latent_dist)
         lse = get_entropy(nn_dists, nn_labels)
@@ -519,7 +527,6 @@ def find_clf_lse(predictor, excitation, ensemble=False, modelname=False):
             _labels_train = array_stack(labels_train, model_idx)
             train_latent = get_layer_outputs(loaded_model, -4, _fmat_train, training_flag=False)
             test_latent = get_layer_outputs(loaded_model, -4, excitation, training_flag=False)
-            # pred_test = get_layer_outputs(loaded_model, -1, excitation, training_flag=False)
             nn_latent_dist_train, _, __ = dist_neighbor(train_latent, train_latent, _labels_train,
                                                         l=5, dist_ref=1)
             avrg_latent_dist = np.mean(nn_latent_dist_train)

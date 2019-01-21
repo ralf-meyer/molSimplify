@@ -423,8 +423,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         descriptors = _descriptors + descriptors
         flag_oct, geo_lse = ANN_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
         sc_pred, sc_lse = ANN_supervisor("sc_static_clf", descriptors, descriptor_names, debug=False)
-        print("geo_label:", flag_oct, "LSE:", geo_lse)
-        print("sc_label:", sc_pred, "LSE:", sc_lse)
         ANN_attributes.update({"geo_label": 0 if flag_oct[0, 0] <= 0.5 else 1,
                                "geo_prob": flag_oct[0, 0],
                                "geo_LSE": geo_lse[0],
