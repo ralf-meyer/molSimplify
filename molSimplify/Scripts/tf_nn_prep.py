@@ -12,6 +12,7 @@ from molSimplify.Informatics.decoration_manager import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.RACassemble import *
+from molSimplify.python_krr.sklearn_models import sklearn_supervisor
 from molSimplify.python_nn.tf_ANN import *
 from molSimplify.python_nn.clf_analysis_tool import lse_trust
 import time
@@ -422,6 +423,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         descriptor_names = _descriptor_names + descriptor_names
         descriptors = _descriptors + descriptors
         flag_oct, geo_lse = ANN_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
+        ### Test for scikit-learn models
+        # flag_oct, geo_lse = sklearn_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
         sc_pred, sc_lse = ANN_supervisor("sc_static_clf", descriptors, descriptor_names, debug=False)
         ANN_attributes.update({"geo_label": 0 if flag_oct[0, 0] <= 0.5 else 1,
                                "geo_prob": flag_oct[0, 0],
@@ -430,7 +433,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                                "sc_label": 0 if sc_pred[0, 0] <= 0.5 else 1,
                                "sc_prob": sc_pred[0, 0],
                                "sc_LSE": sc_lse[0],
-                               "sc_label_trust": lse_trust(sc_lse),})
+                               "sc_label_trust": lse_trust(sc_lse)})
 
         ## build RACs without geo
         con_mat = this_complex.graph
