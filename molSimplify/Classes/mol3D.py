@@ -147,7 +147,7 @@ class mol3D:
         theta, u = rotation_params(r2, r1, r0)
         if theta < 90:
             angle = 180 - angle
-        submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta-angle)
+        submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta - angle)
         mol.copymol3D(submol_to_move)
         self.deleteatoms(range(self.natoms))
         self.copymol3D(mol)
@@ -158,7 +158,7 @@ class mol3D:
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
     def addAtom(self, atom, index=None):
-        if index==None:
+        if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
@@ -327,7 +327,7 @@ class mol3D:
 
             repop = True
         elif not (self.BO_mat == False) and not force_clean:
-            BO_mat =self.BO_mat
+            BO_mat = self.BO_mat
             repop = True
             # write temp xyz
         fd, tempf = tempfile.mkstemp(suffix=".xyz")
@@ -1523,6 +1523,35 @@ class mol3D:
                 rmsd /= Nat0
             return sqrt(rmsd)
 
+    def geo_rmsd(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print
+            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            return float('NaN')
+        else:
+            rmsd = 0
+            availabel_set = list(range(Nat1))
+            for atom0 in self.getAtoms():
+                dist = 1000
+                ind1 = False
+                atom0_sym = atom0.symbol()
+                for _ind1 in availabel_set:
+                    atom1 = mol2.getAtom(_ind1)
+                    if atom1.symbol() == atom0_sym:
+                        _dist = atom0.distance(atom1)
+                        if _dist < dist:
+                            dist = _dist
+                            ind1 = _ind1
+                rmsd += dist ** 2
+                availabel_set.remove(ind1)
+            if Nat0 == 0:
+                rmsd = 0
+            else:
+                rmsd /= Nat0
+            return sqrt(rmsd)
+
     ## Computes mean of absolute atom deviations 
     # 
     #  Like above, this routine does not perform translations or rotations to align molecules.
@@ -1564,6 +1593,32 @@ class mol3D:
                 if dist > dist_max:
                     dist_max = dist
             return dist_max
+
+    def geo_maxatomdist(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print
+            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            return float('NaN')
+        else:
+            maxdist = 0
+            availabel_set = list(range(Nat1))
+            for atom0 in self.getAtoms():
+                dist = 1000
+                ind1 = False
+                atom0_sym = atom0.symbol()
+                for _ind1 in availabel_set:
+                    atom1 = mol2.getAtom(_ind1)
+                    if atom1.symbol() == atom0_sym:
+                        _dist = atom0.distance(atom1)
+                        if _dist < dist:
+                            dist = _dist
+                            ind1 = _ind1
+                if dist> maxdist:
+                    maxdist = dist
+                availabel_set.remove(ind1)
+            return maxdist
 
     def rmsd_nonH(self, mol2):
         Nat0 = self.natoms
