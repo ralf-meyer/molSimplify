@@ -958,25 +958,6 @@ class mol3D:
                         print('Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def update_graph_check(self, oct=True):  ####!!!!Works only for octahedral and one-empty site!!!!
-        if not len(self.graph):
-            self.createMolecularGraph(oct=oct)
-        if oct:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsOct(flag_catoms=True)
-        else:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsStructure(flag_catoms=True)
-        self.graph[0, :] = 0
-        self.graph[:, 0] = 0
-        row = np.zeros(self.graph.shape[0])
-        np.put(row, np.array(catoms_arr), np.ones(len(catoms_arr)))
-        # print('!!!add', row)
-        self.graph[0, :] = row
-        col = np.zeros((self.graph.shape[1], 1))
-        np.put(col, catoms_arr, np.ones(self.graph.shape[0]))
-        self.graph[:, 0] = col
-        self.updated = True
-        # print(self.graph[0], self.graph[1])
-
     ## Gets atoms bonded to a specific atom using the molecular graph, or creates it
     #
     #  @param self The object pointer
@@ -2450,6 +2431,22 @@ class mol3D:
                                                                              num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
+    def get_fcs(self):
+        metalind = self.findMetal()[0]
+        self.get_num_coord_metal(debug=False)
+        catoms = self.catoms
+        if len(catoms) > 6:
+            _, catoms = self.oct_comp(debug=False)
+        fcs = [metalind] + catoms
+        return fcs
+
+    def create_mol_with_inds(self, inds):
+        molnew = mol3D()
+        for ind in inds:
+            atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
+            molnew.addAtom(atom)
+        return molnew
+    
     ## Writes a psueduo-chemical formula
     #
     #  @param self The object pointer   
