@@ -907,6 +907,7 @@ def parseinputfile(args):
                 args.expose_type = l[1]
             if (l[0]=='-shave_extra_layers'):#9
                 args.shave_extra_layers = int(l[1])
+            # TS generation routine
             if (l[0]=='-tsgen'):
                 args.tsgen = True
             if (l[0]=='-substrate'):
@@ -917,6 +918,10 @@ def parseinputfile(args):
                 args.mlig = l[1:]
             if (l[0]=='-mligcatoms'):
                 args.mligcatoms = l[1:]
+            # cdxml import routine
+            if (l[0]=='-cdxml'):
+                args.cdxml = l[1:]
+            # conformers
             if (l[0]=='-conformer'):
                 args.conformer = True                                                           
             # parse place on slab options
@@ -1281,25 +1286,7 @@ def parseinputs_binding(*p):
     elif len(p) == 2: # two inputs, normal parsing
         args = p[1]
         parser.parse_args(namespace=args)
-    return 0 
-
-# ## Parses transition state building options and prints help
-# #  @param *p Parser pointer
-# def parseinputs_tsgen(*p):
-#     parser = p[0]
-#     parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
-#     parser.add_argument("-substrate", help="small molecule substrate")
-#     parser.add_argument("-compreact", help="index of reacting atom in core")
-#     parser.add_argument("-substreact", help="index of reacting atom(s) in substrate")
-#     parser.add_argument("-drawmode", help="flag for enabling draw mode (NOTE: this cancels TS generation)",action="store_true")
-#     parser.add_argument("-substplaceff", help="full FF opt at each possible connecting point (default False - uses empirically estimated sterics)",default=False)
-#     if len(p) == 1: # only one input, printing help only
-#         args = parser.parse_args()
-#         return args
-#     elif len(p) == 2: # two inputs, normal parsing
-#         args = p[1]
-#         parser.parse_args(namespace=args)
-#     return 0 
+    return 0
 
 ## Parses transition state building version 2 options and prints help
 #  @param *p Parser pointer
@@ -1310,6 +1297,8 @@ def parseinputs_tsgen(*p):
     parser.add_argument("-subcatoms", help="index of the connecting atom in substrate")
     parser.add_argument("-mlig", help="ligand name in the metal complex that the substrate connects with")
     parser.add_argument("-mligcatoms", help="index of the connecting atom in the specified ligand in the metal complex",action="store_true")
+    parser.add_argument("-cdxml", help="cdxml file name",
+                        action="store_true")
     parser.add_argument("-conformers", help="flag for requesting metal-substrate TS conformation search",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()

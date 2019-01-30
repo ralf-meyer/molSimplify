@@ -311,32 +311,78 @@ def loaddata_ts(path):
 # @param cdxml a cdxml file
 # return fname the xyz fname for the read-in cdxml
 def loadcdxml(cdxml):
-    import pybel
+    # try importing pybel
+    try:
+        import pybel
+    except:
+        raise
+    fname = re.sub(r'.cdxml', '', cdxml)  # file name for the new xyz
+    # check cdxml file for Dashed bonds
+    f = open(cdxml, 'r')
+    lines = f.read().splitlines()
+    f.close()
+    signal = False
+    for i, line in enumerate(lines):
+        if 'Dash' in line:
+            lnum = i
+            signal = True
+            break
+    # remove the dash bond
+    if signal:
+        cdxml = cdxml.replace('.cdxml','.temp.cdxml')
+    f = open(cdxml, 'a')
+    for i, line in enumerate(lines):
+        if i not in range(lnum-5,lnum+2):
+            f.write(line + '\n')
+    f.close()
+    # load cdxml into obmol
     obconv = openbabel.OBConversion() # ob Class
     obmol = openbabel.OBMol() # ob Class
     obconv.SetInFormat('cdxml') # ob Method to set cdxml
     obconv.ReadFile(obmol,cdxml) # ob Method to reaad cdxml into a OBMol()
+    if signal:
+        os.remove(cdxml)
+    # substitute Si for metals
     obmol.NumAtoms()
     idx_list = []
     atno_list = []
     for idx in range(obmol.NumAtoms()):
-        if obmol.GetAtom(idx+1).GetAtomicNum() == 26:
+        if obmol.GetAtom(idx+1).IsMetal():
             idx_list.append(idx)
             atno_list.append(obmol.GetAtom(idx+1).GetAtomicNum())
             obmol.GetAtom(idx+1).SetAtomicNum(14)
-
+    # convert 2D to 3D
     pymol = pybel.Molecule(obmol)
     pymol.make3D()
     pymol.localopt()
+    # recover metal symbols
     for i in range(len(idx_list)):
         idx = idx_list[i]
         atno = atno_list[i]
         obmol.GetAtom(idx+1).SetAtomicNum(atno)
+    # determine the number of fragments in obmol
+    mol = mol3D()
+    mol.OBMol = obmol
+    mol.convert2mol3D()
+    fraglist = mol.getfragmentlists()
+    # write xyzfs
+    msg = ''
+    if len(fraglist) > 1:
+        for atidxes in fraglist:
+            frag = mol3D()
+            for atidx in atidxes:
+                atom = mol.getAtom(atidx)
+                frag.addAtom(atom)
+            if len(frag.findMetal()) > 0:
+                frag.writexyz(fname + '_cat.xyz')
+            else:
+                frag.writexyz(fname + '_sub.xyz')
+        msg = 'two fragments were saved individually as xyzf'
+    else:
+        mol.writexyz(fname + '.xyz')
+        msg = 'one molecule was saved as xyzf'
 
-    fname = re.sub(r'.cdxml','.xyz',cdxml) # file name for the new xyz
-    obconv.WriteFile(obmol,fname)
-    
-    return fname
+    return fname, msg
 
 ## Load backbone coordinates
 #  @param coord Name of coordination geometry
@@ -436,15 +482,24 @@ def core_load(usercore,mcores=None):
 #  @param usersubstrate Name of substrate
 #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
 #  @return mol3D of substrate, error messages
+#  attributes of substrate: OBMol, denticity, ident (identity), charge, cat (connection atom index), and grps (substrate group)
 def substr_load(usersubstrate,sub_i,subcatoms,subcores=None):
+    # if not using a user-defined substrate dictionary
     if subcores == None:
         subcores = getsubcores()
+    # load global variables
     globs = globalvars()
     if '~' in usersubstrate:
         homedir = os.path.expanduser("~")
         usersubstrate = usersubstrate.replace('~',homedir)
     emsg = False
     sub = mol3D() # initialize core molecule
+    # default attributes of the sub3D
+    sub.denticity = 1
+    sub.ident = None
+    sub.charge = 0
+    sub.cat = [0]
+    sub.grps = ['inter']
     ### check if substrate exists in dictionary
     if usersubstrate.lower() in [i.subname for i in subcores.keys()]:
         print('loading substrate from dictionary')
@@ -503,12 +558,12 @@ def substr_load(usersubstrate,sub_i,subcatoms,subcores=None):
             try:
                 sub.OBMol = sub.getOBMol(usersubstrate,ftype+'f') # convert from file
                 print('Substrate successfully converted to OBMol')
+
             except IOError:
                 emsg = 'Failed converting file ' +usersubstrate+' to molecule..Check your file.\n'
                 print emsg
                 return False,emsg
-            sub.ident = usersubstrate.split('.')[0]
-            sub.ident = sub.ident.rsplit('/')[-1]
+            sub.ident = usersubstrate.split('/')[-1].split('.')[0]
         else:
             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
             print emsg
@@ -874,6 +929,7 @@ def name_complex(rootdir,core,geometry,ligs,ligoc,sernum,args,nconf=False,sanity
         try:
             center += core.getAtom(0).symbol().lower()
         except:
+
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -957,15 +1013,20 @@ def name_ts_complex(rootdir,core,geometry,ligs,ligoc,substrate,subcatoms,mlig,ml
         #     name += "_" + str(sub)
         #     for i,subcatom in enumerate(str(subcatoms))):
         #         name += "_" + str(subcatom)
-        name += "_" + str(substrate[0])
+        for sub in substrate:
+            if '.' in sub:
+                sub = sub.split('.')[0]
+            name += "_" + str(sub)
         for subcatom in subcatoms:
             name += "_" + str(subcatom)
         # for i,mlig_i in enumerate(mlig):
         #     name += "_" + str(mlig)
         #     for j,mligcatom in enumerate(mligcatoms):
         #         name += "_" + str(mligcatom)
-        name += "_" + str(mlig[0])
-        name += "_" + str(mligcatoms[0])
+        if mlig:
+            name += "_" + str(mlig[0])
+        if mligcatoms:
+            name += "_" + str(mligcatoms[0])
         if args.spin:
             spin = str(args.spin)
         else:

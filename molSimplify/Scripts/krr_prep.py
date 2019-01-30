@@ -19,8 +19,8 @@ from sklearn.multioutput import MultiOutputRegressor
 from math import exp
 import numpy as np
 import csv, glob, os, copy, pickle
-# import matplotlib.pyplot as plt
-# import matplotlib.ticker as ticker
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 numpy.seterr(divide = 'ignore')
 
 csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'
@@ -156,9 +156,22 @@ def feature_prep(mol, idx):
         rMLs1_4.pop(idx0)
     # get ax, eq, ax idxes
     idx1_ = np.argsort(np.array(fprio1_4))[-1]
-    idx1 = idx1_4[idx1_]
     vangs1_4 = [vecangle(vML, vMLs1_4[idx1_]) for vML in vMLs1_4]
     idx2_ = np.argsort(np.array(vangs1_4))[-1]
+    idx3_ = np.argsort(np.array(vangs1_4))[1]
+    idx4_ = np.argsort(np.array(vangs1_4))[2]
+    fprio1 = fprio1_4[idx1_]
+    fprio2 = fprio1_4[idx2_]
+    fprio3 = fprio1_4[idx3_]
+    fprio4 = fprio1_4[idx4_]
+    fprio1_2 = sorted([fprio1, fprio2])
+    fprio3_4 = sorted([fprio3, fprio4])
+    if fprio3_4 > fprio1_2:
+        if fprio3 > fprio4:
+            idx1_ = idx3_
+        else:
+            idx1_ = idx4_
+    idx1 = idx1_4[idx1_]
     idx2 = idx1_4[idx2_]
     idx3_4 = copy.deepcopy(idx1_4)
     fprio3_4 = copy.deepcopy(fprio1_4)
@@ -193,7 +206,7 @@ def normalize(data, mean, std):
 #  @param colnum_label the column number for the label column
 #  @param colnum_desc the starting column number for the descriptor columns
 #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
-def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1):
+def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, threshold=0.01):
     # read in desc and label
     f = open(csvf, 'r')
     fcsv = csv.reader(f)
@@ -234,7 +247,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1):
     selector = RandomForestRegressor(random_state=0, n_estimators=100)
     selector.fit(X_norm_train, y_norm_train)
     X_norm_train_impts = selector.feature_importances_
-    idxes = np.where(X_norm_train_impts > 0.001)[0]
+    idxes = np.where(X_norm_train_impts > threshold)[0]
     print(len(idxes))
     importances = X_norm_train_impts[idxes]
     features_sel = headers[idxes]
@@ -265,8 +278,8 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1):
         if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
             (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
             signal = False
-            factor_lower *= 0.5
-            factor_higher *= 0.5
+            factor_lower *= 0.8
+            factor_higher *= 0.8
             gamma_lower = gamma * exp(factor_lower)
             gamma_higher = gamma * exp(factor_higher)
             alpha_lower = alpha * exp(factor_lower)
@@ -808,53 +821,224 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
 
     return descriptor_names, descriptors
 
+def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
+    ## this function gets autocorrelations for a molecule starting
+    ## in one single atom only
+    # Inputs:
+    #       mol - mol3D class
+    #       atomIdx - int, index of atom3D class
+    #       loud - bool, print output
+    result = list()
+    colnames = []
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    for ii, properties in enumerate(allowed_strings):
+        atom_only_ac = atom_only_autocorrelation(mol, properties, depth, atomIdx, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(atom_only_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
+def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
+    ## this function gets autocorrelations for a molecule starting
+    ## in one single atom only
+    # Inputs:
+    #       mol - mol3D class
+    #       atomIdx - int, index of atom3D class
+    #       loud - bool, print output
+    result = list()
+    colnames = []
+    # allowed_strings = ['nuclear_charge', 'ident', 'topology']
+    # labels_strings = ['Z', 'I', 'T']
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    for ii, properties in enumerate(allowed_strings):
+        atom_only_ac = atom_only_autocorrelation(mol, properties, depth, atomIdx, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(atom_only_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
+def generate_atomonly_ratiometrics(mol, atomIdx, loud, depth=4, oct=True):
+    ## this function gets autocorrelations for a molecule starting
+    ## in one single atom only
+    # Inputs:
+    #       mol - mol3D class
+    #       atomIdx - int, index of atom3D class
+    #       loud - bool, print output
+    result = list()
+    colnames = []
+    # allowed_strings_num = ['electronegativity', 'nuclear_charge']
+    # labels_strings_num = ['chi', 'Z']
+    allowed_strings_num = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings_num = ['chi', 'Z', 'I', 'T', 'S']
+    # allowed_strings_den = ['size']
+    # labels_strings_den = ['S']
+    allowed_strings_den = ['electronegativity', 'nuclear_charge', 'size']
+    labels_strings_den = ['chi', 'Z', 'S']
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    for iii, properties_num in enumerate(allowed_strings_num):
+        for iv, properties_den in enumerate(allowed_strings_den):
+            atom_only_ac = atom_only_ratiometric(mol, properties_num, properties_den, depth, atomIdx, oct=oct)
+            this_colnames = []
+            for i in range(0, depth + 1):
+                this_colnames.append(labels_strings_num[iii] + '-' + labels_strings_den[iv] + '-' + str(i))
+            colnames.append(this_colnames)
+            result.append(atom_only_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
+def generate_atomonly_summetrics(mol, atomIdx, loud, depth=4, oct=True):
+    ## this function gets autocorrelations for a molecule starting
+    ## in one single atom only
+    # Inputs:
+    #       mol - mol3D class
+    #       atomIdx - int, index of atom3D class
+    #       loud - bool, print output
+    result = list()
+    colnames = []
+    # allowed_strings = ['ident', 'topology', 'size']
+    # labels_strings = ['I', 'T', 'S']
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    for ii, properties in enumerate(allowed_strings):
+        atom_only_ac = atom_only_summetric(mol, properties, depth, atomIdx, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(atom_only_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
+def generate_revised_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True):
+    ## this function gets autocorrelations for a molecule starting
+    ## in one single atom only
+    # Inputs:
+    #       mol - mol3D class
+    #       atomIdx - int, index of atom3D class
+    #       loud - bool, print output
+    result = list()
+    colnames = []
+    # allowed_strings = ['electronegativity', 'ident', 'topology']
+    # labels_strings = ['chi', 'I', 'T']
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    for ii, properties in enumerate(allowed_strings):
+        atom_only_ac = atom_only_deltametric(mol, properties, depth, atomIdx, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result.append(atom_only_ac)
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
+## Gets the rRACs of a given atidx
+#  @param mol mol3D of this molecule
+#  @param atidx the index of the atom of concern
+#  @return descriptor_names updated names
+#  @return descriptors updated RACs
+def get_revised_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
+    descriptor_names = []
+    descriptors = []
+    result_dictionary = generate_revised_atomonly_autocorrelations(mol, atidx, False, depth, oct)
+    for colnames in result_dictionary['colnames']:
+        for colname in colnames:
+            descriptor_names.append('A_' + colname)
+    for results in result_dictionary['results']:
+        descriptors += results.tolist()
+    result_dictionary = generate_atomonly_ratiometrics(mol, atidx, False, depth, oct)
+    for colnames in result_dictionary['colnames']:
+        for colname in colnames:
+            descriptor_names.append('R_' + colname)
+    for results in result_dictionary['results']:
+        descriptors += results.tolist()
+    result_dictionary = generate_atomonly_summetrics(mol, atidx, False, depth, oct)
+    for colnames in result_dictionary['colnames']:
+        for colname in colnames:
+            descriptor_names.append('S_' + colname)
+    for results in result_dictionary['results']:
+        descriptors += results.tolist()
+    result_dictionary = generate_revised_atomonly_deltametrics(mol, atidx, False, depth, oct)
+    for colnames in result_dictionary['colnames']:
+        for colname in colnames:
+            descriptor_names.append('D_' + colname)
+    for results in result_dictionary['results']:
+        descriptors += results.tolist()
+
+    return descriptor_names, descriptors
+
 # commented out default_plot() as conda repo does not automatically conda install matplitlib
-# def default_plot(x, y):
-#     # defs for plt
-#     xlabel = r'distance / ${\rm \AA}$'
-#     ylabel = r'distance / ${\rm \AA}$'
-#     colors = ['r', 'g', 'b', '.75', 'orange', 'k']
-#     markers = ['o', 's', 'D', 'v', '^', '<', '>']
-#     font = {'family': 'sans-serif',
-#             # 'weight' : 'bold',
-#             'size': 22}
-#     # figure size
-#     plt.figure(figsize=(7, 6))
-#     # dealing with axes
-#     x = np.array(x)
-#     y = np.array(y)
-#     x_min = float(format(np.amin(x),'.1f')) - 0.1
-#     x_max = float(format(np.amax(x), '.1f')) + 0.1
-#     # x_range = x_max - x_min
-#     plt.xlim(x_min, x_max)
-#     # y_min = round(y[0],2)
-#     # y_max = round(y[-1],2)
-#     plt.ylim(x_min, x_max)
-#     plt.xlabel(xlabel)
-#     plt.ylabel(ylabel)
-#     # dealing with ticks
-#     ax = plt.axes()
-#     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.4))
-#     ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.2))
-#     ax.yaxis.set_major_locator(ticker.MultipleLocator(0.4))
-#     ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.2))
-#     plt.tick_params(which='both', axis='both', direction='in', bottom=True, top=True, right=True, left=True)
-#     plt.rcParams['axes.linewidth'] = 3
-#     plt.rcParams['xtick.major.size'] = 10
-#     plt.rcParams['xtick.major.width'] = 3
-#     plt.rcParams['ytick.major.size'] = 10
-#     plt.rcParams['ytick.major.width'] = 3
-#     plt.rcParams['xtick.minor.size'] = 5
-#     plt.rcParams['xtick.minor.width'] = 3
-#     plt.rcParams['ytick.minor.size'] = 5
-#     plt.rcParams['ytick.minor.width'] = 3
-#     plt.tight_layout()
-#
-#     plt.rc('font', **font)
-#     plt.plot(x, y, 'o', markeredgecolor='k')
-#     plt.plot([x_min,x_max],[x_min,x_max],linestyle='dashed',color='k')
-#     # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
-#     plt.show()
+def default_plot(x, y, name=False):
+    # defs for plt
+    xlabel = r'distance / ${\rm \AA}$'
+    ylabel = r'distance / ${\rm \AA}$'
+    colors = ['r', 'g', 'b', '.75', 'orange', 'k']
+    markers = ['o', 's', 'D', 'v', '^', '<', '>']
+    font = {'family': 'sans-serif',
+            # 'weight' : 'bold',
+            'size': 22}
+    # figure size
+    plt.figure(figsize=(7, 6))
+    # dealing with axes
+    x = np.array(x)
+    y = np.array(y)
+    x_min = float(format(np.amin(x),'.1f')) - 0.1
+    x_max = float(format(np.amax(x), '.1f')) + 0.1
+    # x_range = x_max - x_min
+    plt.xlim(x_min, x_max)
+    # y_min = round(y[0],2)
+    # y_max = round(y[-1],2)
+    plt.ylim(x_min, x_max)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    # dealing with ticks
+    ax = plt.axes()
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(0.4))
+    ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.2))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.2))
+    plt.tick_params(which='both', axis='both', direction='in', bottom=True, top=True, right=True, left=True)
+    plt.rcParams['axes.linewidth'] = 3
+    plt.rcParams['xtick.major.size'] = 10
+    plt.rcParams['xtick.major.width'] = 3
+    plt.rcParams['ytick.major.size'] = 10
+    plt.rcParams['ytick.major.width'] = 3
+    plt.rcParams['xtick.minor.size'] = 5
+    plt.rcParams['xtick.minor.width'] = 3
+    plt.rcParams['ytick.minor.size'] = 5
+    plt.rcParams['ytick.minor.width'] = 3
+    plt.tight_layout()
+
+    plt.rc('font', **font)
+    plt.plot(x, y, 'o', markeredgecolor='k')
+    plt.plot([x_min,x_max],[x_min,x_max],linestyle='dashed',color='k')
+    # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
+    plt.hlines(a['mean_y'], x_min, x_max, linestyle='dashed', color='k')
+    texts = []
+    for key in sorted(e.keys()):
+        text = key + ': ' + str(format(e[key], '.2g'))
+        texts.append(text)
+    textstr = '\n'.join(texts)
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+            verticalalignment='top', bbox=props)
+    # plt.show()
+    if name:
+        fpath = os.getcwd()
+        plt.savefig(fpath + '/' + name + '.eps', dpi=400)
+
 # # plt.imshow(data,interpolation='none')
 # # # plt.imshow(data,interpolation='nearest')
 # # plt.savefig('relative_energies_for_Fe-py4.eps',dpi=400)

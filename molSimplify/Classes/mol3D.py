@@ -1056,6 +1056,34 @@ class mol3D:
                 farIndex = ind
         return farIndex
 
+    ## Gets list of atoms of the fragments in the mol3D
+    #  @param sel The object pointer
+    def getfragmentlists(self):
+        atidxes_total = []
+        atidxes_unique = set([0])
+        atidxes_done = []
+        natoms_total_ = len(atidxes_done)
+        natoms_total = self.natoms
+        while natoms_total_ < natoms_total:
+            natoms_ = len(atidxes_unique)
+            for atidx in atidxes_unique:
+                if atidx not in atidxes_done:
+                    atidxes_done.append(atidx)
+                    atidxes = self.getBondedAtoms(atidx)
+                    atidxes.extend(atidxes_unique)
+                    atidxes_unique = set(atidxes)
+                    natoms = len(atidxes_unique)
+                    natoms_total_ = len(atidxes_done)
+            if natoms_ == natoms:
+                atidxes_total.append(list(atidxes_unique))
+                for atidx in range(natoms_total):
+                    if atidx not in atidxes_done:
+                        atidxes_unique = set([atidx])
+                        natoms_total_ = len(atidxes_done)
+                        break
+
+        return atidxes_total
+
     ## Gets H atoms in molecule
     #  @param self The object pointer
     #  @return List of atom3D objects of H atoms
