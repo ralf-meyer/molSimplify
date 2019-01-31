@@ -19,8 +19,8 @@ from sklearn.multioutput import MultiOutputRegressor
 from math import exp
 import numpy as np
 import csv, glob, os, copy, pickle
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+# import matplotlib.pyplot as plt
+# import matplotlib.ticker as ticker
 numpy.seterr(divide = 'ignore')
 
 csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'
@@ -267,6 +267,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     alpha_higher = alpha * exp(factor_higher)
     lin = 7
     # optimize hyperparameters
+    cycle_i = 0
     while gamma == 1 or alpha == 1 or signal == False:
         gammas = np.linspace(gamma_lower, gamma_higher, lin)
         alphas = np.linspace(alpha_lower, alpha_higher, lin)
@@ -276,16 +277,21 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
         gamma = regr.best_params_['gamma']
         alpha = regr.best_params_['alpha']
         if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
-            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]) and cycle_i < 10:
             signal = False
             factor_lower *= 0.8
             factor_higher *= 0.8
+            # if cycle_i > 4:
+            #     factor_lower = -4
+            #     factor_higher = 4
+            #     cycle_i = 0
             gamma_lower = gamma * exp(factor_lower)
             gamma_higher = gamma * exp(factor_higher)
             alpha_lower = alpha * exp(factor_lower)
             alpha_higher = alpha * exp(factor_higher)
         else:
             signal = True
+        cycle_i += 1
         print('gamma is: ', gamma, '. alpha is: ', alpha)
     # final model
     regr = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
