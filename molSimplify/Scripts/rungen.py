@@ -548,6 +548,9 @@ def rungen(rundir,args,chspfname,globs):
                 elif 'qch' in args.qccode.lower():
                     jobdirs = multiqgen(args,strfiles)
                     print 'QChem input files generated!'
+                elif 'orc' in args.qccode.lower():
+                    jobdirs = multiogen(args,strfiles)
+                    print 'ORCA input files generated!'
                 else:
                     print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
             # check molpac

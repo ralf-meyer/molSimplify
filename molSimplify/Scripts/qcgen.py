@@ -599,3 +599,235 @@ def mlpgen(args,strfiles,rootdir):
                     output.write('\n')
         output.close()
     return jobdirs
+
+## Generate multiple ORCA runs if multiple methods requested
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @return List of job directories
+def multiogen(args,strfiles):
+    method = False
+    jobdirs=[]
+    if args.method and len(args.method) > 0:
+        methods = args.method
+        for method in methods:
+            jobdirs.append(ogen(args,strfiles,method))
+    else:
+        jobdirs.append(ogen(args,strfiles,method))
+    # remove original files
+    for xyzf in strfiles:
+        os.remove(xyzf+'.xyz')
+        os.remove(xyzf+'.molinp')
+        os.remove(xyzf + '.report')
+    return jobdirs
+## Generate ORCA input files
+#  @param args Namespace of arguments
+#  @param strfiles List of xyz files produced
+#  @param rootdir Root directory 
+#  @return List of job directories
+def ogen(args,strfiles,method):
+    # global variables
+    globs = globalvars()
+    jobdirs = []
+    coordfs = []
+    # Initialize the jobparams dictionary with mandatory/useful keywords. TG: removed min_coordinates cartesian
+    jobparams={'run': 'Sp',
+           'basis': 'def2-TZVP',
+           'MaxIter': '500',
+           'method': 'B3LYP',
+           'spinmult': '1',
+           'charge': '0',
+           'ERI':'NORI',
+           'REL':'',
+           'UNO':'',
+           'mdci_maxit':'200',
+           'mdci_shift':'0.2',
+           'HFX':False,
+            }
+    # if multiple methods requested generate c directories
+    # Overwrite plus add any new dictionary keys from commandline input.       
+    for xyzf in strfiles:
+        rdir = xyzf.rsplit('/',1)[0]
+        xyzft = xyzf.rsplit('/',1)[-1]
+        xyzf += '.xyz'
+        coordfs.append(xyzf.rsplit('/',1)[-1])
+        coordname = xyzft
+        # Setting jobname for files + truncated name for queue.
+        if len(coordname) > 10:
+            nametrunc=coordname
+        else:
+            nametrunc=coordname
+        if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
+            os.mkdir(rdir+'/'+nametrunc) 
+        mdir = rdir+'/'+nametrunc
+        if method:
+            if method[0]=='U' or method[0]=='u':
+                mmd = '/'+method[1:]
+            else:
+                mmd = '/'+method
+            mdir = rdir+'/'+nametrunc+mmd
+            if not os.path.exists(mdir):
+                os.mkdir(mdir)
+        if not args.jobdir:
+            jobdirs.append(mdir)
+            shutil.copy2(xyzf,mdir)
+            shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+            try:
+                shutil.copy2(xyzf.replace('.xyz','.report'),mdir.replace('.xyz','.report'))
+            except:
+                pass
+        elif args.jobdir:
+             jobdirs.append(rdir)
+    # parse extra arguments
+    # Method parsing, does not check if a garbage method is used here:
+    unrestricted=False
+    if method:
+        jobparams['method'] = method
+        if args.spin and int(args.spin) > 1:
+            unrestricted=True
+        #For ORCA, "ro" or "u" is not needed
+        if ('u' or 'U') in method[0]:
+            jobparams['method'] = method[1:]
+            # Unrestricted calculation
+        elif ('ro' or 'RO') in method[0]:
+            # Restricted calculation
+            unrestricted=False
+            jobparams['method'] = method[2:]
+    else:
+        if args.spin and int(args.spin) >= 1:
+                jobparams['method'] = 'B3LYP'
+                unrestricted=True
+        else:
+            jobparams['method'] = 'B3LYP'
+    print args.method,method,jobparams['method']
+    #Check runtype and we accept both ORCA and terachem naming convention 
+    if (args.runtyp and 'energy' in args.runtyp.lower()):
+        jobparams['run'] = 'Sp'
+    elif (args.runtyp and 'sp' in args.runtyp.lower()):
+        jobparams['run'] = 'Sp'
+    elif (args.runtyp and 'opt' in args.runtyp.lower()):
+        jobparams['run'] = 'Opt'
+    elif (args.runtyp and 'minimize' in args.runtyp.lower()):
+        jobparams['run'] = 'Opt'
+    elif (args.runtyp and 'gradient' in args.runtyp.lower()):
+        jobparams['run'] = 'EnGrad'
+    elif (args.runtyp and 'engrad' in args.runtyp.lower()):
+        jobparams['run'] = 'EnGrad'
+    # Special sanity check for CCSD(T)
+    if jobparams['run'] =='Opt' and 'CC' in jobparams['method']:
+        print('''Warning! You requested geometry optimization with Coupled-Cluster methods,
+                which is NOT supported. Instead, we will geometry optimize the structure 
+                with B3LYP and then conduct CCSD(T) energy calculation on the optimized structure''')
+    #TODO: check ORCA dispersion
+    if (args.dispersion):
+        jobparams['dispersion']=args.dispersion
+    # Just carry over spin and charge keywords if they're set. Could do checks, none for now.
+    if args.spin:
+        jobparams['spinmult']=args.spin
+    if args.charge:
+        if args.bcharge:
+            args.charge = int(args.charge)+int(args.bcharge)
+        jobparams['charge']=args.charge
+    # Check for existence of basis and sanitize name
+    # Read in basis name from args only if it's not the default for terachem
+    if args.basis and args.basis !='lacvps_ecp' :
+        jobparams['basis']=args.basis
+    if not jobparams.has_key('DIISMaxEq'):
+        jobparams['DIISMaxEq']=15
+    # Overwrite plus add any new dictionary keys from commandline input.       
+    if args.qoption:
+        if len(args.qoption)%2!=0:
+                print 'WARNING: wrong number of arguments in -qoption'
+        else:
+            for elem in range(0,int(0.5*len(args.qoption))):
+                key,val=args.qoption[2*elem],args.qoption[2*elem+1]
+                jobparams[key]=val
+    # Extra keywords for unrestricted. 
+    if unrestricted:
+       # If running unrestricted, assume convergence will be more difficult for now.
+       jobparams['scf']='SlowConv' 
+       jobparams['UNO']='UNO'
+       if not jobparams.has_key('levelshift'):
+          jobparams['levelshift']='yes'
+       elif jobparams['levelshift'] != 'yes':
+          print("Warning! You're doing an unrestricted calculation but have set levelshift = %s" %(jobparams['levelshift']))
+       if not jobparams.has_key('levelshiftval'):
+           if jobparams.has_key('levelshiftvala'):
+              jobparams['levelshiftval']=jobparams['levelshiftvala']
+           elif jobparams.has_key('levelshiftvalb'):
+              jobparams['levelshiftval']=jobparams['levelshiftvalb']
+           else:
+               jobparams['levelshiftval']=0.25
+       if not jobparams.has_key('ErrOff'):
+           jobparams['ErrOff']=0.00001
+    # Now we're ready to start building the input file
+    if not args.jobdir:
+        for i,jobd in enumerate(jobdirs):
+            output=open(jobd+'/orca.in','w')
+            output.write('# file created with %s\n' % globs.PROGRAM)
+            if 'CC' in jobparams['method'] and jobparams['run']=='Opt':
+               params0=jobparams.copy()
+               params0['method']='B3LYP'
+               ogenwrt(output,params0,coordfs[i])
+               output.write('\n$new_job\n')
+               jobparams['run']='Sp'
+               ogenwrt(output,jobparams,'')
+            else:
+               ogenwrt(output,jobparams,coordfs[i])
+            output.close()
+    elif args.jobdir:
+        for i,jobd in enumerate(jobdirs):
+            print('jobd is ' + jobd)
+            if args.name:
+                output=open(jobd+ '/'+args.name + '.in','w')
+            else:
+                output=open(jobd+'/orca.in','w')
+            output.write('# file created with %s\n' % globs.PROGRAM)
+            if 'CC' in jobparams['method'] and jobparams['run']=='Opt':
+               params0=jobparams.copy()
+               params0['method']='B3LYP'
+               ogenwrt(output,params0,coordfs[i])
+               output.write('\n$new_job\n')
+               jobparams['run']='Sp'
+               ogenwrt(output,jobparams,'')
+            else:
+               ogenwrt(output,jobparams,coordfs[i])
+            output.close()
+    return jobdirs
+
+def ogenwrt(output,jobparams,xyzf):
+    # write the first line of simple keywords
+    output.write('!'+jobparams['method']+' ')
+    output.write(jobparams['basis']+' ')
+    output.write(jobparams['ERI']+' ')
+    if jobparams['REL']:
+      output.write(jobparams['REL']+' ')
+    output.write(jobparams['UNO']+' ')
+    output.write(jobparams['run']+'\n\n')
+    # write scf convergence mode
+    if jobparams.has_key('scf'):
+       output.write('!'+jobparams['scf']+'\n')
+    # write the scf control block
+    output.write('%scf\n')
+    output.write('MaxIter '+jobparams['MaxIter']+'\n')
+    if jobparams['levelshift']=='yes':
+       output.write('Shift Shift '+str(jobparams['levelshiftval'])+' ErrOff '+ str(jobparams['ErrOff'])+'  end\n')
+    output.write('DIISMaxEq '+str(jobparams['DIISMaxEq'])+'\n')
+    output.write('end\n\n')
+    # write the method block to control HFX 
+    if not (('CC' or 'HF') in jobparams['method']):
+       if jobparams['HFX']:
+           output.write('%method\n')
+           output.write('ScalHFX = '+jobparams['HFX']+'\n')
+           output.write('ScalDFX = '+str(1-float(jobparams['HFX']))+'\n')
+           output.write('end\n\n')
+    # write the mdci block for CCSD(T)
+    if 'CCSD' in jobparams['method']:
+        output.write('%mdci\n')
+        if jobparams['UNO']:
+           output.write('UseQROs true\n')
+        output.write('maxiter '+jobparams['mdci_maxit']+'\n')
+        output.write('Lshift '+jobparams['mdci_shift']+'\n')
+        output.write('end\n\n')
+    # write the coordinate block
+    output.write('*xyzfile '+str(jobparams['charge'])+' '+str(jobparams['spinmult'])+' '+xyzf+'\n')
+    #output.write(''.join(s0)+'*\n')
