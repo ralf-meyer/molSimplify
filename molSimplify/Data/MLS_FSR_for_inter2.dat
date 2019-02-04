@@ -1,0 +1,14 @@
+# Default data for bond lengths (in A) between metal, connection atom and ligand
+# keys are sym1, bo, ox state, spin multiplicity, fsr: bangle_m3D, bangle_m3Dsub, bangle_core3D, bangle_sub
+# octet = 2
+H 0 - - 105
+# octet = 8
+C 0 - - 105
+N 0 - - 105
+O 0 - - 105
+C 1 - - 105
+N 1 - - 105
+O 1 - - 105
+C 2 - - 105
+N 2 - - 105
+C 3 - - 105

@@ -11,7 +11,7 @@ from molSimplify.Informatics.graph_analyze import *
 from molSimplify.Informatics.partialcharges import *
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.globalvars import *
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, LeaveOneOut
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.kernel_ridge import KernelRidge
@@ -19,8 +19,8 @@ from sklearn.multioutput import MultiOutputRegressor
 from math import exp
 import numpy as np
 import csv, glob, os, copy, pickle
-# import matplotlib.pyplot as plt
-# import matplotlib.ticker as ticker
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 numpy.seterr(divide = 'ignore')
 
 csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'
@@ -277,14 +277,15 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
         gamma = regr.best_params_['gamma']
         alpha = regr.best_params_['alpha']
         if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
-            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]) and cycle_i < 10:
+            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+            # and cycle_i < 10:
             signal = False
             factor_lower *= 0.8
             factor_higher *= 0.8
-            # if cycle_i > 4:
-            #     factor_lower = -4
-            #     factor_higher = 4
-            #     cycle_i = 0
+            if cycle_i > 10:
+                factor_lower = -4
+                factor_higher = 4
+                cycle_i = 0
             gamma_lower = gamma * exp(factor_lower)
             gamma_higher = gamma * exp(factor_higher)
             alpha_lower = alpha * exp(factor_lower)
@@ -324,6 +325,164 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     perm_dict = dict(zip(perm_names, perms))
 
     return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
+
+## predict labels using krr with a given csv file
+#  @param csvf the csv file containing headers (first row), data, and label
+#  @param colnum_label the column number for the label column
+#  @param colnum_desc the starting column number for the descriptor columns
+#  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
+def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False, alpha=1, gamma=1, threshold=0.01):
+    # read in desc and label
+    f = open(csvf, 'r')
+    fcsv = csv.reader(f)
+    headers = np.array(next(f, None).rstrip('\r\n').split(','))[colnum_desc:]
+    X = []
+    y = []
+    lines = [line for line in fcsv]
+    lnums = [len(line) for line in lines]
+    count = max(set(lnums), key=lnums.count)
+    for line in lines:
+        if len(line) == count:
+            descs = []
+            for desc in line[colnum_desc:]:
+                descs.append(float(desc))
+            X.append(descs)
+            y.append(float(line[colnum_label]))
+    X = np.array(X)
+    y = np.array(y)
+    ## process desc and label
+    mean_X = np.mean(X, axis=0)
+    std_X = np.std(X, axis=0)
+    mean_y = np.mean(y, axis=0)
+    std_y = np.std(y, axis=0)
+    X_norm = normalize(X, mean_X, std_X)
+    y_norm = normalize(y, mean_y, std_y)
+    # stats
+    mean_X_dict = dict(zip(headers, mean_X))
+    std_X_dict = dict(zip(headers, std_X))
+    stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
+    stats = [mean_X_dict, std_X_dict, mean_y, std_y]
+    stat_dict = dict(zip(stat_names, stats))
+    X_norm = normalize(X, mean_X, std_X)
+    y_norm = normalize(y, mean_y, std_y)
+    # split to train and test
+    loo = LeaveOneOut()
+    total_i = len(X_norm)
+    i = 0
+    # ys
+    ys = []
+    # MAEs
+    MAEs_test = []
+    MAEs_test_i = []
+    for train_idx, test_idx in loo.split(X_norm):
+        X_norm_train, X_norm_test = X_norm[train_idx], X_norm[test_idx]
+        y_norm_train, y_norm_test = y_norm[train_idx], y_norm[test_idx]
+        ## end
+        # feature selection
+        if not feature_names:
+            selector = RandomForestRegressor(random_state=0, n_estimators=100)
+            selector.fit(X_norm_train, y_norm_train)
+            X_norm_train_impts = selector.feature_importances_
+            idxes = np.where(X_norm_train_impts > threshold)[0]
+            print(len(idxes))
+            importances = X_norm_train_impts[idxes]
+            features_sel = headers[idxes]
+            # importance
+            impt_dict = dict(zip(features_sel, importances))
+            X_norm_train_sel = X_norm_train.T[idxes].T
+            X_norm_test_sel = X_norm_test.T[idxes].T
+            print(sorted(impt_dict, key=impt_dict.get))
+            print(impt_dict)
+        else:
+            idxes = [headers.tolist().index(feature_name) for feature_name in feature_names]
+            X_norm_train_sel = X_norm_train.T[idxes].T
+            X_norm_test_sel = X_norm_test.T[idxes].T
+            features_sel = feature_names
+            impt_dict = None
+        ## training with krr
+        if i == 0 or (alpha != 1 and gamma != 1):
+            signal = True
+        else:
+            signal = False
+        # krr parameters
+        kernel = 'rbf'
+        factor_lower = -4
+        factor_higher = 4
+        gamma_lower = gamma * exp(factor_lower)
+        gamma_higher = gamma * exp(factor_higher)
+        alpha_lower = alpha * exp(factor_lower)
+        alpha_higher = alpha * exp(factor_higher)
+        lin = 7
+        # optimize hyperparameters
+        cycle_i = 0
+        while gamma == 1 or alpha == 1 or signal == False:
+            gammas = np.linspace(gamma_lower, gamma_higher, lin)
+            alphas = np.linspace(alpha_lower, alpha_higher, lin)
+            tuned_parameters = [{'kernel': [kernel], 'gamma': gammas, 'alpha': alphas}]
+            regr = GridSearchCV(KernelRidge(), tuned_parameters, cv=5, scoring='neg_mean_absolute_error')
+            regr.fit(X_norm_train_sel, y_norm_train)
+            gamma = regr.best_params_['gamma']
+            alpha = regr.best_params_['alpha']
+            if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
+                (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+                # and cycle_i < 10:
+                signal = False
+                factor_lower *= 0.8
+                factor_higher *= 0.8
+                if cycle_i > 10:
+                    factor_lower = -4
+                    factor_higher = 4
+                    cycle_i = 0
+                gamma_lower = gamma * exp(factor_lower)
+                gamma_higher = gamma * exp(factor_higher)
+                alpha_lower = alpha * exp(factor_lower)
+                alpha_higher = alpha * exp(factor_higher)
+            else:
+                signal = True
+            cycle_i += 1
+            print('gamma is: ', gamma, '. alpha is: ', alpha)
+        # final model
+        regr = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
+        regr.fit(X_norm_train_sel, y_norm_train)
+        # predictions
+        y_norm_train_pred = regr.predict(X_norm_train_sel)
+        y_train_pred = y_norm_train_pred * std_y + mean_y
+        y_train_data = y_norm_train * std_y + mean_y
+        y_norm_test_pred = regr.predict(X_norm_test_sel)
+        y_test_pred = y_norm_test_pred * std_y + mean_y
+        y_test_data = y_norm_test * std_y + mean_y
+        # data
+
+        # train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
+        # X_norm_train_sel_names = features_sel
+        # X_norm_train_sel_dict = dict(zip(X_norm_train_sel_names, X_norm_train_sel.T))
+        # trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
+        # train_dict = dict(zip(train_names, trains))
+        # test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
+        # X_norm_test_sel_names = features_sel
+        # X_norm_test_sel_dict = dict(zip(X_norm_test_sel_names, X_norm_test_sel.T))
+        # tests = [X_norm_test_sel_dict, y_test_data, y_test_pred]
+        # test_dict = dict(zip(test_names, tests))
+        y_name = ['y_train_data', 'y_train_pred', 'y_test_data', 'y_test_pred']
+        y = [y_train_data, y_train_pred, y_test_data, y_test_pred]
+        y_dict = dict(zip(y_name, y))
+        ys.append(y_dict)
+        # performance
+        # score_train = regr.score(X_norm_train_sel, y_norm_train)
+        # score_test = regr.score(X_norm_test_sel, y_norm_test)
+        # MAE_train = mean_absolute_error(y_train_data, y_train_pred)
+        MAE_test = mean_absolute_error(y_test_data, y_test_pred)
+        # perm_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
+        # perms = [score_train, score_test, MAE_train, MAE_test]
+        # perm_dict = dict(zip(perm_names, perms))
+        MAEs_test.append(MAE_test)
+        MAEs_test_i.append(i)
+        print(str(i) + '/' + str(total_i))
+        i += 1
+    perm_dict = dict(zip(MAEs_test_i, MAEs_test))
+
+    # return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
+    return impt_dict, perm_dict, ys
 
 ## predict labels using gradient boosting regressor (GBR) with a given csv file
 #  @param csvf the csv file containing headers (first row), data, and label
