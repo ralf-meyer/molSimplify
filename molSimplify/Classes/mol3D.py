@@ -1016,6 +1016,50 @@ class mol3D:
                 nats.append(i)
         return nats
 
+    ## Gets C=C atoms in molecule
+    #  @param self The object pointer
+    #  @return List of atom3D objects of H atoms
+    def getC2Cs(self):
+        # values to store
+        c2clist = []
+        c2list = []
+        # self.createMolecularGraph(oct=False)
+        # order c2 carbons by priority
+        # c2list_and_prio = []
+        # for i in range(self.natoms):
+        #     if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
+        #         fatnos = sorted([self.getAtom(fidx).atno for fidx in self.getBondedAtoms(i)])[::-1]
+        #         fpriority = float('.'.join([str(fatnos[0]), ''.join([str(i) for i in fatnos[1:]])]))
+        #         c2list_and_prio.append((fpriority, i))
+        # c2 carbons
+        for i in range(self.natoms):
+            if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
+                c2list.append(i)
+        # c2list = [c2[0] for c2 in sorted(c2list_and_prio)[::-1]]
+        # for each c2 carbon, find if any of its neighbors are c2
+        for c2 in c2list:
+            fidxes = self.getBondedAtoms(c2)
+            c2partners = []
+            for fidx in fidxes:
+                if fidx in c2list:
+                    # c2partners.append(fidx)
+                    c2clist.append([c2, fidx])
+                    c2clist.append([fidx, c2])
+            # num_c2partners = len(c2partners)
+            # # if num_c2partners > 1:
+            # #     for c2partner in c2partners:
+            # #         score = 0
+            # #         sidxes = self.getBondedAtoms(fidx)
+            # #         for sidx in sidxes:
+            # # elif num_c2partners == 1:
+            # if num_c2partners > 1:
+            #     c2clist.append([c2, fidx],[fidx, c2])
+            #     continue
+            # else:
+            #     continue
+
+        return c2clist
+
     ## Gets atom that is furthest from the molecule COM along a given direction and returns the corresponding distance
     #  @param self The object pointer
     #  @param uP Search direction

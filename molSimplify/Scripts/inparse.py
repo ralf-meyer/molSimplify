@@ -10,6 +10,7 @@ from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
 
+
 ## Checks input for correctness and uses defaults otherwise
 #  @param args Namespace of arguments
 def checkinput(args,calctype="base"):
@@ -239,11 +240,9 @@ def checkinput(args,calctype="base"):
                             toccs += dent_i
                     
                     for i,substrate in enumerate(args.substrate):
-                        if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
-                            if 'pi' in subcatoms:
-                                suboc_i = 1
-                            else:
-                                suboc_i = len(subcatoms)
+                        # if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
+                        if args.core[0].lower() in args.mlig:
+                            suboc_i = len([core for core in args.core if core.lower() in args.mlig])
                             for j in range(suboc_i):
                                 toccs += 1
                     print('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.')
@@ -1297,8 +1296,7 @@ def parseinputs_tsgen(*p):
     parser.add_argument("-subcatoms", help="index of the connecting atom in substrate")
     parser.add_argument("-mlig", help="ligand name in the metal complex that the substrate connects with")
     parser.add_argument("-mligcatoms", help="index of the connecting atom in the specified ligand in the metal complex",action="store_true")
-    parser.add_argument("-cdxml", help="cdxml file name",
-                        action="store_true")
+    parser.add_argument("-cdxml", help="cdxml file name",action="store_true")
     parser.add_argument("-conformers", help="flag for requesting metal-substrate TS conformation search",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()

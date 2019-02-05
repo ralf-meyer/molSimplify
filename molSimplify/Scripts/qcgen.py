@@ -27,9 +27,12 @@ def multitcgen(args,strfiles):
     # remove original files
     if not args.jobdir:
         for xyzf in strfiles:
-            os.remove(xyzf+'.xyz')
-            os.remove(xyzf+'.molinp')
-            os.remove(xyzf+'.report')
+            try:
+                os.remove(xyzf+'.xyz')
+                os.remove(xyzf+'.molinp')
+                os.remove(xyzf+'.report')
+            except:
+                pass
     return jobdirs
 
 ## Generate terachem input files
