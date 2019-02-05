@@ -114,6 +114,19 @@ def sgejobgen(args,jobdirs):
                 output.write('rungms gam.inp '+cpus +' > gam.out')
             elif not qch and 'qch' in args.qccode.lower():
                 output.write('qchem qch.inp '+cpus +' > qch.out')
+        elif args.qccode and ('orc' in args.qccode.lower() or 'molc' in args.qccode.lower()):
+            orc = False
+            molc = False
+            if args.jcommand:
+                for jc in args.jcommand:
+                    if 'orca' in jc:
+                        orc = True
+                    if 'molcas' in jc:
+                        molc = True
+            if not orc and 'orca' in args.qccode.lower():
+                output.write('orca orca.in > orca.out')
+            elif not molc and 'molc' in args.qccode.lower():
+                output.write('pymolcas molcas.input -f')
         else:
             print 'Not supported QC code requested. Please input execution command manually'
         output.close()
@@ -205,6 +218,19 @@ def slurmjobgen(args,jobdirs):
                 output.write('rungms gam.inp '+cpus +' > gam.out')
             elif not qch and 'qch' in args.qccode.lower():
                 output.write('qchem qch.inp '+cpus +' > qch.out')
+        elif args.qccode and ('orc' in args.qccode.lower() or 'molc' in args.qccode.lower()):
+            orc = False
+            molc = False
+            if args.jcommand:
+                for jc in args.jcommand:
+                    if 'orca' in jc:
+                        orc = True
+                    if 'molcas' in jc:
+                        molc = True
+            if not orc and 'orca' in args.qccode.lower():
+                output.write('orca orca.in > orca.out')
+            elif not molc and 'molc' in args.qccode.lower():
+                output.write('pymolcas molcas.input -f')
         else:
             print 'No supported QC code requested. Please input execution command manually'
         output.close()

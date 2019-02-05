@@ -555,7 +555,7 @@ def rungen(rundir,args,chspfname,globs):
                     jobdirs = multimolcgen(args,strfiles)
                     print 'MOLCAS input files generated!'
                 else:
-                    print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
+                    print 'Only TeraChem, GAMESS, QChem, ORCA, MOLCAS are supported right now.\n'
             # check molpac
             if args.mopac and not emsg:
                 print('Generating MOPAC input')
