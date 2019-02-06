@@ -617,10 +617,14 @@ def multiogen(args,strfiles):
     else:
         jobdirs.append(ogen(args,strfiles,method))
     # remove original files
-    for xyzf in strfiles:
-        os.remove(xyzf+'.xyz')
-        os.remove(xyzf+'.molinp')
-        os.remove(xyzf + '.report')
+    if not args.jobdir:
+       for xyzf in strfiles:
+           try:
+              os.remove(xyzf+'.xyz')
+              os.remove(xyzf+'.molinp')
+              os.remove(xyzf + '.report')
+           except:
+               pass
     return jobdirs
 ## Generate ORCA input files
 #  @param args Namespace of arguments
@@ -669,7 +673,10 @@ def ogen(args,strfiles,method):
                 mmd = '/'+method
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
-                os.mkdir(mdir)
+                try:
+                    os.mkdirs(mdir)
+                except:
+                    pass
         if not args.jobdir:
             jobdirs.append(mdir)
             shutil.copy2(xyzf,mdir)
@@ -780,10 +787,7 @@ def ogen(args,strfiles,method):
     elif args.jobdir:
         for i,jobd in enumerate(jobdirs):
             print('jobd is ' + jobd)
-            if args.name:
-                output=open(jobd+ '/'+args.name + '.in','w')
-            else:
-                output=open(jobd+'/orca.in','w')
+            output=open(jobd+'/orca.in','w')
             output.write('# file created with %s\n' % globs.PROGRAM)
             if 'CC' in jobparams['method'] and jobparams['run']=='Opt':
                params0=jobparams.copy()
@@ -891,7 +895,10 @@ def molcgen(args,strfiles,method):
                 mmd = '/'+method
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
-                os.mkdir(mdir)
+                try:
+                    os.mkdirs(mdir)
+                except:
+                    pass
         if not args.jobdir:
             jobdirs.append(mdir)
             shutil.copy2(xyzf,mdir)
@@ -979,10 +986,7 @@ def molcgen(args,strfiles,method):
     elif args.jobdir:
         for i,jobd in enumerate(jobdirs):
             print('jobd is ' + jobd)
-            if args.name:
-                output=open(jobd+ '/'+args.name + '.in','w')
-            else:
-                output=open(jobd+'/molcas.input','w')
+            output=open(jobd+'/molcas.input','w')
             output.write('# file created with %s\n' % globs.PROGRAM)
             molcwrt(output,jobparams,coordfs[i],i)
             output.close()
@@ -1039,10 +1043,14 @@ def multimolcgen(args,strfiles):
     else:
         jobdirs.append(molcgen(args,strfiles,method))
     # remove original files
-    for xyzf in strfiles:
-        os.remove(xyzf+'.xyz')
-        os.remove(xyzf+'.molinp')
-        os.remove(xyzf + '.report')
+    if not args.jobdir:
+       for xyzf in strfiles:
+           try:
+              os.remove(xyzf+'.xyz')
+              os.remove(xyzf+'.molinp')
+              os.remove(xyzf + '.report')
+           except:
+               pass
     return jobdirs
 ## Generate MOLCAS basis keyword for a given mol3D
 #  @param strfiles List of xyz files produced 

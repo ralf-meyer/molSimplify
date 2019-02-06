@@ -285,8 +285,25 @@ def checkMultiFileGen(myjobdir,refdir):
               passMultiFileCheck=False
     return [passMultiFileCheck,myfiles]
 
+def compare_qc_input(inp,inp_ref):
+    passQcInputCheck=True
+    if not os.path.exists(inp_ref):
+        return passQcInputCheck
+    elif os.path.exists(inp_ref) and (not os.path.exists(inp)):
+        passQcInputCheck=False
+        print inp+"not found"
+        return passQcInputCheck
 
-
+    data1=open(inp,'r').read()
+    data_ref=open(inp_ref,'r').read()
+    if len(data1)!=len(data_ref):
+        passQcInputCheck=False
+        return passQcInputCheck
+    for i in range(0,len(data1)):
+        if data1[i]!=data_ref[i]:
+           passQcInputCheck=False
+           break
+    return passQcInputCheck
 
 def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
@@ -296,8 +313,19 @@ def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     myjobdir=jobdir(infile)
     output_xyz = myjobdir + '/'+ name + '.xyz'
     output_report = myjobdir + '/'+ name + '.report'
+    output_qcin = myjobdir + '/terachem_input'
+    molsim_data=open(newinfile).read()
+    if 'orca' in molsim_data.lower():
+       # if not '-name' in molsim_data.lower():
+           output_qcin = myjobdir + '/orca.in'
+
+    if 'molcas' in molsim_data.lower():
+           output_qcin = myjobdir + '/molcas.input'
+
     ref_xyz = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+".xyz")
     ref_report = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+".report")
+    ref_qcin = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+".qcin")
+
     print "Test input file: ", newinfile
     print "Test output files are generated in ",myjobdir
     print "Output xyz file: ", output_xyz
@@ -309,12 +337,16 @@ def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     print "Reference report file: ", ref_report
     print "Reference xyz status: ", pass_xyz
     print "Reference report status: ", pass_report
-    return [passNumAtoms, passMLBL, passLG, passOG, pass_report]
+    pass_qcin = compare_qc_input(output_qcin,ref_qcin)
+    print "Reference qc input file: ", ref_qcin
+    print "Test qc input file:", output_qcin
+    print "Qc input status:", pass_qcin
+    return [passNumAtoms, passMLBL, passLG, passOG, pass_report, pass_qcin]
 
 def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
     infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
     newinfile = parse4testNoFF(infile,tmpdir)
-    [passNumAtoms, passMLBL, passLG, passOG, pass_report]=[True,True,True,True,True]
+    [passNumAtoms, passMLBL, passLG, passOG, pass_report,pass_qcin]=[True,True,True,True,True,True]
     if newinfile != "":
         newname=jobname(newinfile)
         args =['main.py','-i', newinfile]
@@ -322,8 +354,15 @@ def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
         myjobdir=jobdir(newinfile)
         output_xyz = myjobdir + '/'+ newname + '.xyz'
         output_report = myjobdir + '/'+ newname + '.report'
+        molsim_data=open(newinfile).read()
+        output_qcin = myjobdir + '/terachem_input'
+        if 'orca' in molsim_data.lower():
+            output_qcin = myjobdir + '/orca.in'
+        if 'molcas' in molsim_data.lower():
+            output_qcin = myjobdir + '/molcas.input'
         ref_xyz = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+newname+".xyz")
         ref_report = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+newname+".report")
+        ref_qcin = resource_filename(Requirement.parse("molSimplify"),"tests/refs/"+name+".qcin")
         print "Test input file: ", newinfile
         print "Test output files are generated in ",myjobdir
         print "Output xyz file: ", output_xyz
@@ -335,7 +374,11 @@ def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
         print "Reference report file: ", ref_report
         print "Reference xyz status: ", pass_xyz
         print "Reference report status: ", pass_report
-    return [passNumAtoms, passMLBL, passLG, passOG, pass_report]
+        pass_qcin = compare_qc_input(output_qcin,ref_qcin)
+        print "Reference qc input file: ", ref_qcin
+        print "Test qc input file:", output_qcin
+        print "Qc input status:", pass_qcin
+    return [passNumAtoms, passMLBL, passLG, passOG, pass_report,pass_qcin]
 
 def runtestMulti(tmpdir,name,threshMLBL,threshLG,threshOG):
     infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")

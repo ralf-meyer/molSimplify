@@ -1,7 +1,7 @@
 import helperFuncs as hp
 
-def test_example_8(tmpdir):
-    testName="example_8"
+def test_molcas_casscf(tmpdir):
+    testName="molcas_casscf"
     threshMLBL = 0.1
     threshLG =  1.0
     threshOG = 2.0
@@ -10,4 +10,4 @@ def test_example_8(tmpdir):
     assert passMLBL
     assert passLG
     assert passOG
-    assert pass_report,pass_qcin
+    assert pass_report
