@@ -226,4 +226,5 @@ methylazide:methylazide.xyz,men3,1,build small organic,B,-1
 methylacetylide:methylacetylide.xyz,mecc-,1,build small organic,N,-1
 e2o2:o2.xyz,e2o2,0 1 pi, build small inorganic,BA,0
 o2:o2.xyz,o2,0, build small inorganic,B,0
+n4py:n4py.xyz,n4py,5 15 25 35 41, build functionalize tetra dentate,BA,0
 test:test.xyz,test,10 14,build,BA,-1

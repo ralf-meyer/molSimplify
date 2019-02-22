@@ -5,7 +5,7 @@
 #  
 #  Dpt of Chemical Engineering, MIT
 
-import glob, os,shutil, re, argparse, sys, random, openbabel
+import glob, os,shutil, re, argparse, sys, random, openbabel,copy
 from molSimplify.Classes.mol3D import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
@@ -143,6 +143,11 @@ def getlicores():
     else:
         licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
     licores = readdict(licores)
+    
+    for ligand in licores.keys():
+        if len(licores[ligand][2]) == 2 and type(licores[ligand][2]) == list:
+            licores[ligand+'_flipped'] = copy.deepcopy(licores[ligand])
+            licores[ligand+'_flipped'][2].reverse()
     return licores
 
 ## Get simple ligands in dictionary

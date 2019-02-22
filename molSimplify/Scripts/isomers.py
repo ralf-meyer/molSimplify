@@ -1,6 +1,8 @@
 from molSimplify.Scripts.io import getlicores, lig_load
 from copy import copy, deepcopy
 
+#NOTE: -isomers does not currently support ligands with denticity > 2 or complexes with 3 bidentate molecules
+
 #These adjacency matrices represent what an atom at each position can "see."
 #For example, in an octahedral complex, an atom at the 0th position in an
 #octahedral complex can see atoms at positions (1,3,4,5). Used to check 

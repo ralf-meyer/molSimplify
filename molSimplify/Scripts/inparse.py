@@ -583,6 +583,10 @@ def parseinputfile(args):
                 args.replig = checkTrue(l[1])
             if (l[0]=='-genall'):
                 args.genall = checkTrue(l[1])
+            if (l[0]=='-isomers'):
+                args.isomers = checkTrue(l[1])
+            if (l[0]=='-stereos'):
+                args.stereos = checkTrue(l[1])
             if (l[0]=='-MLbonds' and len(l[1:]) > 0):
                 args.MLbonds = l[1:]
             if (l[0]=='-distort' and len(l[1:]) > 0):
@@ -1054,7 +1058,9 @@ def parseinputs_advanced(*p):
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
     parser.add_argument("-langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
     parser.add_argument("-pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
-    parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions") 
+    parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions")
+    parser.add_argument("-isomers", help='generates all possible isomers of a complex, support oct, thd, and sqp geometries')
+    parser.add_argument("-stereos", help='works in combination with -isomers. generates a mirror image of each isomer complex')
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
