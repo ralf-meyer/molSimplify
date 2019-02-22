@@ -270,7 +270,7 @@ def multigenruns(rundir,args,globs):
             args.name += unique_name
             for ligand in args.lig:
                 if ligand.endswith('_flipped'):
-                    ligand = ligand.strip('_flipped')
+                    ligand = ligand[:-8]
                 args.keepHs.append(keepHs_dict[ligand])
                 
             print '**************************************************************'
