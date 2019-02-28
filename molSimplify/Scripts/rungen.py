@@ -9,6 +9,7 @@ from structgen import *
 from molSimplify.Scripts.io import *
 from molSimplify.Scripts.jobgen import *
 from molSimplify.Scripts.qcgen import *
+from molSimplify.Scripts.isomers import generateisomers
 # from molSimplify.Scripts.tsgen import *
 from molSimplify.Classes.rundiag import *
 import argparse, sys, os, shutil, itertools, random
@@ -236,6 +237,47 @@ def multigenruns(rundir,args,globs):
             emsg = rungen(rundir,args,fname,globs)
             if emsg:
                 return emsg
+    elif args.isomers or args.stereos:
+        isomers = generateisomers(args)
+        if args.charge:
+            args.charge = args.charge[0]
+        if args.spin:
+            args.spin = args.spin[0]
+        args.ligloc = True
+        
+        #store information about the overall ligand complex
+        keepHs_dict = {}
+        ligocc_dict = {}
+        for counter,i in enumerate(args.lig):
+            keepHs_dict[i] = args.keepHs[counter]
+            ligocc_dict[i] = args.ligocc[counter]
+        
+        for counter, isomer in enumerate(isomers):
+            #set args for the generation of a specific isomer
+            args.lig = isomer
+            if args.stereos:
+                if (counter+1)%2 == 0:
+                    unique_name = '_stereo_'+str(int(counter/2+1))
+                else:
+                    unique_name = '_isomer_'+str(int(counter/2+1))
+            else:
+                unique_name = '_isomer_'+str(counter+1)
+            args.ligocc = [1]*len(isomer)
+            args.keepHs = []
+            args.name = str(args.core)+'_ox_'+str(args.oxstate)+'_spin_'+str(args.spin)
+            for ligand in keepHs_dict.keys():
+                args.name += '_'+ligand+'_'+str(ligocc_dict[ligand])
+            args.name += unique_name
+            for ligand in args.lig:
+                if ligand.endswith('_flipped'):
+                    ligand = ligand[:-8]
+                args.keepHs.append(keepHs_dict[ligand])
+                
+            print '**************************************************************'
+            print '******************* Generating isomer ' +str(counter+1)+ '! *******************'
+            print '**************************************************************'
+            emsg = rungen(rundir,args,fname,globs)
+        return emsg
     else:
         if args.charge:
             args.charge = args.charge[0]
@@ -548,8 +590,14 @@ def rungen(rundir,args,chspfname,globs):
                 elif 'qch' in args.qccode.lower():
                     jobdirs = multiqgen(args,strfiles)
                     print 'QChem input files generated!'
+                elif 'orc' in args.qccode.lower():
+                    jobdirs = multiogen(args,strfiles)
+                    print 'ORCA input files generated!'
+                elif 'molc' in args.qccode.lower():
+                    jobdirs = multimolcgen(args,strfiles)
+                    print 'MOLCAS input files generated!'
                 else:
-                    print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
+                    print 'Only TeraChem, GAMESS, QChem, ORCA, MOLCAS are supported right now.\n'
             # check molpac
             if args.mopac and not emsg:
                 print('Generating MOPAC input')

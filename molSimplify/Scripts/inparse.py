@@ -10,6 +10,7 @@ from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
 
+
 ## Checks input for correctness and uses defaults otherwise
 #  @param args Namespace of arguments
 def checkinput(args,calctype="base"):
@@ -239,11 +240,9 @@ def checkinput(args,calctype="base"):
                             toccs += dent_i
                     
                     for i,substrate in enumerate(args.substrate):
-                        if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
-                            if 'pi' in subcatoms:
-                                suboc_i = 1
-                            else:
-                                suboc_i = len(subcatoms)
+                        # if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
+                        if args.core[0].lower() in args.mlig:
+                            suboc_i = len([core for core in args.core if core.lower() in args.mlig])
                             for j in range(suboc_i):
                                 toccs += 1
                     print('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.')
@@ -584,6 +583,10 @@ def parseinputfile(args):
                 args.replig = checkTrue(l[1])
             if (l[0]=='-genall'):
                 args.genall = checkTrue(l[1])
+            if (l[0]=='-isomers'):
+                args.isomers = checkTrue(l[1])
+            if (l[0]=='-stereos'):
+                args.stereos = checkTrue(l[1])
             if (l[0]=='-MLbonds' and len(l[1:]) > 0):
                 args.MLbonds = l[1:]
             if (l[0]=='-distort' and len(l[1:]) > 0):
@@ -907,6 +910,7 @@ def parseinputfile(args):
                 args.expose_type = l[1]
             if (l[0]=='-shave_extra_layers'):#9
                 args.shave_extra_layers = int(l[1])
+            # TS generation routine
             if (l[0]=='-tsgen'):
                 args.tsgen = True
             if (l[0]=='-substrate'):
@@ -917,6 +921,10 @@ def parseinputfile(args):
                 args.mlig = l[1:]
             if (l[0]=='-mligcatoms'):
                 args.mligcatoms = l[1:]
+            # cdxml import routine
+            if (l[0]=='-cdxml'):
+                args.cdxml = l[1:]
+            # conformers
             if (l[0]=='-conformer'):
                 args.conformer = True                                                           
             # parse place on slab options
@@ -1050,7 +1058,9 @@ def parseinputs_advanced(*p):
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
     parser.add_argument("-langles", help="custom angles (polar theta, azimuthal phi) for corresponding ligand in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
     parser.add_argument("-pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
-    parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions") 
+    parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions")
+    parser.add_argument("-isomers", help='generates all possible isomers of a complex, support oct, thd, and sqp geometries')
+    parser.add_argument("-stereos", help='works in combination with -isomers. generates a mirror image of each isomer complex')
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
@@ -1281,25 +1291,7 @@ def parseinputs_binding(*p):
     elif len(p) == 2: # two inputs, normal parsing
         args = p[1]
         parser.parse_args(namespace=args)
-    return 0 
-
-# ## Parses transition state building options and prints help
-# #  @param *p Parser pointer
-# def parseinputs_tsgen(*p):
-#     parser = p[0]
-#     parser.add_argument("-tsgen", help="flag for enabling TS generation mode",action="store_true")
-#     parser.add_argument("-substrate", help="small molecule substrate")
-#     parser.add_argument("-compreact", help="index of reacting atom in core")
-#     parser.add_argument("-substreact", help="index of reacting atom(s) in substrate")
-#     parser.add_argument("-drawmode", help="flag for enabling draw mode (NOTE: this cancels TS generation)",action="store_true")
-#     parser.add_argument("-substplaceff", help="full FF opt at each possible connecting point (default False - uses empirically estimated sterics)",default=False)
-#     if len(p) == 1: # only one input, printing help only
-#         args = parser.parse_args()
-#         return args
-#     elif len(p) == 2: # two inputs, normal parsing
-#         args = p[1]
-#         parser.parse_args(namespace=args)
-#     return 0 
+    return 0
 
 ## Parses transition state building version 2 options and prints help
 #  @param *p Parser pointer
@@ -1310,6 +1302,7 @@ def parseinputs_tsgen(*p):
     parser.add_argument("-subcatoms", help="index of the connecting atom in substrate")
     parser.add_argument("-mlig", help="ligand name in the metal complex that the substrate connects with")
     parser.add_argument("-mligcatoms", help="index of the connecting atom in the specified ligand in the metal complex",action="store_true")
+    parser.add_argument("-cdxml", help="cdxml file name",action="store_true")
     parser.add_argument("-conformers", help="flag for requesting metal-substrate TS conformation search",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()

@@ -147,7 +147,7 @@ class mol3D:
         theta, u = rotation_params(r2, r1, r0)
         if theta < 90:
             angle = 180 - angle
-        submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta-angle)
+        submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta - angle)
         mol.copymol3D(submol_to_move)
         self.deleteatoms(range(self.natoms))
         self.copymol3D(mol)
@@ -158,7 +158,7 @@ class mol3D:
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
     def addAtom(self, atom, index=None):
-        if index==None:
+        if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
@@ -327,7 +327,7 @@ class mol3D:
 
             repop = True
         elif not (self.BO_mat == False) and not force_clean:
-            BO_mat =self.BO_mat
+            BO_mat = self.BO_mat
             repop = True
             # write temp xyz
         fd, tempf = tempfile.mkstemp(suffix=".xyz")
@@ -958,25 +958,6 @@ class mol3D:
                         print('Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def update_graph_check(self, oct=True):  ####!!!!Works only for octahedral and one-empty site!!!!
-        if not len(self.graph):
-            self.createMolecularGraph(oct=oct)
-        if oct:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsOct(flag_catoms=True)
-        else:
-            flag_oct, flag_list, dict_oct_info, catoms_arr = self.IsStructure(flag_catoms=True)
-        self.graph[0, :] = 0
-        self.graph[:, 0] = 0
-        row = np.zeros(self.graph.shape[0])
-        np.put(row, np.array(catoms_arr), np.ones(len(catoms_arr)))
-        # print('!!!add', row)
-        self.graph[0, :] = row
-        col = np.zeros((self.graph.shape[1], 1))
-        np.put(col, catoms_arr, np.ones(self.graph.shape[0]))
-        self.graph[:, 0] = col
-        self.updated = True
-        # print(self.graph[0], self.graph[1])
-
     ## Gets atoms bonded to a specific atom using the molecular graph, or creates it
     #
     #  @param self The object pointer
@@ -1035,6 +1016,50 @@ class mol3D:
                 nats.append(i)
         return nats
 
+    ## Gets C=C atoms in molecule
+    #  @param self The object pointer
+    #  @return List of atom3D objects of H atoms
+    def getC2Cs(self):
+        # values to store
+        c2clist = []
+        c2list = []
+        # self.createMolecularGraph(oct=False)
+        # order c2 carbons by priority
+        # c2list_and_prio = []
+        # for i in range(self.natoms):
+        #     if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
+        #         fatnos = sorted([self.getAtom(fidx).atno for fidx in self.getBondedAtoms(i)])[::-1]
+        #         fpriority = float('.'.join([str(fatnos[0]), ''.join([str(i) for i in fatnos[1:]])]))
+        #         c2list_and_prio.append((fpriority, i))
+        # c2 carbons
+        for i in range(self.natoms):
+            if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
+                c2list.append(i)
+        # c2list = [c2[0] for c2 in sorted(c2list_and_prio)[::-1]]
+        # for each c2 carbon, find if any of its neighbors are c2
+        for c2 in c2list:
+            fidxes = self.getBondedAtoms(c2)
+            c2partners = []
+            for fidx in fidxes:
+                if fidx in c2list:
+                    # c2partners.append(fidx)
+                    c2clist.append([c2, fidx])
+                    c2clist.append([fidx, c2])
+            # num_c2partners = len(c2partners)
+            # # if num_c2partners > 1:
+            # #     for c2partner in c2partners:
+            # #         score = 0
+            # #         sidxes = self.getBondedAtoms(fidx)
+            # #         for sidx in sidxes:
+            # # elif num_c2partners == 1:
+            # if num_c2partners > 1:
+            #     c2clist.append([c2, fidx],[fidx, c2])
+            #     continue
+            # else:
+            #     continue
+
+        return c2clist
+
     ## Gets atom that is furthest from the molecule COM along a given direction and returns the corresponding distance
     #  @param self The object pointer
     #  @param uP Search direction
@@ -1074,6 +1099,34 @@ class mol3D:
                 dd = d0
                 farIndex = ind
         return farIndex
+
+    ## Gets list of atoms of the fragments in the mol3D
+    #  @param sel The object pointer
+    def getfragmentlists(self):
+        atidxes_total = []
+        atidxes_unique = set([0])
+        atidxes_done = []
+        natoms_total_ = len(atidxes_done)
+        natoms_total = self.natoms
+        while natoms_total_ < natoms_total:
+            natoms_ = len(atidxes_unique)
+            for atidx in atidxes_unique:
+                if atidx not in atidxes_done:
+                    atidxes_done.append(atidx)
+                    atidxes = self.getBondedAtoms(atidx)
+                    atidxes.extend(atidxes_unique)
+                    atidxes_unique = set(atidxes)
+                    natoms = len(atidxes_unique)
+                    natoms_total_ = len(atidxes_done)
+            if natoms_ == natoms:
+                atidxes_total.append(list(atidxes_unique))
+                for atidx in range(natoms_total):
+                    if atidx not in atidxes_done:
+                        atidxes_unique = set([atidx])
+                        natoms_total_ = len(atidxes_done)
+                        break
+
+        return atidxes_total
 
     ## Gets H atoms in molecule
     #  @param self The object pointer
@@ -1523,6 +1576,35 @@ class mol3D:
                 rmsd /= Nat0
             return sqrt(rmsd)
 
+    def geo_rmsd(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print
+            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            return float('NaN')
+        else:
+            rmsd = 0
+            availabel_set = list(range(Nat1))
+            for atom0 in self.getAtoms():
+                dist = 1000
+                ind1 = False
+                atom0_sym = atom0.symbol()
+                for _ind1 in availabel_set:
+                    atom1 = mol2.getAtom(_ind1)
+                    if atom1.symbol() == atom0_sym:
+                        _dist = atom0.distance(atom1)
+                        if _dist < dist:
+                            dist = _dist
+                            ind1 = _ind1
+                rmsd += dist ** 2
+                availabel_set.remove(ind1)
+            if Nat0 == 0:
+                rmsd = 0
+            else:
+                rmsd /= Nat0
+            return sqrt(rmsd)
+
     ## Computes mean of absolute atom deviations 
     # 
     #  Like above, this routine does not perform translations or rotations to align molecules.
@@ -1564,6 +1646,32 @@ class mol3D:
                 if dist > dist_max:
                     dist_max = dist
             return dist_max
+
+    def geo_maxatomdist(self, mol2):
+        Nat0 = self.natoms
+        Nat1 = mol2.natoms
+        if (Nat0 != Nat1):
+            print
+            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            return float('NaN')
+        else:
+            maxdist = 0
+            availabel_set = list(range(Nat1))
+            for atom0 in self.getAtoms():
+                dist = 1000
+                ind1 = False
+                atom0_sym = atom0.symbol()
+                for _ind1 in availabel_set:
+                    atom1 = mol2.getAtom(_ind1)
+                    if atom1.symbol() == atom0_sym:
+                        _dist = atom0.distance(atom1)
+                        if _dist < dist:
+                            dist = _dist
+                            ind1 = _ind1
+                if dist> maxdist:
+                    maxdist = dist
+                availabel_set.remove(ind1)
+            return maxdist
 
     def rmsd_nonH(self, mol2):
         Nat0 = self.natoms
@@ -2395,6 +2503,22 @@ class mol3D:
                                                                              num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
+    def get_fcs(self):
+        metalind = self.findMetal()[0]
+        self.get_num_coord_metal(debug=False)
+        catoms = self.catoms
+        if len(catoms) > 6:
+            _, catoms = self.oct_comp(debug=False)
+        fcs = [metalind] + catoms
+        return fcs
+
+    def create_mol_with_inds(self, inds):
+        molnew = mol3D()
+        for ind in inds:
+            atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
+            molnew.addAtom(atom)
+        return molnew
+    
     ## Writes a psueduo-chemical formula
     #
     #  @param self The object pointer   

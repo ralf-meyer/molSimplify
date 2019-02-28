@@ -3,7 +3,7 @@
 -ligocc 5,1
 -charge 2
 -oxstate 4
--spin 3
+-spin 5
 -ligloc true
 -tsgen
 -substrate methane
