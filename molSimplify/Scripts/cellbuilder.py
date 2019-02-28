@@ -685,8 +685,8 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
             if coverage:
                 number_of_placements = int(numpy.ceil(max_sites*coverage))
                 print('Coverage requested = ' + str(coverage))
-	if debug:
-        	print('masklengh is ' + str(masklength))
+        if debug:
+             print('masklengh is ' + str(masklength))
         if surface_atom_ind:
             print('using surface_atom_ind' + str(surfacce_atom_ind))
             for indices in surface_atom_ind:
@@ -772,11 +772,14 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
                     emsg = ('Error: no align of type' + target_atom_type+ ' is possible. Not found in target. Using atom 0 align')
                     cand_ind = 0
                     print(emsg)
-	    if debug:
-            	print('cand _ind = ' + str(cand_ind))
+
+            if debug:
+                 print('cand _ind = ' + str(cand_ind))
             cand_list = [cand_ind]
+            #[(int(i)-1) for i in cand_ind]
         else:
             cand_ind = target_atom_type 
+            print('loading from TAT')
             cand_list = [(int(i)-1) for i in cand_ind]
 	    if debug:
             	print('target molecule mask on ' + str(target_atom_type))
@@ -784,9 +787,12 @@ def molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,m
         ######## rotate for optimal approach
         payload = align_payload_to_multi_site(payload,sites_list,cand_list,align_dist,debug) # align
         if control_angle:
-            print('begining controlled rotation, targeting angle ' + str(control_angle) + ' to  line ' + str(align_axis))
-            print('aligning '+ payload.getAtom(cand_ind).symbol() + ' with ' + payload.getAtom(align_ind).symbol())
-            payload = axes_angle_align(payload,cand_ind,align_ind,align_axis,control_angle)
+            if not len(cand_ind) == 1:
+                print('Cannot use control angle with more than one payload reference')
+            else:    
+                print('begining controlled rotation, targeting angle ' + str(control_angle) + ' to  line ' + str(align_axis))
+                print('aligning payload  indicies '+ str(cand_list[0]) + ' and indicies ' +str(align_ind) + ' with slab axes ')
+                payload = axes_angle_align(payload,cand_list[0],align_ind,align_axis,control_angle)
 	if debug:
             print('payload cysm '+ str(payload.centersym()))
         #######################################
@@ -1360,6 +1366,7 @@ def slab_module_supervisor(args,rootdir):
             print(angle_surface_axis)
             angle_surface_axis.append(0)
             print(angle_surface_axis)
+        print('object_align '  + str(object_align))
         loaded_cell =  molecule_placement_supervisor(super_cell,super_cell_vector,target_molecule,
                                                  align_method,object_align,align_dist,surface_atom_type,
                                                  control_angle = control_angle, align_ind = angle_control_partner, align_axis = angle_surface_axis,

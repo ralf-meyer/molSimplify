@@ -52,10 +52,10 @@ def cell_ffopt(ff,mol,frozenats):
     indmtls = []
     mtlsnums = []
     for iiat,atom in enumerate(openbabel.OBMolAtomIter(mol.OBMol)):
-        if atom.atomicnum in metals:
+        if atom.GetAtomicNum() in metals:
             indmtls.append(iiat)
             mtlsnums.append(atom.GetAtomicNum())
-            atom.OBAtom.SetAtomicNum(6)
+            atom.SetAtomicNum(6)
     for cat in frozenats:
         constr.AddAtomConstraint(cat+1) # indexing babel
     ### set up forcefield
