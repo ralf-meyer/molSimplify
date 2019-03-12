@@ -84,14 +84,14 @@ C4 C3 - - 1.1
 C4 N3 - - 1.1
 C4 C4 - - 1.1
 # usually, fsr_bondl_core3D
-Ti O1 - - 1.1
-V O1 - - 1.1
-Cr O1 - - 1.1
-Mn O1 - - 1.1
+Ti O1 - - 0.9
+V O1 - - 0.9
+Cr O1 - - 0.9
+Mn O1 - - 0.9
 Fe O1 - - 0.9
-Co O1 - - 1.1
-Ni O1 - - 1.1
-Cu O1 - - 1.1
+Co O1 - - 0.9
+Ni O1 - - 0.9
+Cu O1 - - 0.9
 Ti N1 - - 1.1
 V N1 - - 1.1
 Cr N1 - - 1.1
