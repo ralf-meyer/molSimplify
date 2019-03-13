@@ -275,7 +275,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         ANN_reason = 'oxstate not given'
     if valid:
         oxidation_state = args.oxstate
-        valid, oxidation_state = check_metal(this_metal, oxidation_state)
+        #valid, oxidation_state = check_metal(this_metal, oxidation_state)
         if int(oxidation_state) in [3, 4, 5]:
             catalytic_moieties = ['oxo', 'x', 'hydroxyl', '[O--]', '[OH-]']
             if args.debug:
@@ -415,7 +415,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print('finished checking ligands, valid is ' + str(valid))
         print('assembling RAC custom ligand configuration dictionary')
 
-    if valid:
+    #if valid:
+    if True:
         ### =====Classifiers:=====
         _descriptor_names = ["oxstate", "spinmult", "charge_lig"]
         _descriptors = [ox, spin, net_lig_charge]

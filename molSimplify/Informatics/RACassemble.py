@@ -147,6 +147,14 @@ def create_OHE(descriptor_names,descriptors, metal,oxidation_state):
     #    print(OHE_values)
     elif int(oxidation_state) == 3:
         OHE_values[1]+=1
+
+
+    #TODO: Change these to make more rigorous
+    # Temporary fix to allow 2nd row to work
+    metalRemap = {"Mo": "Cr", "Tc": "Mn", "Ru": "Fe", "Rh": "Co"}
+    if metal in metalRemap.keys():
+        metal = metalRemap[metal]
+
     if metal == "Cr" and int(oxidation_state) == 2:
         OHE_values[OHE_names.index("d4")]+=1
     elif metal == "Cr" and int(oxidation_state) == 3:
