@@ -2537,3 +2537,35 @@ class mol3D:
         for sk in skeys:
             retstr += '\\textrm{' + sk + '}_{' + str(int(unique_symbols[sk])) + '}'
         return retstr
+        
+    def read_smiles(self, smiles,ff="mmff94",steps=2500):
+        # used to convert from one formst (ex, SMILES) to another (ex, mol3D ) 
+        obConversion = openbabel.OBConversion() 
+        
+        # the input format "SMILES"; Reads the SMILES - all stacked as 2-D - one on top of the other
+        obConversion.SetInFormat("SMILES")    
+        OBMol = openbabel.OBMol()
+        obConversion.ReadString(OBMol, smiles)
+        
+        # Adds Hydrogens
+        OBMol.AddHydrogens()
+        
+        # Get a 3-D structure with H's
+        builder = openbabel.OBBuilder()
+        builder.Build(OBMol)
+        
+        # Force field optimization is done in the specified number of "steps" using the specified "ff" force field
+        forcefield = openbabel.OBForceField.FindForceField(ff)
+        s = forcefield.Setup(OBMol)
+        if s == False:
+            print('FF setup failed')
+        forcefield.ConjugateGradients(steps)
+        forcefield.GetCoordinates(OBMol)
+
+        # mol3D structure
+        mol = mol3D()
+        mol.OBMol = OBMol
+        mol.convert2mol3D()
+        
+
+        
