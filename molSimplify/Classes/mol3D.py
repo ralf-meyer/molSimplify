@@ -2562,9 +2562,8 @@ class mol3D:
         forcefield.GetCoordinates(OBMol)
 
         # mol3D structure
-        mol = mol3D()
-        mol.OBMol = OBMol
-        mol.convert2mol3D()
+        self.OBMol = OBMol
+        self.convert2mol3D()
         
 
         
