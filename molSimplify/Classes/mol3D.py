@@ -1632,6 +1632,7 @@ class mol3D:
             return dev
 
     def maxatomdist(self, mol2):
+
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
@@ -1667,7 +1668,7 @@ class mol3D:
                         if _dist < dist:
                             dist = _dist
                             ind1 = _ind1
-                if dist> maxdist:
+                if dist > maxdist:
                     maxdist = dist
                 availabel_set.remove(ind1)
             return maxdist
@@ -2024,13 +2025,14 @@ class mol3D:
         from molSimplify.Classes.ligand import ligand_breakdown
         flag_match = True
         if flag_lbd:  ## Also do ligand breakdown for opt geo
-            self.my_mol_trunc = obtain_truncation_metal(self, depth)
-            self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
-            ## write truncated xyz file
-            # self.init_mol_trunc.writexyz('init_mol_trunc.xyz')
-            # self.my_mol_trunc.writexyz('my_mol_trunc.xyz')
-            self.my_mol_trunc.createMolecularGraph()
-            self.init_mol_trunc.createMolecularGraph()
+            ### Truncate ligands at 4 bonds away from metal to aviod rotational group.
+            # self.my_mol_trunc = obtain_truncation_metal(self, depth)
+            # self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+            # self.my_mol_trunc.createMolecularGraph()
+            # self.init_mol_trunc.createMolecularGraph()
+            self.my_mol_trunc = mol3D()
+            self.my_mol_trunc.copymol3D(self)
+            self.init_mol_trunc = init_mol
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
             liglist_atom = [[self.my_mol_trunc.getAtom(x).symbol() for x in ele]
@@ -2142,9 +2144,10 @@ class mol3D:
                     mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
                 except:
                     print('Kabsch failed')
-                rmsd = tmp_mol.rmsd(tmp_org_mol)
+                rmsd = tmp_mol.geo_rmsd(tmp_org_mol)
                 rmsd_arr.append(rmsd)
-                atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
+                # atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
+                atom_dist_max = -1
                 max_atom_dist_arr.append(atom_dist_max)
                 if debug:
                     print('rmsd:', rmsd)
@@ -2517,7 +2520,7 @@ class mol3D:
             atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
             molnew.addAtom(atom)
         return molnew
-    
+
     ## Writes a psueduo-chemical formula
     #
     #  @param self The object pointer   
@@ -2536,23 +2539,23 @@ class mol3D:
         for sk in skeys:
             retstr += '\\textrm{' + sk + '}_{' + str(int(unique_symbols[sk])) + '}'
         return retstr
-        
-    def read_smiles(self, smiles,ff="mmff94",steps=2500):
+
+    def read_smiles(self, smiles, ff="mmff94", steps=2500):
         # used to convert from one formst (ex, SMILES) to another (ex, mol3D ) 
-        obConversion = openbabel.OBConversion() 
-        
+        obConversion = openbabel.OBConversion()
+
         # the input format "SMILES"; Reads the SMILES - all stacked as 2-D - one on top of the other
-        obConversion.SetInFormat("SMILES")    
+        obConversion.SetInFormat("SMILES")
         OBMol = openbabel.OBMol()
         obConversion.ReadString(OBMol, smiles)
-        
+
         # Adds Hydrogens
         OBMol.AddHydrogens()
-        
+
         # Get a 3-D structure with H's
         builder = openbabel.OBBuilder()
         builder.Build(OBMol)
-        
+
         # Force field optimization is done in the specified number of "steps" using the specified "ff" force field
         forcefield = openbabel.OBForceField.FindForceField(ff)
         s = forcefield.Setup(OBMol)
@@ -2564,6 +2567,3 @@ class mol3D:
         # mol3D structure
         self.OBMol = OBMol
         self.convert2mol3D()
-        
-
-        
