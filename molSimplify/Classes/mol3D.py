@@ -2410,7 +2410,7 @@ class mol3D:
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > 6:
                 _, catoms_arr = init_mol.oct_comp(debug=debug)
-        print("connecting atoms are,", catoms_arr)
+        # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
             print('Please DO CHECK what happens!!!!')
@@ -2466,7 +2466,7 @@ class mol3D:
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > num_coord:
                 _, catoms_arr = init_mol.oct_comp(angle_ref=angle_ref, debug=debug)
-        print("connecting atoms are,", catoms_arr)
+        # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != num_coord:
             print('Error, must have %d connecting atoms for octahedral.' % num_coord)
             print('Please DO CHECK what happens!!!!')
