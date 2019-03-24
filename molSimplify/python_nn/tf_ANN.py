@@ -284,7 +284,7 @@ def load_keras_ann(predictor, suffix='model'):
     if "clf" in predictor:
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.h5')
         loaded_model = load_model(path_to_file)
-    # complile model
+    # compile model
     if predictor == 'homo':
         loaded_model.compile(loss="mse", optimizer=Adam(beta_2=1 - 0.0016204733101599046, beta_1=0.8718839135783554,
                                                         decay=7.770243145972892e-05, lr=0.0004961686075897741),

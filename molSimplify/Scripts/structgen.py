@@ -303,13 +303,14 @@ def init_template(args,cpoints_required,globs):
 #  @param args Namespace of arguments
 #  @param cpoints_required Number of connecting points required
 #  @return mol3D of core, template, geometry, backbone atoms, coordination number, core reference atom index
-def init_mcomplex_template(args,core3D,cpoints_required,mligcatoms_ext,bondlss,bangless):
+def init_mcomplex_template(args, core3D, cpoints_required, mligcatoms_ext, bondlss, bangless, bdihedralss):
     # initialize core and template
     m3D = mol3D()
     # container for ordered list of core reference atoms
     corerefatoms = mol3D()
     # geometry load flag
     geom = False
+    cpoint_nums = []
     backbatoms = []
     # bring mligcatoms_ext that are corresponding to core to the front
     i = 0
@@ -325,12 +326,9 @@ def init_mcomplex_template(args,core3D,cpoints_required,mligcatoms_ext,bondlss,b
     d_ref = 100
     m3D.copymol3D(core3D)
     for i in range(cpoints_required):
-        bondl_core3D = bondlss[i][0]
-        bondl_m3D = bondlss[i][1]
-        bondl_sub = bondlss[i][2]
-        bangle_m3D = bangless[i][0]
-        bangle_core3D = bangless[i][2]
-        bangle_sub = bangless[i][3]
+        bondl_core3D, bondl_m3D, bondl_sub = bondlss[i][0], bondlss[i][1], bondlss[i][2]
+        bangle_m3D, bangle_core3D, bangle_sub = bangless[i][0], bangless[i][2], bangless[i][3]
+        bdihedral_m3D, bdihedral_core3D, bdihedrel_sub = bdihedralss[i][0], bdihedralss[i][2], bdihedralss[i][3]
         mligcatom_ext = mligcatoms_ext[i]
         mligcatomcoords = m3D.getAtom(mligcatom_ext).coords()
         mligcatomsym = m3D.getAtom(mligcatom_ext).sym
@@ -346,9 +344,9 @@ def init_mcomplex_template(args,core3D,cpoints_required,mligcatoms_ext,bondlss,b
                 mligcatom_ext_anchor = idx
                 mliganchorcoords = coord
         # adjust M-L distance for the incoming substrate
-        if (args.core not in m3D.getAtom(mligcatom_ext).sym):
-            core3D.BCM(mligcatom_ext, mligcatom_ext_anchor, bondl_core3D)
-            m3D.BCM(mligcatom_ext, mligcatom_ext_anchor, bondl_core3D)
+        # if (args.core not in m3D.getAtom(mligcatom_ext).sym):
+        core3D.BCM(mligcatom_ext, mligcatom_ext_anchor, bondl_core3D)
+        m3D.BCM(mligcatom_ext, mligcatom_ext_anchor, bondl_core3D)
         # check natoms in mlig
         if args.mlig:
             lig, emsg = lig_load(args.mlig[0])
@@ -363,89 +361,78 @@ def init_mcomplex_template(args,core3D,cpoints_required,mligcatoms_ext,bondlss,b
         if i == 0:
             # print('mligcatom_ext_anchor is ' + str(mligcatom_ext_anchor))
             # print('bangle_m3D is ' + str(bangle_m3D))
-            cpoint = getconnectiongivenphi(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, bangle_m3D)
+            # cpoint = getconnectiongivenphi(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, bangle_m3D)
+            cpoint = getconnectiongivenangles(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, (bangle_m3D, bdihedral_m3D))
             # cpoint = getconnection(m3D, mligcatom_ext, bondl_m3D)
             # store core reference atom
-            conatom3D = atom3D(m3D.getAtom(mligcatom_ext).sym,m3D.getAtom(mligcatom_ext).coords())
+            conatom3D = atom3D(m3D.getAtom(mligcatom_ext).sym, m3D.getAtom(mligcatom_ext).coords())
             corerefatoms.addAtom(conatom3D)
             if args.debug:
                 print(corerefatoms.getAtom(0).symbol())
             # initiate dummy atom
             dummy_atom = atom3D(Sym='X',xyz=cpoint)
             m3D.addAtom(dummy_atom)
-            nums = m3D.findAtomsbySymbol('X')
-            backbatoms = getbackbcombsall(nums)
+            cpoint_nums.append(m3D.natoms - 1)
+            # nums = m3D.findAtomsbySymbol('I')
+            backbatoms = getbackbcombsall(cpoint_nums)
             mligcatom_old = mligcatom_ext
         # if the second cpoint is on the same mligcatom as the first one
         elif mligcatom_ext == mligcatom_old:
             cpoint = getconnectiongivenr(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, bangle_m3D, bondl_sub)
+            # print('bondl_sub is ' + str(bondl_sub))
             # store core reference atom
-            conatom3D = atom3D(core3D.getAtom(mligcatom_ext).sym,core3D.getAtom(mligcatom_ext).coords())
+            conatom3D = atom3D(core3D.getAtom(mligcatom_ext).sym, core3D.getAtom(mligcatom_ext).coords())
             corerefatoms.addAtom(conatom3D)
             if args.debug:
                 print(corerefatoms.getAtom(0).symbol())
             #corerefatoms.append(ccatoms[i])N
             # add connecting points to template
-            m3D.addAtom(atom3D(Sym='X',xyz=cpoint))
+            m3D.addAtom(atom3D(Sym='X', xyz=cpoint))
+            cpoint_nums.append(m3D.natoms - 1)
             # except IndexError:
             #     pass
-            nums = m3D.findAtomsbySymbol('X')
-            backbatoms = getbackbcombsall(nums)
+            backbatoms = getbackbcombsall(cpoint_nums)
         else:
-            cpoint = getconnectiongivenphi(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, bangle_m3D)
+            cpoint = getconnectiongivenangles(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, (bangle_m3D, bdihedral_m3D))
+            # cpoint = getconnectiongivenphi(m3D, mligcatom_ext, mligcatom_ext_anchor, bondl_m3D, bangle_m3D)
             # store core reference atom
-            conatom3D = atom3D(core3D.getAtom(mligcatom_ext).sym,core3D.getAtom(mligcatom_ext).coords())
+            conatom3D = atom3D(core3D.getAtom(mligcatom_ext).sym, core3D.getAtom(mligcatom_ext).coords())
             corerefatoms.addAtom(conatom3D)
             if args.debug:
                 print(corerefatoms.getAtom(0).symbol())
             # initiate dummy atom
-            dummy_atom = atom3D(Sym='X',xyz=cpoint)
+            dummy_atom = atom3D(Sym='X', xyz=cpoint)
             m3D.addAtom(dummy_atom)
-            # obtain submols
-            submolidxes = m3D.findsubMol(mligcatom_ext, mligcatom_ext_anchor)
-            mainmolidxes = m3D.findsubMol(mligcatom_ext_anchor, mligcatom_ext)
-            submol = mol3D()
-            for submolidx in submolidxes:
-                atom = m3D.getAtom(submolidx)
-                submol.addAtom(atom)
-            mainmol = mol3D()
-            for mainmolidx in mainmolidxes:
-                atom = m3D.getAtom(mainmolidx)
-                mainmol.addAtom(atom)
+            cpoint_nums.append(m3D.natoms - 1)
             # obtain rotation axis
             mliganchorcoords = m3D.getAtomCoords(mligcatom_ext_anchor)
             mligcatoms_ext_anchor2 = [idx for idx in m3D.getBondedAtoms(mligcatom_ext_anchor) if idx != mligcatom_ext]
             for idx in mligcatoms_ext_anchor2:
                 coord = m3D.getAtom(idx).coords()
                 d = distance(mcoord, coord)
+                mliganchor2coords = coord
                 if d < d_ref:
                     d_ref = d
-                    mligcatom_ext_anchor2 = idx
                     mliganchor2coords = coord
             r_mliganchor_mliganchor2 = vecdiff(mliganchorcoords, mliganchor2coords)
             # rotate the [mligcatom_ext, mligcatom_ext_anchor] bond to bring the dummy atoms closer
             d0 = 100
-            d = 100
+            refidx = sorted(m3D.findAtomsbySymbol('X'))[0]
+            refcoords = m3D.getAtomCoords(refidx)
+            num_rotation = 0
+            m3D_ = mol3D()
+            m3D_.copymol3D(m3D)
             theta = 5
-            refidx = mainmol.findAtomsbySymbol('X')[0]
-            refcoords = mainmol.getAtomCoords(refidx)
-            for theta in range(1,360,1):
-                submol_ = rotate_around_axis(submol, mliganchorcoords, r_mliganchor_mliganchor2, theta)
-                xidx = submol_.findAtomsbySymbol('X')[0]
-                xcoords = submol_.getAtomCoords(xidx)
+            while num_rotation < 72:
+                num_rotation += 1
+                m3D_.ACM_axis(mligcatom_ext, mligcatom_ext_anchor, r_mliganchor_mliganchor2, theta)
+                xidx = sorted(m3D_.findAtomsbySymbol('X'))[-1]
+                xcoords = m3D_.getAtomCoords(xidx)
                 d = distance(refcoords, xcoords)
                 if d < d0:
                     d0 = d
-                    theta += 5
-                    submol_rotated = mol3D()
-                    submol_rotated.copymol3D(submol_)
-                    print(d)
-            nums = m3D.findAtomsbySymbol('X')
-            m3D = mol3D()
-            m3D.copymol3D(mainmol)
-            m3D.combine(submol_rotated)
-            backbatoms = getbackbcombsall(nums)
-            # m3D.writexyz('/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/molSimplify/builts/debug.xyz')
+                    m3D = mol3D()
+                    m3D.copymol3D(m3D_)
     # set charge from oxidation state if desired
     if args.calccharge:
         if args.oxstate:
@@ -453,118 +440,122 @@ def init_mcomplex_template(args,core3D,cpoints_required,mligcatoms_ext,bondlss,b
                 core3D.charge = int(romans[args.oxstate])
             else:
                 core3D.charge = int(args.oxstate)
-    # m3D.writexyz('/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/molSimplify/chemdraw/debug.xyz')
-    # if args.debug:
-    #     m3D.printxyz()
-    return m3D,core3D,geom,backbatoms,coord,corerefatoms
+    # remove X atoms from m3D to generate core3D
+    core3D = mol3D()
+    core3D.copymol3D(m3D)
+    for atidx in range(core3D.natoms)[::-1]:
+        asym = core3D.getAtom(atidx).sym
+        if asym == 'X':
+            core3D.deleteatom(atidx)
+
+    return m3D, core3D, geom, backbatoms, coord, corerefatoms
 
 ## Initializes substrate 3D geometry and properties
 #  @param args Namespace of arguments
 #  @param sub mol3D of ligand
 #  @param subcatoms list of connecting atoms in the substrate
 #  @return mol3D of ligand, flag for pi-coordination, pi-coordinating atoms
-def init_substrate(args,sub,subcatoms,bondlss,bangless):
-    globs = globalvars()
+def init_substrate(args, sub, subcatoms, bondlss, bangless, bdihedralss):
     rempi = False
-    bondl_sub = bondlss[0][2]
-    # if SMILES string, copy connecting atoms list to mol3D properties
-    # if not sub.cat and tcats[i]:
-    #     if 'c' in tcats[i]:
-    #         lig.cat = [lig.natoms]
-    #     else:
-    #         lig.cat = tcats[i]
-    # change name
+    idx3 = ''
     sub.convert2mol3D()
     sub3D = mol3D()
     sub3D.copymol3D(sub)
-    sub3D.createMolecularGraph(False)
-    # substrate bond manipulation to prepare for activation
-    anchor_atom_idx = int(subcatoms[0])
-    moved_atom_idx = sub3D.getBondedAtoms(anchor_atom_idx)[0]
-    if len(subcatoms) > 1 and (int(subcatoms[1]) in sub3D.getBondedAtoms(anchor_atom_idx)):
-            moved_atom_idx = int(subcatoms[1])
-    if args.debug:
-        print('moved_atom_idx is ' + str(moved_atom_idx))
-        print('anchor_atom_idx is ' + str(anchor_atom_idx))
-    sub3D.BCM(moved_atom_idx,anchor_atom_idx,bondl_sub)
-    # if sub3D.natoms > 2:
-    #     idx2 = moved_atom_idx
-    #     idx3 = sub3D.getBondedAtoms(idx2)[0]
-    #     sub3D.ACM(subcatoms[0],idx2,idx3,bangle_sub)
-    # # check for pi-coordinating ligand
-    subpiatoms = []
-    if 'pi' in sub.cat:
-        if args.debug:
-            print('substrate is identified as a pi-type substrate')
-        subcatoms = []
-        for k in sub.cat[:-1]:
-            if isinstance(k,int):
-                subcatoms.append(k)
-            # sub3Dpiatoms.addAtom(sub3D.getAtom(k))
-            # sub3Dpiatoms.addAtom(sub3D.getAtom(k))
-        # subpiatoms = sub.cat[:-1]
-        # sub3D.addAtom(atom3D('C',sub3Dpiatoms.centermass()))
-        # if args.debug:
-        #     sub3D.printxyz()
-        # sub3D.cat = [sub3D.natoms-1]
-        rempi = True
-    # sub3D.convert2mol3D()
-    # perform FF optimization if requested (not supported for pi-coordinating ligands)
-    # if args.ff and 'b' in args.ffoption and not rempi:
-    #     if 'b' in sub.ffopt.lower():
-    #         print 'FF optimizing substrate'
-    #         sub3D.convert2mol3D()
-    #         sub3D,enl = ffopt(args.ff,sub3D,sub3D.cat,0,[],False,[],100,args.debug)
-    # # skip hydrogen removal for pi-coordinating ligands
-    # if not rempi:
-    #     # check smarts match
-    #     if 'auto' in keepHs[i]:
-    #         for j,catom in enumerate(sub.cat):
-    #             match = findsmarts(sub3D.OBMol,globs.remHsmarts,catom)
-    #             if match:
-    #                 keepHs[i][j] = False
-    #             else:
-    #                 keepHs[i][j] = True
-    #     # remove one hydrogen from each connecting atom with keepH false
-    #     for j,cat in enumerate(lig.cat):
-    #         Hs = lig3D.getHsbyIndex(cat)
-    #         if len(Hs) > 0 and not keepHs[i][j]:
-    #             if args.debug:
-    #                 print('modifying charge down from ' + str(lig3D.charge))
-    #                 try:
-    #                     print('debug keepHs check, removing? ' + str(keepHs) + ' i = ' +str(i)+
-    #                 ' , j = ' +str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i] ) +
-    #                  ' length of keepHs list  '+ str(len(keepHs)))
-    #                 except:
-    #                     pass
-    #             # check for cats indices
-    #             if cat > Hs[0]:
-    #                 lig.cat[j] -= 1
-    #             lig3D.deleteatom(Hs[0])
-    #             lig3D.charge = lig3D.charge - 1
-    # Conformer search for multidentate SMILES ligands
-    # sub3D.convert2OBMol()
+    # sub3D.createMolecularGraph(False)
+    for rxn_type_i in range(len(bondlss)):
+        bondl_m3D = bondlss[rxn_type_i][1]
+        bondl_sub = bondlss[rxn_type_i][2]
+        bangle_sub = bangless[rxn_type_i][3]
+        bdihedral_sub = bdihedralss[rxn_type_i][3]
+        # if SMILES string, copy connecting atoms list to mol3D properties
+        # if not sub.cat and tcats[i]:
+        #     if 'c' in tcats[i]:
+        #         lig.cat = [lig.natoms]
+        #     else:
+        #         lig.cat = tcats[i]
+        # change name
+        # substrate bond manipulation to prepare for activation
+        anchor_atom_idx = int(subcatoms[rxn_type_i])
+        ref_to_sub = False
+        moved_atom_idx = ''
+        for atidx in sub3D.getBondedAtoms(anchor_atom_idx):
+            moved_atom_coords = sub3D.getAtomCoords(atidx)
+            # check to see if there is another connection atom
+            distss = []
+            if atidx in subcatoms:
+                moved_atom_idx = atidx
+                break
+            else:
+                ref_to_sub = True
+                for subcatom in subcatoms:
+                    subcoords = sub3D.getAtomCoords(subcatom)
+                    d = distance(moved_atom_coords, subcoords)
+                    distss.append((d, atidx))
+        if ref_to_sub:
+            distss.sort()
+            moved_atom_idx = distss[0][1]
+        elif not moved_atom_idx:
+            moved_atom_idx = sub3D.getBondedAtoms(anchor_atom_idx)[0]
+        sub3D.BCM(moved_atom_idx, anchor_atom_idx, bondl_sub)
+        # angle adjustment
+        if sub3D.natoms > 2 and len(sub3D.getBondedAtoms(moved_atom_idx)) > 1 and moved_atom_idx not in subcatoms:
+            idx3 = [idx for idx in sub3D.getBondedAtoms(moved_atom_idx) if idx != anchor_atom_idx][0]
+            sub3D.ACM(anchor_atom_idx, moved_atom_idx, idx3, bangle_sub)
+        # # check for pi-coordinating substrate
+        subpiatoms = []
+        if 'pi' in sub.cat:
+            if args.debug:
+                print('substrate is identified as a pi-type substrate')
+            subcatoms = []
+            for k in sub.cat[:-1]:
+                if isinstance(k,int):
+                    subcatoms.append(k)
+                # sub3Dpiatoms.addAtom(sub3D.getAtom(k))
+                # sub3Dpiatoms.addAtom(sub3D.getAtom(k))
+            # subpiatoms = sub.cat[:-1]
+            # sub3D.addAtom(atom3D('C',sub3Dpiatoms.centermass()))
+            # if args.debug:
+            #     sub3D.printxyz()
+            # sub3D.cat = [sub3D.natoms-1]
+            rempi = True
+        cpoint = getconnectiongivenangles(sub3D, anchor_atom_idx, moved_atom_idx, bondl_m3D, (bangle_sub, bdihedral_sub))
+        dummy = atom3D(Sym='X', xyz=cpoint)
+        sub3D.addAtom(dummy)
+        xidxes = sorted(sub3D.findAtomsbySymbol('X'))
+        refidx = xidxes[0]
+        refcoords = sub3D.getAtomCoords(refidx)
+        if len(xidxes) > 1 and idx3:
+            anchor_coords = sub3D.getAtomCoords(anchor_atom_idx)
+            moved_coords = sub3D.getAtomCoords(moved_atom_idx)
+            idx3_coords = sub3D.getAtomCoords(idx3)
+            u0 = vecdiff(anchor_coords, moved_coords)
+            u1 = vecdiff(moved_coords, idx3_coords)
+            # u =
+            d0 = 10
+            thetas = [0, 0]
+            theta1 = 5
+            for theta0 in range(0, 360, 5):
+                num_rotation = 0
+                sub3D_ = mol3D()
+                sub3D_.copymol3D(sub3D)
+                sub3D_.ACM_axis(anchor_atom_idx, moved_atom_idx, u0, theta0)
+                while num_rotation < 72:
+                    num_rotation += 1
+                    sub3D_.ACM_axis(anchor_atom_idx, moved_atom_idx, u1, theta1)
+                    pidx = xidxes[1]
+                    pcoords = sub3D_.getAtomCoords(pidx)
+                    d = distance(refcoords, pcoords)
+                    # planar = checkplanar(anchor_coords, moved_coords, pcoords, refcoords)
+                    if d < d0:
+                        d0 = d
+                        thetas[0] = theta0
+                        thetas[1] = theta1 * num_rotation
+            # print('distance is ' + str(d0))
+            # print('theta is ' + str(thetas))
+            sub3D.ACM_axis(anchor_atom_idx, moved_atom_idx, u0, thetas[0])
+            sub3D.ACM_axis(anchor_atom_idx, moved_atom_idx, u1, thetas[1])
 
-    # if sub.needsconformer:
-    #     tcats[i] = True
-    #     print('getting conformers for ' + str(sub.ident))
-
-    # if len(sub.cat) > 1 and tcats[i]:
-    #     print('generating conformations')
-    #     # loop  over conformation gen until success or break 
-    #     breaker = False
-    #     count = 0
-    #     while (not breaker) and count <= 5:
-    #         try:
-    #             sub3D = GetConf(sub3D,lig.cat)    # check if ligand should decorated
-    #             breaker = True            
-    #         except:
-    #             count += 1
-    #             print('lig conformer input failed ' + str(count)  + ' times, trying again...')
-    # if 'pi' in sub.cat:
-    #     subcatoms = []
-    #     subcatoms.append(sub3D.cat[0])
-    return sub3D,rempi,subcatoms,subpiatoms
+    return sub3D, rempi, subcatoms, subpiatoms
 
 ## Initializes ligand 3D geometry and properties
 #  @param args Namespace of arguments
@@ -947,6 +938,93 @@ def getconnectiongivenphi(core,cidx,refidx,BL,BA):
 #  @param refidx idx of the atom bonded to the core connecting atom
 #  @param BL Optimal core-ligand bond length
 #  @return Coordinates of optimum attachment point
+def getconnectiongivenangles(core, cidx, refidx, BL, BAs):
+    # ncore = core.natoms
+    # groups = core.getBondedAtoms(cidx)
+    cpoint = []
+    ccoords = core.getAtom(cidx).coords()
+    refcoords = core.getAtomCoords(refidx)
+    anchoridxes = [idx for idx in core.getBondedAtoms(cidx) if idx != refidx]
+    # print('cidx is ' + str(cidx))
+    # print('refidx is ' + str(refidx))
+    # print('anchoridxes are ' + str(anchoridxes))
+    r_c_ref = vecdiff(refcoords, ccoords)
+    pcoords = getPointu(ccoords, BL, r_c_ref)
+    # print('BL is ' + str(BL))
+    # theta, u = rotation_params(refcoords, ccoords, pcoords)
+    phi = BAs[0] / 180. * pi
+    phi_ref = BAs[0]
+    theta_ref = BAs[1]
+    objopt = 0
+    if anchoridxes:
+        # print('theta_ref is ' + str(theta_ref))
+        anchorcoords = core.getAtomCoords(anchoridxes[0])
+        theta, norm = rotation_params(refcoords, ccoords, anchorcoords)
+        # brute force search
+        objopt = 0
+        distss = []
+        # print('phi_ref is ' + str(phi_ref))
+        # print('theta_ref is ' + str(theta_ref))
+        #! TODO this double for loop needs to go
+        for itheta in range(0, 360, 10):
+            theta = itheta / 180. * pi
+            for iphi in range(0, 360, 10):
+                phi = iphi / 180. * pi
+                pcoords_ = PointTranslateSph(ccoords, r_c_ref, [BL, theta, phi])
+                angle = vecangle(norm, r_c_ref)
+                angle_phi = vecangle(r_c_ref, [pcoords_[i] - ccoords[i] for i in range(len(ccoords))])
+                if angle < 80:
+                    angle_theta = theta_ref
+                else:
+                    angle_theta = vecangle(norm, [pcoords_[i] - ccoords[i] for i in range(len(ccoords))])
+                # print('angle is ' + str(angle))
+                if abs(angle_theta - theta_ref) < 5 and abs(angle_phi - phi_ref) < 5:
+                    dists = []
+                    xidxes = core.findAtomsbySymbol('X')
+                    # whether the second X should be placed near the first one
+                    if xidxes:
+                        for xidx in xidxes:
+                            dists.append(-1 * distance(core.getAtomCoords(xidx), pcoords_))
+                    else:
+                        for ig in range(core.natoms):
+                            if ig != cidx:
+                                dists.append(distance(core.getAtomCoords(ig), pcoords_))
+                    distss.append((min(dists), pcoords_))
+                    # print('distss are ' + str(distss))
+                    # print('angle_phi is ' + str(angle_phi) + ', angle_theta is ' + str(angle_theta))
+                core3D = mol3D()
+                core3D.copymol3D(core)
+                atom = atom3D(Sym='X', xyz=pcoords_)
+                core3D.addAtom(atom)
+        # print('distss are ' + str(sorted(distss)[-1]))
+        cpoint = sorted(distss)[-1][1]
+    else:
+        # print('theta_ref is ' + str(theta_ref))
+        distss = []
+        for itheta in range(1, 359, 1):
+            theta = itheta / 180. * pi
+            for iphi in range(0, 360, 10):
+                phi = iphi / 180. * pi
+                pcoords_ = PointTranslateSph(ccoords, pcoords, [BL, theta, phi])
+                angle_phi = vecangle(r_c_ref, [pcoords_[i] - ccoords[i] for i in range(len(ccoords))])
+                if abs(angle_phi - phi_ref) < 5:
+                    dists = []
+                    for ig in range(core.natoms):
+                        if ig != cidx:
+                            dists.append(distance(core.getAtomCoords(ig), pcoords_))
+                    distss.append((min(dists), pcoords_))
+        cpoint = sorted(distss)[-1][1]
+
+    return cpoint
+
+## Finds the optimum attachment point for an atom/group to a central atom given the desired bond length and bond angle
+#
+#  Objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
+#  @param core mol3D of core
+#  @param cidx Core connecting atom index
+#  @param refidx idx of the atom bonded to the core connecting atom
+#  @param BL Optimal core-ligand bond length
+#  @return Coordinates of optimum attachment point
 def getconnectiongivenr(core,cidx,refidx,BL,BA,r):
     midx = core.findMetal()[0]
     ccoords = core.getAtom(cidx).coords()
@@ -1100,30 +1178,9 @@ def align_sub_firstbond(args,corerefcoords,sub3D,atom0,core3D,bangle_m3Dsub):
     if args.debug:
         print('bangle m3Dsub is ' + str(bangle_m3Dsub))
         print('theta is ' + str(theta))
-    # if args.debug:
-    #     debug3D = mol3D()
-    #     debug3D.copymol3D(core3D)
-    #     debug3D.copymol3D(sub3D)
-    #     debug3D.writexyz('/Users/tzuhsiungyang/Desktop/debug.xyz')
-    # sub3Db = rotate_around_axis(sub3Db,r1,u,theta-180)
-    # # compare shortest distances to core reference coordinates
-    # d2 = distance(r0,sub3D.centersym())
-    # d1 = distance(r0,sub3Db.centersym())
-    # sub3D = sub3D if (d1 < d2)  else sub3Db # pick best one
-    # # additional rotation for bent terminal connecting atom:
-    # if auxmol.natoms == 1:
-    #     if distance(auxmol.getAtomCoords(0),sub3D.getAtomCoords(atom0)) > 0.8*(auxmol.getAtom(0).rad + sub3D.getAtom(atom0).rad) and EnableAutoLinearBend:
-    #         print('bending of linear terminal ligand')
-    #         ##warning: force field might overwrite this
-    #         ## warning: skipping this part because
-    #         ## we no longer understand it
-    #         if False:
-    #             r1 = sub3D.getAtom(atom0).coords()
-    #             r2 = auxmol.getAtom(0).coords()
-    #             theta,u = rotation_params([1,1,1],r1,r2)
-    #             sub3D = rotate_around_axis(sub3D,r1,u,-1*globs.linearbentang)
     sub3D_aligned = mol3D()
     sub3D_aligned.copymol3D(sub3D)
+
     return sub3D_aligned
 
 ## Aligns a linear pi substrate's connecting point to the metal-substrate axis
@@ -1609,7 +1666,7 @@ def get_ts_MLdist_database(args,metal,subcatomsym,MLbonds):
 #  @param ox oxidation state of the metal
 #  @param spin spin multiplicity of the metal
 #  @return fsr, flag for exact DB match
-def get_ts_fsr_database(sym1,sym2,fsr_dict,ox=False,spin=False):
+def get_ts_fsr_database(sym1, sym2, fsr_dict, ox=False, spin=False, bondl_m3D=False):
     # check for roman letters in oxstate
     if ox: # if defined put oxstate in keys
         if ox in romans.keys():
@@ -1632,75 +1689,65 @@ def get_ts_fsr_database(sym1,sym2,fsr_dict,ox=False,spin=False):
     # search for data
     for key in keys:
         if (key in fsr_dict.keys()): # if exact key in dictionary
-            fsr = float(fsr_dict[key][0])
+            if bondl_m3D:
+                fsr = float(fsr_dict[key][1])
+            else:
+                fsr = float(fsr_dict[key][0])
             found = True
-            if (key == ((sym1,sym2,oxs,spin))): ## exact match
+            if (key == ((sym1, sym2, oxs, spin))): ## exact match
                exact_match = True
             break
     if not found: # last resort covalent radii
         fsr = 1
-    return fsr,exact_match
+    return fsr, exact_match
 
-# ## Loads ts M-L-S bond angle from database and reports if compound is in DB
-# #  @param args Namespace of arguments
-# #  @param metal atom3D of atom 1 (usually a metal)
-# #  @param atom0 substrate connecting atom index
-# #  @param substrate Name of substrate
-# #  @param MLbonds M-L dictionary
-# #  @return Bond length in Angstroms, flag for exact DB match
-# def get_ts_MLSangle_database(args,metal,subcatomsym,MLSangles):
+# ## Loads ts M-L-S angle from database and reports if compound is in DB
+# #  @param sym atomic symbol
+# #  @param val remaining valency of the atom
+# #  @param MLS_dict M-L-S angle dictionary
+# #  @param ox oxidation state of the metal
+# #  @param spin spin multiplicity of the metal
+# #  @return bangle, flag for exact DB match
+# def get_ts_MLSangle_database(sym,val,MLS_angle_dict,ox=False,spin=False):
 #     # check for roman letters in oxstate
-#     if args.oxstate: # if defined put oxstate in keys
-#         if args.oxstate in romans.keys():
-#             oxs = romans[args.oxstate]
+#     if ox: # if defined put oxstate in keys
+#         if ox in romans.keys():
+#             oxs = romans[ox]
 #         else:
-#             oxs = args.oxstate
+#             oxs = ox
 #     else:
 #         oxs = '-'
 #     # check for spin multiplicity
-#     spin = args.spin if args.spin else '-'
-#     key = []
-#     key.append((metal,oxs,spin,subcatomsym))
-#     key.append((metal,oxs,'-',subcatomsym))
-#     key.append((metal,'-',spin,subcatomsym))
-#     key.append((metal,'-','-',subcatomsym))
+#     spin = spin if spin else '-'
+#     keys = []
+#     syms = [[sym,str(val)]]
+#     oss = [[oxs,spin],[oxs,'-'],['-',spin],['-','-']]
+#     for sym_ in syms:
+#         for os in oss:
+#             key = sym_ + os
+#             keys.append(tuple(key))
+#     found = False
 #     exact_match = False
 #     # search for data
-#     bangle_m3D = 180
-#     bangle_m3Dsub = 180
-#     bangle_core3D = 100
-#     bangle_sub = 100
-#     for kk in key:
-#         if (kk in MLSangles.keys()): # if exact key in dictionary
-#             if len(MLSangles[kk]) == 1:
-#                 bangle_m3D = float(MLSangles[kk][0])
-#             elif len(MLSangles[kk]) == 2:
-#                 bangle_m3D = float(MLSangles[kk][0])
-#                 bangle_m3Dsub = float(MLSangles[kk][1])
-#             elif len(MLSangles[kk]) == 3:
-#                 bangle_m3D = float(MLSangles[kk][0])
-#                 bangle_m3Dsub = float(MLSangles[kk][1])
-#                 bangle_core3D = float(MLSangles[kk][2])
-#             elif len(MLSangles[kk]) == 4:
-#                 bangle_m3D = float(MLSangles[kk][0])
-#                 bangle_m3Dsub = float(MLSangles[kk][1])
-#                 bangle_core3D = float(MLSangles[kk][2])
-#                 bangle_sub = float(MLSangles[kk][3])
-#             if (kk == ((metal,oxs,spin,subcatomsym))): ## exact match
+#     for key in keys:
+#         if (key in MLS_angle_dict.keys()): # if exact key in dictionary
+#             bangle = float(MLS_angle_dict[key][0])
+#             found = True
+#             if (key == ((sym,val,oxs,spin))): ## exact match
 #                exact_match = True
 #             break
-#     # if args.debug:
-#     #     print('ms default distance is  ' + str(bondl))
-#     return bangle_m3D,bangle_m3Dsub,bangle_core3D,bangle_sub,exact_match
+#     if not found: # last resort covalent radii
+#         bangle = 120
+#     return bangle, exact_match
 
 ## Loads ts M-L-S angle from database and reports if compound is in DB
 #  @param sym atomic symbol
-#  @param val remaining valency of the atom
-#  @param MLS_dict M-L-S angle dictionary
+#  @param sym valency
+#  @param fsr_dict formal shortness ratio dictionary
 #  @param ox oxidation state of the metal
 #  @param spin spin multiplicity of the metal
-#  @return bangle, flag for exact DB match
-def get_ts_MLSangle_database(sym,val,MLS_angle_dict,ox=False,spin=False):
+#  @return fsr, flag for exact DB match
+def get_ts_MLSangle_database(sym, val, MLS_dict, ox=False, spin=False):
     # check for roman letters in oxstate
     if ox: # if defined put oxstate in keys
         if ox in romans.keys():
@@ -1712,25 +1759,27 @@ def get_ts_MLSangle_database(sym,val,MLS_angle_dict,ox=False,spin=False):
     # check for spin multiplicity
     spin = spin if spin else '-'
     keys = []
-    syms = [[sym,str(val)]]
+    syms = [[sym, val], [val, sym]]
     oss = [[oxs,spin],[oxs,'-'],['-',spin],['-','-']]
-    for sym_ in syms:
+    for sym in syms:
         for os in oss:
-            key = sym_ + os
+            key = sym + os
             keys.append(tuple(key))
     found = False
     exact_match = False
     # search for data
     for key in keys:
-        if (key in MLS_angle_dict.keys()): # if exact key in dictionary
-            bangle = float(MLS_angle_dict[key][0])
+        if (key in MLS_dict.keys()): # if exact key in dictionary
+            bangle = float(MLS_dict[key][0])
+            bdihedral = float(MLS_dict[key][1])
             found = True
-            if (key == ((sym,val,oxs,spin))): ## exact match
+            if (key == ((sym, val, oxs, spin))): ## exact match
                exact_match = True
             break
     if not found: # last resort covalent radii
         bangle = 120
-    return bangle, exact_match
+        bdihedral = 90
+    return bangle, bdihedral, exact_match
 
 ## Get backbone atoms from template
 #  @param args Namespace of arguments
@@ -1857,7 +1906,6 @@ def align_intra_sub(args,core3D,subcatoms_ext,mligcatoms_ext,bondl_core3D,bondl_
     for i in core3D.getBondedAtoms(subcatoms_ext):
         if i in midx_list:
             sidx = i
-    # core3D.writexyz('/Users/tzuhsiungyang/Downloads/debug.xyz')
     # bondl_sub_i = distance(core3D.getAtom(subcatoms_ext[0]).coords(),core3D.getAtom(sidx).coords())
     # bondl_m3D_i = distance(core3D.getAtom(subcatoms_ext[0]).coords(),core3D.getAtom(mligcatoms_ext[0]).coords())
     # bondl_core3D_i = distance(core3D.getAtom(mligcatoms_ext[0]).coords(),core3D.getAtom(midx_list[0]).coords())
@@ -1943,7 +1991,7 @@ def align_intra_sub(args,core3D,subcatoms_ext,mligcatoms_ext,bondl_core3D,bondl_
 #  @return mol3D of aligned ligand, updated lists of frozen atoms and M-L bond lengths
 def align_dent2_sub(args,cpoints,m3D,core3D,mligcatom,sub3D,subcatoms,bangless):
     bangle_m3Dsub = bangless[0][1]
-    corerefcoords = core3D.getAtom(mligcatom).coords()
+    corerefcoords = m3D.getAtom(mligcatom).coords()
     r0 = corerefcoords
     # get cis conformer by rotating rotatable bonds
     #lig3D = find_rotate_rotatable_bond(lig3D,catoms)
@@ -1951,34 +1999,42 @@ def align_dent2_sub(args,cpoints,m3D,core3D,mligcatom,sub3D,subcatoms,bangless):
     atom0 = subcatoms[0]
     atom1 = subcatoms[1]
     subcoords = sub3D.getAtom(atom1).coords()
-    # batoms = []
-    # for i in range(m3D.natoms-2,m3D.natoms):
-    #     batoms.append(i)
-    # batom0 = m3D.getAtom(batoms[0])
     # translate ligand to match first connecting atom to backbone connecting point
     sub3D.alignmol(sub3D.getAtom(atom0),cpoints[0])
-    m3D_ = mol3D()
-    m3D_.copymol3D(core3D)
-    m3D_.copymol3D(sub3D)
-    # m3D_.writexyz('/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/molSimplify/builts/debug.xyz')
     # rotate the substrate to align with the cpoints
     r1 = sub3D.getAtom(atom0).coords() # atom0 coord
     r2 = sub3D.getAtom(atom1).coords()  # atom1 coord
     rx2 = cpoints[1].coords() # second cpoint coordxxx
-    theta, u = rotation_params(r2,r1,rx2)
-    if theta > 90:
-        sub3D = rotate_around_axis(sub3D,r1,u,180-theta)
-    else:
-        sub3D = rotate_around_axis(sub3D, r1, u, theta)
-    # rotate the substrate around the M-mlig axis to reduce repulsion
-    mcoords = core3D.getAtom(core3D.findMetal()[0]).coords()
-    rmref = vecdiff(mcoords, corerefcoords)
-    sub3D_aligned = rotate_MLaxis_minimize_steric_ts(sub3D, subcoords, core3D, corerefcoords, rmref)
-    r1 = sub3D_aligned.getAtom(atom0).coords()  # atom0 coord
-    r2 = sub3D_aligned.getAtom(atom1).coords()  # atom1 coord
-    r12 = vecdiff(r2, r1)
-    subcoords = sub3D_aligned.getAtom(atom1).coords()
-    sub3D_aligned = rotate_MLaxis_minimize_steric_ts(sub3D_aligned, subcoords, core3D, subcoords, r12)
+    theta, u = rotation_params(r2, r1, rx2)
+    sub3D = rotate_around_axis(sub3D, r1, u, 180-theta)
+    # m3D_ = mol3D()
+    # # for atom in m3D.atoms:
+    # #     if atom.sym != 'X':
+    # #         m3D_.addAtom(atom)
+    # m3D_.copymol3D(m3D)
+    # m3D_.copymol3D(sub3D)
+    # rotate the sub3D along the two coordinating atoms to maximize the overlap between sub3D-Xs and the mcomplex
+    r1 = sub3D.getAtom(atom0).coords() # atom0 coord
+    r2 = sub3D.getAtom(atom1).coords()  # atom1 coord
+    xidxes_m3D = sorted(m3D.findAtomsbySymbol('X'))
+    xidxes_sub3D = sorted(sub3D.findAtomsbySymbol('X'))
+    refidx = m3D.getBondedAtoms(xidxes_m3D[0])[0]
+    refcoords = m3D.getAtomCoords(refidx)
+    xcoords = sub3D.getAtomCoords(xidxes_sub3D[0])
+    theta, u = rotation_params(refcoords, r1, xcoords)
+    u = vecdiff(r1, r2)
+    # print('theta is ' + str(theta))
+    if theta < 90:
+        theta = 180 - theta
+    sub3D = rotate_around_axis(sub3D, r1, u, theta)
+
+    sub3D_aligned = sub3D
+    # sub3D_aligned = rotate_MLaxis_minimize_steric_ts(sub3D, subcoords, m3D, corerefcoords, rmref)
+    # r1 = sub3D_aligned.getAtom(atom0).coords()  # atom0 coord
+    # r2 = sub3D_aligned.getAtom(atom1).coords()  # atom1 coord
+    # r12 = vecdiff(r2, r1)
+    # subcoords = sub3D_aligned.getAtom(atom1).coords()
+    # sub3D_aligned = rotate_MLaxis_minimize_steric_ts(sub3D_aligned, subcoords, m3D, subcoords, r12)
 
     return sub3D_aligned
 
@@ -2640,6 +2696,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                     avg_MLdists = sum_MLdists/4
                     # scale template by average M-L distance
                     auxmol_m3D.addAtom(m3D.getAtom(0))
+                    #! TODO BCM defition slightly modified. Keep an eye for unexpected structures
                     for iiax in range(0,4):
                         auxmol_m3D.BCM(iiax,4,avg_MLdists)
                     auxmol_m3D.deleteatom(4)
@@ -2851,14 +2908,16 @@ def mcomplex(args,ligs,ligoc,licores,globs):
 #  @param mligcatoms_ext the atom index, compounded with the number of atoms in the mcomplex,
 #  in the mcoomplex where the substrate is attahced to
 #  @return mol3D of built complex, list of all mol3D ligands and core, error messages
-def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcatoms_ext):
+def msubcomplex(args, core3D, substrate, sub_i, subcatoms, mlig, subcatoms_ext, mligcatoms_ext):
+
     globs = globalvars()
     subcores = getsubcores()
     this_diag = run_diag()
     if globs.debug:
         print '\nGenerating TS complex with substrate and mlig:',substrate,mlig
     if args.gui:
-        args.gui.iWtxt.setText('\nGenerating complex with core:'+args.core+' and ligands: '+ ' '.join(ligs)+'\n'+args.gui.iWtxt.toPlainText())
+        args.gui.iWtxt.setText('\nGenerating complex with core:'+args.core+' and ligands: '+ ' '.join(arg.ligs)+'\n'+
+                               args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     # import gui options
     if args.gui:
@@ -2885,7 +2944,7 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
     ox = args.oxstate if args.oxstate else False
     spin = args.spin if args.spin else False
     # load substrate
-    sub, subcatoms, emsg = substr_load(substrate[0],sub_i,subcatoms)
+    sub, subcatoms, emsg = substr_load(substrate[0], sub_i, subcatoms)
     sub.convert2mol3D()
     # # remove dummy atoms in core3D
     for atom_i, atom in enumerate(core3D.atoms):
@@ -2900,6 +2959,7 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
     # obtaining molecular parameters by rxn types
     bondlss = []
     bangless = []
+    bdihedralss = []
     if len(rxn_types) != len(mligcatoms_ext):
         mligcatoms_ext = mligcatoms_ext * len(rxn_types)
     for rxn_type_i, rxn_type in enumerate(rxn_types):
@@ -2920,19 +2980,32 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
             if d < d0:
                 d0 = d
                 mligfidx_ext = fidx
-        subcatom_ext = int(subcatoms[rxn_type_i])
-        bnum0 = 0
-        for i, fidx in enumerate(sub.getBondedAtoms(subcatom_ext)):
-            bnum = len(sub.getBondedAtoms(fidx))
-            if bnum > bnum0:
-                bnum0 = bnum
-                subfidx_ext = fidx
+        subcatom = int(subcatoms[rxn_type_i])
+        bnum0 = 4
+        d0 = 10
+        subfidx = 0
+        for i, fidx in enumerate(sub.getBondedAtoms(subcatom)):
+            if fidx in subcatoms:
+                subfidx = fidx
+                break
+            else:
+                if len(subcatoms) > rxn_type_i + 1:
+                    d = distance(sub.getAtomCoords(fidx), sub.getAtomCoords(subcatoms[rxn_type_i+1]))
+                    if d < d0:
+                        d0 = d
+                        subfidx = fidx
+                else:
+                    bnum = len(sub.getBondedAtoms(fidx))
+                    if bnum < bnum0:
+                        bnum0 = bnum
+                        subfidx = fidx
+        #! TODO this part should be contracted by using the same method
         # get atom symbols
         msym = core3D.getAtom(midxes[0]).sym
         mligcatomsym = core3D.getAtom(mligcatom_ext).sym
         mligfidxsym = core3D.getAtom(mligfidx_ext).sym
-        subcatomsym = sub.getAtom(subcatom_ext).sym
-        subfidxsym = sub.getAtom(subfidx_ext).sym
+        subcatomsym = sub.getAtom(subcatom).sym
+        subfidxsym = sub.getAtom(subfidx).sym
         # get valence electron counts
         mligcatomve = int(amassdict[mligcatomsym][3])
         mligfidxve = int(amassdict[mligfidxsym][3])
@@ -2940,64 +3013,82 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
         subfidxve = int(amassdict[subfidxsym][3])
         # get the number of bonded atoms
         mligcatombnum = len(core3D.getBondedAtoms(mligcatom_ext))
-        subcatombnum = len(sub.getBondedAtoms(subcatom_ext))
+        subcatombnum = len(sub.getBondedAtoms(subcatom))
         mligfidxbnum = len(core3D.getBondedAtoms(mligfidx_ext))
-        subfidxbnum = len(sub.getBondedAtoms(subfidx_ext))
+        subfidxbnum = len(sub.getBondedAtoms(subfidx))
         # get remaining valency
         octet = 8 if mligcatomsym != 'H' else 2
         mligcatomval = (octet - mligcatomve - mligcatombnum)
         octet = 8 if subcatomsym != 'H' else 2
         subcatomval = (octet - subcatomve - subcatombnum)
-        octet = 8 if mligfidxsym != 'H' else 2
-        mligfidxval = (octet - mligfidxve - mligfidxbnum)
+        if mligfidxsym in ['V', 'Cr', 'Mn', 'Fe', 'Co']:
+            octet = 18
+            multiplier = 2
+        elif mligfidxsym in ['Ni', 'Cu']:
+            octet = 14
+            multiplier = 2
+        elif mligfidxsym != 'H':
+            octet = 8
+            multiplier = 1
+        else:
+            octet = 2
+            multiplier = 1
+        mligfidxval = (octet - mligfidxve - mligfidxbnum * multiplier)
         octet = 8 if subfidxsym != 'H' else 2
         subfidxval = (octet - subfidxve - subfidxbnum)
         ## preping for bondls
         # get covalent radius
         mr = float(amassdict[msym][2])
         mligcatomr = float(amassdict[mligcatomsym][2])
+        mligfidxr = float(amassdict[mligfidxsym][2])
         subcatomr = float(amassdict[subcatomsym][2])
         subfidxr = float(amassdict[subfidxsym][2])
         # get sum of cov radii
         sumr_m_mlig = mr + mligcatomr
+        sumr_mlig_mligfidx = mligcatomr + mligfidxr
         sumr_mlig_sub = mligcatomr + subcatomr
         sumr_sub_subfidx = subcatomr + subfidxr
         # keys for bondls, in the order of bondl_core3D, bondl_m3D, and bondl_sub3D
-        keys = [[msym, mligcatomsym + str(mligcatomval), sumr_m_mlig], [mligcatomsym + str(mligcatomval),
-                subcatomsym + str(subcatomval), sumr_mlig_sub], [subcatomsym + str(subcatomval),
-                                                                 subfidxsym + str(subfidxval), sumr_sub_subfidx]]
+        keys = [[mligcatomsym + str(mligcatomval), mligfidxsym + str(mligfidxval), sumr_mlig_mligfidx],
+                [mligcatomsym + str(mligcatomval), subcatomsym + str(subcatomval), sumr_mlig_sub],
+                [subcatomsym + str(subcatomval), subfidxsym + str(subfidxval), sumr_sub_subfidx]]
         # obtain bondls and bangles
         # default ratio
         fsr = 1
         bondls = []
-        for key in keys:
+        for i, key in enumerate(keys):
+            bondl_m3D = False
             sym1 = key[0]
             sym2 = key[1]
             sumr = key[2]
-            fsr, exact_match = get_ts_fsr_database(sym1,sym2,fsr_dict,ox,spin)
+            if i == 1:
+                bondl_m3D = True
+            fsr, exact_match = get_ts_fsr_database(sym1, sym2, fsr_dict, ox, spin, bondl_m3D=bondl_m3D)
             bondl = fsr * sumr
             bondls.append(bondl)
         bondlss.append(bondls)
+        print('keys are ' + str(keys))
+        print('bondlss are ' + str(bondlss))
         ## preping for bangles
         # keys for bangles, in  the order of bangle_m3D, bangle_m3Dsub, bangle_core3D, and bangle_sub
-        # keys = [[mligcatomsym, mligcatomval], [subcatomsym, subcatomval], [mligfidxsym, mligfidxval], [subfidxsym, subfidxval]]
-        # bangles = []
-        # for key in keys:
-        #     sym1 = key[0]
-        #     val = key[1]
-        #     bangle, exact_match = get_ts_MLSangle_database(sym1,val,MLS_dict,ox,spin)
-        #     bangles.append(bangle)
-        # bangless.append(bangles)
-        bangless = [[120, 180, 180, 109]]
+        # keys = [[mligcatomsym, mligcatomval], [subcatomsym, subcatomval], [mligfidxsym, mligfidxval],
+        #         [subfidxsym, subfidxval]]
+        keys = [[mligcatomsym, str(mligcatomval)], [subcatomsym, str(subcatomval)], [mligfidxsym, str(mligfidxval)],
+                [subfidxsym, str(subfidxval)]]
+        bdihedrals = []
+        bangles = []
+        for key in keys:
+            sym = key[0]
+            val = key[1]
+            bangle, bdihedral, exact_match = get_ts_MLSangle_database(sym, val, MLS_dict, ox, spin)
+            bangles.append(bangle)
+            bdihedrals.append(bdihedral)
+        bangless.append(bangles)
+        bdihedralss.append(bdihedrals)
+        # bangless = [[120, 180, 180, 109]]
+        print('keys are ' + str(keys))
         print('bangless are ' + str(bangless))
-        # MLbonds = loaddata_ts('/Data/ML_bond_for_' + rxn_type + '.dat')
-        # MLSangles = loaddata_ts('/Data/MLS_angle_for_' + rxn_type + '.dat')
-        # bangle_m3D, bangle_m3Dsub, bangle_core3D, bangle_sub, exact_match = get_ts_MLSangle_database(args, msym,
-        #                                                                                              subcatomsym,
-        #                                                                                              MLSangles)
-        # bangles_m3D.append(bangle_m3D)
-        # if not args.MLbonds:
-        #     bondl_core3D, bondl_m3D, bondl_sub, exact_match = get_ts_MLdist_database(args, msym, subcatomsym, MLbonds)
+        print('bdihedralss are ' + str(bdihedralss))
     # determine if the sub in lig
     sub_in_lig = False
     if args.lig:
@@ -3022,19 +3113,21 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
         cpoints_required = len(bondlss)
         # load core and initialize template
         # also adjust the specified distance in the core3D and distance and angle in the connection point
-        m3D,core3D,geom,backbatoms,coord,corerefatoms = init_mcomplex_template(args,core3D,cpoints_required,
-                                                                               mligcatoms_ext,bondlss,bangless)
+        m3D, core3D, geom, backbatoms, coord, corerefatoms = init_mcomplex_template(args, core3D, cpoints_required,
+                                                                                    mligcatoms_ext, bondlss,bangless,
+                                                                                    bdihedralss)
 
-        # m3D.writexyz('/Users/tzuhsiungyang/Downloads/m3D.xyz')
-        # core3D.writexyz('/Users/tzuhsiungyang/Downloads/core3D.xyz')
         totsub = 0  # total number of substrates added
         subsused = 0
         ## initialize ligand
-        sub3D,rempi,subcatoms,subpiatoms = init_substrate(args,sub,subcatoms,bondlss,bangless)
-
+        sub3D, rempi, subcatoms, subpiatoms = init_substrate(args, sub, subcatoms, bondlss, bangless, bdihedralss)
+        for subcatom in subcatoms:
+            frozenats.append(core3D.natoms + subcatom)
+            for batidx in sub3D.getBondedAtoms(subcatom):
+                frozenats.append(core3D.natoms + batidx)
         if emsg:
-            return False,emsg
-        for j in range(0,occs):
+            return False, emsg
+        for j in range(0, occs):
             denticity = sub.denticity
             # print('denticity is ' + str(denticity))
             if not(substrate == 'x' or substrate == 'X'):
@@ -3053,22 +3146,24 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
                 # attach ligand depending on the denticity
                 # optimize geometry by minimizing steric effects
                 if (denticity == 1):
-                    sub3D = align_sub(args,cpoints,core3D,coreref,sub3D,subcatoms,mligcatoms_ext[0],bangless,rempi,subpiatoms)
-                    # sub3D.writexyz('/Users/tzuhsiungyang/Downloads/sub3D.xyz')
+                    sub3D = align_sub(args, cpoints, core3D, coreref, sub3D, subcatoms, mligcatoms_ext[0], bangless,
+                                      rempi, subpiatoms)
                 elif (denticity == 2):
                     # for mligcatom_ext in mligcatoms_ext:
                     #     if mligcatom_ext not in core3D.findMetal():
                     #         break
-                    sub3D = align_dent2_sub(args,cpoints,m3D,core3D,mligcatom_ext,sub3D,subcatoms,bangless)
+                    # print('cpoints are ' + str([cpoint.coords() for cpoint in cpoints]))
+                    # print('mligcatom_ext is ' + str(mligcatom_ext))
+                    # print('subcatoms are ' + str(subcatoms))
+                    sub3D = align_dent2_sub(args, cpoints, m3D, core3D, mligcatom_ext, sub3D, subcatoms, bangless)
                 auxm = mol3D()
                 auxm.copymol3D(sub3D)
                 complex3D.append(auxm)
                 # if 'a' not in sub.ffopt.lower():
                 #     for latdix in range(0,sub3D.natoms):
                 #         frozenats.append(latdix+core3D.natoms)
-                # combine molecules into a crude msubcomplex
-                core3D_ = mol3D()
-                core3D_.copymol3D(core3D)
+                # core3D_ = mol3D()
+                # core3D_.copymol3D(core3D)
                 # core3D_ = core3D_.combine(sub3D)
                 # core3D_.convert2mol3D()
                 # remove dummy cm atom if requested
@@ -3085,8 +3180,12 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
                 # # bondl_dict, ds = ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr)
                 # bondl_dict, bondl_m3D, ds1, ds2 = krr_model_predict(core3D_, spin, mligcatoms_ext[0])
                 if args.cdxml:
+                    # combine molecules into a crude msubcomplex
+                    core3D_ = mol3D()
+                    core3D_.copymol3D(core3D)
                     liglist, ligdents, ligcons = ligand_breakdown(core3D_)
-                    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(core3D_, liglist, ligdents, ligcons)
+                    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
+                        ax_con_list, eq_con_list, built_ligand_list = ligand_assign(core3D_, liglist, ligdents, ligcons)
                     if globs.testTF():
                         ## new RACs-ANN
                         from molSimplify.Scripts.tf_nn_prep import invoke_ANNs_from_mol3d
@@ -3117,13 +3216,15 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
                     # m3D.writexyz(fpath + '/init_mcomplex.xyz')
 
                     if (denticity == 1):
-                        sub3D = align_sub(args,cpoints,core3D,coreref,sub3D,subcatoms,mligcatoms_ext[0],bangless,rempi,subpiatoms)
+                        sub3D = align_sub(args, cpoints, core3D, coreref, sub3D, subcatoms, mligcatoms_ext[0], bangless,
+                                          rempi, subpiatoms)
+
                     elif (denticity == 2):
-                        for mligcatom_ext in mligcatoms_ext:
-                            if mligcatom_ext not in core3D_.findMetal():
-                                break
-                        print('mligcatom_ext is ' + str(mligcatom_ext))
-                        sub3D = align_dent2_sub(args,cpoints,m3D,core3D,mligcatom_ext,sub3D,subcatoms,bangless)
+                        # for mligcatom_ext in mligcatoms_ext:
+                        #     if mligcatom_ext not in core3D_.findMetal():
+                        #         break
+                        # print('mligcatom_ext is ' + str(mligcatom_ext))
+                        sub3D = align_dent2_sub(args, cpoints, m3D, core3D, mligcatom_ext, sub3D, subcatoms, bangless)
                 auxm = mol3D()
                 auxm.copymol3D(sub3D)
                 complex3D.append(auxm)
@@ -3146,10 +3247,11 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
             print('Performing final FF constrained opt for the metal-substrate complex')
             connected = []
             freezeangles = []
-            core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
+            core3D, enc = ffopt(args.ff, core3D, connected, 1, frozenats, freezeangles, MLoptbds, 'Adaptive',
+                                args.debug)
             # core3D.writexyz(fpath + '/msubcomplex_ff.xyz')
     else:
-        core3D = align_intra_sub(args,core3D,subcatoms_ext[0],mligcatoms_ext[0],bondlss,bangless)
+        core3D = align_intra_sub(args, core3D, subcatoms_ext[0], mligcatoms_ext[0], bondlss, bangless)
         ## reserved for future conformer search development
         # for cycle in range(5):
         #     if 'a' in args.ffoption:
@@ -3158,7 +3260,7 @@ def msubcomplex(args,core3D,substrate,sub_i,subcatoms,mlig,subcatoms_ext,mligcat
         #         freezeangles = []
         #         core3D,enc = conformer_search(args.ff,core3D,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
         #         # core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
-    return core3D,complex3D,subcatoms,emsg,this_diag
+    return core3D, complex3D, subcatoms, emsg, this_diag
 
 ## Main structure generation routine - single structure
 #  @param strfiles List of xyz files generated

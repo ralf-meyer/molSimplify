@@ -396,3 +396,14 @@ class globalvars:
             return True
         except:
             return False
+
+    # Tests for matplotlib avail
+    #  @return if matplotlib is avail
+    def testmatplotlib(self):
+        try:
+            # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+            import matplotlib.pyplot as plt
+            import matplotlib.ticker as ticker
+            return True
+        except:
+            return False

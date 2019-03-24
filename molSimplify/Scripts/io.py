@@ -336,8 +336,12 @@ def loadcdxml(cdxml):
     if signal:
         cdxml = cdxml.replace('.cdxml','.temp.cdxml')
     f = open(cdxml, 'a')
-    for i, line in enumerate(lines):
-        if i not in range(lnum-5,lnum+2):
+    if signal:
+        for i, line in enumerate(lines):
+            if i not in range(lnum-5,lnum+2):
+                f.write(line + '\n')
+    else:
+        for i, line in enumerate(lines):
             f.write(line + '\n')
     f.close()
     # load cdxml into obmol
