@@ -1,0 +1,79 @@
+root - INFO - ----Logger for the dynamic classifier for on-the-fly job control---
+root - INFO - Monitoring job with PID 26478
+root - INFO - Feature initialized.
+root - INFO - Loading model: conv_2.h5 ...
+root - INFO - Loading model: conv_5.h5 ...
+root - INFO - Loading model: conv_10.h5 ...
+root - INFO - Loading model: conv_15.h5 ...
+root - INFO - Loading model: conv_20.h5 ...
+root - INFO - Loading model: conv_30.h5 ...
+root - INFO - Loading model: conv_40.h5 ...
+root - INFO - Training data loaded.
+root - INFO - Normalization vectors loaded
+root - INFO - Initialize the files to be tracked during the geometry optimization.
+root - INFO - This may take a while until the first step of SCF calculation finishes...
+root - INFO - Tracking files initialization completes.
+root - INFO - 0 step feature obatined.
+root - INFO - At step 1, decision is not activated.
+root - INFO - Prediction made at step 2.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786)])
+root - INFO - This calculation seems good for now at step 2
+root - INFO - At step 3, decision is not activated.
+root - INFO - At step 4, decision is not activated.
+root - INFO - Prediction made at step 5.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302), (5, 0.8130509)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786), (5, 0.22356329914464884)])
+root - INFO - This calculation seems good for now at step 5
+root - INFO - At step 6, decision is not activated.
+root - INFO - At step 7, decision is not activated.
+root - INFO - At step 8, decision is not activated.
+root - INFO - At step 9, decision is not activated.
+root - INFO - Prediction made at step 10.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302), (5, 0.8130509), (10, 0.8180599)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786), (5, 0.22356329914464884), (10, 0.15568570966410075)])
+root - INFO - This calculation seems good for now at step 10
+root - INFO - At step 11, decision is not activated.
+root - INFO - At step 12, decision is not activated.
+root - INFO - At step 13, decision is not activated.
+root - INFO - At step 14, decision is not activated.
+root - INFO - Prediction made at step 15.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302), (5, 0.8130509), (10, 0.8180599), (15, 0.8260999)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786), (5, 0.22356329914464884), (10, 0.15568570966410075), (15, 0.029743256870922823)])
+root - INFO - This calculation seems good for now at step 15
+root - INFO - At step 16, decision is not activated.
+root - INFO - At step 17, decision is not activated.
+root - INFO - At step 18, decision is not activated.
+root - INFO - At step 19, decision is not activated.
+root - INFO - Prediction made at step 20.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302), (5, 0.8130509), (10, 0.8180599), (15, 0.8260999), (20, 0.7288417)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786), (5, 0.22356329914464884), (10, 0.15568570966410075), (15, 0.029743256870922823), (20, 0.12859675805966816)])
+root - INFO - This calculation seems good for now at step 20
+root - INFO - At step 21, decision is not activated.
+root - INFO - At step 22, decision is not activated.
+root - INFO - At step 23, decision is not activated.
+root - INFO - At step 24, decision is not activated.
+root - INFO - At step 25, decision is not activated.
+root - INFO - At step 26, decision is not activated.
+root - INFO - At step 27, decision is not activated.
+root - INFO - At step 28, decision is not activated.
+root - INFO - At step 29, decision is not activated.
+root - INFO - Prediction made at step 30.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302), (5, 0.8130509), (10, 0.8180599), (15, 0.8260999), (20, 0.7288417), (30, 0.75723326)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786), (5, 0.22356329914464884), (10, 0.15568570966410075), (15, 0.029743256870922823), (20, 0.12859675805966816), (30, 0.05546480654618145)])
+root - INFO - This calculation seems good for now at step 30
+root - INFO - At step 31, decision is not activated.
+root - INFO - At step 32, decision is not activated.
+root - INFO - At step 33, decision is not activated.
+root - INFO - At step 34, decision is not activated.
+root - INFO - At step 35, decision is not activated.
+root - INFO - At step 36, decision is not activated.
+root - INFO - At step 37, decision is not activated.
+root - INFO - At step 38, decision is not activated.
+root - INFO - At step 39, decision is not activated.
+root - INFO - Prediction made at step 40.
+root - INFO - Prediction summary, OrderedDict([(2, 0.7213302), (5, 0.8130509), (10, 0.8180599), (15, 0.8260999), (20, 0.7288417), (30, 0.75723326), (40, 0.76380616)])
+root - INFO - LSE summary, OrderedDict([(2, 0.4866482768272786), (5, 0.22356329914464884), (10, 0.15568570966410075), (15, 0.029743256870922823), (20, 0.12859675805966816), (30, 0.05546480654618145), (40, 0.026063744045172622)])
+root - INFO - This calculation seems good for now at step 40
+root - INFO - At step 41, decision is not activated.
+root - WARNING - Step number is larger than the maximum step number that we can make dicision (40 steps). The dynamic classifer is now in principle deactivated.

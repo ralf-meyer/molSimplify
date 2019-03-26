@@ -1,0 +1,65 @@
+root - INFO - ----Logger for the dynamic classifier for on-the-fly job control---
+root - INFO - Monitoring job with PID 20817
+root - INFO - Feature initialized.
+root - INFO - Loading model: conv_2.h5 ...
+root - INFO - Loading model: conv_5.h5 ...
+root - INFO - Loading model: conv_10.h5 ...
+root - INFO - Loading model: conv_15.h5 ...
+root - INFO - Loading model: conv_20.h5 ...
+root - INFO - Loading model: conv_30.h5 ...
+root - INFO - Loading model: conv_40.h5 ...
+root - INFO - Training data loaded.
+root - INFO - Normalization vectors loaded
+root - INFO - Initialize the files to be tracked during the geometry optimization.
+root - INFO - This may take a while until the first step of SCF calculation finishes...
+root - INFO - Tracking files initialization completes.
+root - INFO - 0 step feature obatined.
+root - INFO - At step 1, decision is not activated.
+root - INFO - Prediction made at step 2.
+root - INFO - Prediction summary, OrderedDict([(2, 0.9189462)])
+root - INFO - LSE summary, OrderedDict([(2, 0.08775450860802503)])
+root - INFO - This calculation seems good for now at step 2
+root - INFO - At step 3, decision is not activated.
+root - INFO - At step 4, decision is not activated.
+root - INFO - Prediction made at step 5.
+root - INFO - Prediction summary, OrderedDict([(2, 0.9189462), (5, 0.87165236)])
+root - INFO - LSE summary, OrderedDict([(2, 0.08775450860802503), (5, 0.19977257773110813)])
+root - INFO - This calculation seems good for now at step 5
+root - INFO - At step 6, decision is not activated.
+root - INFO - At step 7, decision is not activated.
+root - INFO - At step 8, decision is not activated.
+root - INFO - At step 9, decision is not activated.
+root - INFO - Prediction made at step 10.
+root - INFO - Prediction summary, OrderedDict([(2, 0.9189462), (5, 0.87165236), (10, 0.7467822)])
+root - INFO - LSE summary, OrderedDict([(2, 0.08775450860802503), (5, 0.19977257773110813), (10, 0.1706677465758421)])
+root - INFO - This calculation seems good for now at step 10
+root - INFO - At step 11, decision is not activated.
+root - INFO - At step 12, decision is not activated.
+root - INFO - At step 13, decision is not activated.
+root - INFO - At step 14, decision is not activated.
+root - INFO - Prediction made at step 15.
+root - INFO - Prediction summary, OrderedDict([(2, 0.9189462), (5, 0.87165236), (10, 0.7467822), (15, 0.7821091)])
+root - INFO - LSE summary, OrderedDict([(2, 0.08775450860802503), (5, 0.19977257773110813), (10, 0.1706677465758421), (15, 0.042476001028832755)])
+root - INFO - This calculation seems good for now at step 15
+root - INFO - At step 16, decision is not activated.
+root - INFO - At step 17, decision is not activated.
+root - INFO - At step 18, decision is not activated.
+root - INFO - At step 19, decision is not activated.
+root - INFO - Prediction made at step 20.
+root - INFO - Prediction summary, OrderedDict([(2, 0.9189462), (5, 0.87165236), (10, 0.7467822), (15, 0.7821091), (20, 0.66559)])
+root - INFO - LSE summary, OrderedDict([(2, 0.08775450860802503), (5, 0.19977257773110813), (10, 0.1706677465758421), (15, 0.042476001028832755), (20, 0.10032037000536347)])
+root - INFO - This calculation seems good for now at step 20
+root - INFO - At step 21, decision is not activated.
+root - INFO - At step 22, decision is not activated.
+root - INFO - At step 23, decision is not activated.
+root - INFO - At step 24, decision is not activated.
+root - INFO - At step 25, decision is not activated.
+root - INFO - At step 26, decision is not activated.
+root - INFO - At step 27, decision is not activated.
+root - INFO - At step 28, decision is not activated.
+root - INFO - At step 29, decision is not activated.
+root - INFO - Prediction made at step 30.
+root - INFO - Prediction summary, OrderedDict([(2, 0.9189462), (5, 0.87165236), (10, 0.7467822), (15, 0.7821091), (20, 0.66559), (30, 0.2927701)])
+root - INFO - LSE summary, OrderedDict([(2, 0.08775450860802503), (5, 0.19977257773110813), (10, 0.1706677465758421), (15, 0.042476001028832755), (20, 0.10032037000536347), (30, 0.1477078290595233)])
+root - CRITICAL - !!!!job killed at step 30!!!!!!
+root - INFO - Reasons: a prediction of 0.2928 with LSE of 0.1477
