@@ -132,7 +132,8 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                     ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
             if ANN_flag:
                  ANN_bondl = ANN_attributes['ANN_bondl']
-                 print('ANN bond length is ' + str(ANN_bondl))
+                 print('ANN bond length is ' + str(ANN_bondl) + ' type ' + str(type(ANN_bondl)))
+
             else:
                  ANN_bondl = len([item for items in batslist for item in items])*[False] ## there needs to be 1 length per possible lig
                  if args.debug:
@@ -2817,13 +2818,12 @@ def mcomplex(args,ligs,ligoc,licores,globs):
         print('Performing final FF opt')
         # idxes
         midx = core3D.findMetal()[0]
-        fidxes = core3D.getBondedAtoms(midx)
-        fidxes = [fidx for fidx in fidxes if core3D.getAtom(fidx).sym != 'H']
-        fsyms = [core3D.getAtom(fidx).sym for fidx in fidxes]
-        print(fsyms)
+       
+        fsyms = [core3D.getAtom(fidx).sym for fidx in connected]
+
         # constraints
         constr = openbabel.OBFFConstraints()
-        for idx in fidxes + [midx]:
+        for idx in connected + [midx]:
             constr.AddAtomConstraint(idx+1)
         # ff
         ff = openbabel.OBForceField.FindType('UFF')
@@ -2835,7 +2835,7 @@ def mcomplex(args,ligs,ligoc,licores,globs):
         ff.GetCoordinates(obmol)
         core3D.OBMol = obmol
         core3D.convert2mol3D()
-
+        
         # core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     return core3D,complex3D,emsg,this_diag,subcatoms_ext,mligcatoms_ext
 
