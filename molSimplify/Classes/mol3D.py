@@ -119,15 +119,15 @@ class mol3D:
         self.dict_orientation = dict()
         self.dict_angle_linear = dict()
 
-    ## Performs angle centric manipulation 
+    ## Performs angle centric manipulation
     #
-    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
+    #  A submolecule is rotated about idx2.
     #
-    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
     #  @param self The object pointer
     #  @param idx1 Index of bonded atom containing submolecule to be moved
     #  @param idx2 Index of anchor atom
-    #  @param d New bond angle in degree
+    #  @param idx3 Index of anchor atom
+    #  @param angle New bond angle in degree
     def ACM(self, idx1, idx2, idx3, angle):
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
@@ -148,9 +148,48 @@ class mol3D:
         if theta < 90:
             angle = 180 - angle
         submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta - angle)
-        mol.copymol3D(submol_to_move)
-        self.deleteatoms(range(self.natoms))
-        self.copymol3D(mol)
+        # print('atidxs_to_move are ' + str(atidxs_to_move))
+        for i, atidx in enumerate(atidxs_to_move):
+            asym = self.atoms[atidx].sym
+            xyz = submol_to_move.getAtomCoords(i)
+            self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
+        # mol.copymol3D(submol_to_move)
+        # self.deleteatoms(range(self.natoms))
+        # self.copymol3D(mol)
+
+    ## Performs angle centric manipulation alnog a given axis
+    #
+    #  A submolecule is rotated about idx2.
+    #
+    #  @param self The object pointer
+    #  @param idx1 Index of bonded atom containing submolecule to be moved
+    #  @param idx2 Index of anchor atom
+    #  @param u axis of rotation
+    #  @param angle New bond angle in degree
+    def ACM_axis(self, idx1, idx2, u, angle):
+        atidxs_to_move = self.findsubMol(idx1, idx2)
+        atidxs_anchor = self.findsubMol(idx2, idx1)
+        submol_to_move = mol3D()
+        submol_anchor = mol3D()
+        for atidx in atidxs_to_move:
+            atom = self.getAtom(atidx)
+            submol_to_move.addAtom(atom)
+        for atidx in atidxs_anchor:
+            atom = self.getAtom(atidx)
+            submol_anchor.addAtom(atom)
+        mol = mol3D()
+        mol.copymol3D(submol_anchor)
+        r0 = self.getAtom(idx1).coords()
+        r1 = self.getAtom(idx2).coords()
+        submol_to_move = rotate_around_axis(submol_to_move, r1, u, angle)
+        # print('atidxs_to_move are ' + str(atidxs_to_move))
+        for i, atidx in enumerate(atidxs_to_move):
+            asym = self.atoms[atidx].sym
+            xyz = submol_to_move.getAtomCoords(i)
+            self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
+        # mol.copymol3D(submol_to_move)
+        # self.deleteatoms(range(self.natoms))
+        # self.copymol3D(mol)
 
     ## Add atom to molecule
     #
@@ -202,10 +241,13 @@ class mol3D:
         u = sqrt(u)
         dl = d - u  # dl > 0: stretch, dl < 0: shrink
         dR = [i * (d / u - 1) for i in bondv]
-        for i in self.getBondedAtoms(idx1):
-            if i != idx2:
-                self.getAtom(i).translate(dR)
-        self.getAtom(idx1).translate(dR)
+        submolidxes = self.findsubMol(idx1, idx2)
+        for submolidx in submolidxes:
+            self.getAtom(submolidx).translate(dR)
+        # for i in self.getBondedAtoms(idx1):
+        #     if i != idx2:
+        #         self.getAtom(i).translate(dR)
+        # self.getAtom(idx1).translate(dR)
 
     ## Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
     #
