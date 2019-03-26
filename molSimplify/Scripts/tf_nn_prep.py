@@ -16,6 +16,7 @@ from molSimplify.python_krr.sklearn_models import sklearn_supervisor
 from molSimplify.python_nn.tf_ANN import *
 from molSimplify.python_nn.clf_analysis_tool import lse_trust
 import time
+from collections import OrderedDict
 from sets import Set
 
 
@@ -223,8 +224,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     last_time = current_time
 
     ######################
-    ANN_reason = False  # holder for reason to reject ANN call
-    ANN_attributes = dict()
+    ANN_reason = {}
+    ANN_attributes = {}
     ######################
 
     r = 0

@@ -119,15 +119,15 @@ class mol3D:
         self.dict_orientation = dict()
         self.dict_angle_linear = dict()
 
-    ## Performs angle centric manipulation 
+    ## Performs angle centric manipulation
     #
-    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
+    #  A submolecule is rotated about idx2.
     #
-    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
     #  @param self The object pointer
     #  @param idx1 Index of bonded atom containing submolecule to be moved
     #  @param idx2 Index of anchor atom
-    #  @param d New bond angle in degree
+    #  @param idx3 Index of anchor atom
+    #  @param angle New bond angle in degree
     def ACM(self, idx1, idx2, idx3, angle):
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
@@ -148,9 +148,48 @@ class mol3D:
         if theta < 90:
             angle = 180 - angle
         submol_to_move = rotate_around_axis(submol_to_move, r1, u, theta - angle)
-        mol.copymol3D(submol_to_move)
-        self.deleteatoms(range(self.natoms))
-        self.copymol3D(mol)
+        # print('atidxs_to_move are ' + str(atidxs_to_move))
+        for i, atidx in enumerate(atidxs_to_move):
+            asym = self.atoms[atidx].sym
+            xyz = submol_to_move.getAtomCoords(i)
+            self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
+        # mol.copymol3D(submol_to_move)
+        # self.deleteatoms(range(self.natoms))
+        # self.copymol3D(mol)
+
+    ## Performs angle centric manipulation alnog a given axis
+    #
+    #  A submolecule is rotated about idx2.
+    #
+    #  @param self The object pointer
+    #  @param idx1 Index of bonded atom containing submolecule to be moved
+    #  @param idx2 Index of anchor atom
+    #  @param u axis of rotation
+    #  @param angle New bond angle in degree
+    def ACM_axis(self, idx1, idx2, u, angle):
+        atidxs_to_move = self.findsubMol(idx1, idx2)
+        atidxs_anchor = self.findsubMol(idx2, idx1)
+        submol_to_move = mol3D()
+        submol_anchor = mol3D()
+        for atidx in atidxs_to_move:
+            atom = self.getAtom(atidx)
+            submol_to_move.addAtom(atom)
+        for atidx in atidxs_anchor:
+            atom = self.getAtom(atidx)
+            submol_anchor.addAtom(atom)
+        mol = mol3D()
+        mol.copymol3D(submol_anchor)
+        r0 = self.getAtom(idx1).coords()
+        r1 = self.getAtom(idx2).coords()
+        submol_to_move = rotate_around_axis(submol_to_move, r1, u, angle)
+        # print('atidxs_to_move are ' + str(atidxs_to_move))
+        for i, atidx in enumerate(atidxs_to_move):
+            asym = self.atoms[atidx].sym
+            xyz = submol_to_move.getAtomCoords(i)
+            self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
+        # mol.copymol3D(submol_to_move)
+        # self.deleteatoms(range(self.natoms))
+        # self.copymol3D(mol)
 
     ## Add atom to molecule
     #
@@ -202,10 +241,13 @@ class mol3D:
         u = sqrt(u)
         dl = d - u  # dl > 0: stretch, dl < 0: shrink
         dR = [i * (d / u - 1) for i in bondv]
-        for i in self.getBondedAtoms(idx1):
-            if i != idx2:
-                self.getAtom(i).translate(dR)
-        self.getAtom(idx1).translate(dR)
+        submolidxes = self.findsubMol(idx1, idx2)
+        for submolidx in submolidxes:
+            self.getAtom(submolidx).translate(dR)
+        # for i in self.getBondedAtoms(idx1):
+        #     if i != idx2:
+        #         self.getAtom(i).translate(dR)
+        # self.getAtom(idx1).translate(dR)
 
     ## Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
     #
@@ -1477,8 +1519,7 @@ class mol3D:
         for atom in self.atoms:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-            print
-            ss
+            print ss
 
     ## returns string of xyz coordinates
     # 
@@ -1633,6 +1674,7 @@ class mol3D:
             return dev
 
     def maxatomdist(self, mol2):
+
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
@@ -1668,7 +1710,7 @@ class mol3D:
                         if _dist < dist:
                             dist = _dist
                             ind1 = _ind1
-                if dist> maxdist:
+                if dist > maxdist:
                     maxdist = dist
                 availabel_set.remove(ind1)
             return maxdist
@@ -2025,13 +2067,14 @@ class mol3D:
         from molSimplify.Classes.ligand import ligand_breakdown
         flag_match = True
         if flag_lbd:  ## Also do ligand breakdown for opt geo
-            self.my_mol_trunc = obtain_truncation_metal(self, depth)
-            self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
-            ## write truncated xyz file
-            # self.init_mol_trunc.writexyz('init_mol_trunc.xyz')
-            # self.my_mol_trunc.writexyz('my_mol_trunc.xyz')
-            self.my_mol_trunc.createMolecularGraph()
-            self.init_mol_trunc.createMolecularGraph()
+            ### Truncate ligands at 4 bonds away from metal to aviod rotational group.
+            # self.my_mol_trunc = obtain_truncation_metal(self, depth)
+            # self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+            # self.my_mol_trunc.createMolecularGraph()
+            # self.init_mol_trunc.createMolecularGraph()
+            self.my_mol_trunc = mol3D()
+            self.my_mol_trunc.copymol3D(self)
+            self.init_mol_trunc = init_mol
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
             liglist_atom = [[self.my_mol_trunc.getAtom(x).symbol() for x in ele]
@@ -2143,9 +2186,10 @@ class mol3D:
                     mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
                 except:
                     print('Kabsch failed')
-                rmsd = tmp_mol.rmsd(tmp_org_mol)
+                rmsd = tmp_mol.geo_rmsd(tmp_org_mol)
                 rmsd_arr.append(rmsd)
-                atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
+                # atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
+                atom_dist_max = -1
                 max_atom_dist_arr.append(atom_dist_max)
                 if debug:
                     print('rmsd:', rmsd)
@@ -2408,7 +2452,7 @@ class mol3D:
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > 6:
                 _, catoms_arr = init_mol.oct_comp(debug=debug)
-        print("connecting atoms are,", catoms_arr)
+        # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
             print('Please DO CHECK what happens!!!!')
@@ -2464,7 +2508,7 @@ class mol3D:
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > num_coord:
                 _, catoms_arr = init_mol.oct_comp(angle_ref=angle_ref, debug=debug)
-        print("connecting atoms are,", catoms_arr)
+        # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != num_coord:
             print('Error, must have %d connecting atoms for octahedral.' % num_coord)
             print('Please DO CHECK what happens!!!!')
@@ -2518,7 +2562,7 @@ class mol3D:
             atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
             molnew.addAtom(atom)
         return molnew
-    
+
     ## Writes a psueduo-chemical formula
     #
     #  @param self The object pointer   
@@ -2537,3 +2581,31 @@ class mol3D:
         for sk in skeys:
             retstr += '\\textrm{' + sk + '}_{' + str(int(unique_symbols[sk])) + '}'
         return retstr
+
+    def read_smiles(self, smiles, ff="mmff94", steps=2500):
+        # used to convert from one formst (ex, SMILES) to another (ex, mol3D ) 
+        obConversion = openbabel.OBConversion()
+
+        # the input format "SMILES"; Reads the SMILES - all stacked as 2-D - one on top of the other
+        obConversion.SetInFormat("SMILES")
+        OBMol = openbabel.OBMol()
+        obConversion.ReadString(OBMol, smiles)
+
+        # Adds Hydrogens
+        OBMol.AddHydrogens()
+
+        # Get a 3-D structure with H's
+        builder = openbabel.OBBuilder()
+        builder.Build(OBMol)
+
+        # Force field optimization is done in the specified number of "steps" using the specified "ff" force field
+        forcefield = openbabel.OBForceField.FindForceField(ff)
+        s = forcefield.Setup(OBMol)
+        if s == False:
+            print('FF setup failed')
+        forcefield.ConjugateGradients(steps)
+        forcefield.GetCoordinates(OBMol)
+
+        # mol3D structure
+        self.OBMol = OBMol
+        self.convert2mol3D()
