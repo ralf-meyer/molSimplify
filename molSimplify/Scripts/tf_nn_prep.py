@@ -224,8 +224,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     last_time = current_time
 
     ######################
-    ANN_reason = False  # holder for reason to reject ANN call
-    ANN_attributes = OrderedDict()
+    ANN_reason = {}
+    ANN_attributes = {}
     ######################
 
     r = 0
