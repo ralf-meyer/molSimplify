@@ -225,7 +225,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     ######################
     ANN_reason = {}
-    ANN_attributes = OrderedDict()
+    ANN_attributes = {}
     ######################
 
     r = 0
