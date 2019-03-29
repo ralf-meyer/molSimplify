@@ -13,6 +13,7 @@
   "dataname": False,
   "normvecname": False,
   "logfile": "molscontrol.log",
+  "resize": True,
   "lse_cutoff": 0.3,
   "debug": True
 }

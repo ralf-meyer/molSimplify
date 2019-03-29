@@ -4,7 +4,7 @@
 #$ -cwd
 #$ -l h_rt=64:00:00
 #$ -l h_rss=8G
-#$ -q gpusnew
+#$ -q gpus
 #$ -l gpus=1
 #$ -pe smp 1
 # -fin terachem_input

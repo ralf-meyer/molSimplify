@@ -9,7 +9,7 @@ import pickle
 import json
 from keras.models import load_model
 from io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_bond_order, get_gradient, \
-    get_mullcharge, kill_job
+    get_mullcharge, kill_job, check_pid
 from clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
 
 
@@ -42,6 +42,7 @@ class dft_control:
     as standarization, and for other descriptors, we use (value-mean_step0)/std_step0 as standardization.
     self.features_dict: a dictionary for features.
     self.avrg_latent_dist_train: averaged 5-neighbor distance in the latent space for the training data.
+    self.resize: whether to use resizing of making predictions on steps where we do not train a model.
     self.lse_cutoff: cutoff for the LSE of model confidence on the prediction.
     self.debug: Whether in debug mode. True means testing on a complete set of files with a finished job. False means
     on-the-fly job control.
@@ -115,8 +116,8 @@ class dft_control:
                               }
         self.avrg_latent_dist_train = {"full": {2: 6.34, 5: 7.59, 10: 4.83, 15: 5.21,
                                                 20: 5.06, 30: 9.34, 40: 8.70},
-                                       "geo": {2: 4.0876, 5: 5.3512, 10: 5.8573, 15: 6.1089,
-                                               20: 6.4067, 30: 10.4459, 40: 9.4269}
+                                       "geo": {2: 4.08, 5: 5.35, 10: 5.85, 15: 6.10,
+                                               20: 6.40, 30: 10.44, 40: 9.42}
                                        }
         self.files_track = {"full": {self.geofile: 0, self.bofile: 0, self.gradfile: 0, self.chargefile: 0},
                             "geo": {self.geofile: 0}
@@ -204,10 +205,7 @@ class dft_control:
 
     def update_features(self):
         dict_combined = {}
-        if self.mode in self.mode_allowed:
-            geometrics_dict = get_geo_metrics(init_mol=self.init_mol, job_info=self.job_info,
-                                              geofile=self.get_file_path(self.geofile))
-            dict_combined.update(geometrics_dict)
+        time.sleep(1)
         if self.mode == 'full':
             bondorder_dict = get_bond_order(bofile=self.get_file_path(self.bofile),
                                             job_info=self.job_info, num_sv=4)
@@ -218,8 +216,18 @@ class dft_control:
             mullcharge_dict = get_mullcharge(chargefile=self.get_file_path(self.chargefile),
                                              job_info=self.job_info)
             dict_combined.update(mullcharge_dict)
+            geometrics_dict = get_geo_metrics(init_mol=self.init_mol, job_info=self.job_info,
+                                              geofile=self.get_file_path(self.geofile))
+            dict_combined.update(geometrics_dict)
+        elif self.mode == 'geo':
+            geometrics_dict = get_geo_metrics(init_mol=self.init_mol, job_info=self.job_info,
+                                              geofile=self.get_file_path(self.geofile))
+            dict_combined.update(geometrics_dict)
         for idx, fname in self.features_dict[self.mode].items():
             self.features[fname].append(dict_combined[fname])
+        f = open("features.json", "w")
+        json.dump(self.features, f)
+        f.close()
 
     def normalize_features(self):
         for idx, fname in self.features_dict[self.mode].items():
@@ -253,7 +261,6 @@ class dft_control:
     def calculate_lse(self, step=False):
         step = self.step_now if not step else step
         if not self.step_now in self.step_decisions:
-            # logging.info("step_now -> step: (%d -> %d)" % (self.step_now, step))
             fmat_train = []
             for ii in range(len(self.train_data[0])):
                 fmat_train.append(scipy.misc.imresize(self.train_data[0][ii, :self.step_now + 1, :],
@@ -352,4 +359,11 @@ class dft_control:
                 stop = True
         else:
             stop = True
+        if self.pid:
+            dft_running = check_pid(self.pid)
+        else:
+            dft_running = True
+        if not dft_running:
+            stop = True
+            logging.info("At step %d, the DFT simulation finishes. molscontrol thus quits." % self.step_now)
         return stop
