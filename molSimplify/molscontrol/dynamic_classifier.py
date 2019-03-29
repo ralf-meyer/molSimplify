@@ -4,12 +4,13 @@ import logging
 from pkg_resources import resource_filename, Requirement
 from collections import OrderedDict
 import numpy as np
+import scipy.ndimage
 import pickle
 import json
 from keras.models import load_model
 from io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_bond_order, get_gradient, \
     get_mullcharge, kill_job
-from clf_tools import get_layer_outputs, dist_neighbor, get_entropy
+from clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
 
 
 class dft_control:
@@ -62,6 +63,7 @@ class dft_control:
                  normvecname='norm_dict.json',
                  logfile='./molscontrol.log',
                  lse_cutoff=0.3,
+                 resize=False,
                  debug=False,
                  pid=False):
         self.step_now = -1
@@ -92,6 +94,7 @@ class dft_control:
         self.models = dict()
         self.normalization_dict = dict()
         self.lse_cutoff = lse_cutoff
+        self.resize = resize
         self.debug = debug
         self.pid = pid
         self.features_dict = {"full": {0: 'bo_0', 1: 'bo_sv0', 2: 'bo_offsv0', 3: 'bo_sv1', 4: 'bo_offsv1', 5: 'bo_sv2',
@@ -233,18 +236,36 @@ class dft_control:
         self.feature_mat = np.transpose(self.feature_mat)
         self.feature_mat = self.feature_mat.reshape(1, self.step_now + 1, len(self.features.keys()))
 
-    def predict(self):
-        pred = self.models[self.step_now].predict(self.feature_mat)
+    def resize_feature_mat(self):
+        step_chosen, mindelta = find_closest_model(self.step_now, self.step_decisions)
+        self.feature_mat = scipy.misc.imresize(self.feature_mat[0], (step_chosen + 1, self.feature_mat.shape[-1]),
+                                               mode='F', interp='nearest')
+        self.feature_mat = self.feature_mat.reshape(1, step_chosen + 1, self.feature_mat.shape[-1])
+        return step_chosen
+
+    def predict(self, step=False):
+        step = self.step_now if not step else step
+        pred = self.models[step].predict(self.feature_mat)
         self.preditions.update({self.step_now: pred[0][0]})
         logging.info('Prediction made at step %d.' % self.step_now)
         logging.info('Prediction summary, %s' % str(self.preditions))
 
-    def calculate_lse(self):
-        train_latent = get_layer_outputs(self.models[self.step_now], -4, self.train_data[0][:, :self.step_now + 1, :],
-                                         training_flag=False)
-        test_latent = get_layer_outputs(self.models[self.step_now], -4, self.feature_mat, training_flag=False)
+    def calculate_lse(self, step=False):
+        step = self.step_now if not step else step
+        if not self.step_now in self.step_decisions:
+            # logging.info("step_now -> step: (%d -> %d)" % (self.step_now, step))
+            fmat_train = []
+            for ii in range(len(self.train_data[0])):
+                fmat_train.append(scipy.misc.imresize(self.train_data[0][ii, :self.step_now + 1, :],
+                                                      (step + 1, self.train_data[0].shape[-1]),
+                                                      mode='F', interp='nearest'))
+            fmat_train = np.array(fmat_train)
+        else:
+            fmat_train = self.train_data[0][:, :step + 1, :]
+        train_latent = get_layer_outputs(self.models[step], -4, fmat_train, training_flag=False)
+        test_latent = get_layer_outputs(self.models[step], -4, self.feature_mat, training_flag=False)
         __, nn_dists, nn_labels = dist_neighbor(test_latent, train_latent, self.train_data[1],
-                                                l=5, dist_ref=self.avrg_latent_dist_train[self.mode][self.step_now])
+                                                l=5, dist_ref=self.avrg_latent_dist_train[self.mode][step])
         lse = get_entropy(nn_dists, nn_labels)
         self.lses.update({self.step_now: lse[0]})
         logging.info('LSE summary, %s' % str(self.lses))
@@ -315,9 +336,16 @@ class dft_control:
                     self.predict()
                     self.calculate_lse()
                     self.make_decision()
+                elif self.resize and self.step_now > 2:
+                    step_chosen = self.resize_feature_mat()
+                    logging.info("At step %d, Resizing to activate cloest model (%d -> %d)." % (
+                        self.step_now, self.step_now, step_chosen))
+                    self.predict(step=step_chosen)
+                    self.calculate_lse(step=step_chosen)
+                    self.make_decision()
                 else:
                     logging.info("At step %d, decision is not activated." % self.step_now)
-            if self.step_now > max(self.step_decisions):
+            if self.step_now > max(self.step_decisions) and not self.resize:
                 logging.warning(
                     "Step number is larger than the maximum step number that we can make dicision (%d steps). The dynamic classifer is now in principle deactivated." % max(
                         self.step_decisions))
