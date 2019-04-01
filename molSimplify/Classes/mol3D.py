@@ -898,28 +898,26 @@ class mol3D:
             ## default interatomic radius
             ## for non-metalics
             distance_max = 1.15 * (atom.rad + ratom.rad)
-            # distance_max = 1.25 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
-                dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
-                if atom.symbol() in dist_allowed.keys():
-                    max_pos_distance = dist_allowed[atom.symbol()]
-                elif ratom.symbol() in dist_allowed.keys():
-                    max_pos_distance = dist_allowed[ratom.symbol()]
-                else:
-                    max_pos_distance = 2.9
-                if debug:
-                    print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
+                #dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
+                #if atom.symbol() in dist_allowed.keys():
+                #    max_pos_distance = dist_allowed[atom.symbol()]
+                #elif ratom.symbol() in dist_allowed.keys():
+                #    max_pos_distance = dist_allowed[ratom.symbol()]
+                #else:
+                #    max_pos_distance = 2.9
+                
                 ## one the atoms is a metal!
                 ## use a longer max for metals
-                # distance_max = min(2.75, 1.35 * (atom.rad + ratom.rad))
-                ### ------cutoff changed by chenru
                 if flag_loose:
                     distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
                 else:
-                    distance_max = min(max_pos_distance, 1.35 * (atom.rad + ratom.rad))
-                # print('distance max:', distance_max)
+                    distance_max = 1.37 * (atom.rad + ratom.rad)
+
                 if debug:
+                    print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
                     print('maximum bonded distance is ' + str(distance_max))
+                    
                 if d < distance_max and i != ind:
                     ### trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
