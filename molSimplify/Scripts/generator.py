@@ -93,15 +93,26 @@ def startgen(argv,flag,gui):
         # parse input file
     if args.i:
         parseinputfile(args)
+    if args.cdxml:
+        print 'converting cdxml file into xyz'
+        cdxml = args.cdxml[0]
+        fname, msg = loadcdxml(cdxml)
+        print(msg)
+        if 'two' in msg:
+            core = fname + '_cat.xyz'
+            sub = fname + '_sub.xyz'
+            args.core = [core]
+            args.substrate = [sub]
+            args.tsgen = True
     # if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
     if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
 
         # check input arguments
         print 'Checking input...'
         if args.tsgen:
-            emsg = checkinput(args,calctype =  "tsgen")
+            emsg = checkinput(args,calctype="tsgen")
         elif args.ligadd:
-            emsg = checkinput(args,calctype =  "dbadd")
+            emsg = checkinput(args,calctype="dbadd")
         else:
             emsg = checkinput(args)
         # check before cleaning input arguments and clean only if checked

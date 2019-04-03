@@ -54,6 +54,79 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, catoms=None):
     return (result_vector)
 
 
+def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None):
+    ## this function returns the ratiometrics
+    ## for one atom
+    # Inputs:
+    #	mol - mol3D class
+    #	prop_vec - vector, property of atoms in mol in order of index
+    #	orig -  int, zero-indexed starting atom
+    #	d - int, number of hops to travel
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result_vector = numpy.zeros(d + 1)
+    hopped = 0
+    active_set = set([orig])
+    historical_set = set()
+    result_vector[hopped] = prop_vec_num[orig] / prop_vec_den[orig]
+    #	if oct:
+    #		print('using OCT autocorrelation')
+    #	#else:
+    #		print('NOT using OCT autocorrelation')
+    while hopped < (d):
+
+        hopped += 1
+        new_active_set = set()
+        for this_atom in active_set:
+            ## prepare all atoms attached to this connection
+            # print('called in AC')
+            this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
+            for bound_atoms in this_atoms_neighbors:
+                if (bound_atoms not in historical_set) and (bound_atoms not in active_set):
+                    new_active_set.add(bound_atoms)
+        # print('new active set at hop = ' +str(hopped) + ' is ' +str(new_active_set))
+        for inds in new_active_set:
+            result_vector[hopped] += prop_vec_num[orig] / prop_vec_den[inds]
+            historical_set.update(active_set)
+        active_set = new_active_set
+    return (result_vector)
+
+
+def summetric(mol, prop_vec, orig, d, oct=True, catoms=None):
+    ## this function returns the summetrics
+    ## for one atom
+    # Inputs:
+    #	mol - mol3D class
+    #	prop_vec - vector, property of atoms in mol in order of index
+    #	orig -  int, zero-indexed starting atom
+    #	d - int, number of hops to travel
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result_vector = numpy.zeros(d + 1)
+    hopped = 0
+    active_set = set([orig])
+    historical_set = set()
+    result_vector[hopped] = prop_vec[orig] + prop_vec[orig]
+    #	if oct:
+    #		print('using OCT autocorrelation')
+    #	#else:
+    #		print('NOT using OCT autocorrelation')
+    while hopped < (d):
+
+        hopped += 1
+        new_active_set = set()
+        for this_atom in active_set:
+            ## prepare all atoms attached to this connection
+            # print('called in AC')
+            this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
+            for bound_atoms in this_atoms_neighbors:
+                if (bound_atoms not in historical_set) and (bound_atoms not in active_set):
+                    new_active_set.add(bound_atoms)
+        # print('new active set at hop = ' +str(hopped) + ' is ' +str(new_active_set))
+        for inds in new_active_set:
+            result_vector[hopped] += prop_vec[orig] + prop_vec[inds]
+            historical_set.update(active_set)
+        active_set = new_active_set
+    return (result_vector)
+
 def deltametric(mol, prop_vec, orig, d, oct=True, catoms=None):
     ## this function returns the deltametric
     ## over the whole molecule
@@ -166,7 +239,7 @@ def full_autocorrelation(mol, prop, d, oct=oct, modifier= False):
 def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
     ## atomIdx must b either a list of indcies
     ## or a single index
-    w = construct_property_vector(mol, prop, oct=True)
+    w = construct_property_vector(mol, prop, oct)
     autocorrelation_vector = numpy.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
@@ -199,7 +272,33 @@ def multimetal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
         autocorrelation_vector =+ func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
     autocorrelation_vector = np.divide(autocorrelation_vector, n_met)
     return (autocorrelation_vector)
-    
+
+def atom_only_ratiometric(mol, prop_num, prop_den, d, atomIdx, oct=True):
+    ## atomIdx must b either a list of indcies
+    ## or a single index
+    w_num = construct_property_vector(mol, prop_num, oct)
+    w_den = construct_property_vector(mol, prop_den, oct)
+    autocorrelation_vector = numpy.zeros(d + 1)
+    if hasattr(atomIdx, "__len__"):
+        for elements in atomIdx:
+            autocorrelation_vector += ratiometric(mol, w_num, w_den, elements, d, oct=oct)
+        autocorrelation_vector = np.divide(autocorrelation_vector, len(atomIdx))
+    else:
+        autocorrelation_vector += ratiometric(mol, w_num, w_den, atomIdx, d, oct=oct)
+    return (autocorrelation_vector)
+
+def atom_only_summetric(mol, prop, d, atomIdx, oct=True):
+    ## atomIdx must b either a list of indcies
+    ## or a single index
+    w = construct_property_vector(mol, prop, oct)
+    autocorrelation_vector = numpy.zeros(d + 1)
+    if hasattr(atomIdx, "__len__"):
+        for elements in atomIdx:
+            autocorrelation_vector += summetric(mol, w, elements, d, oct=oct)
+        autocorrelation_vector = np.divide(autocorrelation_vector, len(atomIdx))
+    else:
+        autocorrelation_vector += summetric(mol, w, atomIdx, d, oct=oct)
+    return (autocorrelation_vector)
 
 def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
     ## atomIdx must b either a list of indcies
@@ -306,8 +405,8 @@ def construct_property_vector(mol, prop, oct=True,modifier = False):
     ## note that ident just codes every atom as one, this gives
     ## a purely toplogical index. coord gives the number of
     ## connecting atom to attom i (similar to Randic index)
-    if not oct:
-        print('NOT using octahedral bonding pattern')
+    # if not oct:
+    #     print('NOT using octahedral bonding pattern')
     globs = globalvars()
     prop_dict = dict()
     w = numpy.zeros(mol.natoms)
@@ -823,7 +922,7 @@ def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True):
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size', 'effective_nuclear_charge']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S', 'Zeff']
-    print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_deltametric(mol, properties, depth, atomIdx, oct=oct)
         this_colnames = []

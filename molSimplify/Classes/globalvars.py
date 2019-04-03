@@ -35,6 +35,8 @@ amassdict = {'X': (1.0, 0, 0.77, 0), 'H': (1.0079, 1, 0.37, 1), 'He': (4.002602,
              'Er': (167.259, 68, 1.65, 14), 'Tm': (168.93422, 69, 1.64, 15), 'Yb': (173.045, 70, 1.70, 16),
              'Lu': (174.9668, 71, 1.62, 3),
              'Hf': (178.5, 72, 1.50, 8), 'Ta': (180.9, 73, 1.38, 5), 'W': (183.8, 74, 1.46, 6), 'Re': (186.2, 75, 1.59, 7),
+             'Lu': (174.9668, 71, 1.62, 17),
+             'Hf': (178.5, 72, 1.50, 4), 'Ta': (180.9, 73, 1.38, 5), 'W': (183.8, 74, 1.46, 6), 'Re': (186.2, 75, 1.59, 7),
              'Os': (190.2, 76, 1.28, 8), 'Ir': (192.2, 77, 1.37, 9), 'Pt': (195.1, 78, 1.23, 10), 'Au': (197.0, 79, 1.24, 11),
              'Hg': (200.6, 80, 1.49, 2),
              'Tl': (204.38, 81, 1.44, 3), 'Pb': (207.2, 82, 1.44, 4), 'Bi': (208.9804, 83, 1.51, 5),
@@ -128,7 +130,7 @@ endict = {"H": 2.20,
           "Ge": 2.01, "As": 2.18, "Se": 2.55, "Br": 2.96, "Rb": 0.82, "Sr": 0.95, "Y": 1.22,
           "Zr": 1.33, "Nb": 1.60, "Mo": 2.16, "Tc": 2.10, "Ru": 2.20, "Rh": 2.28,
           "Pd": 2.20, "Ag": 1.93, "Cd": 1.69, "In": 1.78, "Sn": 1.96, "Sb": 2.05, "I": 2.66, 
-          "Cs": 0.79, "Ba": 0.89, "Hf": 1.30, "Ta": 1.50, "W": 2.36, "Re": 1.90, "Ir": 2.20,
+          "Cs": 0.79, "Ba": 0.89, "Hf": 1.30, "Ta": 1.50, "W": 2.36, "Re": 1.90, "Os":2.20 ,"Ir": 2.20,
           "Pt": 2.28, "Au": 2.54, "Hg": 2.00, "Tl": 1.62, "Pb": 2.33, "Bi": 2.02,
           "La": 1.10, "Ce": 1.12, "Pr": 1.13, "Nd": 1.14, "Sm": 1.17,
           "Gd": 1.20, "Dy": 1.22, "Ho": 1.23, "Er": 1.24, "Tm": 1.25, "Lu": 1.27,
@@ -393,6 +395,17 @@ class globalvars:
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
             from keras.models import Model
             from keras.models import Sequential
+            return True
+        except:
+            return False
+
+    # Tests for matplotlib avail
+    #  @return if matplotlib is avail
+    def testmatplotlib(self):
+        try:
+            # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+            import matplotlib.pyplot as plt
+            import matplotlib.ticker as ticker
             return True
         except:
             return False

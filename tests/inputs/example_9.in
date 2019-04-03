@@ -1,0 +1,12 @@
+-core fe
+-lig ammonia, oxo
+-ligocc 5,1
+-charge 2
+-oxstate 4
+-spin 5
+-ligloc true
+-tsgen
+-substrate methane
+-subcatoms 1
+-mlig oxo
+-mligcatoms 0

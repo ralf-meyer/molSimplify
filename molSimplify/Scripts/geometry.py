@@ -327,6 +327,37 @@ def PointTranslateSphgivenphi(Rp,p0,D):
     p[2] = (D[0])*cos(phi0+D[1]) + Rp[2]
     return p
 
+## Translates point in spherical coordinates
+#  @param Rp Origin of sphere
+#  @param p0 Point to be translated
+#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
+#  @return Translated point
+def PointTranslateSphgivenr(Rp,p0,D,pref, r):
+    # translate to origin
+    ps=[0,0,0]
+    ps[0] = p0[0] - Rp[0]
+    ps[1] = p0[1] - Rp[1]
+    ps[2] = p0[2] - Rp[2]
+    # get initial spherical coords
+    r0 = norm(ps)
+    if (r0 < 1e-16):
+        phi0 = 0.5*pi
+        theta0 = 0
+    else:
+        phi0 = arccos(ps[2]/r0) # z/r
+        theta0 = arctan2(ps[1],ps[0]) # y/x
+    # get new point
+    p = [0,0,0]
+    r0 = 0
+    theta0 = 0
+    while abs(1 - r0 / r) > 0.01 and theta0 < 2 * pi:
+        p[0] = (D[0])*sin(phi0+D[1])*cos(theta0) + Rp[0]
+        p[1] = (D[0])*sin(phi0+D[1])*sin(theta0) + Rp[1]
+        p[2] = (D[0])*cos(phi0+D[1]) + Rp[2]
+        r0 = distance(p, pref)
+        theta0 += 0.01
+    return p
+
 ## Converts spherical translation vector into Cartesian translation vector
 #  @param Rp Origin of sphere
 #  @param p0 Point to be translated
