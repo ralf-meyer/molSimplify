@@ -38,6 +38,9 @@ thiazole:thiazole.mol,thiazole,4,build functionalize,A,0
 diazole:diazole.mol,diazole,4,build functionalize,A,0
 bidiazole:bidiazole.mol,bidiazole,4 9,build bidentate,A,0
 pyridine:pyridine.mol,pyrd,3,build organic,BA,0
+methylpyridine:methylpyridine.mol,mpyrd,3,build organic,BA,0
+bisnapthyridylpyridine:bisnapthyridylpyridine.mol,bisnp,5 13 36,build tridentate,BA,0
+bipyrimidine:bipyrimidine.mol,0,1,build bidentate,N,0
 bipy:bipy.mol,bip,0 1,build bidentate,N,0
 hydrooxazine:hydrooxazine.mol,hydrooxazine,0,build organic,BA,0
 bihydrooxazine:bihydrooxazine.mol,hydrooxazine,0 1,build bidentate,A,0
