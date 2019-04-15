@@ -899,14 +899,14 @@ class mol3D:
             ## for non-metalics
             distance_max = 1.15 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
-                #dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
-                #if atom.symbol() in dist_allowed.keys():
+                # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
+                # if atom.symbol() in dist_allowed.keys():
                 #    max_pos_distance = dist_allowed[atom.symbol()]
-                #elif ratom.symbol() in dist_allowed.keys():
+                # elif ratom.symbol() in dist_allowed.keys():
                 #    max_pos_distance = dist_allowed[ratom.symbol()]
-                #else:
+                # else:
                 #    max_pos_distance = 2.9
-                
+
                 ## one the atoms is a metal!
                 ## use a longer max for metals
                 if flag_loose:
@@ -917,7 +917,7 @@ class mol3D:
                 if debug:
                     print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
                     print('maximum bonded distance is ' + str(distance_max))
-                    
+
                 if d < distance_max and i != ind:
                     ### trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
@@ -2082,6 +2082,7 @@ class mol3D:
             if debug:
                 print('init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()])
                 print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
+                print('liglist, ligdents, ligcons', liglist, ligdents, ligcons)
         else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
             if debug:
                 print('Just inherit the ligand list from init structure.')
@@ -2093,32 +2094,40 @@ class mol3D:
                             for ele in liglist]
             liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
                                  for ele in liglist_init]
-
+        _, catoms = self.my_mol_trunc.oct_comp(debug=False)
+        _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
         if debug:
             print('ligand_list opt in symbols:', liglist_atom)
             print('ligand_list init in symbols: ', liglist_init_atom)
+            print("catoms opt: ", catoms)
+            print("catoms init: ", catoms_init)
+            print("catoms diff: ", set(catoms) - set(catoms_init), len(set(catoms) - set(catoms_init)))
         liglist_shifted = []
-        for ele in liglist_init_atom:
-            try:
-                _flag = False
-                for idx, _ele in enumerate(liglist_atom):
-                    if set(ele) == set(_ele) and len(ele) == len(_ele):
+        if not len(set(catoms) - set(catoms_init)):
+            for ele in liglist_init_atom:
+                try:
+                    _flag = False
+                    for idx, _ele in enumerate(liglist_atom):
+                        if set(ele) == set(_ele) and len(ele) == len(_ele):
+                            if debug:
+                                print('fragment in liglist_init', ele)
+                                print('fragment in liglist', _ele)
+                            posi = idx
+                            _flag = True
+                            break
+                    liglist_shifted.append(liglist[posi])
+                    liglist_atom.pop(posi)
+                    liglist.pop(posi)
+                    if not _flag:
                         if debug:
-                            print('fragment in liglist_init', ele)
-                            print('fragment in liglist', _ele)
-                        posi = idx
-                        _flag = True
-                        break
-                liglist_shifted.append(liglist[posi])
-                liglist_atom.pop(posi)
-                liglist.pop(posi)
-                if not _flag:
-                    if debug:
-                        print('Ligands cannot match!')
+                            print('Ligands cannot match!')
+                        flag_match = False
+                except:
+                    print('Ligands cannot match!')
                     flag_match = False
-            except:
-                print('Ligands cannot match!')
-                flag_match = False
+        else:
+            print('Ligands cannot match! (Connecting atoms are different)')
+            flag_match = False
         if debug:
             print('returning: ', liglist_shifted, liglist_init)
         return liglist_shifted, liglist_init, flag_match
