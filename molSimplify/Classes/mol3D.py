@@ -2367,7 +2367,7 @@ class mol3D:
               angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
-              skip=False, flag_deleteH=False,
+              skip=False, flag_deleteH=True,
               ):
         if not dict_check:
             dict_check = self.dict_oct_check_st
