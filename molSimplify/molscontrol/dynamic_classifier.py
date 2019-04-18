@@ -12,6 +12,10 @@ from io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_
     get_mullcharge, kill_job, check_pid
 from clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
 
+'''
+Main class for the on-the-fly job control.
+'''
+
 
 class dft_control:
     '''
@@ -49,7 +53,7 @@ class dft_control:
     self.pid: pid to kill.
     '''
 
-    def __init__(self, mode='full',
+    def __init__(self, mode='terachem',
                  scrpath='./scr/',
                  geofile='optim.xyz',
                  bofile='bond_order.list',
@@ -69,7 +73,7 @@ class dft_control:
                  pid=False):
         self.step_now = -1
         self.mode = mode
-        self.mode_allowed = ["full", "geo"]
+        self.mode_allowed = ["terachem", "geo"]
         self.step_decisions = [2, 5, 10, 15, 20, 30, 40]
         self.scrpath = scrpath
         self.initxyzfile = initxyzfile
@@ -98,33 +102,38 @@ class dft_control:
         self.resize = resize
         self.debug = debug
         self.pid = pid
-        self.features_dict = {"full": {0: 'bo_0', 1: 'bo_sv0', 2: 'bo_offsv0', 3: 'bo_sv1', 4: 'bo_offsv1', 5: 'bo_sv2',
-                                       6: 'bo_offsv2', 7: 'bo_sv3', 8: 'bo_offsv3', 9: 'bo_eq_mean', 10: 'bo_ax_mean',
-                                       11: 'grad_0', 12: 'grad_sv0', 13: 'grad_intsv0', 14: 'grad_sv1',
-                                       15: 'grad_intsv1',
-                                       16: 'grad_sv2', 17: 'grad_intsv2', 18: 'grad_maxnorm', 19: 'grad_intmaxnorm',
-                                       20: 'grad_rms', 21: 'grad_eq_mean', 22: 'grad_ax_mean', 23: 'charge_0',
-                                       24: 'charge_eq_mean', 25: 'charge_ax_mean', 26: 'flag_oct',
-                                       27: 'inspect_oct_angle_devi_max', 28: 'inspect_max_del_sig_angle',
-                                       29: 'inspect_dist_del_all', 30: 'inspect_dist_del_eq',
-                                       31: 'inspect_devi_linear_avrg',
-                                       32: 'inspect_devi_linear_max', 33: 'actural_rmsd_max'},
-                              "geo": {0: 'flag_oct', 1: 'inspect_oct_angle_devi_max', 2: 'inspect_max_del_sig_angle',
-                                      3: 'inspect_dist_del_all', 4: 'inspect_dist_del_eq',
-                                      5: 'inspect_devi_linear_avrg',
-                                      6: 'inspect_devi_linear_max', 7: 'actural_rmsd_max'}
-                              }
-        self.avrg_latent_dist_train = {"full": {2: 6.34, 5: 7.59, 10: 4.83, 15: 5.21,
-                                                20: 5.06, 30: 9.34, 40: 8.70},
+        self.features_dict = {
+            "terachem": {0: 'bo_0', 1: 'bo_sv0', 2: 'bo_offsv0', 3: 'bo_sv1', 4: 'bo_offsv1', 5: 'bo_sv2',
+                         6: 'bo_offsv2', 7: 'bo_sv3', 8: 'bo_offsv3', 9: 'bo_eq_mean', 10: 'bo_ax_mean',
+                         11: 'grad_0', 12: 'grad_sv0', 13: 'grad_intsv0', 14: 'grad_sv1',
+                         15: 'grad_intsv1',
+                         16: 'grad_sv2', 17: 'grad_intsv2', 18: 'grad_maxnorm', 19: 'grad_intmaxnorm',
+                         20: 'grad_rms', 21: 'grad_eq_mean', 22: 'grad_ax_mean', 23: 'charge_0',
+                         24: 'charge_eq_mean', 25: 'charge_ax_mean', 26: 'flag_oct',
+                         27: 'inspect_oct_angle_devi_max', 28: 'inspect_max_del_sig_angle',
+                         29: 'inspect_dist_del_all', 30: 'inspect_dist_del_eq',
+                         31: 'inspect_devi_linear_avrg',
+                         32: 'inspect_devi_linear_max', 33: 'actural_rmsd_max'},
+            "geo": {0: 'flag_oct', 1: 'inspect_oct_angle_devi_max', 2: 'inspect_max_del_sig_angle',
+                    3: 'inspect_dist_del_all', 4: 'inspect_dist_del_eq',
+                    5: 'inspect_devi_linear_avrg',
+                    6: 'inspect_devi_linear_max', 7: 'actural_rmsd_max'},
+            "custom": {}
+        }
+        self.avrg_latent_dist_train = {"terachem": {2: 6.34, 5: 7.59, 10: 4.83, 15: 5.21,
+                                                    20: 5.06, 30: 9.34, 40: 8.70},
                                        "geo": {2: 4.08, 5: 5.35, 10: 5.85, 15: 6.10,
-                                               20: 6.40, 30: 10.44, 40: 9.42}
+                                               20: 6.40, 30: 10.44, 40: 9.42},
+                                       "custom": {}
                                        }
-        self.files_track = {"full": {self.geofile: 0, self.bofile: 0, self.gradfile: 0, self.chargefile: 0},
-                            "geo": {self.geofile: 0}
+        self.files_track = {"terachem": {self.geofile: 0, self.bofile: 0, self.gradfile: 0, self.chargefile: 0},
+                            "geo": {self.geofile: 0},
+                            "custom": {}
                             }
-        self.file_updated = {"full": {self.geofile: False, self.bofile: False,
-                                      self.gradfile: False, self.chargefile: False},
-                             "geo": {self.geofile: False}
+        self.file_updated = {"terachem": {self.geofile: False, self.bofile: False,
+                                          self.gradfile: False, self.chargefile: False},
+                             "geo": {self.geofile: False},
+                             "custom": {}
                              }
         self.init_mol = read_geometry_to_mol(self.initxyzfile)
         self.job_info = obtain_jobinfo(self.initxyzfile)
@@ -155,7 +164,6 @@ class dft_control:
         return self.scrpath + '/' + filein
 
     def load_models(self):
-        # modelpath = self.modelfile + '/' + self.mode
         if not self.modelfile:
             modelpath = resource_filename(Requirement.parse("molSimplify"),
                                           "molSimplify/molscontrol/models/" + self.mode + "/")
@@ -172,7 +180,6 @@ class dft_control:
             logging.error('Failed at model loading.', exc_info=True)
 
     def load_training_data(self):
-        # datapath = self.traindatafile + '/' + self.mode + '/' + self.dataname
         if not self.traindatafile:
             datapath = resource_filename(Requirement.parse("molSimplify"),
                                          "molSimplify/molscontrol/data/" + self.mode + "/train_data.pkl")
@@ -189,7 +196,6 @@ class dft_control:
             logging.error('Failed at training data loading.', exc_info=True)
 
     def load_normalization_vec(self):
-        # normvecpath = self.normfile + '/' + self.mode + '/' + self.normvecname
         if not self.normfile:
             normvecpath = resource_filename(Requirement.parse("molSimplify"),
                                             "molSimplify/molscontrol/normalization_vec/" + self.mode + "/norm_dict.json")
@@ -206,7 +212,7 @@ class dft_control:
     def update_features(self):
         dict_combined = {}
         time.sleep(1)
-        if self.mode == 'full':
+        if self.mode == 'terachem':
             bondorder_dict = get_bond_order(bofile=self.get_file_path(self.bofile),
                                             job_info=self.job_info, num_sv=4)
             dict_combined.update(bondorder_dict)
@@ -223,6 +229,12 @@ class dft_control:
             geometrics_dict = get_geo_metrics(init_mol=self.init_mol, job_info=self.job_info,
                                               geofile=self.get_file_path(self.geofile))
             dict_combined.update(geometrics_dict)
+        elif self.mode == 'custom':
+            if bool(self.features_dict[self.mode]):
+                ## Placeholder for your functions of obtaining descriptors.
+                pass
+        else:
+            raise KeyError("Mode is not recognized.")
         for idx, fname in self.features_dict[self.mode].items():
             self.features[fname].append(dict_combined[fname])
         f = open("features.json", "w")
@@ -291,6 +303,8 @@ class dft_control:
         existed = False
         logging.info("Initialize the files to be tracked during the geometry optimization.")
         logging.info("This may take a while until the first step of SCF calculation finishes...")
+        if not bool(self.files_track[self.mode]):
+            raise KeyError("file_track is an empty dictory. It should at least contain one file to track on.")
         while not existed:
             for filename in self.files_track[self.mode]:
                 filepath = self.get_file_path(filename)
