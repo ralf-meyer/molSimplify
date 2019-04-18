@@ -2122,7 +2122,10 @@ class mol3D:
                     for idx, _ele in enumerate(liglist_atom):
                         if set(ele) == set(_ele) and len(ele) == len(_ele):
                             liginds = liglist[idx]
-                            match = connectivity_match(liginds_init, liginds, self.init_mol_trunc, self.my_mol_trunc)
+                            if not catoms_arr == None:
+                                match = True
+                            else:
+                                match = connectivity_match(liginds_init, liginds, self.init_mol_trunc, self.my_mol_trunc)
                             if debug:
                                 print('fragment in liglist_init', ele, liginds_init)
                                 print('fragment in liglist', _ele, liginds)
@@ -2146,6 +2149,8 @@ class mol3D:
             flag_match = False
         if debug:
             print('returning: ', liglist_shifted, liglist_init)
+        if not catoms_arr == None:
+            flag_match = True
         return liglist_shifted, liglist_init, flag_match
 
     ## Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
@@ -2501,7 +2506,7 @@ class mol3D:
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                           debug=debug)
             else:
-                raise ValueError('!!!!!Should always match. WRONG!!!!!')
+                print("Warning: Potential issues about lig_mismatch.")
 
             dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
             if debug:
