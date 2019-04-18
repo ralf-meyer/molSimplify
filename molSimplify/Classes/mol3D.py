@@ -2066,7 +2066,7 @@ class mol3D:
     ## Output: liglist_shifted, liglist_init: list of list for each ligands, with one-to-one correspandance between
     ##         initial and optimized mol.
     ##         flag_match: A flag about whether the ligands of initial and optimized mol are exactly the same.
-    def match_lig_list(self, init_mol,
+    def match_lig_list(self, init_mol, catoms_arr=None,
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
@@ -2102,8 +2102,11 @@ class mol3D:
                             for ele in liglist]
             liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
                                  for ele in liglist_init]
-        _, catoms = self.my_mol_trunc.oct_comp(debug=False)
-        _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
+        if not catoms_arr == None:
+            catoms, catoms_init = catoms_arr, catoms_arr
+        else:
+            _, catoms = self.my_mol_trunc.oct_comp(debug=False)
+            _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
         if debug:
             print('ligand_list opt in symbols:', liglist_atom)
             print('ligand_list init in symbols: ', liglist_init_atom)
@@ -2159,10 +2162,12 @@ class mol3D:
                         BondedOct=False):
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         liglist, liglist_init, flag_match = self.match_lig_list(init_mol,
+                                                                catoms_arr=catoms_arr,
                                                                 flag_loose=flag_loose,
                                                                 BondedOct=BondedOct,
                                                                 flag_lbd=flag_lbd,
-                                                                debug=debug, depth=depth)
+                                                                debug=debug,
+                                                                depth=depth)
         if debug:
             print('lig_list:', liglist, len(liglist))
             print('lig_list_init:', liglist_init, len(liglist_init))
@@ -2470,7 +2475,6 @@ class mol3D:
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > 6:
                 _, catoms_arr = init_mol.oct_comp(debug=debug)
-        # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
             print('Please DO CHECK what happens!!!!')
@@ -2495,10 +2499,9 @@ class mol3D:
                                                         BondedOct=BondedOct)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                              debug=debug)
+                                                          debug=debug)
             else:
-                self.num_coord_metal = -1
-                print('!!!!!Should always match. WRONG!!!!!')
+                raise ValueError('!!!!!Should always match. WRONG!!!!!')
 
             dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
             if debug:
