@@ -2407,7 +2407,6 @@ class mol3D:
                     dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                             flag_loose=flag_loose,
                                                             flag_lbd=flag_lbd,
-                                                            catoms_arr=catoms_arr,
                                                             debug=debug,
                                                             BondedOct=BondedOct,
                                                             flag_deleteH=flag_deleteH)
