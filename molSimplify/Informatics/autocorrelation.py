@@ -4,9 +4,7 @@ import sys
 import os
 import numpy as np
 import math
-import random
-import string
-import numpy
+import random 
 from molSimplify.Scripts.geometry import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.globalvars import globalvars
@@ -26,15 +24,11 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, catoms=None):
     #	orig -  int, zero-indexed starting atom
     #	d - int, number of hops to travel
     #	oct - bool, if complex is octahedral, will use better bond checks
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
     result_vector[hopped] = prop_vec[orig] * prop_vec[orig]
-    #	if oct:
-    #		print('using OCT autocorrelation')
-    #	#else:
-    #		print('NOT using OCT autocorrelation')
     while hopped < (d):
 
         hopped += 1
@@ -53,6 +47,45 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, catoms=None):
         active_set = new_active_set
     return (result_vector)
 
+def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True, catoms=None):
+    ## this function returns the derivative vector
+	## of the scalar autocorrelation 
+	## starting at orig with depth d,
+	## with respect to the atomic properties
+	## in prop_vec, for all atoms.
+	## The return type is np.vector for
+	## Be sure to read this carefully!
+    ## for one atom
+    # Inputs:
+    #	mol - mol3D class
+    #	prop_vec - vector, property of atoms in mol in order of index
+    #	orig -  int, zero-indexed starting atom
+    #	d - int, number of hops to travel
+    #	oct - bool, if complex is octahedral, will use better bond checks
+    result_vector = np.zeros(d + 1)
+    hopped = 0
+    active_set = set([orig])
+    historical_set = set()
+    result_vector[hopped] = prop_vec[orig] * prop_vec[orig]
+    while hopped < (d):
+
+        hopped += 1
+        new_active_set = set()
+        for this_atom in active_set:
+            ## prepare all atoms attached to this connection
+            # print('called in AC')
+            this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
+            for bound_atoms in this_atoms_neighbors:
+                if (bound_atoms not in historical_set) and (bound_atoms not in active_set):
+                    new_active_set.add(bound_atoms)
+        # print('new active set at hop = ' +str(hopped) + ' is ' +str(new_active_set))
+        for inds in new_active_set:
+            result_vector[hopped] += prop_vec[orig] * prop_vec[inds]
+            historical_set.update(active_set)
+        active_set = new_active_set
+    return (result_vector)
+	
+	
 
 def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None):
     ## this function returns the ratiometrics
@@ -63,7 +96,7 @@ def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None)
     #	orig -  int, zero-indexed starting atom
     #	d - int, number of hops to travel
     #	oct - bool, if complex is octahedral, will use better bond checks
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
@@ -100,7 +133,7 @@ def summetric(mol, prop_vec, orig, d, oct=True, catoms=None):
     #	orig -  int, zero-indexed starting atom
     #	d - int, number of hops to travel
     #	oct - bool, if complex is octahedral, will use better bond checks
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
@@ -140,7 +173,7 @@ def deltametric(mol, prop_vec, orig, d, oct=True, catoms=None):
     #		print('using OCT delta autocorrelation')
     #	else:
     #		print('NOT using OCT delta autocorrelation')
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
@@ -165,7 +198,7 @@ def deltametric(mol, prop_vec, orig, d, oct=True, catoms=None):
 
 def autocorrelation_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
     # Calculate the autocorrelation for the orig to certain connecting atoms.
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
@@ -199,7 +232,7 @@ def autocorrelation_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
 
 def deltametric_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
     # Calculate the deltametrics for the orig to certain connecting atoms.
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
@@ -230,7 +263,7 @@ def deltametric_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
 def full_autocorrelation(mol, prop, d, oct=oct):
     w = construct_property_vector(mol, prop, oct=oct)
     index_set = range(0, mol.natoms)
-    autocorrelation_vector = numpy.zeros(d + 1)
+    autocorrelation_vector = np.zeros(d + 1)
     for centers in index_set:
         autocorrelation_vector += autocorrelation(mol, w, centers, d, oct=oct)
     return (autocorrelation_vector)
@@ -240,7 +273,7 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
     ## atomIdx must b either a list of indcies
     ## or a single index
     w = construct_property_vector(mol, prop, oct)
-    autocorrelation_vector = numpy.zeros(d + 1)
+    autocorrelation_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
             autocorrelation_vector += autocorrelation(mol, w, elements, d, oct=oct)
@@ -252,7 +285,7 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
 
 def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
                                func=autocorrelation,modifier=False):
-    autocorrelation_vector = numpy.zeros(d)
+    autocorrelation_vector = np.zeros(d)
     try:
         metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
@@ -265,7 +298,7 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
 
 def multimetal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
                                func=autocorrelation,modifier=False):
-    autocorrelation_vector = numpy.zeros(d+1)
+    autocorrelation_vector = np.zeros(d+1)
     n_met = len(mol.findMetal())
     w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
     for metal_ind in mol.findMetal():
@@ -278,7 +311,7 @@ def atom_only_ratiometric(mol, prop_num, prop_den, d, atomIdx, oct=True):
     ## or a single index
     w_num = construct_property_vector(mol, prop_num, oct)
     w_den = construct_property_vector(mol, prop_den, oct)
-    autocorrelation_vector = numpy.zeros(d + 1)
+    autocorrelation_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
             autocorrelation_vector += ratiometric(mol, w_num, w_den, elements, d, oct=oct)
@@ -291,7 +324,7 @@ def atom_only_summetric(mol, prop, d, atomIdx, oct=True):
     ## atomIdx must b either a list of indcies
     ## or a single index
     w = construct_property_vector(mol, prop, oct)
-    autocorrelation_vector = numpy.zeros(d + 1)
+    autocorrelation_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
             autocorrelation_vector += summetric(mol, w, elements, d, oct=oct)
@@ -304,7 +337,7 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
     ## atomIdx must b either a list of indcies
     ## or a single index
     w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
-    deltametric_vector = numpy.zeros(d + 1)
+    deltametric_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
             deltametric_vector += deltametric(mol, w, elements, d, oct=oct)
@@ -316,7 +349,7 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True,modifier=False):
 
 def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
                            func=deltametric, modifier=False):
-    deltametric_vector = numpy.zeros(d+1)
+    deltametric_vector = np.zeros(d+1)
     try:
         metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
@@ -329,7 +362,7 @@ def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
 
 def multimetal_only_deltametric(mol, prop, d, oct=True, catoms=None,
                            func=deltametric, modifier=False):
-    deltametric_vector = numpy.zeros(d+1)
+    deltametric_vector = np.zeros(d+1)
     n_met = len(mol.findMetal())
 
     w = construct_property_vector(mol, prop, oct=oct,modifier=modifier)
@@ -341,7 +374,7 @@ def multimetal_only_deltametric(mol, prop, d, oct=True, catoms=None,
     
     
 def metal_only_layer_density(mol, prop, d, oct=True):
-    density_vector = numpy.zeros(d)
+    density_vector = np.zeros(d)
     try:
         metal_ind = mol.findMetal()[0]
         print ('metal_index is: %d' % metal_ind)
@@ -362,7 +395,7 @@ def layer_density_in_3D(mol, prop_vec, orig, d, oct=True):
     #	orig -  int, zero-indexed starting atom
     #	d - int, number of hops to travel
     #	oct - bool, if complex is octahedral, will use better bond checks
-    result_vector = numpy.zeros(d + 1)
+    result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
@@ -409,7 +442,7 @@ def construct_property_vector(mol, prop, oct=True,modifier = False):
     #     print('NOT using octahedral bonding pattern')
     globs = globalvars()
     prop_dict = dict()
-    w = numpy.zeros(mol.natoms)
+    w = np.zeros(mol.natoms)
     done = False
     if not prop in allowed_strings:
         print('error, property  ' + str(prop) + ' is not a vaild choice')
