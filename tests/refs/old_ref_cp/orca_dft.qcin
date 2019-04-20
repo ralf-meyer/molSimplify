@@ -1,0 +1,16 @@
+# file created with molSimplify
+!b3lyp def2-TZVP NORI DKH2 UNO Opt
+
+!SlowConv
+%scf
+MaxIter 500
+Shift Shift 0.25 ErrOff 1e-05  end
+DIISMaxEq 15
+end
+
+%method
+ScalHFX = 0.2
+ScalDFX = 0.8
+end
+
+*xyzfile 2 5 orca_dft.xyz

@@ -1,3 +1,4 @@
+import os
 import json
 import yaml
 import numpy as np
@@ -60,6 +61,8 @@ def get_geo_metrics(init_mol, job_info, geofile):
     actural_dict_info = ['actural_rmsd_max']
     mol = mol3D()
     mol.copymol3D(mol_now)
+    # print("=========XYZ=========")
+    # print (mol.printxyz())
     inspect_flag, _, dict_oct, inspect_flag_loose, _ = mol.Oct_inspection(init_mol=init_mol,
                                                                           catoms_arr=job_info['catoms'])
     _mol = mol3D()
@@ -199,6 +202,18 @@ def symmetricalize_dict(job_info, feature_dict):
 
 def get_feature_type(feature_dict):
     return feature_dict.keys()[0].split('_')[0]
+
+
+def check_pid(pid):
+    # print("PID: ", pid)
+    if pid == False:
+        pid = 000000
+    try:
+        os.kill(int(pid), 0)
+    except OSError:
+        return False
+    else:
+        return True
 
 
 def kill_job(pid):

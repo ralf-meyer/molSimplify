@@ -82,7 +82,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                                            results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
         
         ## full ACs
-        results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False)
+        results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False, modifier=ox_modifier)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'f','all')
 
@@ -108,13 +108,13 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         
         ## metal ACs
         #print('getting metal ACs')
-        results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False)
+        results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False, modifier=ox_modifier)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-        results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False)
+        results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False, modifier=ox_modifier)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
-        ## ox-metal ACs, if ox available
+        # ## ox-metal ACs, if ox available
         if ox_modifier:
             results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
             descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,

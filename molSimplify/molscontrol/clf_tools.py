@@ -2,7 +2,6 @@ import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 from keras import backend as K
 
-
 """
 tools for ML models.
 """
@@ -75,3 +74,16 @@ def get_entropy(dists, neighbor_targets):
 
 def dist_penalty(d):
     return np.exp(-1 * d ** 2)
+
+
+def find_closest_model(step, allowed_steps):
+    step_chosen = 0
+    for _s in allowed_steps:
+        delta = step - _s
+        if (not "mindelta" in locals().keys()):
+            mindelta = abs(delta)
+            step_chosen = _s
+        elif (abs(delta) < mindelta):
+            mindelta = abs(delta)
+            step_chosen = _s
+    return step_chosen, mindelta

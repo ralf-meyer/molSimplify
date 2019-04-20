@@ -13,7 +13,9 @@ import openbabel
 import sys, time, os, subprocess, random, shutil, unicodedata, inspect, tempfile, re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
-from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis
+from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis, \
+    connectivity_match
+from molSimplify.Scripts.rmsd import rigorous_rmsd
 
 # from molSimplify.Scripts.structgen import ffopt
 
@@ -505,7 +507,13 @@ class mol3D:
         for atom in self.atoms:
             xyz = atom.coords()
             ss.append(xyz)
-        return ss
+        return np.array(ss)
+
+    def symvect(self):
+        ss = []
+        for atom in self.atoms:
+            ss.append(atom.sym)
+        return np.array(ss)
 
     ## Copies properties and atoms of another existing mol3D object into current mol3D object.
     #
@@ -917,28 +925,26 @@ class mol3D:
             ## default interatomic radius
             ## for non-metalics
             distance_max = 1.15 * (atom.rad + ratom.rad)
-            # distance_max = 1.25 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
-                dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
-                if atom.symbol() in dist_allowed.keys():
-                    max_pos_distance = dist_allowed[atom.symbol()]
-                elif ratom.symbol() in dist_allowed.keys():
-                    max_pos_distance = dist_allowed[ratom.symbol()]
-                else:
-                    max_pos_distance = 2.9
-                if debug:
-                    print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
+                # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
+                # if atom.symbol() in dist_allowed.keys():
+                #    max_pos_distance = dist_allowed[atom.symbol()]
+                # elif ratom.symbol() in dist_allowed.keys():
+                #    max_pos_distance = dist_allowed[ratom.symbol()]
+                # else:
+                #    max_pos_distance = 2.9
+
                 ## one the atoms is a metal!
                 ## use a longer max for metals
-                # distance_max = min(2.75, 1.35 * (atom.rad + ratom.rad))
-                ### ------cutoff changed by chenru
                 if flag_loose:
                     distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
                 else:
-                    distance_max = min(max_pos_distance, 1.35 * (atom.rad + ratom.rad))
-                # print('distance max:', distance_max)
+                    distance_max = 1.37 * (atom.rad + ratom.rad)
+
                 if debug:
+                    print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
                     print('maximum bonded distance is ' + str(distance_max))
+
                 if d < distance_max and i != ind:
                     ### trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
@@ -1637,16 +1643,13 @@ class mol3D:
             return sqrt(rmsd)
 
     def geo_rmsd(self, mol2):
+        # print("==========")
         Nat0 = self.natoms
         Nat1 = mol2.natoms
-        if (Nat0 != Nat1):
-            print
-            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
-            return float('NaN')
-        else:
+        if Nat0 == Nat1:
             rmsd = 0
             availabel_set = list(range(Nat1))
-            for atom0 in self.getAtoms():
+            for ii, atom0 in enumerate(self.getAtoms()):
                 dist = 1000
                 ind1 = False
                 atom0_sym = atom0.symbol()
@@ -1654,16 +1657,20 @@ class mol3D:
                     atom1 = mol2.getAtom(_ind1)
                     if atom1.symbol() == atom0_sym:
                         _dist = atom0.distance(atom1)
+                        # print(atom1.symbol(), _dist)
                         if _dist < dist:
                             dist = _dist
                             ind1 = _ind1
                 rmsd += dist ** 2
+                # print("paired: ", ii, ind1, dist)
                 availabel_set.remove(ind1)
             if Nat0 == 0:
                 rmsd = 0
             else:
                 rmsd /= Nat0
             return sqrt(rmsd)
+        else:
+            raise ValueError("Number of atom does not match between two mols.")
 
     ## Computes mean of absolute atom deviations 
     # 
@@ -1693,7 +1700,6 @@ class mol3D:
             return dev
 
     def maxatomdist(self, mol2):
-
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
@@ -2079,21 +2085,21 @@ class mol3D:
     ## Output: liglist_shifted, liglist_init: list of list for each ligands, with one-to-one correspandance between
     ##         initial and optimized mol.
     ##         flag_match: A flag about whether the ligands of initial and optimized mol are exactly the same.
-    def match_lig_list(self, init_mol,
+    def match_lig_list(self, init_mol, catoms_arr=None,
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         from molSimplify.Classes.ligand import ligand_breakdown
         flag_match = True
+        self.my_mol_trunc = mol3D()
+        self.my_mol_trunc.copymol3D(self)
+        self.init_mol_trunc = init_mol
         if flag_lbd:  ## Also do ligand breakdown for opt geo
             ### Truncate ligands at 4 bonds away from metal to aviod rotational group.
             # self.my_mol_trunc = obtain_truncation_metal(self, depth)
             # self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
             # self.my_mol_trunc.createMolecularGraph()
             # self.init_mol_trunc.createMolecularGraph()
-            self.my_mol_trunc = mol3D()
-            self.my_mol_trunc.copymol3D(self)
-            self.init_mol_trunc = init_mol
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
             liglist_atom = [[self.my_mol_trunc.getAtom(x).symbol() for x in ele]
@@ -2103,6 +2109,7 @@ class mol3D:
             if debug:
                 print('init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()])
                 print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
+                print('liglist, ligdents, ligcons', liglist, ligdents, ligcons)
         else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
             if debug:
                 print('Just inherit the ligand list from init structure.')
@@ -2114,34 +2121,55 @@ class mol3D:
                             for ele in liglist]
             liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
                                  for ele in liglist_init]
-
+        if not catoms_arr == None:
+            catoms, catoms_init = catoms_arr, catoms_arr
+        else:
+            _, catoms = self.my_mol_trunc.oct_comp(debug=False)
+            _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
         if debug:
             print('ligand_list opt in symbols:', liglist_atom)
             print('ligand_list init in symbols: ', liglist_init_atom)
+            print("catoms opt: ", catoms)
+            print("catoms init: ", catoms_init)
+            print("catoms diff: ", set(catoms) - set(catoms_init), len(set(catoms) - set(catoms_init)))
         liglist_shifted = []
-        for ele in liglist_init_atom:
-            try:
-                _flag = False
-                for idx, _ele in enumerate(liglist_atom):
-                    if set(ele) == set(_ele) and len(ele) == len(_ele):
+        if not len(set(catoms) - set(catoms_init)):
+            for ii, ele in enumerate(liglist_init_atom):
+                liginds_init = liglist_init[ii]
+                try:
+                    _flag = False
+                    for idx, _ele in enumerate(liglist_atom):
+                        if set(ele) == set(_ele) and len(ele) == len(_ele):
+                            liginds = liglist[idx]
+                            if not catoms_arr == None:
+                                match = True
+                            else:
+                                match = connectivity_match(liginds_init, liginds, self.init_mol_trunc, self.my_mol_trunc)
+                            if debug:
+                                print('fragment in liglist_init', ele, liginds_init)
+                                print('fragment in liglist', _ele, liginds)
+                                print("match status: ", match)
+                            if match:
+                                posi = idx
+                                _flag = True
+                                break
+                    liglist_shifted.append(liglist[posi])
+                    liglist_atom.pop(posi)
+                    liglist.pop(posi)
+                    if not _flag:
                         if debug:
-                            print('fragment in liglist_init', ele)
-                            print('fragment in liglist', _ele)
-                        posi = idx
-                        _flag = True
-                        break
-                liglist_shifted.append(liglist[posi])
-                liglist_atom.pop(posi)
-                liglist.pop(posi)
-                if not _flag:
-                    if debug:
-                        print('Ligands cannot match!')
+                            print('Ligands cannot match!')
+                        flag_match = False
+                except:
+                    print('Ligands cannot match!')
                     flag_match = False
-            except:
-                print('Ligands cannot match!')
-                flag_match = False
+        else:
+            print('Ligands cannot match! (Connecting atoms are different)')
+            flag_match = False
         if debug:
             print('returning: ', liglist_shifted, liglist_init)
+        if not catoms_arr == None:
+            flag_match = True
         return liglist_shifted, liglist_init, flag_match
 
     ## Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
@@ -2158,10 +2186,12 @@ class mol3D:
                         BondedOct=False):
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         liglist, liglist_init, flag_match = self.match_lig_list(init_mol,
+                                                                catoms_arr=catoms_arr,
                                                                 flag_loose=flag_loose,
                                                                 BondedOct=BondedOct,
                                                                 flag_lbd=flag_lbd,
-                                                                debug=debug, depth=depth)
+                                                                debug=debug,
+                                                                depth=depth)
         if debug:
             print('lig_list:', liglist, len(liglist))
             print('lig_list_init:', liglist_init, len(liglist_init))
@@ -2201,11 +2231,8 @@ class mol3D:
                 if flag_deleteH:
                     tmp_mol.deleteHs()
                     tmp_org_mol.deleteHs()
-                try:
-                    mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
-                except:
-                    print('Kabsch failed')
-                rmsd = tmp_mol.geo_rmsd(tmp_org_mol)
+                rmsd = rigorous_rmsd(tmp_mol, tmp_org_mol,
+                                     rotation="kabsch", reorder="hungarian")
                 rmsd_arr.append(rmsd)
                 # atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
                 atom_dist_max = -1
@@ -2369,7 +2396,7 @@ class mol3D:
               angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
-              skip=False
+              skip=False, flag_deleteH=True,
               ):
         if not dict_check:
             dict_check = self.dict_oct_check_st
@@ -2399,9 +2426,9 @@ class mol3D:
                     dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                             flag_loose=flag_loose,
                                                             flag_lbd=flag_lbd,
-                                                            catoms_arr=catoms_arr,
                                                             debug=debug,
-                                                            BondedOct=BondedOct)
+                                                            BondedOct=BondedOct,
+                                                            flag_deleteH=flag_deleteH)
             if not 'lig_linear' in skip:
                 dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
@@ -2471,7 +2498,6 @@ class mol3D:
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > 6:
                 _, catoms_arr = init_mol.oct_comp(debug=debug)
-        # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != 6:
             print('Error, must have 6 connecting atoms for octahedral.')
             print('Please DO CHECK what happens!!!!')
@@ -2496,10 +2522,9 @@ class mol3D:
                                                         BondedOct=BondedOct)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                              debug=debug)
+                                                          debug=debug)
             else:
-                self.num_coord_metal = -1
-                print('!!!!!Should always match. WRONG!!!!!')
+                print("Warning: Potential issues about lig_mismatch.")
 
             dict_angle_linear, dict_orientation = self.check_angle_linear(catoms_arr=catoms_arr)
             if debug:

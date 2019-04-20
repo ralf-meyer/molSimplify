@@ -78,7 +78,7 @@ def cell_ffopt(ff,mol,frozenats):
 #
 #  @param fst string of  .cif file path
 #  @return mol3D of unit cell, cell vector
-def import_from_cif(fst):
+def import_from_cif(fst, return_extra_cif_info = False):
     #INPUT:
     # fst:  filename of cif file
     #OUTPUT:
@@ -147,6 +147,8 @@ def import_from_cif(fst):
                 cell_vector[i][j] = 0
     if exit_status != 0:
         return emsg
+    elif return_extra_cif_info:
+        return unit_cell, cell_vector, alpha, beta, gamma
     else:
         return unit_cell,cell_vector
 ##################################
