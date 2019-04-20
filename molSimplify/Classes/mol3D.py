@@ -95,6 +95,9 @@ class mol3D:
         self.needsconformer = False
         ## Holder for molecular group
         self.grps = False
+        # Holder rfor metals
+        self.metals = False
+        
         ## Holder for partial charge for each atom
         self.partialcharges = []
 
@@ -207,9 +210,16 @@ class mol3D:
         self.mass += atom.mass
         self.size = self.molsize()
         self.graph = []
-
+        self.metal = False
+        
+    ## Change type of atom in molecule
+    #
+    #  @param self The object pointer
+    #  @param atom_ind int index of atom
+    #  @param atom_type str type of the new atom
     def changeAtomtype(self, atom_ind, atom_type):
         self.atoms[atom_ind].sym = atom_type
+        self.metal = False
 
     ## Aligns two molecules such that the coordinates of two atoms overlap.
     #
@@ -352,6 +362,8 @@ class mol3D:
             sym = elem[atom.GetAtomicNum() - 1]
             # add atom to molecule
             self.addAtom(atom3D(sym, [pos[0], pos[1], pos[2]]))
+        # reset metal ID
+        self.metal = False
 
     ## Converts mol3D to OBMol
     #
@@ -404,7 +416,7 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
         else:
-            print("OBmol not existed.")
+            print("OBmol doies not exist")
 
     ## Combines two molecules
     #
@@ -467,8 +479,9 @@ class mol3D:
                 for j in range(0, n_tot):
                     if jointBOMat[i][j] > 0:
                         cmol.OBMol.AddBond(i + 1, j + 1, int(jointBOMat[i][j]))
-            # reset graph
+        # reset graph
         cmol.graph = []
+        self.metal = False
         return cmol
 
     ## Prints coordinates of all atoms in molecule
@@ -542,6 +555,7 @@ class mol3D:
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
         self.graph = []
+        self.metal = False
         del (self.atoms[atomIdx])
 
     ## Freezes specific atom in molecule
@@ -635,11 +649,14 @@ class mol3D:
     #  @param atom0 Index of reference atom
     #  @return Index of closest metal atom
     def findcloseMetal(self, atom0):
+        if not self.metals:
+            self.findMetal()
+            
         mm = False
         mindist = 1000
-        for i, atom in enumerate(self.atoms):
-            if atom.ismetal():
-                if distance(atom.coords(), atom0.coords()) < mindist:
+        for i in enumerate(self.metals):
+            atom = self.getAtom(i)
+            if distance(atom.coords(), atom0.coords()) < mindist:
                     mindist = distance(atom.coords(), atom0.coords())
                     mm = i
         # if no metal, find heaviest atom
@@ -654,11 +671,13 @@ class mol3D:
     #  @param self The object pointer
     #  @return List of indices of metal atoms
     def findMetal(self):
-        mm = []
-        for i, atom in enumerate(self.atoms):
-            if atom.ismetal():
-                mm.append(i)
-        return mm
+        if not self.metals:
+            mm = []
+            for i, atom in enumerate(self.atoms):
+                if atom.ismetal():
+                    mm.append(i)
+            self.metals = mm
+        return(self.metals)
 
     ## Finds atoms in molecule with given symbol
     #  @param self The object pointer
