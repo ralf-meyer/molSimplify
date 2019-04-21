@@ -940,7 +940,7 @@ class mol3D:
                             print(ratom.symbol())
                         valid = False
                     if d < distance_max and i != ind and valid:
-                        if atom.symbol() == "C":
+                        if atom.symbol() == "C" or atom.symbol() == "S":
                             if debug:
                                 print('\n')
                                 self.printxyz()
@@ -968,12 +968,11 @@ class mol3D:
                                     valid = False
                                     if debug:
                                         print('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds))
-                                        sardines
                                 else:
                                     if debug:
                                         print('Ok based on atom')
-                        if ratom.symbol() == "C":
-                            ## in this case, ratom might be intruder C!
+                        if ratom.symbol() == "C" or ratom.symbol() == "S":
+                            ## in this case, ratom might be intruder C or S
                             possible_inds = self.getBondedAtomsnotH(i)  ## bonded to metal
                             metal_prox = sorted(possible_inds, key=lambda x: self.getDistToMetal(x, i))
                             if len(possible_inds) > CN:
