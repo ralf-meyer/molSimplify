@@ -357,7 +357,7 @@ class dft_control:
                     self.predict()
                     self.calculate_lse()
                     self.make_decision()
-                elif self.resize and self.step_now > 2:
+                elif self.resize and self.step_now > 5:
                     step_chosen = self.resize_feature_mat()
                     logging.info("At step %d, Resizing to activate cloest model (%d -> %d)." % (
                         self.step_now, self.step_now, step_chosen))
