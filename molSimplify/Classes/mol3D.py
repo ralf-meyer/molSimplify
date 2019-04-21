@@ -531,7 +531,12 @@ class mol3D:
         A = np.zeros((self.natoms, self.natoms))
         for i in index_set:
             if oct:
-                this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
+                if self.getAtom(i).ismetal():
+                    this_bonded_atoms = self.get_fcs()
+                    if i in this_bonded_atoms:
+                        this_bonded_atoms.remove(i)
+                else:
+                    this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
             else:
                 this_bonded_atoms = self.getBondedAtoms(i, debug=False)
             for j in index_set:
@@ -1015,11 +1020,6 @@ class mol3D:
     def getBondedAtomsSmart(self, ind, oct=True, geo_check=False):
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        # if (not self.updated):
-        #     print('---------')
-        #     self.update_graph_check()
-        if geo_check:  # Force check
-            self.update_graph_check()
         return list(np.nonzero(np.ravel(self.graph[ind]))[0])
 
     ## Gets non-H atoms bonded to a specific atom
@@ -2125,7 +2125,8 @@ class mol3D:
                             if not catoms_arr == None:
                                 match = True
                             else:
-                                match = connectivity_match(liginds_init, liginds, self.init_mol_trunc, self.my_mol_trunc)
+                                match = connectivity_match(liginds_init, liginds, self.init_mol_trunc,
+                                                           self.my_mol_trunc)
                             if debug:
                                 print('fragment in liglist_init', ele, liginds_init)
                                 print('fragment in liglist', _ele, liginds)
@@ -2503,7 +2504,7 @@ class mol3D:
                                                         BondedOct=BondedOct)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                          debug=debug)
+                                                              debug=debug)
             else:
                 print("Warning: Potential issues about lig_mismatch.")
 
