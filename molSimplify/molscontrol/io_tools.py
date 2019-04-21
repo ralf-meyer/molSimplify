@@ -61,8 +61,6 @@ def get_geo_metrics(init_mol, job_info, geofile):
     actural_dict_info = ['actural_rmsd_max']
     mol = mol3D()
     mol.copymol3D(mol_now)
-    # print("=========XYZ=========")
-    # print (mol.printxyz())
     inspect_flag, _, dict_oct, inspect_flag_loose, _ = mol.Oct_inspection(init_mol=init_mol,
                                                                           catoms_arr=job_info['catoms'])
     _mol = mol3D()
@@ -71,7 +69,7 @@ def get_geo_metrics(init_mol, job_info, geofile):
     actural_dict_geo = {}
     inspect_dict_geo = {}
     for key in dict_oct_info:
-        val = dict_oct_info[key] if dict_oct_info[key] != -1 else 1.20 * dict_oct_check_st[key]
+        val = dict_oct_info[key] if (dict_oct_info[key] != -1) and (dict_oct_info[key] != "lig_mismatch") else 1.20 * dict_oct_check_st[key]
         actural_dict_geo['actural_%s' % key] = val
     for key in dict_oct:
         inspect_dict_geo['inspect_%s' % key] = dict_oct[key]
