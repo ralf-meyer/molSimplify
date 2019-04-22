@@ -529,10 +529,14 @@ class mol3D:
     def createMolecularGraph(self, oct=True):
         index_set = range(0, self.natoms)
         A = np.zeros((self.natoms, self.natoms))
+        catoms_metal = list()
+        metal_ind = None
         for i in index_set:
             if oct:
                 if self.getAtom(i).ismetal():
                     this_bonded_atoms = self.get_fcs()
+                    metal_ind = i
+                    catoms_metal = this_bonded_atoms
                     if i in this_bonded_atoms:
                         this_bonded_atoms.remove(i)
                 else:
@@ -542,6 +546,11 @@ class mol3D:
             for j in index_set:
                 if j in this_bonded_atoms:
                     A[i, j] = 1
+        if not metal_ind == None:
+            for i in index_set:
+                if not i in catoms_metal:
+                    A[i, metal_ind] = 0
+                    A[metal_ind, i] = 0
         self.graph = A
 
     ## Deletes specific atom from molecule
@@ -940,7 +949,7 @@ class mol3D:
                             print(ratom.symbol())
                         valid = False
                     if d < distance_max and i != ind and valid:
-                        if atom.symbol() == "C" or atom.symbol() == "S":
+                        if atom.symbol() == "C":
                             if debug:
                                 print('\n')
                                 self.printxyz()
@@ -968,11 +977,12 @@ class mol3D:
                                     valid = False
                                     if debug:
                                         print('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds))
+                                        sardines
                                 else:
                                     if debug:
                                         print('Ok based on atom')
-                        if ratom.symbol() == "C" or ratom.symbol() == "S":
-                            ## in this case, ratom might be intruder C or S
+                        if ratom.symbol() == "C":
+                            ## in this case, ratom might be intruder C!
                             possible_inds = self.getBondedAtomsnotH(i)  ## bonded to metal
                             metal_prox = sorted(possible_inds, key=lambda x: self.getDistToMetal(x, i))
                             if len(possible_inds) > CN:
