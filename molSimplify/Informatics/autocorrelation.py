@@ -541,6 +541,78 @@ def find_ligand_autocorrelations_oct(mol, prop, loud, depth, name=False,
     return ax_ligand_ac_full, eq_ligand_ac_full, ax_ligand_ac_con, eq_ligand_ac_con
 
 
+def find_ligand_autocorrs_and_deltametrics_oct_dimers(mol, prop, loud, depth, name=False,
+                                           oct=True,custom_ligand_dict = False):
+    ## this function takes a
+    ## symmetric (axial == axial,
+    ## equatorial == equatorial)
+    ## octahedral complex
+    ## and returns autocorrelations for
+    ## the axial an equatorial ligands
+    ## custom_ligand_dict allows the user to skip the breakdown
+    ## in cases where 3D geo is not correct/formed 
+    ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
+    ##                                    ax_con_int_list ,eq_con_int_list
+    ## with types: eq/ax_ligand_list list of mol3D
+    ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+    if not custom_ligand_dict:
+        raise ValueError('No custom ligand dict provided!')
+        #liglist, ligdents, ligcons = ligand_breakdown(mol)
+        #ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        #    mol, liglist, ligdents, ligcons, loud, name=False)
+    else:
+        ax1_ligand_list = custom_ligand_dict["ax1_ligand_list"]
+        ax2_ligand_list = custom_ligand_dict["ax2_ligand_list"]
+        ax3_ligand_list = custom_ligand_dict["ax3_ligand_list"]
+        ax1_con_int_list = custom_ligand_dict["ax1_con_int_list"]
+        ax2_con_int_list = custom_ligand_dict["ax2_con_int_list"]
+        ax3_con_int_list = custom_ligand_dict["ax3_con_int_list"]
+        axligs = [ax1_ligand_list, ax2_ligand_list, ax3_ligand_list]
+        axcons = [ax1_con_int_list, ax2_con_int_list, ax3_con_int_list]
+        n_axs = [len(i) for i in axligs]
+    
+    ## get full ligand AC
+    ax_ligand_ac_fulls = [False, False, False]
+
+    for axnum in range(3):
+        ax_ligand_ac_full = list()
+        for i in range(0, n_axs[axnum]):
+            if not list(ax_ligand_ac_full):
+                ax_ligand_ac_full = full_autocorrelation(axligs[axnum][i].mol, prop, depth)
+            else:
+                ax_ligand_ac_full += full_autocorrelation(axligs[axnum][i].mol, prop, depth)
+        ax_ligand_ac_full = np.divide(ax_ligand_ac_full, n_axs[axnum])
+        ax_ligand_ac_fulls[axnum] = ax_ligand_ac_full
+
+    ## get partial ligand AC
+    ax_ligand_ac_cons = [False, False, False]
+    
+    for axnum in range(3):
+        ax_ligand_ac_con = list()
+        for i in range(0, n_axs[axnum]):
+            if not list(ax_ligand_ac_con):
+                ax_ligand_ac_con = atom_only_autocorrelation(axligs[axnum][i].mol, prop, depth, axcons[axnum][i])
+            else:
+                ax_ligand_ac_con += atom_only_autocorrelation(axligs[axnum][i].mol, prop, depth, axcons[axnum][i])
+        ax_ligand_ac_con = np.divide(ax_ligand_ac_con, n_axs[axnum])
+        ax_ligand_ac_cons[axnum] = ax_ligand_ac_con
+
+    ## get deltametrics
+    ax_delta_cons = [False, False, False]
+    
+    for axnum in range(3):
+        ax_delta_con = list()
+        for i in range(0, n_axs[axnum]):
+            if not list(ax_delta_con):
+                ax_delta_con = atom_only_deltametric(axligs[axnum][i].mol, prop, depth, axcons[axnum][i])
+            else:
+                ax_delta_con += atom_only_deltametric(axligs[axnum][i].mol, prop, depth, axcons[axnum][i])
+        ax_delta_con = np.divide(ax_delta_con, n_axs[axnum])
+        ax_delta_cons[axnum] = ax_delta_con
+
+    return ax_ligand_ac_fulls + ax_ligand_ac_cons + ax_delta_cons
+
+
 def find_ligand_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True,custom_ligand_dict=False):
     ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
     ##                                    ax_con_int_list ,eq_con_int_list
@@ -698,6 +770,69 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_na
     return results_dictionary
 
 
+def generate_all_ligand_autocorrs_and_deltametrics_dimers(mol, loud, depth=4, name=False, flag_name=False,custom_ligand_dict=False):
+    ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
+    ##                                    ax_con_int_list ,eq_con_int_list
+    ## with types: eq/ax_ligand_list list of mol3D
+    ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+    result_ax1_full = list()
+    result_ax2_full = list()
+    result_ax3_full = list()
+    result_ax1_con = list()
+    result_ax2_con = list()
+    result_ax3_con = list()
+    result_delta_ax1_con = list()
+    result_delta_ax2_con = list()
+    result_delta_ax3_con = list()
+
+    colnames = []
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size', 'effective_nuclear_charge']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S', 'Zeff']
+    
+    for ii, properties in enumerate(allowed_strings):
+        # lig_autocorrs is a list of length 6 (ax{i}_ligand_ac_fulls, ax{i}_ligand_ac_cons)
+        lig_autocorrs = find_ligand_autocorrs_and_deltametrics_oct_dimers(mol,
+                                                                          properties,
+                                                                          loud = loud,
+                                                                          depth = depth,
+                                                                          name =name,
+                                                                          oct=True,
+                                                                          custom_ligand_dict= custom_ligand_dict)
+        this_colnames = []
+        assert all([len(i) > 0 for i in lig_autocorrs]), 'Some ligand autocorrelations are empty! %s' % lig_autocorrs
+        for i in range(0, depth + 1):
+            this_colnames.append(labels_strings[ii] + '-' + str(i))
+        colnames.append(this_colnames)
+        result_ax1_full.append(lig_autocorrs[0])
+        result_ax2_full.append(lig_autocorrs[1])
+        result_ax3_full.append(lig_autocorrs[2])
+        result_ax1_con.append(lig_autocorrs[3])
+        result_ax2_con.append(lig_autocorrs[4])
+        result_ax3_con.append(lig_autocorrs[5])
+        result_delta_ax1_con.append(lig_autocorrs[6])
+        result_delta_ax2_con.append(lig_autocorrs[7])
+        result_delta_ax3_con.append(lig_autocorrs[8])
+
+    results_dictionary = {'colnames': colnames,
+                          'result_ax1_full': result_ax1_full,
+                          'result_ax2_full': result_ax2_full,
+                          'result_ax3_full': result_ax3_full,
+                          'result_ax1_con': result_ax1_con,
+                          'result_ax2_con': result_ax2_con,
+                          'result_ax3_con': result_ax3_con,
+                          'result_delta_ax1_con': result_delta_ax1_con,
+                          'result_delta_ax2_con': result_delta_ax2_con,
+                          'result_delta_ax3_con': result_delta_ax3_con}
+    #if flag_name:
+    #    results_dictionary = {'colnames': colnames, 'result_ax_full_ac': result_ax_full,
+    #                          'result_eq_full_ac': result_eq_full,
+    #                          'result_ax_con_ac': result_ax_con, 'result_eq_con_ac': result_eq_con}
+    #else:
+    #    results_dictionary = {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
+    #                          'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+    return results_dictionary
+
+
 def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False, flag_name=False,custom_ligand_dict=False):
     ## custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
     ##                                    ax_con_int_list ,eq_con_int_list
@@ -724,7 +859,6 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False, flag_name=F
     else:
         results_dictionary = {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
     return results_dictionary
-
 
 def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False, modifier=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
