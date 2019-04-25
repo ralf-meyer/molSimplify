@@ -529,10 +529,14 @@ class mol3D:
     def createMolecularGraph(self, oct=True):
         index_set = range(0, self.natoms)
         A = np.zeros((self.natoms, self.natoms))
+        catoms_metal = list()
+        metal_ind = None
         for i in index_set:
             if oct:
                 if self.getAtom(i).ismetal():
                     this_bonded_atoms = self.get_fcs()
+                    metal_ind = i
+                    catoms_metal = this_bonded_atoms
                     if i in this_bonded_atoms:
                         this_bonded_atoms.remove(i)
                 else:
@@ -542,6 +546,11 @@ class mol3D:
             for j in index_set:
                 if j in this_bonded_atoms:
                     A[i, j] = 1
+        if not metal_ind == None:
+            for i in index_set:
+                if not i in catoms_metal:
+                    A[i, metal_ind] = 0
+                    A[metal_ind, i] = 0
         self.graph = A
 
     ## Deletes specific atom from molecule
