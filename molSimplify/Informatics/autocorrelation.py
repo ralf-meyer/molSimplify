@@ -62,11 +62,19 @@ def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True, catoms=None):
     #	orig -  int, zero-indexed starting atom
     #	d - int, number of hops to travel
     #	oct - bool, if complex is octahedral, will use better bond checks
-    result_vector = np.zeros(d + 1)
+    derivative_mat = np.zeros((d + 1,len(prop_vec)))
+    
+
+    # loop for each atom
+
     hopped = 0
     active_set = set([orig])
     historical_set = set()
-    result_vector[hopped] = prop_vec[orig] * prop_vec[orig]
+    for derivate_ind in range(0,len(prop_vec)):
+        if derivate_ind == orig:
+            derivative_mat[hopped,derivate_ind] = 2*prop_vec[orig]
+        else:
+            derivative_mat[hopped,derivate_ind] = 0
     while hopped < (d):
 
         hopped += 1
@@ -80,10 +88,14 @@ def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True, catoms=None):
                     new_active_set.add(bound_atoms)
         # print('new active set at hop = ' +str(hopped) + ' is ' +str(new_active_set))
         for inds in new_active_set:
-            result_vector[hopped] += prop_vec[orig] * prop_vec[inds]
+            for derivate_ind in range(0,len(prop_vec)):
+                if derivate_ind == orig:
+                    derivative_mat[hopped,derivate_ind] += prop_vec[inds]
+                elif derivate_ind == inds:
+                    derivative_mat[hopped,derivate_ind] += prop_vec[orig]
             historical_set.update(active_set)
         active_set = new_active_set
-    return (result_vector)
+    return (derivative_mat)
 	
 	
 
@@ -268,6 +280,13 @@ def full_autocorrelation(mol, prop, d, oct=oct, modifier= False):
         autocorrelation_vector += autocorrelation(mol, w, centers, d, oct=oct)
     return (autocorrelation_vector)
 
+def full_autocorrelation_derivative(mol, prop, d, oct=oct, modifier= False):
+    w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
+    index_set = range(0, mol.natoms)
+    autocorrelation_derivative_mat = np.zeros((d + 1,mol.natoms))
+    for centers in index_set:
+        autocorrelation_derivative_mat += autocorrelation_derivative(mol, w, centers, d, oct=oct)
+    return (autocorrelation_derivative_mat)
 
 def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
     ## atomIdx must b either a list of indcies
@@ -282,7 +301,19 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
         autocorrelation_vector += autocorrelation(mol, w, atomIdx, d, oct=oct)
     return (autocorrelation_vector)
 
-
+def atom_only_autocorrelation_derivative(mol, prop, d, atomIdx, oct=True):
+    ## atomIdx must b either a list of indcies
+    ## or a single index
+    w = construct_property_vector(mol, prop, oct)
+    autocorrelation_derivative_mat = np.zeros((d + 1,mol.natoms))
+    if hasattr(atomIdx, "__len__"):
+        for elements in atomIdx:
+            autocorrelation_derivative_mat += autocorrelation_derivative(mol, w, elements, d, oct=oct)
+        autocorrelation_derivative_mat = np.divide(autocorrelation_derivative_mat, len(atomIdx))
+    else:
+        autocorrelation_derivative_mat += autocorrelation_derivative(mol, w, atomIdx, d, oct=oct)
+    return (autocorrelation_derivative_mat)
+    
 def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
                                func=autocorrelation,modifier=False):
     autocorrelation_vector = np.zeros(d)
@@ -920,6 +951,28 @@ def generate_full_complex_autocorrelations(mol, loud, depth=4, oct=True, flag_na
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=True, flag_name=False, modifier=False):
+    result = None
+    colnames = []
+    
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size', 'effective_nuclear_charge']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S', 'Zeff']
+    for ii, properties in enumerate(allowed_strings):
+        f_ac_der = full_autocorrelation_derivative(mol, properties, depth, oct=oct, modifier=modifier)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            colnames.append(['d'+labels_strings[ii] + '-' + str(i)+ '/d' + labels_strings[ii] + str(j) for j in range(0, mol.natoms)])
+        #colnames.append(this_colnames)
+        if result is None:
+            result = f_ac_der
+        else:
+            result = np.row_stack([result,f_ac_der])
+    if flag_name:
+        results_dictionary = {'colnames': colnames, 'results_f_all': result}
+    else:
+        results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
+
 
 def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
     ## this function gets autocorrelations for a molecule starting
@@ -942,7 +995,30 @@ def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
         result.append(atom_only_ac)
     results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
-
+    
+def generate_atomonly_autocorrelation_derivatives(mol, atomIdx, loud, depth=4, oct=True):
+    ## this function gets the d/dx for autocorrelations for a molecule starting
+    ## in one single atom only
+    # Inputs:
+    #       mol - mol3D class
+    #       atomIdx - int, index of atom3D class
+    #       loud - bool, print output
+    result = None
+    colnames = []
+    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size', 'effective_nuclear_charge']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S', 'Zeff']
+    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    for ii, properties in enumerate(allowed_strings):
+        atom_only_ac = atom_only_autocorrelation_derivative(mol, properties, depth, atomIdx, oct=oct)
+        this_colnames = []
+        for i in range(0, depth + 1):
+            colnames.append(['d'+labels_strings[ii] + '-' + str(i)+ '/d' + labels_strings[ii] + str(j) for j in range(0, mol.natoms)])
+        if result is None:
+            result = atom_only_ac
+        else:
+            result = np.row_stack([result,atom_only_ac])
+    results_dictionary = {'colnames': colnames, 'results': result}
+    return results_dictionary
 
 def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True):
     ## this function gets deltametrics for a molecule starting
