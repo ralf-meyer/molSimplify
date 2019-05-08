@@ -55,7 +55,7 @@ def get_key(predictor, suffix=False):
 
 def data_rescale(scaled_dat, train_mean, train_var):
     d = np.shape(train_mean)[0]
-    # print('unnormalizing with number of dimensions = ' +str(d))
+    print('unnormalizing with number of dimensions = ' +str(d))
     dat = (np.multiply(scaled_dat.T, np.sqrt(train_var), ) + train_mean).T
     return (dat)
 
@@ -64,10 +64,14 @@ def data_normalize(data, train_mean, train_var):
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
 
-    # print('normalizing with number of dimensions = ' +str(d))
+    print('normalizing with number of dimensions = ' +str(d))
     ### double check the variance in the training data
     delete_ind = list()
-    # print(train_var)
+    #print(train_var)
+    print('shape of things in normalize:')
+    print(data.shape)
+    print(train_mean.shape)
+    print(train_var.shape)
     for idx, var in enumerate(np.squeeze(train_var)):
         if var < 1e-16:
             delete_ind.append(idx)
@@ -129,11 +133,11 @@ def get_data_mean_std(predictor):
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_x'
     elif predictor == "split":
-        key = predictor + '/' + predictor + '_x_41_OHE'
+        key = predictor + '/' + predictor + '_x'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = 'static_clf/' + predictor + '_train_x'
     else:
-        key = predictor + '/' + predictor + '_x_OHE'
+        key = predictor + '/' + predictor + '_x'
     path_to_feature_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     df_feature = pd.read_csv(path_to_feature_file)
     train_mean_x, train_var_x = list(), list()
@@ -148,11 +152,11 @@ def get_data_mean_std(predictor):
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_y'
     elif predictor == "split":
-        key = predictor + '/' + predictor + '_y_41_OHE'
+        key = predictor + '/' + predictor + '_y'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = 'static_clf/' + predictor + '_train_y'
     else:
-        key = predictor + '/' + predictor + '_y_OHE'
+        key = predictor + '/' + predictor + '_y'
     path_to_label_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     df_label = pd.read_csv(path_to_label_file)
     train_mean_y, train_var_y = list(), list()
@@ -180,11 +184,11 @@ def load_training_data(predictor):
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_x'
     elif predictor == "split":
-        key = predictor + '/' + predictor + '_x_41_OHE'
+        key = predictor + '/' + predictor + '_x'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = predictor + '/' + predictor + '_train_x'
     else:
-        key = predictor + '/' + predictor + '_x_OHE'
+        key = predictor + '/' + predictor + '_x'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "r") as f:
         csv_lines = list(csv.reader(f))
@@ -201,11 +205,11 @@ def load_test_data(predictor):
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_test_x'
     elif predictor == "split":
-        key = predictor + '/' + predictor + '_x_41_OHE'  # Note, this test data is not available, will return train
+        key = predictor + '/' + predictor + '_x'  # Note, this test data is not available, will return train
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = predictor + '/' + predictor + '_test_x'
     else:
-        key = predictor + '/' + predictor + '_x_OHE'
+        key = predictor + '/' + predictor + '_x'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "r") as f:
         csv_lines = list(csv.reader(f))
@@ -222,11 +226,11 @@ def load_training_labels(predictor):
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_y'
     elif predictor == "split":
-        key = predictor + '/' + predictor + '_y_41_OHE'
+        key = predictor + '/' + predictor + '_y'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = predictor + '/' + predictor + '_train_y'
     else:
-        key = predictor + '/' + predictor + '_y_OHE'
+        key = predictor + '/' + predictor + '_y'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "r") as f:
         csv_lines = list(csv.reader(f))
@@ -243,11 +247,11 @@ def load_test_labels(predictor):
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_test_y'
     elif predictor == "split":
-        key = predictor + '/' + predictor + '_y_41_OHE'
+        key = predictor + '/' + predictor + '_y'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = predictor + '/' + predictor + '_test_y'
     else:
-        key = predictor + '/' + predictor + '_y_OHE'
+        key = predictor + '/' + predictor + '_y'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "rU") as f:
         csv_lines = list(csv.reader(f))
@@ -297,6 +301,7 @@ def load_keras_ann(predictor, suffix='model'):
         loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
                                                         decay=0.0006651401379502965, lr=0.0007727366541920176),
                              metrics=['mse', 'mae', 'mape'])
+        
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         loaded_model.compile(loss='binary_crossentropy',
                              optimizer=Adam(lr=0.00005,
@@ -342,6 +347,7 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
 
 def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     print('ANN activated for ' + str(predictor))
+    debug = True
     # _start = time.time()
 
     ## form the excitation in the corrrect order/variables
@@ -349,6 +355,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     if debug:
         print('excitation is ' + str(excitation.shape))
         print('fetching non-dimensionalization data... ')
+    #sardines
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
     if debug:
         print('rescaling input excitation...')
