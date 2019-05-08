@@ -39,6 +39,8 @@ class atom3D:
             self.name = name
         else:
             self.name = Sym
+        ## flag for metal
+        self.metal = None
             
         ## Coordinates
         self.__xyz = xyz
@@ -78,10 +80,12 @@ class atom3D:
     #  @param self The object pointer
     #  @return ismetal bool
     def ismetal(self):
-        if self.sym in globalvars().metals():
-            return True
-        else:
-            return False
+        if self.metal is None:
+            if self.sym in globalvars().metals():
+                self.metal = True
+            else:
+                self.metal = False
+        return self.metal
             
     ## Set 3D coordinates
     #  @param self The object pointer
