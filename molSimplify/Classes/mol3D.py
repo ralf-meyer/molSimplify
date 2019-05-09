@@ -463,7 +463,7 @@ class mol3D:
             # optional add additional bond(s)
             if bond_to_add:
                 for bond_tuples in bond_to_add:
-                    print('adding bond ' + str(bond_tuples))
+                    #print('adding bond ' + str(bond_tuples))
                     jointBOMat[bond_tuples[0], bond_tuples[1]] = bond_tuples[2]
                     jointBOMat[bond_tuples[1], bond_tuples[0]] = bond_tuples[2]
                     # jointBOMat[bond_tuples[0], bond_tuples[1]+n_one] = bond_tuples[2]
