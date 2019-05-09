@@ -53,25 +53,27 @@ def get_key(predictor, suffix=False):
     return key
 
 
-def data_rescale(scaled_dat, train_mean, train_var):
+def data_rescale(scaled_dat, train_mean, train_var, debug = False):
     d = np.shape(train_mean)[0]
-    print('unnormalizing with number of dimensions = ' +str(d))
+    if debug:
+        print('unnormalizing with number of dimensions = ' +str(d))
     dat = (np.multiply(scaled_dat.T, np.sqrt(train_var), ) + train_mean).T
     return (dat)
 
 
-def data_normalize(data, train_mean, train_var):
+def data_normalize(data, train_mean, train_var, debug = False):
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
-
-    print('normalizing with number of dimensions = ' +str(d))
+    if debug:
+        print('normalizing with number of dimensions = ' +str(d))
     ### double check the variance in the training data
     delete_ind = list()
-    #print(train_var)
-    print('shape of things in normalize:')
-    print(data.shape)
-    print(train_mean.shape)
-    print(train_var.shape)
+    
+    if debug:
+        print('shape of things in normalize:')
+        print('data.shape ' + str(data.shape))
+        print('train_mean.shape ' + str(train_mean.shape))
+        print('train_mean.shape ' + str(train_var.shape))
     for idx, var in enumerate(np.squeeze(train_var)):
         if var < 1e-16:
             delete_ind.append(idx)
@@ -81,7 +83,7 @@ def data_normalize(data, train_mean, train_var):
         data = np.delete(data, delete_ind, axis=1)
         train_mean = np.delete(train_mean, delete_ind, axis=0)
         train_var = np.delete(train_var, delete_ind, axis=0)
-    # print(data.shape, train_mean.shape, train_var.shape)
+
     scaled_dat = np.divide((data.T - train_mean), np.sqrt(train_var), ).T
     return (scaled_dat)
 
@@ -275,7 +277,6 @@ def load_keras_ann(predictor, suffix='model'):
     # disable TF output text to reduce console spam
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     key = get_key(predictor, suffix)
-    # print('THIS IS THE KEY',key)
     if not "clf" in predictor:
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
         json_file = open(path_to_file, 'r')
@@ -312,7 +313,7 @@ def load_keras_ann(predictor, suffix='model'):
     else:
         loaded_model.compile(loss="mse", optimizer='adam',
                              metrics=['mse', 'mae', 'mape'])
-    # print("Keras/tf model loaded for " + str(predictor) + " from disk")
+    #print("Keras/tf model loaded for " + str(predictor) + " from disk")
     return (loaded_model)
 
 
@@ -345,10 +346,9 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     return excitation
 
 
-def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
-    print('ANN activated for ' + str(predictor))
-    debug = True
-    # _start = time.time()
+def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
+    if debug:
+        print('ANN activated for ' + str(predictor))    
 
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
@@ -360,12 +360,11 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     if debug:
         print('rescaling input excitation...')
 
-    excitation = data_normalize(excitation, train_mean_x, train_var_x)
+    excitation = data_normalize(excitation, train_mean_x, train_var_x, debug = debug)
 
     ## fetch ANN
-    # print('This is the predictor......',predictor)
     loaded_model = load_keras_ann(predictor)
-    result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
+    result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y, debug = debug)
     if not "clf" in predictor:
         if debug:
             print('LOADED MODEL HAS ' + str(
@@ -378,12 +377,11 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
             print('calling ANN model...')
     else:
         latent_space_vector = find_clf_lse(predictor, excitation, loaded_model=loaded_model, ensemble=False,
-                                           modelname=False)
-    # print("Finished in %f s" % (time.time() - _start))
+                                           modelname=False, debug = debug)
     return result, latent_space_vector
 
 
-def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
+def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -391,7 +389,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
     excitation = excitation.astype(float)  # ensure that the excitation is a float, and not strings
-    scaled_excitation = data_normalize(excitation, train_mean_x, train_var_x)  # normalize the excitation
+    scaled_excitation = data_normalize(excitation, train_mean_x, train_var_x,  debug = debug)  # normalize the excitation
     ## getting train matrix info
     mat = load_training_data(predictor)
     train_mat = np.array(mat, dtype='float64')
@@ -400,7 +398,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
     min_ind = 0
     for i, rows in enumerate(train_mat):
         scaled_row = np.squeeze(
-            data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
+            data_normalize(rows, train_mean_x.T, train_var_x.T, debug = debug))  # Normalizing the row before finding the distance
         this_dist = np.linalg.norm(np.subtract(scaled_row, np.array(scaled_excitation)))
         if this_dist < min_dist:
             min_dist = this_dist
@@ -410,7 +408,8 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
 
     # flatten min row
     min_row = np.reshape(min_row, excitation.shape)
-    print('min dist EU is ' + str(min_dist))
+    if debug:
+        print('min dist EU is ' + str(min_dist))
     if predictor in ['oxo', 'hat', 'homo', 'gap']:
         if predictor in ['homo', 'gap']:
             key = 'homolumo/' + predictor + '_train_names'
@@ -437,7 +436,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names):
     return (min_dist)
 
 
-def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
+def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -458,18 +457,13 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
     for i, rows in enumerate(train_mat):
-        # print('row',rows)
         scaled_row = np.squeeze(
-            data_normalize(rows, train_mean_x.T, train_var_x.T))  # Normalizing the row before finding the distance
-        # print('scaled_row',scaled_row)
+            data_normalize(rows, train_mean_x.T, train_var_x.T, debug = debug))  # Normalizing the row before finding the distance
         latent_train_row = get_outputs([np.array([scaled_row]), 0])
-        # print('LATENT TRAIN ROW', latent_train_row)
         this_dist = np.linalg.norm(np.subtract(np.squeeze(latent_train_row), np.squeeze(latent_space_vector)))
-        # print(this_dist)
         if this_dist < min_dist:
             min_dist = this_dist
             min_ind = i
-            # best_row = rownames[i]
             min_row = rows
 
     # flatten min row
@@ -487,7 +481,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     return (min_dist)
 
 
-def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False):
+def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False,  debug = False):
     if modelname == False:
         modelname = "spectro"
         if predictor == "geo_static_clf":
@@ -503,7 +497,7 @@ def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=
     fmat_train = load_training_data(predictor)
     labels_train = np.array(load_training_labels(predictor), dtype='int')
     fmat_train = np.array(fmat_train, dtype='float64')
-    fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x)
+    fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x,  debug = debug)
     fmat_train = np.array(fmat_train)
     if not ensemble:
         # model = base_path + 'model.h5'
