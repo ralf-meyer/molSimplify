@@ -117,7 +117,7 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
     else:
 
          try:
-         # if True:
+         #if True:
             if args.oldANN:
                 print('using old ANN by request')
                 ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
@@ -132,14 +132,15 @@ def init_ANN(args,ligands,occs,dents,batslist,tcats,licores):
                     ANN_flag,ANN_reason,ANN_attributes = ANN_preproc(args,ligands,occs,dents,batslist,tcats,licores)
             if ANN_flag:
                  ANN_bondl = ANN_attributes['ANN_bondl']
-                 print('ANN bond length is ' + str(ANN_bondl) + ' type ' + str(type(ANN_bondl)))
+                 if args.debug:
+                    print('ANN bond length is ' + str(ANN_bondl) + ' type ' + str(type(ANN_bondl)))
 
             else:
                  ANN_bondl = len([item for items in batslist for item in items])*[False] ## there needs to be 1 length per possible lig
                  if args.debug:
                      print("ANN called failed with reason: " + ANN_reason)
          except:
-         # else:
+         #else:
              print("ANN call rejected")
              ANN_reason = 'uncaught exception'
              ANN_flag = False
@@ -591,7 +592,8 @@ def init_ligand(args,lig,tcats,keepHs,i):
     # perform FF optimization if requested (not supported for pi-coordinating ligands)
     if args.ff and 'b' in args.ffoption and not rempi:
         if 'b' in lig.ffopt.lower():
-            print 'FF optimizing ligand'
+            if args.debug:
+                print 'FF optimizing ligand'
             lig3D.convert2mol3D()
             lig3D,enl = ffopt(args.ff,lig3D,lig3D.cat,0,[],False,[],100,args.debug)
     # skip hydrogen removal for pi-coordinating ligands
@@ -840,10 +842,12 @@ def ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=
         s = forcefield.Setup(OBMol,constr)
         # force field optimize structure
         if OBMol.NumHvyAtoms() > 10:
-            print('doing 50 steps')
+            if debug:
+                print('doing 50 steps')
             forcefield.ConjugateGradients(50)
         else:
-            print('doing 200 steps')
+            if debug:
+                print('doing 200 steps')
             forcefield.ConjugateGradients(200)
         forcefield.GetCoordinates(OBMol)
         en = forcefield.Energy()
@@ -1567,7 +1571,8 @@ def get_MLdist(args,lig3D,atom0,ligand,metal,MLb,i,ANN_flag,ANN_bondl,this_diag,
             pass
         if not exact_match and ANN_flag:
             # if no exact match found and ANN enabled, use it
-            print('no M-L match in DB, using ANN')
+            if args.debug:
+                print('no M-L match in DB, using ANN')
             bondl =  ANN_bondl
         elif exact_match:
             print('using exact M-L match from DB')
@@ -2836,13 +2841,16 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 # remove dummy cm atom if requested
                 if rempi:
                     core3D.deleteatom(core3D.natoms-1)
-                print('number of atoms in lig3D is ' + str(lig3D.natoms))
+                if args.debug:
+                    print('number of atoms in lig3D is ' + str(lig3D.natoms))
                 if lig3D.natoms < 3:
                     frozenats += range(core3D.natoms-2,core3D.natoms)
-                    print(str(range(core3D.natoms-2,core3D.natoms)) + ' are frozen.')
+                    if args.debug:
+                        print(str(range(core3D.natoms-2,core3D.natoms)) + ' are frozen.')
                 if args.calccharge:
                     core3D.charge += lig3D.charge
-                    print('core3D charge is ' + str(core3D.charge))
+                    if args.debug:
+                        print('core3D charge is ' + str(core3D.charge))
                 # perform FF optimization if requested
                 if args.debug:
                     print('saving a copy of the complex named complex_'+str(i)+'_'+str(j) + '.xyz')
@@ -2872,7 +2880,8 @@ def mcomplex(args,ligs,ligoc,licores,globs):
             ligsused += 1
     # perform FF optimization if requested
     if 'a' in args.ffoption:
-        print('Performing final FF opt')
+        if args.debug:
+            print('Performing final FF opt')
         # idxes
         midx = core3D.findMetal()[0]
        
@@ -3352,7 +3361,8 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     this_diag.set_sanity(sanity,d0)
     # generate file name
     fname = name_complex(rootdir,name_core,args.geometry,ligands,ligoc,sernum,args,nconf,sanity)
-    print('fname is ' + fname)
+    if args.debug:
+        print('fname is ' + fname)
     # generate ts 
     if (args.tsgen):
         substrate = []
