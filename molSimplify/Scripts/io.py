@@ -135,19 +135,20 @@ def getligs():
 ## Get ligands cores
 #
 #  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getligs() but returns the full dictionary
+#  @param flip if we want to return flipped versions of bidentates
 #  @return Ligands dictionary
-def getlicores():
+def getlicores(flip=True):
     globs = globalvars()
     if globs.custom_path: # test if a custom path is used:
          licores = str(globs.custom_path).rstrip('/') + "/Ligands/ligands.dict"
     else:
         licores = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Ligands/ligands.dict")
     licores = readdict(licores)
-    
-    for ligand in licores.keys():
-        if len(licores[ligand][2]) == 2 and type(licores[ligand][2]) == list:
-            licores[ligand+'_flipped'] = copy.deepcopy(licores[ligand])
-            licores[ligand+'_flipped'][2].reverse()
+    if flip:
+        for ligand in licores.keys():
+            if len(licores[ligand][2]) == 2 and type(licores[ligand][2]) == list:
+                licores[ligand+'_flipped'] = copy.deepcopy(licores[ligand])
+                licores[ligand+'_flipped'][2].reverse()
     return licores
 
 ## Get simple ligands in dictionary
