@@ -23,8 +23,13 @@
     You should have received a copy of the GNU General Public License
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
-
+# fix OB bug: https://github.com/openbabel/openbabel/issues/1983
 import sys, argparse, os, platform, shutil
+flags = sys.getdlopenflags()
+import openbabel
+sys.setdlopenflags(flags)
+
+
 from Scripts.inparse import *
 from Scripts.generator import *
 from molSimplify.Classes.globalvars import *
@@ -82,6 +87,15 @@ except ImportError:
 ## Main function
 #  @param args Argument namespace
 def main(args=None):
+    
+    ## issue a call to test TF, this is needed to keep
+    ## ordering between openbabel and TF calls consistent
+    ## on some sytems
+    if globs.testTF():
+        print('TensorFlow connection successful')
+    else:
+        print('TensorFlow connection failed')
+
     if args is None:
         args = sys.argv[1:]
     ### run GUI by default ###
