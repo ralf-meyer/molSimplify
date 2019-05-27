@@ -124,10 +124,10 @@ def check_ligands(ligs,batlist,dents,tcats):
                         eq_dent = this_dent
                         eq_tcat = tcats[i]
     if not (len(axial_ligs) == 1):
-        print('axial ligs mismatch: ',axial_ligs,ax_dent)
+        print(('axial ligs mismatch: ',axial_ligs,ax_dent))
         valid = False
     if not (len(equitorial_ligs) == 1):
-        print('equitorial ligs mismatch: ',equitorial_ligs,eq_dent)
+        print(('equitorial ligs mismatch: ',equitorial_ligs,eq_dent))
         valid = False
     if valid: # get the index position in ligs
         axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
@@ -173,7 +173,7 @@ def get_con_at_type(mol,connection_atoms):
                     valid = False
         if not this_type in ['C','O','Cl','N','S']:
             valid = False
-            print('untrained atom type: ',this_type)
+            print(('untrained atom type: ',this_type))
     return valid,this_type
 
 
@@ -231,8 +231,8 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         ox = int(oxidation_state)
         spin = args.spin
         if args.debug:
-	    print('metal is '+ str(this_metal))
-            print('metal validity',valid)
+	    print(('metal is '+ str(this_metal)))
+            print(('metal validity',valid))
         if not valid:
             emsg.append("\n Oxidation state not available for this metal")
             ANN_reason = 'ox state not avail for metal'
@@ -242,12 +242,12 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             emsg.append("\n this spin state not available for this metal")
             ANN_reason = 'spin state not availble for metal'
     if emsg:
-        print(str(" ".join( ["ANN messages:"] +   [str(i) for i in emsg] )))
+        print((str(" ".join( ["ANN messages:"] +   [str(i) for i in emsg] ))))
     if valid:
         valid,axial_ligs,equitorial_ligs,ax_dent,eq_dent,ax_tcat,eq_tcat,axial_ind_list,equitorial_ind_list = check_ligands(ligs,batslist,dents,tcats)
         if args.debug:
             print("\n")
-            print("ligand validity is  "+str(valid))
+            print(("ligand validity is  "+str(valid)))
             print('Occs')
             print(occs)
             print('Ligands')
@@ -256,10 +256,10 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             print(dents)
             print('Bats (backbone atoms)')
             print(batslist)
-            print('lig validity',valid)
-            print('ax ligs',axial_ligs)
-            print('eq ligs',equitorial_ligs)
-            print('spin is',spin)
+            print(('lig validity',valid))
+            print(('ax ligs',axial_ligs))
+            print(('eq ligs',equitorial_ligs))
+            print(('spin is',spin))
         if not valid:
                 ANN_reason  = 'found incorrect ligand symmetry'
 
@@ -286,19 +286,19 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
             if ax_tcat:
                     ax_lig3D.cat = ax_tcat
                     if args.debug:
-                        print('custom ax connect atom given (0-ind) '+str(ax_tcat))
+                        print(('custom ax connect atom given (0-ind) '+str(ax_tcat)))
             if eq_tcat:
                     eq_lig3D.cat = eq_tcat
                     if args.debug:
-                        print('custom eq connect atom given (0-ind) '+str(eq_tcat))
+                        print(('custom eq connect atom given (0-ind) '+str(eq_tcat)))
     if args.debug:
-        print('finished checking ligands, valid is '+str(valid))
+        print(('finished checking ligands, valid is '+str(valid)))
     if valid:
         valid,ax_type = get_con_at_type(ax_lig3D,ax_lig3D.cat)
     if valid:
         valid,eq_type = get_con_at_type(eq_lig3D,eq_lig3D.cat)
         if args.debug:
-            print('finished con atom types '+ str(ax_type) + ' and ' + str(eq_type))
+            print(('finished con atom types '+ str(ax_type) + ' and ' + str(eq_type)))
 
     if valid:
         eq_ki = get_truncated_kier(eq_lig3D,eq_lig3D.cat)
@@ -333,18 +333,18 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
 			print('cannot case exchange argument as a float, using 20%')
  
         if args.debug:
-            print('ax_bo',ax_bo)
-            print('eq_bo',eq_bo)
-            print('ax_dent',ax_dent)
-            print('eq_dent',eq_dent)
-            print('ax_charge',ax_charge)
-            print('eq_charge',eq_charge)
-            print('sum_delen',sum_delen)
-            print('max_delen',max_delen)
-            print('ax_type',ax_type)
-            print('eq_type',eq_type)
-            print('ax_ki',ax_ki)
-            print('eq_ki',eq_ki)
+            print(('ax_bo',ax_bo))
+            print(('eq_bo',eq_bo))
+            print(('ax_dent',ax_dent))
+            print(('eq_dent',eq_dent))
+            print(('ax_charge',ax_charge))
+            print(('eq_charge',eq_charge))
+            print(('sum_delen',sum_delen))
+            print(('max_delen',max_delen))
+            print(('ax_type',ax_type))
+            print(('eq_type',eq_type))
+            print(('ax_ki',ax_ki))
+            print(('eq_ki',eq_ki))
 
 
     if valid:
@@ -398,17 +398,17 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         print("************** and metal-ligand bond distances    ****************")
         print("******************************************************************")
         if high_spin:
-            print('You have selected a high-spin state, s = ' + str(spin))
+            print(('You have selected a high-spin state, s = ' + str(spin)))
         else:
-            print('You have selected a low-spin state, s = ' + str(spin))
+            print(('You have selected a low-spin state, s = ' + str(spin)))
         ## test Euclidean norm to training data distance
         train_dist,best_row = find_eu_dist(nn_excitation)
         ANN_trust = max(0.01,1.0-train_dist)
 
         ANN_attributes.update({'ANN_dist_to_train':train_dist} )
         ANN_attributes.update({'ANN_closest_train':best_row} )
-        print('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +"{0:.2f}".format(ANN_trust))
-        print(' with closest training row ' + best_row[:-2] + ' at  ' + str(best_row[-2:]) + '% HFX')
+        print(('distance to training data is ' + "{0:.2f}".format(train_dist) + ' ANN trust: ' +"{0:.2f}".format(ANN_trust)))
+        print((' with closest training row ' + best_row[:-2] + ' at  ' + str(best_row[-2:]) + '% HFX'))
         ANN_trust = 'not set'
         if float(train_dist)< 0.25:
             print('ANN results should be trustworthy for this complex ')
@@ -438,7 +438,7 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
                 print('warning, ANN predicts a low spin ground state for this complex')
             else:
                     print('warning, ANN predicts a near degenerate ground state for this complex')
-        print("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX')
+        print(("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(float(delta[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX'))
         ANN_attributes.update({'pred_split_ HS_LS':delta[0]})
         ## reparse to save attributes
         ANN_attributes.update({'This spin':spin})
@@ -457,15 +457,15 @@ def ANN_preproc(args,ligs,occs,dents,batslist,tcats,licores):
         else:
             r = r_hs
 
-        print('ANN bond length is predicted to be: '+"{0:.2f}".format(float(r)) + ' angstrom')
+        print(('ANN bond length is predicted to be: '+"{0:.2f}".format(float(r)) + ' angstrom'))
         ANN_attributes.update({'ANN_bondl': len(batslist)*[r[0]]})
-        print('ANN low spin bond length is predicted to be: '+"{0:.2f}".format(float(r_ls)) + ' angstrom')
-        print('ANN high spin bond length is predicted to be: '+"{0:.2f}".format(float(r_hs)) + ' angstrom')
+        print(('ANN low spin bond length is predicted to be: '+"{0:.2f}".format(float(r_ls)) + ' angstrom'))
+        print(('ANN high spin bond length is predicted to be: '+"{0:.2f}".format(float(r_hs)) + ' angstrom'))
         
 	### use ANN to predict fucntional sensitivty
         HFX_slope = 0 
         HFX_slope = get_slope(slope_excitation)
-        print('Predicted HFX exchange sensitivity is : '+"{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX')
+        print(('Predicted HFX exchange sensitivity is : '+"{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX'))
 	ANN_attributes.update({'ANN_slope':HFX_slope})
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")

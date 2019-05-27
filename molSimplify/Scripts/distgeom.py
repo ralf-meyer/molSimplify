@@ -226,7 +226,7 @@ def DistErrGrad(x,*args):
     LB,UB,natoms = args
     g = np.zeros(3*natoms)
     for i in range(natoms):
-        jr = range(natoms)
+        jr = list(range(natoms))
         jr.remove(i)
         for j in jr:
             ri = [x[3*i],x[3*i+1],x[3*i+2]]

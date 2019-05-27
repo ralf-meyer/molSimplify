@@ -23,7 +23,7 @@ def generateisomers(args):
         denticity = checkdenticity(ligands)
         dents.append(denticity)
     if max(dents) > 2:
-        print 'WARNING, -isomers does not support ligand denticities greater than two. Quiting...'
+        print('WARNING, -isomers does not support ligand denticities greater than two. Quiting...')
         continue_flag = False
     
     #If supported, run the program
@@ -53,7 +53,7 @@ def expandrepresentation(args):
             expanded.append(ligand+'_alphabond')
             expanded.append(ligand+'_betabond')
         elif checkdenticity(ligand) > 2:
-            print 'WARNING, -isomers does not fully support ligand denticities greater than two!'
+            print('WARNING, -isomers does not fully support ligand denticities greater than two!')
             expanded.append(ligand)
         else:
             expanded.append(ligand)
@@ -184,8 +184,8 @@ def generatestereo(collapsed_representation):
         if len(stereoisomer) == 6:
             stereoisomers.append(stereoisomer)
         else:
-            print 'WARNING, isomers.py has detected a non-octahedral complex in stereoisomer generation.'
-            print 'Stereoisomer generation only supports octahedral complexes!'
+            print('WARNING, isomers.py has detected a non-octahedral complex in stereoisomer generation.')
+            print('Stereoisomer generation only supports octahedral complexes!')
     
     stereoisomers_final = []
     for isomer in stereoisomers:
@@ -279,9 +279,9 @@ def getadjacency(geo):
     elif geo == 'sqp':
         return sqp_adjacency
     else:
-        print '****************************************************'
-        print '****** WARNING, '+geo+' not supported by -isomers! *****'
-        print '****************************************************'
+        print('****************************************************')
+        print('****** WARNING, '+geo+' not supported by -isomers! *****')
+        print('****************************************************')
         return None
         
 ## Searches through a list and returns the index(es) as which a value occurs

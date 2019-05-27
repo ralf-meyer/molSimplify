@@ -128,7 +128,7 @@ def sgejobgen(args,jobdirs):
             elif not molc and 'molc' in args.qccode.lower():
                 output.write('pymolcas molcas.input -f')
         else:
-            print 'Not supported QC code requested. Please input execution command manually'
+            print('Not supported QC code requested. Please input execution command manually')
         output.close()
 
 ## Generates jobscripts for SLURM queueing system
@@ -232,5 +232,5 @@ def slurmjobgen(args,jobdirs):
             elif not molc and 'molc' in args.qccode.lower():
                 output.write('pymolcas molcas.input -f')
         else:
-            print 'No supported QC code requested. Please input execution command manually'
+            print('No supported QC code requested. Please input execution command manually')
         output.close()

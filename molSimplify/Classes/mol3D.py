@@ -310,8 +310,7 @@ class mol3D:
             pmc[2] /= mmass
         else:
             pmc = False
-            print
-            'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n'
+            print('ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
         return pmc
 
     ## Computes coordinates of center of symmetry of molecule
@@ -540,7 +539,7 @@ class mol3D:
     #  @param self The object pointer
     #  @oct flag to control  special oct-metal bonds
     def createMolecularGraph(self, oct=True):
-        index_set = range(0, self.natoms)
+        index_set = list(range(0, self.natoms))
         A = np.zeros((self.natoms, self.natoms))
         catoms_metal = list()
         metal_ind = None
@@ -956,46 +955,45 @@ class mol3D:
                     distance_max = 1.37 * (atom.rad + ratom.rad)
 
                 if debug:
-                    print('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol()))
-                    print('maximum bonded distance is ' + str(distance_max))
+                    print(('metal in  cat ' + str(atom.symbol()) + ' and rat ' + str(ratom.symbol())))
+                    print(('maximum bonded distance is ' + str(distance_max)))
 
                 if d < distance_max and i != ind:
                     ### trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
                         if debug:
                             print('invalid due to hydrogens: ')
-                            print(atom.symbol())
-                            print(ratom.symbol())
+                            print((atom.symbol()))
+                            print((ratom.symbol()))
                         valid = False
                     if d < distance_max and i != ind and valid:
                         if atom.symbol() in ["C","S","N"]:
                             if debug:
                                 print('\n')
-                                self.printxyz()
-                                print('this atom in is ' + str(i))
-                                print('this atom sym is ' + str(atom.symbol()))
-                                print('this ratom in is ' + str(self.getAtom(i).symbol()))
-                                print('this ratom sym is ' + str(ratom.symbol()))
+                                print(('this atom in is ' + str(i)))
+                                print(('this atom sym is ' + str(atom.symbol())))
+                                print(('this ratom in is ' + str(self.getAtom(i).symbol())))
+                                print(('this ratom sym is ' + str(ratom.symbol())))
                             ## in this case, atom might be intruder C!
                             possible_inds = self.getBondedAtomsnotH(ind)  ## bonded to metal
                             if debug:
-                                print('poss inds are' + str(possible_inds))
+                                print(('poss inds are' + str(possible_inds)))
                             if len(possible_inds) > CN:
                                 metal_prox = sorted(possible_inds, key=lambda x: self.getDistToMetal(x, ind))
 
                                 allowed_inds = metal_prox[0:CN]
                                 # if
                                 if debug:
-                                    print('ind: ' + str(ind))
-                                    print('metal prox: ' + str(metal_prox))
-                                    print('trimmed to: ' + str(allowed_inds))
+                                    print(('ind: ' + str(ind)))
+                                    print(('metal prox: ' + str(metal_prox)))
+                                    print(('trimmed to: ' + str(allowed_inds)))
                                     print(allowed_inds)
-                                    print('CN is ' + str(CN))
+                                    print(('CN is ' + str(CN)))
 
                                 if not i in allowed_inds:
                                     valid = False
                                     if debug:
-                                        print('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds))
+                                        print(('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds)))
                                 else:
                                     if debug:
                                         print('Ok based on atom')
@@ -1006,15 +1004,15 @@ class mol3D:
                             if len(possible_inds) > CN:
                                 allowed_inds = metal_prox[0:CN]
                                 if debug:
-                                    print('ind: ' + str(ind))
-                                    print('metal prox:' + str(metal_prox))
-                                    print('trimmed to ' + str(allowed_inds))
+                                    print(('ind: ' + str(ind)))
+                                    print(('metal prox:' + str(metal_prox)))
+                                    print(('trimmed to ' + str(allowed_inds)))
                                     print(allowed_inds)
                                 if not ind in allowed_inds:
                                     valid = False
                                     if debug:
-                                        print('bond rejected based on ratom ' + str(
-                                            ind) + ' with symbol ' + ratom.symbol())
+                                        print(('bond rejected based on ratom ' + str(
+                                            ind) + ' with symbol ' + ratom.symbol()))
                                 else:
                                     if debug:
                                         print('ok based on ratom...')
@@ -1024,16 +1022,16 @@ class mol3D:
             if (d < distance_max and i != ind):
                 if valid:
                     if debug:
-                        print('Valid atom  ind ' + str(i) + ' (' + atom.symbol() + ') and ' + str(
-                            ind) + ' (' + ratom.symbol() + ')')
-                        print(' at distance ' + str(d) + ' (which is less than ' + str(distance_max) + ')')
+                        print(('Valid atom  ind ' + str(i) + ' (' + atom.symbol() + ') and ' + str(
+                            ind) + ' (' + ratom.symbol() + ')'))
+                        print((' at distance ' + str(d) + ' (which is less than ' + str(distance_max) + ')'))
                     nats.append(i)
                 else:
                     if debug:
-                        print('atom  ind ' + str(i) + ' (' + atom.symbol() + ')')
-                        print('has been disallowed from bond with ' + str(ind) + ' (' + ratom.symbol() + ')')
-                        print(' at distance ' + str(d) + ' (which would normally be less than ' + str(
-                            distance_max) + ')')
+                        print(('atom  ind ' + str(i) + ' (' + atom.symbol() + ')'))
+                        print(('has been disallowed from bond with ' + str(ind) + ' (' + ratom.symbol() + ')'))
+                        print((' at distance ' + str(d) + ' (which would normally be less than ' + str(
+                            distance_max) + ')'))
                     if d < 2 and not atom.symbol() == 'H' and not ratom.symbol() == 'H':
                         print('Error, mol3D could not understand conenctivity in mol')
         return nats
@@ -1484,11 +1482,11 @@ class mol3D:
                 if (distance(atom1.coords(), atom0.coords()) < 0.85 * (atom1.rad + atom0.rad)):
                     overlap = True
                     if not (silence):
-                        print
+                        print()
                         "#############################################################"
-                        print
+                        print()
                         "!!!Molecules might be overlapping. Increase distance!!!"
-                        print
+                        print()
                         "#############################################################"
                     break
         return overlap
@@ -1552,7 +1550,7 @@ class mol3D:
         for atom in self.atoms:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-            print ss
+            print(ss)
 
     ## returns string of xyz coordinates
     # 
@@ -1593,7 +1591,7 @@ class mol3D:
                     globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                                   name=line_split[0])
-                elif line_split[0] in amassdict.keys():
+                elif line_split[0] in list(amassdict.keys()):
                     atom = atom3D(line_split[0], [float(line_split[1]), float(line_split[2]), float(line_split[3])])
                 else:
                     print('cannot find atom type')
@@ -1618,7 +1616,7 @@ class mol3D:
                     # globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                                   name=line_split[0])
-                elif line_split[0] in en_dict.keys():
+                elif line_split[0] in list(en_dict.keys()):
                     atom = atom3D(line_split[0], [float(line_split[1]), float(line_split[2]), float(line_split[3])])
                 else:
                     print('cannot find atom type')
@@ -1637,8 +1635,7 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print
-            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            print("ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             rmsd = 0
@@ -1694,8 +1691,7 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print
-            "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms.."
+            print("ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             dev = 0
@@ -1712,8 +1708,7 @@ class mol3D:
         Nat1 = mol2.natoms
         dist_max = 0
         if (Nat0 != Nat1):
-            print
-            "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
+            print("ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1726,8 +1721,7 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print
-            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            print("ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             maxdist = 0
@@ -1752,8 +1746,7 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print
-            "ERROR: RMSD can be calculated only for molecules with the same number of atoms.."
+            print("ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             rmsd = 0
@@ -1768,8 +1761,7 @@ class mol3D:
         Nat1 = mol2.natoms
         dist_max = 0
         if (Nat0 != Nat1):
-            print
-            "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.."
+            print("ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -1803,12 +1795,9 @@ class mol3D:
                     if distance(atom1.coords(), atom0.coords()) < mind:
                         mind = distance(atom1.coords(), atom0.coords())
                     if not (silence):
-                        print
-                        "#############################################################"
-                        print
-                        "!!!Molecules might be overlapping. Increase distance!!!"
-                        print
-                        "#############################################################"
+                        print("#############################################################")
+                        print("Molecules might be overlapping. Increase distance!")
+                        print("#############################################################")
                     break
         return overlap, mind
 
@@ -1893,7 +1882,7 @@ class mol3D:
 
         for atom in self.atoms:
             this_sym = atom.symbol()
-            if not this_sym in unique_types.keys():
+            if not this_sym in list(unique_types.keys()):
                 unique_types.update({this_sym: 1})
             else:
                 unique_types.update({this_sym: unique_types[this_sym] + 1})
@@ -1987,8 +1976,8 @@ class mol3D:
             catoms = []
 
         if debug:
-            print('metal coordinate:', metal_coord)
-            print('coordinations: ', catoms, len(catoms))
+            print(('metal coordinate:', metal_coord))
+            print(('coordinations: ', catoms, len(catoms)))
 
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
@@ -2033,11 +2022,11 @@ class mol3D:
         th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
         self.catoms = catoms_arr
         if debug:
-            print('th:', th_output_arr)
-            print('sum_del:', sum_del_angle)
-            print('catoms_arr:', catoms_arr)
-            print('catoms_type:', [self.getAtom(x).symbol() for x in catoms_arr])
-            print('catoms_coord:', [self.getAtom(x).coords() for x in catoms_arr])
+            print(('th:', th_output_arr))
+            print(('sum_del:', sum_del_angle))
+            print(('catoms_arr:', catoms_arr))
+            print(('catoms_type:', [self.getAtom(x).symbol() for x in catoms_arr]))
+            print(('catoms_coord:', [self.getAtom(x).coords() for x in catoms_arr]))
         for idx, ele in enumerate(th_output_arr):
             theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
         theta_trunc_arr = theta_arr
@@ -2046,8 +2035,8 @@ class mol3D:
         oct_angle_devi = theta_trunc_arr_T[1]
         oct_angle_all = theta_trunc_arr_T[2]
         if debug:
-            print('Summation of deviation angle for catoms:', oct_angle_devi)
-            print('Angle for catoms:', oct_angle_all)
+            print(('Summation of deviation angle for catoms:', oct_angle_devi))
+            print(('Angle for catoms:', oct_angle_all))
         for atom in oct_catoms:
             coord = self.getAtom(atom).coords()
             dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
@@ -2075,7 +2064,7 @@ class mol3D:
             dist_del_eq = -1
         dist_del_all = oct_dist[-1] - oct_dist[0]
         if debug:
-            print('dist:', dist_eq, dist_ax)
+            print(('dist:', dist_eq, dist_ax))
         dict_catoms_shape = dict()
         dict_catoms_shape['oct_angle_devi_max'] = float(max(oct_angle_devi))
         dict_catoms_shape['max_del_sig_angle'] = float(max_del_sig_angle)
@@ -2115,9 +2104,9 @@ class mol3D:
             liglist_init_atom = [[self.init_mol_trunc.getAtom(x).symbol() for x in ele]
                                  for ele in liglist_init]
             if debug:
-                print('init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()])
-                print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
-                print('liglist, ligdents, ligcons', liglist, ligdents, ligcons)
+                print(('init_mol_trunc:', [x.symbol() for x in self.init_mol_trunc.getAtoms()]))
+                print(('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init))
+                print(('liglist, ligdents, ligcons', liglist, ligdents, ligcons))
         else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
             if debug:
                 print('Just inherit the ligand list from init structure.')
@@ -2135,11 +2124,11 @@ class mol3D:
             _, catoms = self.my_mol_trunc.oct_comp(debug=False)
             _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
         if debug:
-            print('ligand_list opt in symbols:', liglist_atom)
-            print('ligand_list init in symbols: ', liglist_init_atom)
-            print("catoms opt: ", catoms)
-            print("catoms init: ", catoms_init)
-            print("catoms diff: ", set(catoms) - set(catoms_init), len(set(catoms) - set(catoms_init)))
+            print(('ligand_list opt in symbols:', liglist_atom))
+            print(('ligand_list init in symbols: ', liglist_init_atom))
+            print(("catoms opt: ", catoms))
+            print(("catoms init: ", catoms_init))
+            print(("catoms diff: ", set(catoms) - set(catoms_init), len(set(catoms) - set(catoms_init))))
         liglist_shifted = []
         if not len(set(catoms) - set(catoms_init)):
             for ii, ele in enumerate(liglist_init_atom):
@@ -2155,9 +2144,9 @@ class mol3D:
                                 match = connectivity_match(liginds_init, liginds, self.init_mol_trunc,
                                                            self.my_mol_trunc)
                             if debug:
-                                print('fragment in liglist_init', ele, liginds_init)
-                                print('fragment in liglist', _ele, liginds)
-                                print("match status: ", match)
+                                print(('fragment in liglist_init', ele, liginds_init))
+                                print(('fragment in liglist', _ele, liginds))
+                                print(("match status: ", match))
                             if match:
                                 posi = idx
                                 _flag = True
@@ -2176,7 +2165,7 @@ class mol3D:
             print('Ligands cannot match! (Connecting atoms are different)')
             flag_match = False
         if debug:
-            print('returning: ', liglist_shifted, liglist_init)
+            print(('returning: ', liglist_shifted, liglist_init))
         if not catoms_arr == None:
             flag_match = True
         return liglist_shifted, liglist_init, flag_match
@@ -2202,8 +2191,8 @@ class mol3D:
                                                                 debug=debug,
                                                                 depth=depth)
         if debug:
-            print('lig_list:', liglist, len(liglist))
-            print('lig_list_init:', liglist_init, len(liglist_init))
+            print(('lig_list:', liglist, len(liglist)))
+            print(('lig_list_init:', liglist_init, len(liglist_init)))
         if flag_lbd:
             mymol_xyz = self.my_mol_trunc
             initmol_xyz = self.init_mol_trunc
@@ -2215,8 +2204,8 @@ class mol3D:
             for idx, lig in enumerate(liglist):
                 lig_init = liglist_init[idx]
                 if debug:
-                    print('----This is %d th piece of ligand.' % (idx + 1))
-                    print('ligand is:', lig, lig_init)
+                    print(('----This is %d th piece of ligand.' % (idx + 1)))
+                    print(('ligand is:', lig, lig_init))
                 foo = []
                 for ii, atom in enumerate(mymol_xyz.atoms):
                     if ii in lig:
@@ -2234,9 +2223,9 @@ class mol3D:
                 tmp_org_mol = mol3D()
                 tmp_org_mol = readfromtxt(tmp_org_mol, foo)
                 if debug:
-                    print('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms))
-                    print('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()],
-                          [x.symbol() for x in tmp_org_mol.getAtoms()])
+                    print(('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms)))
+                    print(('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()],
+                          [x.symbol() for x in tmp_org_mol.getAtoms()]))
                 if flag_deleteH:
                     tmp_mol.deleteHs()
                     tmp_org_mol.deleteHs()
@@ -2247,8 +2236,8 @@ class mol3D:
                 atom_dist_max = -1
                 max_atom_dist_arr.append(atom_dist_max)
                 if debug:
-                    print('rmsd:', rmsd)
-                    print('atom_dist_max', atom_dist_max)
+                    print(('rmsd:', rmsd))
+                    print(('atom_dist_max', atom_dist_max))
             rmsd_max = max(rmsd_arr)
             atom_dist_max = max(max_atom_dist_arr)
         else:
@@ -2345,12 +2334,12 @@ class mol3D:
         self.geo_dict.update(self.dict_orientation)
         banned_sign = 'banned_by_user'
         if debug:
-            print('dict_oct_info', self.geo_dict)
+            print(('dict_oct_info', self.geo_dict))
         for ele in self.std_not_use:
             self.geo_dict[ele] = banned_sign
         self.geo_dict['atom_dist_max'] = banned_sign
         flag_list = []
-        for key, values in dict_check.items():
+        for key, values in list(dict_check.items()):
             if (self.geo_dict[key] > values) and (not self.geo_dict[key] == banned_sign):
                 flag_list.append(key)
         if self.geo_dict['num_coord_metal'] < num_coord:
@@ -2366,7 +2355,7 @@ class mol3D:
             flag_oct = 0
             flag_list = '; '.join(flag_list)
             print('------bad structure!-----')
-            print('flag_list:', flag_list)
+            print(('flag_list:', flag_list))
         self.flag_oct = flag_oct
         self.flag_list = flag_list
         return flag_oct, flag_list, self.geo_dict
@@ -2375,8 +2364,8 @@ class mol3D:
     def print_geo_dict(self):
         print('========Geo_check_results========')
         print('--------coordination_check-----')
-        print('num_coord_metal:', self.num_coord_metal)
-        print('catoms_arr:', self.catoms)
+        print(('num_coord_metal:', self.num_coord_metal))
+        print(('catoms_arr:', self.catoms))
         print('-------catoms_shape_check-----')
         _dict = self.dict_catoms_shape
         self.print_dict(_dict)
@@ -2390,7 +2379,7 @@ class mol3D:
 
     def print_dict(self, _dict):
         for key, value in _dict.items():
-            print('%s: ' % key, value)
+            print(('%s: ' % key, value))
 
     ## Final geometry check call for octahedral structures.
     ## Input: init_mol. mol3D object for the inital geometry.
@@ -2563,7 +2552,7 @@ class mol3D:
                 _, catoms_arr = init_mol.oct_comp(angle_ref=angle_ref, debug=debug)
         # print("connecting atoms are,", catoms_arr)
         if len(catoms_arr) != num_coord:
-            print('Error, must have %d connecting atoms for octahedral.' % num_coord)
+            print(('Error, must have %d connecting atoms for octahedral.' % num_coord))
             print('Please DO CHECK what happens!!!!')
             flag_oct = 0
             flag_list = ["num_coord_metal"]
@@ -2629,7 +2618,7 @@ class mol3D:
                     unique_symbols[atoms.symbol()] = 1
                 else:
                     unique_symbols[atoms.symbol()] = unique_symbols[atoms.symbol()] + 1
-        skeys = sorted(unique_symbols.keys(), key=lambda x: (self.globs.elementsbynum().index(x)))
+        skeys = sorted(list(unique_symbols.keys()), key=lambda x: (self.globs.elementsbynum().index(x)))
         skeys = skeys[::-1]
         for sk in skeys:
             retstr += '\\textrm{' + sk + '}_{' + str(int(unique_symbols[sk])) + '}'

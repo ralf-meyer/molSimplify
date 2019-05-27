@@ -142,8 +142,8 @@ def get_num_coord_metal(file_in, debug=False):
     metal_coord = my_mol.getAtomCoords(metal_ind)
     catoms = my_mol.getBondedAtomsOct(ind=metal_ind)
     if debug:
-        print('metal coordinate:', metal_coord)
-        print('coordinations: ', catoms, len(catoms))
+        print(('metal coordinate:', metal_coord))
+        print(('coordinations: ', catoms, len(catoms)))
     ## standard 1: number of coordination for metal.
     num_coord_metal = len(catoms)
     return num_coord_metal, catoms
@@ -163,8 +163,8 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
                                                        debug=debug, depth=depth,
                                                        BondedOct=BondedOct)
     if debug:
-        print('lig_list:', liglist, len(liglist))
-        print('lig_list_init:', liglist_init, len(liglist_init))
+        print(('lig_list:', liglist, len(liglist)))
+        print(('lig_list_init:', liglist_init, len(liglist_init)))
     if flag_lbd:
         mymol_xyz = 'mymol_trunc_tmp.xyz'
         initmol_xyz = 'init_trunc_tmp.xyz'
@@ -176,8 +176,8 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
         for idx, lig in enumerate(liglist):
             lig_init = liglist_init[idx]
             if debug:
-                print('----This is %d th piece of ligand.' % (idx + 1))
-                print('ligand is:', lig, lig_init)
+                print(('----This is %d th piece of ligand.' % (idx + 1)))
+                print(('ligand is:', lig, lig_init))
             posi_shift = 2
             ## Create mol3D without a tmp file.
             _start = time.clock()
@@ -186,7 +186,7 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
                 for ii, line in enumerate(fo):
                     if (ii - posi_shift) in lig:
                         if debug:
-                            print('line is', line)
+                            print(('line is', line))
                         foo.append(line)
             tmp_mol = mol3D()
             tmp_mol = readfromtxt(tmp_mol, foo)
@@ -195,16 +195,16 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
                 for ii, line in enumerate(fo):
                     if (ii - posi_shift) in lig_init:
                         if debug:
-                            print('line is', line)
+                            print(('line is', line))
                         foo.append(line)
             tmp_org_mol = mol3D()
             tmp_org_mol = readfromtxt(tmp_org_mol, foo)
             _elapsed = (time.clock() - _start)
             # print('-reading txt:', _elapsed)
             if debug:
-                print('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms))
-                print('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()],
-                      [x.symbol() for x in tmp_org_mol.getAtoms()])
+                print(('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms)))
+                print(('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()],
+                      [x.symbol() for x in tmp_org_mol.getAtoms()]))
             if flag_deleteH:
                 tmp_mol.deleteHs()
                 tmp_org_mol.deleteHs()
@@ -214,8 +214,8 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
             atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)
             max_atom_dist_arr.append(atom_dist_max)
             if debug:
-                print('rmsd:', rmsd)
-                print('atom_dist_max', atom_dist_max)
+                print(('rmsd:', rmsd))
+                print(('atom_dist_max', atom_dist_max))
         rmsd_max = max(rmsd_arr)
         atom_dist_max = max(max_atom_dist_arr)
     else:
@@ -247,8 +247,8 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
         liglist_init_atom = [[init_mol_trunc.getAtom(x).symbol() for x in ele]
                              for ele in liglist_init]
         if debug:
-            print('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()])
-            print('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init)
+            print(('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()]))
+            print(('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init))
             # print('liglist, ligdents, ligcons', liglist, ligdents, ligcons)
     else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
         # _start = time.clock()
@@ -266,8 +266,8 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                              for ele in liglist_init]
 
     if debug:
-        print('ligand_list opt in symbols:', liglist_atom)
-        print('ligand_list init in symbols: ', liglist_init_atom)
+        print(('ligand_list opt in symbols:', liglist_atom))
+        print(('ligand_list init in symbols: ', liglist_init_atom))
     liglist_shifted = []
     for ele in liglist_init_atom:
         # posi = liglist_atom.index(ele)
@@ -278,8 +278,8 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
             for idx, _ele in enumerate(liglist_atom):
                 if set(ele) == set(_ele) and len(ele) == len(_ele):
                     if debug:
-                        print('fragment in liglist_init', ele)
-                        print('fragment in liglist', _ele)
+                        print(('fragment in liglist_init', ele))
+                        print(('fragment in liglist', _ele))
                     posi = idx
                     _flag = True
             liglist_shifted.append(liglist[posi])
@@ -293,7 +293,7 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
             print('Ligands cannot match!')
             flag_match = False
     if debug:
-        print('!!!!!returns', liglist_shifted, liglist_init)
+        print(('!!!!!returns', liglist_shifted, liglist_init))
     return liglist_shifted, liglist_init, flag_match
 
 
@@ -397,23 +397,23 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
         th_input_arr.append([catoms[idx1], theta_tmp])
     th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
     if debug:
-        print('th:', th_output_arr)
-        print('sum_del:', sum_del_angle)
-        print('catoms_arr:', catoms_arr)
-        print('catoms_type:', [my_mol.getAtom(x).symbol() for x in catoms_arr])
+        print(('th:', th_output_arr))
+        print(('sum_del:', sum_del_angle))
+        print(('catoms_arr:', catoms_arr))
+        print(('catoms_type:', [my_mol.getAtom(x).symbol() for x in catoms_arr]))
     for idx, ele in enumerate(th_output_arr):
         theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
     # theta_arr.sort(key=sort_sec_ele)
     # theta_trunc_arr = theta_arr[0:6]
     theta_trunc_arr = theta_arr
     # print('truncated theta array:', theta_trunc_arr)
-    theta_trunc_arr_T = list(map(list, zip(*theta_trunc_arr)))
+    theta_trunc_arr_T = list(map(list, list(zip(*theta_trunc_arr))))
     oct_catoms = theta_trunc_arr_T[0]
     oct_angle_devi = theta_trunc_arr_T[1]
     oct_angle_all = theta_trunc_arr_T[2]
     if debug:
-        print('Summation of deviation angle for catoms:', oct_angle_devi)
-        print('Angle for catoms:', oct_angle_all)
+        print(('Summation of deviation angle for catoms:', oct_angle_devi))
+        print(('Angle for catoms:', oct_angle_all))
     for atom in oct_catoms:
         coord = catom_coord[catoms.index(atom)]
         dist = distance(coord, metal_coord)
@@ -436,24 +436,24 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
             dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]  # eq dist is smaller
     dist_del_all = oct_dist[-1] - oct_dist[0]
     if debug:
-        print('dist:', dist_eq, dist_ax)
+        print(('dist:', dist_eq, dist_ax))
     dist_del_eq = max(dist_eq) - min(dist_eq)
     dist_del_ax = max(dist_ax) - min(dist_ax)
     dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
     oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax, dist_del_all]
     if debug:
-        print('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del)
+        print(('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del))
     return oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr
 
 
 def dict_check_processing(dict_info, dict_check, std_not_use,
                           num_coord=6, debug=False):
     if debug:
-        print('dict_oct_info', dict_info)
+        print(('dict_oct_info', dict_info))
     for ele in std_not_use:
         dict_info[ele] = 'banned_by_user'
     flag_list = []
-    for key, values in dict_check.items():
+    for key, values in list(dict_check.items()):
         if not dict_info[key] == 'banned_by_user':
             if dict_info[key] > values:
                 flag_list.append(key)
@@ -470,7 +470,7 @@ def dict_check_processing(dict_info, dict_check, std_not_use,
         flag_oct = 0
         flag_list = ', '.join(flag_list)
         print('------bad structure!-----')
-        print('flag_list:', flag_list)
+        print(('flag_list:', flag_list))
     return flag_oct, flag_list, dict_info
 
 
@@ -512,9 +512,9 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
     dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
     if debug:
         print('-------This is for the linear ligand orientation test-----')
-        print('!!!catoms_arr:', catoms_arr)
-        print('!!!dict_angle_linear', dict_angle_linear)
-        print('!!!dict_orientation', dict_orientation)
+        print(('!!!catoms_arr:', catoms_arr))
+        print(('!!!dict_angle_linear', dict_angle_linear))
+        print(('!!!dict_orientation', dict_orientation))
         print('---------orientation end.------------')
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
@@ -567,9 +567,9 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
         if debug:
             print('-------This is for the linear ligand orientation test-----')
-            print('!!!catoms_arr:', catoms_arr)
-            print('!!!dict_angle_linear', dict_angle_linear)
-            print('!!!dict_orientation', dict_orientation)
+            print(('!!!catoms_arr:', catoms_arr))
+            print(('!!!dict_angle_linear', dict_angle_linear))
+            print(('!!!dict_orientation', dict_orientation))
             print('---------orientation end.------------')
     dict_oct_info = {}
     dict_oct_info['num_coord_metal'] = num_coord_metal
@@ -607,9 +607,9 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
         dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
         if debug:
             print('-------This is for the linear ligand orientation test-----')
-            print('!!!catoms_arr:', catoms_arr)
-            print('!!!dict_angle_linear', dict_angle_linear)
-            print('!!!dict_orientation', dict_orientation)
+            print(('!!!catoms_arr:', catoms_arr))
+            print(('!!!dict_angle_linear', dict_angle_linear))
+            print(('!!!dict_orientation', dict_orientation))
             print('---------orientation end.------------')
     dict_struct_info = {}
     dict_struct_info['num_coord_metal'] = num_coord_metal
@@ -639,20 +639,20 @@ def loop_structure(_path, path_init_geo):
         for name in sorted(files):
             if name.split('.')[1] == 'xyz':
                 unique_num, oxstate, spinmult = name.split('_')[0], name.split('_')[4][1:], name.split('_')[5][2:]
-                print(unique_num, oxstate, spinmult)
+                print((unique_num, oxstate, spinmult))
                 file_in = '%s/%s' % (dirpath, name)
                 ## ---You may add the function to find initial geo here.
                 file_init_geo = find_file_with_unique_num(path_init_geo, unique_num)
                 # file_init_geo = gen_file_with_name(path_init_geo, name)
-                print('!!!!file info:!!!!!', file_in, file_init_geo)
+                print(('!!!!file info:!!!!!', file_in, file_init_geo))
                 if os.path.exists(file_init_geo):
                     flag_oct, flag_list, dict_oct_info = IsOct(file_in, file_init_geo)
                 else:
-                    print('No init_geo!', name)
+                    print(('No init_geo!', name))
                     flag_oct, flag_list, dict_oct_info = IsOct(file_in)
                 # dict_oct_info = json.dumps(dict_oct_info) # dictionary to string
                 _c, _dict = [], []
-                for key, value in dict_oct_info.items():
+                for key, value in list(dict_oct_info.items()):
                     _c.append(key)
                     _dict.append(value)
                 info = [unique_num, oxstate, spinmult, flag_oct, flag_list] + _dict

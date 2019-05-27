@@ -33,11 +33,11 @@ def cell_ffopt(ff,mol,frozenats):
     #   - mol: mol3D to be ff optimized
     # OUTPUT
     #   - mol: force field optimized mol3D
-    metals = range(21,31)+range(39,49)+range(72,81)
+    metals = list(range(21,31))+list(range(39,49))+list(range(72,81))
     ### check requested force field
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s' # force fields
     if ff.lower() not in ffav:
-        print 'Requested force field not available. Defaulting to UFF'
+        print('Requested force field not available. Defaulting to UFF')
         ff = 'UFF'
     ### convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
     backup_mol = mol3D()
@@ -128,7 +128,7 @@ def import_from_cif(fst, return_extra_cif_info = False):
                 if linesplit[0] == "_cell_angle_gamma":
                     gamma = float(''.join(c for c in linesplit[1] if c not in '()').rstrip('.'))
     # create cell vectors
-    print('alpha , beta , gama = ' + str(alpha) + ', '+  str(beta) +' ,'+ str(gamma))
+    print(('alpha , beta , gama = ' + str(alpha) + ', '+  str(beta) +' ,'+ str(gamma)))
  
     try:
         cell_vector.append([A,0,0])
@@ -266,7 +266,7 @@ def find_all_surface_atoms(super_cell,tol=1e-2,type_of_atom = False):
     if type_of_atom:
         possible_atom_inds = super_cell.findAtomsbySymbol(type_of_atom)
     else:
-        possible_atom_inds =range(0,super_cell.natoms)
+        possible_atom_inds =list(range(0,super_cell.natoms))
     for indices in possible_atom_inds:
         z_dist = abs(super_cell.getAtom(indices).coords()[2] - target_height)
         if (z_dist <= tol):
@@ -388,7 +388,7 @@ def check_top_layer_correct(super_cell,atom_type):
     trimmed_cell.copymol3D(super_cell)
     globs = globalvars()
     elements = globs.elementsbynum()
-    print('chekcing surface  for  ' + atom_type + '\n')
+    print(('chekcing surface  for  ' + atom_type + '\n'))
     if not atom_type in elements:
         print("unkown surface type, unable to trim ")
         return trimmed_cell
@@ -539,7 +539,7 @@ def fractionate_points_by_plane(super_cell,n,tol=1E-8):
                 #print('have this point')
             else:
                 vals.append(this_frac)
-                print('new point at '+ str(this_frac))
+                print(('new point at '+ str(this_frac)))
         else:
             vals.append(this_frac)
     return vals

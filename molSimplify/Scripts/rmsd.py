@@ -321,10 +321,10 @@ def reorder_distance(p_atoms, q_atoms, p_coord, q_coord):
 def rmsd_reorder_rotate(p_atoms, q_atoms, p_coord, q_coord,
                         rotation="kabsch", reorder="hungarian", ):
     if not p_atoms.shape[0] == q_atoms.shape[0]:
-        print("Warning: Number of atoms do not match!", p_atoms.shape[0], q_atoms[0])
+        print(("Warning: Number of atoms do not match!", p_atoms.shape[0], q_atoms[0]))
         return 1000
     elif not len(set(np.unique(p_atoms)) - set(np.unique(q_atoms))) == 0:
-        print("Warning: Atom types do not match!", np.unique(p_atoms), np.unique(q_atoms))
+        print(("Warning: Atom types do not match!", np.unique(p_atoms), np.unique(q_atoms)))
         return 1000
 
     p_cent = centroid(p_coord)
