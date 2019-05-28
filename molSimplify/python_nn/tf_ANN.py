@@ -35,6 +35,8 @@ def get_key(predictor, suffix=False):
             key = 'homolumo/' + predictor + '_%s' % suffix
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/' + predictor + '_%s' % suffix
+        elif predictor in ['oxo20','homo_empty']:
+            key = 'oxoandhomo/' + predictor + '_%s' % suffix
         elif predictor in ['geo_static_clf', 'sc_static_clf']:
             key = predictor + '/' + predictor + '_%s' % suffix
         else:
@@ -46,6 +48,8 @@ def get_key(predictor, suffix=False):
             key = 'homolumo/'
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/'
+        elif predictor in ['oxo20','homo_empty']:
+            key = 'oxoandhomo/'
         elif predictor in ['geo_static_clf', 'sc_static_clf']:
             key = predictor + '/' + predictor + '_%s' % suffix
         else:
@@ -134,6 +138,8 @@ def get_data_mean_std(predictor):
         key = 'homolumo/' + predictor + '_train_x'
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_x'
+    elif predictor in ['oxo20', 'homo_empty']:
+        key = 'oxoandhomo/' + predictor + '_train_x'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_x'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
@@ -153,6 +159,8 @@ def get_data_mean_std(predictor):
         key = 'homolumo/' + predictor + '_train_y'
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_y'
+    elif predictor in ['oxo20', 'homo_empty']:
+        key = 'oxoandhomo/' + predictor + '_train_y'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_y'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
@@ -185,12 +193,37 @@ def load_training_data(predictor):
         key = 'homolumo/' + predictor + '_train_x'
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_x'
+    elif predictor in ['oxo20', 'homo_empty']:
+        key = 'oxoandhomo/' + predictor + '_train_x'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_x'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         key = predictor + '/' + predictor + '_train_x'
     else:
         key = predictor + '/' + predictor + '_x'
+    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
+    with open(path_to_file, "r") as f:
+        csv_lines = list(csv.reader(f))
+        # row_names = [row[0] for row in csv_lines]
+        mat = [row for row in csv_lines[1:]]
+    return mat
+
+def load_latent_training_data(predictor):
+    ##### CURRENTLY LATENT TRAINING DATA NOT AVAIL
+    if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
+        key = 'geos/' + predictor + '_latent_bl_x'
+    elif predictor in ['homo', 'gap']:
+        key = 'homolumo/' + predictor + '_latent_train_x'
+    elif predictor in ['oxo', 'hat']:
+        key = 'oxocatalysis/' + predictor + '_latent_train_x'
+    elif predictor in ['oxo20', 'homo_empty']:
+        key = 'oxoandhomo/' + predictor + '_latent_train_x'
+    elif predictor == "split":
+        key = predictor + '/' + predictor + '_latent_x_41_OHE'
+    elif predictor in ['geo_static_clf', 'sc_static_clf']:
+        key = 'static_clf/' + predictor + '_latent_train_x'
+    else:
+        key = predictor + '/' + predictor + '_latent_x_OHE'
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     with open(path_to_file, "r") as f:
         csv_lines = list(csv.reader(f))
@@ -227,6 +260,8 @@ def load_training_labels(predictor):
         key = 'homolumo/' + predictor + '_train_y'
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_train_y'
+    elif predictor in ['oxo20', 'homo_empty']:
+        key = 'oxoandhomo/' + predictor + '_train_y'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_y'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
@@ -248,6 +283,8 @@ def load_test_labels(predictor):
         key = 'homolumo/' + predictor + '_test_y'
     elif predictor in ['oxo', 'hat']:
         key = 'oxocatalysis/' + predictor + '_test_y'
+    elif predictor in ['oxo20', 'homo_empty']:
+        key = 'oxoandhomo/' + predictor + '_test_y'
     elif predictor == "split":
         key = predictor + '/' + predictor + '_y'
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
@@ -301,6 +338,14 @@ def load_keras_ann(predictor, suffix='model'):
     elif predictor in ['oxo', 'hat']:
         loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
                                                         decay=0.0006651401379502965, lr=0.0007727366541920176),
+                             metrics=['mse', 'mae', 'mape'])
+    elif predictor == 'oxo20':
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
+                                                        beta_2=0.8264616523572279, decay=0.0005114008091318582),
+                             metrics=['mse', 'mae', 'mape'])
+    elif predictor == 'homo_empty':
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.006677578283098809, beta_1 = 0.8556594887870226, 
+                                                        beta_2 = 0.9463468021275508, decay = 0.0006621877134674607),
                              metrics=['mse', 'mae', 'mape'])
         
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
@@ -415,6 +460,8 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = Fals
             key = 'homolumo/' + predictor + '_train_names'
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/' + predictor + '_train_names'
+        elif predictor in ['oxo20', 'homo_empty']:
+            key = 'oxoandhomo/' + predictor + '_train_names'
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
@@ -435,6 +482,43 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = Fals
     # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
     return (min_dist)
 
+def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=False):
+    # returns scaled euclidean distance to nearest trainning 
+    # vector in desciptor space
+
+    average_train_train_10NN = {'homo_empty':0.43517572, 'oxo20':0.068675719}
+    train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
+
+    ## getting train matrix info
+    mat = load_training_data(predictor)
+    train_mat = np.array(mat, dtype='float64')
+    ## loop over rows
+    min_dist = 100000000
+    min_ind = 0
+
+    loaded_model = load_keras_ann(predictor)
+    if debug:
+        print('measuring latent distances:')
+        print('loaded model has  ' + str(
+            len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
+            len(loaded_model.layers) - 1) + ' layers')
+    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                             [loaded_model.layers[len(loaded_model.layers) - 2].output])
+    norm_train_mat = []
+    for i, row in enumerate(train_mat):
+        row = np.array(row)
+        scaled_excitation = data_normalize(row, train_mean_x.T, train_var_x.T)
+        norm_train_mat.append(scaled_excitation)
+    norm_train_mat = np.squeeze(np.array(norm_train_mat))
+    loaded_model = load_keras_ann(predictor)
+    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                                 [loaded_model.layers[len(loaded_model.layers) - 2].output])
+    latent_space_train = np.squeeze(np.array(get_outputs([norm_train_mat, 0])))
+    dist_array = np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_vector)),axis=1)
+    sorted_dist = np.sort(np.squeeze(dist_array))
+    avg_10_NN_dist = np.mean(sorted_dist[0:10])
+    avg_10_NN_dist /= average_train_train_10NN[predictor]
+    return avg_10_NN_dist
 
 def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     # returns scaled euclidean distance to nearest trainning 
@@ -474,6 +558,8 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
             key = 'homolumo/' + predictor + '_train_names'
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/' + predictor + '_train_names'
+        elif predictor in ['oxo20', 'homo_empty']:
+            key = 'oxoandhomo/' + predictor + '_train_names'
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
