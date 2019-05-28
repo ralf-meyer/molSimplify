@@ -292,12 +292,12 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print('metal validity', valid)
     if not valid and not catalysis:
         emsg.append("\n Oxidation state not available for this metal")
-        ANN_reason = 'ox state not avail for metal'
+        ANN_reason = 'ox state not available for metal'
     if valid:
         high_spin, spin_ops = spin_classify(this_metal, spin, ox)
     if not valid and not catalysis:
         emsg.append("\n this spin state not available for this metal")
-        ANN_reason = 'spin state not availble for metal'
+        ANN_reason = 'spin state not available for metal'
     if emsg:
         print(str(" ".join(["ANN messages:"] + [str(i) for i in emsg])))
 
@@ -361,6 +361,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             ax_lig3D.convert2mol3D()  ## mol3D representation of ligand
             for jj in range(0, ax_occs[ii]):
                 ax_ligands_list.append(this_lig)
+        print('Obtained the net ligand charge, which is... ',net_lig_charge)
         if args.debug:
             print('ax_ligands_list:')
             print(ax_ligands_list)
@@ -641,14 +642,13 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("*******************************************************************")
         from keras import backend as K
         K.clear_session()  # This is done to get rid of the attribute error that is a bug in tensorflow.
-
-    if valid:
         current_time = time.time()
         total_ANN_time = current_time - start_time
         last_time = current_time
         print('Total ML functions took ' + "{0:.2f}".format(total_ANN_time) + ' seconds')
 
     if catalysis:
+        print('-----In Catalysis Mode-----')
         ## build RACs without geo
         con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(this_complex, custom_ligand_dict, ox_modifier)
@@ -662,18 +662,14 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange)
             except:
                 print('cannot case exchange argument as a float, using 20%')
-        descriptor_names += ['alpha']
-        descriptors += [alpha]
-        descriptor_names += ['ox']
-        descriptors += [ox]
-        descriptor_names += ['spin']
-        descriptors += [spin]
+        descriptor_names += ['alpha','ox','spin','charge_lig']
+        descriptors += [alpha,ox,spin,net_lig_charge]
         if args.debug:
             current_time = time.time()
             rac_check_time = current_time - last_time
             last_time = current_time
             print('getting RACs took ' + "{0:.2f}".format(rac_check_time) + ' seconds')
-        oxo, latent_oxo = ANN_supervisor('oxo', descriptors, descriptor_names, args.debug, args.debug)
+        oxo, latent_oxo = ANN_supervisor('oxo', descriptors, descriptor_names, args.debug)
         if args.debug:
             current_time = time.time()
             split_ANN_time = current_time - last_time
@@ -701,9 +697,79 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             min_dist_time = current_time - last_time
             last_time = current_time
             print('min hat dist took ' + "{0:.2f}".format(min_dist_time) + ' seconds')
-
         ANN_attributes.update({'hat': hat[0][0]})
         ANN_attributes.update({'hat_dist': hat_dist})
+
+        ########## for Oxo and HOMO optimization ##########
+        oxo20, latent_oxo20 = ANN_supervisor('oxo20', descriptors, descriptor_names, args.debug)
+        if args.debug:
+            current_time = time.time()
+            oxo20_ANN_time = current_time - last_time
+            last_time = current_time
+            print('oxo20 ANN took ' + "{0:.2f}".format(oxo20_ANN_time) + ' seconds')
+        # oxo20_dist = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
+        oxo20_dist = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
+        if args.debug:
+            current_time = time.time()
+            min_dist_time = current_time - last_time
+            last_time = current_time
+            print('min oxo20 dist took ' + "{0:.2f}".format(min_dist_time) + ' seconds')
+        ANN_attributes.update({'oxo20': oxo20[0][0]})
+        ANN_attributes.update({'oxo20_dist': oxo20_dist})
+        # _ = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
+        # _ = find_true_min_eu_dist("oxo20", descriptors, descriptor_names, latent_space_vector=latent_oxo20)
+
+        homo_empty, latent_homo_empty = ANN_supervisor('homo_empty', descriptors, descriptor_names, args.debug)
+        if args.debug:
+            current_time = time.time()
+            homo_empty_ANN_time = current_time - last_time
+            last_time = current_time
+            print('homo_empty ANN took ' + "{0:.2f}".format(homo_empty_ANN_time) + ' seconds')
+        # homo_empty_dist = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
+        homo_empty_dist = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
+        if args.debug:
+            current_time = time.time()
+            min_dist_time = current_time - last_time
+            last_time = current_time
+            print('min homo_empty dist took ' + "{0:.2f}".format(min_dist_time) + ' seconds')
+        ANN_attributes.update({'homo_empty': homo_empty[0][0]})
+        ANN_attributes.update({'homo_empty_dist': homo_empty_dist})
+        # _ = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
+        # _ = find_true_min_eu_dist("homo_empty", descriptors, descriptor_names, latent_space_vector=latent_homo_empty)
+
+        Oxo20_ANN_trust = 'not set'
+        Oxo20_ANN_trust_message = ""
+        if float(oxo20_dist) < 0.75:  # Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+            Oxo20_ANN_trust_message = 'Oxo20 ANN results should be trustworthy for this complex '
+            Oxo20_ANN_trust = 'high'
+        elif float(oxo20_dist) < 1:
+            Oxo20_ANN_trust_message = 'Oxo20 ANN results are probably useful for this complex '
+            Oxo20_ANN_trust = 'medium'
+        elif float(oxo20_dist) <= 1.25:
+            Oxo20_ANN_trust_message = 'Oxo20 ANN results are fairly far from training data, be cautious '
+            Oxo20_ANN_trust = 'low'
+        elif float(oxo20_dist) > 1.25:
+            Oxo20_ANN_trust_message = 'Oxo20 ANN results are too far from training data, be cautious '
+            Oxo20_ANN_trust = 'very low'
+        ANN_attributes.update({'oxo20_trust': Oxo20_ANN_trust})
+
+        homo_empty_ANN_trust = 'not set'
+        homo_empty_ANN_trust_message = ""
+        if float(homo_empty_dist) < 0.75:  # Not quite sure if this should be divided by 3 or not, since RAC-155 descriptors
+            homo_empty_ANN_trust_message = 'homo_empty ANN results should be trustworthy for this complex '
+            homo_empty_ANN_trust = 'high'
+        elif float(homo_empty_dist) < 1:
+            homo_empty_ANN_trust_message = 'homo_empty ANN results are probably useful for this complex '
+            homo_empty_ANN_trust = 'medium'
+        elif float(homo_empty_dist) <= 1.25:
+            homo_empty_ANN_trust_message = 'homo_empty ANN results are fairly far from training data, be cautious '
+            homo_empty_ANN_trust = 'low'
+        elif float(homo_empty_dist) > 1.25:
+            homo_empty_ANN_trust_message = 'homo_empty ANN results are too far from training data, be cautious '
+            homo_empty_ANN_trust = 'very low'
+        ANN_attributes.update({'homo_empty_trust': homo_empty_ANN_trust})
+
+        ####################################################
 
         Oxo_ANN_trust = 'not set'
         Oxo_ANN_trust_message = ""
@@ -740,6 +806,15 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("**************       CATALYTIC ANN ACTIVATED!      ****************")
         print("*********** Currently advising on Oxo and HAT energies ************")
         print("*******************************************************************")
+        print("ANN predicts a Oxo20 energy of " + "{0:.2f}".format(float(oxo20[0])) + ' kcal/mol at ' + "{0:.2f}".format(
+            alpha) + '% HFX')
+        print(Oxo20_ANN_trust_message)
+        print('Distance to Oxo20 training data in the latent space is ' + "{0:.2f}".format(oxo20_dist))
+        print("ANN predicts a empty site beta HOMO level of " + "{0:.2f}".format(float(homo_empty[0])) + ' kcal/mol at ' + "{0:.2f}".format(
+            alpha) + '% HFX')
+        print(homo_empty_ANN_trust_message)
+        print('Distance to empty site beta HOMO level training data in the latent space is ' + "{0:.2f}".format(homo_empty_dist))
+        print('-------------------------------------------------------------------')
         print("ANN predicts a oxo formation energy of " + "{0:.2f}".format(
             float(oxo[0])) + ' kcal/mol at ' + "{0:.2f}".format(alpha) + '% HFX')
         print(Oxo_ANN_trust_message)
