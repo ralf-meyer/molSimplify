@@ -1,0 +1,7 @@
+{
+  "epochs": 4000,
+  "batch_size": 2000,
+  "patience": 100,
+  "min_delta": 0.0001,
+  "monitor": "val_loss"
+}
