@@ -28,11 +28,15 @@ def multitcgen(args,strfiles):
     if not args.jobdir:
         for xyzf in strfiles:
             try:
-                os.remove(xyzf+'.xyz')
                 os.remove(xyzf+'.molinp')
                 os.remove(xyzf+'.report')
             except:
                 pass
+            if not args.reportonly:
+                try:
+                    os.remove(xyzf+'.xyz')
+                except:
+                    pass
     return jobdirs
 
 ## Generate terachem input files
@@ -42,6 +46,8 @@ def multitcgen(args,strfiles):
 #  @return List of job directories
 def tcgen(args,strfiles,method):
     # global variables
+    # print('----- args provided to tc gen --------')
+    # print(args)
     globs = globalvars()
     jobdirs = []
     coordfs = []
@@ -82,7 +88,8 @@ def tcgen(args,strfiles,method):
                 os.mkdir(mdir)
         if not args.jobdir:
             jobdirs.append(mdir)
-            shutil.copy2(xyzf,mdir)
+            if not args.reportonly:
+                shutil.copy2(xyzf,mdir)
             shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
             try:
                 shutil.copy2(xyzf.replace('.xyz','.report'),mdir.replace('.xyz','.report'))
@@ -90,6 +97,9 @@ def tcgen(args,strfiles,method):
                 pass
         elif args.jobdir:
              jobdirs.append(rdir)
+    #### if report only specified, end here
+    if args.reportonly:
+        return jobdirs
     # parse extra arguments
     # Method parsing, does not check if a garbage method is used here:
     unrestricted=False
