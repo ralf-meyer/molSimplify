@@ -585,6 +585,8 @@ def parseinputfile(args):
                 args.genall = checkTrue(l[1])
             if (l[0]=='-isomers'):
                 args.isomers = checkTrue(l[1])
+            if (l[0]=='-reportonly'):
+                args.reportonly = checkTrue(l[1])
             if (l[0]=='-stereos'):
                 args.stereos = checkTrue(l[1])
             if (l[0]=='-MLbonds' and len(l[1:]) > 0):
@@ -1061,6 +1063,7 @@ def parseinputs_advanced(*p):
     parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions")
     parser.add_argument("-isomers", help='generates all possible isomers of a complex, support oct, thd, and sqp geometries')
     parser.add_argument("-stereos", help='works in combination with -isomers. generates a mirror image of each isomer complex')
+    parser.add_argument("-reportonly", help='add this flag if you just want the report, without actual structure generation')
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
