@@ -84,6 +84,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print('ligs ' + str(ligs))
         print('occs in function  ' + str(occs))
         print('tcats in function  ' + str(tcats))
+    
     unique_ligands = []
     axial_ind_list = []
     equitorial_ind_list = []
@@ -147,44 +148,45 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         for i in range(0, n_ligs):
 
             this_bat = batlist[i]
-            if debug:
-                print('iteration  ' + str(i))
-                print('this bat ' + str(this_bat) + ' from ' + str(batlist))
+
             this_lig = ligs[i]
             this_dent = dents[i]
             this_occ = occs[i]
-            #            print(this_bat,this_lig,this_dent)
+            if debug:
+                print('\n')
+                print('iteration  ' + str(i))
+                print('this_lig  ' + str(this_lig))
+                print('this_dent  ' + str(this_dent))
+                print('this_occ  ' + str(this_occ))                                
+                print('this backbone atom  ' + str(this_bat) + ' from ' + str(batlist))
             ## mulitple points
             if len(this_bat) == 1:
                 if (5 in this_bat) or (6 in this_bat):
-
-                    if not (this_lig in axial_ligs):
-                        if debug:
-                            print('adding ' + str(this_lig) + ' to axial')
-                        axial_ligs.append(this_lig)
-                        ax_dent = this_dent
-                        if this_lig not in ['x', 'oxo', 'hydroxyl']:
-                            ax_tcat = tcats[i]
-                        ax_occs.append(occs[i])
-                    else:
-                        ax_occs[axial_ligs.index(this_lig)] += 1
+                    if debug:
+                        print('adding ' + str(this_lig) + ' to axial')
+                    axial_ligs.append(this_lig)
+                    ax_dent = this_dent
+                    if this_lig not in ['x', 'oxo', 'hydroxyl']:
+                        ax_tcat = tcats[i]
+                    ax_occs.append(occs[i])
+                    axial_ind_list.append(i)
                 else:
-                    if not (this_lig in equitorial_ligs):
-                        equitorial_ligs.append(this_lig)
-                        eq_dent = this_dent
-                        eq_tcat = tcats[i]
-                        eq_occs.append(occs[i])
-                    else:
-                        eq_occs[equitorial_ligs.index(this_lig)] += 1
-
-            else:
-                if not (this_lig in equitorial_ligs):
+                    if debug:
+                        print('adding ' + str(this_lig) + ' to equitorial')
                     equitorial_ligs.append(this_lig)
                     eq_dent = this_dent
                     eq_tcat = tcats[i]
                     eq_occs.append(occs[i])
-                else:
-                    eq_occs[equitorial_ligs.index(this_lig)] += 1
+                    equitorial_ind_list.append(i)
+
+
+            else:
+                equitorial_ligs.append(this_lig)
+                eq_dent = this_dent
+                eq_tcat = tcats[i]
+                eq_occs.append(occs[i])
+                equitorial_ind_list.append(i)
+
 
     if (len(axial_ligs) > 2):
         print('axial lig error : ', axial_ligs, ax_dent, ax_tcat, ax_occs)
@@ -195,10 +197,11 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     if not (4.0 / (float(eq_dent) * sum(eq_occs)) == 1):
         print('equitorial ligs error: ', equitorial_ligs, eq_dent, eq_tcat)
         valid = False
-    if valid:  # get the index position in ligs
+    if valid and len(axial_ind_list) ==0:  # get the index position in ligs
         axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
+    if valid and len(equitorial_ind_list) ==0:  # get the index position in ligs
         equitorial_ind_list = [ligs.index(eq_lig) for eq_lig in equitorial_ligs]
-
+    
     return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list, ax_occs, eq_occs
 
 
@@ -321,6 +324,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print('ax ligs', axial_ligs)
             print('eq ligs', equitorial_ligs)
             print('spin is', spin)
+            
         if catalysis:
             valid = False
     if (not valid) and (not catalysis):
@@ -368,7 +372,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print([h.mol.cat for h in ax_ligands_list])
 
         if args.debug:
-            print('loading equitorial ligands')
+            print('loading equitorial ligands ' + str(equitorial_ligs))
         for ii, eql in enumerate(equitorial_ligs):
             eq_lig3D, r_emsg = lig_load(eql, licores)  # load ligand
             net_lig_charge += eq_lig3D.charge
@@ -378,17 +382,26 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                 eq_lig3D.cat = eq_tcat
                 if args.debug:
                     print('custom eq connect atom given (0-ind) ' + str(eq_tcat))
-            this_lig = ligand(mol3D(), [], eq_dent)
-            this_lig.mol = eq_lig3D
-
+            
             if newdecs:
+                if args.debug:
+                    print('newdecs' + str(newdecs) )
+                    print('equitorial_ind_list is ' + str(equitorial_ind_list))
+                c = 0
                 if newdecs[equitorial_ind_list[ii]]:
-                    print('decorating ' + str(eql) + ' with ' + str(
+                    if args.debug:
+                        print('decorating ' + str(eql) + ' with ' + str(
                         newdecs[equitorial_ind_list[ii]]) + ' at sites ' + str(newdec_inds[equitorial_ind_list[ii]]))
                     eq_lig3D = decorate_ligand(args, eql, newdecs[equitorial_ind_list[ii]],
                                                newdec_inds[equitorial_ind_list[ii]])
+                    c+=1                                                    
 
+                    
+        
             eq_lig3D.convert2mol3D()  ## mol3D representation of ligand
+            this_lig = ligand(mol3D(), [], eq_dent)
+            this_lig.mol = eq_lig3D
+
             for jj in range(0, eq_occs[ii]):
                 eq_ligands_list.append(this_lig)
         if args.debug:
@@ -399,14 +412,21 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             ligand_check_time = current_time - last_time
             last_time = current_time
             print('checking ligs took ' + "{0:.2f}".format(ligand_check_time) + ' seconds')
-
+            print('writing copies of ligands as used  in ANN to currrent dir : ' + os.getcwd())
+            for kk,l in enumerate(ax_ligands_list):
+                l.mol.writexyz('axlig-'+ str(kk) + '.xyz')
+            for kk,l in enumerate(eq_ligands_list):
+                l.mol.writexyz('eqlig-'+ str(kk) + '.xyz')
         ## make description of complex
         custom_ligand_dict = {"eq_ligand_list": eq_ligands_list,
                               "ax_ligand_list": ax_ligands_list,
                               "eq_con_int_list": [h.mol.cat for h in eq_ligands_list],
                               "ax_con_int_list": [h.mol.cat for h in ax_ligands_list]}
-
+        
         ox_modifier = {metal: ox}
+    
+
+
         this_complex = assemble_connectivity_from_parts(metal_mol, custom_ligand_dict)
 
         if args.debug:
@@ -424,10 +444,10 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         descriptor_names, descriptors = get_descriptor_vector(this_complex, custom_ligand_dict, ox_modifier)
         descriptor_names = _descriptor_names + descriptor_names
         descriptors = _descriptors + descriptors
-        flag_oct, geo_lse = ANN_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
+        flag_oct, geo_lse = ANN_supervisor("geo_static_clf", descriptors, descriptor_names, debug=args.debug)
         ### Test for scikit-learn models
         # flag_oct, geo_lse = sklearn_supervisor("geo_static_clf", descriptors, descriptor_names, debug=False)
-        sc_pred, sc_lse = ANN_supervisor("sc_static_clf", descriptors, descriptor_names, debug=False)
+        sc_pred, sc_lse = ANN_supervisor("sc_static_clf", descriptors, descriptor_names, debug=args.debug)
         ANN_attributes.update({"geo_label": 0 if flag_oct[0, 0] <= 0.5 else 1,
                                "geo_prob": flag_oct[0, 0],
                                "geo_LSE": geo_lse[0],

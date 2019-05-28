@@ -104,6 +104,14 @@ def startgen(argv,flag,gui):
             args.core = [core]
             args.substrate = [sub]
             args.tsgen = True
+	# issue a call to test TF, this is needed to keep
+	# ordering between openbabel and TF calls consistent
+	# on some sytems
+	if globs.testTF():
+		print('TensorFlow connection successful')
+	else:
+		print('TensorFlow connection failed')
+
     # if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
     if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
 
