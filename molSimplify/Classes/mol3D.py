@@ -2104,10 +2104,10 @@ class mol3D:
         self.init_mol_trunc = init_mol
         if flag_lbd:  ## Also do ligand breakdown for opt geo
             ### Truncate ligands at 4 bonds away from metal to aviod rotational group.
-            # self.my_mol_trunc = obtain_truncation_metal(self, depth)
-            # self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
-            # self.my_mol_trunc.createMolecularGraph()
-            # self.init_mol_trunc.createMolecularGraph()
+            self.my_mol_trunc = obtain_truncation_metal(self, depth)
+            self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+            self.my_mol_trunc.createMolecularGraph()
+            self.init_mol_trunc.createMolecularGraph()
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
             liglist_atom = [[self.my_mol_trunc.getAtom(x).symbol() for x in ele]
