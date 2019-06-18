@@ -96,6 +96,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     eq_tcat = False
     ax_tcat = False
     triple_bidentate = False
+    pentadentate = False
     ax_occs = []
     eq_occs = []
     valid = True
@@ -144,11 +145,41 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                     eq_tcat = tcats[ligs.index(key)]
         else:
             valid = False
+    elif (set(dents) == set([1, 5])):
+        print('THIS IS A PENTADENTATE!')
+        pentadentate = True
+        for i in range(0, n_ligs):
+            this_bat = batlist[i]
+            this_lig = ligs[i]
+            this_dent = dents[i]
+            this_occ = occs[i]
+            if debug:
+                print('\n')
+                print('iteration  ' + str(i))
+                print('this_lig  ' + str(this_lig))
+                print('this_dent  ' + str(this_dent))
+                print('this_occ  ' + str(this_occ))                                
+                print('this backbone atom  ' + str(this_bat) + ' from ' + str(batlist))
+            ## mulitple points
+            if len(this_bat) > 1:
+                if debug:
+                    print('adding ' + str(this_lig) + ' to equitorial')
+                equitorial_ligs.append(this_lig)
+                eq_dent = 4
+                eq_tcat = tcats[i]
+                eq_occs.append(1)
+                equitorial_ind_list.append(i)
+            if debug:
+                print('adding ' + str(this_lig) + ' to axial')
+            axial_ligs.append(this_lig)
+            ax_dent = 1
+            ax_tcat = tcats[i]
+            ax_occs.append(1)
+            axial_ind_list.append(i)
+
     else:
         for i in range(0, n_ligs):
-
             this_bat = batlist[i]
-
             this_lig = ligs[i]
             this_dent = dents[i]
             this_occ = occs[i]
@@ -178,16 +209,12 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                     eq_tcat = tcats[i]
                     eq_occs.append(occs[i])
                     equitorial_ind_list.append(i)
-
-
             else:
                 equitorial_ligs.append(this_lig)
                 eq_dent = this_dent
                 eq_tcat = tcats[i]
                 eq_occs.append(occs[i])
                 equitorial_ind_list.append(i)
-
-
     if (len(axial_ligs) > 2):
         print('axial lig error : ', axial_ligs, ax_dent, ax_tcat, ax_occs)
         valid = False
@@ -202,7 +229,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     if valid and len(equitorial_ind_list) ==0:  # get the index position in ligs
         equitorial_ind_list = [ligs.index(eq_lig) for eq_lig in equitorial_ligs]
     
-    return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list, ax_occs, eq_occs
+    return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list, ax_occs, eq_occs, pentadentate
 
 
 def check_metal(metal, oxidation_state):
@@ -311,7 +338,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print('checking metal/ox took  ' + "{0:.2f}".format(metal_check_time) + ' seconds')
 
     if valid or catalysis:
-        valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list, ax_occs, eq_occs = tf_check_ligands(
+        (valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, 
+        equitorial_ind_list, ax_occs, eq_occs, pentadentate)  = tf_check_ligands(
             ligs, batslist, dents, tcats, occs, args.debug)
 
         if args.debug:
@@ -353,6 +381,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                 ax_lig3D.cat = ax_tcat
                 if args.debug:
                     print('custom ax connect atom given (0-ind) ' + str(ax_tcat))
+            if pentadentate and len(ax_lig3D.cat)>1:
+                ax_lig3D.cat = [ax_lig3D.cat[-1]]
             this_lig = ligand(mol3D(), [], ax_dent)
             this_lig.mol = ax_lig3D
 
@@ -382,6 +412,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                 eq_lig3D.cat = eq_tcat
                 if args.debug:
                     print('custom eq connect atom given (0-ind) ' + str(eq_tcat))
+            if pentadentate and len(eq_lig3D.cat)>1:
+                eq_lig3D.cat = eq_lig3D.cat[0:4]
             
             if newdecs:
                 if args.debug:
@@ -422,10 +454,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                               "ax_ligand_list": ax_ligands_list,
                               "eq_con_int_list": [h.mol.cat for h in eq_ligands_list],
                               "ax_con_int_list": [h.mol.cat for h in ax_ligands_list]}
-        
-        ox_modifier = {metal: ox}
-    
 
+        ox_modifier = {metal: ox}
 
         this_complex = assemble_connectivity_from_parts(metal_mol, custom_ligand_dict)
 
