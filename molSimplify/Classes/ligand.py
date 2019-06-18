@@ -111,7 +111,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
 
 def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     valid = True
-    loud = True
+    loud = False
     pentadentate = False
     metal_index = mol.findMetal()[0]
     built_ligand_list = list()
