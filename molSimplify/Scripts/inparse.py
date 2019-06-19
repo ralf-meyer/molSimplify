@@ -585,6 +585,8 @@ def parseinputfile(args):
                 args.genall = checkTrue(l[1])
             if (l[0]=='-isomers'):
                 args.isomers = checkTrue(l[1])
+            if (l[0]=='-antigeoisomer'):
+                args.antigeoisomer = checkTrue(l[1])
             if (l[0]=='-reportonly'):
                 args.reportonly = checkTrue(l[1])
             if (l[0]=='-stereos'):
@@ -1062,8 +1064,9 @@ def parseinputs_advanced(*p):
     parser.add_argument("-pangles", help="custom angles (polar theta, azimuthal phi) for corresponding connectino points in degrees separated by '/' e.g. 20/30,10/20",action="store_true")
     parser.add_argument("-oldANN", help=" use old (MCDL-25) ANN predictions")
     parser.add_argument("-isomers", help='generates all possible isomers of a complex, support oct, thd, and sqp geometries')
+    parser.add_argument("-antigeoisomer", help='for tetradentate structures with geometric isomers, allows generation of the anti isomer (as opposed to the syn, used by default)')
     parser.add_argument("-stereos", help='works in combination with -isomers. generates a mirror image of each isomer complex')
-    parser.add_argument("-reportonly", help='add this flag if you just want the report, without actual structure generation')
+    parser.add_argument("-reportonly", help='add this flag if you just want the report, without actual structure generation. Currently does not support pentadentates.')
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
