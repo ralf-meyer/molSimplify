@@ -2673,6 +2673,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 elif (denticity == 4):
                     # note: catoms for ligand should be specified clockwise
                     # connection atoms in backbone
+                    if args.antigeoisomer:
+                        print('anti geometric isomer requested.')
+                        catoms = catoms[::-1]
                     batoms = batslist[ligsused]
                     if len(batoms) < 1 :
                         if args.gui:
@@ -3363,8 +3366,7 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
             eq_number = int(4/dents[0])
             eq_cons = eq_number*[cons[0]]
             eq_ligs = eq_number*[lig_instances[0]]
-            
-            if dents[-2] == 2:
+            if (len(dents)>1) and (dents[-2] == 2):
                 ax_ligs = 1*[lig_instances[-2]]
                 ax_cons = 1*[cons[-2]]
             else:
