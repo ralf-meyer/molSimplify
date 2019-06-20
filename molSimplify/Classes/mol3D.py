@@ -99,7 +99,7 @@ class mol3D:
         self.grps = False
         # Holder rfor metals
         self.metals = False
-        
+
         ## Holder for partial charge for each atom
         self.partialcharges = []
 
@@ -213,7 +213,7 @@ class mol3D:
         self.size = self.molsize()
         self.graph = []
         self.metal = False
-        
+
     ## Change type of atom in molecule
     #
     #  @param self The object pointer
@@ -462,7 +462,7 @@ class mol3D:
             # optional add additional bond(s)
             if bond_to_add:
                 for bond_tuples in bond_to_add:
-                    #print('adding bond ' + str(bond_tuples))
+                    # print('adding bond ' + str(bond_tuples))
                     jointBOMat[bond_tuples[0], bond_tuples[1]] = bond_tuples[2]
                     jointBOMat[bond_tuples[1], bond_tuples[0]] = bond_tuples[2]
                     # jointBOMat[bond_tuples[0], bond_tuples[1]+n_one] = bond_tuples[2]
@@ -672,14 +672,14 @@ class mol3D:
     def findcloseMetal(self, atom0):
         if not self.metals:
             self.findMetal()
-            
+
         mm = False
         mindist = 1000
         for i in enumerate(self.metals):
             atom = self.getAtom(i)
             if distance(atom.coords(), atom0.coords()) < mindist:
-                    mindist = distance(atom.coords(), atom0.coords())
-                    mm = i
+                mindist = distance(atom.coords(), atom0.coords())
+                mm = i
         # if no metal, find heaviest atom
         if not mm:
             maxaw = 0
@@ -698,7 +698,7 @@ class mol3D:
                 if atom.ismetal():
                     mm.append(i)
             self.metals = mm
-        return(self.metals)
+        return (self.metals)
 
     ## Finds atoms in molecule with given symbol
     #  @param self The object pointer
@@ -967,7 +967,7 @@ class mol3D:
                             print((ratom.symbol()))
                         valid = False
                     if d < distance_max and i != ind and valid:
-                        if atom.symbol() in ["C","S","N"]:
+                        if atom.symbol() in ["C", "S", "N"]:
                             if debug:
                                 print('\n')
                                 print(('this atom in is ' + str(i)))
@@ -997,7 +997,7 @@ class mol3D:
                                 else:
                                     if debug:
                                         print('Ok based on atom')
-                        if ratom.symbol() in ["C","S","N"]:
+                        if ratom.symbol() in ["C", "S", "N"]:
                             ## in this case, ratom might be intruder C or S
                             possible_inds = self.getBondedAtomsnotH(i)  ## bonded to metal
                             metal_prox = sorted(possible_inds, key=lambda x: self.getDistToMetal(x, i))
@@ -1550,6 +1550,7 @@ class mol3D:
         for atom in self.atoms:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+
             print(ss)
 
     ## returns string of xyz coordinates
@@ -2084,7 +2085,8 @@ class mol3D:
     ##         flag_match: A flag about whether the ligands of initial and optimized mol are exactly the same.
     def match_lig_list(self, init_mol, catoms_arr=None,
                        flag_loose=False, BondedOct=False,
-                       flag_lbd=True, debug=False, depth=3):
+                       flag_lbd=True, debug=False, depth=3,
+                       check_whole=False):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         from molSimplify.Classes.ligand import ligand_breakdown
         flag_match = True
@@ -2092,11 +2094,12 @@ class mol3D:
         self.my_mol_trunc.copymol3D(self)
         self.init_mol_trunc = init_mol
         if flag_lbd:  ## Also do ligand breakdown for opt geo
-            ### Truncate ligands at 4 bonds away from metal to aviod rotational group.
-            # self.my_mol_trunc = obtain_truncation_metal(self, depth)
-            # self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
-            # self.my_mol_trunc.createMolecularGraph()
-            # self.init_mol_trunc.createMolecularGraph()
+            if not check_whole:
+                ### Truncate ligands at 4 bonds away from metal to aviod rotational group.
+                self.my_mol_trunc = obtain_truncation_metal(self, depth)
+                self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+                self.my_mol_trunc.createMolecularGraph()
+                self.init_mol_trunc.createMolecularGraph()
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
             liglist_atom = [[self.my_mol_trunc.getAtom(x).symbol() for x in ele]
@@ -2166,7 +2169,7 @@ class mol3D:
             flag_match = False
         if debug:
             print(('returning: ', liglist_shifted, liglist_init))
-        if not catoms_arr == None:
+        if not catoms_arr == None:  # Force as matching in inspection mode.
             flag_match = True
         return liglist_shifted, liglist_init, flag_match
 
@@ -2183,13 +2186,23 @@ class mol3D:
                         flag_lbd=True, debug=False, depth=3,
                         BondedOct=False):
         from molSimplify.Scripts.oct_check_mols import readfromtxt
-        liglist, liglist_init, flag_match = self.match_lig_list(init_mol,
-                                                                catoms_arr=catoms_arr,
-                                                                flag_loose=flag_loose,
-                                                                BondedOct=BondedOct,
-                                                                flag_lbd=flag_lbd,
-                                                                debug=debug,
-                                                                depth=depth)
+        from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        _, _, flag_match = self.match_lig_list(init_mol,
+                                               catoms_arr=catoms_arr,
+                                               flag_loose=flag_loose,
+                                               BondedOct=BondedOct,
+                                               flag_lbd=flag_lbd,
+                                               debug=debug,
+                                               depth=depth,
+                                               check_whole=True)
+        liglist, liglist_init, _ = self.match_lig_list(init_mol,
+                                                       catoms_arr=catoms_arr,
+                                                       flag_loose=flag_loose,
+                                                       BondedOct=BondedOct,
+                                                       flag_lbd=flag_lbd,
+                                                       debug=debug,
+                                                       depth=depth,
+                                                       check_whole=False)
         if debug:
             print(('lig_list:', liglist, len(liglist)))
             print(('lig_list_init:', liglist_init, len(liglist_init)))
@@ -2445,7 +2458,7 @@ class mol3D:
     def IsStructure(self, init_mol=None, dict_check=False,
                     angle_ref=False, num_coord=5,
                     flag_catoms=False, debug=False,
-                    skip=False):
+                    skip=False, flag_deleteH=True):
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
         if not angle_ref:
@@ -2466,7 +2479,7 @@ class mol3D:
                                                                   debug=debug)
             if not init_mol == None:
                 if not 'lig_distort' in skip:
-                    dict_lig_distort = self.ligand_comp_org(init_mol, catoms_arr, debug=debug)
+                    dict_lig_distort = self.ligand_comp_org(init_mol, flag_deleteH=flag_deleteH, debug=debug)
             if not 'lig_linear' in skip:
                 dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
@@ -2651,3 +2664,11 @@ class mol3D:
         # mol3D structure
         self.OBMol = OBMol
         self.convert2mol3D()
+
+    def mols_symbols(self):
+        self.symbols_dict = {}
+        for atom in self.getAtoms():
+            if not atom.symbol() in self.symbols_dict:
+                self.symbols_dict.update({atom.symbol(): 1})
+            else:
+                self.symbols_dict[atom.symbol()] += 1

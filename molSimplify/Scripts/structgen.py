@@ -18,6 +18,7 @@ from molSimplify.Classes.rundiag import *
 from molSimplify.Classes import globalvars
 from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
+from molSimplify.Informatics.RACassemble import *
 from molSimplify.Scripts.krr_prep import *
 import os, sys, time
 from pkg_resources import resource_filename, Requirement
@@ -2672,6 +2673,9 @@ def mcomplex(args,ligs,ligoc,licores,globs):
                 elif (denticity == 4):
                     # note: catoms for ligand should be specified clockwise
                     # connection atoms in backbone
+                    if args.antigeoisomer:
+                        print('anti geometric isomer requested.')
+                        catoms = catoms[::-1]
                     batoms = batslist[ligsused]
                     if len(batoms) < 1 :
                         if args.gui:
@@ -3289,12 +3293,101 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
     sanity = False
     this_diag = run_diag()
     if (ligands):
-        core3D,complex3D,emsg,this_diag,subcatoms_ext,mligcatoms_ext = mcomplex(args,ligands,ligoc,licores,globs)
-        if args.debug:
-            print('subcatoms_ext are ' + str(subcatoms_ext))
-        name_core = args.core
-        if emsg:
-            return False,emsg
+        if args.reportonly:
+            ligs  = []
+            cons  = []
+            mono_inds = []
+            bi_inds = []
+            tri_inds = []
+            tetra_inds  = []
+            penta_inds = []
+            emsg, complex3D = False, []
+            occs0 = []      # occurrences of each ligand
+            toccs = 0       # total occurrence count (number of ligands)
+            catsmi = []     # SMILES ligands connection atoms
+            smilesligs = 0  # count how many smiles strings
+            cats0 = []      # connection atoms for ligands
+            dentl = []      # denticity of ligands
+            connected = []  # indices in core3D of ligand atoms connected to metal
+            frozenats = []  # atoms to be frozen in optimization
+            freezeangles = False # custom angles imposed
+            MLoptbds = []   # list of bond lengths
+            rempi = False   # remove dummy pi orbital center of mass atom
+            backbatoms = []
+            batslist = []
+            bats = []
+            print('ONLY report wanted. Not building structure.')
+            metal_mol = mol3D()
+            metal_mol.addAtom(atom3D(args.core))
+            ### CURRENTLY only works for molsimplify ligands... ###
+            for i,name in enumerate(ligands):     
+                this_mol, emsg = lig_load(name)
+                this_mol.convert2mol3D()
+                this_lig  = ligand(mol3D(), [],this_mol.denticity)
+                this_lig.mol = this_mol
+                this_con = this_mol.cat
+                ligs.append(this_lig)
+                cons.append(this_con)
+                if name not in licores.keys():
+                    if args.smicat and len(args.smicat)>= (smilesligs+1):
+                        if 'pi' in args.smicat[smilesligs]:
+                            cats0.append(['c'])
+                        else:
+                            cats0.append(args.smicat[smilesligs])
+                    else:
+                        cats0.append([0])
+                    dent_i = len(cats0[-1])
+                    smilesligs += 1
+                else:
+                    cats0.append(False)
+                # otherwise get denticity from ligands dictionary
+                    if 'pi' in licores[name][2]:
+                        dent_i = 1
+                    else:
+                        if isinstance(licores[name][2], (str, unicode)):
+                            dent_i = 1
+                        else:
+                            dent_i = int(len(licores[name][2]))
+                oc_i = int(ligoc[i]) if i < len(ligoc) else 1
+                occs0.append(0)         # initialize occurrences list
+                dentl.append(dent_i)    # append denticity to list
+                # loop over occurrence of ligand i to check for max coordination
+                for j in range(0,oc_i):
+                    occs0[i] += 1
+                    toccs += dent_i
+            # sort by descending denticity (needed for adjacent connection atoms)
+            ligandsU,occsU,dentsU = ligs,occs0,dentl # save unordered lists
+            indcs = smartreorderligs(args,ligs,dentl,licores)
+            lig_instances = [ligs[i] for i in indcs]  # sort ligands list
+            occs = [occs0[i] for i in indcs]    # sort occurrences list
+            tcats = [cats0[i] for i in indcs]   # sort connections list
+            dents = [dentl[i] for i in indcs]   # sort denticities list
+            #### CURRENTLY ASSUMES EQ, AX1, AX2 in that ORDER, CANNOT HANDLE DENTICITIES OUT OF 1, 2, 4 #####
+            eq_number = int(4/dents[0])
+            eq_cons = eq_number*[cons[0]]
+            eq_ligs = eq_number*[lig_instances[0]]
+            if (len(dents)>1) and (dents[-2] == 2):
+                ax_ligs = 1*[lig_instances[-2]]
+                ax_cons = 1*[cons[-2]]
+            else:
+                ax_ligs = [lig_instances[-2],lig_instances[-1]]
+                ax_cons = [cons[-2],cons[-1]]
+            
+            custom_ligand_dict = {"eq_ligand_list":eq_ligs,
+                              "ax_ligand_list":ax_ligs,
+                              "eq_con_int_list":eq_cons,
+                              "ax_con_int_list":ax_cons}
+            core3D = assemble_connectivity_from_parts(metal_mol,custom_ligand_dict)
+            name_core = args.core
+            if emsg:
+                return False,emsg
+        else:
+            core3D,complex3D,emsg,this_diag,subcatoms_ext,mligcatoms_ext = mcomplex(args,ligands,ligoc,licores,globs)
+            if args.debug:
+                print('subcatoms_ext are ' + str(subcatoms_ext))
+            name_core = args.core
+            if emsg:
+                return False,emsg
     else:
         print('You specified no ligands. The whole mcomplex is read from the core.')
         # read mol3D from core
@@ -3349,16 +3442,57 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
         if args.debug:
             print('setting charge to be ' + str(args.charge))
     # check for molecule sanity
-    sanity,d0 = core3D.sanitycheck(True)
-    if sanity:
-        print 'WARNING: Generated complex is not good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
-        if args.gui:
-            ssmsg = 'Generated complex in folder '+rootdir+' is no good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
-            qqb = mQDialogWarn('Warning',ssmsg)
-            qqb.setParent(args.gui.wmain)
-    if args.debug:
-        print('setting sanity diag, min dist at ' +str(d0) + ' (higher is better)')
-    this_diag.set_sanity(sanity,d0)
+    if not args.reportonly:
+        sanity,d0 = core3D.sanitycheck(True)
+        if sanity:
+            print 'WARNING: Generated complex is not good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
+            if args.gui:
+                ssmsg = 'Generated complex in folder '+rootdir+' is no good! Minimum distance between atoms:'+"{0:.2f}".format(d0)+'A\n'
+                qqb = mQDialogWarn('Warning',ssmsg)
+                qqb.setParent(args.gui.wmain)
+        if args.debug:
+            print('setting sanity diag, min dist at ' +str(d0) + ' (higher is better)')
+        this_diag.set_sanity(sanity,d0)
+    else:
+        this_diag.set_sanity(False, 'graph')
+        cpoints_required = 0
+        for i,ligand_val in enumerate(ligands):
+            for j in range(0,occs[i]):
+                cpoints_required += dents[i]
+
+        # load core and initialize template
+        m3D,core3D,geom,backbatoms,coord,corerefatoms = init_template(args,cpoints_required,globs)
+        # Get connection points for all the ligands
+        # smart alignment and forced order
+
+        #if geom:
+        if args.ligloc and args.ligalign:
+            batslist0 = []
+            for i,ligand_val in enumerate(ligandsU):
+                for j in range(0,occsU[i]):
+                    # get correct atoms
+                    bats,backbatoms = getnupdateb(backbatoms,dentsU[i])
+                    batslist0.append(bats)
+            # reorder according to smart reorder
+            for i in indcs:
+                offset = 0
+                for ii in range(0,i):
+                        offset += (occsU[ii]-1)
+                for j in range(0,occsU[i]):
+                    batslist.append(batslist0[i+j+offset])# sort connections list
+        else:
+            for i,ligand_val in enumerate(ligands):
+                for j in range(0,occs[i]):
+                    # get correct atoms
+                    bats,backbatoms = getnupdateb(backbatoms,dents[i])
+                    batslist.append(bats)
+        if not geom:
+            for comb in batslist:
+                for i in comb:
+                    if i == 1:
+                        batslist[comb][i] = m3D.natoms - coord + 1
+        ANN_flag,ANN_bondl,ANN_reason,ANN_attributes, catalysis_flag = init_ANN(args,ligands,occs,dents,batslist,tcats,licores)
+        this_diag.set_ANN(ANN_flag,ANN_reason,ANN_attributes, catalysis_flag)
     # generate file name
     fname = name_complex(rootdir,name_core,args.geometry,ligands,ligoc,sernum,args,nconf,sanity)
     if args.debug:
@@ -3425,7 +3559,8 @@ def structgen_one(strfiles,args,rootdir,ligands,ligoc,globs,sernum,nconf=False):
             getinputargs(args,fname)
         return strfiles, emsg, this_diag
     # write xyz file
-    core3D.writexyz(fname)
+    if not args.reportonly:
+        core3D.writexyz(fname)
     strfiles.append(fname)
     # write report file
     this_diag.set_mol(core3D)

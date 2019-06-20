@@ -112,6 +112,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
 def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     valid = True
     loud = False
+    pentadentate = False
     metal_index = mol.findMetal()[0]
     built_ligand_list = list()
     lig_natoms_list = list()
@@ -138,9 +139,13 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         print(('bad denticities: ' + str(ligdents)))
         print(('min denticities: ' + str(min(ligdents))))
     if max(ligdents) > 4:
-        valid = False
-        print(('bad denticities: ' + str(ligdents)))
-        print(('max denticities: ' + str(min(ligdents))))
+        #### Handling of pentadentate ligands goes here. #####
+        if max(ligdents) == 5 and min(ligdents) == 1:
+            pentadentate = True
+        else:
+            valid = False
+            print('bad denticities: ' + str(ligdents))
+            print('max denticities: ' + str(min(ligdents)))
     if n_ligs > 3 and min(ligdents) > 1:
         valid = False
         print(('too many ligs ' + str((n_ligs))))
@@ -275,6 +280,52 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             eq_lig_list = [i for i in allowed if (all_ligand_counts[i] == 4)]
             ax_con_list = [ligcons[i] for i in ax_lig_list]
             eq_con_list = [ligcons[i] for i in eq_lig_list]
+    elif n_ligs == 2 and pentadentate:
+        #### Handling for pentadentate scaffolds ####
+        minz = 500
+        maxz = -500
+        if loud:
+            print('pentadentate case')
+        allowed = range(0, 1)
+        not_eq = list()
+        for j, built_ligs in enumerate(built_ligand_list):
+            if len(ligcons[j]) == 1:
+                #### This is the axial ligand ####
+                print(j, 'axial lig')
+                z_coord = [mol.getAtom(ii).coords()[2] for ii in ligcons[j]][0]
+                if z_coord < 0:
+                    bot_lig = j
+                    bot_con = ligcons[j]
+                    not_eq.append(bot_lig)
+                else:
+                    top_lig = j
+                    top_con = ligcons[j]
+                    not_eq.append(top_lig)
+            else:
+                pentadentate_z_list =[mol.getAtom(ii).coords()[2] for ii in ligcons[j]]
+                print('pentadentate Z LIST!')
+                print(pentadentate_z_list)
+                for k, z_val in enumerate(pentadentate_z_list):
+                    if z_val > maxz:
+                        maxz = z_val
+                        top_lig = j
+                        top_con = [ligcons[j][k]]
+                    if z_val < minz:
+                        minz = z_val
+                        bot_lig = j
+                        bot_con = [ligcons[j][k]]
+        allowed = [x for x in allowed if ((x not in not_eq))]
+        eq_lig_list = allowed
+        eq_con_list = [list(set([ligcons[i] for i in allowed][0])-set(top_con)-set(bot_con))]
+        ax_lig_list = [top_lig, bot_lig]
+        ax_con_list = [top_con, bot_con]
+        print('con lists', eq_con_list, ax_con_list)
+        ###########################################################################################
+        # In the above, the pentadentate ligand is classified as both axial and equatorial.       #
+        # The lc atoms are decided by the z-position. Thus the pentadentate ligand has 4 eq-lc    #
+        # and 1 ax-lc. Currently should be able to check this and set that up.                    #
+        ###########################################################################################
+    ############### DONE WITH CLASSIFICATION ######
     # ax_lig=ligand_records[ligand_counts.index(2)]
     # eq_lig=ligand_records[ligand_counts.index(4)]
     ax_ligand_list = [built_ligand_list[i] for i in ax_lig_list]

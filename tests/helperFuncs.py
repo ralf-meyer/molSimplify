@@ -1,5 +1,6 @@
 import pytest
 import argparse
+import json
 import os
 import openbabel as ob
 import numpy as np
@@ -10,12 +11,13 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.mol3D import distance
 from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
 
 def fuzzy_equal(x1,x2,thresh):
     return np.fabs(float(x1)-float(x2)) < thresh
 
-#check whether the string is a integral/float/scientific 
+#check whether the string is a integral/float/scientific
 def is_number(s):
         try:
           float(s)
@@ -154,6 +156,22 @@ def compareGeo(xyz1,xyz2,threshMLBL,threshLG,threshOG):
     # covalent radii test
     return [passNumAtoms,passMLBL,passLG,passOG]
 
+def comparedict(ref, gen, thresh):
+    passComp = True
+    if not set(ref.keys()) == set(gen.keys()):
+        raise KeyError("Keys in the dictionay has been changed")
+    for key in ref:
+        try:
+            valref, valgen = float(ref[key]), float(gen[key])
+            if not abs(valref- valgen) < thresh:
+                passComp = False
+        except ValueError:
+            valref, valgen = str(ref[key]), str(gen[key])
+            if not valgen == valref:
+                passComp = False
+    return passComp
+
+
 def jobname(infile):
     name=os.path.basename(infile)
     name=name.replace(".in","")
@@ -195,7 +213,7 @@ def parse4test(infile,tmpdir,isMulti=False):
 
 def parse4testNoFF(infile,tmpdir):
     name = jobname(infile)
-    newname = name+"_noff" 
+    newname = name+"_noff"
     newinfile = name+"_noff.in"
     f=tmpdir.join(newinfile)
     fullnewname = f.dirname+"/"+newinfile
@@ -223,7 +241,7 @@ def parse4testNoFF(infile,tmpdir):
         print "Input file parsed for no FF test is located: ",fullnewname
     return fullnewname
 
-#compare the report, split key and values, do 
+#compare the report, split key and values, do
 # fuzzy comparison on the values
 def compare_report_new(report1,report2):
     data1=open(report1,'r').readlines()
@@ -232,7 +250,7 @@ def compare_report_new(report1,report2):
         Equal = True
     else:
         Equal = False
-        print('File not found:') 
+        print('File not found:')
         if not data1:
             print('missing: ' + str(report1))
         if not data2:
@@ -342,6 +360,31 @@ def runtest(tmpdir,name,threshMLBL,threshLG,threshOG):
     print "Test qc input file:", output_qcin
     print "Qc input status:", pass_qcin
     return [passNumAtoms, passMLBL, passLG, passOG, pass_report, pass_qcin]
+
+def runtestgeo(tmpdir,name,thresh, deleteH=True, geo_type="oct"):
+    initgeo = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/geocheck/"+name+"/init.xyz")
+    optgeo = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/geocheck/"+name+"/opt.xyz")
+    refjson = resource_filename(Requirement.parse("molSimplify"),"tests/refs/geocheck/"+name+"/ref.json")
+    mymol = mol3D()
+    mymol.readfromxyz(optgeo)
+    init_mol = mol3D()
+    init_mol.readfromxyz(initgeo)
+    if geo_type == "oct":
+        _, _, dict_struct_info = mymol.IsOct(init_mol=init_mol,
+                                             debug=False,
+                                             flag_deleteH=deleteH)
+    elif geo_type == "one_empty":
+        _, _, dict_struct_info = mymol.IsStructure(init_mol=init_mol,
+                                                   dict_check=dict_oneempty_check_st,
+                                                   angle_ref=oneempty_angle_ref,
+                                                   num_coord=5,
+                                                   debug=False,
+                                                   flag_deleteH=deleteH)
+    with open(refjson, "r") as fo:
+        dict_ref = json.load(fo)
+    # passGeo = (sorted(dict_ref.items()) == sorted(dict_struct_info.items()))
+    passGeo = comparedict(dict_ref, dict_struct_info, thresh)
+    return passGeo
 
 def runtestNoFF(tmpdir,name,threshMLBL,threshLG,threshOG):
     infile = resource_filename(Requirement.parse("molSimplify"),"tests/inputs/"+name+".in")
