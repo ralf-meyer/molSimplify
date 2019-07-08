@@ -638,7 +638,7 @@ def init_ligand(args,lig,tcats,keepHs,i):
         count = 0
         while (not breaker) and count <= 5:
             try:
-                lig3D = GetConf(lig3D,lig.cat)    # check if ligand should decorated
+                lig3D = GetConf(lig3D,args,lig.cat)  #Find a (random) binding conformer
                 breaker = True
             except:
                 count += 1

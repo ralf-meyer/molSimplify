@@ -534,6 +534,7 @@ class mol3D:
         self.ident = mol0.ident
         self.ffopt = mol0.ffopt
         self.OBMol = mol0.OBMol
+        self.name = mol0.name
 
     ## Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
