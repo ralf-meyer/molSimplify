@@ -2,6 +2,7 @@
 #  Implements a basic distance geometry conformer search routine
 #  
 #  Written by Terry Gani for HJK Group
+#  Modified for improved support of bidentates on 07/08/2019 by Daniel Harper
 #  
 #  Dpt of Chemical Engineering, MIT
 # 
@@ -14,6 +15,7 @@
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
+from molSimplify.Classes.atom3D import atom3D
 import os, sys
 import openbabel
 import numpy as np
@@ -30,6 +32,18 @@ def CosRule(AB,BC,theta):
     theta = np.pi*theta/180
     AC = sqrt(AB**2+BC**2-2*AB*BC*cos(theta))
     return AC
+    
+##Apply the cosine rule to find the angle ABC given points A,B, and C
+#  @param A the coordinates of A
+#  @param B the coordinates of B
+#  @param C the coordinates of C
+#  @return theta The angle ABC in degrees
+def inverseCosRule(A,B,C):
+    BA = np.linalg.norm(np.array(A)-np.array(B))
+    BC = np.linalg.norm(np.array(C)-np.array(B))
+    AC = np.linalg.norm(np.array(C)-np.array(A))
+    theta = np.arccos((BA**2+BC**2-AC**2)/(2*BA*BC))
+    return np.rad2deg(theta)
 
 ## Generate distance bounds matrices
 #  
@@ -43,20 +57,21 @@ def CosRule(AB,BC,theta):
 #  @param catoms List of ligand connection atoms (default empty)
 #  @param A Distance 2 connectivity matrix
 #  @return Lower and upper bounds matrices
-def GetBoundsMatrices(mol,natoms,catoms=[],A=[]):
+def GetBoundsMatrices(mol,natoms,catoms=[],shape=[],A=[]):
     LB = np.zeros((natoms,natoms)) # lower bound
     UB = np.zeros((natoms,natoms)) # upper bound, both symmetric
-    for i in range(natoms):
-        for j in range(natoms):
+    #Set constraints for all atoms excluding the dummy metal atom
+    for i in range(natoms-1):
+        for j in range(natoms-1):
             # 1-2 constraints: UB = LB = BL
             if mol.OBMol.GetBond(i+1,j+1) is not None:
                 UB[i][j] = distance(mol.getAtomCoords(i),mol.getAtomCoords(j))
                 UB[j][i] = distance(mol.getAtomCoords(i),mol.getAtomCoords(j))
                 LB[i][j] = distance(mol.getAtomCoords(i),mol.getAtomCoords(j))
                 LB[j][i] = distance(mol.getAtomCoords(i),mol.getAtomCoords(j))            
-    for i in range(natoms):
-        for j in range(natoms):
-            for k in range(natoms):
+    for i in range(natoms-1):
+        for j in range(natoms-1):
+            for k in range(natoms-1):
             # 1-3 constraints: UB = LB = BL
                 if mol.OBMol.GetBond(i+1,j+1) is not None and mol.OBMol.GetBond(j+1,k+1) is not None and j != k and i != k:
                     AB = vecdiff(mol.getAtomCoords(j),mol.getAtomCoords(i))
@@ -65,36 +80,38 @@ def GetBoundsMatrices(mol,natoms,catoms=[],A=[]):
                     UB[k][i] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))      
                     LB[i][k] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))
                     LB[k][i] = CosRule(norm(AB),norm(BC),180-vecangle(AB,BC))
-    # set cis 1-2 constraints for connecting atoms
-    for i,catom in enumerate(catoms[:-1]):
-        # exclude catoms with distance 2 or less e.g. NCN
-        if A[catoms[i],catoms[i+1]] == 0:
-	        UB[catoms[i]][catoms[i+1]] = 2.8
-	        UB[catoms[i+1]][catoms[i]] = 2.8
-	        LB[catoms[i]][catoms[i+1]] = 2.8
-	        LB[catoms[i+1]][catoms[i]] = 2.8
-    # set right-triangle 1-3 constraints for connecting atoms
-    if len(catoms) > 2:
-        for i,catom in enumerate(catoms[:-2]):
-	        UB[catoms[i]][catoms[i+2]] = 4.0
-	        UB[catoms[i+2]][catoms[i]] = 4.0        
-	        LB[catoms[i]][catoms[i+2]] = 4.0
-	        LB[catoms[i+2]][catoms[i]] = 4.0
-	# set planar 1-4 constraints for connecting atoms
-    if len(catoms) > 3:
-        for i,catom in enumerate(catoms[:-3]):
-	        UB[catoms[i]][catoms[i+3]] = 2.8
-	        UB[catoms[i+3]][catoms[i]] = 2.8        
-	        LB[catoms[i]][catoms[i+3]] = 2.8
-	        LB[catoms[i+3]][catoms[i]] = 2.8                              
+    
+    #Set constraints for atoms bonded to the dummy metal atom
+    #Currently assumes all M-L bonds are 2 Angstroms
+    dummy_idx = natoms-1
+    M_L_bond = 2
+    for catom in catoms:
+        #Set 1-2 constraints
+        UB[catom][dummy_idx] = M_L_bond
+        UB[dummy_idx][catom] = M_L_bond
+        LB[catom][dummy_idx] = M_L_bond
+        LB[dummy_idx][catom] = M_L_bond
+    if len(catoms) > 1:
+        #Set 1-3 contraints for ligating atoms
+        for i in range(len(catoms[:-1])):
+            for j in range(i+1,len(catoms)):
+                angle = shape[str(i)+'-'+str(j)]
+                lig_distance = CosRule(M_L_bond,M_L_bond,angle)
+                UB[catoms[i]][catoms[j]] = lig_distance
+                UB[catoms[j]][catoms[i]] = lig_distance
+                LB[catoms[i]][catoms[j]] = lig_distance
+                LB[catoms[j]][catoms[i]] = lig_distance
+    
+    expanded_vdwrad = vdwrad.copy()
+    expanded_vdwrad['X'] = 1.5 #Default vdw radius for the dummy metal is 1.5
     for i in range(natoms):
         for j in range(i):
             # fill LBs with sums of vdW radii and UBs with arbitrary large cutoff
             if LB[i][j] == 0:
-                LB[i][j] = vdwrad[mol.getAtom(i).sym] + vdwrad[mol.getAtom(j).sym]
-                LB[j][i] = vdwrad[mol.getAtom(i).sym] + vdwrad[mol.getAtom(j).sym]            
+                LB[i][j] = expanded_vdwrad[mol.getAtom(i).sym] + expanded_vdwrad[mol.getAtom(j).sym]
+                LB[j][i] = expanded_vdwrad[mol.getAtom(i).sym] + expanded_vdwrad[mol.getAtom(j).sym]            
                 UB[i][j] = 100
-                UB[j][i] = 100              
+                UB[j][i] = 100
     return LB,UB
 
 ## Triangle inequality bounds smoothing
@@ -142,6 +159,8 @@ def Metrize(LB,UB,natoms,Full=False,seed=False):
         for j in range(i,natoms):
             if Full:
                 LB,UB = Triangle(LB,UB,natoms)
+            if UB[i][j] < LB[i][j]: #ensure that the upper bound is larger than the lower bound
+                UB[i][j] = LB[i][j]
             D[i][j] = np.random.uniform(LB[i][j],UB[i][j])
             D[j][i] = D[i][j]
     return D
@@ -257,48 +276,92 @@ def SaveConf(X,mol,ffclean=True,catoms=[]):
     for i,atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
         atom.SetVector(X[i,0],X[i,1],X[i,2])
     if ffclean:
-        ff = openbabel.OBForceField.FindForceField('mmff94')
+        ff = openbabel.OBForceField.FindForceField('UFF')
         constr = openbabel.OBFFConstraints()
-        # constrain connecting atoms
-        for catom in catoms:
-            constr.AddAtomConstraint(catom+1)
-        s = ff.Setup(OBMol,constr)
+        s = ff.Setup(OBMol)
         if not s:
             print('FF setup failed')
         for i in range(200):
             ff.SteepestDescent(10)
             ff.ConjugateGradients(10)
         ff.GetCoordinates(OBMol)
-        conf3D.OBMol = OBMol  
+        conf3D.OBMol = OBMol
     conf3D.convert2mol3D()
     return conf3D
+
+## Determines the relative positioning of different ligating atoms
+# @param args
+# @return A dictionary of angles (in degrees)between catoms
+def findshape(args,master_ligand):
+    core = loadcoord(args.geometry)
+    
+    #load ligands and identify the denticity of each
+    ligands = []
+    for counter,i in enumerate(args.lig):
+        ligands.append(lig_load(i)[0])
+    number_of_smiles_ligands = 0
+    for counter,lig in enumerate(ligands):
+        if lig.ident == 'smi':
+            ligands[counter].denticity = len(args.smicat[number_of_smiles_ligands])
+    
+    bind = 1
+    for counter,i in enumerate(ligands):
+        if i.name == master_ligand.name:
+            master_denticity = i.denticity
+            break
+        else:
+            bind += 1*int(args.ligocc[counter])*int(i.denticity)
+    binding_locations = (np.array(range(master_denticity)))+bind
+
+    metal_coords = np.array(core[0])
+    ligating_coords = []
+    for i in binding_locations:
+        ligating_coords.append(np.array(core[i]))
+    
+    angles_dict = dict()
+    for i in range(len(ligating_coords)):
+        for j in range(len(ligating_coords)):
+            angles_dict[str(i)+'-'+str(j)]=inverseCosRule(ligating_coords[i],metal_coords,ligating_coords[j])
+    return angles_dict
 
 ## Uses distance geometry to get a random conformer.
 #  @param mol mol3D of molecule
 #  @param catoms List of connection atoms (default empty), used to generate additional constraints if specified (see GetBoundsMatrices())
 #  @return mol3D of new conformer
-def GetConf(mol,catoms=[]):
-    natoms = mol.natoms
-    mol.createMolecularGraph()
-    A = mol.graph
-    A = A + np.dot(A,np.transpose(A))
+def GetConf(mol,args,catoms=[]):
+    #Create a mol3D copy with a dummy metal metal
+    Conf3D = mol3D()
+    Conf3D.copymol3D(mol)
+    Conf3D.addAtom(atom3D('X',[0,0,0]))
+    dummy_metal = openbabel.OBAtom()
+    dummy_metal.SetAtomicNum(26)
+    Conf3D.OBMol.AddAtom(dummy_metal)
+    for i in catoms:
+        Conf3D.OBMol.AddBond(i+1,34,1)
+    natoms = Conf3D.natoms
+    Conf3D.createMolecularGraph()
+    # ~ A = Conf3D.graph
+    # ~ A = A + np.dot(A,np.transpose(A))
+    
     start = time.time()
-    LB,UB = GetBoundsMatrices(mol,natoms,catoms,A)
+    shape = findshape(args,mol)
+    LB,UB = GetBoundsMatrices(Conf3D,natoms,catoms,shape)
     status = False
     while not status:
-	    D = Metrize(LB,UB,natoms)
-	    D0,status = GetCMDists(D,natoms)
+        D = Metrize(LB,UB,natoms)
+        D0,status = GetCMDists(D,natoms)
     G = GetMetricMatrix(D,D0,natoms)
     L,V = Get3Eigs(G,natoms)
     X = np.dot(V,L) # get projection
     x = np.reshape(X,3*natoms)
     res1 = optimize.fmin_cg(DistErr,x,fprime=DistErrGrad,gtol=0.1,args=(LB,UB,natoms),disp=0)
     Opt = time.time()
-    #print('Optimize',str(Opt-start))
     X = np.reshape(res1,(natoms,3))
-    conf3D = SaveConf(X,mol,True,catoms)
+    conf3D = SaveConf(X,Conf3D,True,catoms)
     ff = time.time()
-    #print('FF',str(ff-Opt))
+    
+    metal = conf3D.findMetal()
+    conf3D.deleteatom(metal[0])
     return conf3D
 
 # for testing

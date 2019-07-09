@@ -638,7 +638,7 @@ def init_ligand(args,lig,tcats,keepHs,i):
         count = 0
         while (not breaker) and count <= 5:
             try:
-                lig3D = GetConf(lig3D,lig.cat)    # check if ligand should decorated
+                lig3D = GetConf(lig3D,args,lig.cat)  #Find a (random) binding conformer
                 breaker = True
             except:
                 count += 1
@@ -2888,24 +2888,19 @@ def mcomplex(args,ligs,ligoc,licores,globs):
             print('Performing final FF opt')
         # idxes
         midx = core3D.findMetal()[0]
-       
-        fsyms = [core3D.getAtom(fidx).sym for fidx in connected]
+        core3D,enc = ffopt(ff=args.ff,\
+                        mol=core3D,\
+                        connected=connected,\
+                        constopt=1,\
+                        frozenats=connected + [midx],\
+                        frozenangles=freezeangles,\
+                        mlbonds=MLoptbds,\
+                        nsteps='Adaptive',\
+                        debug=args.debug)
 
-        # constraints
-        constr = openbabel.OBFFConstraints()
-        for idx in connected + [midx]:
-            constr.AddAtomConstraint(idx+1)
-        # ff
-        ff = openbabel.OBForceField.FindType('UFF')
-        core3D.convert2OBMol()
-        obmol = core3D.OBMol
-        flag = ff.Setup(obmol,constr)
-        if flag:
-            ff.SteepestDescent(5000)
-        ff.GetCoordinates(obmol)
-        core3D.OBMol = obmol
-        core3D.convert2mol3D()
-        
+        if args.debug:
+            print('saving a final debug copy of the complex named complex_after_final_ff.xyz')
+            core3D.writexyz('complex_after_final_ff.xyz')
         # core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     return core3D,complex3D,emsg,this_diag,subcatoms_ext,mligcatoms_ext
 
