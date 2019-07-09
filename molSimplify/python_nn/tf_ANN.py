@@ -336,8 +336,11 @@ def load_keras_ann(predictor, suffix='model'):
                                                         decay=0.00011224350434148253, lr=0.0006759924688701965),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor in ['oxo', 'hat']:
-        loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
-                                                        decay=0.0006651401379502965, lr=0.0007727366541920176),
+        # loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
+        #                                                 decay=0.0006651401379502965, lr=0.0007727366541920176),
+        #                      metrics=['mse', 'mae', 'mape']) #decomissioned on 06/20/2019 by Aditya. Using hyperparams from oxo20.
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
+                                                        beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'oxo20':
         loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
@@ -515,10 +518,19 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
                                  [loaded_model.layers[len(loaded_model.layers) - 2].output])
     latent_space_train = np.squeeze(np.array(get_outputs([norm_train_mat, 0])))
     dist_array = np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_vector)),axis=1)
+    # train_dist_array =  np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_train)),axis=1)
+    from scipy.spatial import distance_matrix
+    train_dist_array = distance_matrix(latent_space_train,latent_space_train)
+    nearest_10_NN_train = []
+    for j, train_row in enumerate(train_dist_array):
+        nearest_10_NN_train.append(np.sort(np.squeeze(train_row))[0:10])
+    nearest_10_NN_train = np.array(nearest_10_NN_train)
+    avg_traintrain = np.mean(nearest_10_NN_train)
     sorted_dist = np.sort(np.squeeze(dist_array))
+    sorted_indices = np.argsort(np.squeeze(dist_array))
     avg_10_NN_dist = np.mean(sorted_dist[0:10])
-    avg_10_NN_dist /= average_train_train_10NN[predictor]
-    return avg_10_NN_dist
+    norm_avg_10_NN_dist = avg_10_NN_dist/avg_traintrain
+    return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain 
 
 def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     # returns scaled euclidean distance to nearest trainning 
@@ -533,6 +545,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     min_ind = 0
 
     loaded_model = load_keras_ann(predictor)
+
     if debug:
         print('measuring latent distances:')
         print('loaded model has  ' + str(
