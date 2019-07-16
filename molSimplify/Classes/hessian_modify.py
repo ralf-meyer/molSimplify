@@ -55,7 +55,7 @@ for i in range(repeats):
 
 # replace selected elements of the hessian
 idx_list = [27,28,40]
-dof = [range(idx*3,idx*3+3) for idx in idx_list]
+dof = [list(range(idx*3,idx*3+3)) for idx in idx_list]
 a = 0
 for i in range(len(dof)):
     for ii in range(len(dof[i])):
@@ -79,10 +79,10 @@ f = open('try.hess','ab')
 ncol = npf.shape[1]
 for col in range(ncol/5):
     a = npf[col*5:col*5+5].T
-    b = np.array([range(col*5,col*5+5)])
+    b = np.array([list(range(col*5,col*5+5))])
     a = np.concatenate((b,a),axis=0)
     b = np.array([[0]])
-    c = np.array([range(ncol)]).T
+    c = np.array([list(range(ncol))]).T
     b = np.concatenate((b,c))
     a = np.concatenate((b,a),axis=1)
     a = a.astype(str)
@@ -97,10 +97,10 @@ f.close()
 f = open('try.hess','ab')
 if (ncol % 5) != 0:
     a = npf[ncol-(ncol % 5):ncol].T
-    b = np.array([range(ncol-(ncol % 5),ncol)])
+    b = np.array([list(range(ncol-(ncol % 5),ncol))])
     a = np.concatenate((b,a),axis=0)
     b = np.array([[0]])
-    c = np.array([range(ncol)]).T
+    c = np.array([list(range(ncol))]).T
     b = np.concatenate((b,c))
     a = np.concatenate((b,a),axis=1)
     a = a.astype(str)

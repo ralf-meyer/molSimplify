@@ -80,21 +80,21 @@ def startgen(argv,flag,gui):
     ss += "\n******** Welcome to "+PROGRAM+"! Let's get started. ********\n"
     ss += "************************************************************\n\n"
     if not flag:
-        print ss
+        print(ss)
     sys.argv = argv
     parser = argparse.ArgumentParser()
     args = parseall(parser)
     # check if input file exists
     if not glob.glob(args.i):
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
-        print emsg
+        print(emsg)
         return emsg
     args.gui = gui # add gui flag
         # parse input file
     if args.i:
         parseinputfile(args)
     if args.cdxml:
-        print 'converting cdxml file into xyz'
+        print('converting cdxml file into xyz')
         cdxml = args.cdxml[0]
         fname, msg = loadcdxml(cdxml)
         print(msg)
@@ -104,19 +104,12 @@ def startgen(argv,flag,gui):
             args.core = [core]
             args.substrate = [sub]
             args.tsgen = True
-	# issue a call to test TF, this is needed to keep
-	# ordering between openbabel and TF calls consistent
-	# on some sytems
-	if globs.testTF():
-		print('TensorFlow connection successful')
-	else:
-		print('TensorFlow connection failed')
 
     # if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
     if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
 
         # check input arguments
-        print 'Checking input...'
+        print('Checking input...')
         if args.tsgen:
             emsg = checkinput(args,calctype="tsgen")
         elif args.ligadd:
@@ -148,7 +141,7 @@ def startgen(argv,flag,gui):
             del args
             return emsg
         else:
-            print 'Successful database search!\n'
+            print('Successful database search!\n')
     # random generation?
     elif (args.rgen): # check if random generation was requested
         if args.charge:
@@ -168,7 +161,7 @@ def startgen(argv,flag,gui):
                     return emsg
             else:
                 emsg = 'For random generation specify at least a ligand, coordination or ligand types.\n'
-                print emsg
+                print(emsg)
                 del args
                 return emsg
     #elif args.drawmode:
@@ -187,7 +180,7 @@ def startgen(argv,flag,gui):
         analysis_supervisor(args,rundir)
     # add ligand to list 
     elif (args.ligadd):
-        print('adding ' +str(args.ligadd)  + ' to ligand database  with name ' + args.ligname + ' and connection atom(s) ' + str(args.ligcon))
+        print(('adding ' +str(args.ligadd)  + ' to ligand database  with name ' + args.ligname + ' and connection atom(s) ' + str(args.ligcon)))
         addtoldb(smimol=args.ligadd.decode('utf-8'),sminame=args.ligname.decode('utf-8'),smident = len(args.ligcon),smicat=str(args.ligcon).strip('[]').decode('utf-8'),smigrps ="custom",smictg="custom",ffopt=args.ligffopt)
         
 
@@ -207,7 +200,7 @@ def startgen(argv,flag,gui):
             args.core = cc
             emsg = multigenruns(rundir,args,globs)
             if emsg:
-                print emsg
+                print(emsg)
                 del args
                 return emsg
     ss =  "\n**************************************************************"
@@ -215,7 +208,7 @@ def startgen(argv,flag,gui):
     ss += "**************************************************************"
     ss += globs.about
     if not flag:
-        print ss
+        print(ss)
     del args
     return emsg
 

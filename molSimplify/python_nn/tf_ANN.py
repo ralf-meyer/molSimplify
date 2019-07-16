@@ -642,3 +642,15 @@ def save_model(model, predictor, num=None, suffix=False):
     # serialize weights to HDF5
     model.save_weights("%s.h5" % name)
     print("Saved model !%s! to disk" % name.split('/')[-1])
+
+
+def initialize_model_weights(model):
+    session = K.get_session()
+    for layer in model.layers: 
+         for v in layer.__dict__:
+             v_arg = getattr(layer,v)
+             if hasattr(v_arg,'initializer'):
+                 initializer_method = getattr(v_arg, 'initializer')
+                 initializer_method.run(session=session)
+                 # print('reinitializing layer {}.{}'.format(layer.name, v))
+    return model

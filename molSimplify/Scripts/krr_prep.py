@@ -132,7 +132,7 @@ def feature_prep(mol, idx):
     rMLs = [distance(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
     idx0 = idx
     vangs = [vecangle(vML, vMLs[idx0]) for vML in vMLs]
-    idxes = range(6)
+    idxes = list(range(6))
     idx5 = np.argsort(np.array(vangs))[-1]
     idx1_4 = copy.deepcopy(idxes)
     idx1_4.remove(idx0)
@@ -248,7 +248,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     selector.fit(X_norm_train, y_norm_train)
     X_norm_train_impts = selector.feature_importances_
     idxes = np.where(X_norm_train_impts > threshold)[0]
-    print(len(idxes))
+    print((len(idxes)))
     importances = X_norm_train_impts[idxes]
     features_sel = headers[idxes]
     # importance
@@ -293,7 +293,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
         else:
             signal = True
         cycle_i += 1
-        print('gamma is: ', gamma, '. alpha is: ', alpha)
+        print(('gamma is: ', gamma, '. alpha is: ', alpha))
     # final model
     regr = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
     regr.fit(X_norm_train_sel, y_norm_train)
@@ -384,7 +384,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
             selector.fit(X_norm_train, y_norm_train)
             X_norm_train_impts = selector.feature_importances_
             idxes = np.where(X_norm_train_impts > threshold)[0]
-            print(len(idxes))
+            print((len(idxes)))
             importances = X_norm_train_impts[idxes]
             features_sel = headers[idxes]
             # importance
@@ -440,7 +440,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
             else:
                 signal = True
             cycle_i += 1
-            print('gamma is: ', gamma, '. alpha is: ', alpha)
+            print(('gamma is: ', gamma, '. alpha is: ', alpha))
         # final model
         regr = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
         regr.fit(X_norm_train_sel, y_norm_train)
@@ -477,7 +477,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
         # perm_dict = dict(zip(perm_names, perms))
         MAEs_test.append(MAE_test)
         MAEs_test_i.append(i)
-        print(str(i) + '/' + str(total_i))
+        print((str(i) + '/' + str(total_i)))
         i += 1
     perm_dict = dict(zip(MAEs_test_i, MAEs_test))
 

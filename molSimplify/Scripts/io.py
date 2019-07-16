@@ -973,6 +973,8 @@ def name_complex(rootdir,core,geometry,ligs,ligoc,sernum,args,nconf=False,sanity
             if bsmi:
                 if args.nambsmi: # if name specified use it in file
                     name += "_" + +args.nambsmi[0:2]
+        if args.antigeoisomer:
+            name+='_antigeoisomer'
     return name
 
 ## Generate complex name (this is actually used instead of namegen.py)

@@ -45,14 +45,14 @@ def interatomic_dist(mol,ind1,ind2):
 	   coord1 = mol.getAtom(ind1).coords()
 	   coord2 = mol.getAtom(ind2).coords()
 	   distance =  mdistance(coord1,coord2)
-	   print('iad between',mol.getAtom(ind1).symbol(),mol.getAtom(ind2).symbol())
+	   print(('iad between',mol.getAtom(ind1).symbol(),mol.getAtom(ind2).symbol()))
 
 	   vector  =  [coord1[i] - coord2[i] for i in [0,1,2]]
 	   return distance,vector
 def find_term_heavy(mol,reference_point):
 		min_dist  = 1000
 		min_ind = 0
-		print('reference_point',reference_point)
+		print(('reference_point',reference_point))
 		for inds,atoms in enumerate(mol.getAtoms()):
 	 #           print('inds,atoms')
 	  #          print('this ind is ',inds)
@@ -133,7 +133,7 @@ def remove_closest_h(mol,other_mol):
 			if this_distance < min_distance:
 				min_distance = this_distance
 				current_ind = Hatoms
-	print(' the H ind to delete is  ' +str(current_ind) + '  at ' + str(min_distance)) 
+	print((' the H ind to delete is  ' +str(current_ind) + '  at ' + str(min_distance))) 
 	new_mol.deleteatoms([current_ind])
 	return new_mol
 	
@@ -147,17 +147,17 @@ def grow_linear_step(chain,new_unit,dim,interv,conatom,freezhead):
                 add_mol.convert2OBMol()
 		add_mol = zero_dim(new_unit,dim)
 
-		chain_inds = range(0,chain.natoms)
-		print('chain_inds',chain_inds)
-                print('freezehead is '+str(freezhead))
-                print('freezehead is '+str(freezhead))
+		chain_inds = list(range(0,chain.natoms))
+		print(('chain_inds',chain_inds))
+                print(('freezehead is '+str(freezhead)))
+                print(('freezehead is '+str(freezhead)))
 		basic_lengths = find_extents(chain)
-                print('extents are ' + str(basic_lengths))
+                print(('extents are ' + str(basic_lengths)))
 		basic_dist  = basic_lengths[dim]
 		tv =[0,0,0]
 		tv[dim] = basic_dist
 
-		print('translating',tv)
+		print(('translating',tv))
 
 		add_mol.translate(interv)
 		
@@ -170,7 +170,7 @@ def grow_linear_step(chain,new_unit,dim,interv,conatom,freezhead):
 		
                 #ffopt(ff,mol,connected,constopt,frozenats,frozenangles,mlbonds,nsteps,debug=False):
                 combined_mol,en = ffopt('MMFF94',mol=combined_mol,connected=[],constopt=0,
-                                        frozenats=range(0,freezhead+1),frozenangles=[],
+                                        frozenats=list(range(0,freezhead+1)),frozenangles=[],
                                         mlbonds=[],nsteps=200,debug=False)
                 combined_mol.convert2mol3D()
 		combined_mol.writexyz('pre.xyz')
@@ -185,8 +185,8 @@ def chain_builder_supervisor(args,rundir):
 		if not (args.chain) and not (isinstance(args.chain_units, (int))):
 				emsg.append('Invalid input: need monomer AND number of units')
 
-		print(args.chain)
-		print(args.chain_units)
+		print((args.chain))
+		print((args.chain_units))
                 
                 print('loading monomer')
 		monomer = mol3D()
@@ -199,28 +199,28 @@ def chain_builder_supervisor(args,rundir):
                 
                 
                 conatom = len(args.chain)-1
-                print('connection atom is '+monomer.getAtom(conatom).symbol())
+                print(('connection atom is '+monomer.getAtom(conatom).symbol()))
                 
                 
                 old_pos = monomer.getAtom(conatom).coords()
                 idist = 1.25*mdistance(old_pos,[0,0,0])
-                print('currently at located at ' + str(old_pos))
+                print(('currently at located at ' + str(old_pos)))
                 target = [0,0,-1*mdistance(old_pos,[0,0,0])]
                 
-                print('target located at ' + str(target) )
+                print(('target located at ' + str(target) ))
                 vec1 = vecdiff([0,0,0],old_pos)
-                print('vecdiff is ' + str(vec1) )
+                print(('vecdiff is ' + str(vec1) ))
                 vec2 = [0,0,1]
                 
                 thetaold = vecangle(vec1,vec2)
                 
                 
-                print('thetaold is ' + str(thetaold) )
+                print(('thetaold is ' + str(thetaold) ))
                 
                 myu = np.cross(vec1,vec2)
 
                 theta,u = rotation_params(target,[0,0,0],old_pos)
-                print('rot params are ' + str([theta, u]) +' my way '  + str(thetaold) + ' my norm '  + str(myu)) 
+                print(('rot params are ' + str([theta, u]) +' my way '  + str(thetaold) + ' my norm '  + str(myu))) 
                 
                 
                 monomer = rotate_around_axis(monomer,[0,0,0],u,theta)
@@ -236,8 +236,8 @@ def chain_builder_supervisor(args,rundir):
                 new_coords = monomer.getAtom(conatom).coords()
 
 
-                print('now located at ' + str(new_coords))
-                print('target located at ' + str(target))
+                print(('now located at ' + str(new_coords)))
+                print(('target located at ' + str(target)))
                 print('\n\n\n')
 
 
@@ -262,7 +262,7 @@ def chain_builder_supervisor(args,rundir):
 
                 middle = mol3D()
                 middle.copymol3D(monomer)
-                print('connection atom is '+monomer.getAtom(len(args.chain)-1).symbol())
+                print(('connection atom is '+monomer.getAtom(len(args.chain)-1).symbol()))
                 conatom = len(args.chain)-1
                 middle = trim_H(middle,monomer.getAtom(len(args.chain)-1).coords())
 
@@ -271,7 +271,7 @@ def chain_builder_supervisor(args,rundir):
 
                 print('loading end')
                 end = mol3D()
-                print(args.chain_head)
+                print((args.chain_head))
                 if args.chain_head:
                         end.OBMol = end.getOBMol(args.chain_head,convtype='smistring')
                 else:
@@ -283,9 +283,9 @@ def chain_builder_supervisor(args,rundir):
                 end =zero_1st(end)
                 end.writexyz('end_zero_z.xyz')
                 conatom_end = 0
-                print('end connection atom is '+end.getAtom(conatom_end).symbol())
+                print(('end connection atom is '+end.getAtom(conatom_end).symbol()))
                 end_pos = end.getAtom(conatom_end).coords()
-                print('end target position is  '+str(end_pos))
+                print(('end target position is  '+str(end_pos)))
                 target_displacement= mdistance(end_pos,[0,0,0])
                 end.printxyz()
                 if target_displacement>0.05:
@@ -316,8 +316,8 @@ def chain_builder_supervisor(args,rundir):
                         locked_atoms = my_dim.natoms -1
                         my_dim = grow_linear_step(my_dim,repu,0,interv,conatom,freezhead = locked_atoms)
                         interv = [interv[i] + interv0[i] for i in [0,1,2]]
-                        print('con is '+ str(conatom))
-                        print('old nat is '+ str(old_nat))
+                        print(('con is '+ str(conatom)))
+                        print(('old nat is '+ str(old_nat)))
                         conatom = conatom + old_nat  
                         old_nat =  repu.natoms +1
                         if not i%2:
