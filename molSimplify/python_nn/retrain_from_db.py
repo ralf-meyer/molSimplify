@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import sklearn.preprocessing
 import sklearn.utils
-from molSimplifyAD.utils.pymongo_tools import convert2dataframe, connect2db
+from molSimplifyAD.utils.pymongo_tools import convert2dataframe, connect2db, push_models
 from pkg_resources import resource_filename, Requirement
 from molSimplify.python_nn.tf_ANN import get_key, load_ANN_variables, load_keras_ann, initialize_model_weights
 
@@ -47,6 +47,7 @@ def get_label(predictor):
 
 
 def extract_data_from_db(predictor, db, collection, constraints):
+    print("Collecting data with constraints: %s..." % constraints)
     df = convert2dataframe(db, collection, constraints=constraints, normalized=True)
     fnames = get_vars(predictor)
     lname = get_label(predictor)
@@ -90,9 +91,30 @@ def train_model(predictor, X_train, X_test, y_train, y_test, epochs=1000, batch_
     return model
 
 
-def retrain(predictor, user, pwd, host, port, database, auth, collection,
-            constraints=False, frac=0.8, epochs=1000, batch_size=32):
+def retrain(predictor, user, pwd, host, port,
+            database, auth, collection, collection_model,
+            constraints=False, frac=0.8, epochs=1000, batch_size=32,
+            force_push=False):
     db = connect2db(user, pwd, host, port, database, auth)
     df, fnames, lname = extract_data_from_db(predictor, db, collection, constraints=constraints)
-    X_train, X_test, y_train, y_test = normalize_data(df, fnames, lname, predicter, frac=frac)
+    X_train, X_test, y_train, y_test = normalize_data(df, fnames, lname, predictor, frac=frac)
     model = train_model(predictor, X_train, X_test, y_train, y_test, epochs=epochs, batch_size=batch_size)
+    model_dict = {}
+    model_dict.update({"predictor": predictor})
+    model_dict.update({"hyperparams": {"epochs": epochs, "batch_size": batch_size}})
+    model_dict.update({"score_train": model.evaluate(X_train, y_train)[-1],
+                       "score_test": model.evaluate(X_test, y_test)[-1],
+                       "target_train": y_train.tolist(),
+                       "target_test": y_test.tolist(),
+                       "pred_train": model.predict(X_train).tolist(),
+                       "pred_test": model.predict(X_test).tolist(),
+                       "len_train": y_train.shape[0],
+                       "len_test": y_test.shape[0],
+                       "len_tot": y_train.shape[0] + y_test.shape[0],
+                       "force_push": force_push
+                       })
+    push_models(model, model_dict,
+                database, collection_model,
+                user=user, pwd=pwd,
+                host=host, port=port,
+                auth=auth)
