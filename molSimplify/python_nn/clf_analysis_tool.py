@@ -127,9 +127,9 @@ def get_acc(pred_std, pred_err, stds):
         acc_arr = [1 if pred_err_now[ii] < 0.5 else 0 for ii in range(len(pred_err_now))]
         acc.append(np.mean(acc_arr))
         ratio.append(1.0 * len(pred_err_now) / len(pred_std))
-    print('stds', stds)
-    print('accuracy', acc)
-    print('ratio', ratio)
+    print(('stds', stds))
+    print(('accuracy', acc))
+    print(('ratio', ratio))
     return stds, np.array(acc), np.array(ratio)
 
 

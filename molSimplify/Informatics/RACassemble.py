@@ -99,21 +99,23 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                                             results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
-        
+       
         results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,custom_ligand_dict=custom_ligand_dict)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
-        
+       
         ## metal ACs
         #print('getting metal ACs')
         results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False, modifier=ox_modifier)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+ 
         results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False, modifier=ox_modifier)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+
         # ## ox-metal ACs, if ox available
         if ox_modifier:
             results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
@@ -122,7 +124,6 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False)
             descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')    
-                                                           
         return descriptor_names, descriptors
 
 
@@ -253,15 +254,20 @@ def create_OHE(descriptor_names,descriptors, metal,oxidation_state):
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
 def append_descriptors(descriptor_names,descriptors,list_of_names,list_of_props,prefix,suffix):
+    try:
+        basestring
+    except NameError:
+        basestring = str
+
     for names in list_of_names:
-        if hasattr(names, '__iter__'):
+        if not isinstance(names, basestring):
             names = ["-".join([prefix,str(i),suffix]) for i in names]
             descriptor_names += names
         else:
             names = "-".join([prefix,str(names),suffix])
             descriptor_names.append(names)
     for values in list_of_props:
-        if hasattr(values, '__iter__'):
+        if not isinstance(names, basestring):
             descriptors.extend(values)
         else:
             descriptors.append(values)

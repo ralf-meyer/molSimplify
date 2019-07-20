@@ -14,7 +14,7 @@ def name_converter(fnames):
     for ii, fname in enumerate(fnames):
         if isRAC(fname):
             fnames_new.append("RACs." + fname)
-        elif fname in name_converter_dict.keys():
+        elif fname in list(name_converter_dict.keys()):
             fnames_new.append(name_converter_dict[fname])
         else:
             fnames_new.append(fname)
@@ -47,14 +47,14 @@ def get_label(predictor):
 
 
 def extract_data_from_db(predictor, db, collection, constraints):
-    print("Collecting data with constraints: %s..." % constraints)
+    print(("Collecting data with constraints: %s..." % constraints))
     df = convert2dataframe(db, collection, constraints=constraints, normalized=True)
     fnames = get_vars(predictor)
     lname = get_label(predictor)
     df_use = df[fnames + lname]
     shape = df_use.shape[0]
     df_use = df_use.dropna()
-    print("data reduce (%d ->  %d) because of NaN." % (shape, df_use.shape[0]))
+    print(("data reduce (%d ->  %d) because of NaN." % (shape, df_use.shape[0])))
     return df_use, fnames, lname
 
 
@@ -83,11 +83,11 @@ def train_model(predictor, X_train, X_test, y_train, y_test, epochs=1000, batch_
     model = initialize_model_weights(model)
     history = model.fit(X_train, y_train, epochs=epochs, verbose=1, batch_size=batch_size)
     loss, metrics = model.evaluate(X_test, y_test)
-    print("loss: ", loss)
+    print(("loss: ", loss))
     if not 'clf' in predictor:
-        print("mae: ", metrics)
+        print(("mae: ", metrics))
     else:
-        print("accuracy: ", metrics)
+        print(("accuracy: ", metrics))
     return model
 
 

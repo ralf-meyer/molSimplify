@@ -1,5 +1,9 @@
 from molSimplify.Classes.mol3D import *
-import glob, os, time, re, sys
+import glob
+import os
+import time
+import re
+import sys
 import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
@@ -14,14 +18,14 @@ from molSimplify.Classes.globalvars import dict_oct_check_loose, dict_oct_check_
 # from openpyxl import Workbook
 # import json
 
-### Check whether the complex form an octahedral.
-### Written by Chenru Duan
+# Check whether the complex form an octahedral.
+# Written by Chenru Duan
 ### upload: 3/7/2018
 ### update: 4/5/2018
 
 
-## input: a xyz file
-## output: a mol3D object.
+# input: a xyz file
+# output: a mol3D object.
 def create_mol_with_xyz(_file_in):
     my_mol = mol3D()
     my_mol.readfromxyz(_file_in)
@@ -47,7 +51,8 @@ def readfromtxt(mol, txt):
                 atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                               name=line_split[0])
             elif line_split[0] in en_dict.keys():
-                atom = atom3D(line_split[0], [float(line_split[1]), float(line_split[2]), float(line_split[3])])
+                atom = atom3D(line_split[0], [float(line_split[1]), float(
+                    line_split[2]), float(line_split[3])])
             else:
                 print('cannot find atom type')
                 sys.exit()
@@ -55,13 +60,13 @@ def readfromtxt(mol, txt):
     return mol
 
 
-## description: select the closest elements in input_arr compared
-##              to the target array. Is used to screen atoms that
-##              might construct an octehedral structure. Used to select
-##              m targeting catoms out of n candidates (n > m).
-## input: two array of float. dim(input_arr) >= dim(target_arr)
-## output: output_arr that is most similar to target_arr after filtering,
-##         summation for the difference for output_arr and target_arr
+# description: select the closest elements in input_arr compared
+# to the target array. Is used to screen atoms that
+# might construct an octehedral structure. Used to select
+# m targeting catoms out of n candidates (n > m).
+# input: two array of float. dim(input_arr) >= dim(target_arr)
+# output: output_arr that is most similar to target_arr after filtering,
+# summation for the difference for output_arr and target_arr
 def comp_two_angle_array(input_angle, target_angle):
     _i = input_angle[1][:]
     # print('target_angle', input_angle, target_angle)
@@ -82,18 +87,19 @@ def comp_two_angle_array(input_angle, target_angle):
     return output_angle, sum_del, max_del_angle
 
 
-## description: Given the target_angle, choose the input_angle that has
-##              the smallest angle deviation in input_array. In this process,
-##              the input_angle has already been filtered.
-## input:       input_arr: array of input_angle, target_angle: array of angle you want.
-## output:      output_angle: the input_angle that has the smallest deviation compared
-##              to target_arr. del_angle: the deviation. catoms: the connecting antom for
-##              the output_angle.
+# description: Given the target_angle, choose the input_angle that has
+# the smallest angle deviation in input_array. In this process,
+# the input_angle has already been filtered.
+# input:       input_arr: array of input_angle, target_angle: array of angle you want.
+# output:      output_angle: the input_angle that has the smallest deviation compared
+# to target_arr. del_angle: the deviation. catoms: the connecting antom for
+# the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle):
     del_arr = []
     # print("input_arr", input_arr)
     for ii, input_angle in enumerate(input_arr):
-        out_angle, sum_del, max_del_angle = comp_two_angle_array(input_angle, target_angle)
+        out_angle, sum_del, max_del_angle = comp_two_angle_array(
+            input_angle, target_angle)
         del_arr.append([sum_del, ii, max_del_angle, out_angle])
     del_arr.sort()
     # print("del_arr", del_arr)
@@ -108,15 +114,16 @@ def comp_angle_pick_one_best(input_arr, target_angle):
     return output_angle, del_angle, catoms, max_del_sig_angle
 
 
-## description: Loop the target_angle in target_arr.
-## output: three lists corresponding to the outputs of comp_angle_pick_one_best.
+# description: Loop the target_angle in target_arr.
+# output: three lists corresponding to the outputs of comp_angle_pick_one_best.
 def loop_target_angle_arr(input_arr, target_arr):
     output_arr = []
     sum_del = []
     catoms_arr = []
     max_del_sig_angle_arr = []
     for idx, ele in enumerate(target_arr):
-        output_angle, del_angle, catoms, max_del_sig_angle = comp_angle_pick_one_best(input_arr, ele)
+        output_angle, del_angle, catoms, max_del_sig_angle = comp_angle_pick_one_best(
+            input_arr, ele)
         output_arr.append(output_angle)
         sum_del.append(del_angle)
         catoms_arr.append(catoms)
@@ -128,14 +135,14 @@ def sort_sec_ele(ele):
     return ele[1]
 
 
-## standard 1: number of coordination for metal.
-## For octehegral, if num_coord_metal < 6, it will be considered as
-## problemetic. For num_coord_metal > 6, it might be caused by the
-## ambiguity of C-N ring in the getBondedAtom function. We will use
-## other metric (oct_comp) to see whether some of these catoms can
-## construct an Oct.
-## input: a xyz file
-## output: coordination number for metal, and their indexes.
+# standard 1: number of coordination for metal.
+# For octehegral, if num_coord_metal < 6, it will be considered as
+# problemetic. For num_coord_metal > 6, it might be caused by the
+# ambiguity of C-N ring in the getBondedAtom function. We will use
+# other metric (oct_comp) to see whether some of these catoms can
+# construct an Oct.
+# input: a xyz file
+# output: coordination number for metal, and their indexes.
 def get_num_coord_metal(file_in, debug=False):
     my_mol = create_mol_with_xyz(_file_in=file_in)
     metal_ind = my_mol.findMetal()[0]
@@ -144,17 +151,17 @@ def get_num_coord_metal(file_in, debug=False):
     if debug:
         print(('metal coordinate:', metal_coord))
         print(('coordinations: ', catoms, len(catoms)))
-    ## standard 1: number of coordination for metal.
+    # standard 1: number of coordination for metal.
     num_coord_metal = len(catoms)
     return num_coord_metal, catoms
 
 
-## standard 2: ligand changes (rmsd, max atom distance)
-## for each ligand in the complex. Need input for
-## original gemoetry.
-## input: optimized and original xyz file.
-## output: two scalar of maximum rmsd for ligands, and the
-##         maximum distance change in ligands.
+# standard 2: ligand changes (rmsd, max atom distance)
+# for each ligand in the complex. Need input for
+# original gemoetry.
+# input: optimized and original xyz file.
+# output: two scalar of maximum rmsd for ligands, and the
+# maximum distance change in ligands.
 def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_loose=False,
                     flag_lbd=True, debug=False, depth=3, BondedOct=False):
     liglist, liglist_init, flag_match = match_lig_list(file_in, file_init_geo,
@@ -179,7 +186,7 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
                 print(('----This is %d th piece of ligand.' % (idx + 1)))
                 print(('ligand is:', lig, lig_init))
             posi_shift = 2
-            ## Create mol3D without a tmp file.
+            # Create mol3D without a tmp file.
             _start = time.clock()
             with open(mymol_xyz, 'r') as fo:
                 foo = []
@@ -202,9 +209,10 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
             _elapsed = (time.clock() - _start)
             # print('-reading txt:', _elapsed)
             if debug:
-                print(('# atoms: %d, init: %d' % (tmp_mol.natoms, tmp_org_mol.natoms)))
+                print(('# atoms: %d, init: %d' %
+                       (tmp_mol.natoms, tmp_org_mol.natoms)))
                 print(('!!!!atoms:', [x.symbol() for x in tmp_mol.getAtoms()],
-                      [x.symbol() for x in tmp_org_mol.getAtoms()]))
+                       [x.symbol() for x in tmp_org_mol.getAtoms()]))
             if flag_deleteH:
                 tmp_mol.deleteHs()
                 tmp_org_mol.deleteHs()
@@ -223,24 +231,25 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
     return rmsd_max, atom_dist_max
 
 
-## Match the ligend list generated by ligand_breakdown.
-## useful for cases where the init geo and opt geo have the
-## different ligands arrangement (when you only have the opt geo
-## but still want init geo)
+# Match the ligend list generated by ligand_breakdown.
+# useful for cases where the init geo and opt geo have the
+# different ligands arrangement (when you only have the opt geo
+# but still want init geo)
 def match_lig_list(file_in, file_init_geo, catoms_arr,
                    flag_loose, flag_lbd=True, debug=False,
                    depth=3, BondedOct=False):
     flag_match = True
     my_mol = create_mol_with_xyz(_file_in=file_in)
     init_mol = create_mol_with_xyz(_file_in=file_init_geo)
-    if flag_lbd:  ## Also do ligand breakdown for opt geo
+    if flag_lbd:  # Also do ligand breakdown for opt geo
         my_mol_trunc = obtain_truncation_metal(my_mol, depth)
         init_mol_trunc = obtain_truncation_metal(init_mol, depth)
         my_mol_trunc.createMolecularGraph()
         init_mol_trunc.createMolecularGraph()
         init_mol_trunc.writexyz('init_trunc_tmp.xyz')
         my_mol_trunc.writexyz('mymol_trunc_tmp.xyz')
-        liglist_init, ligdents_init, ligcons_init = ligand_breakdown(init_mol_trunc)
+        liglist_init, ligdents_init, ligcons_init = ligand_breakdown(
+            init_mol_trunc)
         liglist, ligdents, ligcons = ligand_breakdown(my_mol_trunc)
         liglist_atom = [[my_mol_trunc.getAtom(x).symbol() for x in ele]
                         for ele in liglist]
@@ -248,9 +257,10 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                              for ele in liglist_init]
         if debug:
             print(('!!!!:', [x.symbol() for x in init_mol_trunc.getAtoms()]))
-            print(('liglist_init, ligdents_init, ligcons_init', liglist_init, ligdents_init, ligcons_init))
+            print(('liglist_init, ligdents_init, ligcons_init',
+                   liglist_init, ligdents_init, ligcons_init))
             # print('liglist, ligdents, ligcons', liglist, ligdents, ligcons)
-    else:  ## ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
+    else:  # ceate/use the liglist, ligdents, ligcons of initial geo as we just wanna track them down
         # _start = time.clock()
         if debug:
             print('Just inherit the ligand list from init structure.')
@@ -259,7 +269,8 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                                                                      BondedOct=BondedOct)
         # _elapsed = (time.clock() - _start)
         # print('time on lig_breakdoen:', _elapsed)
-        liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
+        liglist, ligdents, ligcons = liglist_init[:
+                                                  ], ligdents_init[:], ligcons_init[:]
         liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
                         for ele in liglist]
         liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
@@ -302,10 +313,10 @@ def find_the_other_ind(arr, ind):
     return arr[0]
 
 
-## The linear ligand here ius defined as:
-## 1) ligands that contains only two atoms. For example CO
-## 2) ligands with more than two atoms and looks linear itself.
-## For example: A-B-C-.... with the angle of A-B and B-C larger than 170.
+# The linear ligand here ius defined as:
+# 1) ligands that contains only two atoms. For example CO
+# 2) ligands with more than two atoms and looks linear itself.
+# For example: A-B-C-.... with the angle of A-B and B-C larger than 170.
 def is_linear_ligand(mol, ind):
     catoms = mol.getBondedAtomsSmart(ind)
     metal_ind = mol.findMetal()[0]
@@ -317,8 +328,10 @@ def is_linear_ligand(mol, ind):
             flag = True
         elif len(_catoms) == 2:
             ind_next2 = find_the_other_ind(_catoms[:], ind)
-            vec1 = np.array(mol.getAtomCoords(ind)) - np.array(mol.getAtomCoords(ind_next))
-            vec2 = np.array(mol.getAtomCoords(ind_next2)) - np.array(mol.getAtomCoords(ind_next))
+            vec1 = np.array(mol.getAtomCoords(ind)) - \
+                np.array(mol.getAtomCoords(ind_next))
+            vec2 = np.array(mol.getAtomCoords(ind_next2)) - \
+                np.array(mol.getAtomCoords(ind_next))
             ang = vecangle(vec1, vec2)
             if ang > 170:
                 flag = True
@@ -329,8 +342,10 @@ def is_linear_ligand(mol, ind):
 def get_linear_angle(mol, ind):
     flag, catoms = is_linear_ligand(mol, ind)
     if flag:
-        vec1 = np.array(mol.getAtomCoords(catoms[0])) - np.array(mol.getAtomCoords(ind))
-        vec2 = np.array(mol.getAtomCoords(catoms[1])) - np.array(mol.getAtomCoords(ind))
+        vec1 = np.array(mol.getAtomCoords(
+            catoms[0])) - np.array(mol.getAtomCoords(ind))
+        vec2 = np.array(mol.getAtomCoords(
+            catoms[1])) - np.array(mol.getAtomCoords(ind))
         ang = vecangle(vec1, vec2)
     else:
         ang = 0
@@ -362,15 +377,15 @@ def check_angle_linear(file_in, catoms_arr):
     return dict_angle_linear, dict_orientation
 
 
-## standard 3: catoms structure compared to a perfect octahedral.
-## Note: The same logic can be used to judge whether a complex is
-##       Tetrahedron or panor square.
-## input: a xyz file.
-## output: the summation for the angle deviation for the closest
-##         Oct structure. Candidates are from GetBondedAtom function
-##         for the metal. A metric for the distance deviation from the
-##         pefect Oct, including the diff in eq ligands, ax ligands and
-##         eq-ax ligands.
+# standard 3: catoms structure compared to a perfect octahedral.
+# Note: The same logic can be used to judge whether a complex is
+# Tetrahedron or panor square.
+# input: a xyz file.
+# output: the summation for the angle deviation for the closest
+# Oct structure. Candidates are from GetBondedAtom function
+# for the metal. A metric for the distance deviation from the
+# pefect Oct, including the diff in eq ligands, ax ligands and
+# eq-ax ligands.
 def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
              debug=False):
     my_mol = create_mol_with_xyz(_file_in=file_in)
@@ -395,12 +410,14 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
                 theta = vecangle(delr1, delr2)
                 theta_tmp.append(theta)
         th_input_arr.append([catoms[idx1], theta_tmp])
-    th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(th_input_arr, angle_ref)
+    th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
+        th_input_arr, angle_ref)
     if debug:
         print(('th:', th_output_arr))
         print(('sum_del:', sum_del_angle))
         print(('catoms_arr:', catoms_arr))
-        print(('catoms_type:', [my_mol.getAtom(x).symbol() for x in catoms_arr]))
+        print(('catoms_type:', [my_mol.getAtom(x).symbol()
+                                for x in catoms_arr]))
     for idx, ele in enumerate(th_output_arr):
         theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
     # theta_arr.sort(key=sort_sec_ele)
@@ -420,8 +437,9 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
         oct_dist.append(dist)
     oct_dist.sort()
     # print('!!!oct_dist:', oct_dist)
-    try:  ### For Oct
-        dist_del_arr = np.array([oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
+    try:  # For Oct
+        dist_del_arr = np.array(
+            [oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
         min_posi = np.argmin(dist_del_arr)
         if min_posi == 0:
             dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
@@ -429,7 +447,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
             dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
         else:
             dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
-    except IndexError:  ## For one empty site
+    except IndexError:  # For one empty site
         if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
             dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]  # ax dist is smaller
         else:
@@ -439,7 +457,8 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
         print(('dist:', dist_eq, dist_ax))
     dist_del_eq = max(dist_eq) - min(dist_eq)
     dist_del_ax = max(dist_ax) - min(dist_ax)
-    dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)), abs(max(dist_ax) - min(dist_eq)))
+    dist_del_eq_ax = max(abs(max(dist_eq) - min(dist_ax)),
+                         abs(max(dist_ax) - min(dist_eq)))
     oct_dist_del = [dist_del_eq, dist_del_ax, dist_del_eq_ax, dist_del_all]
     if debug:
         print(('distance difference for catoms to metal (eq, ax, eq_ax):', oct_dist_del))
@@ -484,7 +503,8 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
         print('Error, must have 6 connecting atoms for octahedral.')
         quit()
     num_coord_metal = 6
-    oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    oct_angle_devi, oct_dist_del, max_del_sig_angle = [
+        -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if not file_init_geo == None:
@@ -509,7 +529,8 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
         rmsd_max, atom_dist_max = -1, -1
         print('!!!!!Should always match. WRONG!!!!!')
         quit()
-    dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
+    dict_angle_linear, dict_orientation = check_angle_linear(
+        file_in, catoms_arr)
     if debug:
         print('-------This is for the linear ligand orientation test-----')
         print(('!!!catoms_arr:', catoms_arr))
@@ -538,10 +559,10 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
     return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
 
-## See whether a complex is Oct or not.
-## output: flag: 1 is good and 0 is bad
-##         flag_list: if structure is bad, which test it fails
-##         dict_oct_info: values for each metric we check.
+# See whether a complex is Oct or not.
+# output: flag: 1 is good and 0 is bad
+# flag_list: if structure is bad, which test it fails
+# dict_oct_info: values for each metric we check.
 def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
           std_not_use=[], angle_ref=oct_angle_ref, flag_catoms=False,
           catoms_arr=None, debug=False):
@@ -550,7 +571,8 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         catoms = catoms_arr
         num_coord_metal = len(catoms_arr)
 
-    oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    oct_angle_devi, oct_dist_del, max_del_sig_angle = [
+        -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     catoms_arr = catoms
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
@@ -560,11 +582,13 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
             oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                    catoms_arr, debug=debug)
         if not file_init_geo == None:
-            rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
+            rmsd_max, atom_dist_max = ligand_comp_org(
+                file_in, file_init_geo, catoms_arr, debug=debug)
         else:
             # num_coord_metal = -1
             rmsd_max, atom_dist_max = -1, -1
-        dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
+        dict_angle_linear, dict_orientation = check_angle_linear(
+            file_in, catoms_arr)
         if debug:
             print('-------This is for the linear ligand orientation test-----')
             print(('!!!catoms_arr:', catoms_arr))
@@ -594,17 +618,20 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
                 flag_catoms=False, debug=False):
     num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
 
-    struct_angle_devi, struct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
+    struct_angle_devi, struct_dist_del, max_del_sig_angle = [
+        -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if num_coord_metal >= num_coord:
         struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                      debug=debug)
         if file_init_geo != None:
-            rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo, catoms_arr, debug=debug)
+            rmsd_max, atom_dist_max = ligand_comp_org(
+                file_in, file_init_geo, catoms_arr, debug=debug)
         else:
             rmsd_max, atom_dist_max = -1, -1
-        dict_angle_linear, dict_orientation = check_angle_linear(file_in, catoms_arr)
+        dict_angle_linear, dict_orientation = check_angle_linear(
+            file_in, catoms_arr)
         if debug:
             print('-------This is for the linear ligand orientation test-----')
             print(('!!!catoms_arr:', catoms_arr))
@@ -629,24 +656,27 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
         return flag_struct, flag_list, dict_struct_info, catoms_arr
 
 
-## input: _path: path for opt geo
-##         path_init_geo: path for init geo
-## output: list of info: ['unique_num', 'oxstate', 'spinmult', 'flag_oct', 'flag_list', 'dict_oct_info']
+# input: _path: path for opt geo
+# path_init_geo: path for init geo
+# output: list of info: ['unique_num', 'oxstate', 'spinmult', 'flag_oct', 'flag_list', 'dict_oct_info']
 def loop_structure(_path, path_init_geo):
     charac = ['unique_num', 'oxstate', 'spinmult', 'flag_oct', 'flag_list']
     info_tot = []
     for dirpath, dirs, files in sorted(os.walk(_path)):
         for name in sorted(files):
             if name.split('.')[1] == 'xyz':
-                unique_num, oxstate, spinmult = name.split('_')[0], name.split('_')[4][1:], name.split('_')[5][2:]
+                unique_num, oxstate, spinmult = name.split('_')[0], name.split('_')[
+                    4][1:], name.split('_')[5][2:]
                 print((unique_num, oxstate, spinmult))
                 file_in = '%s/%s' % (dirpath, name)
-                ## ---You may add the function to find initial geo here.
-                file_init_geo = find_file_with_unique_num(path_init_geo, unique_num)
+                # ---You may add the function to find initial geo here.
+                file_init_geo = find_file_with_unique_num(
+                    path_init_geo, unique_num)
                 # file_init_geo = gen_file_with_name(path_init_geo, name)
                 print(('!!!!file info:!!!!!', file_in, file_init_geo))
                 if os.path.exists(file_init_geo):
-                    flag_oct, flag_list, dict_oct_info = IsOct(file_in, file_init_geo)
+                    flag_oct, flag_list, dict_oct_info = IsOct(
+                        file_in, file_init_geo)
                 else:
                     print(('No init_geo!', name))
                     flag_oct, flag_list, dict_oct_info = IsOct(file_in)
@@ -655,14 +685,15 @@ def loop_structure(_path, path_init_geo):
                 for key, value in list(dict_oct_info.items()):
                     _c.append(key)
                     _dict.append(value)
-                info = [unique_num, oxstate, spinmult, flag_oct, flag_list] + _dict
+                info = [unique_num, oxstate, spinmult,
+                        flag_oct, flag_list] + _dict
                 info_tot.append(info)
     charac += _c  # append dict_oct_info
     # write_list_2_xlsx(charac, info_tot)
     return charac, info_tot
 
 
-## find the file name by matching unique_ID and spin mulplicity
+# find the file name by matching unique_ID and spin mulplicity
 def find_file_with_unique_num(_path, unique_num):
     filename = None
     for dirpath, dirs, files in sorted(os.walk(_path)):
@@ -673,7 +704,7 @@ def find_file_with_unique_num(_path, unique_num):
     return filename
 
 
-## Only use this function when they have roughly have the same naming.
+# Only use this function when they have roughly have the same naming.
 def gen_file_with_name(path_init_geo, name_opt):
     name_opt = name_opt.split('_')
     name_opt = '_'.join(name_opt[:len(name_opt) - 1])
