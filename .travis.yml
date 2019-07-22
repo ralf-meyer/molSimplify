@@ -1,8 +1,9 @@
+dist: xenial
 language: python
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "2.7"
-  - "3.6"
+  - "3.7"
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -25,11 +26,8 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda config --add channels hjkgroup
+  - conda install -c openbabel openbabel  
   - conda build conda-recipe
-  - conda install pytest-runner
-  - conda install keras
-  - conda install pandas
-  - conda install -c openbabel openbabel
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
   - conda install pytest
