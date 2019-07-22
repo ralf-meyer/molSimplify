@@ -29,9 +29,9 @@ install:
   - conda install keras
   - conda install pandas
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      conda install -c hjkgroup openbabel
+      conda install -c hjkgroup openbabel;
     else
-      conda install -c openbabel openbabel
+      conda install -c openbabel openbabel;
     fi
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
