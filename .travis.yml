@@ -26,6 +26,7 @@ install:
   - source activate test-environment
   - conda config --add channels hjkgroup
   - conda build conda-recipe
+  - conda install pytest-runner
   - conda install keras
   - conda install pandas
   - conda install -c openbabel openbabel
