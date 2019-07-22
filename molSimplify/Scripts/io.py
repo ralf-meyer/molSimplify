@@ -1057,7 +1057,8 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
             else:
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
-        if nconf and args.nconfs > 1:
+        print([nconf,args.nconfs])
+        if nconf and int(args.nconfs) >= 1:
             name += "_conf_"+str(nconf)
         if args.bind:
             if bsmi:
@@ -1137,7 +1138,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
         else:
             spin = "0"
         name += "_s_"+str(spin)
-        if nconf and args.nconfs > 1:
+        if nconf and int(args.nconfs) >= 1:
             name += "_conf_"+str(nconf)
         if args.bind:
             if bsmi:

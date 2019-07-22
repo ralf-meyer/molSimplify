@@ -2403,6 +2403,7 @@ class mol3D:
     # flag_list: metrics that are failed from being a good geometry.
     def dict_check_processing(self, dict_check,
                               num_coord=6, debug=False):
+
         self.geo_dict['num_coord_metal'] = int(self.num_coord_metal)
         self.geo_dict.update(self.dict_lig_distort)
         self.geo_dict.update(self.dict_catoms_shape)
@@ -2415,7 +2416,10 @@ class mol3D:
         self.geo_dict['atom_dist_max'] = banned_sign
         flag_list = []
         for key, values in list(dict_check.items()):
-            if (self.geo_dict[key] > values) and (not self.geo_dict[key] == banned_sign):
+            if isinstance(self.geo_dict[key],(int,float)):
+                if self.geo_dict[key] > values:
+                    flag_list.append(key)
+            elif not self.geo_dict[key] == banned_sign:
                 flag_list.append(key)
         if self.geo_dict['num_coord_metal'] < num_coord:
             flag_list.append('num_coord_metal')

@@ -474,6 +474,8 @@ def dict_check_processing(dict_info, dict_check, std_not_use,
     flag_list = []
     for key, values in list(dict_check.items()):
         if not dict_info[key] == 'banned_by_user':
+            print(dict_info[key])
+            print(values)
             if dict_info[key] > values:
                 flag_list.append(key)
     if dict_info['num_coord_metal'] < num_coord:
