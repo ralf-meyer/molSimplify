@@ -17,6 +17,12 @@ import os
 import imghdr
 import struct
 
+
+# py 2/3 interop
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
+
 # Get screen size
 
 
