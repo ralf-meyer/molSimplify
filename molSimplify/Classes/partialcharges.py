@@ -4,6 +4,7 @@ import glob
 
 # xyzf = '/Users/tzuhsiungyang/Downloads/cuacetate1k2acetate1o-pyridylphenyl1_0_1_RIJCOSX-B3LYP-D3_BS_TS-ar-carboxylation.numfreq.xyz'
 
+
 def fpriority(xyzf):
     # setting properties
     xyz = mol3D()
@@ -39,7 +40,8 @@ def fpriority(xyzf):
     for satno in sorted(set(satno_list)):
         satnocount = satno_list.count(satno)
         if satnocount > 1:
-            s_sel_list = [i for i,atno in enumerate(satno_list) if atno is satno]
+            s_sel_list = [i for i, atno in enumerate(
+                satno_list) if atno is satno]
             exit_signal = False
 
     for i in range(len(fidx_list)):
@@ -72,7 +74,7 @@ def fpriority(xyzf):
                         BO = int(BOMatrix[sidx][tidx])
                         tatno_str = str(xyz.getAtom(tidx).atno)
                         ls.append(BO * tatno_str)
-                sorted(ls,reverse=True)
+                sorted(ls, reverse=True)
                 for j in ls:
                     atno_list.append(j)
                 a = ''.join(atno_list)
@@ -97,61 +99,69 @@ def fpriority(xyzf):
         else:
             atno_list.append(tatno_list[i][0])
         a = '.'.join(atno_list)
-        fpriority_list.append(float(a))   
-        
+        fpriority_list.append(float(a))
+
     return fpriority_list
+
 
 def fsym(xyzf):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     # getting idxs of interest
-    midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
+    midx = xyz.findMetal()[0]  # monometallic complexes
+    # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx)
     fsym_list = []
     for idx in fidx_list:
         sym = xyz.getAtom(idx).sym
         fsym_list.append(sym)
-    
-    return fsym_list    
+
+    return fsym_list
+
 
 def fvalency(xyzf):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     # getting idxs of interest
-    midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
+    midx = xyz.findMetal()[0]  # monometallic complexes
+    # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx)
     fvalency_list = []
     for idx in fidx_list:
         valency = len(xyz.getBondedAtoms(idx)) - 1
         fvalency_list.append(valency)
-    
-    return fvalency_list    
 
-def fcharge(xyzf,charge):
+    return fvalency_list
+
+
+def fcharge(xyzf, charge):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     xyz.calccharges(charge)
     # getting idxs of interest
-    midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
+    midx = xyz.findMetal()[0]  # monometallic complexes
+    # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx)
     fcharge_list = []
     for idx in fidx_list:
         charge = xyz.partialcharges[idx]
         fcharge_list.append(float(charge))
-    
+
     return fcharge_list
 
-def scharge_ave(xyzf,charge):
+
+def scharge_ave(xyzf, charge):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     xyz.calccharges(charge)
     # getting idxs of interest
-    midx = xyz.findMetal()[0] # monometallic complexes
-    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
+    midx = xyz.findMetal()[0]  # monometallic complexes
+    # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx)
     sidx_list = [xyz.getBondedAtoms(fidx) for fidx in fidx_list]
     scharge_ave_list = []
     for i in range(len(sidx_list)):
@@ -159,41 +169,45 @@ def scharge_ave(xyzf,charge):
         for j in range(len(sidx_list[i])):
             idx = sidx_list[i][j]
             if idx is not midx:
-                charge =+ xyz.partialcharges[idx]
+                charge = + xyz.partialcharges[idx]
         charge_ave = charge/len(sidx_list[i])
         scharge_ave_list.append(float(charge_ave))
 
     return scharge_ave_list
+
 
 def fdistance(xyzf):
     # setting properties
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     # getting idxs of interest
-    midx = xyz.findMetal()[0] # monometallic complexes
+    midx = xyz.findMetal()[0]  # monometallic complexes
     mcoord = xyz.getAtom(midx).coords()
-    fidx_list = xyz.getBondedAtoms(midx) # list of idx of the first-coord sphere
+    # list of idx of the first-coord sphere
+    fidx_list = xyz.getBondedAtoms(midx)
     fdistance_list = []
     for idx in fidx_list:
         fcoord = xyz.getAtom(idx).coords()
-        d = distance(mcoord,fcoord)
+        d = distance(mcoord, fcoord)
         fdistance_list.append(float(d))
-    
+
     return fdistance_list
 
-def all_prop(xyzf,charge):
+
+def all_prop(xyzf, charge):
     fprio_list = fpriority(xyzf)
     # fsym_list = fsym(xyzf)
     fva_list = fvalency(xyzf)
-    fq_list = fcharge(xyzf,charge)
-    sq_ave_list = scharge_ave(xyzf,charge)
+    fq_list = fcharge(xyzf, charge)
+    sq_ave_list = scharge_ave(xyzf, charge)
     fd_list = fdistance(xyzf)
-    prop_list = [fprio_list,fq_list,sq_ave_list,fva_list,fd_list]
+    prop_list = [fprio_list, fq_list, sq_ave_list, fva_list, fd_list]
 
     return prop_list
 
-def features(xyzf,charge):
-    prop_list = all_prop(xyzf,charge)
+
+def features(xyzf, charge):
+    prop_list = all_prop(xyzf, charge)
     xyz = mol3D()
     xyz.readfromxyz(xyzf)
     midx = xyz.findMetal()[0]

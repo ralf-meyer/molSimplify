@@ -1,7 +1,7 @@
 from keras import backend as K
 from keras.callbacks import EarlyStopping
 from keras.models import model_from_json
-from tf_ANN import *
+from .tf_ANN import *
 from sklearn.utils import shuffle
 from pkg_resources import resource_filename, Requirement
 import glob
@@ -87,7 +87,7 @@ def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=Fal
     if not os.path.exists(base_path):
         print('Ensemble models do not exist now, training...')
         ensemble_maker(predictor)
-    print('ANN activated for ' + str(predictor))
+    print(('ANN activated for ' + str(predictor)))
     model_list = glob.glob(base_path + '/*.h5')
 
     labels = load_test_labels(predictor)
@@ -104,8 +104,8 @@ def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=Fal
         mat = np.array(mat, dtype='float64')
         train_mat = data_normalize(mat, train_mean_x, train_var_x)
         excitation = np.array(train_mat)
-    print('excitation is ' + str(excitation.shape))
-    print('actual label:', labels[:3])
+    print(('excitation is ' + str(excitation.shape)))
+    print(('actual label:', labels[:3]))
     results_list = []
     # print('models', model_list)
     for idx, model in enumerate(model_list):
@@ -129,7 +129,7 @@ def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=Fal
     # print(results_list.shape)
     result_mean, result_std = np.mean(results_list, axis=1), np.std(results_list, axis=1)
     labels = np.squeeze(labels, axis=1)
-    print(labels.shape, result_mean.shape)
+    print((labels.shape, result_mean.shape))
     error_for_mean = np.abs(labels - result_mean)
     return result_mean, result_std, error_for_mean
 
@@ -149,18 +149,18 @@ def mc_dropout_uq(predictor, descriptors=False, descriptor_names=False, num=500)
         mat = np.array(mat, dtype='float64')
         train_mat = data_normalize(mat, train_mean_x, train_var_x)
         excitation = np.array(train_mat)
-    print('excitation is ' + str(excitation.shape))
+    print(('excitation is ' + str(excitation.shape)))
     loaded_model = load_keras_ann(predictor)
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[-1].output])
-    print('LOADED MODEL HAS ' + str(
+    print(('LOADED MODEL HAS ' + str(
         len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
-        len(loaded_model.layers) - 1) + ' layers')
+        len(loaded_model.layers) - 1) + ' layers'))
     results_list = []
     err_list = []
     for ii in range(num):
         if not np.mod(ii, int(num / 10)):
-            print('%d / %d' % (ii, num))
+            print(('%d / %d' % (ii, num)))
         if not 'clf' in predictor:
             results = data_rescale(np.array(get_outputs([excitation, 1])), train_mean_y,
                                    train_var_y)[0]
@@ -188,7 +188,7 @@ def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_nam
     if not os.path.exists(base_path):
         print('Ensemble models do not exist now, training...')
         ensemble_maker(predictor)
-    print('ANN activated for ' + str(predictor))
+    print(('ANN activated for ' + str(predictor)))
     model_list = glob.glob(base_path + '/*.h5')
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
     if (descriptors and descriptor_names):
@@ -232,8 +232,8 @@ def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_nam
                                  [loaded_model.layers[-1].output])
         get_latent = K.function([loaded_model.layers[0].input, K.learning_phase()],
                                 [loaded_model.layers[layer_index].output])
-        print('NOTE: you are choosing:', loaded_model.layers[layer_index], loaded_model.layers[layer_index].name,
-              'for the latence space!')
+        print(('NOTE: you are choosing:', loaded_model.layers[layer_index], loaded_model.layers[layer_index].name,
+              'for the latence space!'))
         if not 'clf' in predictor:
             results = data_rescale(np.array(get_outputs([excitation_test, 0])), train_mean_y,
                                    train_var_y)[0]

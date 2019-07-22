@@ -30,8 +30,8 @@ import openbabel
 sys.setdlopenflags(flags)
 
 
-from Scripts.inparse import *
-from Scripts.generator import *
+from .Scripts.inparse import *
+from .Scripts.generator import *
 from molSimplify.Classes.globalvars import *
 
 globs = globalvars()
@@ -75,6 +75,27 @@ DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
 
+def tensorflow_silence():
+    ## thanks to 
+    # stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints
+    try:
+        from tensorflow import logging
+        logging.set_verbosity(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        os.environ['KMP_WARNINGS'] = '0'
+
+        def deprecated(date, instructions, warn_once=False):
+            def deprecated_wrapper(func):
+                return func
+            return deprecated_wrapper
+
+        from tensorflow.python.util import deprecation
+        deprecation.deprecated = deprecated
+
+    except ImportError:
+        pass
+
+
 try:
     import PyQt5
     from PyQt5.QtGui import *
@@ -93,6 +114,7 @@ def main(args=None):
     ## on some sytems
     if globs.testTF():
         print('TensorFlow connection successful')
+        tensorflow_silence()
     else:
         print('TensorFlow connection failed')
 
@@ -103,7 +125,7 @@ def main(args=None):
     gui = True
     cmd = False
     if len(args)==0 and not qtflag:
-        print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
+        print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")
         exit()
     ####################################
     ### print help ###
@@ -170,7 +192,7 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # create input file from commandline
-        infile = parseCLI(filter(None,args))
+        infile = parseCLI([_f for _f in args if _f])
         args = ['main.py','-i',infile]
         emsg = startgen(args,False,gui)
 if __name__ == '__main__':

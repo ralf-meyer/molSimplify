@@ -1,8 +1,8 @@
-## @file nn_prep.py
+# @file nn_prep.py
 #  Helper routines for ANN integration
-#  
+#
 #   Written by Nick Yang for HJK Group
-#  
+#
 #  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Classes import *
@@ -18,15 +18,20 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.multioutput import MultiOutputRegressor
 from math import exp
 import numpy as np
-import csv, glob, os, copy, pickle
+import csv
+import glob
+import os
+import copy
+import pickle
 # import matplotlib.pyplot as plt
 # import matplotlib.ticker as ticker
-np.seterr(divide = 'ignore')
+np.seterr(divide='ignore')
 
 csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'
 colnum_i_label = 1
 colnum_j_label = 2
 colnum_desc = 2
+
 
 def feature_prep(mol, idx):
     # setting up variables
@@ -62,7 +67,8 @@ def feature_prep(mol, idx):
     for satno in set(satno_list):
         satnocount = satno_list.count(satno)
         if satnocount > 1:
-            s_sel_list = [i for i,atno in enumerate(satno_list) if atno is satno]
+            s_sel_list = [i for i, atno in enumerate(
+                satno_list) if atno is satno]
             exit_signal = False
 
     for i in range(len(fidx_list)):
@@ -96,7 +102,7 @@ def feature_prep(mol, idx):
                         BO = int(BOMatrix[sidx][tidx])
                         tatno_str = str(mol.getAtom(tidx).atno)
                         ls.append(BO * tatno_str)
-                sorted(ls,reverse=True)
+                sorted(ls, reverse=True)
                 for j in ls:
                     atno_list.append(j)
                 a = ''.join(atno_list)
@@ -121,7 +127,7 @@ def feature_prep(mol, idx):
             a = '.'.join(atno_list)
             fpriority_list.append(float(a))
         if tidx_list == test_list or len(set(fpriority_list)) == 6:
-        # if tidx_list == test_list:
+            # if tidx_list == test_list:
             exit_signal = True
     # get distance
     # idx = np.argsort(np.array(fpriority_list))[-1]
@@ -186,26 +192,30 @@ def feature_prep(mol, idx):
     idx3 = idx3_4[np.argsort(np.array(fprio3_4))[-1]]
     idx3_4.remove(idx3)
     idx4 = idx3_4[0]
-    idx_list = [idx0,idx1,idx2,idx3,idx4,idx5]
+    idx_list = [idx0, idx1, idx2, idx3, idx4, idx5]
     fpriority_list = np.array(fpriority_list)[idx_list].tolist()
     fd_list = np.array(rMLs)[idx_list].tolist()
 
     return fpriority_list, fd_list, idx_list
 
+
 def normalize(data, mean, std):
     data = np.array(data)
     mean = np.array(mean)
     std = np.array(std)
-    data_norm = np.divide((data - mean), std, out=np.zeros_like(data - mean), where=std!=0)
+    data_norm = np.divide((data - mean), std,
+                          out=np.zeros_like(data - mean), where=std != 0)
     # data_norm = np.nan_to_num(data_norm)
 
     return data_norm
 
-## predict labels using krr with a given csv file
+# predict labels using krr with a given csv file
 #  @param csvf the csv file containing headers (first row), data, and label
 #  @param colnum_label the column number for the label column
 #  @param colnum_desc the starting column number for the descriptor columns
 #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
+
+
 def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, threshold=0.01):
     # read in desc and label
     f = open(csvf, 'r')
@@ -225,7 +235,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
             y.append(float(line[colnum_label]))
     X = np.array(X)
     y = np.array(y)
-    ## process desc and label
+    # process desc and label
     mean_X = np.mean(X, axis=0)
     std_X = np.std(X, axis=0)
     mean_y = np.mean(y, axis=0)
@@ -241,8 +251,9 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
-    X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(X_norm, y_norm, test_size=0.2, random_state=0)
-    ## end
+    X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(
+        X_norm, y_norm, test_size=0.2, random_state=0)
+    # end
     # feature selection
     selector = RandomForestRegressor(random_state=0, n_estimators=100)
     selector.fit(X_norm_train, y_norm_train)
@@ -255,7 +266,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     impt_dict = dict(zip(features_sel, importances))
     X_norm_train_sel = X_norm_train.T[idxes].T
     X_norm_test_sel = X_norm_test.T[idxes].T
-    ## training with krr
+    # training with krr
     signal = True
     # krr parameters
     kernel = 'rbf'
@@ -271,13 +282,15 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     while gamma == 1 or alpha == 1 or signal == False:
         gammas = np.linspace(gamma_lower, gamma_higher, lin)
         alphas = np.linspace(alpha_lower, alpha_higher, lin)
-        tuned_parameters = [{'kernel': [kernel], 'gamma': gammas, 'alpha': alphas}]
-        regr = GridSearchCV(KernelRidge(), tuned_parameters, cv=5, scoring='neg_mean_absolute_error')
+        tuned_parameters = [
+            {'kernel': [kernel], 'gamma': gammas, 'alpha': alphas}]
+        regr = GridSearchCV(KernelRidge(), tuned_parameters,
+                            cv=5, scoring='neg_mean_absolute_error')
         regr.fit(X_norm_train_sel, y_norm_train)
         gamma = regr.best_params_['gamma']
         alpha = regr.best_params_['alpha']
         if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
-            (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+                (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
             # and cycle_i < 10:
             signal = False
             factor_lower *= 0.8
@@ -307,7 +320,8 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     # data
     train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
     X_norm_train_sel_names = features_sel
-    X_norm_train_sel_dict = dict(zip(X_norm_train_sel_names, X_norm_train_sel.T))
+    X_norm_train_sel_dict = dict(
+        zip(X_norm_train_sel_names, X_norm_train_sel.T))
     trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
     train_dict = dict(zip(train_names, trains))
     test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
@@ -326,11 +340,13 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
 
     return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
 
-## predict labels using krr with a given csv file
+# predict labels using krr with a given csv file
 #  @param csvf the csv file containing headers (first row), data, and label
 #  @param colnum_label the column number for the label column
 #  @param colnum_desc the starting column number for the descriptor columns
 #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
+
+
 def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False, alpha=1, gamma=1, threshold=0.01):
     # read in desc and label
     f = open(csvf, 'r')
@@ -350,7 +366,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
             y.append(float(line[colnum_label]))
     X = np.array(X)
     y = np.array(y)
-    ## process desc and label
+    # process desc and label
     mean_X = np.mean(X, axis=0)
     std_X = np.std(X, axis=0)
     mean_y = np.mean(y, axis=0)
@@ -377,7 +393,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
     for train_idx, test_idx in loo.split(X_norm):
         X_norm_train, X_norm_test = X_norm[train_idx], X_norm[test_idx]
         y_norm_train, y_norm_test = y_norm[train_idx], y_norm[test_idx]
-        ## end
+        # end
         # feature selection
         if not feature_names:
             selector = RandomForestRegressor(random_state=0, n_estimators=100)
@@ -394,12 +410,13 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
             print(sorted(impt_dict, key=impt_dict.get))
             print(impt_dict)
         else:
-            idxes = [headers.tolist().index(feature_name) for feature_name in feature_names]
+            idxes = [headers.tolist().index(feature_name)
+                     for feature_name in feature_names]
             X_norm_train_sel = X_norm_train.T[idxes].T
             X_norm_test_sel = X_norm_test.T[idxes].T
             features_sel = feature_names
             impt_dict = None
-        ## training with krr
+        # training with krr
         if i == 0 or (alpha != 1 and gamma != 1):
             signal = True
         else:
@@ -418,13 +435,15 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
         while gamma == 1 or alpha == 1 or signal == False:
             gammas = np.linspace(gamma_lower, gamma_higher, lin)
             alphas = np.linspace(alpha_lower, alpha_higher, lin)
-            tuned_parameters = [{'kernel': [kernel], 'gamma': gammas, 'alpha': alphas}]
-            regr = GridSearchCV(KernelRidge(), tuned_parameters, cv=5, scoring='neg_mean_absolute_error')
+            tuned_parameters = [
+                {'kernel': [kernel], 'gamma': gammas, 'alpha': alphas}]
+            regr = GridSearchCV(KernelRidge(), tuned_parameters,
+                                cv=5, scoring='neg_mean_absolute_error')
             regr.fit(X_norm_train_sel, y_norm_train)
             gamma = regr.best_params_['gamma']
             alpha = regr.best_params_['alpha']
             if (gamma < gammas[lin / 2 - 1] or gamma > gammas[lin / 2]) or \
-                (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
+                    (alpha < alphas[lin / 2 - 1] or alpha > alphas[lin / 2]):
                 # and cycle_i < 10:
                 signal = False
                 factor_lower *= 0.8
@@ -484,12 +503,14 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
     # return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
     return impt_dict, perm_dict, ys
 
-## predict labels using gradient boosting regressor (GBR) with a given csv file
+# predict labels using gradient boosting regressor (GBR) with a given csv file
 #  @param csvf the csv file containing headers (first row), data, and label
 #  @param colnum_i_label the starting column number for the label column
 #  @param colnum_j_label the ending column number for the label column + 1
 #  @param colnum_desc the starting column number for the descriptor columns
 #  @return y_train_data, y_train_pred, y_test_data, y_test_pred, score
+
+
 def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
     # read in desc and label
     f = open(csvf, 'r')
@@ -512,7 +533,7 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
             y.append(labels)
     X = np.array(X)
     y = np.array(y)
-    ## process desc and label
+    # process desc and label
     mean_X = np.mean(X, axis=0)
     std_X = np.std(X, axis=0)
     mean_y = np.mean(y, axis=0)
@@ -526,15 +547,16 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
-    X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(X_norm, y_norm, test_size=0.2, random_state=0)
-    ## end
+    X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(
+        X_norm, y_norm, test_size=0.2, random_state=0)
+    # end
     # feature selection
     selector = RandomForestRegressor(random_state=0, n_estimators=100)
     selector.fit(X_norm_train, y_norm_train.T[0])
     X_norm_train_impts = selector.feature_importances_
     scores = []
     results = []
-    thresholds = np.logspace(-2,-2,1)
+    thresholds = np.logspace(-2, -2, 1)
     for threshold in thresholds:
         idxes = np.where(X_norm_train_impts > threshold)[0]
         importances = X_norm_train_impts[idxes]
@@ -544,7 +566,7 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
         # idxes = range(len(X_norm_train.T))
         X_norm_train_sel = X_norm_train.T[idxes].T
         X_norm_test_sel = X_norm_test.T[idxes].T
-        ## training with gbr
+        # training with gbr
         regr = MultiOutputRegressor(GradientBoostingRegressor(random_state=0))
         # final model
         regr.fit(X_norm_train_sel, y_norm_train)
@@ -558,12 +580,14 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
         # data
         train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
         X_norm_train_sel_names = features_sel
-        X_norm_train_sel_dict = dict(zip(X_norm_train_sel_names, X_norm_train_sel.T))
+        X_norm_train_sel_dict = dict(
+            zip(X_norm_train_sel_names, X_norm_train_sel.T))
         trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
         train_dict = dict(zip(train_names, trains))
         test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
         X_norm_test_sel_names = features_sel
-        X_norm_test_sel_dict = dict(zip(X_norm_test_sel_names, X_norm_test_sel.T))
+        X_norm_test_sel_dict = dict(
+            zip(X_norm_test_sel_names, X_norm_test_sel.T))
         tests = [X_norm_test_sel_dict, y_test_data, y_test_pred]
         test_dict = dict(zip(test_names, tests))
         # performance
@@ -575,7 +599,8 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
         perms = [score_train, score_test, MAE_train, MAE_test]
         perm_dict = dict(zip(perm_names, perms))
         scores.append(score_test)
-        results.append([stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr])
+        results.append([stat_dict, impt_dict, train_dict,
+                        test_dict, perm_dict, regr])
     idx = np.argsort(np.array(scores))[-1]
     stat_dict = results[idx][0]
     impt_dict = results[idx][1]
@@ -586,7 +611,7 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
 
     return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
 
-## predict labels using a given regr
+# predict labels using a given regr
 #  @param core3D mol3D class of a molecule
 #  @param spin the spin multiplicity of the core3D
 #  @param train_dict th dictionary that contains the training data
@@ -594,6 +619,8 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
 #  @param impt_dict the dictionary that contains the important features
 #  @param regr the regression model
 #  @return bondl_dict, ds (a list of Euclidean distances)
+
+
 def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
     bondl_keys = []
     bondls = []
@@ -619,7 +646,8 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
                 desc_names.append('spin' + str(i) + '_ohe')
             for idx_i, idx in enumerate(idx_list):
                 fidx_ = fidxes[idx]
-                descriptor_names, descriptors = get_descriptor_vector_for_atidx(core3D, fidx_)
+                descriptor_names, descriptors = get_descriptor_vector_for_atidx(
+                    core3D, fidx_)
                 for descriptor_name in descriptor_names:
                     desc_names.append(descriptor_name + '_' + str(idx_i))
                 descs += descriptors
@@ -628,7 +656,8 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
             Xs_train_sel = []
             d2s = [0] * len(Xs_train.values()[0])
             for key in impt_dict.keys():
-                desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key]!= 0)
+                desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
+                    desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
                 descs.append(desc)
                 X_train = Xs_train[key]
                 Xs_train_sel.append(X_train.tolist())
@@ -637,7 +666,8 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
             # ds = np.sqrt(d2s)
             ds = []
             for i in range(len(Xs_train_sel[0])):
-                d = np.linalg.norm(np.array(descs) - np.array(Xs_train_sel).T[i])
+                d = np.linalg.norm(np.array(descs) -
+                                   np.array(Xs_train_sel).T[i])
                 ds.append(np.linalg.norm(d))
             bondl = regr.predict([descs]) * std_y + mean_y
             bondl_keys.append(fidx)
@@ -646,27 +676,30 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
 
     return bondl_dict, ds
 
-## predict labels using a given regr
+# predict labels using a given regr
 #  @param core3D mol3D class of a molecule
 #  @param spin the spin multiplicity of the core3D
 #  @param mligcaomt the external atom index of the mlig
 #  @return bondl_dict, ds (a list of Euclidean distances)
+
+
 def krr_model_predict(core3D, spin, mligcatom):
     bondl_keys = []
     bondls = []
     spin_ohe = [0] * 6
     spin_ohe[spin - 1] = 1
     globs = globalvars()
-    if globs.custom_path: # test if a custom path is used:
+    if globs.custom_path:  # test if a custom path is used:
         fpath = str(globs.custom_path).rstrip('/') + "/python_krr"
     else:
-        fpath = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_krr")
+        fpath = resource_filename(Requirement.parse(
+            "molSimplify"), "molSimplify/python_krr")
     # load model
     f_model = fpath + '/hat_krr_model.pkl'
-    f = open(f_model,'rb')
+    f = open(f_model, 'rb')
     regr = pickle.load(f)
     Xs_train = regr.X_fit_
-    ## load stats
+    # load stats
     # y stats
     f_stats = fpath + '/hat_y_mean_std.csv'
     f = open(f_stats, 'r')
@@ -694,13 +727,13 @@ def krr_model_predict(core3D, spin, mligcatom):
     fcsv = csv.reader(f)
     for i, line in enumerate(fcsv):
         keys = line
-    ## rOH
+    # rOH
     # load model2
     f_model = fpath + '/hat2_krr_model.pkl'
-    f = open(f_model,'rb')
+    f = open(f_model, 'rb')
     regr2 = pickle.load(f)
     X2s_train = regr2.X_fit_
-    ## load stats
+    # load stats
     # y2 stats
     f_stats = fpath + '/hat2_y_mean_std.csv'
     f = open(f_stats, 'r')
@@ -759,7 +792,8 @@ def krr_model_predict(core3D, spin, mligcatom):
                 desc_names.append('spin' + str(i) + '_ohe')
             for idx_i, idx in enumerate(idx_list):
                 fidx_ = fidxes[idx]
-                descriptor_names, descriptors = get_descriptor_vector_for_atidx(core3D, fidx_)
+                descriptor_names, descriptors = get_descriptor_vector_for_atidx(
+                    core3D, fidx_)
                 for descriptor_name in descriptor_names:
                     desc_names.append(descriptor_name + '_' + str(idx_i))
                 descs += descriptors
@@ -768,7 +802,8 @@ def krr_model_predict(core3D, spin, mligcatom):
             Xs_train_sel = []
             d2s = [0] * len(Xs_train[0])
             for key in keys:
-                desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key]!= 0)
+                desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
+                    desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
                 descs.append(desc)
                 # d2s = d2s + np.square(np.array(desc * len(X_train)) - np.array(X_train))
             # print('The largest desc is ' + str(max(descs)))
@@ -793,7 +828,8 @@ def krr_model_predict(core3D, spin, mligcatom):
                 # ds = np.sqrt(d2s)
                 ds2 = []
                 for i in range(len(X2s_train[0])):
-                    d2 = np.linalg.norm(np.array(descs) - np.array(X2s_train)[i])
+                    d2 = np.linalg.norm(
+                        np.array(descs) - np.array(X2s_train)[i])
                     ds2.append(d2)
                 bondl2 = regr2.predict([descs]) * std_y2 + mean_y2
 
@@ -849,39 +885,45 @@ def krr_model_predict(core3D, spin, mligcatom):
 #
 #     return bondl_dict
 
-## wrapper to get KRR predictions for bondl_core3D, bondl_m3D, bondl_m3Dsub from a known mol3D using partial charges
+# wrapper to get KRR predictions for bondl_core3D, bondl_m3D, bondl_m3Dsub from a known mol3D using partial charges
 #  @param mol mol3D of the molecule
 #  @param charge charge of the molecule
 #  @return KRR-predicted bondl_core3D
 #  KRR accuracies for bondl_core3D: 98.2% (training score) and 47.6 (test score)
 #  KRR accuracies for bondl_m3D: 99.5% (training score) and 51.1 (test score)
-def invoke_KRR_from_mol3d_dQ(mol,charge):
+
+
+def invoke_KRR_from_mol3d_dQ(mol, charge):
     X_norm_train = []
     y_norm_train = []
     # # find the metal from RACs
     # metal = mol.getAtom(mol.findMetal()[0]).symbol()
     # ox_modifier = {metal:oxidation_state}
     # get partialQs
-    feature_names,features = ffeatures(mol,charge)
+    feature_names, features = ffeatures(mol, charge)
     # # get one-hot-encoding (OHE)
     # descriptor_names,descriptors = create_OHE(descriptor_names,descriptors, metal,oxidation_state)
     # # set exchange fraction
     # descriptor_names += ['alpha']
     # descriptors += [alpha]
-    ## KRR initiation
+    # KRR initiation
     # defined variables
     globs = globalvars()
-    if globs.custom_path: # test if a custom path is used:
-         X_norm_train_csv = str(globs.custom_path).rstrip('/') + "/python_krr/X_norm_train_TS.csv"
-         y_norm_train_csv = str(globs.custom_path).rstrip('/') + "/python_krr/y_norm_train_TS.csv"
+    if globs.custom_path:  # test if a custom path is used:
+        X_norm_train_csv = str(globs.custom_path).rstrip(
+            '/') + "/python_krr/X_norm_train_TS.csv"
+        y_norm_train_csv = str(globs.custom_path).rstrip(
+            '/') + "/python_krr/y_norm_train_TS.csv"
     else:
-        X_norm_train_csv = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_krr/X_norm_train_TS.csv")
-        y_norm_train_csv = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_krr/y_norm_train_TS.csv")
-    f = open(X_norm_train_csv,'r')
+        X_norm_train_csv = resource_filename(Requirement.parse(
+            "molSimplify"), "molSimplify/python_krr/X_norm_train_TS.csv")
+        y_norm_train_csv = resource_filename(Requirement.parse(
+            "molSimplify"), "molSimplify/python_krr/y_norm_train_TS.csv")
+    f = open(X_norm_train_csv, 'r')
     for line in csv.reader(f):
         X_norm_train.append([float(i) for i in line])
     X_norm_train = np.array(X_norm_train)
-    f = open(y_norm_train_csv,'r')
+    f = open(y_norm_train_csv, 'r')
     for line in csv.reader(f):
         y_norm_train.append([float(i) for i in line])
     y_norm_train = np.array(y_norm_train)
@@ -890,94 +932,106 @@ def invoke_KRR_from_mol3d_dQ(mol,charge):
     kernel = 'rbf'
     keys = []
     bondls = []
-    for targets in ['bondl_core3D','bondl_m3D']:#,'bondl_m3Dsub']:
+    for targets in ['bondl_core3D', 'bondl_m3D']:  # ,'bondl_m3Dsub']:
         keys.append(targets)
         if targets == 'bondl_core3D':
-        # KRR parameters for bondl_core3D 
+            # KRR parameters for bondl_core3D
             alpha = 0.1
             gamma = 4.6415888336127775
             mean_y_norm_train = 1.8556069976566096
             std_y_norm_train = 0.08511267085380758
-            mean_X_norm_train = np.array([1.1886128903870394, 1.0746595698697274, 1.0089390403652372, 1.0051636435711488, 
-                                    0.9639844597149281, 1.5924309727104378])
+            mean_X_norm_train = np.array([1.1886128903870394, 1.0746595698697274, 1.0089390403652372, 1.0051636435711488,
+                                          0.9639844597149281, 1.5924309727104378])
             std_X_norm_train = np.array([1.4887238067607071, 1.4391120341824508, 1.351343230273359, 1.302911028297482,
-                                    1.1511093513567663, 0.7366350688359029])
+                                         1.1511093513567663, 0.7366350688359029])
 
         if targets == 'bondl_m3D':
-        # KRR parameters for bondl_core3D 
+            # KRR parameters for bondl_core3D
             alpha = 0.015848931924611134
             gamma = 8.531678524172808
             mean_y_norm_train = 1.1429284052746633
             std_y_norm_train = 0.04763054722349127
-            mean_X_norm_train = np.array([-1.17136495, -1.09058534, -1.04062806, -1.01379334, -0.92612448, -1.30558513])
-            std_X_norm_train = np.array([1.36359461, 1.32785945, 1.26392399, 1.21494676, 1.0253893, 0.5940198])
+            mean_X_norm_train = np.array(
+                [-1.17136495, -1.09058534, -1.04062806, -1.01379334, -0.92612448, -1.30558513])
+            std_X_norm_train = np.array(
+                [1.36359461, 1.32785945, 1.26392399, 1.21494676, 1.0253893, 0.5940198])
 
         # model initation
         X_norm_test = np.array(features[7:13])
         X_norm_test = (X_norm_test - mean_X_norm_train) / std_X_norm_train
-        model = KernelRidge(kernel=kernel,alpha=alpha,gamma=gamma)
-        model.fit(X_norm_train,y_norm_train)
+        model = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
+        model.fit(X_norm_train, y_norm_train)
         y_norm_test = model.predict([X_norm_test])
         y_norm_test = y_norm_test * std_y_norm_train + mean_y_norm_train
         bondl = y_norm_test[0][0]
         bondls.append(bondl)
-    
-    bondl_dict = dict(zip(keys,bondls))
+
+    bondl_dict = dict(zip(keys, bondls))
 
     return bondl_dict
 
-## wrapper to get KRR predictions for bondl_core3D from a known mol3D using RAC-190
+# wrapper to get KRR predictions for bondl_core3D from a known mol3D using RAC-190
 #  @param mol mol3D of the molecule
 #  @param charge charge of the molecule
 #  @return KRR-predicted bondl_core3D
 #  KRR accuracies: 98.2% (training score) and 47.6 (test score)
-def invoke_KRR_from_mol3d_RACs(mol,charge):
-    # # find the metal from RACs 
+
+
+def invoke_KRR_from_mol3d_RACs(mol, charge):
+    # # find the metal from RACs
     # metal = mol.getAtom(mol.findMetal()[0]).symbol()
     # ox_modifier = {metal:oxidation_state}
     # get partialQs
-    feature_names,features = ffeatures(mol,charge)
+    feature_names, features = ffeatures(mol, charge)
     # # get one-hot-encoding (OHE)
     # descriptor_names,descriptors = create_OHE(descriptor_names,descriptors, metal,oxidation_state)
     # # set exchange fraction
     # descriptor_names += ['alpha']
     # descriptors += [alpha]
-    ## KRR initiation
+    # KRR initiation
     # defined variables
-    X_norm_train = pd.read_csv('/Users/tzuhsiungyang/anaconda2/envs/molSimplify/molSimplify/molSimplify/python_krr/X_norm_train_TS.csv',header=None)
-    y_norm_train = pd.read_csv('/Users/tzuhsiungyang/anaconda2/envs/molSimplify/molSimplify/molSimplify/python_krr/y_norm_train_TS.csv',header=None)
+    X_norm_train = pd.read_csv(
+        '/Users/tzuhsiungyang/anaconda2/envs/molSimplify/molSimplify/molSimplify/python_krr/X_norm_train_TS.csv', header=None)
+    y_norm_train = pd.read_csv(
+        '/Users/tzuhsiungyang/anaconda2/envs/molSimplify/molSimplify/molSimplify/python_krr/y_norm_train_TS.csv', header=None)
     kernel = 'rbf'
     alpha = 0.1
     gamma = 4.6415888336127775
     mean_y_norm_train = 1.8556069976566096
     std_y_norm_train = 0.08511267085380758
-    mean_X_norm_train = np.array([1.1886128903870394, 1.0746595698697274, 1.0089390403652372, 1.0051636435711488, 0.9639844597149281, 1.5924309727104378])
-    std_X_norm_train = np.array([1.4887238067607071, 1.4391120341824508, 1.351343230273359, 1.302911028297482, 1.1511093513567663, 0.7366350688359029])
+    mean_X_norm_train = np.array([1.1886128903870394, 1.0746595698697274, 1.0089390403652372,
+                                  1.0051636435711488, 0.9639844597149281, 1.5924309727104378])
+    std_X_norm_train = np.array([1.4887238067607071, 1.4391120341824508, 1.351343230273359,
+                                 1.302911028297482, 1.1511093513567663, 0.7366350688359029])
     # model initation
     X_norm_test = np.array(features[7:13])
     X_norm_test = (X_norm_test - mean_X_norm_train) / std_X_norm_train
-    model = KernelRidge(kernel=kernel,alpha=alpha,gamma=gamma)
-    model.fit(X_norm_train,y_norm_train)
+    model = KernelRidge(kernel=kernel, alpha=alpha, gamma=gamma)
+    model.fit(X_norm_train, y_norm_train)
     y_norm_test = model.predict([X_norm_test])
     y_norm_test = y_norm_test * std_y_norm_train + mean_y_norm_train
     bondl_core3D = y_norm_test[0][0]
 
     return bondl_core3D
 
-## Gets the RACs of a given atidx
+# Gets the RACs of a given atidx
 #  @param mol mol3D of this molecule
 #  @param atidx the index of the atom of concern
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
+
+
 def get_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
     descriptor_names = []
     descriptors = []
-    result_dictionary = generate_atomonly_autocorrelations(mol, atidx, False, depth, oct)
+    result_dictionary = generate_atomonly_autocorrelations(
+        mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         descriptor_names += colnames
     for results in result_dictionary['results']:
         descriptors += results.tolist()
-    result_dictionary = generate_atomonly_deltametrics(mol, atidx, False, depth, oct)
+    result_dictionary = generate_atomonly_deltametrics(
+        mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         for colname in colnames:
             descriptor_names.append('D_' + colname)
@@ -986,20 +1040,23 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
 
     return descriptor_names, descriptors
 
+
 def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+    # this function gets autocorrelations for a molecule starting
+    # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
     #       loud - bool, print output
     result = list()
     colnames = []
-    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    allowed_strings = ['electronegativity',
+                       'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
-        atom_only_ac = atom_only_autocorrelation(mol, properties, depth, atomIdx, oct=oct)
+        atom_only_ac = atom_only_autocorrelation(
+            mol, properties, depth, atomIdx, oct=oct)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1008,9 +1065,10 @@ def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
     results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+
 def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+    # this function gets autocorrelations for a molecule starting
+    # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
@@ -1019,11 +1077,13 @@ def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=
     colnames = []
     # allowed_strings = ['nuclear_charge', 'ident', 'topology']
     # labels_strings = ['Z', 'I', 'T']
-    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    allowed_strings = ['electronegativity',
+                       'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
-        atom_only_ac = atom_only_autocorrelation(mol, properties, depth, atomIdx, oct=oct)
+        atom_only_ac = atom_only_autocorrelation(
+            mol, properties, depth, atomIdx, oct=oct)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1032,9 +1092,10 @@ def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=
     results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+
 def generate_atomonly_ratiometrics(mol, atomIdx, loud, depth=4, oct=True):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+    # this function gets autocorrelations for a molecule starting
+    # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
@@ -1043,7 +1104,8 @@ def generate_atomonly_ratiometrics(mol, atomIdx, loud, depth=4, oct=True):
     colnames = []
     # allowed_strings_num = ['electronegativity', 'nuclear_charge']
     # labels_strings_num = ['chi', 'Z']
-    allowed_strings_num = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    allowed_strings_num = ['electronegativity',
+                           'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings_num = ['chi', 'Z', 'I', 'T', 'S']
     # allowed_strings_den = ['size']
     # labels_strings_den = ['S']
@@ -1052,18 +1114,21 @@ def generate_atomonly_ratiometrics(mol, atomIdx, loud, depth=4, oct=True):
     #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for iii, properties_num in enumerate(allowed_strings_num):
         for iv, properties_den in enumerate(allowed_strings_den):
-            atom_only_ac = atom_only_ratiometric(mol, properties_num, properties_den, depth, atomIdx, oct=oct)
+            atom_only_ac = atom_only_ratiometric(
+                mol, properties_num, properties_den, depth, atomIdx, oct=oct)
             this_colnames = []
             for i in range(0, depth + 1):
-                this_colnames.append(labels_strings_num[iii] + '-' + labels_strings_den[iv] + '-' + str(i))
+                this_colnames.append(
+                    labels_strings_num[iii] + '-' + labels_strings_den[iv] + '-' + str(i))
             colnames.append(this_colnames)
             result.append(atom_only_ac)
     results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+
 def generate_atomonly_summetrics(mol, atomIdx, loud, depth=4, oct=True):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+    # this function gets autocorrelations for a molecule starting
+    # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
@@ -1072,11 +1137,13 @@ def generate_atomonly_summetrics(mol, atomIdx, loud, depth=4, oct=True):
     colnames = []
     # allowed_strings = ['ident', 'topology', 'size']
     # labels_strings = ['I', 'T', 'S']
-    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    allowed_strings = ['electronegativity',
+                       'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
-        atom_only_ac = atom_only_summetric(mol, properties, depth, atomIdx, oct=oct)
+        atom_only_ac = atom_only_summetric(
+            mol, properties, depth, atomIdx, oct=oct)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1085,9 +1152,10 @@ def generate_atomonly_summetrics(mol, atomIdx, loud, depth=4, oct=True):
     results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+
 def generate_revised_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+    # this function gets autocorrelations for a molecule starting
+    # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
@@ -1096,11 +1164,13 @@ def generate_revised_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True
     colnames = []
     # allowed_strings = ['electronegativity', 'ident', 'topology']
     # labels_strings = ['chi', 'I', 'T']
-    allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
+    allowed_strings = ['electronegativity',
+                       'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
-        atom_only_ac = atom_only_deltametric(mol, properties, depth, atomIdx, oct=oct)
+        atom_only_ac = atom_only_deltametric(
+            mol, properties, depth, atomIdx, oct=oct)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1109,33 +1179,39 @@ def generate_revised_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True
     results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
-## Gets the rRACs of a given atidx
+# Gets the rRACs of a given atidx
 #  @param mol mol3D of this molecule
 #  @param atidx the index of the atom of concern
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
+
+
 def get_revised_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
     descriptor_names = []
     descriptors = []
-    result_dictionary = generate_revised_atomonly_autocorrelations(mol, atidx, False, depth, oct)
+    result_dictionary = generate_revised_atomonly_autocorrelations(
+        mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         for colname in colnames:
             descriptor_names.append('A_' + colname)
     for results in result_dictionary['results']:
         descriptors += results.tolist()
-    result_dictionary = generate_atomonly_ratiometrics(mol, atidx, False, depth, oct)
+    result_dictionary = generate_atomonly_ratiometrics(
+        mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         for colname in colnames:
             descriptor_names.append('R_' + colname)
     for results in result_dictionary['results']:
         descriptors += results.tolist()
-    result_dictionary = generate_atomonly_summetrics(mol, atidx, False, depth, oct)
+    result_dictionary = generate_atomonly_summetrics(
+        mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         for colname in colnames:
             descriptor_names.append('S_' + colname)
     for results in result_dictionary['results']:
         descriptors += results.tolist()
-    result_dictionary = generate_revised_atomonly_deltametrics(mol, atidx, False, depth, oct)
+    result_dictionary = generate_revised_atomonly_deltametrics(
+        mol, atidx, False, depth, oct)
     for colnames in result_dictionary['colnames']:
         for colname in colnames:
             descriptor_names.append('D_' + colname)
@@ -1145,6 +1221,8 @@ def get_revised_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
     return descriptor_names, descriptors
 
 # commented out default_plot() as conda repo does not automatically conda install matplitlib
+
+
 def default_plot(x, y, name=False):
     # defs for plt
     xlabel = r'distance / ${\rm \AA}$'
@@ -1159,7 +1237,7 @@ def default_plot(x, y, name=False):
     # dealing with axes
     x = np.array(x)
     y = np.array(y)
-    x_min = float(format(np.amin(x),'.1f')) - 0.1
+    x_min = float(format(np.amin(x), '.1f')) - 0.1
     x_max = float(format(np.amax(x), '.1f')) + 0.1
     # x_range = x_max - x_min
     plt.xlim(x_min, x_max)
@@ -1174,7 +1252,8 @@ def default_plot(x, y, name=False):
     ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.2))
     ax.yaxis.set_major_locator(ticker.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.2))
-    plt.tick_params(which='both', axis='both', direction='in', bottom=True, top=True, right=True, left=True)
+    plt.tick_params(which='both', axis='both', direction='in',
+                    bottom=True, top=True, right=True, left=True)
     plt.rcParams['axes.linewidth'] = 3
     plt.rcParams['xtick.major.size'] = 10
     plt.rcParams['xtick.major.width'] = 3
@@ -1188,7 +1267,7 @@ def default_plot(x, y, name=False):
 
     plt.rc('font', **font)
     plt.plot(x, y, 'o', markeredgecolor='k')
-    plt.plot([x_min,x_max],[x_min,x_max],linestyle='dashed',color='k')
+    plt.plot([x_min, x_max], [x_min, x_max], linestyle='dashed', color='k')
     # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
     plt.hlines(a['mean_y'], x_min, x_max, linestyle='dashed', color='k')
     texts = []
@@ -1207,6 +1286,3 @@ def default_plot(x, y, name=False):
 # # plt.imshow(data,interpolation='none')
 # # # plt.imshow(data,interpolation='nearest')
 # # plt.savefig('relative_energies_for_Fe-py4.eps',dpi=400)
-
-
-

@@ -1,8 +1,8 @@
-## @file ligand.py
+# @file ligand.py
 #  Defines ligand class for postprocessing DFT results by measuring ligand properties
-#  
+#
 #  Written by JP Janet for HJK Group
-#  
+#
 #  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Classes.mol3D import *
@@ -11,9 +11,9 @@ from molSimplify.Scripts.geometry import *
 from collections import Counter
 
 
-## Ligand class for postprocessing DFT results by measuring ligand properties
+# Ligand class for postprocessing DFT results by measuring ligand properties
 class ligand:
-    ## Constructor
+    # Constructor
     #  @param self The object pointer
     #  @param master_mol A mol3D complex to extract ligand from
     #  @param index_list A list of indices of the ligand atoms
@@ -22,20 +22,20 @@ class ligand:
         self.master_mol = master_mol
         self.index_list = index_list
         self.dent = dent
-        self.ext_int_dict = dict()  ## store
+        self.ext_int_dict = dict()  # store
 
-    ## map betweem
-    ## int and ext indcies
-    ## Obtain the ligand from the complex mol3D object
+    # map betweem
+    # int and ext indcies
+    # Obtain the ligand from the complex mol3D object
     # @param self The object pointer
     def obtain_mol3d(self):
         this_mol = mol3D()
         this_ext_int_dict = dict()
         j = 0
-        ## the old routine where all atoms in the master_mol are gone through from 0 to natoms-1 
+        # the old routine where all atoms in the master_mol are gone through from 0 to natoms-1
         # for i in range(0, self.master_mol.natoms):
         #     if i in self.index_list:
-        ## the new rountine where the indices are taken out directly. This way the order of atoms is preserved
+        # the new rountine where the indices are taken out directly. This way the order of atoms is preserved
         for i in self.index_list:
             this_mol.addAtom(self.master_mol.getAtom(i))
             this_ext_int_dict.update({i: j})
@@ -43,7 +43,7 @@ class ligand:
         self.mol = this_mol
         self.ext_int_dict = this_ext_int_dict
 
-    ## Truncate ligand about connecting atoms
+    # Truncate ligand about connecting atoms
     #  @param self The object pointer
     #  @param con_atoms The connection atom indices
     #  @param hops Number of bonds to truncate after
@@ -58,17 +58,20 @@ class ligand:
                 hopped += 1
                 new_active_set = list()
                 for this_atom in active_set:
-                    this_atoms_neighbors = self.master_mol.getBondedAtomsSmart(this_atom)
+                    this_atoms_neighbors = self.master_mol.getBondedAtomsSmart(
+                        this_atom)
                     for bound_atoms in this_atoms_neighbors:
                         if (bound_atoms in self.index_list) and (bound_atoms not in added_list):
-                            self.trunc_mol.addAtom(self.master_mol.getAtomSmart(bound_atoms))
+                            self.trunc_mol.addAtom(
+                                self.master_mol.getAtomSmart(bound_atoms))
                             added_list.append(bound_atoms)
-                    [new_active_set.append(element) for element in this_atoms_neighbors]
+                    [new_active_set.append(element)
+                     for element in this_atoms_neighbors]
                 active_set = new_active_set
         return trunc_mol
 
 
-## Extract axial and equitorial components of a octahedral complex
+# Extract axial and equitorial components of a octahedral complex
 #  @param mol The mol3D object for the complex
 #  @param liglist List of ligands
 #  @return ligdents List of ligand dents
@@ -159,7 +162,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         built_ligand_list.append(this_ligand)
         lig_natoms_list.append(this_ligand.mol.natoms)
     for j, built_ligs in enumerate(built_ligand_list):
-        ### test if ligand is unique
+        # test if ligand is unique
         sl = [atom.symbol() for atom in built_ligs.mol.getAtoms()]
         if loud:
             print(('checking lig ' + str(j) + ' : ' + str(sl)))
@@ -173,9 +176,9 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             unique_ligands.append(sl)
             ligand_counts.append(1)
             ligand_records.append(j)
-    ### loop to bin ligands:
+    # loop to bin ligands:
     for j, built_ligs in enumerate(built_ligand_list):
-        ### test if ligand is unique
+        # test if ligand is unique
         sl = [atom.symbol() for atom in built_ligs.mol.getAtoms()]
         unique = 1
         for i, other_sl in enumerate(unique_ligands):
@@ -188,14 +191,15 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         print(('unique ligands' + str(unique_ligands)))
         print(('ligand counts' + str(ligand_counts)))
         print(('ligand records ' + str(ligand_records)))
-        print((str(max(ligand_counts)) + ' is the max and min in  ' + str(min(ligand_counts))))
+        print((str(max(ligand_counts)) +
+               ' is the max and min in  ' + str(min(ligand_counts))))
     n_unique_ligs = len(unique_ligands)
     if (n_ligs == 3) or (n_ligs == 4):  # most common case,
         # one/two equitorial and 2 axial mono
         # or three bidentate
         for i, ligs in enumerate(liglist):
-            if ligdents[i] == 1 and min_dent == 1:  ## anything with equitorial monos will
-                ## have higher than 4 n_ligs
+            if ligdents[i] == 1 and min_dent == 1:  # anything with equitorial monos will
+                # have higher than 4 n_ligs
                 ax_lig_list.append(i)
                 if loud:
                     print(('choosing ' + str(i) + ' as ax based on dent =1'))
@@ -217,7 +221,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                 eq_con_list.append(ligcons[1])
                 eq_con_list.append(ligcons[2])
             elif min_dent == 2 and max_dent == 2 and n_ligs == 3 and not n_unique_ligs == 1:
-                ## this is a hetero/bidentate case
+                # this is a hetero/bidentate case
                 for i, ligs in enumerate(liglist):
                     if all_ligand_counts[i] == 2:
                         eq_lig_list.append(i)
@@ -233,7 +237,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         allowed = list(range(0, 6))
         not_eq = list()
         for j, built_ligs in enumerate(built_ligand_list):
-            this_z = sum([mol.getAtom(ii).coords()[2] for ii in ligcons[j]])/len(ligcons[j])
+            this_z = sum([mol.getAtom(ii).coords()[2]
+                          for ii in ligcons[j]])/len(ligcons[j])
             if this_z < minz:
                 minz = this_z
                 bot_lig = j
@@ -302,7 +307,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                     top_con = ligcons[j]
                     not_eq.append(top_lig)
             else:
-                pentadentate_z_list =[mol.getAtom(ii).coords()[2] for ii in ligcons[j]]
+                pentadentate_z_list = [mol.getAtom(
+                    ii).coords()[2] for ii in ligcons[j]]
                 print('pentadentate Z LIST!')
                 print(pentadentate_z_list)
                 for k, z_val in enumerate(pentadentate_z_list):
@@ -316,7 +322,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                         bot_con = [ligcons[j][k]]
         allowed = [x for x in allowed if ((x not in not_eq))]
         eq_lig_list = allowed
-        eq_con_list = [list(set([ligcons[i] for i in allowed][0])-set(top_con)-set(bot_con))]
+        eq_con_list = [
+            list(set([ligcons[i] for i in allowed][0])-set(top_con)-set(bot_con))]
         ax_lig_list = [top_lig, bot_lig]
         ax_con_list = [top_con, bot_con]
         print('con lists', eq_con_list, ax_con_list)
@@ -334,21 +341,26 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         print(('lig_nat_list', lig_natoms_list))
         print(('eq_liq is ind ', eq_lig_list))
         print(('ax_liq is ind ', ax_lig_list))
-        print(('ax built lig [0] ext ind :' + str(list(built_ligand_list[ax_lig_list[0]].ext_int_dict.keys()))))
+        print(('ax built lig [0] ext ind :' +
+               str(list(built_ligand_list[ax_lig_list[0]].ext_int_dict.keys()))))
         if len(ax_lig_list) > 1:
-            print(('ax built lig [1] ext ind :' + str(list(built_ligand_list[ax_lig_list[1]].ext_int_dict.keys()))))
-        print(('eq built lig [0] ext ind: ' + str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
+            print(('ax built lig [1] ext ind :' +
+                   str(list(built_ligand_list[ax_lig_list[1]].ext_int_dict.keys()))))
+        print(('eq built lig [0] ext ind: ' +
+               str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
     if name:
         for i, ax_ligand in enumerate(ax_ligand_list):
             if not os.path.isdir('ligands'):
                 os.mkdir('ligands')
-            ax_ligand.mol.writexyz('ligands/' + name + '_' + str(i) + '_ax.xyz')
+            ax_ligand.mol.writexyz('ligands/' + name +
+                                   '_' + str(i) + '_ax.xyz')
         for i, eq_ligand in enumerate(eq_ligand_list):
             if not os.path.isdir('ligands'):
                 os.mkdir('ligands')
-            eq_ligand.mol.writexyz('ligands/' + name + '_' + str(i) + '_eq.xyz')
+            eq_ligand.mol.writexyz('ligands/' + name +
+                                   '_' + str(i) + '_eq.xyz')
     for j, ax_con in enumerate(ax_con_list):
         ax_con_int_list.append(
             [built_ligand_list[ax_lig_list[j]].ext_int_dict[i] for i in ax_con])  # convert to interal index
