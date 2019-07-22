@@ -258,6 +258,24 @@ def parse4testNoFF(infile, tmpdir):
         print("Input file parsed for no FF test is located: ", fullnewname)
     return fullnewname
 
+
+
+def report_to_dict(lines):
+   """ 
+   create a dictionary from comma
+   separated files 
+   """
+   d = dict()
+   for l in lines:
+        key, val = l.strip().split(',')[0:2]
+        try:
+            d[key]=float(val.strip('[]'))
+        except:
+            d[key]=str(val.strip('[]'))
+    ## extra proc for ANN_bond list:
+   if 'ANN_bondl' in d.keys():
+         d['ANN_bondl']=[float(i.strip('[]')) for i in d['ANN_bondl'].split()]
+   return(d)
 # compare the report, split key and values, do
 # fuzzy comparison on the values
 
@@ -267,6 +285,8 @@ def compare_report_new(report1, report2):
     data2 = open(report2, 'r').readlines()
     if data1 and data2:
         Equal = True
+        dict1 = report_to_dict(data1)
+        dict2 = report_to_dict(data2)
     else:
         Equal = False
         print('File not found:')
@@ -275,27 +295,36 @@ def compare_report_new(report1, report2):
         if not data2:
             print(('missing: ' + str(report2)))
     if Equal:
-        for i in range(0, len(data1)):
+
+        for k in dict1.keys():
             if Equal:
-                e1 = data1[i].split(',')
-                [key1, val1] = e1[0:2]
-                e2 = data2[i].split(',')
-                [key2, val2] = e2[0:2]
-                val1 = val1.strip('[]')
-                val2 = val1.strip('[]')
-                if key1 != key2:
+                val1 =  dict1[k]
+                if not k in dict2.keys():
                     Equal = False
                     print("Report compare failed for ", report1, report2)
-                    print("keys don't match on line ", i)
+                    print("keys " + str(k) + " not present in " +str(report2))
                 else:
-                    # see whether the values are numbers or text
-                    if is_number(val1) and is_number(val2):
-                        Equal = fuzzy_equal(val1, val2, 1e-4)
+                    val2 = dict2[k]
+     
+                    if not k == "ANN_bondl":
+                           # see whether the values are numbers or text
+                            if is_number(val1) and is_number(val2):
+                                Equal = fuzzy_equal(val1, val2, 1e-4)
+                            else:
+                                Equal = (val1 == val2)
+                            if not Equal:
+                                print("Report compare failed for ", report1, report2)
+                                print("Values don't match for key",k)
+                                print([val1,val2])
                     else:
-                        Equal = (val1 == val2)
-                    if not Equal:
-                        print("Report compare failed for ", report1, report2)
-                        print("Values don't match on line ", i+1)
+                            # loop over ANN bonds?
+                            # see whether the values are numbers or text
+                            for ii,v in enumerate(val1):
+                                Equal = fuzzy_equal(v, val2[ii], 1e-4)
+                            if not Equal:
+                                print("Report compare failed for ", report1, report2)
+                                print("Values don't match for key",k)
+                                print([val1,val2])
             else:
                 break
     return Equal
