@@ -38,4 +38,4 @@ script:
   - molsimplify -h
 
 notifications:
-          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvOlol  
+          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO  
