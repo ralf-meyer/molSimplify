@@ -24,6 +24,8 @@ requirements:
     - numpy
     - python 
     - scikit-learn
+    - pandas
+    - keras
     - scipy
     
 
