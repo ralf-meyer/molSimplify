@@ -8,6 +8,7 @@ setup(name='molSimplify', version="v1.2.7-alpha", packages=find_packages(),
       },
       data_files=[("molSimplify", ["molSimplify/Data/ML.dat"])],
       install_requirements=['numpy','scipy','scikit-learn','pandas','keras','tensorflow'],
+      setup_requires=['pytest-runner'],
       tests_require=['pytest'],
       include_package_data=True
       )
