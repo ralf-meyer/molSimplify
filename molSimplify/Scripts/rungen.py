@@ -605,7 +605,7 @@ def rungen(rundir,args,chspfname,globs):
                     print(strfiles)
                 jobdirs = mlpgen(args,strfiles,rootdir)
             # generate jobscripts
-            if args.jsched and not emsg:
+            if args.jsched and (not emsg) and (not args.reportonly):
                 if args.jsched in 'SBATCH SLURM slurm sbatch':
                     slurmjobgen(args,jobdirs)
                     print 'SLURM jobscripts generated!'
