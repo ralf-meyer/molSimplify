@@ -8,9 +8,9 @@ import scipy.ndimage
 import pickle
 import json
 from keras.models import load_model
-from io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_bond_order, get_gradient, \
+from .io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_bond_order, get_gradient, \
     get_mullcharge, kill_job, check_pid
-from clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
+from .clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
 
 '''
 Main class for the on-the-fly job control.
@@ -154,7 +154,7 @@ class dft_control:
 
     def initialize_features(self):
         try:
-            for idx, fname in self.features_dict[self.mode].items():
+            for idx, fname in list(self.features_dict[self.mode].items()):
                 self.features.update({fname: []})
             logging.info('Feature initialized.')
         except Exception as e:
@@ -189,7 +189,7 @@ class dft_control:
         try:
             with open(datapath, 'rb') as f:
                 _train_data = pickle.load(f)
-            for key, val in _train_data.items():
+            for key, val in list(_train_data.items()):
                 self.train_data.append(val)
             logging.info("Training data loaded.")
         except Exception as e:
@@ -235,15 +235,15 @@ class dft_control:
                 pass
         else:
             raise KeyError("Mode is not recognized.")
-        for idx, fname in self.features_dict[self.mode].items():
+        for idx, fname in list(self.features_dict[self.mode].items()):
             self.features[fname].append(dict_combined[fname])
         f = open("features.json", "w")
         json.dump(self.features, f)
         f.close()
 
     def normalize_features(self):
-        for idx, fname in self.features_dict[self.mode].items():
-            if fname in self.features_dict["geo"].values():
+        for idx, fname in list(self.features_dict[self.mode].items()):
+            if fname in list(self.features_dict["geo"].values()):
                 self.features_norm[fname] = np.array(self.features[fname]) / self.normalization_dict[fname]
             else:
                 self.features_norm[fname] = (np.array(self.features[fname]) - self.normalization_dict[fname][0]) / \
@@ -251,10 +251,10 @@ class dft_control:
 
     def prepare_feature_mat(self):
         self.feature_mat = list()
-        for fname, vec in self.features_norm.items():
+        for fname, vec in list(self.features_norm.items()):
             self.feature_mat.append(vec)
         self.feature_mat = np.transpose(self.feature_mat)
-        self.feature_mat = self.feature_mat.reshape(1, self.step_now + 1, len(self.features.keys()))
+        self.feature_mat = self.feature_mat.reshape(1, self.step_now + 1, len(list(self.features.keys())))
 
     def resize_feature_mat(self):
         step_chosen, mindelta = find_closest_model(self.step_now, self.step_decisions)
@@ -310,7 +310,7 @@ class dft_control:
                 filepath = self.get_file_path(filename)
                 if os.path.isfile(filepath):
                     self.file_updated[self.mode].update({filename: True})
-            existed = all(value == True for value in self.file_updated[self.mode].values())
+            existed = all(value == True for value in list(self.file_updated[self.mode].values()))
         for filename in self.files_track[self.mode]:
             filepath = self.get_file_path(filename)
             self.files_track[self.mode].update({filename: os.path.getmtime(filepath)})
@@ -328,11 +328,11 @@ class dft_control:
             logging.warning('Cannot obtain the information of the zeroth step.', exc_info=True)
 
     def check_updates(self):
-        for filename, val in self.files_track[self.mode].items():
+        for filename, val in list(self.files_track[self.mode].items()):
             filepath = self.get_file_path(filename)
             if os.path.getmtime(filepath) - val > 3:
                 self.file_updated[self.mode].update({filename: True})
-        updated = all(value == True for value in self.file_updated[self.mode].values())
+        updated = all(value == True for value in list(self.file_updated[self.mode].values()))
         if self.debug:
             updated = True
         if updated:

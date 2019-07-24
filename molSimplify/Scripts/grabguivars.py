@@ -1,85 +1,94 @@
-## @file grabguivars.py
+# @file grabguivars.py
 #  Grabs arguments from GUI input
 #
 #  Written by Tim Ioannidisfor HJK Group
 #
 #  Dpt of Chemical Engineering, MIT
 
-import glob, os, re, argparse, sys, time
-from io import *
+import glob
+import os
+import re
+import argparse
+import sys
+import time
+from .io import *
 
-## Check true or false
-#  @param arg String to be checked    
+# Check true or false
+#  @param arg String to be checked
 #  @return bool
+
+
 def checkTrue(arg):
     if 'n' in arg.lower() or '0' in arg.lower() or 'f' in arg.lower():
         return False
     else:
         return True
-        
-## Collects ligand-related arguments
+
+# Collects ligand-related arguments
 #  @param gui GUI flag
 #  @return ligand-related arguments (ligs,ligoccs,lcats,kHs,MLb,lang,lname)
+
+
 def getligands(gui):
-    ligs,ligoccs,lcats,kHs,MLb,lang,lname = '','','','','','',''
-    for ii in range(0,7):
-        if len(gui.lig[ii].currentText().replace(' ','')) > 0:
-            ligs += gui.lig[ii].currentText().replace(' ','')+','
+    ligs, ligoccs, lcats, kHs, MLb, lang, lname = '', '', '', '', '', '', ''
+    for ii in range(0, 7):
+        if len(gui.lig[ii].currentText().replace(' ', '')) > 0:
+            ligs += gui.lig[ii].currentText().replace(' ', '')+','
             ligoccs += str(gui.ligocc[ii].value())+','
             kHs += gui.ligH[ii].currentText()+','
-            lcats += gui.ligconn[ii].text().replace(' ','')+'/'
-            MLb += gui.ligML[ii].text().replace(' ','')+','
-            lang += gui.ligan[ii].text().replace(' ','')+','
-            lname += gui.lignam[ii].text().replace(' ','')+','
+            lcats += gui.ligconn[ii].text().replace(' ', '')+'/'
+            MLb += gui.ligML[ii].text().replace(' ', '')+','
+            lang += gui.ligan[ii].text().replace(' ', '')+','
+            lname += gui.lignam[ii].text().replace(' ', '')+','
     # check for empty
-    ligs = ligs.rsplit(',',1)[0]
-    lgtxt = ligoccs.replace(',','')
+    ligs = ligs.rsplit(',', 1)[0]
+    lgtxt = ligoccs.replace(',', '')
     if len(lgtxt) > 0:
-        ligoccs = ligoccs.rsplit(',',1)[0]
+        ligoccs = ligoccs.rsplit(',', 1)[0]
     else:
         ligoccs = ''
-    lgtxt = kHs.replace(',','')
+    lgtxt = kHs.replace(',', '')
     if len(lgtxt) > 0:
-        kHs = kHs.rsplit(',',1)[0]
+        kHs = kHs.rsplit(',', 1)[0]
     else:
         kHs = ''
-    lgtxt = lcats.replace('/','')
+    lgtxt = lcats.replace('/', '')
     if len(lgtxt) > 0:
-        lcats = lcats.rsplit('/',1)[0]
+        lcats = lcats.rsplit('/', 1)[0]
     else:
         lcats = ''
-    lgtxt = MLb.replace(',','')
+    lgtxt = MLb.replace(',', '')
     if len(lgtxt) > 0:
-        MLb = MLb.rsplit(',',1)[0]
+        MLb = MLb.rsplit(',', 1)[0]
     else:
         MLb = ''
-    lgtxt = lang.replace(',','')
+    lgtxt = lang.replace(',', '')
     if len(lgtxt) > 0:
-        lang = lang.rsplit(',',1)[0]
+        lang = lang.rsplit(',', 1)[0]
     else:
         lang = ''
-    lgtxt = lname.replace(',','')
+    lgtxt = lname.replace(',', '')
     if len(lgtxt) > 0:
-        lname = lname.rsplit(',',1)[0]
+        lname = lname.rsplit(',', 1)[0]
     else:
         lname = ''
-    return ligs,ligoccs,lcats,kHs,MLb,lang,lname
+    return ligs, ligoccs, lcats, kHs, MLb, lang, lname
 
 
-## Fills in GUI variables from ligand-related arguments
+# Fills in GUI variables from ligand-related arguments
 #  @param gui GUI flag
 #  @param ligs,ligoccs,lcats,kHs,MLb,lang,lname ligand-related arguments
-def setligands(gui,ligs,ligoccs,lcats,kHs,MLb,lang,lname):
-    ligs = filter(None,re.split(',|\t|&',ligs))
-    ligoccs = filter(None,re.split(',|\t|&',ligoccs))
-    lcats = filter(None,re.split('/|\t|&',lcats))
-    kHs = filter(None,re.split(',|\t|&',kHs))
-    MLb = filter(None,re.split(',|\t|&',MLb))
-    lang = filter(None,re.split(',|\t|&',lang))
-    lname = filter(None,re.split(',|\t|&',lname))
-    for ii in range(0,len(ligs)):
+def setligands(gui, ligs, ligoccs, lcats, kHs, MLb, lang, lname):
+    ligs = [_f for _f in re.split(',|\t|&', ligs) if _f]
+    ligoccs = [_f for _f in re.split(',|\t|&', ligoccs) if _f]
+    lcats = [_f for _f in re.split('/|\t|&', lcats) if _f]
+    kHs = [_f for _f in re.split(',|\t|&', kHs) if _f]
+    MLb = [_f for _f in re.split(',|\t|&', MLb) if _f]
+    lang = [_f for _f in re.split(',|\t|&', lang) if _f]
+    lname = [_f for _f in re.split(',|\t|&', lname) if _f]
+    for ii in range(0, len(ligs)):
         gui.lig[ii].setCurrentText(ligs[ii])
-        if len(ligoccs) > ii and ligoccs[ii]!='':
+        if len(ligoccs) > ii and ligoccs[ii] != '':
             gui.ligocc[ii].setValue(int(ligoccs[ii]))
         if len(lcats) > ii:
             gui.ligconn[ii].setText(lcats[ii])
@@ -106,38 +115,45 @@ def setligands(gui,ligs,ligoccs,lcats,kHs,MLb,lang,lname):
             gui.ligadd[ii+1].show()
             gui.ligadd[ii+1].setDisabled(False)
 
-## Writes options to input file with arbitrary name
+# Writes options to input file with arbitrary name
 #  @param args Namespace of arguments
 #  @param fname Input file name
-def writeinputc(args,fname):
-    f = open(fname,'w')
+
+
+def writeinputc(args, fname):
+    f = open(fname, 'w')
     f.write("# Input file generated from GUI options\n")
-    for key, val in args.iteritems():
+    for key, val in args.items():
         if len(val) > 0:
             vals = val.splitlines()
             for v in vals:
                 f.write(key+' '+v+'\n')
     f.close()
 
-## Writes postprocessing options to input file
+# Writes postprocessing options to input file
 #  @param args Namespace of arguments
 #  @param fname Input file name
-def writeinputp(args,fname):
-    f = open(fname,'w')
+
+
+def writeinputp(args, fname):
+    f = open(fname, 'w')
     f.write("# Input file generated from GUI options\n")
-    for key, val in args.iteritems():
-            f.write(key+' '+val+'\n')
+    for key, val in args.items():
+        f.write(key+' '+val+'\n')
     f.close()
-    
-## Writes options to input file with fixed name
+
+# Writes options to input file with fixed name
 #  @param args Namespace of arguments
+
+
 def writeinputf(args):
-    f = open(args['-rundir']+'/geninput.inp','w')
+    f = open(args['-rundir']+'/geninput.inp', 'w')
     f.write("# Input file generated from GUI options\n")
-    ff = open(args['-rundir']+'/molSimp.log','a')
-    dd = "# Input file generated from GUI options at "+ time.strftime('%m/%d/%Y %H:%M')+'\n'
+    ff = open(args['-rundir']+'/molSimp.log', 'a')
+    dd = "# Input file generated from GUI options at " + \
+        time.strftime('%m/%d/%Y %H:%M')+'\n'
     ff.write(dd)
-    for key, val in args.iteritems():
+    for key, val in args.items():
         if len(val) > 0:
             vals = val.splitlines()
             for v in vals:
@@ -145,17 +161,19 @@ def writeinputf(args):
                 ff.write(key+' '+v+'\n')
     f.close()
     ff.close()
-    
-## Grabs all GUI options
+
+# Grabs all GUI options
 #  @param gui GUI flag
 #  @return Namespace of arguments
+
+
 def grabguivars(gui):
     # list with arguments
     args = dict()
     ### general structure generation options ###
     args['-core'] = gui.etcore.currentText()
     args['-ccatoms'] = gui.etccat.text()
-    ligs,ligoccs,lcats,kHs,MLb,lang,lname=getligands(gui)
+    ligs, ligoccs, lcats, kHs, MLb, lang, lname = getligands(gui)
     noligs = len(ligs.split(','))-1
     args['-lig'] = ligs
     if len(ligoccs) > noligs:
@@ -193,7 +211,7 @@ def grabguivars(gui):
     args['-rundir'] = gui.etrdir.text()
     rdir = args['-rundir']
     if rdir[1] == '/':
-         args['-rundir'] = rdir[:-1]
+        args['-rundir'] = rdir[:-1]
     args['-suff'] = gui.etsuff.text()
     ### binding molecule options ###
     if gui.chkM.getState():
@@ -221,7 +239,7 @@ def grabguivars(gui):
             if gui.chch.getState():
                 args['-calccharge'] = 'yes'
             args['-spin'] = gui.etqctspin.text()
-            print gui.qctcalc.currentText()
+            print(gui.qctcalc.currentText())
             args['-runtyp'] = gui.qctcalc.currentText()
             args['-method'] = gui.etqctmethod.text()
             args['-basis'] = gui.etqctbasis.text()
@@ -271,9 +289,11 @@ def grabguivars(gui):
     writeinputf(args)
     return args
 
-## Grabs GUI options for terachem input files
+# Grabs GUI options for terachem input files
 #  @param gui GUI flag
 #  @return Namespace of arguments of related arguments (charge, spin, runtyp, method, basis, dispersion, qoption, rprompt)
+
+
 def grabguivarstc(gui):
     globs = globalvars()
     # list with arguments
@@ -288,12 +308,14 @@ def grabguivarstc(gui):
     # extra flag to control duplication prompt
     args['-rprompt'] = 'True'
     ### write input file ###
-    writeinputc(args,globs.installdir+'/Data/.tcdefinput.inp')
+    writeinputc(args, globs.installdir+'/Data/.tcdefinput.inp')
     return args
 
-## Grabs GUI options for GAMESS input files
+# Grabs GUI options for GAMESS input files
 #  @param gui GUI flag
 #  @return Namespace of arguments of related arguments (charge, spin, runtyp, method, gbasis, ngauss, npfunc, ndfunc, sysoption, ctrloption, scfoption, statoption, rprompt)
+
+
 def grabguivarsgam(gui):
     globs = globalvars()
     # list with arguments
@@ -313,12 +335,14 @@ def grabguivarsgam(gui):
     # extra flag to control duplication prompt
     args['-rprompt'] = 'True'
     ### write input file ###
-    writeinputc(args,globs.installdir+'/Data/.gamdefinput.inp')
+    writeinputc(args, globs.installdir+'/Data/.gamdefinput.inp')
     return args
 
-## Grabs GUI options for QChem input files
+# Grabs GUI options for QChem input files
 #  @param gui GUI flag
 #  @return Namespace of arguments of related arguments (charge, spin, runtyp, basis, remoption, exchange, correlation, unrestricted, rprompt)
+
+
 def grabguivarsqch(gui):
     globs = globalvars()
     # list with arguments
@@ -335,12 +359,14 @@ def grabguivarsqch(gui):
     ### write input file ###
     # extra flag to control duplication prompt
     args['-rprompt'] = 'True'
-    writeinputc(args,globs.installdir+'/Data/.qchdefinput.inp')
+    writeinputc(args, globs.installdir+'/Data/.qchdefinput.inp')
     return args
 
-## Grabs GUI options for jobscripts
+# Grabs GUI options for jobscripts
 #  @param gui GUI flag
 #  @return Namespace of arguments of related arguments (jname, memory, wtime, queue, gpus, cpus, modules, joption, jcommand, rprompt)
+
+
 def grabguivarsjob(gui):
     globs = globalvars()
     # list with arguments
@@ -354,15 +380,17 @@ def grabguivarsjob(gui):
     args['-modules'] = gui.etjmod.text()
     args['-joption'] = gui.etjopt.toPlainText()
     args['-jcommand'] = gui.jcomm.toPlainText()
-    ## set prompt option
+    # set prompt option
     args['-rprompt'] = 'True'
     ### write input file ###
-    writeinputc(args,globs.installdir+'/Data/.jobdefinput.inp')
+    writeinputc(args, globs.installdir+'/Data/.jobdefinput.inp')
     return args
 
-## Grabs GUI options for DB search
+# Grabs GUI options for DB search
 #  @param gui GUI flag
 #  @return Namespace of arguments of related arguments (dbsim, dbcatoms, dbresults, dboutputf, dbbase, dbsmarts, dbfinger, dbatoms, dbbonds, dbarbonds, dbsbonds, dbmw)
+
+
 def grabdbguivars(gui):
     args = dict()
     ### database search options ###
@@ -378,31 +406,33 @@ def grabdbguivars(gui):
     args['-dbarbonds'] = gui.etcDBsabonds0.text()+'<'+gui.etcDBsabonds1.text()
     args['-dbsbonds'] = gui.etcDBsbondss0.text()+'<'+gui.etcDBsbondss1.text()
     args['-dbmw'] = gui.etcDBmw0.text()+'<'+gui.etcDBmw1.text()
-    if len(args['-dboutputf'].replace(' ',''))==4:
+    if len(args['-dboutputf'].replace(' ', '')) == 4:
         args['-dboutputf'] = ''
-    ### check input
-    if args['-dbatoms']=='<':
+    # check input
+    if args['-dbatoms'] == '<':
         args['-dbatoms'] = ''
-    if args['-dbbonds']=='<':
+    if args['-dbbonds'] == '<':
         args['-dbbonds'] = ''
-    if args['-dbarbonds']=='<':
+    if args['-dbarbonds'] == '<':
         args['-dbarbonds'] = ''
-    if args['-dbsbonds']=='<':
+    if args['-dbsbonds'] == '<':
         args['-dbsbonds'] = ''
-    if args['-dbmw']=='<':
+    if args['-dbmw'] == '<':
         args['-dbmw'] = ''
     rdir = gui.etrdir.text()
-    if rdir[-1]=='/':
+    if rdir[-1] == '/':
         rdir = rdir[:-1]
     args['-rundir'] = rdir
-    ## extra flag to control duplication prompt
+    # extra flag to control duplication prompt
     args['-rprompt'] = 'True'
     ### write input file ###
-    writeinputc(args,rdir+'/dbinput.inp')
+    writeinputc(args, rdir+'/dbinput.inp')
     return args
-    
-## Grabs GUI options for postprocessing
+
+# Grabs GUI options for postprocessing
 #  @param gui GUI flag
+
+
 def grabguivarsP(gui):
     args = dict()
     ### post-processing options ###
@@ -410,65 +440,69 @@ def grabguivarsP(gui):
     args['-postdir'] = gui.etpdir.text()
     args['-postqc'] = gui.pqcode.currentText()
     rdir = args['-postdir']
-    if rdir[-1]=='/':
+    if rdir[-1] == '/':
         rdir = rdir[:-1]
-    if gui.psum.getState()==1:
+    if gui.psum.getState() == 1:
         args['-pres'] = ''
-    if gui.pwfnav.getState()==1:
+    if gui.pwfnav.getState() == 1:
         args['-pwfninfo'] = ''
-    if gui.pch.getState()==1: 
+    if gui.pch.getState() == 1:
         args['-pcharge'] = ''
-    if gui.pcub.getState()==1:
+    if gui.pcub.getState() == 1:
         args['-pgencubes'] = ''
-    if gui.porbs.getState()==1: 
+    if gui.porbs.getState() == 1:
         args['-porbinfo'] = ''
-    if gui.pdeloc.getState()==1:
+    if gui.pdeloc.getState() == 1:
         args['-pdeloc'] = ''
-    if gui.pnbo.getState()==1:
+    if gui.pnbo.getState() == 1:
         args['-pnbo'] = ''
     # extra flag to control duplication prompt
     args['-rprompt'] = 'True'
     ### write input file ###
-    writeinputp(args,rdir+'/postproc.inp')
+    writeinputp(args, rdir+'/postproc.inp')
 
-## Reads terachem input options from input file
+# Reads terachem input options from input file
 #  @param gui GUI flag
 #  @param fname input file name
-def loadfrominputtc(gui,fname):
-    f = open(fname,'r')
+
+
+def loadfrominputtc(gui, fname):
+    f = open(fname, 'r')
     s = f.read()
-    s = filter(None,s.splitlines())
+    s = [_f for _f in s.splitlines() if _f]
     f.close()
     gui.qceditor.setText('')
     ### general structure generation options ###
     for ss in s:
-        st = ss.split(None,1)
-        if '-charge'==st[0]:
+        st = ss.split(None, 1)
+        if '-charge' == st[0]:
             gui.etqctch.setText(st[-1])
-        if '-spin'==st[0]:
+        if '-spin' == st[0]:
             gui.etqctspin.setText(st[-1])
-        if '-runtyp'==st[0]:
+        if '-runtyp' == st[0]:
             gui.qctcalc.setCurrentText(st[-1])
-        if '-method'==st[0]:
+        if '-method' == st[0]:
             gui.etqctmethod.setText(st[-1])
-        if '-basis'==st[0]:
+        if '-basis' == st[0]:
             gui.etqctbasis.setText(st[-1])
-        if '-dispersion'==st[0]:
+        if '-dispersion' == st[0]:
             gui.qctsel.setCurrentText(st[-1])
-        if '-qoption'==st[0]:
+        if '-qoption' == st[0]:
             gui.qceditor.setText(gui.qceditor.toPlainText()+st[-1]+'\n')
-        if '-charge'==st[0]:
+        if '-charge' == st[0]:
             gui.etqctch.setText(st[-1])
-        if '-runtyp'==st[0]:
+        if '-runtyp' == st[0]:
             gui.qctcalc.setCurrentText(st[-1])
-            
-## Reads GAMESS input options from input file
+
+# Reads GAMESS input options from input file
 #  @param gui GUI flag
 #  @param fname input file name
-def loadfrominputgam(gui,fname):
-    f = open(fname,'r')
+
+
+def loadfrominputgam(gui, fname):
+    f = open(fname, 'r')
     s = f.read()
-    s = filter(None,s.splitlines())
+    s = [_f for _f in s.splitlines() if _f]
     f.close()
     gui.qcgedsys.setText('')
     gui.qcgedctrl.setText('')
@@ -476,108 +510,114 @@ def loadfrominputgam(gui,fname):
     gui.qcgedstat.setText('')
     ### general structure generation options ###
     for ss in s:
-        st = ss.split(None,1)
+        st = ss.split(None, 1)
       ### Quantum Chemistry options ###
-        if '-charge'==st[0]:
+        if '-charge' == st[0]:
             gui.etqcgch.setText(st[-1])
-        if '-spin'==st[0]:
+        if '-spin' == st[0]:
             gui.etqcgspin.setText(st[-1])
-        if '-runtyp'==st[0]:
+        if '-runtyp' == st[0]:
             gui.qcgcalc.setCurrentText(st[-1])
-        if '-method'==st[0]:
+        if '-method' == st[0]:
             gui.etqcgmethod.setText(st[-1])
-        if '-gbasis'==st[0]:
+        if '-gbasis' == st[0]:
             gui.etqcgbasis.setText(st[-1])
-        if '-ngauss'==st[0]:
+        if '-ngauss' == st[0]:
             gui.etqcngauss.setText(st[-1])
-        if '-npfunc'==st[0]:
+        if '-npfunc' == st[0]:
             gui.etqcnpfunc.setText(st[-1])
-        if '-ndfunc'==st[0]:
+        if '-ndfunc' == st[0]:
             gui.etqcndfunc.setText(st[-1])
-        if '-sysoption'==st[0]:
+        if '-sysoption' == st[0]:
             gui.qcgedsys.setText(gui.qcgedsys.toPlainText()+st[-1]+'\n')
-        if '-ctrloption'==st[0]:
+        if '-ctrloption' == st[0]:
             gui.qcgedctrl.setText(gui.qcgedctrl.toPlainText()+st[-1]+'\n')
-        if '-scfoption'==st[0]:
+        if '-scfoption' == st[0]:
             gui.qcgedscf.setText(gui.qcgedscf.toPlainText()+st[-1]+'\n')
-        if '-statoption'==st[0]:
+        if '-statoption' == st[0]:
             gui.qcgedstat.setText(gui.qcgedstat.toPlainText()+st[-1]+'\n')
 
-## Reads QChem input options from input file
+# Reads QChem input options from input file
 #  @param gui GUI flag
 #  @param fname input file name
-def loadfrominputqch(gui,fname):
-    f = open(fname,'r')
+
+
+def loadfrominputqch(gui, fname):
+    f = open(fname, 'r')
     s = f.read()
-    s = filter(None,s.splitlines())
+    s = [_f for _f in s.splitlines() if _f]
     f.close()
     gui.qcQeditor.setText('')
     ### general structure generation options ###
     for ss in s:
-        st = ss.split(None,1)
+        st = ss.split(None, 1)
       ### Quantum Chemistry options ###
-        if '-basis'==st[0]:
+        if '-basis' == st[0]:
             gui.etqcQbasis.setText(st[-1])
-        if '-charge'==st[0]:
+        if '-charge' == st[0]:
             gui.etqcQch.setText(st[-1])
-        if '-spin'==st[0]:
+        if '-spin' == st[0]:
             gui.etqcQspin.setText(st[-1])
-        if '-runtyp'==st[0]:
+        if '-runtyp' == st[0]:
             gui.qcQcalc.setCurrentText(st[-1])
-        if '-remoption'==st[0]:
+        if '-remoption' == st[0]:
             gui.qcQeditor.setText(gui.qcQeditor.toPlainText()+st[-1]+'\n')
-        if '-exchange'==st[0]:
+        if '-exchange' == st[0]:
             gui.etqcQex.setText(st[-1])
-        if '-correlation'==st[0]:
+        if '-correlation' == st[0]:
             gui.etqcQcor.setText(st[-1])
-        if '-unrestricted'==st[0]:
+        if '-unrestricted' == st[0]:
             gui.chQun.setChecked(True)
-            
-## Reads jobscript options from input file
+
+# Reads jobscript options from input file
 #  @param gui GUI flag
 #  @param fname input file name
-def loadfrominputjob(gui,fname):
-    f = open(fname,'r')
+
+
+def loadfrominputjob(gui, fname):
+    f = open(fname, 'r')
     s = f.read()
-    s = filter(None,s.splitlines())
+    s = [_f for _f in s.splitlines() if _f]
     f.close()
     gui.etjopt.setText('')
     gui.jcomm.setText('')
     ### general structure generation options ###
     for ss in s:
-        st = ss.split(None,1)
+        st = ss.split(None, 1)
         ### jobscript options ###
-        if '-jname'==st[0]:
+        if '-jname' == st[0]:
             gui.etjname.setText(st[-1])
-        if '-memory'==st[0]:
+        if '-memory' == st[0]:
             gui.etjmem.setText(st[-1])
-        if '-wtime'==st[0]:
+        if '-wtime' == st[0]:
             gui.etjwallt.setText(st[-1])
-        if '-queue'==st[0]:
+        if '-queue' == st[0]:
             gui.etjqueue.setText(st[-1])
-        if '-gpus'==st[0]:
+        if '-gpus' == st[0]:
             gui.etjgpus.setText(st[-1])
-        if '-cpus'==st[0]:
+        if '-cpus' == st[0]:
             gui.etjcpus.setText(st[-1])
-        if '-modules'==st[0]:
+        if '-modules' == st[0]:
             gui.etjmod.setText(st[-1])
-        if '-joption'==st[0]:
+        if '-joption' == st[0]:
             gui.etjopt.setText(gui.etjopt.toPlainText()+st[-1]+'\n')
-        if '-jcommand'==st[0]:
+        if '-jcommand' == st[0]:
             gui.jcomm.setText(gui.jcomm.toPlainText()+st[-1]+'\n')
-            
-## Reads all input options from input file
+
+# Reads all input options from input file
 #  @param gui GUI flag
 #  @param fname input file name
-def loadfrominputfile(gui,fname):
-    f = open(fname,'r')
+
+
+def loadfrominputfile(gui, fname):
+    f = open(fname, 'r')
     s = f.read()
-    s = filter(None,s.splitlines())
+    s = [_f for _f in s.splitlines() if _f]
     f.close()
     # re-initialize GUI
-    #gui.initGUI(gui.app)
+    # gui.initGUI(gui.app)
     db = False
-    ligs,ligoccs,lcats,kHs,MLb,lang,lname='','','','','','',''
+    ligs, ligoccs, lcats, kHs, MLb, lang, lname = '', '', '', '', '', '', ''
     # reset edit boxes
     gui.qceditor.setText('')
     gui.qcgedsys.setText('')
@@ -589,103 +629,103 @@ def loadfrominputfile(gui,fname):
     gui.jcomm.setText('')
     ### general structure generation options ###
     for ss in s:
-        st = ss.split(None,1)
+        st = ss.split(None, 1)
         if '-lig' not in st[0]:
             st[-1] = st[-1].split('#')[0]
-        if '-core'==st[0]:
+        if '-core' == st[0]:
             gui.etcore.setCurrentText(st[-1])
-        if '-lig'==st[0]:
+        if '-lig' == st[0]:
             ligs = st[-1]
-        if '-ligocc'==st[0]:
-            ligoccs= st[-1]
-        if '-replig'==st[0]:
+        if '-ligocc' == st[0]:
+            ligoccs = st[-1]
+        if '-replig' == st[0]:
             if checkTrue(st[-1]):
                 gui.replig.setChecked(True)
-        if '-ligloc'==st[0]:
+        if '-ligloc' == st[0]:
             if checkTrue(st[-1]):
                 gui.ligfloc.setChecked(True)
-        if '-ligalign'==st[0]:
+        if '-ligalign' == st[0]:
             if checkTrue(st[-1]):
                 gui.ligfalign.setChecked(True)
-        if '-genall'==st[0]:
+        if '-genall' == st[0]:
             if checkTrue(st[-1]):
                 gui.chkgenall.setChecked(True)
-        if '-MLbonds'==st[0]:
+        if '-MLbonds' == st[0]:
             Mlb = st[-1]
-        if '-distort'==st[0]:
+        if '-distort' == st[0]:
             gui.sdist.setValue(int(st[-1]))
-        if '-pangles'==st[0]:
+        if '-pangles' == st[0]:
             lang = st[-1]
-        if '-ccatoms'==st[0]:
+        if '-ccatoms' == st[0]:
             gui.etccat.setText(st[-1])
-        if '-coord'==st[0]:
+        if '-coord' == st[0]:
             gui.dcoord.setCurrentText(st[-1])
-        if '-geometry'==st[0]:
+        if '-geometry' == st[0]:
             gui.dcoordg.setCurrentText(st[-1])
-        if '-lignum'==st[0]:
+        if '-lignum' == st[0]:
             gui.etlignum.setCurrentText(st[-1])
-        if '-liggrp'==st[0]:
+        if '-liggrp' == st[0]:
             gui.etliggrp.setCurrentText(st[-1])
-        if '-ligctg'==st[0]:
+        if '-ligctg' == st[0]:
             gui.etligctg.setCurrentText(st[-1])
-        if '-rkHs'==st[0]:
+        if '-rkHs' == st[0]:
             if checkTrue(st[-1]):
                 gui.randkHs.setChecked(True)
-        if '-rgen'==st[0]:
+        if '-rgen' == st[0]:
             gui.etrgen.setText(st[-1])
             gui.randomchk.setChecked(True)
-        if '-keepHs'==st[0]:
+        if '-keepHs' == st[0]:
             kHs = st[-1]
-        if '-smicat'==st[0]:
+        if '-smicat' == st[0]:
             lcats = st[-1]
-        if '-sminame'==st[0]:
+        if '-sminame' == st[0]:
             lname = st[-1]
-        if '-oxstate'==st[0]:
+        if '-oxstate' == st[0]:
             gui.doxs.setCurrentText(st[-1])
-        if '-rundir'==st[0]:
+        if '-rundir' == st[0]:
             gui.etrdir.setText(st[-1])
-        if '-suff'==st[0]:
+        if '-suff' == st[0]:
             gui.etsuff.setText(st[-1])
         ### binding molecule options ###
-        if '-bind'==st[0]:
+        if '-bind' == st[0]:
             gui.chkM.setChecked(True)
             gui.enableemol()
             gui.etbind.setCurrentText(st[-1])
-        if '-bsep'==st[0]:
+        if '-bsep' == st[0]:
             gui.chsep.setChecked(True)
-        if '-bcharge'==st[0]:
+        if '-bcharge' == st[0]:
             gui.etchbind.setText(st[-1])
-        if '-nbind'==st[0]:
+        if '-nbind' == st[0]:
             gui.etnbind.setText(st[-1])
-        if '-nambsmi'==st[0]:
+        if '-nambsmi' == st[0]:
             gui.etbsmi.setText(st[-1])
-        if '-maxd'==st[0]:
+        if '-maxd' == st[0]:
             gui.etplacemax.setText(st[-1])
-        if '-mind'==st[0]:
+        if '-mind' == st[0]:
             gui.etplacemin.setText(st[-1])
-        if '-place'==st[0]:
+        if '-place' == st[0]:
             gui.dmolp.setCurrentText(st[-1])
-        if '-bphi'==st[0]:
+        if '-bphi' == st[0]:
             gui.etplacephi.setText(st[-1])
-        if '-btheta'==st[0]:
+        if '-btheta' == st[0]:
             gui.etplacetheta.setText(st[-1])
-        if '-bref'==st[0]:
+        if '-bref' == st[0]:
             gui.etmaskbind.setText(st[-1])
         ### force field optimization ###
         ff = False
-        if '-ff'==st[0]:
+        if '-ff' == st[0]:
             gui.chkFF.setChecked(True)
             gui.enableffinput()
             gui.dff.setCurrentText(st[-1])
             ff = True
-        if '-ffoption'==st[0]:
+        if '-ffoption' == st[0]:
             sopt = st[-1].split('&')
-            b,a,e = False,False,False
+            b, a, e = False, False, False
             for sopts in sopt:
-                ssopt = sopts.replace(' ','')
-                if ssopt[0].lower()=='b':
+                ssopt = sopts.replace(' ', '')
+                if ssopt[0].lower() == 'b':
                     b = True
-                elif ssopt[0].lower()=='a':
+                elif ssopt[0].lower() == 'a':
                     a = True
             if b and not a:
                 idx = 0
@@ -697,121 +737,121 @@ def loadfrominputfile(gui,fname):
                 idx = 2
             gui.dffba.setCurrentIndex(idx)
         ### Quantum Chemistry options ###
-        if '-qccode'==st[0]:
+        if '-qccode' == st[0]:
             gui.chkI.setChecked(True)
             gui.enableqeinput()
             gui.qcode.setCurrentText(st[-1])
-        if '-calccharge'==st[0]:
+        if '-calccharge' == st[0]:
             gui.chch.setChecked(True)
-        if '-basis'==st[0]:
+        if '-basis' == st[0]:
             gui.etqctbasis.setText(st[-1])
             gui.etqcQbasis.setText(st[-1])
-        if '-dispersion'==st[0]:
+        if '-dispersion' == st[0]:
             gui.qctsel.setCurrentText(st[-1])
-        if '-qoption'==st[0]:
+        if '-qoption' == st[0]:
             gui.qceditor.setText(gui.qceditor.toPlainText()+st[-1]+'\n')
-        if '-charge'==st[0]:
+        if '-charge' == st[0]:
             gui.etqcgch.setText(st[-1])
             gui.etqctch.setText(st[-1])
             gui.etqcQch.setText(st[-1])
-        if '-spin'==st[0]:
+        if '-spin' == st[0]:
             gui.etqcgspin.setText(st[-1])
             gui.etqctspin.setText(st[-1])
             gui.etqcQspin.setText(st[-1])
-        if '-runtyp'==st[0]:
+        if '-runtyp' == st[0]:
             gui.qcgcalc.setCurrentText(st[-1])
             gui.qctcalc.setCurrentText(st[-1])
             gui.qcQcalc.setCurrentText(st[-1])
-        if '-method'==st[0]:
+        if '-method' == st[0]:
             gui.etqctmethod.setText(st[-1])
             gui.etqcgmethod.setText(st[-1])
-        if '-gbasis'==st[0]:
+        if '-gbasis' == st[0]:
             gui.etqcgbasis.setText(st[-1])
-        if '-ngauss'==st[0]:
+        if '-ngauss' == st[0]:
             gui.etqcngauss.setText(st[-1])
-        if '-npfunc'==st[0]:
+        if '-npfunc' == st[0]:
             gui.etqcnpfunc.setText(st[-1])
-        if '-ndfunc'==st[0]:
+        if '-ndfunc' == st[0]:
             gui.etqcndfunc.setText(st[-1])
-        if '-sysoption'==st[0]:
+        if '-sysoption' == st[0]:
             gui.qcgedsys.setText(gui.qcgedsys.toPlainText()+st[-1]+'\n')
-        if '-ctrloption'==st[0]:
+        if '-ctrloption' == st[0]:
             gui.qcgedctrl.setText(gui.qcgedctrl.toPlainText()+st[-1]+'\n')
-        if '-scfoption'==st[0]:
+        if '-scfoption' == st[0]:
             gui.qcgedscf.setText(gui.qcgedscf.toPlainText()+st[-1]+'\n')
-        if '-statoption'==st[0]:
+        if '-statoption' == st[0]:
             gui.qcgedstat.setText(gui.qcgedstat.toPlainText()+st[-1]+'\n')
-        if '-remoption'==st[0]:
+        if '-remoption' == st[0]:
             gui.qcQeditor.setText(gui.qcQeditor.toPlainText()+st[-1]+'\n')
-        if '-exchange'==st[0]:
+        if '-exchange' == st[0]:
             gui.etqcQex.setText(st[-1])
-        if '-correlation'==st[0]:
+        if '-correlation' == st[0]:
             gui.etqcQcor.setText(st[-1])
-        if '-unrestricted'==st[0]:
+        if '-unrestricted' == st[0]:
             gui.chQun.setChecked(True)
         ### jobscript options ###
-        if '-jsched'==st[0]:
+        if '-jsched' == st[0]:
             gui.chkJ.setChecked(True)
             gui.enableqeinput()
             gui.scheduler.setCurrentText(st[-1])
-        if '-jname'==st[0]:
+        if '-jname' == st[0]:
             gui.etjname.setText(st[-1])
-        if '-memory'==st[0]:
+        if '-memory' == st[0]:
             gui.etjmem.setText(st[-1])
-        if '-wtime'==st[0]:
+        if '-wtime' == st[0]:
             gui.etjwallt.setText(st[-1])
-        if '-queue'==st[0]:
+        if '-queue' == st[0]:
             gui.etjqueue.setText(st[-1])
-        if '-gpus'==st[0]:
+        if '-gpus' == st[0]:
             gui.etjgpus.setText(st[-1])
-        if '-cpus'==st[0]:
+        if '-cpus' == st[0]:
             gui.etjcpus.setText(st[-1])
-        if '-modules'==st[0]:
+        if '-modules' == st[0]:
             gui.etjmod.setText(st[-1])
-        if '-joption'==st[0]:
+        if '-joption' == st[0]:
             gui.etjopt.setText(gui.etjopt.toPlainText()+st[-1]+'\n')
-        if '-jcommand'==st[0]:
+        if '-jcommand' == st[0]:
             gui.jcomm.setText(gui.jcomm.toPlainText()+st[-1]+'\n')
         ### database search options ###
-        if '-dbsim'==st[0]:
+        if '-dbsim' == st[0]:
             gui.etcDBsmi.setText(st[-1])
             db = True
-        if '-dbcatoms'==st[0]:
+        if '-dbcatoms' == st[0]:
             gui.etcDBcatoms.setText(st[-1])
-        if '-dbresults'==st[0]:
+        if '-dbresults' == st[0]:
             gui.etcDBnres.setText(st[-1])
             db = True
-        if '-dboutputf'==st[0]:
+        if '-dboutputf' == st[0]:
             ssp = st[-1].split('.')
             gui.etcDBoutf.setText(ssp[0])
             gui.cDBdent.setCurrentText('.'+ssp[-1])
-        if '-dbbase'==st[0]:
+        if '-dbbase' == st[0]:
             gui.cDBsel.setCurrentText(st[-1])
             db = True
-        if '-dbsmarts'==st[0]:
+        if '-dbsmarts' == st[0]:
             gui.etcDBsmarts.setText(st[-1])
-        if '-dbfinger'==st[0]:
+        if '-dbfinger' == st[0]:
             gui.cDBsf.setCurrentText(st[-1])
-        if '-dbatoms'==st[0]:
+        if '-dbatoms' == st[0]:
             ssp = st[-1].split('<')
             gui.etcDBsatoms0.setText(ssp[0])
             gui.etcDBsatoms1.setText(ssp[-1])
-        if '-dbbonds'==st[0]:
+        if '-dbbonds' == st[0]:
             ssp = st[-1].split('<')
             gui.etcDBsbonds0.setText(ssp[0])
             gui.etcDBsbonds1.setText(ssp[-1])
-        if '-dbarbonds'==st[0]:
+        if '-dbarbonds' == st[0]:
             ssp = st[-1].split('<')
             gui.etcDBsabonds0.setText(ssp[0])
             gui.etcDBsabonds1.setText(ssp[-1])
-        if '-dbsbonds'==st[0]:
+        if '-dbsbonds' == st[0]:
             ssp = st[-1].split('<')
             gui.etcDBsbondss0.setText(ssp[0])
             gui.etcDBsbondss1.setText(ssp[-1])
-        if '-dbmw'==st[0]:
+        if '-dbmw' == st[0]:
             ssp = st[-1].split('<')
             gui.etcDBmw0.setText(ssp[0])
             gui.etcDBmw1.setText(ssp[-1])
-    setligands(gui,ligs,ligoccs,lcats,kHs,MLb,lang,lname)
+    setligands(gui, ligs, ligoccs, lcats, kHs, MLb, lang, lname)
     if db:
         gui.searchDBW()
