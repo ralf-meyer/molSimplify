@@ -34,7 +34,6 @@ sys.setdlopenflags(flags)
 from .Scripts.inparse import *
 from .Scripts.generator import *
 from molSimplify.Classes.globalvars import *
-from molSimplify.python_nn.retrain_from_db import retrain_and_push
 
 globs = globalvars()
 ## Basic help description string
@@ -190,20 +189,6 @@ def main(args=None):
         gui = False
         # run from commandline
         emsg = startgen(sys.argv, False, gui)
-    elif "-retrain" in args:
-        real_args = args_parser_retrain()
-        predictor = real_args.retrain
-        print("Model retraining on :", predictor)
-        infile = real_args.infile
-        if real_args.user == None or real_args.pwd == None:
-            raise KeyError(
-                "Please use the format molsimplify -retrain <predictor> -infile <infile> -user <username> -pwd <password> to retrain a model.")
-        args_dict = deserialize_json(infile)
-        args_dict.update({"predictor": predictor,
-                          "user": real_args.user,
-                          "pwd": real_args.pwd})
-        print("with arguments as: ", args_dict)
-        retrain_and_push(args_dict)
     ### grab from commandline arguments ###
     else:
         print('No input file detected, reading arguments from commandline')
