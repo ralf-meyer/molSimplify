@@ -6,6 +6,8 @@
 #  Dpt of Chemical Engineering, MIT
 
 import glob, os, re, argparse, sys, ast
+import json
+import yaml
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
@@ -23,10 +25,10 @@ def checkinput(args,calctype="base"):
             print 'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()
             args.core = ['fe']
         # convert full element name to symbol for cores:
-        if args.core[0].lower() in metals_conv.keys(): 
+        if args.core[0].lower() in metals_conv.keys():
             print('swithcing core from ' + str(args.core) + ' to ' + str(metals_conv[args.core[0].lower()]))
             args.core = [metals_conv[args.core[0].lower()]]
-        if (args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum):    
+        if (args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum):
             # convert to titlecase
             args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
             # check oxidation state
@@ -49,13 +51,13 @@ def checkinput(args,calctype="base"):
                         print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
                         print 'Please check this against our ANN output (where available)'
                     else:
-                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
+                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.'
                         defaultspinstate = '1'
                 else:
                     defaultspinstate = '1'
                     print 'WARNING: No spin multiplicity specified. Defaulting to singlet (1)'
                 args.spin = defaultspinstate
-            
+
              # check coordination number and geometry from ligands if given
             if (not args.coord) and (not args.geometry) and args.lig:
                 if not args.gui:
@@ -146,7 +148,7 @@ def checkinput(args,calctype="base"):
         if not args.core:
             print 'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores()
             args.core = ['fe']
-        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:    
+        if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:
             # convert to titlecase
             args.core[0] = args.core[0][0].upper()+args.core[0][1:].lower()
             # check oxidation state
@@ -169,7 +171,7 @@ def checkinput(args,calctype="base"):
                         print 'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate
                         print 'Please check this against our ANN output (where available)'
                     else:
-                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.' 
+                        print 'WARNING: Oxidation state seems to be invalid. Please check. Defaulting to singlet anyway.'
                         defaultspinstate = '1'
                 else:
                     defaultspinstate = '1'
@@ -238,7 +240,7 @@ def checkinput(args,calctype="base"):
                         for j in range(0,oc_i):
                             occs0[i] += 1
                             toccs += dent_i
-                    
+
                     for i,substrate in enumerate(args.substrate):
                         # if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
                         if args.core[0].lower() in args.mlig:
@@ -289,7 +291,7 @@ def checkinput(args,calctype="base"):
                     args.mligcatoms = [0]
                 else:
                     print('WARNING: A ligand in the metal complex is specified to connect with the substrate for TS generation without the specification of a connection point in the ligand. Defaulting to atom index 0.')
-                    args.mligcatoms = [0]  
+                    args.mligcatoms = [0]
     elif calctype == "dbadd":
         if args.ligadd:
             print('ligand addition function')
@@ -299,9 +301,9 @@ def checkinput(args,calctype="base"):
                 args.ligcon = [0]
             if not args.ligffopt:
                 args.ligffopt = "BA"
-                
+
     return(emsg)
-            
+
 ## Check true or false
 #  @param arg String to be checked    
 #  @return bool
@@ -459,7 +461,7 @@ def cleaninput(args):
 #  @return CLIinput.inp (file name)
 def parseCLI(args):
     cliargs = ' '.join(args)
-    cliargs = ' ' + cliargs   
+    cliargs = ' ' + cliargs
     s = filter(None,cliargs.split(' -'))
     # fname = args.core[0] + '.inp'
     fname = 'CLIinput.inp'
@@ -629,15 +631,15 @@ def parseinputfile(args):
                         except:
                             print('ERROR: smicat processing failed at ' + str(ll))
                             print('Please use integers or  "pi" and divide by smiles ligand using [],[]')
-                    args.smicat.append(lloc)    
-                
+                    args.smicat.append(lloc)
+
                 print('final smicat set to ' + str(args.smicat))
             if (l[0]=='-nconfs' and len(l[1:]) > 0):
-                args.nconfs = l[1]    
+                args.nconfs = l[1]
             #if (l[0]=='-maxconfs' and len(l[1:]) > 0):
                 #args.maxconfs = l[1]
             if (l[0]=='-scoreconfs'):
-                args.scoreconfs = True                                
+                args.scoreconfs = True
             if '-pangles' in line:
                 args.pangles = []
                 l = filter(None,line.split('pangles',1)[1])
@@ -669,8 +671,8 @@ def parseinputfile(args):
                         local_list = local_list + [str(i) for i in decor]
                         #print(local_list)
                         ### correct for 0 index
-                        list_to_add.append([int(i.strip('[]'))-1 for i in decor]) 
-                        
+                        list_to_add.append([int(i.strip('[]'))-1 for i in decor])
+
                 else:
                     ### correct for 0 index
                     list_to_add = [int(list_to_parse.strip('[]'))-1]
@@ -837,7 +839,7 @@ def parseinputfile(args):
                 print('adding a ligand')
                 args.ligadd = l[1]
             if (l[0]=='-ligname'):
-                args.ligname = l[1]        
+                args.ligname = l[1]
             if (l[0]=='-ligcon'):
                 list_to_parse = (line.strip().split(' ')[1:])
                 list_to_add = list()
@@ -850,15 +852,15 @@ def parseinputfile(args):
                         local_list = local_list + [str(i) for i in decor]
                         #print(local_list)
                         ### correct for 0 index
-                        list_to_add.append([int(i.strip('[]')) for i in decor]) 
-                        
+                        list_to_add.append([int(i.strip('[]')) for i in decor])
+
                 else:
                     ### correct for 0 index
                     list_to_add = [int(list_to_parse.strip('[]'))-1]
                 args.decoration_index = list_to_add
                 args.ligcon = list_to_add[0]
             if (l[0]=='-ligffopt'):
-                args.ffopt = l[1]   
+                args.ffopt = l[1]
             # parse postprocessing arguments
             if (l[0]=='-postp'):
                 args.postp = True
@@ -930,7 +932,7 @@ def parseinputfile(args):
                 args.cdxml = l[1:]
             # conformers
             if (l[0]=='-conformer'):
-                args.conformer = True                                                           
+                args.conformer = True
             # parse place on slab options
             if (l[0]=='-place_on_slab'): #0
                 args.place_on_slab = True
@@ -989,7 +991,7 @@ def parseinputfile(args):
 		args.simple =True
 	    if (l[0] == '-max_descriptors'):
 		args.max_descriptors = [str(i) for i in l[1:]]
-		
+
 ## Parses command line arguments and prints help information
 #  @param parser Parser object
 #  @return Namespace of arguments
@@ -1030,7 +1032,7 @@ def parseinputs_basic(*p):
     parser.add_argument("-ligocc", help="number of corresponding ligands",action="store_true") # e.g. 1,2,1
     parser.add_argument("-spin", help="Spin multiplicity (e.g., 1 for singlet)")
     parser.add_argument("-keepHs", help="force keep hydrogens, default auto for each ligand") # specified in cleaninput
-    parser.add_argument("-skipANN", help="skip attempting ANN predictions") 
+    parser.add_argument("-skipANN", help="skip attempting ANN predictions")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
@@ -1038,7 +1040,7 @@ def parseinputs_basic(*p):
         args = p[1]
         parser.parse_args(namespace=args)
         return 0
-        
+
 ## Parses advanced input options and prints help
 #  @param *p Parser pointer
 def parseinputs_advanced(*p):
@@ -1056,7 +1058,7 @@ def parseinputs_advanced(*p):
     parser.add_argument("-genall", help="Generate complex both with and without FF opt, default False",action="store_true") # geometry
     parser.add_argument("-ligloc", help="force location of ligands in the structure generation (default False)",default=False)
     parser.add_argument("-decoration_index", help="list of indicies on each ligand to decorate",action="store_true") # decoration indexes, one list per ligand
-    parser.add_argument("-decoration", help="list of SMILES for each decoratation",action="store_true") # decoration, one list ligand  
+    parser.add_argument("-decoration", help="list of SMILES for each decoratation",action="store_true") # decoration, one list ligand
     parser.add_argument("-ligalign", help="smart alignment of ligands in the structure generation (default False)",default=False)
     parser.add_argument("-MLbonds", help="custom M-L bond length (Ang) for corresponding ligand",action="store_true")
     parser.add_argument("-distort", help="randomly distort backbone. Ranges from 0 (no distortion) to 100. e.g. 20",default='0')
@@ -1141,8 +1143,8 @@ def parseinputs_autocorr(*p):
 def parseinputs_chainb(*p):
     parser = p[0]
     parser.add_argument('-chain', help = "SMILES string of monomer", action = "store_true") #0
-    parser.add_argument('-chain_units', help = "int, number of monomers") #0    
-    parser.add_argument('-chain_head', help = "SMILEs of chain terminator") #0    
+    parser.add_argument('-chain_units', help = "int, number of monomers") #0
+    parser.add_argument('-chain_head', help = "SMILEs of chain terminator") #0
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
@@ -1155,7 +1157,7 @@ def parseinputs_chainb(*p):
 #  @param *p Parser pointer
 def parseinputs_db(*p):
     parser = p[0]
-    parser.add_argument("-dbsearch", help="flag enabling db search",action="store_true") 
+    parser.add_argument("-dbsearch", help="flag enabling db search",action="store_true")
     parser.add_argument("-dbsim", help="deprecated, please use dbsmarts instead",action="store_true")
     parser.add_argument("-dbcatoms", help="connection atoms for similarity search",action="store_true")
     parser.add_argument("-dbresults", help="how many results for similary search or screening",action="store_true")
@@ -1177,12 +1179,12 @@ def parseinputs_db(*p):
     parser.add_argument("-dbconns", help="ligand coordinating elements (requires dbhuman)",action="store_true")
     parser.add_argument("-dbhyb", help="hybridization (sp^n) of ligand coordinating elements (requires dbhuman)",action="store_true")
     parser.add_argument("-dblinks", help="number of linking atoms (requires dbhuman)",action="store_true")
-    parser.add_argument("-dbfs", help="use fastsearch database if present",action="store_true") 
+    parser.add_argument("-dbfs", help="use fastsearch database if present",action="store_true")
     # add to DB commands
-    parser.add_argument("-ligadd", help=" add file/SMILES string to ligands available database ",action="store_true") 
-    parser.add_argument("-ligname", help="name of ligand to be added",action="store_true") 
-    parser.add_argument("-ligcon", help="list of connecting atoms for ligand to be added",action="store_true") 
-    parser.add_argument("-ligffopt", help="so we ff optimize the ligand before or (B), after (A) placement, never (N) or both (BA)",action="store_true") 
+    parser.add_argument("-ligadd", help=" add file/SMILES string to ligands available database ",action="store_true")
+    parser.add_argument("-ligname", help="name of ligand to be added",action="store_true")
+    parser.add_argument("-ligcon", help="list of connecting atoms for ligand to be added",action="store_true")
+    parser.add_argument("-ligffopt", help="so we ff optimize the ligand before or (B), after (A) placement, never (N) or both (BA)",action="store_true")
     if len(p) == 1: # only one input, printing help only
         args = parser.parse_args()
         return args
@@ -1274,7 +1276,7 @@ def parseinputs_random(*p):
     elif len(p) == 2: # two inputs, normal parsing
         args = p[1]
         parser.parse_args(namespace=args)
-    return 0 
+    return 0
 
 ## Parses binding species placement options and prints help
 #  @param *p Parser pointer
@@ -1316,7 +1318,7 @@ def parseinputs_tsgen(*p):
     elif len(p) == 2: # two inputs, normal parsing
         args = p[1]
         parser.parse_args(namespace=args)
-    return 0 
+    return 0
 
 ## Parses ligand replacement options and prints help
 #  @param *p Parser pointer
@@ -1330,7 +1332,7 @@ def parseinputs_customcore(*p):
     elif len(p) == 2: # two inputs, normal parsing
         args = p[1]
         parser.parse_args(namespace=args)
-    return 0 
+    return 0
 
 ## Parses file naming options and prints help
 #  @param *p Parser pointer
@@ -1345,4 +1347,18 @@ def parseinputs_naming(*p):
     elif len(p) == 2: # two inputs, normal parsing
         args = p[1]
         parser.parse_args(namespace=args)
-    return 0 
+    return 0
+
+def deserialize_json(filein):
+    with open(filein, "r") as fo:
+        args_dict = yaml.safe_load(fo)
+    return args_dict
+
+def args_parser_retrain():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-user')
+    parser.add_argument('-pwd')
+    parser.add_argument('-retrain')
+    parser.add_argument('-infile')
+    args = parser.parse_args()
+    return args

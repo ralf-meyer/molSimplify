@@ -54,6 +54,8 @@ def extract_data_from_db(predictor, db, collection, constraints):
     df_use = df[fnames + lname]
     shape = df_use.shape[0]
     df_use = df_use.dropna()
+    for key in df_use:
+        df_use = df_use[df_use[key] != "undef"]
     print("data reduce (%d ->  %d) because of NaN." % (shape, df_use.shape[0]))
     return df_use, fnames, lname
 
@@ -88,19 +90,22 @@ def train_model(predictor, X_train, X_test, y_train, y_test, epochs=1000, batch_
         print("mae: ", metrics)
     else:
         print("accuracy: ", metrics)
-    return model
+    return model, history
 
 
-def retrain(predictor, user, pwd, host, port,
-            database, auth, collection, collection_model,
-            constraints=False, frac=0.8, epochs=1000, batch_size=32,
-            force_push=False):
+def retrain(predictor, user, pwd,
+            database, collection, collection_model,
+            host="localhost", port=27017, auth=True,
+            constraints=False, frac=0.8, epochs=1000,
+            batch_size=32, force_push=False):
     db = connect2db(user, pwd, host, port, database, auth)
     df, fnames, lname = extract_data_from_db(predictor, db, collection, constraints=constraints)
     X_train, X_test, y_train, y_test = normalize_data(df, fnames, lname, predictor, frac=frac)
-    model = train_model(predictor, X_train, X_test, y_train, y_test, epochs=epochs, batch_size=batch_size)
+    model, history = train_model(predictor, X_train, X_test, y_train, y_test, epochs=epochs, batch_size=batch_size)
     model_dict = {}
     model_dict.update({"predictor": predictor})
+    model_dict.update({"constraints": str(constraints)})
+    model_dict.update({"history": history.history})
     model_dict.update({"hyperparams": {"epochs": epochs, "batch_size": batch_size}})
     model_dict.update({"score_train": model.evaluate(X_train, y_train)[-1],
                        "score_test": model.evaluate(X_test, y_test)[-1],
@@ -118,3 +123,28 @@ def retrain(predictor, user, pwd, host, port,
                 user=user, pwd=pwd,
                 host=host, port=port,
                 auth=auth)
+
+
+def check_retrain_inputs(args_dict):
+    keys_required = ["predictor", "database", "collection", "collection_model", "user", "pwd"]
+    if not set(keys_required) <= set(args_dict.keys()):
+        raise KeyError("missing necessary keys to retrain a model. Required inputs are: ", keys_required)
+    return args_dict
+
+
+def retrain_and_push(args_dict):
+    args_dict = check_retrain_inputs(args_dict)
+    default_args = {"host": "localhost", "port": 27017, "auth": True,
+                    "constraints": False, "frac": 0.8, "epochs": 1000,
+                    "batch_size": 32, "force_push": False}
+    for key in args_dict:
+        print(key, args_dict[key])
+        globals().update({key: args_dict[key]})
+    for key in default_args:
+        if not key in args_dict.keys():
+            globals().update({key: default_args[key]})
+    retrain(predictor, user, pwd,
+            database, collection, collection_model,
+            host, port, auth,
+            constraints, frac, epochs,
+            batch_size, force_push)
