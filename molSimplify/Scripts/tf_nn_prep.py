@@ -725,7 +725,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             split_ANN_time = current_time - last_time
             last_time = current_time
             print(('oxo ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds'))
-        oxo_dist = find_ANN_latent_dist("oxo", latent_oxo, args.debug)
+        oxo_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo",latent_oxo,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -741,7 +741,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             last_time = current_time
             print(('HAT ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds'))
 
-        hat_dist = find_ANN_latent_dist("hat", latent_hat, args.debug)
+        hat_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("hat",latent_hat,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -758,7 +758,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             last_time = current_time
             print('oxo20 ANN took ' + "{0:.2f}".format(oxo20_ANN_time) + ' seconds')
         # oxo20_dist = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
-        oxo20_dist = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
+        oxo20_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -776,7 +776,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             last_time = current_time
             print('homo_empty ANN took ' + "{0:.2f}".format(homo_empty_ANN_time) + ' seconds')
         # homo_empty_dist = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
-        homo_empty_dist = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
+        homo_empty_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -860,7 +860,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             alpha) + '% HFX')
         print(Oxo20_ANN_trust_message)
         print('Distance to Oxo20 training data in the latent space is ' + "{0:.2f}".format(oxo20_dist))
-        print("ANN predicts a empty site beta HOMO level of " + "{0:.2f}".format(float(homo_empty[0])) + ' kcal/mol at ' + "{0:.2f}".format(
+        print("ANN predicts a empty site beta HOMO level of " + "{0:.2f}".format(float(homo_empty[0])) + ' eV at ' + "{0:.2f}".format(
             alpha) + '% HFX')
         print(homo_empty_ANN_trust_message)
         print('Distance to empty site beta HOMO level training data in the latent space is ' + "{0:.2f}".format(homo_empty_dist))
