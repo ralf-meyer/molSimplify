@@ -6,7 +6,7 @@ def write_dictionary(dictionary,path):
     emsg =  False
     try:
         with open(path,'w') as f:
-            for keys in dictionary.keys():
+            for keys in list(dictionary.keys()):
                 f.write(str(keys).strip("\n") + ',' + str(dictionary[keys]) + '\n')
     except:
         emsg = "Error, could not write dictionary space: " + path

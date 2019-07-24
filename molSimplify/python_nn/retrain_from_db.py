@@ -14,7 +14,7 @@ def name_converter(fnames):
     for ii, fname in enumerate(fnames):
         if isRAC(fname):
             fnames_new.append("RACs." + fname)
-        elif fname in name_converter_dict.keys():
+        elif fname in list(name_converter_dict.keys()):
             fnames_new.append(name_converter_dict[fname])
         else:
             fnames_new.append(fname)
@@ -47,7 +47,7 @@ def get_label(predictor):
 
 
 def extract_data_from_db(predictor, db, collection, constraints):
-    print("Collecting data with constraints: %s..." % constraints)
+    print(("Collecting data with constraints: %s..." % constraints))
     df = convert2dataframe(db, collection, constraints=constraints, normalized=True)
     fnames = get_vars(predictor)
     lname = get_label(predictor)
@@ -85,9 +85,9 @@ def train_model(predictor, X_train, X_test, y_train, y_test, epochs=1000, batch_
     model = initialize_model_weights(model)
     history = model.fit(X_train, y_train, epochs=epochs, verbose=1, batch_size=batch_size)
     loss, metrics = model.evaluate(X_test, y_test)
-    print("loss: ", loss)
+    print(("loss: ", loss))
     if not 'clf' in predictor:
-        print("mae: ", metrics)
+        print(("mae: ", metrics))
     else:
         print("accuracy: ", metrics)
     return model, history
@@ -101,7 +101,8 @@ def retrain(predictor, user, pwd,
     db = connect2db(user, pwd, host, port, database, auth)
     df, fnames, lname = extract_data_from_db(predictor, db, collection, constraints=constraints)
     X_train, X_test, y_train, y_test = normalize_data(df, fnames, lname, predictor, frac=frac)
-    model, history = train_model(predictor, X_train, X_test, y_train, y_test, epochs=epochs, batch_size=batch_size)
+    model, history = train_model(predictor, X_train, X_test, y_train, y_test,
+                                 epochs=epochs, batch_size=batch_size)
     model_dict = {}
     model_dict.update({"predictor": predictor})
     model_dict.update({"constraints": str(constraints)})

@@ -1,8 +1,8 @@
 ## @file __main__.py
 #  Gateway script to rest of program
-#  
+#
 #  Written by Tim Ioannidis for HJK Group
-#  
+#
 #  Dpt of Chemical Engineering, MIT
 
 # !/usr/bin/env python
@@ -31,8 +31,8 @@ import openbabel
 
 sys.setdlopenflags(flags)
 
-from Scripts.inparse import *
-from Scripts.generator import *
+from .Scripts.inparse import *
+from .Scripts.generator import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.python_nn.retrain_from_db import retrain_and_push
 
@@ -77,6 +77,27 @@ DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
 
+def tensorflow_silence():
+    ## thanks to
+    # stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints
+    try:
+        from tensorflow import logging
+        logging.set_verbosity(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        os.environ['KMP_WARNINGS'] = '0'
+
+        def deprecated(date, instructions, warn_once=False):
+            def deprecated_wrapper(func):
+                return func
+            return deprecated_wrapper
+
+        from tensorflow.python.util import deprecation
+        deprecation.deprecated = deprecated
+
+    except ImportError:
+        pass
+
+
 try:
     import PyQt5
     from PyQt5.QtGui import *
@@ -96,6 +117,7 @@ def main(args=None):
     ## on some sytems
     if globs.testTF():
         print('TensorFlow connection successful')
+        tensorflow_silence()
     else:
         print('TensorFlow connection failed')
 
@@ -105,8 +127,8 @@ def main(args=None):
     args = sys.argv[1:]
     gui = True
     cmd = False
-    if len(args) == 0 and not qtflag:
-        print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
+    if len(args)==0 and not qtflag:
+        print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")
         exit()
     ####################################
     ### print help ###
@@ -148,7 +170,7 @@ def main(args=None):
             parser = argparse.ArgumentParser(description=DescString_naming)
             parseinputs_naming(parser)
         else:
-            # print basic help    
+            # print basic help
             parser = argparse.ArgumentParser(description=DescString_basic,
                                              formatter_class=argparse.RawDescriptionHelpFormatter)
             parseinputs_basic(parser)
@@ -188,10 +210,8 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # create input file from commandline
-        infile = parseCLI(filter(None, args))
-        args = ['main.py', '-i', infile]
-        emsg = startgen(args, False, gui)
-
-
+        infile = parseCLI([_f for _f in args if _f])
+        args = ['main.py','-i',infile]
+        emsg = startgen(args,False,gui)
 if __name__ == '__main__':
     main()

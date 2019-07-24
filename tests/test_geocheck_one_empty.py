@@ -13,4 +13,3 @@ def test_example_2(tmpdir):
     thresh = 0.01
     passGeo = hp.runtestgeo(tmpdir, testName, thresh, geo_type="one_empty")
     assert passGeo
-

@@ -7,8 +7,8 @@ crduan@mit.edu, hjkulik@mit.edu
 """
 
 import sys
-from io_tools import get_configure
-from dynamic_classifier import dft_control
+from .io_tools import get_configure
+from .dynamic_classifier import dft_control
 import argparse
 
 
