@@ -11,6 +11,8 @@ import re
 import argparse
 import sys
 import ast
+import json
+import yaml
 from molSimplify.Scripts.io import *
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
@@ -265,7 +267,6 @@ def checkinput(args, calctype="base"):
                         for j in range(0, oc_i):
                             occs0[i] += 1
                             toccs += dent_i
-
                     for i, substrate in enumerate(args.substrate):
                         # if args.core[0].lower() in args.mlig and (substrate not in [lig_i.lower() for lig_i in args.lig]):
                         if args.core[0].lower() in args.mlig:
@@ -335,6 +336,7 @@ def checkinput(args, calctype="base"):
                 args.ligffopt = "BA"
 
     return(emsg)
+
 
 # Check true or false
 #  @param arg String to be checked
@@ -717,7 +719,6 @@ def parseinputfile(args):
                         # correct for 0 index
                         list_to_add.append(
                             [int(i.strip('[]'))-1 for i in decor])
-
                 else:
                     # correct for 0 index
                     list_to_add = [int(list_to_parse.strip('[]'))-1]
@@ -1585,3 +1586,18 @@ def parseinputs_naming(*p):
         args = p[1]
         parser.parse_args(namespace=args)
     return 0
+
+def deserialize_json(filein):
+    with open(filein, "r") as fo:
+        args_dict = yaml.safe_load(fo)
+    return args_dict
+
+def args_parser_retrain():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-user')
+    parser.add_argument('-pwd')
+    parser.add_argument('-retrain')
+    parser.add_argument('-infile')
+    args = parser.parse_args()
+    return args
+
