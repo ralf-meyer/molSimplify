@@ -86,7 +86,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'f','all')
 
-         ## ligand ACs
+        ## ligand ACs
         #print('get ligand ACs')
         results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=True,name=False,
                                                                   flag_name=False,
@@ -125,6 +125,66 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')    
         return descriptor_names, descriptors
+
+
+## Gets the derivatives of RACs of an octahedral complex with geo only!
+#  @param this_complex mol3D() we want derivatives for 
+#  @param custom_ligand_dict optional dict defining ligands (see below)
+#  @return descriptor_derivative_names matrix of names
+#  @return descriptor_derivatives derivatives of racs w.r.t atomic props
+def get_descriptor_derivatives(this_complex,custom_ligand_dict=False,ox_modifier=False):
+    descriptor_derivative_names = []
+    descriptor_derivatives = None
+    ##  cannot do misc descriptors !
+
+    ## full ACs
+    results_dictionary = generate_full_complex_autocorrelation_derivatives(this_complex,depth=3,
+                                                                           loud=False,flag_name=False,
+                                                                           modifier=ox_modifier)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['results'],'f','all')
+
+
+    ## ligand ACs
+    print('getting ligand AC derivatives')
+    results_dictionary = generate_all_ligand_autocorrelation_derivatives(this_complex,depth=3,loud=True,name=False, flag_name=False)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
+
+
+    results_dictionary = generate_all_ligand_deltametric_derivatives(this_complex,depth=3,loud=False,name=False)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
+
+    ## metal ACs
+    print('getting metal AC derivatives')
+    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+
+    results_dictionary = generate_metal_deltametric_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+
+    # ## ox-metal ACs 
+    if ox_modifier:
+        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex,depth=3,loud=False)
+        descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+
+        results_dictionary =  generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex,depth=3,loud=False)
+        descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
+                                                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+
+    return descriptor_derivative_names, descriptor_derivatives 
 
 
 ## Gets the RACs of an octahedral complex without/without geo
@@ -272,3 +332,52 @@ def append_descriptors(descriptor_names,descriptors,list_of_names,list_of_props,
         else:
             descriptors.append(values)
     return descriptor_names, descriptors
+    
+## utility to build standardly formated RACS derivatives
+#  @param descriptor_derivative_names RAC names, will be a matrix!
+#  @param descriptor_derivatives RAC, will be appended to
+#  @param mat_of_names names, will be added
+#  @param dmat mat of RACs
+#  @param prefix RAC prefix
+#  @param suffix RAC suffix
+#  @return descriptor_derivative_names updated names
+#  @return descriptor_derivatives updated RACs
+def append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives, mat_of_names,dmat,prefix,suffix):
+
+    try:
+        basestring
+    except NameError:
+        basestring = str
+      
+    for names in mat_of_names:
+        jnames = ["-".join([prefix,str(i),suffix]) for i in names]
+        descriptor_derivative_names.append(jnames)
+    if descriptor_derivatives is None:
+        descriptor_derivatives = dmat
+    else:
+        descriptor_derivatives =  np.row_stack([descriptor_derivatives,dmat]) 
+    return descriptor_derivative_names, descriptor_derivatives
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
