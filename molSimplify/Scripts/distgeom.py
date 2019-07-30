@@ -21,8 +21,6 @@ import sys
 import openbabel
 import numpy as np
 from scipy import optimize
-# for testing
-import time
 
 # Applies the cosine rule to get the length of AC given lengths of AB, BC and angle ABC
 #  @param AB Length of AB
@@ -114,7 +112,7 @@ def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
                 LB[catoms[j]][catoms[i]] = lig_distance
 
     expanded_vdwrad = vdwrad.copy()
-    expanded_vdwrad['X'] = 1.5  # Default vdw radius for the dummy metal is 1.5
+    expanded_vdwrad['Fe'] = 1.5  # Default vdw radius for the dummy metal is 1.5
     for i in range(natoms):
         for j in range(i):
             # fill LBs with sums of vdW radii and UBs with arbitrary large cutoff
@@ -172,17 +170,27 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
         numpy.random.seed(seed)
     D = np.zeros((natoms, natoms))
     LB, UB = Triangle(LB, UB, natoms)
+    #First generate a random distance for all atom pairings not involving the metal
     for i in range(natoms-1):
-        for j in range(i, natoms):
-            if Full:
-                LB, UB = Triangle(LB, UB, natoms)
+        for j in range(i, natoms-1):
+            # ~ if Full:
+                # ~ LB, UB = Triangle(LB, UB, natoms)
             if UB[i][j] < LB[i][j]:  # ensure that the upper bound is larger than the lower bound
                 UB[i][j] = LB[i][j]
             D[i][j] = np.random.uniform(LB[i][j], UB[i][j])
             D[j][i] = D[i][j]
+    
+    #For pairs involving the metal, set the distance to 100 Angstroms regardless of the triangle rule
+    #This encourages the algorithm to select conformations which don't crowd the metal, as these often lead to failure
+    for j in range(natoms):
+        if UB[natoms-1][j] < LB[natoms-1][j]:  # ensure that the upper bound is larger than the lower bound
+            UB[natoms-1][j] = LB[natoms-1][j]
+        D[natoms-1][j] = 100
+        D[j][natoms-1] = D[natoms-1][j]
     return D
 
 # Get distances of each atom to CM given the distance matrix
+# CM = Center mass???
 #
 #  Copied from ref [2], pp. 309
 #  @param D Distance matrix
@@ -192,17 +200,14 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
 
 def GetCMDists(D, natoms):
     D0 = np.zeros(natoms)
-    try:
-        status = True
-        for i in range(natoms):
-            for j in range(natoms):
-                D0[i] += D[i][j]**2/natoms
-            for j in range(natoms):
-                for k in range(j, natoms):
-                    D0[i] -= (D[j][k])**2/natoms**2
-            D0[i] = sqrt(D0[i])
-    except ValueError:
-        status = False
+    status = True
+    for i in range(natoms):
+        for j in range(natoms):
+            D0[i] += D[i][j]**2/natoms
+        for j in range(natoms):
+            for k in range(j, natoms):
+                D0[i] -= (D[j][k])**2/natoms**2
+        D0[i] = sqrt(D0[i])
     return D0, status
 
 # Get metric matrix from distance matrix and CM distances
@@ -307,9 +312,9 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     OBMol = conf3D.OBMol
     for i, atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
         atom.SetVector(X[i, 0], X[i, 1], X[i, 2])
+        
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('UFF')
-        constr = openbabel.OBFFConstraints()
         s = ff.Setup(OBMol)
         if not s:
             print('FF setup failed')
@@ -317,15 +322,18 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
             ff.SteepestDescent(10)
             ff.ConjugateGradients(10)
         ff.GetCoordinates(OBMol)
-        conf3D.OBMol = OBMol
+        
+    last_atom_index = OBMol.NumAtoms() #Delete the dummy metal atom that we added earlier
+    metal_atom = OBMol.GetAtom(last_atom_index)
+    OBMol.DeleteAtom(metal_atom)
+    
+    conf3D.OBMol = OBMol
     conf3D.convert2mol3D()
     return conf3D
 
 # Determines the relative positioning of different ligating atoms
 # @param args
 # @return A dictionary of angles (in degrees)between catoms
-
-
 def findshape(args, master_ligand):
     core = loadcoord(args.geometry)
 
@@ -370,18 +378,15 @@ def GetConf(mol, args, catoms=[]):
     # Create a mol3D copy with a dummy metal metal
     Conf3D = mol3D()
     Conf3D.copymol3D(mol)
-    Conf3D.addAtom(atom3D('X', [0, 0, 0]))
-    dummy_metal = openbabel.OBAtom()
+    Conf3D.addAtom(atom3D('Fe', [0, 0, 0])) #Add dummy metal to the mol3D
+    dummy_metal = openbabel.OBAtom() #And add the dummy metal to the OBmol
     dummy_metal.SetAtomicNum(26)
     Conf3D.OBMol.AddAtom(dummy_metal)
     for i in catoms:
-        Conf3D.OBMol.AddBond(i+1, 34, 1)
+        Conf3D.OBMol.AddBond(i+1, Conf3D.OBMol.NumAtoms(), 1)
     natoms = Conf3D.natoms
     Conf3D.createMolecularGraph()
-    # ~ A = Conf3D.graph
-    # ~ A = A + np.dot(A,np.transpose(A))
 
-    start = time.time()
     shape = findshape(args, mol)
     LB, UB = GetBoundsMatrices(Conf3D, natoms, catoms, shape)
     status = False
@@ -394,16 +399,21 @@ def GetConf(mol, args, catoms=[]):
     x = np.reshape(X, 3*natoms)
     res1 = optimize.fmin_cg(DistErr, x, fprime=DistErrGrad,
                             gtol=0.1, args=(LB, UB, natoms), disp=0)
-    Opt = time.time()
     X = np.reshape(res1, (natoms, 3))
-    conf3D = SaveConf(X, Conf3D, True, catoms)
-    ff = time.time()
+    Conf3D = SaveConf(X, Conf3D, True, catoms)
 
-    metal = conf3D.findMetal()
-    conf3D.deleteatom(metal[0])
-    return conf3D
+    return Conf3D
 
 # for testing
+#
+#n4py
+#molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True -geometry oct -rprompt True -ffoption A
+#heptacoordinate water oxidation catalyst
+#molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
+#same water oxidation catalyst in a hexacoordinate binding pattern
+#molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
+#tetrahedral with 2 bidentates
+#molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1 -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
 #mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
 #mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
 #catoms = [7,10,18,19]
