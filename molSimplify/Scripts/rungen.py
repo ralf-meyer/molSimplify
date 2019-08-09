@@ -22,6 +22,13 @@ from collections import Counter
 from pkg_resources import resource_filename, Requirement
 import openbabel
 
+###################################################################
+### define input for cross-compatibility between python 2 and 3 ###
+###################################################################
+get_input = input
+if sys.version_info[:2] <= (2,7):
+    get_input = raw_input
+    
 #######################################
 ### get subset between list1, list2 ###
 #######################################
@@ -498,7 +505,7 @@ def rungen(rundir, args, chspfname, globs):
         if rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
             args.checkdirt = True
             if not args.rprompt:
-                flagdir = input('\nDirectory '+rootcheck +
+                flagdir = get_input('\nDirectory '+rootcheck +
                                 ' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'
@@ -537,7 +544,7 @@ def rungen(rundir, args, chspfname, globs):
         if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
             args.checkdirb = True
             if not args.rprompt:
-                flagdir = input(
+                flagdir = get_input(
                     '\nDirectory '+rootdir + ' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'

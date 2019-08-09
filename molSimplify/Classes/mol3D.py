@@ -2402,7 +2402,7 @@ class mol3D:
     # Output: flag_oct: good (1) or bad (0) structure.
     # flag_list: metrics that are failed from being a good geometry.
     def dict_check_processing(self, dict_check,
-                              num_coord=6, debug=False):
+                              num_coord=6, debug=False, silent = False):
 
         self.geo_dict['num_coord_metal'] = int(self.num_coord_metal)
         self.geo_dict.update(self.dict_lig_distort)
@@ -2433,8 +2433,9 @@ class mol3D:
         else:
             flag_oct = 0
             flag_list = '; '.join(flag_list)
-            print('------bad structure!-----')
-            print(('flag_list:', flag_list))
+            if not silent:
+                print('------bad structure!-----')
+                print(('flag_list:', flag_list))
         self.flag_oct = flag_oct
         self.flag_list = flag_list
         return flag_oct, flag_list, self.geo_dict
@@ -2474,7 +2475,7 @@ class mol3D:
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
-              ):
+              silent = False):
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
@@ -2512,7 +2513,8 @@ class mol3D:
                 self.print_geo_dict()
         flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
                                                                         num_coord=6,
-                                                                        debug=debug)
+                                                                        debug=debug,
+                                                                        silent=silent)
         if not flag_catoms:
             return flag_oct, flag_list, dict_oct_info
         else:

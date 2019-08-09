@@ -687,19 +687,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
         print(('getting conformers for ' + str(lig.ident)))
 
     if len(lig.cat) > 1 and tcats[i]:
-        print('generating conformations')
-        # loop  over conformation gen until success or break
-        breaker = False
-        count = 0
-        while (not breaker) and count <= 5:
-            try:
-                # Find a (random) binding conformer
-                lig3D = GetConf(lig3D, args, lig.cat)
-                breaker = True
-            except:
-                count += 1
-                print(('lig conformer input failed ' +
-                       str(count) + ' times, trying again...'))
+        lig3D = GetConf(lig3D, args, lig.cat)
     return lig3D, rempi, ligpiatoms
 
 # Distorts backbone according to user specified angles

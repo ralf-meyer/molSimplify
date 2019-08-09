@@ -6,11 +6,14 @@ from copy import copy, deepcopy
 # These adjacency matrices represent what an atom at each position can "see."
 # For example, in an octahedral complex, an atom at the 0th position in an
 # octahedral complex can see atoms at positions (1,3,4,5). Used to check
-# whether a given isomer is unique. NOTE: uses python numbering
+# whether a given isomer is unique. NOTE: uses python numbering (zero indexed)
 oct_adjacency = {0: (1, 3, 4, 5), 1: (0, 2, 4, 5), 2: (1, 3, 4, 5), 3: (0, 2, 4, 5),
                  4: (0, 1, 2, 3), 5: (0, 1, 2, 3)}
 thd_adjacency = {0: (1, 2, 3), 1: (0, 2, 3), 2: (0, 1, 3), 3: (0, 1, 2)}
 sqp_adjacency = {0: (1, 3), 1: (0, 2), 2: (1, 3), 3: (0, 2)}
+tbp_adjacency = {0: (2,3,4), 1: (2,3,4), 2: (0,1), 3: (0,1), 4: (0,1)}
+spy_adjacency = {0: (1,3,4), 1: (0,2,4), 2: (1,3,4), 3: (0,2,4), 4: (0,1,2,3)}
+pbp_adjacency = {0: (1,4), 1: (0,2), 2: (1,3), 3: (2,4), 4: (3,0), 5: (0,1,2,3,4), 6: (0,1,2,3,4)}
 
 # Core functionality of isomers.py
 #  @param args A class containing the user specified input
@@ -115,7 +118,7 @@ def checkunique(args, permutations):
 
             geometry.append([permutation[index]] + visible_ligands)
 
-        if checkallowedbidentates(permutation):
+        if checkallowedbidentates(permutation,args.geometry):
             geometry.sort()
             if checkincluded(geometry, unique_representations):
                 unique_representations.append(geometry)
@@ -230,17 +233,17 @@ def generatestereo(collapsed_representation):
 #
 #  @param simple_geometry A lig list in expanded form.
 #  @return allowed Returns a boolean. True if the bidentates are in allowed positions.
-def checkallowedbidentates(simple_geometry):
-    allowed = True
+def checkallowedbidentates(simple_geometry,geometry):
     simple_geometry_tmp = copy(simple_geometry)
-
-    # Special rules for oct and tbp! Remove if making more general.
-    if len(simple_geometry) == 6:
+    
+    #Check if bidentate is in a position where there's nothing to coordinate to
+    
+    if geometry in ['oct','pbp']:
         if simple_geometry[-1].endswith('_alphabond') or simple_geometry[-1].endswith('_betabond'):
-            allowed = False
-    if len(simple_geometry) == 5:
+            return False
+    if geometry in ['tbp']:
         if simple_geometry[0].endswith('_alphabond') or simple_geometry[0].endswith('_betabond'):
-            allowed = False
+            return False
 
     for counter, bonds in enumerate(simple_geometry_tmp):
         if counter > 0:
@@ -262,7 +265,7 @@ def checkallowedbidentates(simple_geometry):
                 simple_geometry_tmp[counter] = 'None'
                 simple_geometry_tmp[counter + 1] = 'None'
             else:
-                allowed = False
+                return False
 
         elif bonds.endswith('_betabond'):
             if bond_previous.endswith('_alphabond') and bond_previous.startswith(ligand_name):
@@ -272,9 +275,8 @@ def checkallowedbidentates(simple_geometry):
                 simple_geometry_tmp[counter] = 'None'
                 simple_geometry_tmp[counter + 1] = 'None'
             else:
-                allowed = False
-    return allowed
-
+                return False
+    return True
 # Fetches the ligand dictionary and returns the denticity of a ligand
 #  @param ligand The name of the ligand, as a string
 #  @return dent The denticity of the ligand.
@@ -298,6 +300,12 @@ def getadjacency(geo):
         return thd_adjacency
     elif geo == 'sqp':
         return sqp_adjacency
+    elif geo =='tbp':
+        return tbp_adjacency
+    elif geo =='spy':
+        return spy_adjacency
+    elif geo =='pbp':
+        return pbp_adjacency
     else:
         print('****************************************************')
         print('****** WARNING, '+geo+' not supported by -isomers! *****')
