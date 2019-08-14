@@ -16,9 +16,8 @@ from keras.optimizers import Adam
 import numpy as np
 import csv
 from pkg_resources import resource_filename, Requirement
-from clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
+from .clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
 from molSimplify.Classes.globalvars import *
-from molSimplify.python_nn.ANN import matrix_loader
 import sys, os
 import json
 import pandas as pd
@@ -27,6 +26,23 @@ import time
 
 
 ## Functions
+def matrix_loader(path,rownames=False):
+    ## loads matrix with rowname option
+    if rownames:
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+        with open(path_to_file, "r") as f:
+            csv_lines = list(csv.reader(f))
+            row_names = [row[0] for row in csv_lines]
+            mat = [row[1:] for row in csv_lines]
+        return mat,row_names
+    else:
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+        with open(path_to_file,'r') as csvfile:
+            csv_lines = csv.reader(csvfile,delimiter= ',')
+            mat = [a for a in csv_lines]
+        return mat
+
+
 def get_key(predictor, suffix=False):
     if suffix:
         if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
@@ -60,7 +76,7 @@ def get_key(predictor, suffix=False):
 def data_rescale(scaled_dat, train_mean, train_var, debug = False):
     d = np.shape(train_mean)[0]
     if debug:
-        print('unnormalizing with number of dimensions = ' +str(d))
+        print(('unnormalizing with number of dimensions = ' +str(d)))
     dat = (np.multiply(scaled_dat.T, np.sqrt(train_var), ) + train_mean).T
     return (dat)
 
@@ -69,20 +85,20 @@ def data_normalize(data, train_mean, train_var, debug = False):
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
     if debug:
-        print('normalizing with number of dimensions = ' +str(d))
+        print(('normalizing with number of dimensions = ' +str(d)))
     ### double check the variance in the training data
     delete_ind = list()
     
     if debug:
         print('shape of things in normalize:')
-        print('data.shape ' + str(data.shape))
-        print('train_mean.shape ' + str(train_mean.shape))
-        print('train_mean.shape ' + str(train_var.shape))
+        print(('data.shape ' + str(data.shape)))
+        print(('train_mean.shape ' + str(train_mean.shape)))
+        print(('train_mean.shape ' + str(train_var.shape)))
     for idx, var in enumerate(np.squeeze(train_var)):
         if var < 1e-16:
             delete_ind.append(idx)
     if len(delete_ind) > 0:
-        print('Note: There are %d features with a variance smaller than 1e-16.' % len(delete_ind))
+        print(('Note: There are %d features with a variance smaller than 1e-16.' % len(delete_ind)))
         print('Please double check your input data if this number is not what you expect...')
         data = np.delete(data, delete_ind, axis=1)
         train_mean = np.delete(train_mean, delete_ind, axis=0)
@@ -336,8 +352,11 @@ def load_keras_ann(predictor, suffix='model'):
                                                         decay=0.00011224350434148253, lr=0.0006759924688701965),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor in ['oxo', 'hat']:
-        loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
-                                                        decay=0.0006651401379502965, lr=0.0007727366541920176),
+        # loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
+        #                                                 decay=0.0006651401379502965, lr=0.0007727366541920176),
+        #                      metrics=['mse', 'mae', 'mape']) #decomissioned on 06/20/2019 by Aditya. Using hyperparams from oxo20.
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
+                                                        beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'oxo20':
         loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
@@ -369,36 +388,37 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
 
     ## get variable names
     target_names = load_ANN_variables(predictor)
-    if len(target_names) > str(len(descriptors)):
-        print(
+    if len(target_names) > len(descriptors):
+        print((
                 'Error: preparing features for ' + str(predictor) + ', recieved ' + str(
-            len(descriptors)) + ' descriptors')
-        print('model requires ' + str(len(target_names)) + ' descriptors, attempting match')
+            len(descriptors)) + ' descriptors'))
+        print(('model requires ' + str(len(target_names)) + ' descriptors, attempting match'))
     excitation = []
     valid = True
     for var_name in target_names:
 
         try:
+#        if True:
             excitation.append(descriptors[descriptor_names.index(var_name)])
         except:
-            print('looking for  ' + str(var_name))
-            print('Error! variable  ' + str(var_name) + ' not found!')
+#        if False:
+            print(('looking for  ' + str(var_name)))
+            print(('Error! variable  ' + str(var_name) + ' not found!'))
             valid = False
             break
     excitation = np.array(excitation)
-    # print('SHAPE IN EXCITATION PREPARE', excitation.shape)
     excitation = np.reshape(excitation, (1, len(target_names)))
     return excitation
 
 
 def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
     if debug:
-        print('ANN activated for ' + str(predictor))    
+        print(('ANN activated for ' + str(predictor)))    
 
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
     if debug:
-        print('excitation is ' + str(excitation.shape))
+        print(('excitation is ' + str(excitation.shape)))
         print('fetching non-dimensionalization data... ')
     #sardines
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -412,9 +432,9 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
     result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y, debug = debug)
     if not "clf" in predictor:
         if debug:
-            print('LOADED MODEL HAS ' + str(
+            print(('LOADED MODEL HAS ' + str(
                 len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
-                len(loaded_model.layers) - 1) + ' layers')
+                len(loaded_model.layers) - 1) + ' layers'))
         get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                                  [loaded_model.layers[len(loaded_model.layers) - 2].output])
         latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
@@ -454,7 +474,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = Fals
     # flatten min row
     min_row = np.reshape(min_row, excitation.shape)
     if debug:
-        print('min dist EU is ' + str(min_dist))
+        print(('min dist EU is ' + str(min_dist)))
     if predictor in ['oxo', 'hat', 'homo', 'gap']:
         if predictor in ['homo', 'gap']:
             key = 'homolumo/' + predictor + '_train_names'
@@ -465,8 +485,8 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = Fals
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Euc Dist Structure:  ' + str(csv_lines[min_ind]).strip('[]') + ' for predictor ' + str(
-                predictor))
+            print(('Closest Euc Dist Structure:  ' + str(csv_lines[min_ind]).strip('[]') + ' for predictor ' + str(
+                predictor)))
     # need to get normalized distances 
 
     ########################################################################################
@@ -499,9 +519,9 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
     loaded_model = load_keras_ann(predictor)
     if debug:
         print('measuring latent distances:')
-        print('loaded model has  ' + str(
+        print(('loaded model has  ' + str(
             len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
-            len(loaded_model.layers) - 1) + ' layers')
+            len(loaded_model.layers) - 1) + ' layers'))
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
     norm_train_mat = []
@@ -515,10 +535,19 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
                                  [loaded_model.layers[len(loaded_model.layers) - 2].output])
     latent_space_train = np.squeeze(np.array(get_outputs([norm_train_mat, 0])))
     dist_array = np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_vector)),axis=1)
+    # train_dist_array =  np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_train)),axis=1)
+    from scipy.spatial import distance_matrix
+    train_dist_array = distance_matrix(latent_space_train,latent_space_train)
+    nearest_10_NN_train = []
+    for j, train_row in enumerate(train_dist_array):
+        nearest_10_NN_train.append(np.sort(np.squeeze(train_row))[0:10])
+    nearest_10_NN_train = np.array(nearest_10_NN_train)
+    avg_traintrain = np.mean(nearest_10_NN_train)
     sorted_dist = np.sort(np.squeeze(dist_array))
+    sorted_indices = np.argsort(np.squeeze(dist_array))
     avg_10_NN_dist = np.mean(sorted_dist[0:10])
-    avg_10_NN_dist /= average_train_train_10NN[predictor]
-    return avg_10_NN_dist
+    norm_avg_10_NN_dist = avg_10_NN_dist/avg_traintrain
+    return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain 
 
 def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     # returns scaled euclidean distance to nearest trainning 
@@ -533,11 +562,12 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     min_ind = 0
 
     loaded_model = load_keras_ann(predictor)
+
     if debug:
         print('measuring latent distances:')
-        print('loaded model has  ' + str(
+        print(('loaded model has  ' + str(
             len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
-            len(loaded_model.layers) - 1) + ' layers')
+            len(loaded_model.layers) - 1) + ' layers'))
     get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                              [loaded_model.layers[len(loaded_model.layers) - 2].output])
     for i, rows in enumerate(train_mat):
@@ -552,7 +582,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
 
     # flatten min row
     if debug:
-        print('min dist is ' + str(min_dist) + ' at  ' + str(min_ind))
+        print(('min dist is ' + str(min_dist) + ' at  ' + str(min_ind)))
     if predictor in ['oxo', 'hat', 'homo', 'gap']:
         if predictor in ['homo', 'gap']:
             key = 'homolumo/' + predictor + '_train_names'
@@ -563,7 +593,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
-            print('Closest Latent Dist Structure: ' + str(csv_lines[min_ind]) + ' for predictor ' + str(predictor))
+            print(('Closest Latent Dist Structure: ' + str(csv_lines[min_ind]) + ' for predictor ' + str(predictor)))
     return (min_dist)
 
 
@@ -601,7 +631,7 @@ def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=
             print(key)
             print(base_path)
             print(model_list)
-            print("Error: LSE cannot be calculated with modelname %s--The number of models is wrong." % modelname)
+            print(("Error: LSE cannot be calculated with modelname %s--The number of models is wrong." % modelname))
             return -1
         fmat_train = np.array_split(fmat_train, 10, axis=0)
         labels_train = np.array_split(labels_train, 10, axis=0)
@@ -641,7 +671,7 @@ def save_model(model, predictor, num=None, suffix=False):
         json_file.write(model_json)
     # serialize weights to HDF5
     model.save_weights("%s.h5" % name)
-    print("Saved model !%s! to disk" % name.split('/')[-1])
+    print(("Saved model !%s! to disk" % name.split('/')[-1]))
 
 
 def initialize_model_weights(model):
