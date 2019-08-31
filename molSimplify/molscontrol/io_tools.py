@@ -113,7 +113,7 @@ def get_bond_order(bofile, job_info, num_sv=4):
     _sigma = _Sigma.tolist()
     for sv in range(num_sv):
         dict_bondorder.update({'bo_offsv%d' % sv: _sigma[sv]})
-    for catom, vals in dict_patterns.items():
+    for catom, vals in list(dict_patterns.items()):
         dict_bondorder.update({'bo_%d' % catom: bo_mat[vals[0], vals[1]]})
     dict_bondorder = symmetricalize_dict(job_info, feature_dict=dict_bondorder)
     return dict_bondorder
@@ -199,7 +199,7 @@ def symmetricalize_dict(job_info, feature_dict):
 
 
 def get_feature_type(feature_dict):
-    return feature_dict.keys()[0].split('_')[0]
+    return list(feature_dict.keys())[0].split('_')[0]
 
 
 def check_pid(pid):

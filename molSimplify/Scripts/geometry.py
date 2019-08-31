@@ -1,10 +1,10 @@
-## @file geometry.py
+# @file geometry.py
 #  Contains many useful 3D Euclidean geometric manipulation routines.
 #
 #  Unless otherwise stated, all "points" refer to 3-element lists.
-#  
+#
 #  Written by Tim Ioannidis for HJK Group
-#  
+#
 #  Dpt of Chemical Engineering, MIT
 
 import sys
@@ -19,7 +19,7 @@ from math import pi, sin, cos, sqrt
 # from molSimplify.Classes.mol3D import mol3D
 # from molSimplify.Classes.atom3D import atom3D
 
-## Euclidean norm
+# Euclidean norm
 #  @param u Vector
 #  @return Norm of u
 def norm(u):
@@ -30,7 +30,7 @@ def norm(u):
     return d
 
 
-## Normalize a vector
+# Normalize a vector
 #  @param u Vector
 #  @return Normalized vector
 def normalize(u):
@@ -41,7 +41,7 @@ def normalize(u):
     return un
 
 
-## Euclidean distance between points
+# Euclidean distance between points
 #  @param R1 Point 1
 #  @param R2 Point 2
 #  @return Euclidean distance
@@ -53,7 +53,7 @@ def distance(R1, R2):
     return d
 
 
-## Element-wise vector difference
+# Element-wise vector difference
 #  @param r1 Point 1
 #  @param r2 Point 2
 #  @return Vector difference
@@ -62,7 +62,7 @@ def vecdiff(r1, r2):
     return dr
 
 
-## Vector midpoint
+# Vector midpoint
 #  @param r1 Point 1
 #  @param r2 Point 2
 #  @return Vector midpoint
@@ -71,10 +71,10 @@ def midpt(r1, r2):
     return m
 
 
-## Checks if three points are collinear
+# Checks if three points are collinear
 #  @param R1 Point 1
 #  @param R2 Point 2
-#  @param R3 Point 3    
+#  @param R3 Point 3
 #  @return Collinear flag
 def checkcolinear(R1, R2, R3):
     dr1 = vecdiff(R2, R1)
@@ -86,10 +86,10 @@ def checkcolinear(R1, R2, R3):
         return False
 
 
-## Checks if four points are coplanar
+# Checks if four points are coplanar
 #  @param R1 Point 1
 #  @param R2 Point 2
-#  @param R3 Point 3    
+#  @param R3 Point 3
 #  @param R4 Point 4
 #  @return Coplanar flag
 def checkplanar(R1, R2, R3, R4):
@@ -104,7 +104,7 @@ def checkplanar(R1, R2, R3, R4):
         return False
 
 
-## Computes angle between two vectors
+# Computes angle between two vectors
 #  @param r1 Vector 1
 #  @param r2 Vector 2
 #  @return Angle between vectors in degrees
@@ -117,7 +117,7 @@ def vecangle(r1, r2):
     return theta
 
 
-## Gets point given reference point, direction vector and distance
+# Gets point given reference point, direction vector and distance
 #  @param Rr Reference point
 #  @param dist Distance
 #  @param u Direction vector
@@ -135,7 +135,7 @@ def getPointu(Rr, dist, u):
     return P
 
 
-## Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points
+# Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points
 #  @param r0 Point 0
 #  @param r1 Point 1
 #  @param r2 Point 2
@@ -170,7 +170,7 @@ def rotation_params(r0, r1, r2):
     return theta, u
 
 
-## Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
+# Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
 #  @param mol0 mol3D of molecule to be aligned
 #  @param mol1 mol3D of reference molecule
 #  @return Aligned mol3D, rotation matrix, translation vectors
@@ -207,7 +207,7 @@ def kabsch(mol0, mol1):
     return mol0, U.tolist(), d0, d1
 
 
-## Reflects point about plane defined by its normal vector and a point on the plane
+# Reflects point about plane defined by its normal vector and a point on the plane
 #  @param u Normal vector to plane
 #  @param r Point to be reflected
 #  @param Rp Reference point on plane
@@ -243,7 +243,7 @@ def ReflectPlane(u, r, Rp):
     return rn
 
 
-## Rotates point about axis defined by direction vector and point on axis
+# Rotates point about axis defined by direction vector and point on axis
 #  @param u Direction vector of axis
 #  @param rp Reference point along axis
 #  @param r Point to be rotated
@@ -259,17 +259,20 @@ def PointRotateAxis(u, rp, r, theta):
     R[0][0] = cos(theta) + u[0] ** 2 * (1 - cos(theta))
     R[0][1] = u[0] * u[1] * (1 - cos(theta)) - u[2] * sin(theta)
     R[0][2] = u[0] * u[2] * (1 - cos(theta)) + u[1] * sin(theta)
-    R[0][3] = (rp[0] * (u[1] ** 2 + u[2] ** 2) - u[0] * (rp[1] * u[1] + rp[2] * u[2])) * (1 - cos(theta))
+    R[0][3] = (rp[0] * (u[1] ** 2 + u[2] ** 2) - u[0] *
+               (rp[1] * u[1] + rp[2] * u[2])) * (1 - cos(theta))
     R[0][3] += (rp[1] * u[2] - rp[2] * u[1]) * sin(theta)
     R[1][0] = u[1] * u[0] * (1 - cos(theta)) + u[2] * sin(theta)
     R[1][1] = cos(theta) + u[1] ** 2 * (1 - cos(theta))
     R[1][2] = u[1] * u[2] * (1 - cos(theta)) - u[0] * sin(theta)
-    R[1][3] = (rp[1] * (u[0] ** 2 + u[2] ** 2) - u[1] * (rp[0] * u[0] + rp[2] * u[2])) * (1 - cos(theta))
+    R[1][3] = (rp[1] * (u[0] ** 2 + u[2] ** 2) - u[1] *
+               (rp[0] * u[0] + rp[2] * u[2])) * (1 - cos(theta))
     R[1][3] += (rp[2] * u[0] - rp[0] * u[2]) * sin(theta)
     R[2][0] = u[2] * u[0] * (1 - cos(theta)) - u[1] * sin(theta)
     R[2][1] = u[2] * u[1] * (1 - cos(theta)) + u[0] * sin(theta)
     R[2][2] = cos(theta) + u[2] ** 2 * (1 - cos(theta))
-    R[2][3] = (rp[2] * (u[0] ** 2 + u[1] ** 2) - u[2] * (rp[0] * u[0] + rp[1] * u[1])) * (1 - cos(theta))
+    R[2][3] = (rp[2] * (u[0] ** 2 + u[1] ** 2) - u[2] *
+               (rp[0] * u[0] + rp[1] * u[1])) * (1 - cos(theta))
     R[2][3] += (rp[0] * u[1] - rp[1] * u[0]) * sin(theta)
     R[3][3] = 1
     # get new point
@@ -279,7 +282,7 @@ def PointRotateAxis(u, rp, r, theta):
     return rn
 
 
-## Rotates point using arbitrary 3x3 rotation matrix
+# Rotates point using arbitrary 3x3 rotation matrix
 #  @param r Point to be rotated
 #  @param R 3x3 rotation matrix
 #  @return Rotated point
@@ -291,7 +294,7 @@ def PointRotateMat(r, R):
     return rn
 
 
-## Translates point in spherical coordinates
+# Translates point in spherical coordinates
 #  @param Rp Origin of sphere
 #  @param p0 Point to be translated
 #  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
@@ -318,7 +321,7 @@ def PointTranslateSph(Rp, p0, D):
     return p
 
 
-## Translates point in spherical coordinates
+# Translates point in spherical coordinates
 #  @param Rp Origin of sphere
 #  @param p0 Point to be translated
 #  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
@@ -345,7 +348,7 @@ def PointTranslateSphgivenphi(Rp, p0, D):
     return p
 
 
-## Translates point in spherical coordinates
+# Translates point in spherical coordinates
 #  @param Rp Origin of sphere
 #  @param p0 Point to be translated
 #  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
@@ -377,7 +380,7 @@ def PointTranslateSphgivenr(Rp, p0, D, pref, r):
     return p
 
 
-## Converts spherical translation vector into Cartesian translation vector
+# Converts spherical translation vector into Cartesian translation vector
 #  @param Rp Origin of sphere
 #  @param p0 Point to be translated
 #  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
@@ -404,7 +407,7 @@ def PointTranslatetoPSph(Rp, p0, D):
     return p
 
 
-## Rotates point about Cartesian axes defined relative to given origin
+# Rotates point about Cartesian axes defined relative to given origin
 #  @param Rp Cartesian origin
 #  @param p0 Point to be rotated
 #  @param D [theta-x, theta-y, theta-z] in RADIANS
@@ -429,7 +432,7 @@ def PointRotateSph(Rp, p0, D):
     return p
 
 
-## Reflects molecule about plane defined by its normal vector and a point on the plane
+# Reflects molecule about plane defined by its normal vector and a point on the plane
 #
 #  Loops over ReflectPlane().
 #  @param mol mol3D of molecule to be reflected
@@ -449,7 +452,7 @@ def reflect_through_plane(mol, u, Rp):
     return mol
 
 
-## Rotates molecule about axis defined by direction vector and point on axis
+# Rotates molecule about axis defined by direction vector and point on axis
 #
 #  Loops over PointRotateAxis().
 #  @param mol mol3D of molecule to be rotated
@@ -471,7 +474,7 @@ def rotate_around_axis(mol, Rp, u, theta):
     return mol
 
 
-## Rotates molecule using arbitrary rotation matrix
+# Rotates molecule using arbitrary rotation matrix
 #
 #  Loops over PointRotateMat().
 #  @param mol mol3D of molecule to be rotated
@@ -486,8 +489,8 @@ def rotate_mat(mol, R):
     return mol
 
 
-## Translates molecule such that a given point in the molecule is at a given distance from a reference point
-#  
+# Translates molecule such that a given point in the molecule is at a given distance from a reference point
+#
 #  The molecule is moved along the axis given by the two points.
 #  @param mol mol3D of molecule to be translated
 #  @param Rr Point in molecule to be aligned
@@ -514,8 +517,8 @@ def setPdistance(mol, Rr, Rp, bond):
     return mol, dxyz
 
 
-## Translates molecule such that a given point in the molecule is at a given distance from a reference point
-#  
+# Translates molecule such that a given point in the molecule is at a given distance from a reference point
+#
 #  The molecule is moved along an arbitrary axis.
 #  @param mol mol3D of molecule to be translated
 #  @param Rr Point in molecule to be aligned
@@ -538,8 +541,8 @@ def setPdistanceu(mol, Rr, Rp, bond, u):
     return mol
 
 
-## Translates molecule such that its center of mass is at a given distance from a reference point
-#  
+# Translates molecule such that its center of mass is at a given distance from a reference point
+#
 #  The molecule is moved along the axis given by the two points.
 #  @param mol mol3D of molecule to be translated
 #  @param Rp Reference alignment point
@@ -563,7 +566,7 @@ def setcmdistance(mol, Rp, bond):
     return mol
 
 
-## Translates molecule in spherical coordinates based on center of mass reference
+# Translates molecule in spherical coordinates based on center of mass reference
 #
 #  Loops over PointTranslateSph().
 #  @param mol mol3D of molecule to be translated
@@ -585,7 +588,7 @@ def protate(mol, Rr, D):
     return mol
 
 
-## Translates molecule in spherical coordinates based on arbitrary reference
+# Translates molecule in spherical coordinates based on arbitrary reference
 #
 #  Loops over PointTranslateSph().
 #  @param mol mol3D of molecule to be translated
@@ -607,7 +610,7 @@ def protateref(mol, Rr, Rref, D):
     return mol
 
 
-## Rotates molecule about its center of mass
+# Rotates molecule about its center of mass
 #
 #  Loops over PointRotateSph().
 #  @param mol mol3D of molecule to be rotated
@@ -627,7 +630,7 @@ def cmrotate(mol, D):
     return mol
 
 
-## Rotates molecule about an arbitrary point
+# Rotates molecule about an arbitrary point
 #
 #  Loops over PointRotateSph().
 #  @param mol mol3D of molecule to be rotated
@@ -648,7 +651,7 @@ def rotateRef(mol, Ref, D):
     return mol
 
 
-## Translates molecule to align point to axis at constant distance
+# Translates molecule to align point to axis at constant distance
 #  @param mol mol3D of molecule to be translated
 #  @param Rr Point to be aligned
 #  @param Rp Reference point on axis
@@ -676,7 +679,7 @@ def aligntoaxis(mol, Rr, Rp, u):
     return mol
 
 
-## Translates molecule to align point to axis at arbitrary distance
+# Translates molecule to align point to axis at arbitrary distance
 #  @param mol mol3D of molecule to be translated
 #  @param Rr Point to be aligned
 #  @param Rp Reference point on axis
@@ -696,7 +699,7 @@ def aligntoaxis2(mol, Rr, Rp, u, d):
     return mol
 
 
-## Translates point and aligns to axis
+# Translates point and aligns to axis
 #  @param Rr Point to be aligned
 #  @param Rp Reference point on axis
 #  @param u Direction vector of axis
@@ -720,7 +723,7 @@ def alignPtoaxis(Rr, Rp, u, d):
     return dxyz
 
 
-## Rotates molecule about Cartesian axes defined relative to given origin
+# Rotates molecule about Cartesian axes defined relative to given origin
 #
 #  Loops over PointRotateSph().
 #  @param mol mol3D of molecule to be rotated

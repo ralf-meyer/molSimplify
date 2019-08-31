@@ -80,7 +80,7 @@ def find_closest_model(step, allowed_steps):
     step_chosen = 0
     for _s in allowed_steps:
         delta = step - _s
-        if (not "mindelta" in locals().keys()):
+        if (not "mindelta" in list(locals().keys())):
             mindelta = abs(delta)
             step_chosen = _s
         elif (abs(delta) < mindelta):

@@ -1,28 +1,34 @@
-## @file jobgen.py
+# @file jobgen.py
 #  Generates jobscripts for queueing systems
-#  
+#
 #  Written by Tim Ioannidis for HJK Group
 #
 #  Dpt of Chemical Engineering, MIT
 
-import argparse, glob, sys, os, subprocess
+import argparse
+import glob
+import sys
+import os
+import subprocess
 
-## Generates jobscripts for SGE queueing system
+# Generates jobscripts for SGE queueing system
 #  @param args Namespace of arguments
 #  @param jobdirs Subdirectories for jobscript placement
-def sgejobgen(args,jobdirs):
+
+
+def sgejobgen(args, jobdirs):
     # consolidate lists
     jd = []
-    for i,s in enumerate(jobdirs):
-        if isinstance(s,list):
+    for i, s in enumerate(jobdirs):
+        if isinstance(s, list):
             for ss in s:
                 jd.append(ss)
         else:
             jd.append(s)
     jobdirs = jd
-    gpus = '1' # initialize gpus
-    cpus = '1' # initialize cpus
-    ### loop over job directories
+    gpus = '1'  # initialize gpus
+    cpus = '1'  # initialize cpus
+    # loop over job directories
     for job in jobdirs:
         # form jobscript identifier
         if args.jname:
@@ -31,9 +37,9 @@ def sgejobgen(args,jobdirs):
         else:
             jobname = 'job'+str(args.jid)
         args.jid += 1
-        output=open(job+'/'+'jobscript','w')
+        output = open(job+'/'+'jobscript', 'w')
         output.write('#$ -S /bin/bash\n')
-        output.write('#$ -N %s\n' %(jobname))
+        output.write('#$ -N %s\n' % (jobname))
         output.write('#$ -R y\n')
         output.write('#$ -cwd\n')
         if not args.wtime:
@@ -65,8 +71,8 @@ def sgejobgen(args,jobdirs):
         else:
             output.write('#$ -q '+args.queue+'\n')
             if args.cpus:
-                    output.write('#$ -l cpus='+args.cpus+'\n')
-                    cpus = args.cpus
+                output.write('#$ -l cpus='+args.cpus+'\n')
+                cpus = args.cpus
             elif args.gpus:
                 output.write('#$ -l gpus='+args.gpus+'\n')
                 gpus = args.gpus
@@ -95,12 +101,13 @@ def sgejobgen(args,jobdirs):
                 output.write(com+'\n')
         if args.qccode and args.qccode in 'terachem TeraChem TERACHEM tc TC Terachem':
             tc = False
-            if args.jcommand: 
+            if args.jcommand:
                 for jc in args.jcommand:
                     if 'terachem' in jc:
                         tc = True
             if not tc:
-                output.write('terachem terachem_input > $SGE_O_WORKDIR/opttest.out')
+                output.write(
+                    'terachem terachem_input > $SGE_O_WORKDIR/opttest.out')
         elif args.qccode and ('gam' in args.qccode.lower() or 'qch' in args.qccode.lower()):
             gm = False
             qch = False
@@ -111,9 +118,9 @@ def sgejobgen(args,jobdirs):
                     if 'qchem' in jc:
                         qch = True
             if not gm and 'gam' in args.qccode.lower():
-                output.write('rungms gam.inp '+cpus +' > gam.out')
+                output.write('rungms gam.inp '+cpus + ' > gam.out')
             elif not qch and 'qch' in args.qccode.lower():
-                output.write('qchem qch.inp '+cpus +' > qch.out')
+                output.write('qchem qch.inp '+cpus + ' > qch.out')
         elif args.qccode and ('orc' in args.qccode.lower() or 'molc' in args.qccode.lower()):
             orc = False
             molc = False
@@ -128,25 +135,28 @@ def sgejobgen(args,jobdirs):
             elif not molc and 'molc' in args.qccode.lower():
                 output.write('pymolcas molcas.input -f')
         else:
-            print('Not supported QC code requested. Please input execution command manually')
+            print(
+                'Not supported QC code requested. Please input execution command manually')
         output.close()
 
-## Generates jobscripts for SLURM queueing system
+# Generates jobscripts for SLURM queueing system
 #  @param args Namespace of arguments
 #  @param jobdirs Subdirectories for jobscript placement
-def slurmjobgen(args,jobdirs):
+
+
+def slurmjobgen(args, jobdirs):
     # consolidate lists
     jd = []
-    for i,s in enumerate(jobdirs):
-        if isinstance(s,list):
+    for i, s in enumerate(jobdirs):
+        if isinstance(s, list):
             for ss in s:
                 jd.append(ss)
         else:
             jd.append(s)
     jobdirs = jd
-    gpus = '1' # initialize gpus
-    cpus = '1' # initialize cpus
-    ### loop over job directories
+    gpus = '1'  # initialize gpus
+    cpus = '1'  # initialize cpus
+    # loop over job directories
     for job in jobdirs:
         # form jobscript identifier
         if args.jname:
@@ -155,9 +165,9 @@ def slurmjobgen(args,jobdirs):
         else:
             jobname = 'job'+str(args.jid)
         args.jid += 1
-        output=open(job+'/'+'jobscript','w')
+        output = open(job+'/'+'jobscript', 'w')
         output.write('#!/bin/bash\n')
-        output.write('#SBATCH --job-name=%s\n' %(jobname))
+        output.write('#SBATCH --job-name=%s\n' % (jobname))
         output.write('#SBATCH --output=batch.log\n')
         output.write('#SBATCH --export=ALL\n')
         if not args.wtime:
@@ -199,7 +209,7 @@ def slurmjobgen(args,jobdirs):
                 output.write(com+'\n')
         if args.qccode and args.qccode in 'terachem TeraChem TERACHEM tc TC Terachem':
             tc = False
-            if args.jcommand: 
+            if args.jcommand:
                 for jc in args.jcommand:
                     if 'terachem' in jc:
                         tc = True
@@ -215,9 +225,9 @@ def slurmjobgen(args,jobdirs):
                     if 'qchem' in jc:
                         qch = True
             if not gm and 'gam' in args.qccode.lower():
-                output.write('rungms gam.inp '+cpus +' > gam.out')
+                output.write('rungms gam.inp '+cpus + ' > gam.out')
             elif not qch and 'qch' in args.qccode.lower():
-                output.write('qchem qch.inp '+cpus +' > qch.out')
+                output.write('qchem qch.inp '+cpus + ' > qch.out')
         elif args.qccode and ('orc' in args.qccode.lower() or 'molc' in args.qccode.lower()):
             orc = False
             molc = False
@@ -232,5 +242,6 @@ def slurmjobgen(args,jobdirs):
             elif not molc and 'molc' in args.qccode.lower():
                 output.write('pymolcas molcas.input -f')
         else:
-            print('No supported QC code requested. Please input execution command manually')
+            print(
+                'No supported QC code requested. Please input execution command manually')
         output.close()

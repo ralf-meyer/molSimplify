@@ -1,11 +1,11 @@
 ## @file __main__.py
 #  Gateway script to rest of program
-#  
+#
 #  Written by Tim Ioannidis for HJK Group
-#  
+#
 #  Dpt of Chemical Engineering, MIT
 
-#!/usr/bin/env python
+# !/usr/bin/env python
 '''
     Copyright 2017 Kulik Lab @ MIT
 
@@ -25,13 +25,14 @@
 '''
 # fix OB bug: https://github.com/openbabel/openbabel/issues/1983
 import sys, argparse, os, platform, shutil
+
 flags = sys.getdlopenflags()
 import openbabel
+
 sys.setdlopenflags(flags)
 
-
-from Scripts.inparse import *
-from Scripts.generator import *
+from .Scripts.inparse import *
+from .Scripts.generator import *
 from molSimplify.Classes.globalvars import *
 
 globs = globalvars()
@@ -40,7 +41,7 @@ DescString_basic = 'Welcome to molSimplify. Only basic usage is described here.\
 DescString_basic += 'For help on advanced modules, please refer to our documentation at molsimplify.mit.edu or provide additional commands to -h, as below:\n'
 DescString_basic += '-h advanced: advanced structure generation help\n'
 DescString_basic += '-h slabgen: slab builder help\n'
-#DescString_basic += '-h chainb: chain builder help\n'
+# DescString_basic += '-h chainb: chain builder help\n'
 DescString_basic += '-h autocorr: automated correlation analysis help\n'
 DescString_basic += '-h db: database search help\n'
 DescString_basic += '-h inputgen: quantum chemistry code input file generation help\n'
@@ -75,24 +76,47 @@ DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
 
+def tensorflow_silence():
+    ## thanks to
+    # stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints
+    try:
+        from tensorflow import logging
+        logging.set_verbosity(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        os.environ['KMP_WARNINGS'] = '0'
+
+        def deprecated(date, instructions, warn_once=False):
+            def deprecated_wrapper(func):
+                return func
+            return deprecated_wrapper
+
+        from tensorflow.python.util import deprecation
+        deprecation.deprecated = deprecated
+
+    except ImportError:
+        pass
+
+
 try:
     import PyQt5
     from PyQt5.QtGui import *
     from molSimplify.Classes.mGUI import *
+
     qtflag = True
 except ImportError:
-   qtflag = False
-   pass
+    qtflag = False
+    pass
+
 
 ## Main function
 #  @param args Argument namespace
 def main(args=None):
-    
     ## issue a call to test TF, this is needed to keep
     ## ordering between openbabel and TF calls consistent
     ## on some sytems
     if globs.testTF():
         print('TensorFlow connection successful')
+        tensorflow_silence()
     else:
         print('TensorFlow connection failed')
 
@@ -103,58 +127,59 @@ def main(args=None):
     gui = True
     cmd = False
     if len(args)==0 and not qtflag:
-        print "\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n"
+        print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")
         exit()
     ####################################
     ### print help ###
     elif '-h' in args or '-H' in args or '--help' in args:
         if 'advanced' in args:
             parser = argparse.ArgumentParser(description=DescString_advanced)
-            parseinputs_advanced(parser)            
+            parseinputs_advanced(parser)
         if 'slabgen' in args:
             parser = argparse.ArgumentParser(description=DescString_slabgen)
             parseinputs_slabgen(parser)
-    #    elif 'chainb' in args:
-    #        parser = argparse.ArgumentParser(description=DescString_chainb)
-    #        parseinputs_chainb(parser)            
-    #    elif 'autocorr' in args:
-    #        parser = argparse.ArgumentParser(description=DescString_autocorr)
-    #        parseinputs_autocorr(parser)           
+        #    elif 'chainb' in args:
+        #        parser = argparse.ArgumentParser(description=DescString_chainb)
+        #        parseinputs_chainb(parser)
+        #    elif 'autocorr' in args:
+        #        parser = argparse.ArgumentParser(description=DescString_autocorr)
+        #        parseinputs_autocorr(parser)
         elif 'db' in args:
             parser = argparse.ArgumentParser(description=DescString_db)
-            parseinputs_db(parser)       
+            parseinputs_db(parser)
         elif 'inputgen' in args:
             parser = argparse.ArgumentParser(description=DescString_inputgen)
-            parseinputs_inputgen(parser)            
+            parseinputs_inputgen(parser)
         elif 'postproc' in args:
             parser = argparse.ArgumentParser(description=DescString_postproc)
-            parseinputs_postproc(parser)         
+            parseinputs_postproc(parser)
         elif 'random' in args:
             parser = argparse.ArgumentParser(description=DescString_random)
             parseinputs_random(parser)
         elif 'binding' in args:
             parser = argparse.ArgumentParser(description=DescString_binding)
-            parseinputs_binding(parser)            
+            parseinputs_binding(parser)
         elif 'tsgen' in args:
             parser = argparse.ArgumentParser(description=DescString_tsgen)
-            parseinputs_tsgen(parser)            
+            parseinputs_tsgen(parser)
         elif 'customcore' in args:
             parser = argparse.ArgumentParser(description=DescString_customcore)
-            parseinputs_customcore(parser) 
+            parseinputs_customcore(parser)
         elif 'naming' in args:
             parser = argparse.ArgumentParser(description=DescString_naming)
-            parseinputs_naming(parser)                          
+            parseinputs_naming(parser)
         else:
-            # print basic help    
-            parser = argparse.ArgumentParser(description=DescString_basic,formatter_class=argparse.RawDescriptionHelpFormatter)
-            parseinputs_basic(parser) 
+            # print basic help
+            parser = argparse.ArgumentParser(description=DescString_basic,
+                                             formatter_class=argparse.RawDescriptionHelpFormatter)
+            parseinputs_basic(parser)
         exit()
     ### run with gui ###
-    elif gui and len(args)==0:
+    elif gui and len(args) == 0:
         print('molSimplify is starting!')
         ### create main application
-        app = QApplication(sys.argv) # main application
-        gui = mGUI(app) # main GUI class
+        app = QApplication(sys.argv)  # main application
+        gui = mGUI(app)  # main GUI class
         app.processEvents()
         app.exec_()
     ### if input file is specified run without GUI ###
@@ -163,14 +188,14 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # run from commandline
-        emsg = startgen(sys.argv,False,gui)
+        emsg = startgen(sys.argv, False, gui)
     ### grab from commandline arguments ###
     else:
         print('No input file detected, reading arguments from commandline')
         print('molSimplify is starting!')
         gui = False
         # create input file from commandline
-        infile = parseCLI(filter(None,args))
+        infile = parseCLI([_f for _f in args if _f])
         args = ['main.py','-i',infile]
         emsg = startgen(args,False,gui)
 if __name__ == '__main__':
