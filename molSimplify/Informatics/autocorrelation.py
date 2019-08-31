@@ -599,7 +599,7 @@ def construct_property_vector(mol, prop, oct=True,modifier = False):
             for keys in at_keys:
                 values = globs.amass()[keys][3]
                 if keys in modifier.keys():
-                    values += float(modifier[keys])
+                    values -= float(modifier[keys]) #Assumes that the oxidation state removes electrons from the valence shell
                 prop_dict.update({keys: values})
     elif prop == 'ox_nuclear_charge':
         if not modifier:
@@ -610,7 +610,7 @@ def construct_property_vector(mol, prop, oct=True,modifier = False):
             for keys in at_keys:
                 values = globs.amass()[keys][1]
                 if keys in modifier.keys():
-                    values += float(modifier[keys])
+                    values -= float(modifier[keys]) #Takes the net electronic charge, and removes the electrons for oxidation state
                 prop_dict.update({keys: values})
     elif prop == 'ident':
         at_keys = globs.amass().keys()
