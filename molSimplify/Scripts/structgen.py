@@ -20,6 +20,7 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
 from molSimplify.Informatics.RACassemble import *
 from molSimplify.Scripts.krr_prep import *
+from molSimplify.Scripts.nn_prep import *
 import os
 import sys
 import time
