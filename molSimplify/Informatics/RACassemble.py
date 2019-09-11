@@ -13,6 +13,7 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.autocorrelation import*
 from molSimplify.Informatics.misc_descriptors import*
 from molSimplify.Informatics.graph_analyze import*
+from molSimplify.Informatics.rac155_geo import*
 
 ## Gets the connectivity matrix of an octahedral complex without geo
 #  @param metal_mol mol3D() for the metal
@@ -126,6 +127,23 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')    
         return descriptor_names, descriptors
 
+
+## Gets only the graph-based RAC155-RACs of an octahedral complex without/without geo
+#  @param this_complex mol3D() we want RACs for
+#  @param custom_ligand_dict optional dict defining ligands (see below)
+#  @return descriptor_names_rac155 updated names
+#  @return descriptors_rac155 updated RACs
+def get_rac155_graph_based(this_complex, custom_ligand_dict=False,ox_modifier=False):
+    descriptor_names,descriptors = get_descriptor_vector(this_complex,
+                                                         custom_ligand_dict=custom_ligand_dict,
+                                                         ox_modifier=False)
+    descriptor_names_rac155 = []
+    descriptors_rac155 = []
+    for i,item in enumerate(descriptor_names):
+        if item in rac155_list:
+            descriptor_names_rac155.append(item)
+            descriptors_rac155.append(descriptors[i])
+    return descriptor_names_rac155, descriptors_rac155
 
 ## Gets the derivatives of RACs of an octahedral complex with geo only!
 #  @param this_complex mol3D() we want derivatives for 
