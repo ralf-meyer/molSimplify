@@ -824,7 +824,7 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
         if debug:
             print(('masklengh is ' + str(masklength)))
         if surface_atom_ind:
-            print(('using surface_atom_ind' + str(surfacce_atom_ind)))
+            print(('using surface_atom_ind' + str(surface_atom_ind)))
             for indices in surface_atom_ind:
                 avail_sites_dict[indices] = super_cell.getAtom(
                     indices).coords()
