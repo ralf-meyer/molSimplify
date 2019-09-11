@@ -478,7 +478,7 @@ def align_payload_to_multi_site(payload, surface_coord_list, cand_list, bind_dis
 ##################################
 
 
-def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, payload, cand_list, surface_coord_list, bind_dist, duplicate=False, control_angle=False, debug=False):
+def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, payload, cand_list, surface_coord_list, bind_dist, duplicate=False, control_angle=False, align_axis=False,align_ind=False, debug=False):
      #   This function does final lowering, rotate and merge of previously aligned molecule with surface
      #   Precede all calls to this funciton with allign_payload_to_Site to avoid strange behaviour
      # INPUT
@@ -536,16 +536,16 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
         print(('\n\n Target distance was  ' + str(bind_dist) +
                ', achieved ' + str(distances_list)))
 
-    if not control_angle:
-        print('starting align rotation')
-        for rotate_angle in range(0, 360):
-            this_payload = mol3D()
-            this_payload.copymol3D(new_payload)
-            this_payload = rotate_around_axis(
-                this_payload, this_payload.centersym(), vec, rotate_angle)
-            this_cost = multialign_objective_function(
-                this_payload, surface_coord_list, cand_list, bind_dist)
-            if (this_cost < (cost)):
+    
+    print('starting align rotation')
+    for rotate_angle in range(0, 360):
+        this_payload = mol3D()
+        this_payload.copymol3D(new_payload)
+        this_payload = rotate_around_axis(
+            this_payload, this_payload.centersym(), vec, rotate_angle)
+        this_cost = multialign_objective_function(
+            this_payload, surface_coord_list, cand_list, bind_dist)
+        if (this_cost < (cost)):
                 cost = this_cost
                 final_payload = this_payload
     if debug:
@@ -647,8 +647,7 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
         vec = vecdiff(final_payload.getAtom(cand_list[0]).coords(
         ), final_payload.getAtom(cand_list[1]).coords())
         rotate_on = True
-    if control_angle:
-        rotate_on = False
+
     if rotate_on:
         trial_cell.combine(final_payload)
         trial_cell.writexyz('before_rot.xyz')
@@ -663,12 +662,47 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
             this_dist = min(periodic_mindist(this_payload, combined_cell, extents), periodic_selfdist(
                 this_payload, extents), this_payload.mindist(combined_cell))
             if (this_dist > (min_dist + 1e-3)):
+    
                 if debug:
                     print(('current dist = ' + str(this_dist) +
                            ', the max is ' + str(min_dist)))
                     print(('accepting rotate at theta  = ' + str(rotate_angle)))
                 min_dist = this_dist
                 final_payload = this_payload
+                
+                
+                
+
+    if control_angle:
+            
+            print('inner control angle loop')
+            if not len(cand_list) == 1:
+                print('Warning! Using control angle with more than one payload,  reference will only use the FIRST payload reference ')
+
+                print(('begining controlled rotation, targeting angle ' +
+                       str(control_angle) + ' to  line ' + str(align_axis)))
+                print(('aligning payload  index ' +
+                       str(cand_list[0]) + ' and indicies ' + str(align_ind-1) + ' with slab axes '))
+                this_payload = mol3D()
+                this_payload.copymol3D(final_payload)
+                
+                if debug:
+                    debug_cell = mol3D()
+                    debug_cell.copymol3D(combined_cell)
+                    debug_cell.combine(this_payload)
+                    this_payload.writexyz('aligned-payload-before-angle-control.xyz')
+                    debug_cell.writexyz('cell-before-angle-control.xyz')
+
+                this_payload = axes_angle_align(
+                    this_payload, cand_list[0], align_ind-1, align_axis, control_angle)
+                if debug:
+                    debug_cell = mol3D()
+                    debug_cell.copymol3D(combined_cell)
+                    debug_cell.combine(this_payload)
+                    this_payload.writexyz('aligned-payload-after-angle-control.xyz')
+                    debug_cell.writexyz('cell-before-after-control.xyz')
+                final_payload = this_payload
+                
     if len(cand_list) > 1:
         # now, distort molecule based on FF to optimize bond length
         print('\n begining distortion ')
@@ -713,7 +747,8 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
                 min_dist = this_dist
                 if debug:
                     print('accepting distort')
-
+                
+            
     distances_list = []
     for indices in enumerate(cand_list):
         v1 = (surface_coord_list[indices[0]])
@@ -789,7 +824,7 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
         if debug:
             print(('masklengh is ' + str(masklength)))
         if surface_atom_ind:
-            print(('using surface_atom_ind' + str(surfacce_atom_ind)))
+            print(('using surface_atom_ind' + str(surface_atom_ind)))
             for indices in surface_atom_ind:
                 avail_sites_dict[indices] = super_cell.getAtom(
                     indices).coords()
@@ -896,32 +931,31 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
         # rotate for optimal approach
         payload = align_payload_to_multi_site(
             payload, sites_list, cand_list, align_dist, debug)  # align
-        if control_angle:
-            if not len(cand_ind) == 1:
-                print('Cannot use control angle with more than one payload reference')
-            else:
-                print(('begining controlled rotation, targeting angle ' +
-                       str(control_angle) + ' to  line ' + str(align_axis)))
-                print(('aligning payload  indicies ' +
-                       str(cand_list[0]) + ' and indicies ' + str(align_ind) + ' with slab axes '))
-                payload = axes_angle_align(
-                    payload, cand_list[0], align_ind, align_axis, control_angle)
+        if debug:
+            payload.writexyz('aligned-payload-before-angle-control.xyz')
+        
+                
         if debug:
             print(('payload cysm ' + str(payload.centersym())))
+            
         #######################################
         temp_pay2 = mol3D()
         temp_pay2.copymol3D(payload)
         temp_pay2.translate([0, 0, -5])
         debug_cell.combine(temp_pay2)
+        if debug:
+            debug_cell.writexyz('db2.xyz')
         # lower payload to distance, rotate to avoid conflicr
         loaded_cell = combine_multi_aligned_payload_with_cell(
-            loaded_cell, super_cell_vector, payload, cand_list, sites_list, align_dist, duplicate, control_angle, debug)
+            loaded_cell, super_cell_vector, payload, cand_list, sites_list, align_dist, duplicate, control_angle, align_axis,align_ind, debug)
 
         ########################
         temp_pay3 = mol3D()
         temp_pay3.copymol3D(payload)
         debug_cell.combine(temp_pay3)
-    #    debug_cell.writexyz('db3.xyz')
+        if debug:
+            debug_cell.writexyz('db3.xyz')
+            temp_pay3.writexyz('db3-only.xyz')
         print(('number of atoms = ' + str(loaded_cell.natoms)))
         # print("\n")
     # run tests
@@ -979,7 +1013,7 @@ def staggered2_align_coord(super_cell):
 
 
 def axes_angle_align(payload, cand_ind, align_ind, align_target, angle):
-     #   This function doe rotates a given payload molecule such that the X-Y projection of
+     #   This function rotates a given payload molecule such that the X-Y projection of
      #   the cord joining the two atoms in cand_ind and  align_ind is aligned with the vector given in align_target
      # INPUT
      #   - payload: mol3D class that contains that target molecule
@@ -992,10 +1026,23 @@ def axes_angle_align(payload, cand_ind, align_ind, align_target, angle):
     new_payload.copymol3D(payload)
     align_chord = vecdiff(new_payload.getAtom(
         cand_ind).coords(), new_payload.getAtom(align_ind).coords())
+    print('align coord:' + str(align_chord))
     align_chord[2] = 0  # project into X-Y
+    print('align coord, proj ' + str(align_chord))
+    print('align target ' + str(align_target))
     normal_vect = numpy.cross(align_chord, align_target)
+    print('vec angle id ' + str(vecangle(align_chord, align_target)))
     rotate_angle = vecangle(align_chord, align_target) + angle
     print(('my angle is ' + str(rotate_angle) + ' nv is ' + str(normal_vect)))
+    # Rotates molecule about axis defined by direction vector and point on axis
+    #
+    #  Loops over PointRotateAxis().
+    #  @param mol mol3D of molecule to be rotated
+    #  @param Rp Reference point along axis
+    #  @param u Direction vector of axis
+    #  @param theta Angle of rotation in DEGREES
+    #  @return mol3D of rotated molecule
+
     new_payload = rotate_around_axis(new_payload, new_payload.getAtom(
         cand_ind).coords(), normal_vect, rotate_angle)
     return new_payload
@@ -1502,6 +1549,8 @@ def slab_module_supervisor(args, rootdir):
             print(angle_surface_axis)
             angle_surface_axis.append(0)
             print(angle_surface_axis)
+            
+            
         print(('object_align ' + str(object_align)))
         loaded_cell = molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule,
                                                     align_method, object_align, align_dist, surface_atom_type,

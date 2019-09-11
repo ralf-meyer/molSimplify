@@ -71,6 +71,9 @@ class ligand:
         return trunc_mol
 
 
+
+
+
 # Extract axial and equitorial components of a octahedral complex
 #  @param mol The mol3D object for the complex
 #  @param liglist List of ligands
@@ -296,7 +299,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         for j, built_ligs in enumerate(built_ligand_list):
             if len(ligcons[j]) == 1:
                 #### This is the axial ligand ####
-                print(j, 'axial lig')
+                # print(j, 'axial lig')
                 z_coord = [mol.getAtom(ii).coords()[2] for ii in ligcons[j]][0]
                 if z_coord < 0:
                     bot_lig = j
@@ -309,8 +312,9 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             else:
                 pentadentate_z_list = [mol.getAtom(
                     ii).coords()[2] for ii in ligcons[j]]
-                print('pentadentate Z LIST!')
-                print(pentadentate_z_list)
+                if loud:
+                    print('pentadentate Z LIST!')
+                    print(pentadentate_z_list)
                 for k, z_val in enumerate(pentadentate_z_list):
                     if z_val > maxz:
                         maxz = z_val
@@ -326,7 +330,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             list(set([ligcons[i] for i in allowed][0])-set(top_con)-set(bot_con))]
         ax_lig_list = [top_lig, bot_lig]
         ax_con_list = [top_con, bot_con]
-        print('con lists', eq_con_list, ax_con_list)
+        if loud:
+            print('con lists', eq_con_list, ax_con_list)
         ###########################################################################################
         # In the above, the pentadentate ligand is classified as both axial and equatorial.       #
         # The lc atoms are decided by the z-position. Thus the pentadentate ligand has 4 eq-lc    #
@@ -376,3 +381,4 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     for eq_lig in eq_lig_list:
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
+

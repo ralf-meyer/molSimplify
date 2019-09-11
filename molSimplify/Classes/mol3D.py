@@ -858,8 +858,6 @@ class mol3D:
             if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
                 distance_max = 1.05 * (atom.rad + ratom.rad)
                 # print(distance_max)
-            if atom.symbol() == "I" or ratom.symbol() == "I":
-                distance_max = 0
             if (d < distance_max and i != ind):
                 nats.append(i)
         return nats
@@ -957,7 +955,7 @@ class mol3D:
             d = distance(ratom.coords(), atom.coords())
             # default interatomic radius
             # for non-metalics
-            distance_max = 1.15 * (atom.rad + ratom.rad)
+            distance_max = 1.15 * (atom.rad + ratom.rad)  ## Not consistent with getBondedAtoms?
             if atom.ismetal() or ratom.ismetal():
                 # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
                 # if atom.symbol() in dist_allowed.keys():
@@ -1724,7 +1722,8 @@ class mol3D:
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
-            print("ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms..")
+            print(
+                "ERROR: Absolute atom deviations can be calculated only for molecules with the same number of atoms..")
             return float('NaN')
         else:
             dev = 0
@@ -2143,10 +2142,12 @@ class mol3D:
         if flag_lbd:  # Also do ligand breakdown for opt geo
             if not check_whole:
                 # Truncate ligands at 4 bonds away from metal to aviod rotational group.
-                self.my_mol_trunc = obtain_truncation_metal(self, depth)
-                self.init_mol_trunc = obtain_truncation_metal(init_mol, depth)
+                self.my_mol_trunc = obtain_truncation_metal(self, hops=depth)
+                self.init_mol_trunc = obtain_truncation_metal(init_mol, hops=depth)
                 self.my_mol_trunc.createMolecularGraph()
                 self.init_mol_trunc.createMolecularGraph()
+                # self.my_mol_trunc.writexyz("final_trunc.xyz")
+                # self.init_mol_trunc.writexyz("init_trunc.xyz")
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(
                 self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
@@ -2167,7 +2168,7 @@ class mol3D:
                                                                          flag_loose=flag_loose,
                                                                          BondedOct=BondedOct)
             liglist, ligdents, ligcons = liglist_init[:
-                                                      ], ligdents_init[:], ligcons_init[:]
+                                         ], ligdents_init[:], ligcons_init[:]
             liglist_atom = [[self.getAtom(x).symbol() for x in ele]
                             for ele in liglist]
             liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
@@ -2189,6 +2190,7 @@ class mol3D:
             for ii, ele in enumerate(liglist_init_atom):
                 liginds_init = liglist_init[ii]
                 try:
+                    # if True:
                     _flag = False
                     for idx, _ele in enumerate(liglist_atom):
                         if set(ele) == set(_ele) and len(ele) == len(_ele):
@@ -2212,9 +2214,12 @@ class mol3D:
                     liglist.pop(posi)
                     if not _flag:
                         if debug:
+                            print("here1")
                             print('Ligands cannot match!')
                         flag_match = False
                 except:
+                    # else:
+                    print("here2")
                     print('Ligands cannot match!')
                     flag_match = False
         else:
@@ -2306,7 +2311,7 @@ class mol3D:
                 max_atom_dist_arr.append(atom_dist_max)
                 if debug:
                     print(('rmsd:', rmsd))
-                    print(('atom_dist_max', atom_dist_max))
+                    # print(('atom_dist_max', atom_dist_max))
             rmsd_max = max(rmsd_arr)
             atom_dist_max = max(max_atom_dist_arr)
         else:
@@ -2340,7 +2345,7 @@ class mol3D:
                     elif len(_catoms) == 2:
                         ind_next2 = self.find_the_other_ind(_catoms[:], ind)
                         vec1 = np.array(self.getAtomCoords(ind)) - \
-                            np.array(self.getAtomCoords(ind_next))
+                               np.array(self.getAtomCoords(ind_next))
                         vec2 = np.array(self.getAtomCoords(
                             ind_next2)) - np.array(self.getAtomCoords(ind_next))
                         ang = vecangle(vec1, vec2)
@@ -2402,7 +2407,7 @@ class mol3D:
     # Output: flag_oct: good (1) or bad (0) structure.
     # flag_list: metrics that are failed from being a good geometry.
     def dict_check_processing(self, dict_check,
-                              num_coord=6, debug=False, silent = False):
+                              num_coord=6, debug=False, silent=False):
 
         self.geo_dict['num_coord_metal'] = int(self.num_coord_metal)
         self.geo_dict.update(self.dict_lig_distort)
@@ -2416,7 +2421,7 @@ class mol3D:
         self.geo_dict['atom_dist_max'] = banned_sign
         flag_list = []
         for key, values in list(dict_check.items()):
-            if isinstance(self.geo_dict[key],(int,float)):
+            if isinstance(self.geo_dict[key], (int, float)):
                 if self.geo_dict[key] > values:
                     flag_list.append(key)
             elif not self.geo_dict[key] == banned_sign:
@@ -2475,7 +2480,7 @@ class mol3D:
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
-              silent = False):
+              silent=False):
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
@@ -2709,7 +2714,7 @@ class mol3D:
         skeys = skeys[::-1]
         for sk in skeys:
             retstr += '\\textrm{' + sk + '}_{' + \
-                str(int(unique_symbols[sk])) + '}'
+                      str(int(unique_symbols[sk])) + '}'
         return retstr
 
     def read_smiles(self, smiles, ff="mmff94", steps=2500):
@@ -2747,3 +2752,69 @@ class mol3D:
                 self.symbols_dict.update({atom.symbol(): 1})
             else:
                 self.symbols_dict[atom.symbol()] += 1
+
+    def read_bonder_order(self, bofile):
+        globs = globalvars()
+        bonds_organic = {'H': 1, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'P': 3, 'S': 2}
+        self.bv_dict = {}
+        self.ve_dict = {}
+        self.bvd_dict = {}
+        self.bodstd_dict = {}
+        self.bodavrg_dict = {}
+        self.bo_mat = np.zeros(shape=(self.natoms, self.natoms))
+        if os.path.isfile(bofile):
+            with open(bofile, "r") as fo:
+                for line in fo:
+                    ll = line.split()
+                    if len(ll) == 5 and ll[0].isdigit() and ll[1].isdigit():
+                        self.bo_mat[int(ll[0]), int(ll[1])] = float(ll[2])
+                        self.bo_mat[int(ll[1]), int(ll[0])] = float(ll[2])
+                        if int(ll[0]) == int(ll[1]):
+                            self.bv_dict.update({int(ll[0]): float(ll[2])})
+        else:
+            print("bofile does not exist.", bofile)
+        for ii in range(self.natoms):
+            # self.ve_dict.update({ii: globs.amass()[self.atoms[ii].symbol()][3]})
+            self.ve_dict.update({ii: bonds_organic[self.atoms[ii].symbol()]})
+            self.bvd_dict.update({ii: self.bv_dict[ii] - self.ve_dict[ii]})
+            # neighbors = self.getBondedAtomsSmart(ii, oct=oct)
+            # vec = self.bo_mat[ii, :][neighbors]
+            vec = self.bo_mat[ii, :][self.bo_mat[ii, :] > 0.1]
+            if vec.shape[0] == 0:
+                self.bodstd_dict.update({ii: 0})
+                self.bodavrg_dict.update({ii: 0})
+            else:
+                devi = [abs(v - max(round(v), 1)) for v in vec]
+                self.bodstd_dict.update({ii: np.std(devi)})
+                self.bodavrg_dict.update({ii: np.mean(devi)})
+
+    def read_charge(self, chargefile):
+        self.charge_dict = {}
+        if os.path.isfile(chargefile):
+            with open(chargefile, "r") as fo:
+                for line in fo:
+                    ll = line.split()
+                    if len(ll) == 3 and ll[0].isdigit():
+                        self.charge_dict.update({int(ll[0]) - 1: float(ll[2])})
+        else:
+            print("chargefile does not exist.", chargefile)
+
+    def get_symmetry_denticity(self):
+        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
+        liglist, ligdents, ligcons = ligand_breakdown(self)
+        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+            self, liglist, ligdents, ligcons)
+        dent = "mono"
+        eqsym = True
+        for lig in eq_ligand_list[1:]:
+            if not connectivity_match(eq_ligand_list[0].index_list, lig.index_list, self, self):
+                eqsym = False
+        if 5 in ligdents:
+            dent = "penta"
+        elif 4 in ligdents:
+            dent = "tetra"
+        elif 3 in ligdents:
+            dent = "tri"
+        elif 2 in ligdents:
+            dent = "bi"
+        return eqsym, dent
