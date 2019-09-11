@@ -617,7 +617,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
             for keys in at_keys:
                 values = globs.amass()[keys][3]
                 if keys in modifier.keys():
-                    values += float(modifier[keys])
+                    values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
                 prop_dict.update({keys: values})
     elif prop == 'ox_nuclear_charge':
         if not modifier:
@@ -628,7 +628,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
             for keys in at_keys:
                 values = globs.amass()[keys][1]
                 if keys in modifier.keys():
-                    values += float(modifier[keys])
+                    values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
                 prop_dict.update({keys: values})
     elif prop == 'ident':
         at_keys = globs.amass().keys()
