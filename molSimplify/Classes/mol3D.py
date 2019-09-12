@@ -25,6 +25,7 @@ import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis, \
     connectivity_match
 from molSimplify.Scripts.rmsd import rigorous_rmsd
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
 
 # from molSimplify.Scripts.structgen import ffopt
 
@@ -2800,7 +2801,6 @@ class mol3D:
             print("chargefile does not exist.", chargefile)
 
     def get_symmetry_denticity(self):
-        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
         liglist, ligdents, ligcons = ligand_breakdown(self)
         try:
             _, eq_ligand_list, _, _, _, _, _, _, _ = ligand_assign(self, liglist, ligdents, ligcons)
@@ -2816,7 +2816,7 @@ class mol3D:
                     eqsym = False
                     homoleptic = False
         else:
-            eqsym = 'undef'
+            eqsym = None
         if eqsym:
             for lig in liglist[1:]:
                 if not connectivity_match(liglist[0], lig, self, self):
