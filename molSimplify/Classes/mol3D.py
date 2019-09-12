@@ -2804,7 +2804,10 @@ class mol3D:
             assigned = True
         except:
             assigned = False
-        maxdent = max(ligdents)
+        if ligdents:
+            maxdent = max(ligdents)
+        else:
+            maxdent = 0
         eqsym = True
         homoleptic = True
         if assigned:
