@@ -294,37 +294,89 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         maxz = -500
         if loud:
             print('pentadentate case')
-        allowed = range(0, 1)
+        allowed = [0, 1]
         not_eq = list()
         for j, built_ligs in enumerate(built_ligand_list):
             if len(ligcons[j]) == 1:
                 #### This is the axial ligand ####
                 # print(j, 'axial lig')
-                z_coord = [mol.getAtom(ii).coords()[2] for ii in ligcons[j]][0]
-                if z_coord < 0:
-                    bot_lig = j
-                    bot_con = ligcons[j]
-                    not_eq.append(bot_lig)
-                else:
-                    top_lig = j
-                    top_con = ligcons[j]
-                    not_eq.append(top_lig)
+                top_lig = j
+                top_con = ligcons[j]
+                not_eq.append(top_lig)
             else:
-                pentadentate_z_list = [mol.getAtom(
-                    ii).coords()[2] for ii in ligcons[j]]
+                pentadentate_coord_list = np.array([mol.getAtom(
+                    ii).coords() for ii in ligcons[j]])
+                ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
                 if loud:
-                    print('pentadentate Z LIST!')
-                    print(pentadentate_z_list)
-                for k, z_val in enumerate(pentadentate_z_list):
-                    if z_val > maxz:
-                        maxz = z_val
-                        top_lig = j
-                        top_con = [ligcons[j][k]]
-                    if z_val < minz:
-                        minz = z_val
-                        bot_lig = j
-                        bot_con = [ligcons[j][k]]
-        allowed = [x for x in allowed if ((x not in not_eq))]
+                    print('pentadentate coord LIST!')
+                    print(pentadentate_coord_list)
+                point1 = np.array(pentadentate_coord_list[0])
+                point2 = np.array(pentadentate_coord_list[1])
+                point3 = np.array(pentadentate_coord_list[2])
+                point4 = np.array(pentadentate_coord_list[3])
+                point5 = np.array(pentadentate_coord_list[4])
+                if loud: 
+                    print('points',point1,point2,point3,point4,point5)
+                plane123 = np.cross(point1-point2,point1-point3)
+                plane124 = np.cross(point1-point2,point1-point4)
+                plane125 = np.cross(point1-point2,point1-point5)
+                plane134 = np.cross(point1-point3,point1-point4)
+                plane135 = np.cross(point1-point3,point1-point5)
+                plane145 = np.cross(point1-point4,point1-point5)
+                plane234 = np.cross(point2-point3,point2-point4)
+                plane235 = np.cross(point2-point3,point2-point5)
+                plane245 = np.cross(point2-point4,point2-point5)
+                plane345 = np.cross(point3-point4,point3-point5)
+                list_of_planes = [plane123, plane124, plane125, plane134, plane135,
+                                  plane145, plane234, plane235, plane245, plane345]
+                norm_planes = []
+                for plane in list_of_planes:
+                    norm_planes.append(plane/np.linalg.norm(plane))
+                equatorial_planes = []
+                tolerance = 0.1
+                for p1ind, plane1 in enumerate(norm_planes):
+                    for p2ind, plane2 in enumerate(norm_planes):
+                        if p1ind == p2ind:
+                            continue
+                        if abs(np.sum(plane1 - plane2)) < tolerance:
+                            equatorial_planes.append(p1ind)
+                            equatorial_planes.append(p2ind)
+                not_ax_points = []
+                for eqplane in list(set(equatorial_planes)):
+                    #### Check which points are equatorial
+                    if eqplane == 0:
+                        not_ax_points.append(0),not_ax_points.append(1),not_ax_points.append(2) 
+                    if eqplane == 1:
+                        not_ax_points.append(0),not_ax_points.append(1),not_ax_points.append(3)
+                    if eqplane == 2:
+                        not_ax_points.append(0),not_ax_points.append(1),not_ax_points.append(4)
+                    if eqplane == 3:
+                        not_ax_points.append(0),not_ax_points.append(2),not_ax_points.append(3)
+                    if eqplane == 4:
+                        not_ax_points.append(0),not_ax_points.append(2),not_ax_points.append(4)
+                    if eqplane == 5:
+                        not_ax_points.append(0),not_ax_points.append(3),not_ax_points.append(4)
+                    if eqplane == 6:
+                        not_ax_points.append(1),not_ax_points.append(2),not_ax_points.append(3)
+                    if eqplane == 7:
+                        not_ax_points.append(1),not_ax_points.append(2),not_ax_points.append(4)
+                    if eqplane == 8:
+                        not_ax_points.append(1),not_ax_points.append(3),not_ax_points.append(4)
+                    if eqplane == 9:
+                        not_ax_points.append(2),not_ax_points.append(3),not_ax_points.append(4)
+                if len(set(not_ax_points)) != 4:
+                    print('The equatorial plane is not being assigned correctly. Please check.')
+                    sardines
+                else:
+                    bot_idx = list(set(range(5))-set(not_ax_points))[0]
+                    if loud:
+                        print('This is bot_idx',bot_idx)
+                    bot_lig = j
+                    bot_con = [ligcons[j][bot_idx]]
+               
+        allowed = list(set(allowed)-set(not_eq))
+        if loud:
+            print('this is the allowed list', allowed, not_eq)
         eq_lig_list = allowed
         eq_con_list = [
             list(set([ligcons[i] for i in allowed][0])-set(top_con)-set(bot_con))]
