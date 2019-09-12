@@ -2802,19 +2802,23 @@ class mol3D:
     def get_symmetry_denticity(self):
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
         liglist, ligdents, ligcons = ligand_breakdown(self)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            self, liglist, ligdents, ligcons)
-        dent = "mono"
+        try:
+            _, eq_ligand_list, _, _, _, _, _, _, _ = ligand_assign(self, liglist, ligdents, ligcons)
+            assigned = True
+        except:
+            assigned = False
+        maxdent = max(ligdents)
         eqsym = True
-        for lig in eq_ligand_list[1:]:
-            if not connectivity_match(eq_ligand_list[0].index_list, lig.index_list, self, self):
-                eqsym = False
-        if 5 in ligdents:
-            dent = "penta"
-        elif 4 in ligdents:
-            dent = "tetra"
-        elif 3 in ligdents:
-            dent = "tri"
-        elif 2 in ligdents:
-            dent = "bi"
-        return eqsym, dent
+        homoleptic = True
+        if assigned:
+            for lig in eq_ligand_list[1:]:
+                if not connectivity_match(eq_ligand_list[0].index_list, lig.index_list, self, self):
+                    eqsym = False
+                    homoleptic = False
+        else:
+            eqsym = 'undef'
+        if eqsym:
+            for lig in liglist[1:]:
+                if not connectivity_match(liglist[0], lig, self, self):
+                    homoleptic = False
+        return eqsym, maxdent, homoleptic
