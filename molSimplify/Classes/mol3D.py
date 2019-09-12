@@ -764,6 +764,9 @@ class mol3D:
     def getAtom(self, idx):
         return self.atoms[idx]
 
+    def getAtomwithinds(self, inds):
+        return [self.atoms[idx] for idx in inds]
+
     # Gets atoms in molecule
     #  @param self The object pointer
     #  @return List of atoms in molecule

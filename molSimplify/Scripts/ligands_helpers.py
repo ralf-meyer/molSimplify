@@ -1,3 +1,5 @@
+from molSimplify.Classes.ligand import ligand
+
 
 # Extract axial and equitorial components of a octahedral complex
 #  @param mol The mol3D object for the complex
@@ -84,12 +86,14 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     eq_con_list = list()
     for i, ligand_indices in enumerate(liglist):
         this_ligand = ligand(mol, ligand_indices, ligdents[i])
-        this_ligand.obtain_mol3d()
+        # this_ligand.obtain_mol3d()
+        # lig_natoms_list.append(this_ligand.mol.natoms) ## old one with obtain_mol3d
         built_ligand_list.append(this_ligand)
-        lig_natoms_list.append(this_ligand.mol.natoms)
+        lig_natoms_list.append(len(this_ligand.index_list))
     for j, built_ligs in enumerate(built_ligand_list):
         # test if ligand is unique
-        sl = [atom.symbol() for atom in built_ligs.mol.getAtoms()]
+        sl = [atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
+        # _sl = [atom.symbol() for atom in built_ligs.mol.getAtoms()] ## old one with obtain_mol3d
         if loud:
             print(('checking lig ' + str(j) + ' : ' + str(sl)))
         unique = 1
@@ -105,7 +109,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     # loop to bin ligands:
     for j, built_ligs in enumerate(built_ligand_list):
         # test if ligand is unique
-        sl = [atom.symbol() for atom in built_ligs.mol.getAtoms()]
+        sl = [atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
         unique = 1
         for i, other_sl in enumerate(unique_ligands):
             if sorted(sl) == sorted(other_sl):
@@ -164,7 +168,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         not_eq = list()
         for j, built_ligs in enumerate(built_ligand_list):
             this_z = sum([mol.getAtom(ii).coords()[2]
-                          for ii in ligcons[j]])/len(ligcons[j])
+                          for ii in ligcons[j]]) / len(ligcons[j])
             if this_z < minz:
                 minz = this_z
                 bot_lig = j
@@ -250,7 +254,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         allowed = [x for x in allowed if ((x not in not_eq))]
         eq_lig_list = allowed
         eq_con_list = [
-            list(set([ligcons[i] for i in allowed][0])-set(top_con)-set(bot_con))]
+            list(set([ligcons[i] for i in allowed][0]) - set(top_con) - set(bot_con))]
         ax_lig_list = [top_lig, bot_lig]
         ax_con_list = [top_con, bot_con]
         if loud:
@@ -278,7 +282,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
-    if name:
+    if name: ## TODO: this part might be broken. Maybe not of much use though.
         for i, ax_ligand in enumerate(ax_ligand_list):
             if not os.path.isdir('ligands'):
                 os.mkdir('ligands')
@@ -290,11 +294,15 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             eq_ligand.mol.writexyz('ligands/' + name +
                                    '_' + str(i) + '_eq.xyz')
     for j, ax_con in enumerate(ax_con_list):
-        ax_con_int_list.append(
-            [built_ligand_list[ax_lig_list[j]].ext_int_dict[i] for i in ax_con])  # convert to interal index
+        current_ligand_index_list = built_ligand_list[ax_lig_list[j]].index_list
+        ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])
+        # ax_con_int_list.append(
+        #     [built_ligand_list[ax_lig_list[j]].ext_int_dict[i] for i in ax_con])  # convert to interal index ## old one with obtain_mol3d
     for j, eq_con in enumerate(eq_con_list):
-        eq_con_int_list.append(
-            [built_ligand_list[eq_lig_list[j]].ext_int_dict[i] for i in eq_con])  # convert to interal index
+        current_ligand_index_list = built_ligand_list[eq_lig_list[j]].index_list
+        eq_con_int_list.append([current_ligand_index_list.index(i) for i in eq_con])
+        # eq_con_int_list.append(
+        #     [built_ligand_list[eq_lig_list[j]].ext_int_dict[i] for i in eq_con])  # convert to interal index ## old one with obtain_mol3d
     if loud:
         print(('int eq ' + str(eq_con_int_list)))
         print(('ext eq ' + str(eq_con_list)))
@@ -304,4 +312,3 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     for eq_lig in eq_lig_list:
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
-
