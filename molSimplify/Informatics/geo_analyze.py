@@ -8,6 +8,7 @@
 ################      TM complexs          ###############
 ##########################################################
 from molSimplify.Classes.ligand import *
+from molSimplify.Scripts.ligands_helpers import *
 
 
 def getOctBondDistances(mol):

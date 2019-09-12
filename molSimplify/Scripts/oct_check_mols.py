@@ -7,6 +7,7 @@ import sys
 import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
+from molSimplify.Scripts.ligands_helpers import ligand_breakdown, ligand_assign
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
 from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
 from molSimplify.Classes.atom3D import *

@@ -21,6 +21,7 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
 from molSimplify.Informatics.RACassemble import *
 from molSimplify.Scripts.krr_prep import *
+from molSimplify.Scripts.ligands_helpers import ligand_breakdown, ligand_assign
 import os
 import sys
 import time
