@@ -65,6 +65,89 @@ amassdict = {'X': (1.0, 0, 0.77, 0), 'H': (1.0079, 1, 0.37, 1), 'He': (4.002602,
 vdwrad = {'H': 1.2, 'C': 1.7, 'N': 1.55, 'O': 1.52, 'F': 1.47,
           'P': 1.8, 'S': 1.8, 'Cl': 1.75, 'Br': 1.85, 'I': 1.98}
 
+# Period definitions for all element symbols
+# Data from https://en.wikipedia.org/wiki/Group_(periodic_table) (last accessed Sept. 12th 2019)
+
+period_1 = ['H', 'He']
+
+period_2 = ['Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne']
+
+period_3 = ['Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar']
+
+period_4 = ['K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu',
+            'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr']
+
+period_5 = ['Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh',
+            'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sn', ' Te', 'I', 'Xe']
+
+period_6 = ['Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd',
+            'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re',
+            'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn']
+
+period_7 = ['Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk',
+            'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs',
+            'Mt', 'Ds', 'Rg', 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og']
+
+periods_dict = {'period_1': period_1, 'period_2': period_2, 'period_3': period_3,
+                'period_4': period_4, 'period_5': period_5, 'period_6': period_6,
+                'period_7': period_7}
+
+# Group definitions for all element symbols
+# Data from https://en.wikipedia.org/wiki/Group_(periodic_table) (last accessed Sept. 12th 2019)
+
+hydrogen = ['H'] # Note H not typically included in group 1
+
+group_1 = ['Li', 'Na', 'K', 'Rb', 'Cs', 'Fr']
+
+group_2 = ['Be', 'Mg', 'Ca', 'Sr', 'Ba', 'Ra']
+
+group_3 = ['Sc', 'Y'] # Some IUPAC Initiatives to call either 'La' and 'Ac' grp 3 or 'Lu' and 'Lr
+
+group_4 = ['Ti', 'Zr', 'Hf', 'Rf']
+
+group_5 = ['V', 'Nb', 'Ta', 'Db']
+
+group_6 = ['Cr', 'Mo', 'W', 'Sg']
+
+group_7 = ['Mn', 'Tc', 'Re', 'Bh']
+
+group_8 = ['Fe', 'Ru', 'Os', 'Hs']
+
+group_9 = ['Co', 'Rh', 'Ir', 'Mt']
+
+group_10 = ['Ni', 'Pd', 'Pt', 'Ds']
+
+group_11 = ['Cu', 'Ag', 'Au', 'Rg']
+
+group_12 = ['Zn', 'Cd', 'Hg', 'Cn']
+
+group_13 = ['B', 'Al', 'Ga', 'In', 'Tl', 'Nh']
+
+group_14 = ['C', 'Si', 'Ge', 'Sn', 'Pb', 'Fl']
+
+group_15 = ['N', 'P', 'As', 'Sb', 'Bi', 'Mc']
+
+group_16 = ['O', 'S', 'Se', 'Te', 'Po', 'Lv']
+
+group_17 = ['F', 'Cl', 'Br', 'I', 'At', 'Ts']
+
+group_18 = ['He', 'Ne', 'Ar', 'Kr', 'Xe', 'Rn', 'Og']
+
+lanthanides = ['La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy',
+               'Ho', 'Er', 'Tm', 'Yb', 'Lu']
+
+actinoids = ['Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf',
+             'Es', 'Fm', 'Md', 'No', 'Lr']
+
+groups_dict = {'group_1': group_1, 'group_2': group_2, 'group_3': group_3,
+               'group_4': group_4, 'group_5': group_5, 'group_6': group_6,
+               'group_7': group_7, 'group_8': group_8, 'group_9': group_9,
+               'group_10': group_10, 'group_11': group_11, 'group_12': group_12,
+               'group_13': group_13, 'group_14': group_14, 'group_15': group_15,
+               'group_16': group_16, 'group_17': group_17, 'group_18': group_18,
+               'lanthanides': lanthanides, 'actinoids': actinoids, 'hydrogen': hydrogen}
+
+
 # Metals (includes alkali, alkaline earth, and transition metals)
 metalslist = ['Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
               'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
@@ -366,6 +449,18 @@ class globalvars:
     #  @return metals dictionary
     def metalslist(self):
         return metalslist
+
+    # Returns dict of elements by groups
+    #  @param self The object pointer
+    #  @return groups dictionary
+    def groups(self):
+        return groups_dict
+
+    # Returns dict of elements by periods
+    #  @param self The object pointer
+    #  @return periods dictionary
+    def periods(self):
+        return periods_dict
 
     # Returns list of geo check objects dictionary
     #  @param self The object pointer
