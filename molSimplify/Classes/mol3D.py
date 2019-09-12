@@ -2810,7 +2810,7 @@ class mol3D:
                     eqsym = False
                     homoleptic = False
         else:
-            eqsym = 'undef'
+            eqsym = None
         if eqsym:
             for lig in liglist[1:]:
                 if not connectivity_match(liglist[0], lig, self, self):
