@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import combinations
 from molSimplify.Classes.ligand import ligand
 
 
@@ -238,60 +239,32 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                 if loud:
                     print('pentadentate coord LIST!')
                     print(pentadentate_coord_list)
-                point1 = np.array(pentadentate_coord_list[0])
-                point2 = np.array(pentadentate_coord_list[1])
-                point3 = np.array(pentadentate_coord_list[2])
-                point4 = np.array(pentadentate_coord_list[3])
-                point5 = np.array(pentadentate_coord_list[4])
+                point_combos = combinations([0,1,2,3,4],4)
+                error_list = []
+                combo_list = []
+                for i, combo in enumerate(point_combos):
+                    combo_list.append(list(combo))
+                    A = []
+                    b = []
+                    for point_num in combo:
+                        coordlist = pentadentate_coord_list[point_num]
+                        A.append([coordlist[0], coordlist[1], 1])
+                        b.append(coordlist[2])
+                    ##### This code builds the best fit plane between 4 points,
+                    ##### Then calculates the variance of the 4 points with respect to the plane
+                    ##### The 4 that have the least variance are flagged as the eq plane.
+                    mat_b = np.matrix(b).T
+                    mat_A = np.matrix(A)
+                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                    error_var = np.var(errors)
+                    error_list.append(error_var)
                 if loud:
-                    print('points',point1,point2,point3,point4,point5)
-                plane123 = np.cross(point1-point2,point1-point3)
-                plane124 = np.cross(point1-point2,point1-point4)
-                plane125 = np.cross(point1-point2,point1-point5)
-                plane134 = np.cross(point1-point3,point1-point4)
-                plane135 = np.cross(point1-point3,point1-point5)
-                plane145 = np.cross(point1-point4,point1-point5)
-                plane234 = np.cross(point2-point3,point2-point4)
-                plane235 = np.cross(point2-point3,point2-point5)
-                plane245 = np.cross(point2-point4,point2-point5)
-                plane345 = np.cross(point3-point4,point3-point5)
-                list_of_planes = [plane123, plane124, plane125, plane134, plane135,
-                                  plane145, plane234, plane235, plane245, plane345]
-                norm_planes = []
-                for plane in list_of_planes:
-                    norm_planes.append(plane/np.linalg.norm(plane))
-                equatorial_planes = []
-                tolerance = 0.1
-                for p1ind, plane1 in enumerate(norm_planes):
-                    for p2ind, plane2 in enumerate(norm_planes):
-                        if p1ind == p2ind:
-                            continue
-                        if abs(np.sum(plane1 - plane2)) < tolerance:
-                            equatorial_planes.append(p1ind)
-                            equatorial_planes.append(p2ind)
-                not_ax_points = []
-                for eqplane in list(set(equatorial_planes)):
-                    #### Check which points are equatorial
-                    if eqplane == 0:
-                        not_ax_points.append(0),not_ax_points.append(1),not_ax_points.append(2)
-                    if eqplane == 1:
-                        not_ax_points.append(0),not_ax_points.append(1),not_ax_points.append(3)
-                    if eqplane == 2:
-                        not_ax_points.append(0),not_ax_points.append(1),not_ax_points.append(4)
-                    if eqplane == 3:
-                        not_ax_points.append(0),not_ax_points.append(2),not_ax_points.append(3)
-                    if eqplane == 4:
-                        not_ax_points.append(0),not_ax_points.append(2),not_ax_points.append(4)
-                    if eqplane == 5:
-                        not_ax_points.append(0),not_ax_points.append(3),not_ax_points.append(4)
-                    if eqplane == 6:
-                        not_ax_points.append(1),not_ax_points.append(2),not_ax_points.append(3)
-                    if eqplane == 7:
-                        not_ax_points.append(1),not_ax_points.append(2),not_ax_points.append(4)
-                    if eqplane == 8:
-                        not_ax_points.append(1),not_ax_points.append(3),not_ax_points.append(4)
-                    if eqplane == 9:
-                        not_ax_points.append(2),not_ax_points.append(3),not_ax_points.append(4)
+                    print('combos below')
+                    print(combo_list)
+                    print('errors next, argmin combo selected')
+                    print(error_list)
+                not_ax_points = combo_list[np.argmin(error_list)]
                 if len(set(not_ax_points)) != 4:
                     print('The equatorial plane is not being assigned correctly. Please check.')
                     sardines
