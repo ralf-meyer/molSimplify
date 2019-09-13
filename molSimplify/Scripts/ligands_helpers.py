@@ -75,6 +75,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         #### Handling of pentadentate ligands goes here. #####
         if max(ligdents) == 5 and min(ligdents) == 1:
             pentadentate = True
+        elif max(ligdents) == 6 and min(ligdents) == 6:
+            hexadentate = True
         else:
             valid = False
             print('bad denticities: ' + str(ligdents))
@@ -290,6 +292,90 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         # The lc atoms are decided by the z-position. Thus the pentadentate ligand has 4 eq-lc    #
         # and 1 ax-lc. Currently should be able to check this and set that up.                    #
         ###########################################################################################
+    elif n_ligs == 1 and hexadentate:
+        allowed = [0, 1]
+        if loud:
+            print('hexadentate case')
+        not_eq = list()
+        for j, built_ligs in enumerate(built_ligand_list):
+            hexadentate_coord_list = np.array([mol.getAtom(
+                ii).coords() for ii in ligcons[j]])
+            ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
+            if loud:
+                print('hexadentate coord LIST!')
+                print(hexadentate_coord_list)
+            point_combos = combinations([0,1,2,3,4,5],4)
+            error_list = []
+            combo_list = []
+            fitlist = []
+            for i, combo in enumerate(point_combos):
+                combo_list.append(list(combo))
+                A = []
+                b = []
+                for point_num in combo:
+                    coordlist = hexadentate_coord_list[point_num]
+                    A.append([coordlist[0], coordlist[1], 1])
+                    b.append(coordlist[2])
+                ##### This code builds the best fit plane between 4 points,
+                ##### Then calculates the variance of the 4 points with respect to the plane
+                ##### The 4 that have the least variance are flagged as the eq plane.
+                mat_b = np.matrix(b).T
+                mat_A = np.matrix(A)
+                fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                fitlist.append(fit)
+                errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                error_var = np.var(errors)
+                error_list.append(error_var)
+            if loud:
+                print('combos below')
+                print(combo_list)
+                print('errors next, argmin combo selected')
+                print(error_list)
+            best_fit_planes = np.squeeze(np.array(error_list)).argsort()[:3] #Get the 3 best fit planes. Argpartition does not sort
+            perpdist = []
+            perpcombo = []
+            for fitnum, best_fit in enumerate(best_fit_planes):
+                temp_fit = fitlist[best_fit]
+                temp_combo = combo_list[best_fit]
+                perpcombo.append(int(best_fit))
+                temp_ax = set(range(0,6))-set(temp_combo)
+                # print(fitnum, temp_ax)
+                ax_dist = []
+                for point_num in temp_ax:
+                    coordlist = hexadentate_coord_list[point_num]
+                    planez = temp_fit[0] * coordlist[0] + temp_fit[1] * coordlist[1] + fit[2]
+                    plane_coords = [coordlist[0],coordlist[1],planez]
+                    adjusted_coords = [coordlist[0], coordlist[1], abs(coordlist[2])]
+                    squared_dist = np.sum((np.array(adjusted_coords)-np.array(plane_coords))**2, axis=0)
+                    dist = np.squeeze(np.sqrt(squared_dist))
+                    ax_dist.append(dist)
+                perpdist.append(np.mean(ax_dist))
+            # if loud:
+            print("Perpendicular distance is",perpdist, perpcombo, len(perpdist), len(best_fit_planes))
+            not_ax_points = combo_list[perpcombo[np.argmax(np.array(perpdist))]]
+            if len(set(not_ax_points)) != 4:
+                print('The equatorial plane is not being assigned correctly. Please check.')
+                sardines
+            else:
+                bot_idx = list(set(range(6))-set(not_ax_points))[0]
+                top_idx = list(set(range(6))-set(not_ax_points))[1]
+                if loud:
+                    print('This is bot_idx',bot_idx)
+                bot_lig = j
+                top_lig = j
+                bot_con = [ligcons[j][bot_idx]]
+                top_con = [ligcons[j][top_idx]]
+        allowed = list(set(allowed)-set(not_eq))
+        if loud:
+            print('this is the allowed list', allowed, not_eq)
+        eq_lig_list = [top_lig]
+        eq_con_list = eq_con_list = [
+            list(set([ligcons[0][i] for i in not_ax_points]))]
+        ax_lig_list = [top_lig, bot_lig]
+        ax_con_list = [top_con, bot_con]
+        if loud:
+            print('con lists', eq_con_list, ax_con_list)
+
     ############### DONE WITH CLASSIFICATION ######
     # ax_lig=ligand_records[ligand_counts.index(2)]
     # eq_lig=ligand_records[ligand_counts.index(4)]
