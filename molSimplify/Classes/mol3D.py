@@ -25,7 +25,7 @@ import xml.etree.ElementTree as ET
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis, \
     connectivity_match
 from molSimplify.Scripts.rmsd import rigorous_rmsd
-from molSimplify.Scripts.ligands_helpers import ligand_breakdown, ligand_assign
+
 
 try:
     import PyQt5
@@ -2133,6 +2133,7 @@ class mol3D:
                        flag_lbd=True, debug=False, depth=3,
                        check_whole=False):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
         flag_match = True
         self.my_mol_trunc = mol3D()
         self.my_mol_trunc.copymol3D(self)
@@ -2798,6 +2799,7 @@ class mol3D:
             print("chargefile does not exist.", chargefile)
 
     def get_symmetry_denticity(self):
+        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
         liglist, ligdents, ligcons = ligand_breakdown(self)
         try:
             _, eq_ligand_list, _, _, _, _, _, _, _ = ligand_assign(self, liglist, ligdents, ligcons)
