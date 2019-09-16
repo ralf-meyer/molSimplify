@@ -130,7 +130,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     eq_con_list = list()
     for i, ligand_indices in enumerate(liglist):
         this_ligand = ligand(mol, ligand_indices, ligdents[i])
-        # this_ligand.obtain_mol3d()
+        this_ligand.obtain_mol3d()
         # lig_natoms_list.append(this_ligand.mol.natoms) ## old one with obtain_mol3d
         built_ligand_list.append(this_ligand)
         lig_natoms_list.append(len(this_ligand.index_list))
