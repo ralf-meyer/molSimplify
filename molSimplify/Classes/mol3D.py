@@ -553,31 +553,32 @@ class mol3D:
     #  @param self The object pointer
     #  @oct flag to control  special oct-metal bonds
     def createMolecularGraph(self, oct=True):
-        index_set = list(range(0, self.natoms))
-        A = np.zeros((self.natoms, self.natoms))
-        catoms_metal = list()
-        metal_ind = None
-        for i in index_set:
-            if oct:
-                if self.getAtom(i).ismetal():
-                    this_bonded_atoms = self.get_fcs()
-                    metal_ind = i
-                    catoms_metal = this_bonded_atoms
-                    if i in this_bonded_atoms:
-                        this_bonded_atoms.remove(i)
-                else:
-                    this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
-            else:
-                this_bonded_atoms = self.getBondedAtoms(i, debug=False)
-            for j in index_set:
-                if j in this_bonded_atoms:
-                    A[i, j] = 1
-        if not metal_ind == None:
+        if not len(self.graph):
+            index_set = list(range(0, self.natoms))
+            A = np.zeros((self.natoms, self.natoms))
+            catoms_metal = list()
+            metal_ind = None
             for i in index_set:
-                if not i in catoms_metal:
-                    A[i, metal_ind] = 0
-                    A[metal_ind, i] = 0
-        self.graph = A
+                if oct:
+                    if self.getAtom(i).ismetal():
+                        this_bonded_atoms = self.get_fcs()
+                        metal_ind = i
+                        catoms_metal = this_bonded_atoms
+                        if i in this_bonded_atoms:
+                            this_bonded_atoms.remove(i)
+                    else:
+                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
+                else:
+                    this_bonded_atoms = self.getBondedAtoms(i, debug=False)
+                for j in index_set:
+                    if j in this_bonded_atoms:
+                        A[i, j] = 1
+            if not metal_ind == None:
+                for i in index_set:
+                    if not i in catoms_metal:
+                        A[i, metal_ind] = 0
+                        A[metal_ind, i] = 0
+            self.graph = A
 
     # Deletes specific atom from molecule
     #
@@ -838,27 +839,30 @@ class mol3D:
     #  @param ind Index of reference atom
     #  @return List of indices of bonded atoms
     def getBondedAtoms(self, ind, debug=False):
-        ratom = self.getAtom(ind)
-        # calculates adjacent number of atoms
-        nats = []
-        for i, atom in enumerate(self.atoms):
-            d = distance(ratom.coords(), atom.coords())
-            distance_max = 1.15 * (atom.rad + ratom.rad)
-            if atom.symbol() == "C" and not ratom.symbol() == "H":
-                distance_max = min(2.75, distance_max)
-            if ratom.symbol() == "C" and not atom.symbol() == "H":
-                distance_max = min(2.75, distance_max)
-            if ratom.symbol() == "H" and atom.ismetal:
-                # tight cutoff for metal-H bonds
-                distance_max = 1.1 * (atom.rad + ratom.rad)
-            if atom.symbol() == "H" and ratom.ismetal:
-                # tight cutoff for metal-H bonds
-                distance_max = 1.1 * (atom.rad + ratom.rad)
-            if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
-                distance_max = 1.05 * (atom.rad + ratom.rad)
-                # print(distance_max)
-            if (d < distance_max and i != ind):
-                nats.append(i)
+        if len(self.graph):
+            nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
+        else:
+            ratom = self.getAtom(ind)
+            # calculates adjacent number of atoms
+            nats = []
+            for i, atom in enumerate(self.atoms):
+                d = distance(ratom.coords(), atom.coords())
+                distance_max = 1.15 * (atom.rad + ratom.rad)
+                if atom.symbol() == "C" and not ratom.symbol() == "H":
+                    distance_max = min(2.75, distance_max)
+                if ratom.symbol() == "C" and not atom.symbol() == "H":
+                    distance_max = min(2.75, distance_max)
+                if ratom.symbol() == "H" and atom.ismetal:
+                    # tight cutoff for metal-H bonds
+                    distance_max = 1.1 * (atom.rad + ratom.rad)
+                if atom.symbol() == "H" and ratom.ismetal:
+                    # tight cutoff for metal-H bonds
+                    distance_max = 1.1 * (atom.rad + ratom.rad)
+                if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
+                    distance_max = 1.05 * (atom.rad + ratom.rad)
+                    # print(distance_max)
+                if (d < distance_max and i != ind):
+                    nats.append(i)
         return nats
 
     # Gets atoms bonded to a specific atom with a given threshold
@@ -1060,6 +1064,8 @@ class mol3D:
                             distance_max) + ')'))
                     if d < 2 and not atom.symbol() == 'H' and not ratom.symbol() == 'H':
                         print('Error, mol3D could not understand conenctivity in mol')
+        if len(self.graph):
+            nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
         return nats
 
     # Gets atoms bonded to a specific atom using the molecular graph, or creates it
