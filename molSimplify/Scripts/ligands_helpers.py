@@ -1,6 +1,5 @@
 import numpy as np
 from itertools import combinations
-from scipy.stats.mstats import gmean
 from molSimplify.Classes.ligand import ligand
 
 
@@ -299,45 +298,30 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             print('hexadentate case')
         not_eq = list()
         for j, built_ligs in enumerate(built_ligand_list):
-            hexadentate_coord_list = np.array([mol.getAtom(
+            hexadentate_coord_list = np.array([mol.getAtom(mol.findMetal()[0]).coords()]+[mol.getAtom(
                 ii).coords() for ii in ligcons[j]])
             ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
             if loud:
                 print('hexadentate coord LIST!')
                 print(hexadentate_coord_list)
-            # point_combos = combinations([1,2,3,4,5,6],4)
-            pair_combos = list(combinations([0,1,2,3,4,5],2))
-            angle_list = []
-            pair_list = []
-            for i, pair in enumerate(pair_combos):
-                pair_list.append(list(pair))
-                p1 = np.squeeze(np.array(hexadentate_coord_list[list(pair)[0]]))
-                p2 = np.squeeze(np.array(hexadentate_coord_list[list(pair)[1]]))
-                m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
-                v1u = np.squeeze(np.array((m-p1)/np.linalg.norm((m-p1))))
-                v2u = np.squeeze(np.array((m-p2)/np.linalg.norm((m-p2))))
-                # print('v1v2',v1u,v2u)
-                angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
-                if loud:
-                    print('pair of atoms, then angle',pair,angle)
-                angle_list.append(angle)
-            argsort_angle_list = np.squeeze(np.array(angle_list)).argsort()[-3:][::-1]
-            point_combos = [pair_list[argsort_angle_list[0]]+pair_list[argsort_angle_list[1]],
-                            pair_list[argsort_angle_list[1]]+pair_list[argsort_angle_list[2]],
-                            pair_list[argsort_angle_list[2]]+pair_list[argsort_angle_list[0]]]
+            point_combos = combinations([1,2,3,4,5,6],4)
+            point_combos_shift = list(combinations([0,1,2,3,4,5],4))
             error_list = []
             combo_list = []
             fitlist = []
             for i, combo in enumerate(point_combos):
-                combo_list.append(combo)
+                combo_list.append(list(point_combos_shift[i]))
                 A = []
                 b = []
+                metal_coords = hexadentate_coord_list[0]
+                A.append([metal_coords[0], metal_coords[1], 1])
+                b.append(metal_coords[2])
                 for point_num in combo:
                     coordlist = hexadentate_coord_list[point_num]
                     A.append([coordlist[0], coordlist[1], 1])
                     b.append(coordlist[2])
-                ##### This code builds the best fit plane between 4 points,
-                ##### Then calculates the variance of the 4 points with respect to the plane
+                ##### This code builds the best fit plane between 4 points + metal,
+                ##### Then calculates the variance of the 4 points + metal with respect to the plane
                 ##### The 4 that have the least variance are flagged as the eq plane.
                 mat_b = np.matrix(b).T
                 mat_A = np.matrix(A)
@@ -351,7 +335,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                 print(combo_list)
                 print('errors next, argmin combo selected')
                 print(error_list)
-            best_fit_planes = np.squeeze(np.array(error_list)).argsort()[:3]
+            best_fit_planes = np.squeeze(np.array(error_list)).argsort()[:3] #Get the 3 best fit planes.
             perpdist = []
             perpcombo = []
             for fitnum, best_fit in enumerate(best_fit_planes):
