@@ -970,7 +970,6 @@ class mol3D:
                     distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
                 else:
                     distance_max = 1.37 * (atom.rad + ratom.rad)
-
                 if debug:
                     print(('metal in  cat ' + str(atom.symbol()) +
                            ' and rat ' + str(ratom.symbol())))
@@ -2006,19 +2005,30 @@ class mol3D:
     # num_coord_metal and the list of indexs of the connecting atoms are stored in mol3D
     def get_num_coord_metal(self, debug):
         metal_list = self.findMetal()
-        if len(self.findMetal()) > 0:
+        if len(metal_list) > 0:
             metal_ind = self.findMetal()[0]
             metal_coord = self.getAtomCoords(metal_ind)
-            catoms = self.getBondedAtomsOct(ind=metal_ind)
+            _catoms = self.getBondedAtomsOct(ind=metal_ind)
+            dist2metal = {}
+            for ind in _catoms:
+                coord = self.getAtom(ind).coords()
+                dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
+                dist2metal.update({ind: dist})
+            min_bond_dist = 2.0
+            if len(dist2metal) > 0:
+                min_bond_dist = max(2.0, min(dist2metal.values()))
+            max_bond_dist = min_bond_dist + 1.0
+            catoms = []
+            for ind in _catoms:
+                if dist2metal[ind] <= max_bond_dist:
+                    catoms.append(ind)
         else:
             metal_ind = []
             metal_coord = []
             catoms = []
-
         if debug:
-            print(('metal coordinate:', metal_coord))
+            print(('metal coordinate:', metal_coord, self.getAtom(metal_ind).symbol()))
             print(('coordinations: ', catoms, len(catoms)))
-
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
 
@@ -2333,11 +2343,19 @@ class mol3D:
         catoms = self.getBondedAtomsSmart(ind)
         metal_ind = self.findMetal()[0]
         flag = False
+        endcheck = False
         if not self.atoms[ind].sym == 'O':
             if metal_ind in catoms and len(catoms) == 2:
                 ind_next = self.find_the_other_ind(catoms[:], metal_ind)
                 _catoms = self.getBondedAtomsSmart(ind_next)
-                if not self.atoms[ind_next].sym == 'H':
+                # print("~~~~", (self.atoms[ind].sym, self.atoms[ind_next].sym))
+                if (self.atoms[ind].sym, self.atoms[ind_next].sym) in self.globs.tribonddict().keys():
+                    dist = np.linalg.norm(np.array(self.atoms[ind].coords()) - np.array(self.atoms[ind_next].coords()))
+                    if dist > self.globs.tribonddict()[(self.atoms[ind].sym, self.atoms[ind_next].sym)]:
+                        endcheck = True
+                else:
+                    endcheck = True
+                if (not self.atoms[ind_next].sym == 'H') and (not endcheck):
                     if len(_catoms) == 1:
                         flag = True
                     elif len(_catoms) == 2:
@@ -2349,8 +2367,6 @@ class mol3D:
                         ang = vecangle(vec1, vec2)
                         if ang > 170:
                             flag = True
-                else:
-                    print('Hydrogens do not count for linear ligand check!')
         # print(flag, catoms)
         return flag, catoms
 

@@ -69,3 +69,17 @@ def test_example_10(tmpdir):
     thresh = 0.01
     passGeo = hp.runtestgeo(tmpdir, testName, thresh, deleteH=False)
     assert passGeo
+
+
+def test_example_11(tmpdir):
+    testName = "compact_bonding"
+    thresh = 0.01
+    passGeo = hp.runtestgeo_optonly(tmpdir, testName, thresh)
+    assert passGeo
+
+
+def test_example_12(tmpdir):
+    testName = "triplebond_linear_broken"
+    thresh = 0.01
+    passGeo = hp.runtestgeo_optonly(tmpdir, testName, thresh)
+    assert passGeo
