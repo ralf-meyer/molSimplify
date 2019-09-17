@@ -2829,4 +2829,4 @@ class mol3D:
             for lig in liglist[1:]:
                 if not connectivity_match(liglist[0], lig, self, self):
                     homoleptic = False
-        return eqsym, maxdent, homoleptic
+        return eqsym, maxdent, ligdents, homoleptic
