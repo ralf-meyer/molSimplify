@@ -13,7 +13,7 @@ from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.mol3D import*
 from molSimplify.Classes.ligand import *
-from molSimplify.Scripts.ligands_helpers import ligand_breakdown, ligand_assign
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
 from molSimplify.Informatics.graph_analyze import *
 
 
