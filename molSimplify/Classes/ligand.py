@@ -4,7 +4,8 @@
 #  Written by JP Janet for HJK Group
 #
 #  Dpt of Chemical Engineering, MIT
-
+import numpy as np
+from itertools import combinations
 from molSimplify.Classes.mol3D import mol3D
 
 # Ligand class for postprocessing DFT results by measuring ligand properties
