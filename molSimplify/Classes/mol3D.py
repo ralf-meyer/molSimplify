@@ -26,7 +26,6 @@ from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_pa
     connectivity_match
 from molSimplify.Scripts.rmsd import rigorous_rmsd
 
-
 try:
     import PyQt5
     from molSimplify.Classes.miniGUI import *
@@ -858,7 +857,8 @@ class mol3D:
                 if atom.symbol() == "H" and ratom.ismetal:
                     # tight cutoff for metal-H bonds
                     distance_max = 1.1 * (atom.rad + ratom.rad)
-                if atom.symbol() == "I" or ratom.symbol() == "I" and not (atom.symbol() == "I" and ratom.symbol() == "I"):
+                if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+                        atom.symbol() == "I" and ratom.symbol() == "I"):
                     distance_max = 1.05 * (atom.rad + ratom.rad)
                     # print(distance_max)
                 if (d < distance_max and i != ind):
@@ -2016,13 +2016,33 @@ class mol3D:
             metal_coord = self.getAtomCoords(metal_ind)
             _catoms = self.getBondedAtomsOct(ind=metal_ind)
             dist2metal = {}
+            dist2catoms = {}
             for ind in _catoms:
+                tmpd = {}
                 coord = self.getAtom(ind).coords()
                 dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
                 dist2metal.update({ind: dist})
-            min_bond_dist = 2.0
+                for _ind in _catoms:
+                    _coord = self.getAtom(_ind).coords()
+                    dist = np.linalg.norm(np.array(coord) - np.array(_coord))
+                    tmpd.update({_ind: dist})
+                dist2catoms.update({ind: tmpd})
+            _catoms_set = set()
+            for ind in _catoms:
+                tmp = {}
+                distind = np.linalg.norm(np.array(self.getAtom(ind).coords()) - np.array(metal_coord))
+                tmp.update({ind: distind})
+                for _ind in _catoms:
+                    if dist2catoms[ind][_ind] < 1.3:
+                        tmp.update({_ind: dist2metal[_ind]})
+                _catoms_set.add(min(tmp.items(), key=lambda x: x[1])[0])
+            _catoms = list(_catoms_set)
+            min_bond_dist = 2.0  ## This need double check with Aditya/ Michael
             if len(dist2metal) > 0:
-                min_bond_dist = max(2.0, min(dist2metal.values()))
+                dists = np.array(dist2metal.values())
+                inds = np.where(dists > min_bond_dist)[0]
+                if inds.shape[0] > 0:
+                    min_bond_dist = min(dists[inds])
             max_bond_dist = min_bond_dist + 1.0
             catoms = []
             for ind in _catoms:
@@ -2037,6 +2057,8 @@ class mol3D:
             print(('coordinations: ', catoms, len(catoms)))
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
+        print("self.catoms: ", self.catoms)
+        print("self.num_coord_metal: ", self.num_coord_metal)
 
     # Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
     # Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
@@ -2161,8 +2183,8 @@ class mol3D:
                 self.init_mol_trunc = obtain_truncation_metal(init_mol, hops=depth)
                 self.my_mol_trunc.createMolecularGraph()
                 self.init_mol_trunc.createMolecularGraph()
-                # self.my_mol_trunc.writexyz("final_trunc.xyz")
-                # self.init_mol_trunc.writexyz("init_trunc.xyz")
+                self.my_mol_trunc.writexyz("final_trunc.xyz")
+                self.init_mol_trunc.writexyz("init_trunc.xyz")
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(
                 self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
@@ -2191,6 +2213,8 @@ class mol3D:
         if not catoms_arr == None:
             catoms, catoms_init = catoms_arr, catoms_arr
         else:
+            self.my_mol_trunc.writexyz("final_trunc.xyz")
+            self.init_mol_trunc.writexyz("init_trunc.xyz")
             _, catoms = self.my_mol_trunc.oct_comp(debug=False)
             _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
         if debug:
