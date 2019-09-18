@@ -2039,7 +2039,7 @@ class mol3D:
             _catoms = list(_catoms_set)
             min_bond_dist = 2.0  ## This need double check with Aditya/ Michael
             if len(dist2metal) > 0:
-                dists = np.array(dist2metal.values())
+                dists = np.array(list(dist2metal.values()))
                 inds = np.where(dists > min_bond_dist)[0]
                 if inds.shape[0] > 0:
                     min_bond_dist = min(dists[inds])
