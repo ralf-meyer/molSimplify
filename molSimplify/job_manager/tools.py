@@ -6,8 +6,7 @@ import subprocess
 import pandas as pd
 import shutil
 import time
-from resub_history import resub_history
-from textfile import textfile
+from molSimplify.job_manager.classes import resub_history,textfile
 
 def try_float(obj):
     # Converts an object to a floating point if possible
@@ -49,18 +48,6 @@ def list_active_jobs():
     name = job_report.wordgrab('jobname:',2)
         
     return name
-# ~ def list_active_jobs():
-    # ~ #  @return A list of active jobs for the current user. By job name
-    
-    # ~ job_report = textfile() 
-    # ~ job_report.lines_as_list = call_bash("qstat -r")
-    # ~ job_report.nested_word_list = job_report.wordlist()
-    
-    # ~ name = []
-    # ~ for job in  job_report.wordsearch('jobname:'):
-        # ~ name.append(job[2])
-        
-    # ~ return name
 
 def check_completeness(directory = 'in place', max_resub = 5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
@@ -187,9 +174,9 @@ def read_outfile(outfile_path):
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
     
     output = textfile(outfile_path)
-    output_type = textfile.wordgrab(['TeraChem','ORCA'],[0]*2)
-    for counter,match in output_type:
-        if match > 0:
+    output_type = output.wordgrab(['TeraChem','ORCA'],'whole_line')
+    for counter,match in enumerate(output_type):
+        if match[0]:
             break
         if counter == 1:
             raise ValueError('.out file type not recognized!')
@@ -206,15 +193,16 @@ def read_outfile(outfile_path):
     time = None
 
     if output_type == 'TeraChem':
+        
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
         finalenergy,s_squared,s_squared_ideal,time = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing'],[2,2,4,3],last_line=True)
-        min_energy = output.wordgrab('FINAL',2,min_value = True)
+        min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
         if s_squared_ideal:
-            s_squared_ideal = s_squared_ideal.strip(')')
+            s_squared_ideal = float(s_squared_ideal.strip(')'))
         
-        is_finished = output.wordgrab(['finished:','finished:'],[0,1],last_line=True)
+        is_finished = output.wordgrab(['finished:'],'whole_line',last_line=True)[0]
         if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
-            finished = output.wordgrab('finished:','whole line',last_line=True)[2:]
+            finished = is_finished[2:]
         
         is_scf_error = output.wordgrab('DISS','whole line')
         if type(is_scf_error) == list and len(is_scf_error) > 0:
@@ -246,110 +234,16 @@ def read_outfile(outfile_path):
     return_dict['min_energy'] = try_float(min_energy)
     return_dict['scf_error'] = scf_error
     return return_dict
-# ~ def read_outfile(outfile_path):
-    # ~ ## Reads TeraChem,ORCA, and MOLCAS outfiles
-    # ~ #  @param outfile_path complete path to the outfile to be read, as a string
-    # ~ #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
-    
-    # ~ output = textfile(outfile_path)
-    # ~ output_type = textfile.wordgrab(['TeraChem','ORCA','MOLCAS'],[0]*3)
-    # ~ for counter,match in output_type:
-        # ~ if len(match) > 0:
-            # ~ break
-        # ~ if counter == 2:
-            # ~ raise ValueError('.out file type not recognized!')
-    # ~ output_type = ['TeraChem','ORCA','MOLCAS'][counter]
-    
-    # ~ name = None
-    # ~ finished = None
-    # ~ charge = None
-    # ~ finalenergy = None
-    # ~ min_energy = None
-    # ~ s_squared = None
-    # ~ s_squared_ideal = None
-    # ~ scf_error = False
-    # ~ time = None
-
-    # ~ if output.type == 'TeraChem':
-        # ~ name = output.wordgrab('Startfile',4,last_line = False)
-        # ~ name = name.rsplit('.',1)[0]    
-        # ~ charge = output.wordgrab('charge:',2,last_line = False)
-        # ~ finalenergy = output.wordgrab('FINAL',2)
-        # ~ min_energy = output.wordgrab('FINAL',2,min_value = True)
-        # ~ s_squared = output.wordgrab('S-SQUARED:',2)
-        # ~ s_squared_ideal = output.wordgrab('S-SQUARED:',4)
-        # ~ if s_squared_ideal:
-            # ~ s_squared_ideal = s_squared_ideal.strip(')')
-        # ~ time = output.wordgrab('processing',3)
-
-        # ~ is_finished = output.wordsearch('finished:')
-        # ~ if type(is_finished) == list and len(is_finished) > 0:
-            # ~ is_finished = is_finished[-1]
-            # ~ if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
-                # ~ finished = is_finished[2:]
-        
-        # ~ is_scf_error = output.wordsearch('DIIS')
-        # ~ if type(is_scf_error) == list and len(is_scf_error) > 0:
-            # ~ for scf in is_scf_error:
-                # ~ if ('failed' in scf) and ('converge' in scf) and ('iterations,' in scf) and ('ADIIS' in scf):
-                    # ~ scf = scf[5]
-                    # ~ scf = int(scf.split('+')[0])
-                    # ~ if scf > 5000:
-                        # ~ scf_error = [True,scf]
-                    
-    # ~ if output.type == 'ORCA':
-        # ~ finalenergy = output.wordgrab('FINAL',8)
-        # ~ s_squared = output.wordgrab('<S**2>',13)
-        # ~ s_squared_ideal = output.wordgrab('S*(S+1)',12)
-        # ~ timekey = 'TIME:'
-        # ~ if type(output.wordsearch(timekey)) == list: 
-            # ~ time = float(output.wordgrab(timekey,3))*24*60*60+float(output.wordgrab(timekey,5))*60*60+float(output.wordgrab(timekey,7))*60+float(output.wordgrab(timekey,9))+float(output.wordgrab(timekey,11))*0.001
-
-    # ~ if output.type == 'MOLCAS':
-        # ~ finalenergy = output.wordgrab('KS-DFT',33)
-        
-        # ~ try:
-            # ~ (foo,spin_multiplicity_location) = output.wordsearch('spin',True)
-            # ~ spin_multiplicity_location = spin_multiplicity_location[0]+1
-            # ~ spin_multiplicity = output.nested_word_list[spin_multiplicity_location]
-            # ~ spin_multiplicity = float(spin_multiplicity[6])
-            # ~ spin_quantum_number = (spin_multiplicity-1)/2
-            # ~ s_squared_ideal = spin_quantum_number*(spin_quantum_number+1)
-        # ~ except:
-            # ~ print 'The spin multiplicity of your run could not be found'
-            
-        # ~ s_squared = output.wordgrab('S(S+1)',40)
-        
-        # ~ time = output.wordsearch('auto')
-        # ~ time = time[-1]
-        # ~ time_statement = ''
-        # ~ for entry in time:
-            # ~ time_statement = time_statement + ' ' + entry
-        # ~ time = time_statement
-        
-    # ~ return_dict = {}
-    # ~ return_dict['name'] = name
-    # ~ return_dict['charge'] = try_float(charge)
-    # ~ return_dict['finalenergy'] = try_float(finalenergy)
-    # ~ return_dict['time'] = try_float(time)
-    # ~ return_dict['s_squared'] = try_float(s_squared)
-    # ~ return_dict['s_squared_ideal'] = try_float(s_squared_ideal)
-    # ~ return_dict['finished'] = finished
-    # ~ return_dict['min_energy'] = try_float(min_energy)
-    # ~ return_dict['scf_error'] = scf_error
-    # ~ return return_dict
 
 def read_infile(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     inp = textfile(root+'.in')
-    charge = inp.wordgrab('charge',1,first_line=True)
-    spinmult = inp.wordgrab('spinmult',1,first_line=True)
-    solvent = inp.wordgrab('pcm',0,first_line=True)
+    charge,spinmult,solvent,run_type = inp.wordgrab(['charge ','spinmult ','pcm ','run '],[1,1,0,1],last_line=True)
+    charge,spinmult = int(charge),int(spinmult)
     if solvent:
         solvent = True
     else:
         solvent = False
-    run_type = inp.wordgrab('run',1,first_line=True)
     return charge,spinmult,solvent,run_type
 
 def read_charges(PATH):
@@ -360,24 +254,11 @@ def read_charges(PATH):
             PATH = os.path.join(os.path.split(PATH)[0],'scr','charge_mull.xls')
     try:
         charge_mull = textfile(PATH)
-        split_lines = [i.split for i in charge_mull.lines]
+        split_lines = [i.split() for i in charge_mull.lines]
         charges = [i[1] + ' '+ i[2] for i in split_lines]
         return charges
     except:
         return []
-        
-# ~ def read_charges(PATH):
-    # ~ #Takes the path to either the outfile or the charge_mull.xls and returns the charges
-    # ~ PATH = convert_to_absolute_path(PATH)
-    # ~ if len(PATH.rsplit('.',1)) > 1:
-        # ~ if PATH.rsplit('.',1)[1] == 'out':
-            # ~ PATH = os.path.join(os.path.split(PATH)[0],'scr','charge_mull.xls')
-    # ~ try:
-        # ~ charge_mull = textfile(PATH)
-        # ~ charges = [i[1] + ' '+ i[2] for i in charge_mull.nested_word_list]
-        # ~ return charges
-    # ~ except:
-        # ~ return []
 
 def read_mullpop(PATH):
     #Takes the path to either the outfile or the mullpop and returns the mullikan populations
@@ -396,23 +277,6 @@ def read_mullpop(PATH):
         return pops
     except:
         return []
-        
-# ~ def read_mullpop(PATH):
-    # ~ #Takes the path to either the outfile or the mullpop and returns the mullikan populations
-    # ~ PATH = convert_to_absolute_path(PATH)
-    # ~ if len(PATH.rsplit('.',1)) > 1:
-        # ~ if PATH.rsplit('.',1)[1] == 'out':
-            # ~ PATH = os.path.join(os.path.split(PATH)[0],'scr','mullpop')
-    # ~ try:
-        # ~ mullpop = textfile(PATH)
-        # ~ if len(mullpop.nested_word_list[2]) == 6:
-            # ~ pops = [i[1] + ' ' + i[5] for i in mullpop.nested_word_list[1:-2]]
-        # ~ else:
-            # ~ pops = [i[1] + ' ' + i[5] + ' ' + i[9] for i in mullpop.nested_word_list[2:-2]]
-            
-        # ~ return pops
-    # ~ except:
-        # ~ return []
     
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd

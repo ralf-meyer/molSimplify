@@ -6,12 +6,11 @@ import numpy as np
 import subprocess
 import shutil
 import time
-import tools
-import moltools
+import molSimplify.job_manager.tools as tools
+import molSimplify.job_manager.moltools as moltools
 import time
 import sys
-from resub_history import resub_history
-from text_parse import textfile
+from molSimplify.job_manager.classes import resub_history,textfile
 
 ## Save the outfile within the resub_history pickel object
 def save_outfile(outfile_path):

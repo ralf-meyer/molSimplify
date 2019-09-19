@@ -76,10 +76,10 @@ class textfile:
             indices = [indices]
             
         results = dict()
-        zipped_values = zip(keywords,indices)
+        zipped_values = zip(keywords,indices,range(len(keywords)))
         
         for line in self.lines:
-            for keyword,index in zipped_values:
+            for keyword,index,keyword_number in zipped_values:
                 if keyword in line:
                     
                     if type(index) == int:
@@ -87,26 +87,25 @@ class textfile:
                     else:
                         matching_value = line.split()
                     
-                    if keyword not in results.keys():
-                        results[keyword] = [matching_value]
+                    if keyword_number not in results.keys():
+                        results[keyword_number] = [matching_value]
                     else:
-                        results[keyword].append(matching_value)
-        
+                        results[keyword_number].append(matching_value)
         if (last_line and min_value) or (last_line and first_line) or (first_line and min_value):
             raise ValueError('Warning, incompatible options selected in text parsing')
-            
+        
         if last_line:
-            for keyword in results.keys():
-                results[keyword] = results[keyword][-1]
+            for keyword_number in results.keys():
+                results[keyword_number] = results[keyword_number][-1]
         if first_line:
-            for keyword in results.keys():
-                results[keyword] = results[keyword][0]
+            for keyword_number in results.keys():
+                results[keyword_number] = results[keyword_number][0]
         if min_value:
-            for keyword in results.keys():
-                results[keyword] = min(results[keyword])
+            for keyword_number in results.keys():
+                results[keyword_number] = min(results[keyword_number])
                 
         results_to_return = []
-        for key in keywords:
+        for key in range(len(keywords)):
             if key in results.keys():
                 results_to_return.append(results[key])
             else:

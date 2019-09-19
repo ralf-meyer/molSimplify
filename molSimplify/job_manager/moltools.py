@@ -9,12 +9,10 @@ import subprocess
 import pandas as pd
 import shutil
 import time
-import tools
+import molSimplify.job_manager.tools as tools
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown
-from resub_history import resub_history
-from text_parse import textfile
-import tools
+from molSimplify.job_manager.classes import resub_history,textfile
 
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
