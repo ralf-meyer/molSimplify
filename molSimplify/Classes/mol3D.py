@@ -2057,8 +2057,9 @@ class mol3D:
             print(('coordinations: ', catoms, len(catoms)))
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
-        print("self.catoms: ", self.catoms)
-        print("self.num_coord_metal: ", self.num_coord_metal)
+        if debug:
+            print("self.catoms: ", self.catoms)
+            print("self.num_coord_metal: ", self.num_coord_metal)
 
     # Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
     # Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
