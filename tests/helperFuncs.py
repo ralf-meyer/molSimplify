@@ -16,7 +16,8 @@ from pkg_resources import resource_filename, Requirement
 
 
 def fuzzy_equal(x1, x2, thresh):
-    return np.fabs(float(x1)-float(x2)) < thresh
+    return np.fabs(float(x1) - float(x2)) < thresh
+
 
 # check whether the string is a integral/float/scientific
 
@@ -89,6 +90,7 @@ def getMetalLigBondLength(mymol3d):
             distance(mymol3d.atoms[mm].coords(), mymol3d.atoms[i].coords()))
     return blength
 
+
 # Compare number of atoms
 
 
@@ -98,10 +100,11 @@ def compareNumAtoms(xyz1, xyz2):
     mol1.readfromxyz(xyz1)
     mol2 = mol3D()
     mol2.readfromxyz(xyz1)
-   # Compare number of atoms
+    # Compare number of atoms
     passNumAtoms = (mol1.natoms == mol2.natoms)
     print("Pass total number of atoms check: ", passNumAtoms)
     return passNumAtoms
+
 
 # Compare Metal Ligand Bond Length
 
@@ -122,6 +125,7 @@ def compareMLBL(xyz1, xyz2, thresh):
     print("Pass metal-ligand bond length check: ", passMLBL)
     print("Threshold for bondlength difference: ", thresh)
     return passMLBL
+
 
 # Compare Ligand Geometry
 
@@ -195,14 +199,14 @@ def jobname(infile):
 def jobdir(infile):
     name = jobname(infile)
     homedir = os.path.expanduser("~")
-    mydir = homedir+'/Runs/'+name
+    mydir = homedir + '/Runs/' + name
     return mydir
 
 
 def parse4test(infile, tmpdir, isMulti=False):
     name = jobname(infile)
     f = tmpdir.join(os.path.basename(infile))
-    newname = f.dirname+"/"+os.path.basename(infile)
+    newname = f.dirname + "/" + os.path.basename(infile)
     data = open(infile).readlines()
     newdata = ""
     hasJobdir = False
@@ -212,16 +216,16 @@ def parse4test(infile, tmpdir, isMulti=False):
             newdata += line
         if ("-lig " in line) and (".smi" in line):  # Need to parse the dir of smi file
             smi = line.strip('\n').split()[1]
-            abs_smi = os.path.dirname(infile)+'/'+smi
-            newdata += "-lig "+abs_smi+"\n"
-            #fsmi = tmpdir.join(smi)
+            abs_smi = os.path.dirname(infile) + '/' + smi
+            newdata += "-lig " + abs_smi + "\n"
+            # fsmi = tmpdir.join(smi)
             # oldsmi=os.path.dirname(infile)+"/"+smi
             # smidata=open(oldsmi).read()
             # fsmi.write(smidata)
             # print "smi file is copied to the temporary running folder!"
-    newdata += "-jobdir "+name+"\n"
+    newdata += "-jobdir " + name + "\n"
     if isMulti == False:
-        newdata += "-name "+name+"\n"
+        newdata += "-name " + name + "\n"
     print(newdata)
     f.write(newdata)
     print("Input file parsed for test is located: ", newname)
@@ -230,10 +234,10 @@ def parse4test(infile, tmpdir, isMulti=False):
 
 def parse4testNoFF(infile, tmpdir):
     name = jobname(infile)
-    newname = name+"_noff"
-    newinfile = name+"_noff.in"
+    newname = name + "_noff"
+    newinfile = name + "_noff.in"
     f = tmpdir.join(newinfile)
-    fullnewname = f.dirname+"/"+newinfile
+    fullnewname = f.dirname + "/" + newinfile
     data = open(infile).readlines()
     newdata = ""
     hasJobdir = False
@@ -251,31 +255,32 @@ def parse4testNoFF(infile, tmpdir):
         for line in data:
             if not (("-jobdir" in line) or ("-name" in line) or ("-ff " in line)):
                 newdata += line
-        newdata += "-jobdir "+newname+"\n"
-        newdata += "-name "+newname+"\n"
+        newdata += "-jobdir " + newname + "\n"
+        newdata += "-name " + newname + "\n"
         print(newdata)
         f.write(newdata)
         print("Input file parsed for no FF test is located: ", fullnewname)
     return fullnewname
 
 
-
 def report_to_dict(lines):
-   """ 
-   create a dictionary from comma
-   separated files 
-   """
-   d = dict()
-   for l in lines:
+    """
+    create a dictionary from comma
+    separated files
+    """
+    d = dict()
+    for l in lines:
         key, val = l.strip().split(',')[0:2]
         try:
-            d[key]=float(val.strip('[]'))
+            d[key] = float(val.strip('[]'))
         except:
-            d[key]=str(val.strip('[]'))
+            d[key] = str(val.strip('[]'))
     ## extra proc for ANN_bond list:
-   if 'ANN_bondl' in d.keys():
-         d['ANN_bondl']=[float(i.strip('[]')) for i in d['ANN_bondl'].split()]
-   return(d)
+    if 'ANN_bondl' in d.keys():
+        d['ANN_bondl'] = [float(i.strip('[]')) for i in d['ANN_bondl'].split()]
+    return (d)
+
+
 # compare the report, split key and values, do
 # fuzzy comparison on the values
 
@@ -298,36 +303,37 @@ def compare_report_new(report1, report2):
 
         for k in dict1.keys():
             if Equal:
-                val1 =  dict1[k]
+                val1 = dict1[k]
                 if not k in dict2.keys():
                     Equal = False
                     print("Report compare failed for ", report1, report2)
-                    print("keys " + str(k) + " not present in " +str(report2))
+                    print("keys " + str(k) + " not present in " + str(report2))
                 else:
                     val2 = dict2[k]
-     
+
                     if not k == "ANN_bondl":
-                           # see whether the values are numbers or text
-                            if is_number(val1) and is_number(val2):
-                                Equal = fuzzy_equal(val1, val2, 1e-4)
-                            else:
-                                Equal = (val1 == val2)
-                            if not Equal:
-                                print("Report compare failed for ", report1, report2)
-                                print("Values don't match for key",k)
-                                print([val1,val2])
+                        # see whether the values are numbers or text
+                        if is_number(val1) and is_number(val2):
+                            Equal = fuzzy_equal(val1, val2, 1e-4)
+                        else:
+                            Equal = (val1 == val2)
+                        if not Equal:
+                            print("Report compare failed for ", report1, report2)
+                            print("Values don't match for key", k)
+                            print([val1, val2])
                     else:
-                            # loop over ANN bonds?
-                            # see whether the values are numbers or text
-                            for ii,v in enumerate(val1):
-                                Equal = fuzzy_equal(v, val2[ii], 1e-4)
-                            if not Equal:
-                                print("Report compare failed for ", report1, report2)
-                                print("Values don't match for key",k)
-                                print([val1,val2])
+                        # loop over ANN bonds?
+                        # see whether the values are numbers or text
+                        for ii, v in enumerate(val1):
+                            Equal = fuzzy_equal(v, val2[ii], 1e-4)
+                        if not Equal:
+                            print("Report compare failed for ", report1, report2)
+                            print("Values don't match for key", k)
+                            print([val1, val2])
             else:
                 break
     return Equal
+
 
 # When generating multiple files from the 1 input file
 # Compare the test directory and reference directory for
@@ -360,7 +366,7 @@ def compare_qc_input(inp, inp_ref):
         return passQcInputCheck
     elif os.path.exists(inp_ref) and (not os.path.exists(inp)):
         passQcInputCheck = False
-        print(inp+"not found")
+        print(inp + "not found")
         return passQcInputCheck
 
     data1 = open(inp, 'r').read()
@@ -377,7 +383,7 @@ def compare_qc_input(inp, inp_ref):
 
 def runtest(tmpdir, name, threshMLBL, threshLG, threshOG):
     infile = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/inputs/"+name+".in")
+        "molSimplify"), "tests/inputs/" + name + ".in")
     newinfile = parse4test(infile, tmpdir)
     args = ['main.py', '-i', newinfile]
     startgen(args, False, False)
@@ -394,11 +400,11 @@ def runtest(tmpdir, name, threshMLBL, threshLG, threshOG):
         output_qcin = myjobdir + '/molcas.input'
 
     ref_xyz = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/refs/"+name+".xyz")
+        "molSimplify"), "tests/refs/" + name + ".xyz")
     ref_report = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/refs/"+name+".report")
+        "molSimplify"), "tests/refs/" + name + ".report")
     ref_qcin = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/refs/"+name+".qcin")
+        "molSimplify"), "tests/refs/" + name + ".qcin")
 
     print("Test input file: ", newinfile)
     print("Test output files are generated in ", myjobdir)
@@ -420,11 +426,11 @@ def runtest(tmpdir, name, threshMLBL, threshLG, threshOG):
 
 def runtestgeo(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
     initgeo = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/inputs/geocheck/"+name+"/init.xyz")
+        "molSimplify"), "tests/inputs/geocheck/" + name + "/init.xyz")
     optgeo = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/inputs/geocheck/"+name+"/opt.xyz")
+        "molSimplify"), "tests/inputs/geocheck/" + name + "/opt.xyz")
     refjson = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/refs/geocheck/"+name+"/ref.json")
+        "molSimplify"), "tests/refs/geocheck/" + name + "/ref.json")
     mymol = mol3D()
     mymol.readfromxyz(optgeo)
     init_mol = mol3D()
@@ -447,12 +453,28 @@ def runtestgeo(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
     return passGeo
 
 
+def runtestgeo_optonly(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
+    optgeo = resource_filename(Requirement.parse(
+        "molSimplify"), "tests/inputs/geocheck/" + name + "/opt.xyz")
+    refjson = resource_filename(Requirement.parse(
+        "molSimplify"), "tests/refs/geocheck/" + name + "/ref.json")
+    mymol = mol3D()
+    mymol.readfromxyz(optgeo)
+    if geo_type == "oct":
+        _, _, dict_struct_info = mymol.IsOct(debug=False,
+                                             flag_deleteH=deleteH)
+    with open(refjson, "r") as fo:
+        dict_ref = json.load(fo)
+    passGeo = comparedict(dict_ref, dict_struct_info, thresh)
+    return passGeo
+
+
 def runtestNoFF(tmpdir, name, threshMLBL, threshLG, threshOG):
     infile = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/inputs/"+name+".in")
+        "molSimplify"), "tests/inputs/" + name + ".in")
     newinfile = parse4testNoFF(infile, tmpdir)
     [passNumAtoms, passMLBL, passLG, passOG, pass_report,
-        pass_qcin] = [True, True, True, True, True, True]
+     pass_qcin] = [True, True, True, True, True, True]
     if newinfile != "":
         newname = jobname(newinfile)
         args = ['main.py', '-i', newinfile]
@@ -467,11 +489,11 @@ def runtestNoFF(tmpdir, name, threshMLBL, threshLG, threshOG):
         if 'molcas' in molsim_data.lower():
             output_qcin = myjobdir + '/molcas.input'
         ref_xyz = resource_filename(Requirement.parse(
-            "molSimplify"), "tests/refs/"+newname+".xyz")
+            "molSimplify"), "tests/refs/" + newname + ".xyz")
         ref_report = resource_filename(Requirement.parse(
-            "molSimplify"), "tests/refs/"+newname+".report")
+            "molSimplify"), "tests/refs/" + newname + ".report")
         ref_qcin = resource_filename(Requirement.parse(
-            "molSimplify"), "tests/refs/"+name+".qcin")
+            "molSimplify"), "tests/refs/" + name + ".qcin")
         print("Test input file: ", newinfile)
         print("Test output files are generated in ", myjobdir)
         print("Output xyz file: ", output_xyz)
@@ -493,16 +515,16 @@ def runtestNoFF(tmpdir, name, threshMLBL, threshLG, threshOG):
 
 def runtestMulti(tmpdir, name, threshMLBL, threshLG, threshOG):
     infile = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/inputs/"+name+".in")
+        "molSimplify"), "tests/inputs/" + name + ".in")
     newinfile = parse4test(infile, tmpdir, True)
     args = ['main.py', '-i', newinfile]
     # Need to make the ligand file visible to the input file
     startgen(args, False, False)
-    myjobdir = jobdir(infile)+"/"
+    myjobdir = jobdir(infile) + "/"
     print("Test input file: ", newinfile)
     print("Test output files are generated in ", myjobdir)
     refdir = resource_filename(Requirement.parse(
-        "molSimplify"), "tests/refs/"+name+"/")
+        "molSimplify"), "tests/refs/" + name + "/")
     [passMultiFileCheck, myfiles] = checkMultiFileGen(myjobdir, refdir)
     pass_structures = []
     if passMultiFileCheck == False:
@@ -513,9 +535,9 @@ def runtestMulti(tmpdir, name, threshMLBL, threshLG, threshOG):
             if ".xyz" in f:
                 r = f.replace(".xyz", ".report")
                 output_xyz = output_xyz = myjobdir + f
-                ref_xyz = refdir+f
-                output_report = myjobdir+r
-                ref_report = refdir+r
+                ref_xyz = refdir + f
+                output_report = myjobdir + r
+                ref_report = refdir + r
                 print("Output xyz file: ", output_xyz)
                 print("Reference xyz file: ", ref_xyz)
                 print("Test report file: ", output_report)

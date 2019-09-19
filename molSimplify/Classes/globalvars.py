@@ -251,6 +251,11 @@ bondsdict = {"H": 1, "Li": 1, "Be": 2, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
              "Na": 1, "Mg": 2, "Al": 3, "Si": 4, "P": 3, "S": 2, "Cl": 1,
              "As": 3, "Se": 2, "Br": 1, "I": 1}
 
+# triple bonds dictionry: Defined as 0.5*(double bond dist + triple bond dist)
+# bond lengths are from http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
+tribonddict = {("C", "C"): 1.27, ("C", "N"): 1.235, ("C", "O"): 1.165, ("N", "N"): 1.175,
+               ("N", "C"): 1.235, ("O", "C"): 1.165}
+
 # ---Geo_Check_Metrics------
 dict_oct_check_loose = {'num_coord_metal': 6,
                         'rmsd_max': 0.4, 'atom_dist_max': 0.6,
@@ -418,6 +423,9 @@ class globalvars:
     #  @return Atomic mass dictionary
     def amass(self):
         return amassdict
+
+    def tribonddict(self):
+        return tribonddict
 
     def bondsdict(self):
         return bondsdict
