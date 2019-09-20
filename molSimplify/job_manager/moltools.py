@@ -68,13 +68,19 @@ def prep_ligand_breakown(outfile_path):
     results = tools.read_outfile(outfile_path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
-        
+    
+    
     charge,spinmult,solvent,run_type,_,_,_ = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     
     base = os.path.split(outfile_path)[0]
     name = os.path.split(outfile_path)[-1][:-4]
+    
+    breakdown_folder = os.path.join(base,name+'_dissociation')
+    
+    if os.path.isdir(breakdown_folder):
+        return ['Ligand dissociation directory already exists']
     
     optimxyz = os.path.join(base,'scr','optim.xyz')
     tools.extract_optimized_geo(optimxyz)
@@ -89,11 +95,6 @@ def prep_ligand_breakown(outfile_path):
         ligand_syms.append([mol.getAtom(i).symbol() for i in ii])
         
     ligand_names = name_ligands(ligand_syms)
-    
-    breakdown_folder = os.path.join(base,name+'_dissociation')
-    
-    # ~ if os.path.isdir(breakdown_folder):
-        # ~ return ['Ligand dissociation directory already exists']
     
     if not os.path.isdir(breakdown_folder):
         os.mkdir(breakdown_folder)
