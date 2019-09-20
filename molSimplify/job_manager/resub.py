@@ -519,7 +519,7 @@ def reset(outfile_path):
             writer.write(i)
         writer.close()
         shutil.move(scr_path+'_0',scr_path)
-        shutil.move(pickle_path,os.path.join(old_path,str(np.random.randint(999999999))+'_resub_history')
+        shutil.move(pickle_path,os.path.join(old_path,str(np.random.randint(999999999))+'_resub_history'))
 
 def load_history(PATH):
     #takes the path to either an outfile or the resub_history pickle
