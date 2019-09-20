@@ -29,6 +29,10 @@ class resub_history:
         self.needs_resub = False
         self.notes = []
         self.outfiles = []
+        self.infiles = []
+        self.xyzs = []
+        self.jobscripts = []
+        self.waiting = None #Path to another job that this job is waiting on
         self.path = path
         
     def save(self):
@@ -49,6 +53,14 @@ class resub_history:
             self.needs_resub = saved.needs_resub
             self.notes = saved.notes
             self.outfiles = saved.outfiles
+            if hasattr(saved,'infiles'):
+                self.infiles = saved.infiles
+            if hasattr(saved,'xyzs'):
+                self.xyzs = saved.xyzs
+            if hasattr(saved,'jobscripts'):
+                self.jobscripts = saved.jobscripts
+            if hasattr(saved,'waiting'):
+                self.waiting = saved.waiting
         self.path = path
 
 class textfile:

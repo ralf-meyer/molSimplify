@@ -8,6 +8,15 @@ import shutil
 import time
 from molSimplify.job_manager.classes import resub_history,textfile
 
+def not_nohup(path):
+    #The nohup.out file gets caught in the find statement
+    #use this function so that we only get TeraChem.outs
+    endpath = os.path.split(path)[-1]
+    if 'nohup.out' in endpath:
+        return False
+    else:
+        return True
+            
 def try_float(obj):
     # Converts an object to a floating point if possible
         try:
@@ -15,6 +24,20 @@ def try_float(obj):
         except:
             floating_point = obj
         return floating_point
+        
+def invert_dictionary(dictionary):
+    new_dict = dict()
+    for key in dictionary.keys():
+        if type(dictionary[key])==list:
+            for entry in dictionary[key]:
+                if entry in new_dict.keys():
+                    raise Exception('Dictionary inversion failed, values do not serve as unique keys')
+                new_dict[entry] = key
+        else:
+            if dictionary[key] in new_dict.keys():
+                raise Exception('Dictionary inversion failed, values do not serve as unique keys')
+            new_dict[dictionary[key]]=key
+    return new_dict
 
 def call_bash(string, error = False,version = 1):
     if version == 1:
@@ -52,6 +75,7 @@ def list_active_jobs():
 def check_completeness(directory = 'in place', max_resub = 5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find('*.out',directory)
+    outfiles = filter(not_nohup,outfiles)
     
     results_tmp = map(read_outfile,outfiles)
     results_tmp = zip(outfiles,results_tmp)
@@ -92,6 +116,21 @@ def check_completeness(directory = 'in place', max_resub = 5):
         else:
             return False
             
+    def check_waiting(path):
+        if os.path.isfile(path.rsplit('.',1)[0]+'.pickle'):
+            history = resub_history()
+            history.read(path)
+            if history.waiting:
+                return True
+        return False
+    
+    def grab_waiting(path):
+        if os.path.isfile(path.rsplit('.',1)[0]+'.pickle'):
+            history = resub_history()
+            history.read(path)
+            return history.waiting
+        raise Exception('Attempting to grab a "waiting" criteria that does not exist')
+            
     def check_chronic_failure(path):
         if os.path.isfile(path.rsplit('.',1)[0]+'.pickle'):
             history = resub_history()
@@ -109,35 +148,43 @@ def check_completeness(directory = 'in place', max_resub = 5):
                     return True
         return False
         
-    def not_nohup(path):
-        #The nohup.out file gets caught in the find statement
-        #use this function so that we only get TeraChem.outs
-        endpath = os.path.split(path)[-1]
-        if 'nohup.out' in endpath:
-            return False
-        else:
+    def check_thermo_grad_error(path,results_dict=results_dict):
+        results = results_dict[path]
+        if results['thermo_grad_error']:
             return True
-    
-    outfiles = filter(not_nohup,outfiles)
+        else:
+            return False
+        
     active_jobs = filter(check_active,outfiles)
     finished = filter(check_finished,outfiles)
     needs_resub = filter(check_needs_resub,outfiles)
+    waiting = filter(check_waiting,outfiles)
     spin_contaminated = filter(check_spin_contaminated,outfiles)
+    thermo_grad_errors = filter(check_thermo_grad_error,outfiles)
     chronic_errors = filter(check_chronic_failure,outfiles)
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     
     #Sort out conflicts in order of reverse priority
     #A job only gets labelled as finished if it's in no other category
     #A job always gets labelled as active if it fits that criteria, even if it's in every other category too
-    finished = list(set(finished)- set(spin_contaminated) - set(needs_resub) - set(errors) - set(chronic_errors) - set(active_jobs))
-    spin_contaminated = list(set(spin_contaminated) - set(needs_resub) - set(errors) - set(chronic_errors) - set(active_jobs))
-    needs_resub = list(set(needs_resub) - set(errors) - set(chronic_errors) - set(active_jobs))
-    errors = list(set(errors) - set(chronic_errors) - set(active_jobs))
+    finished = list(set(finished)- set(spin_contaminated) - set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    spin_contaminated = list(set(spin_contaminated) - set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    needs_resub = list(set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    errors = list(set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    thermo_grad_errors = list(set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    waiting = list(set(waiting) - set(chronic_errors) - set(active_jobs))
     chronic_errors = list(set(chronic_errors) - set(active_jobs))
     active_jobs = list(set(active_jobs))
     
-    return {'Finished':finished,'Active':active_jobs,'Error':errors,'Resub':needs_resub,
-            'Spin_contaminated':spin_contaminated, 'Chronic_error':chronic_errors}
+    results = {'Finished':finished,'Active':active_jobs,'Error':errors,'Resub':needs_resub,
+            'Spin_contaminated':spin_contaminated, 'Chronic_error':chronic_errors, 
+            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting}
+    
+    inverted_results = invert_dictionary(results)
+    waiting = [{i:grab_waiting(i)} for i in waiting]
+    results['Waiting'] = waiting
+    
+    return results,inverted_results
     
 
 def find(key,directory = 'in place'):
@@ -179,8 +226,15 @@ def read_outfile(outfile_path):
         if match[0]:
             break
         if counter == 1:
-            raise ValueError('.out file type not recognized!')
+            if 'nohup' in outfile_path:
+                print 'Warning! Nohup file caught in outfile processing'
+                print outfile_path
+                counter = 0
+            else:
+                raise ValueError('.out file type not recognized!')
     output_type = ['TeraChem','ORCA'][counter]
+    if output_type == 'ORCA':
+        raise Exception(outfile_path)
     
     name = None
     finished = None
@@ -191,18 +245,26 @@ def read_outfile(outfile_path):
     s_squared_ideal = None
     scf_error = False
     time = None
+    thermo_grad_error = False
 
     if output_type == 'TeraChem':
         
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
-        finalenergy,s_squared,s_squared_ideal,time = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing'],[2,2,4,3],last_line=True)
-        min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
+        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing',
+                                                                                        'Maximum component of gradient is too large'],[2,2,4,3,0],last_line=True)
+        if thermo_grad_error:
+            thermo_grad_error = True
+        else:
+            thermo_grad_error = False
         if s_squared_ideal:
             s_squared_ideal = float(s_squared_ideal.strip(')'))
+            
+        min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
         
         is_finished = output.wordgrab(['finished:'],'whole_line',last_line=True)[0]
-        if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
-            finished = is_finished[2:]
+        if is_finished:
+            if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
+                finished = is_finished[2:]
         
         is_scf_error = output.wordgrab('DISS','whole line')
         if type(is_scf_error) == list and len(is_scf_error) > 0:
@@ -216,7 +278,7 @@ def read_outfile(outfile_path):
     if output_type == 'ORCA':
         finalenergy,s_squared,s_squared_ideal = output.wordgrab(['FINAL','<S**2>','S*(S+1)'],[8,13,12],last_line=True)
         timekey = 'TIME:'
-        if type(output.wordgrab(timekey)) == list: 
+        if type(output.wordgrab(timekey,'whole_line')) == list: 
             time = (float(output.wordgrab(timekey,3),last_line=True)*24*60*60
                    +float(output.wordgrab(timekey,5),last_line=True)*60*60
                    +float(output.wordgrab(timekey,7,last_line=True))*60
@@ -233,18 +295,22 @@ def read_outfile(outfile_path):
     return_dict['finished'] = finished
     return_dict['min_energy'] = try_float(min_energy)
     return_dict['scf_error'] = scf_error
+    return_dict['thermo_grad_error'] = thermo_grad_error
     return return_dict
 
 def read_infile(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     inp = textfile(root+'.in')
-    charge,spinmult,solvent,run_type = inp.wordgrab(['charge ','spinmult ','pcm ','run '],[1,1,0,1],last_line=True)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb = inp.wordgrab(['charge ',
+                                                'spinmult ','pcm ','run ','levelshiftvala ','levelshiftvalb '],[1,1,0,1,1,1],last_line=True)
     charge,spinmult = int(charge),int(spinmult)
     if solvent:
         solvent = True
     else:
         solvent = False
-    return charge,spinmult,solvent,run_type
+    convergence_thresholds = inp.wordgrab(['min_converge_gmax ','min_converge_grms ','min_converge_dmax ','min_converge_drms ','min_converge_e ','convthre '],
+                                          [1]*6,last_line=True)
+    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,convergence_thresholds
 
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges
@@ -281,6 +347,7 @@ def read_mullpop(PATH):
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
     outfiles = find('*.out',directory)
+    outfiles = filter(not_nohup,outfiles)
     results = map(read_outfile,outfiles)
     summary = pd.DataFrame(results)
     
@@ -471,7 +538,65 @@ def prep_thermo(path):
     os.chdir(home)
     
     return [os.path.join(PATH,name+'_jobscript')]
-
+    
+def prep_ultratight(path):
+    #Given a path to the outfile of a finished run, this preps a run with tighter convergence criteria
+    #Uses the wavefunction and geometry from the previous calculation as an initial guess
+    #Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
+    home = os.getcwd()
+    path = convert_to_absolute_path(path)
+    
+    results = read_outfile(path)
+    if not results['finished']:
+        raise Exception('This calculation does not appear to be complete! Aborting...')
+    
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,convergence_thresholds = read_infile(path)
+    
+    base = os.path.split(path)[0]
+    
+    optimxyz = os.path.join(base,'scr','optim.xyz')
+    extract_optimized_geo(optimxyz)
+    
+    #Now, start generating the new directory
+    name = results['name']+'_ultratight'
+    PATH = os.path.join(base,name)
+    
+    if not os.path.isdir(PATH): #First time that ultratight has been run, create necessary files
+        os.mkdir(PATH)
+        os.chdir(PATH)    
+        
+        if os.path.exists(name+'.in') or os.path.exists(name+'.out') or os.path.exists(name+'_jobscript'):
+            raise Exception('This tightened convergence run appears to already exist. Aborting...')
+            
+        shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
+        if spinmult == 1:
+            shutil.copyfile(os.path.join(base,'scr','c0'),os.path.join(PATH,'c0'))
+            write_jobscript(name,custom_line = '# -fin c0')
+        if spinmult != 1:
+            shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
+            shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
+            write_jobscript(name,custom_line = ['# -fin ca0\n,# -fin cb0\n'])
+        
+        criteria = ['2.25e-04','1.5e-04','0.9e-03','0.6e-03','0.5e-06','1.5e-05']
+        tight_thresholds ="min_converge_gmax "+criteria[0]+"\nmin_converge_grms "+criteria[1]+"\nmin_converge_dmax "+criteria[2]+"\nmin_converge_drms "+criteria[3]+"\nmin_converge_e "+criteria[4]+"\nconvthre "+criteria[5]
+        write_input(name,charge,spinmult,run_type = 'minimize',solvent = solvent, guess = True, custom_line = tight_thresholds)
+        
+        os.chdir(home)
+        
+        return [os.path.join(PATH,name+'_jobscript')]
+    
+    else: #This has been run before, further tighten the convergence criteria
+        os.chdir(PATH)
+        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,criteria = read_infile(os.path.join(PATH,name+'.out'))
+        criteria = [str(i/2.) for i in criteria]
+        
+        tight_thresholds ="min_converge_gmax "+criteria[0]+"\nmin_converge_grms "+criteria[1]+"\nmin_converge_dmax "+criteria[2]+"\nmin_converge_drms "+criteria[3]+"\nmin_converge_e "+criteria[4]+"\nconvthre "+criteria[5]
+        write_input(name,charge,spinmult,run_type = 'minimize',solvent = solvent, guess = True, custom_line = tight_thresholds)
+        
+        os.chdir(home)
+        
+        return [os.path.join(PATH,name+'_jobscript')]
+        
 def extract_optimized_geo(PATH, custom_name = False):
     #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
     #The file is written to the same directory as contained optim.xyz

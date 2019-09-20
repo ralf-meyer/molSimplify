@@ -12,7 +12,6 @@ import time
 import molSimplify.job_manager.tools as tools
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown
-from molSimplify.job_manager.classes import resub_history,textfile
 
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
@@ -51,17 +50,9 @@ def read_run(outfile_PATH):
         
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-    def not_nohup(path):
-        #The nohup.out file gets caught in the find statement
-        #use this function so that we only get TeraChem.outs
-        endpath = os.path.split(path)[-1]
-        if 'nohup.out' in endpath:
-            return False
-        else:
-            return True
             
     outfiles = tools.find('*.out',directory)
-    outfiles = filter(not_nohup,outfiles)
+    outfiles = filter(tools.not_nohup,outfiles)
     results = map(read_run,outfiles)
     summary = pd.DataFrame(results)
     
@@ -78,7 +69,7 @@ def prep_ligand_breakown(outfile_path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
         
-    charge,spinmult,solvent,run_type = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,_,_,_ = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     
