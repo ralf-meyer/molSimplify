@@ -148,10 +148,15 @@ def get_rac155_graph_based(this_complex, custom_ligand_dict=False,ox_modifier=Fa
                                                          ox_modifier=False)
     descriptor_names_rac155 = []
     descriptors_rac155 = []
-    for i,item in enumerate(descriptor_names):
-        if item in rac155_list:
-            descriptor_names_rac155.append(item)
-            descriptors_rac155.append(descriptors[i])
+    try:
+        for i,item in enumerate(descriptor_names):
+            if item in rac155_list:
+                descriptor_names_rac155.append(item)
+                descriptors_rac155.append(descriptors[i])
+    except IndexError:
+        descriptor_names_rac155, descriptors_rac155 = None,None
+        print('Complex could not featurize to all rac155 descriptors')
+
     return descriptor_names_rac155, descriptors_rac155
 
 ## Gets the derivatives of RACs of an octahedral complex with geo only!
