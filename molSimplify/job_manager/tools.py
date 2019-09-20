@@ -250,6 +250,7 @@ def read_outfile(outfile_path):
     if output_type == 'TeraChem':
         
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
+        name = name.rsplit('.',1)[0]
         finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing',
                                                                                         'Maximum component of gradient is too large'],[2,2,4,3,0],last_line=True)
         if thermo_grad_error:
@@ -485,7 +486,7 @@ def prep_solvent_sp(path):
     if spin != 1:
         shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
-        write_jobscript(name,custom_line = ['# -fin ca0\n,# -fin cb0\n'])
+        write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
     write_input(name,results['charge'],spin,solvent = True, guess = True)
     
@@ -531,7 +532,7 @@ def prep_thermo(path):
     if spin != 1:
         shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
-        write_jobscript(name,custom_line = ['# -fin ca0\n,# -fin cb0\n'])
+        write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
     write_input(name,results['charge'],spin,run_type = 'frequencies',solvent = True, guess = True)
     
@@ -575,12 +576,13 @@ def prep_ultratight(path):
         if spinmult != 1:
             shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
             shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
-            write_jobscript(name,custom_line = ['# -fin ca0\n,# -fin cb0\n'])
+            write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
         
         criteria = ['2.25e-04','1.5e-04','0.9e-03','0.6e-03','0.5e-06','1.5e-05']
         tight_thresholds ="min_converge_gmax "+criteria[0]+"\nmin_converge_grms "+criteria[1]+"\nmin_converge_dmax "+criteria[2]+"\nmin_converge_drms "+criteria[3]+"\nmin_converge_e "+criteria[4]+"\nconvthre "+criteria[5]
         write_input(name,charge,spinmult,run_type = 'minimize',solvent = solvent, guess = True, custom_line = tight_thresholds)
-        
+        os.mknod(name+'.out') #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
+
         os.chdir(home)
         
         return [os.path.join(PATH,name+'_jobscript')]

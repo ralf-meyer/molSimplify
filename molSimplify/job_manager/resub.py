@@ -139,12 +139,18 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
         
     #Look at jobs in "waiting," resume them if the job they were waiting for is finished
     #Currently, this should only ever be thermo jobs waiting for an ultratight job
-    for job in waiting.keys():
-        waiting_for = waiting[job]
+    for waiting_dict in waiting:
+	if len( waiting_dict.keys()) > 1:
+            raise Exception('Waiting job list improperly constructed')
+        job = waiting_dict.keys()[0]
+        waiting_for = waiting_dict[job]
         if waiting_for in finished:
+	    history = load_history(job)
+            history.waiting = None
+            history.save()
             results_for_this_job = tools.read_outfile(job)
             if results_for_this_job['thermo_grad_error']:
-                resub_thermo(job)
+                resubmitted.append(resub_thermo(job))
             else:
                 raise Exception('A method for resuming job: '+job+' is not defined')
         else:
@@ -303,8 +309,8 @@ def resub_tighter(outfile_path):
     name = os.path.split(outfile_path)[-1].rsplit('.',1)[0]
     parent_name = name.rsplit('_',1)[0]
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
-    parent_path = os.path.join(parent_directory,parent_name)
-    ultratight_path = os.path.join(parent_direcotry,parent_name+'+_ultratight',parent_name+'+_ultratight.out')
+    parent_path = os.path.join(parent_directory,parent_name+'.out')
+    ultratight_path = os.path.join(parent_directory,parent_name+'_ultratight',parent_name+'_ultratight.out')
     
     if os.path.exists(ultratight_path): #This ultratight resubmission has happend before, need to archive the results
         history = resub_history()
@@ -344,15 +350,16 @@ def resub_thermo(outfile_path):
     history.save()
     
     
-    directory = os.path.split(outfile_path)[-1]
-    name = directory.rsplit('.',1)[0]
+    name = os.path.split(outfile_path)[-1]
+    name = name.rsplit('.',1)[0]
+    directory = os.path.split(outfile_path)[0]
     parent_name = name.rsplit('_',1)[0]
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
-    ultratight_dir = os.path.join(parent_direcotry,parent_name+'+_ultratight')
+    ultratight_dir = os.path.join(parent_directory,parent_name+'_ultratight')
     
     _,spinmult,_,_,_,_,_ = tools.read_infile(outfile_path)
     
-    if os.path.exits(ultratight_dir):
+    if os.path.exists(ultratight_dir):
         if os.path.exists(os.path.join(ultratight_dir,'scr','optim.xyz')):
             tools.extract_optimized_geo(os.path.join(ultratight_dir,'scr','optim.xyz'))
             shutil.copy(os.path.join(ultratight_dir,'scr','optimized.xyz'),outfile_path.rsplit('.',1)[0]+'.xyz')
@@ -369,7 +376,7 @@ def resub_thermo(outfile_path):
     else:
         raise Exception('An ultratight run does not exist for this thermo file. Consider calling simple_resub() or resub_tighter() instead of resub_thermo()')
         
-    jobscript = outfile_path.rsplit(',',1)+'_jobscript'
+    jobscript = outfile_path.rsplit('.',1)[0]+'_jobscript'
     tools.qsub(jobscript)
     return True
     
