@@ -34,6 +34,12 @@ def save_run(outfile_path):
     f.close()
     history.jobscripts.append(job_lines)
     
+    xyz_path = outfile_path.rsplit('.',1)[0]+'.xyz'
+    f = open(xyz_path,'r')
+    xyz_lines = f.readlines()
+    f.close()
+    history.jobscripts.append(xyz_lines)
+    
     history.save()
 
 ## Archive the scr file so it isn't overwritten in future resubs
