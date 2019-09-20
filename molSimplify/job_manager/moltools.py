@@ -88,7 +88,7 @@ def prep_ligand_breakown(outfile_path):
     mol = mol3D()
     mol.readfromxyz(os.path.join(base,'scr','optimized.xyz'))
     
-    ligand_idxs,_,_ = ligand_breakdown(mol)
+    ligand_idxs,_,_ = ligand_breakdown(mol,silent=True)
     
     ligand_syms = []
     for ii in ligand_idxs:
