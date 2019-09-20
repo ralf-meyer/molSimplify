@@ -481,53 +481,45 @@ def read_configure(directory):
     else:
         return []
         
-def reset(outfile_path, state=0):
+def reset(outfile_path):
     #Returns the run to the state it was after a given run
     #reference runs as integers, starting from zero
     
     pickle_path = outfile_path.rsplit('.',1)[0]+'.pickle'
     if os.path.isfile(pickle_path):
         
-        print 'Resetting run: '+os.path.split(outfile_path)[-1].rsplit('.',1)[0]+' to state: ' +str(state)
+        print 'Resetting run: '+os.path.split(outfile_path)[-1].rsplit('.',1)[0]
         old_path = os.path.join(os.path.split(outfile_path)[0],'pre_reset')
         if not os.path.isdir(old_path):
             os.mkdir(old_path)
         
         #remove all files from states after the specified state
         move = []
-        identifier = state+1
+        identifier = 1
         while True:
             move.extend(glob.glob(os.path.join(os.path.split(outfile_path)[0],'scr_'+str(identifier))))
             identifier += 1
             if len(glob.glob(os.path.join(os.path.split(outfile_path)[0],'scr_'+str(identifier)))) == 0:
-                break #break when all scr_? files are found. random number prevents names clashing
+                break #break when all scr_? files are found.
                 
         shutil.move(outfile_path,outfile_path[:-4]+'.old') #rename old out so it isn't found in .out searches
         move.append(outfile_path[:-4]+'.old')
         scr_path = os.path.join(os.path.split(outfile_path)[0],'scr')
         move.append(scr_path)
         for path in move:
-            #move the paths to their new location
+            #move the paths to their new location, Random numbers prevent clashes
             shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
             
         
         history = resub_history()
         history.read(pickle_path)
-        outfile = history.outfiles[state]
+        outfile = history.outfiles[0]
         writer = open(outfile_path,'w')
         for i in outfile:
             writer.write(i)
         writer.close()
-        shutil.move(scr_path+'_'+str(state),scr_path)
-        
-        history.resub_number = state
-        history.status = 'reset'
-        history.notes = history.notes[:state]
-        history.outfiles = history.outfiles[:state]
-        if len(history.notes) > 0:
-            if history.notes[-1] == 'Spin contaminated, lowering HFX to aid convergence' or history.notes[-1] == 'SCF convergence error, level shifts adjusted to aid convergence':
-                history.needs_resub = True
-        history.save()
+        shutil.move(scr_path+'_0',scr_path)
+        shutil.move(pickle_path,os.path.join(old_path,str(np.random.randint(999999999))+'_resub_history')
 
 def load_history(PATH):
     #takes the path to either an outfile or the resub_history pickle
