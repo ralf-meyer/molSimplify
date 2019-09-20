@@ -146,7 +146,7 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
     #Look at jobs in "waiting," resume them if the job they were waiting for is finished
     #Currently, this should only ever be thermo jobs waiting for an ultratight job
     for waiting_dict in waiting:
-	if len( waiting_dict.keys()) > 1:
+        if len(waiting_dict.keys()) > 1:
             raise Exception('Waiting job list improperly constructed')
         job = waiting_dict.keys()[0]
         waiting_for = waiting_dict[job]
