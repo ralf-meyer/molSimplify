@@ -52,13 +52,15 @@ class ligand:
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False):
     # this function takes an octahedral
     # complex and returns ligands
+    loud = False
     metal_index = mol.findMetal()[0]
     bondedatoms = mol.getBondedAtomsSmart(metal_index, oct=True)
     # print('!!!!!boundatoms', bondedatoms)
     #	print('from get oct' + str(bondedatoms))
     #	print('***\n')
     bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]
-    print('result of ligand ligand_breakdown', bonded_atom_symbols)
+    if loud:
+        print('result of ligand ligand_breakdown', bonded_atom_symbols)
     counter = 0
     liglist = []
     ligdents = []
@@ -603,7 +605,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     fitlist = []
     for i, combo in enumerate(point_combos):
         combo_list.append(combo)
-        print('combo',combo)
+        if loud:
+            print('combo',combo)
         A = []
         b = []
         m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
@@ -648,7 +651,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             ax_con_list = [ligcons[j] for j in ax_lig_list]
         elif n_unique_ligs == 2:
             print('monodentate 5+1')
-            print(ligand_counts,unique_ligands)
+            if loud:
+                print(ligand_counts,unique_ligands)
             eq_lig_list = list()
             if max(ligand_counts) in [5,4]: 
                 for i, ligand_count in enumerate(ligand_counts):
@@ -658,7 +662,6 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         if sym_list != temp_unique:
                             continue
                         elif (ligand_count in [4,5]) and len(eq_lig_list)<4:
-                            print('recognized!')
                             eq_lig_list.append(j)
                             eq_con_list.append(ligcons[j])
                         elif len(ax_lig_list)<2:
@@ -677,7 +680,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                             continue
                         elif (ligand_count==4) and len(four_repeats)<4:
                             four_repeats.append(j)
-                print('this is four repeats',four_repeats)
+                if loud:
+                    print('this is four repeats',four_repeats)
                 four_repeats_cons = [ligcons[j] for j in four_repeats]
                 pair_combos = list(combinations([0,1,2,3],2))
                 angle_list = []
@@ -759,7 +763,6 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             eq_ligcons = list(set([flat_ligcons[j] for j in eq_points]))
             eq_lig_list = eq_points
             eq_con_list = [ligcons[j] for j in eq_lig_list]
-            print('this is eq con list')
             ax_lig_list = list(set(allowed)-set(eq_points))
             ax_con_list = [ligcons[j] for j in ax_lig_list]
     elif (n_ligs == 3): # triple bidentate or 4+1+1, can be seesaw/planar or 3+2+1
