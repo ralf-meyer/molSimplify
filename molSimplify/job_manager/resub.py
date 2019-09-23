@@ -573,9 +573,6 @@ def main():
         
         configure_dict = read_configure('in place',None)
                 
-        return {'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
-            'levelb':levelb,'method':method,'hfx':hfx,'octahedral':octahedral}
-                
         number_resubmitted = resub(max_jobs = configure_dict['max_jobs'],max_resub = configure_dict['max_resub']) 
         
         print('**********************************')
