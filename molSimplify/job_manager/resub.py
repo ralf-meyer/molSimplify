@@ -38,7 +38,7 @@ def save_run(outfile_path):
     f = open(xyz_path,'r')
     xyz_lines = f.readlines()
     f.close()
-    history.jobscripts.append(xyz_lines)
+    history.xyzs.append(xyz_lines)
     
     history.save()
 
@@ -319,11 +319,10 @@ def resub_tighter(outfile_path):
     ultratight_path = os.path.join(parent_directory,parent_name+'_ultratight',parent_name+'_ultratight.out')
     
     if os.path.exists(ultratight_path): #This ultratight resubmission has happend before, need to archive the results
-        history = resub_history()
-        history.read(ultratight_path)
         save_scr(ultratight_path)
         save_run(ultratight_path)
-    
+        history = resub_history()
+        history.read(ultratight_path)
         history.resub_number += 1
         history.status = 'Running with tightened convergence thresholds'
         history.needs_resub = False
