@@ -581,7 +581,9 @@ def prep_ultratight(path):
         criteria = ['2.25e-04','1.5e-04','0.9e-03','0.6e-03','0.5e-06','1.5e-05']
         tight_thresholds ="min_converge_gmax "+criteria[0]+"\nmin_converge_grms "+criteria[1]+"\nmin_converge_dmax "+criteria[2]+"\nmin_converge_drms "+criteria[3]+"\nmin_converge_e "+criteria[4]+"\nconvthre "+criteria[5]
         write_input(name,charge,spinmult,run_type = 'minimize',solvent = solvent, guess = True, custom_line = tight_thresholds)
-        os.mknod(name+'.out') #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
+        #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
+        f = open(name+'.out','w')
+        f.close()
 
         os.chdir(home)
         
