@@ -77,7 +77,89 @@ def save_scr(outfile_path, rewrite_inscr = True):
         shutil.move(scr_path,scr_path+'_'+new_scr)
         
         return scr_path+'_'+new_scr
+
+#Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
+#The global configure file should be in the same directory where resub() is called
+#The local configure file should be in the same directory as the .out file
+def read_configure(home_directory,outfile_path):
     
+    def load_configure_file(directory):
+        def strip_new_line(string):
+            if string[-1] == '\n':
+                return string[:-1]
+            else:
+                return string
+                
+        if directory == 'in place':
+            directory = os.getcwd()
+            
+        configure = os.path.join(directory,'configure')
+        if os.path.isfile(configure):
+            f = open(configure,'r')
+            configure = f.readlines()
+            f.close()
+            configure = map(strip_new_line,configure)
+            return configure
+        else:
+            return []
+    
+    home_configure = load_configure_file(home_directory)
+    if outfile_path:
+        local_configure = load_configure_file(os.path.split(outfile_path)[0])
+    else:
+        local_configure = []
+    
+    #Determine which derivative jobs are requested
+    solvent,vertEA,vertIP,thermo,dissociation,hfx_resample = False,False,False,False,False,False
+    if 'solvent' in home_configure or 'Solvent' in home_configure or 'solvent' in local_configure or 'Solvent' in local_configure:
+        solvent = True
+    if 'vertEA' in home_configure or 'VertEA' in home_configure or 'vertEA' in local_configure or 'VertEA' in local_configure:
+        vertEA = True
+    if 'vertIP' in home_configure or 'VertIP' in home_configure or 'vertIP' in local_configure or 'VertIP' in local_configure:
+        vertIP = True
+    if 'thermo' in home_configure or 'Thermo' in home_configure or 'thermo' in local_configure or 'Thermo' in local_configure:
+        thermo = True
+    if 'dissociation' in home_configure or 'Dissociation' in home_configure or 'dissociation' in local_configure or 'Dissociation' in local_configure:
+        dissociation = True
+    if 'hfx_resample' in home_configure or 'HFX_resample' in home_configure or 'hfx_resample' in local_configure or 'HFX_resample' in local_configure:
+        hfx_resample = True
+    
+    #Determine global settings for this run
+    max_jobs,max_resub,levela,levelb,method,hfx,octahedral = False,False,False,False,False,False,True
+    for configure in [home_configure,local_configure]:
+        for line in home_configure:
+            if 'max_jobs' in line.split(':'):
+                max_jobs = int(line.split(':')[-1]) - 1
+            if 'max_resub' in line.split(':'):
+                max_resub = int(line.split(':')[-1])
+            if 'levela' in line.split(':'):
+                levela = int(line.split(':')[-1])
+            if 'levelb' in line.split(':'):
+                levelb = int(line.split(':')[-1])
+            if 'method' in line.split(':'):
+                method = int(line.split(':')[-1])
+            if 'hfx' in line.split(':'):
+                hfx = int(line.split(':')[-1])
+            if 'octahedral' in line.split(':'):
+                octahedral = int(line.split(':')[-1])
+    #If global settings not specified, choose defaults:
+        if not max_jobs:
+            max_jobs = 50 - 1 
+        if not max_resub:
+            max_resub = 5
+        if not levela:
+            levela = 0.25
+        if not levelb:
+            levelb = 0.25
+        if not method:
+            method = 'b3lyp'
+        if not hfx:
+            hfx = 0.20
+        #Octahedral defaults to True in original variable initiation
+                
+    return {'solvent':solvent,'vertEA':vertEA,'vertIP':vertIP,'thermo':thermo,'dissociation':dissociation,
+            'hfx_resample':hfx_resample,'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
+            'levelb':levelb,'method':method,'hfx':hfx,'octahedral':octahedral}
 
 def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
     
@@ -210,7 +292,7 @@ def clean_resub(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,_ = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
     
     home = os.getcwd()
     if len(directory) > 0: #if the string is blank, then we're already in the correct directory
@@ -222,13 +304,20 @@ def clean_resub(outfile_path):
         coordinates = name+'.xyz' #Should trigger for single point runs
     else:
         raise ValueError('No coordinates idenfied for clean in resubmission in directory '+os.getcwd())
-        
+    
+    configure_dict = read_configure('in_place',outfile_path)
+    
     if spinmult == 1:
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
-                          guess = 'inscr/c0', alternate_coordinates = coordinates)
+                          guess = 'inscr/c0', alternate_coordinates = coordinates,
+                          thresholds = criteria, basis = basis, method = configure_dict['method'],
+                          levela = configure_dict['levela'], levelb = configure_dict['levelb'])
+                          
     else:
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
-                          guess = 'inscr/ca0 inscr/cb0', alternate_coordinates =coordinates)
+                          guess = 'inscr/ca0 inscr/cb0', alternate_coordinates =coordinates,
+                          thresholds = criteria, basis = basis, method = configure_dict['method'],
+                          levela = configure_dict['levela'], levelb = configure_dict['levelb'])
     tools.write_jobscript(name,custom_line = '# -fin inscr/')
     os.chdir(home)
     tools.qsub(root+'_jobscript')
@@ -255,12 +344,14 @@ def resub_spin(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,_ = tools.read_infile(outfile_path)
+        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
-        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, method = 'blyp')
+        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, method = 'blyp',
+                          thresholds = criteria, basis = basis, levela = levelshifta, levelb = levelshiftb)
+        
         tools.write_jobscript(name)
         os.chdir(home)
         tools.qsub(root+'_jobscript')
@@ -291,13 +382,14 @@ def resub_scf(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spinmult,solvent,run_type,old_levela,old_levelb,method,_ = tools.read_infile(outfile_path)
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type,
-                          levela = 1.0, levelb = 0.1)
+                          levela = 1.0, levelb = 0.1, method = method, thresholds = criteria, hfx = hfx, basis = basis)
+                          
         tools.write_jobscript(name)
         os.chdir(home)
         tools.qsub(root+'_jobscript')
@@ -362,7 +454,7 @@ def resub_thermo(outfile_path):
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
     ultratight_dir = os.path.join(parent_directory,parent_name+'_ultratight')
     
-    _,spinmult,_,_,_,_,_,_ = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
     
     if os.path.exists(ultratight_dir):
         if os.path.exists(os.path.join(ultratight_dir,'scr','optim.xyz')):
@@ -385,28 +477,6 @@ def resub_thermo(outfile_path):
     tools.qsub(jobscript)
     return True
     
-    home = os.getcwd()
-    if len(directory) > 0: #if the string is blank, then we're already in the correct directory
-        os.chdir(directory)
-        
-    if os.path.isfile('inscr/optimized.xyz'):
-        coordinates = 'inscr/optimized.xyz' #Should trigger for optimization runs
-    elif os.path.isfile(name+'.xyz'):
-        coordinates = name+'.xyz' #Should trigger for single point runs
-    else:
-        raise ValueError('No coordinates idenfied for clean in resubmission in directory '+os.getcwd())
-        
-    if spinmult == 1:
-        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
-                          guess = 'inscr/c0', alternate_coordinates = coordinates)
-    else:
-        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
-                          guess = 'inscr/ca0 inscr/cb0', alternate_coordinates =coordinates)
-    tools.write_jobscript(name,custom_line = '# -fin inscr/')
-    os.chdir(home)
-    tools.qsub(root+'_jobscript')
-    return True
-    
 
 def prep_derivative_jobs(directory,list_of_outfiles):
     
@@ -422,27 +492,9 @@ def prep_derivative_jobs(directory,list_of_outfiles):
             return False
         else:
             return True
-    
-    def check_jobs_requested(directory):
-        configure = read_configure(directory)
-        
-        solvent,vertEA,vertIP,thermo,dissociation = False,False,False,False,False
-        if 'solvent' in configure or 'Solvent' in configure:
-            solvent = True
-        if 'vertEA' in configure or 'VertEA' in configure:
-            vertEA = True
-        if 'vertIP' in configure or 'VertIP' in configure:
-            vertIP = True
-        if 'thermo' in configure or 'Thermo' in configure:
-            thermo = True
-        if 'dissociation' in configure or 'Dissociation' in configure:
-            dissociation = True
-        
-        return solvent,vertEA,vertIP,thermo,dissociation
         
     
     jobs = filter(check_original,list_of_outfiles)
-    solvent,vertEA,vertIP,thermo,dissociation = check_jobs_requested(directory)
     
     for job in jobs:
         results = moltools.read_run(job)
@@ -450,41 +502,18 @@ def prep_derivative_jobs(directory,list_of_outfiles):
             print job+' Does not appear to be octahedral! Not generating derivative jobs...'
             continue
         
-        if os.path.exists(os.path.join(os.path.split(job)[0],'configure')): #look for a local configure file requesting additional jobs
-            solvent_loc,vertEA_loc,vertIP_loc,thermo_loc,dissociation_loc = check_jobs_requested(os.path.split(job)[0])
-        else:
-            solvent_loc,vertEA_loc,vertIP_loc,thermo_loc,dissociation_loc = False,False,False,False,False
+        configure_dict = read_configure(directory,job)
         
-        if solvent or solvent_loc:
+        if configure_dict['solvent']:
             tools.prep_solvent_sp(job)
-        if vertEA or vertEA_loc:
+        if configure_dict['vertEA']:
             tools.prep_vertical_ea(job)
-        if vertIP or vertIP_loc:
+        if configure_dict['vertIP']:
             tools.prep_vertical_ip(job)
-        if thermo or thermo_loc:
+        if configure_dict['thermo']:
             tools.prep_thermo(job)
-        if dissociation or dissociation_loc:
+        if configure_dict['dissociation']:
             moltools.prep_ligand_breakown(job)
-        
-def read_configure(directory):
-    def strip_new_line(string):
-        if string[-1] == '\n':
-            return string[:-1]
-        else:
-            return string
-            
-    if directory == 'in place':
-        directory = os.getcwd()
-        
-    configure = os.path.join(directory,'configure')
-    if os.path.isfile(configure):
-        f = open(configure,'r')
-        configure = f.readlines()
-        f.close()
-        configure = map(strip_new_line,configure)
-        return configure
-    else:
-        return []
         
 def reset(outfile_path):
     #Returns the run to the state it was after a given run
@@ -540,16 +569,12 @@ def main():
         print("****** Assessing Job Status ******")
         print('**********************************')
         
-        configure = read_configure('in place')
-        max_jobs = 50
-        max_resub = 5
-        for i in configure:
-            if 'max_jobs' in i.split(':'):
-                max_jobs = int(i.split(':')[-1])
-            if 'max_resub' in i.split(':'):
-                max_resub = int(i.split(':')[-1])
+        configure_dict = read_configure('in place',None)
                 
-        number_resubmitted = resub(max_jobs = max_jobs-1,max_resub = max_resub) 
+        return {'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
+            'levelb':levelb,'method':method,'hfx':hfx,'octahedral':octahedral}
+                
+        number_resubmitted = resub(max_jobs = configure_dict['max_jobs'],max_resub = configure_dict['max_resub']) 
         
         print('**********************************')
         print("******** "+str(number_resubmitted)+" Jobs Submitted ********")
