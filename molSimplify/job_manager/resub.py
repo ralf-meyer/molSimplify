@@ -512,6 +512,8 @@ def prep_derivative_jobs(directory,list_of_outfiles):
             tools.prep_vertical_ip(job)
         if configure_dict['thermo']:
             tools.prep_thermo(job)
+        if configure_dict['hfx_resample']:
+            tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
             moltools.prep_ligand_breakown(job)
         

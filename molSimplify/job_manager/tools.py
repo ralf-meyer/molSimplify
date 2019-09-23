@@ -605,6 +605,102 @@ def prep_ultratight(path):
         
         return [os.path.join(PATH,name+'_jobscript')]
         
+def prep_hfx_resample(path,hfx_values = [0,0.05,0.10,0.15,0.20,0.25,0.30]):
+    #Given a path to the outfile of a finished run, this preps the files for hfx resampling
+    #Uses the wavefunction from the gas phase calculation as an initial guess
+    #Returns a list of the PATH(s) to the jobscript(s) to start the resampling calculations(s)
+    home = os.getcwd()
+    path = convert_to_absolute_path(path)
+    base = os.path.split(path)[0]
+    
+    results = read_outfile(path)
+    if not results['finished']:
+        raise Exception('This calculation does not appear to be complete! Aborting...')
+    
+    #Check the state of the calculation and ensure than hfx resampling is valid
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    if method != 'b3lyp':
+        raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
+    if not hfx:
+        hfx = 0.20
+    if hfx not in hfx_values:
+        raise Exception('HFX resampling list does not contain the original hfx value!')
+    
+    #Now, start generating the base directory to hold all the hfx resampling values
+    name = results['name']+'_HFXresampling'
+    hfx_path = os.path.join(base,name)
+    if not os.path.isdir(hfx_path):
+        os.mkdir(hfx_path)
+    os.chdir(hfx_path)    
+    
+    #Make the directory for the original calculation
+    subname = name+'_'+str(int(100*hfx))
+    PATH = os.path.join(hfx_path,subname)
+    if not os.path.isdir(PATH):
+        os.mkdir(PATH)
+    os.chdir(PATH)
+    
+    if not os.path.exists(os.path.join(PATH,subname+'.out')):
+        shutil.copyfile(path,subname+'.out')
+        shutil.copyfile(path.rsplit('.',1)[0]+'_jobscript',subname+'_jobscript')
+        shutil.copyfile(path.rsplit('.',1)[0]+'.in',subname+'.in')
+        shutil.copyfile(path.rsplit('.',1)[0]+'.xyz',subname+'.xyz')
+        shutil.copytree(os.path.join(os.path.split(path)[0],'scr'),'scr')
+    
+    #Find the hfx resampling values that we're ready to generate
+    hfx_values_to_generate = []
+    existing_resampled_values = glob.glob(os.path.join(hfx_path,name+'_*'))
+    for existing in existing_resampled_values:
+        hfx = float(existing.rsplit('_',1)[1])/100.
+        subname = name+'_'+str(int(100*hfx))
+        outfile_path = os.path.join(existing,subname+'.out')
+        if os.path.exists(outfile_path):
+            if read_outfile(outfile_path)['finished']:
+                hfx_values_to_generate.append(hfx-0.05)
+                hfx_values_to_generate.append(hfx+0.05)
+    
+    hfx_values_to_generate = [int(100.*i)/100. for i in hfx_values_to_generate] #We're about to check equality to a float, this makes sure that it behaves well
+    hfx_values_to_generate = list(set(hfx_values_to_generate))
+    hfx_values_to_generate = [i for i in hfx_values_to_generate if i in hfx_values]
+    
+    #Now generate the additional hfx resampling values
+    jobscripts = []
+    for hfx in hfx_values_to_generate:
+        subname = name+'_'+str(int(100*hfx))
+        if os.path.exists(os.path.join(hfx_path,subname)): #skip over values that we've already done
+            continue
+            
+        os.mkdir(os.path.join(hfx_path,subname))
+        os.chdir(os.path.join(hfx_path,subname))
+        
+        higher_hfx = subname.rsplit('_',1)[0]+'_'+str(int(subname.rsplit('_',1)[1])+5)
+        lower_hfx = subname.rsplit('_',1)[0]+'_'+str(int(subname.rsplit('_',1)[1])-5)
+        if os.path.exists(os.path.join(hfx_path,higher_hfx)):
+            source_dir = os.path.join(hfx_path,higher_hfx)
+        else:
+            source_dir = os.path.join(hfx_path,lower_hfx)
+            
+        optimxyz = os.path.join(source_dir,'scr','optim.xyz')
+        extract_optimized_geo(optimxyz)
+        
+        shutil.copy(os.path.join(source_dir,'scr','optimized.xyz'),subname+'.xyz')
+        if spin == 1:
+            shutil.copy(os.path.join(source_dir,'scr','c0'),'c0')
+            write_jobscript(name,custom_line = '# -fin c0')
+        if spin != 1:
+            shutil.copyfile(os.path.join(source_dir,'scr','ca0'),os.path.join('ca0'))
+            shutil.copyfile(os.path.join(source_dir,'scr','cb0'),os.path.join('cb0'))
+            write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
+    
+        write_input(name,charge,spin,solvent = solvent, guess = True, 
+            run_type = run_type, method = method, levela = levelshifta, 
+            levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis)
+        jobscripts.append(os.path.join(os.getcwd(),subname+'_jobscript'))
+    
+    os.chdir(home)
+    
+    return jobscripts
+
 def extract_optimized_geo(PATH, custom_name = False):
     #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
     #The file is written to the same directory as contained optim.xyz
