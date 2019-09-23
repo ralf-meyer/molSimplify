@@ -210,7 +210,7 @@ def clean_resub(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,_ = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,_ = tools.read_infile(outfile_path)
     
     home = os.getcwd()
     if len(directory) > 0: #if the string is blank, then we're already in the correct directory
@@ -255,7 +255,7 @@ def resub_spin(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,_ = tools.read_infile(outfile_path)
+        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,_ = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
@@ -291,7 +291,7 @@ def resub_scf(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spinmult,solvent,run_type,old_levela,old_levelb,_ = tools.read_infile(outfile_path)
+        charge,spinmult,solvent,run_type,old_levela,old_levelb,method,_ = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
@@ -362,7 +362,7 @@ def resub_thermo(outfile_path):
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
     ultratight_dir = os.path.join(parent_directory,parent_name+'_ultratight')
     
-    _,spinmult,_,_,_,_,_ = tools.read_infile(outfile_path)
+    _,spinmult,_,_,_,_,_,_ = tools.read_infile(outfile_path)
     
     if os.path.exists(ultratight_dir):
         if os.path.exists(os.path.join(ultratight_dir,'scr','optim.xyz')):

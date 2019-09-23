@@ -70,7 +70,7 @@ def prep_ligand_breakown(outfile_path):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    charge,spinmult,solvent,run_type,_,_,_ = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     
@@ -137,7 +137,8 @@ def prep_ligand_breakown(outfile_path):
             local_mol.copymol3D(mol)
             local_mol.deleteatoms(ligand[1])
             local_mol.writexyz(local_name+'.xyz')
-            tools.write_input(local_name,metal_charge,metal_spin,run_type = 'energy', method = 'b3lyp', solvent = solvent)
+            tools.write_input(local_name,metal_charge,metal_spin,run_type = 'energy', method = method, solvent = solvent,
+                              levela = levelshifta, levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis)
             tools.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
@@ -155,7 +156,8 @@ def prep_ligand_breakown(outfile_path):
             deletion_indices = list(set(range(local_mol.natoms))-set(ligand[1]))
             local_mol.deleteatoms(deletion_indices)
             local_mol.writexyz(local_name+'.xyz')
-            tools.write_input(local_name,ligand_charge,ligand_spin,run_type = 'energy', method = 'b3lyp', solvent = solvent)
+            tools.write_input(local_name,ligand_charge,ligand_spin,run_type = 'energy', method = method, solvent = solvent,
+                              levela = levelshifta, levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis)
             tools.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')

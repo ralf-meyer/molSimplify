@@ -302,16 +302,21 @@ def read_outfile(outfile_path):
 def read_infile(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     inp = textfile(root+'.in')
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb = inp.wordgrab(['charge ',
-                                                'spinmult ','pcm ','run ','levelshiftvala ','levelshiftvalb '],[1,1,0,1,1,1],last_line=True)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis = inp.wordgrab(['charge ', 'spinmult ','pcm ',
+                                                                                        'run ','levelshiftvala ',
+                                                                                        'levelshiftvalb ','method ',
+                                                                                        'HFX ', 'basis '],[1,1,0,1,1,1,1,1,1],last_line=True)
     charge,spinmult = int(charge),int(spinmult)
     if solvent:
         solvent = True
     else:
         solvent = False
+    if method[1] == 'u':
+        method = method[1:]
+        
     convergence_thresholds = inp.wordgrab(['min_converge_gmax ','min_converge_grms ','min_converge_dmax ','min_converge_drms ','min_converge_e ','convthre '],
                                           [1]*6,last_line=True)
-    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,convergence_thresholds
+    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds
 
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges
@@ -364,12 +369,9 @@ def prep_vertical_ip(path, solvent = False):
     results = read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
+        
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
     
-    if type(results['s_squared_ideal']) == float:
-        S = ((1 + 4*results['s_squared_ideal'])**(0.5)-1)/2 #Calculate S based on S(S+1) using quadratic formula
-    else:
-        S = 0
-    spin = int(round(2*S+1)) #Spin multiplicity of the non-ionized species
     if spin == 1:
         new_spin = [2]
     else:
@@ -392,7 +394,9 @@ def prep_vertical_ip(path, solvent = False):
             
             shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
             
-            write_input(name,results['charge']+1,calc, solvent = solvent)
+            write_input(name,charge+1,calc,solvent = solvent, guess = False, 
+                run_type = 'energy', method = method, levela = levelshifta, 
+                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -412,11 +416,8 @@ def prep_vertical_ea(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    if type(results['s_squared_ideal']) == float:
-        S = ((1 + 4*results['s_squared_ideal'])**(0.5)-1)/2 #Calculate S based on S(S+1) using quadratic formula
-    else:
-        S = 0
-    spin = int(round(2*S+1)) #Spin multiplicity of the non-ionized species
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    
     if spin == 1:
         new_spin = [2]
     else:
@@ -439,7 +440,9 @@ def prep_vertical_ea(path, solvent = False):
             
             shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
             
-            write_input(name,results['charge']-1,calc, solvent = solvent)
+            write_input(name,charge-1,calc,solvent = solvent, guess = False, 
+                run_type = 'energy', method = method, levela = levelshifta, 
+                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -459,11 +462,7 @@ def prep_solvent_sp(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    if type(results['s_squared_ideal']) == float:
-        S = ((1 + 4*results['s_squared_ideal'])**(0.5)-1)/2 #Calculate S based on S(S+1) using quadratic formula
-    else:
-        S = 0
-    spin = int(round(2*S+1)) #Spin multiplicity of the non-ionized species
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -488,7 +487,9 @@ def prep_solvent_sp(path):
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
         write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
-    write_input(name,results['charge'],spin,solvent = True, guess = True)
+    write_input(name,charge,spin,solvent = True, guess = True, 
+                run_type = 'energy', method = method, levela = levelshifta, 
+                levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis)
     
     os.chdir(home)
     
@@ -505,11 +506,7 @@ def prep_thermo(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    if type(results['s_squared_ideal']) == float:
-        S = ((1 + 4*results['s_squared_ideal'])**(0.5)-1)/2 #Calculate S based on S(S+1) using quadratic formula
-    else:
-        S = 0
-    spin = int(round(2*S+1)) #Spin multiplicity of the non-ionized species
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -534,7 +531,9 @@ def prep_thermo(path):
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
         write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
-    write_input(name,results['charge'],spin,run_type = 'frequencies',solvent = True, guess = True)
+    write_input(name,charge,spin,solvent = solvent, guess = True, 
+                run_type = 'frequencies', method = method, levela = levelshifta, 
+                levelb = levelshiftb, hfx = hfx, basis = basis)
     
     os.chdir(home)
     
@@ -551,7 +550,7 @@ def prep_ultratight(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -570,17 +569,20 @@ def prep_ultratight(path):
             raise Exception('This tightened convergence run appears to already exist. Aborting...')
             
         shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
-        if spinmult == 1:
+        if spin == 1:
             shutil.copyfile(os.path.join(base,'scr','c0'),os.path.join(PATH,'c0'))
             write_jobscript(name,custom_line = '# -fin c0')
-        if spinmult != 1:
+        if spin != 1:
             shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
             shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
             write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
         
         criteria = ['2.25e-04','1.5e-04','0.9e-03','0.6e-03','0.5e-06','1.5e-05']
-        tight_thresholds ="min_converge_gmax "+criteria[0]+"\nmin_converge_grms "+criteria[1]+"\nmin_converge_dmax "+criteria[2]+"\nmin_converge_drms "+criteria[3]+"\nmin_converge_e "+criteria[4]+"\nconvthre "+criteria[5]
-        write_input(name,charge,spinmult,run_type = 'minimize',solvent = solvent, guess = True, custom_line = tight_thresholds)
+        
+        write_input(name,charge,spin,solvent = solvent, guess = True, 
+                run_type = run_type, method = method, levela = levelshifta, 
+                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis)
+        
         #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
         f = open(name+'.out','w')
         f.close()
@@ -591,11 +593,13 @@ def prep_ultratight(path):
     
     else: #This has been run before, further tighten the convergence criteria
         os.chdir(PATH)
-        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,criteria = read_infile(os.path.join(PATH,name+'.out'))
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = read_infile(os.path.join(PATH,name+'.out'))
         criteria = [str(i/2.) for i in criteria]
         
-        tight_thresholds ="min_converge_gmax "+criteria[0]+"\nmin_converge_grms "+criteria[1]+"\nmin_converge_dmax "+criteria[2]+"\nmin_converge_drms "+criteria[3]+"\nmin_converge_e "+criteria[4]+"\nconvthre "+criteria[5]
-        write_input(name,charge,spinmult,run_type = 'minimize',solvent = solvent, guess = True, custom_line = tight_thresholds)
+        write_input(name,charge,spin,solvent = solvent, guess = True, 
+                run_type = run_type, method = method, levela = levelshifta, 
+                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis)
+        
         
         os.chdir(home)
         
@@ -666,7 +670,7 @@ def pull_optimized_geos(PATHs = []):
     
 def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solvent = False, 
                 guess = False, custom_line = None, levela = 0.25, levelb = 0.25,
-                alternate_coordinates = False):
+                thresholds = None, basis = 'lacvps_ecp', hfx = None,alternate_coordinates = False):
     #Writes a generic terachem input file
     #solvent indicates whether to set solvent calculations True or False
     
@@ -689,7 +693,7 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
             'gpus 1\n',
             'spinmult '+str(spinmult) +'\n',
             'scrdir ./scr\n',
-            'basis lacvps_ecp\n',
+            'basis '+basis+'\n',
             'timings yes\n',
             'charge '+str(charge)+'\n',
             'method '+method+'\n',
@@ -709,6 +713,17 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
     if run_type != 'ts':
         text = text[:-1] + ['maxit 500\n',
                             'end']
+                            
+    if type(thresholds) == list:
+        if thresholds[0]:
+            tight_thresholds ="min_converge_gmax "+thresholds[0]+"\nmin_converge_grms "+thresholds[1]+"\nmin_converge_dmax "+thresholds[2]+"\nmin_converge_drms "+thresholds[3]+"\nmin_converge_e "+thresholds[4]+"\nconvthre "+thresholds[5]
+            text = text[:-1]+['\n',tight_thresholds+'\n','end']
+    
+    if hfx:
+        text = text[:-1] + ['\n',
+                            'HFX '+str(hfx)+'\n',
+                            '\n']
+                            
     if solvent: #Adds solvent correction, if requested
         text = text[:-1] + ['\n',
                             'pcm cosmo\n',
