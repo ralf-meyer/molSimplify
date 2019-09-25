@@ -251,8 +251,9 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
     #Submit jobs which haven't yet been submitted
     to_submit = []
     jobscripts = tools.find('*_jobscript')
+    active_jobs = tools.list_active_jobs()
     for job in jobscripts:
-        if not os.path.isfile(job.rsplit('_',1)[0]+'.out'):
+        if not os.path.isfile(job.rsplit('_',1)[0]+'.out') and not os.path.split(job.rsplit('_',1)[0])[-1] in active_jobs:
             to_submit.append(job)
     submitted = []
     for job in to_submit:
