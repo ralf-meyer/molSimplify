@@ -237,7 +237,7 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
         job = waiting_dict.keys()[0]
         waiting_for = waiting_dict[job]
         if waiting_for in finished:
-	    history = load_history(job)
+            history = load_history(job)
             history.waiting = None
             history.save()
             results_for_this_job = tools.read_outfile(job)
