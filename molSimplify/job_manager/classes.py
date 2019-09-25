@@ -76,7 +76,7 @@ class textfile:
         else:
             self.lines = None
             
-    def wordgrab(self,keywords,indices,last_line=False,first_line = False,min_value = False):
+    def wordgrab(self,keywords,indices, last_line=False, first_line = False, min_value = False, matching_index=False):
         ## takes two lists as an input
         # The first list is the keywords to look for
         # The second list is the indices to pull from the matching lines
@@ -90,7 +90,7 @@ class textfile:
         results = dict()
         zipped_values = zip(keywords,indices,range(len(keywords)))
         
-        for line in self.lines:
+        for counter,line in enumerate(self.lines):
             for keyword,index,keyword_number in zipped_values:
                 if keyword in line:
                     
@@ -103,6 +103,15 @@ class textfile:
                         results[keyword_number] = [matching_value]
                     else:
                         results[keyword_number].append(matching_value)
+                    
+                    #Special procedure for returning the index of matching lines instead of the matching values
+                    if matching_index:
+                        if keyword_number not in results.keys():
+                            results[keyword_number] = [counter]
+                        else:
+                            results[keyword_number].append(counter)
+                            
+                            
         if (last_line and min_value) or (last_line and first_line) or (first_line and min_value):
             raise ValueError('Warning, incompatible options selected in text parsing')
         

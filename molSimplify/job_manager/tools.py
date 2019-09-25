@@ -316,7 +316,13 @@ def read_infile(outfile_path):
         
     convergence_thresholds = inp.wordgrab(['min_converge_gmax ','min_converge_grms ','min_converge_dmax ','min_converge_drms ','min_converge_e ','convthre '],
                                           [1]*6,last_line=True)
-    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds
+                                          
+    multibasis = inp.wordgrab(['$multibasis','$end'],[0,0],last_line=True,matching_index=True)
+    if not multibasis[0]:
+        multibasis = False
+    else:
+        multibasis = inp.lines[multibasis[0]+1:multibasis[1]]
+    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis
 
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges
@@ -370,7 +376,7 @@ def prep_vertical_ip(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
         
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
     
     if spin == 1:
         new_spin = [2]
@@ -396,7 +402,7 @@ def prep_vertical_ip(path, solvent = False):
             
             write_input(name,charge+1,calc,solvent = solvent, guess = False, 
                 run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis)
+                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,multibasis=multibasis)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -416,7 +422,7 @@ def prep_vertical_ea(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
     
     if spin == 1:
         new_spin = [2]
@@ -442,7 +448,7 @@ def prep_vertical_ea(path, solvent = False):
             
             write_input(name,charge-1,calc,solvent = solvent, guess = False, 
                 run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis)
+                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis, multibasis = multibasis)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -462,7 +468,7 @@ def prep_solvent_sp(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -489,7 +495,7 @@ def prep_solvent_sp(path):
     
     write_input(name,charge,spin,solvent = True, guess = True, 
                 run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis)
+                levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis, multibasis = multibasis)
     
     os.chdir(home)
     
@@ -506,7 +512,7 @@ def prep_thermo(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -533,7 +539,7 @@ def prep_thermo(path):
     
     write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = 'frequencies', method = method, levela = levelshifta, 
-                levelb = levelshiftb, hfx = hfx, basis = basis)
+                levelb = levelshiftb, hfx = hfx, basis = basis, multibasis = multibasis)
     
     os.chdir(home)
     
@@ -550,7 +556,7 @@ def prep_ultratight(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds, multibasis = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -581,7 +587,7 @@ def prep_ultratight(path):
         
         write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = run_type, method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis)
+                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, multibasis = multibasis)
         
         #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
         f = open(name+'.out','w')
@@ -593,12 +599,12 @@ def prep_ultratight(path):
     
     else: #This has been run before, further tighten the convergence criteria
         os.chdir(PATH)
-        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = read_infile(os.path.join(PATH,name+'.out'))
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = read_infile(os.path.join(PATH,name+'.out'))
         criteria = [str(i/2.) for i in criteria]
         
         write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = run_type, method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis)
+                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, multibasis = multibasis)
         tools.extract_optimized_geo(os.path.join(PATH,'scr','optim.xyz'))
         shutil.copy(os.path.join(PATH,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
         
@@ -619,7 +625,7 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     #Check the state of the calculation and ensure than hfx resampling is valid
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
     if method != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
     if not hfx:
@@ -695,7 +701,7 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
     
         write_input(subname,charge,spin,solvent = solvent, guess = True, 
             run_type = run_type, method = method, levela = levelshifta, 
-            levelb = levelshiftb, hfx = hfx/100. ,thresholds = convergence_thresholds, basis = basis)
+            levelb = levelshiftb, hfx = hfx/100. ,thresholds = convergence_thresholds, basis = basis, multibasis = multibasis)
         jobscripts.append(os.path.join(os.getcwd(),subname+'_jobscript'))
     
     os.chdir(home)
@@ -767,7 +773,8 @@ def pull_optimized_geos(PATHs = []):
     
 def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solvent = False, 
                 guess = False, custom_line = None, levela = 0.25, levelb = 0.25,
-                thresholds = None, basis = 'lacvps_ecp', hfx = None,alternate_coordinates = False):
+                thresholds = None, basis = 'lacvps_ecp', hfx = None,alternate_coordinates = False,
+                multibasis = False):
     #Writes a generic terachem input file
     #solvent indicates whether to set solvent calculations True or False
     
@@ -815,11 +822,15 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
         if thresholds[0]:
             tight_thresholds ="min_converge_gmax "+thresholds[0]+"\nmin_converge_grms "+thresholds[1]+"\nmin_converge_dmax "+thresholds[2]+"\nmin_converge_drms "+thresholds[3]+"\nmin_converge_e "+thresholds[4]+"\nconvthre "+thresholds[5]
             text = text[:-1]+['\n',tight_thresholds+'\n','end']
+            
+    if multibasis:
+        multibasis = [line if line.endswith('\n') else line+'\n' for line in multibasis]
+        text = text[:-1] + ['\n','$multibasis\n'] + multibasis + ['$end\n','end']
     
     if type(hfx) == int or type(hfx) == float:
         text = text[:-1] + ['\n',
                             'HFX '+str(hfx)+'\n',
-                            '\n']
+                            'end']
                             
     if solvent: #Adds solvent correction, if requested
         text = text[:-1] + ['\n',

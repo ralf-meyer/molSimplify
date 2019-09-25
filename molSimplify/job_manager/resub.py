@@ -296,7 +296,7 @@ def clean_resub(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
     
     home = os.getcwd()
     if len(directory) > 0: #if the string is blank, then we're already in the correct directory
@@ -315,13 +315,15 @@ def clean_resub(outfile_path):
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
                           guess = 'inscr/c0', alternate_coordinates = coordinates,
                           thresholds = criteria, basis = basis, method = configure_dict['method'],
-                          levela = configure_dict['levela'], levelb = configure_dict['levelb'])
+                          levela = configure_dict['levela'], levelb = configure_dict['levelb'],
+                          multibasis = multibasis)
                           
     else:
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
                           guess = 'inscr/ca0 inscr/cb0', alternate_coordinates =coordinates,
                           thresholds = criteria, basis = basis, method = configure_dict['method'],
-                          levela = configure_dict['levela'], levelb = configure_dict['levelb'])
+                          levela = configure_dict['levela'], levelb = configure_dict['levelb'],
+                          multibasis = multibasis)
     tools.write_jobscript(name,custom_line = '# -fin inscr/')
     os.chdir(home)
     tools.qsub(root+'_jobscript')
@@ -348,13 +350,13 @@ def resub_spin(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
+        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, method = 'blyp',
-                          thresholds = criteria, basis = basis, levela = levelshifta, levelb = levelshiftb)
+                          thresholds = criteria, basis = basis, levela = levelshifta, levelb = levelshiftb, multibasis=multibasis)
         
         tools.write_jobscript(name)
         os.chdir(home)
@@ -386,13 +388,14 @@ def resub_scf(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type,
-                          levela = 1.0, levelb = 0.1, method = method, thresholds = criteria, hfx = hfx, basis = basis)
+                          levela = 1.0, levelb = 0.1, method = method, thresholds = criteria, hfx = hfx, basis = basis,
+                          multibasis = multibasis)
                           
         tools.write_jobscript(name)
         os.chdir(home)
@@ -458,7 +461,7 @@ def resub_thermo(outfile_path):
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
     ultratight_dir = os.path.join(parent_directory,parent_name+'_ultratight')
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
     
     if os.path.exists(ultratight_dir):
         if os.path.exists(os.path.join(ultratight_dir,'scr','optim.xyz')):
