@@ -68,7 +68,7 @@ def list_active_jobs():
     job_report = textfile() 
     job_report.lines = call_bash("qstat -r")
     
-    name = job_report.wordgrab('jobname:',2)
+    name = job_report.wordgrab('jobname:',2)[0]
         
     return name
 
@@ -311,7 +311,7 @@ def read_infile(outfile_path):
         solvent = True
     else:
         solvent = False
-    if method[1] == 'u':
+    if method[0] == 'u':
         method = method[1:]
         
     convergence_thresholds = inp.wordgrab(['min_converge_gmax ','min_converge_grms ','min_converge_dmax ','min_converge_drms ','min_converge_e ','convthre '],
@@ -599,13 +599,14 @@ def prep_ultratight(path):
         write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = run_type, method = method, levela = levelshifta, 
                 levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis)
-        
+        tools.extract_optimized_geo(os.path.join(PATH,'scr','optim.xyz'))
+        shutil.copy(os.path.join(PATH,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
         
         os.chdir(home)
         
         return [os.path.join(PATH,name+'_jobscript')]
         
-def prep_hfx_resample(path,hfx_values = [0,0.05,0.10,0.15,0.20,0.25,0.30]):
+def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
     #Given a path to the outfile of a finished run, this preps the files for hfx resampling
     #Uses the wavefunction from the gas phase calculation as an initial guess
     #Returns a list of the PATH(s) to the jobscript(s) to start the resampling calculations(s)
@@ -622,7 +623,7 @@ def prep_hfx_resample(path,hfx_values = [0,0.05,0.10,0.15,0.20,0.25,0.30]):
     if method != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
     if not hfx:
-        hfx = 0.20
+        hfx = 20
     if hfx not in hfx_values:
         raise Exception('HFX resampling list does not contain the original hfx value!')
     
@@ -634,7 +635,7 @@ def prep_hfx_resample(path,hfx_values = [0,0.05,0.10,0.15,0.20,0.25,0.30]):
     os.chdir(hfx_path)    
     
     #Make the directory for the original calculation
-    subname = name+'_'+str(int(100*hfx))
+    subname = name+'_'+str(hfx)
     PATH = os.path.join(hfx_path,subname)
     if not os.path.isdir(PATH):
         os.mkdir(PATH)
@@ -651,22 +652,21 @@ def prep_hfx_resample(path,hfx_values = [0,0.05,0.10,0.15,0.20,0.25,0.30]):
     hfx_values_to_generate = []
     existing_resampled_values = glob.glob(os.path.join(hfx_path,name+'_*'))
     for existing in existing_resampled_values:
-        hfx = float(existing.rsplit('_',1)[1])/100.
-        subname = name+'_'+str(int(100*hfx))
+        hfx = int(existing.rsplit('_',1)[1])
+        subname = name+'_'+str(hfx)
         outfile_path = os.path.join(existing,subname+'.out')
         if os.path.exists(outfile_path):
             if read_outfile(outfile_path)['finished']:
-                hfx_values_to_generate.append(hfx-0.05)
-                hfx_values_to_generate.append(hfx+0.05)
+                hfx_values_to_generate.append(hfx-5)
+                hfx_values_to_generate.append(hfx+5)
     
-    hfx_values_to_generate = [int(100.*i)/100. for i in hfx_values_to_generate] #We're about to check equality to a float, this makes sure that it behaves well
     hfx_values_to_generate = list(set(hfx_values_to_generate))
     hfx_values_to_generate = [i for i in hfx_values_to_generate if i in hfx_values]
     
     #Now generate the additional hfx resampling values
     jobscripts = []
     for hfx in hfx_values_to_generate:
-        subname = name+'_'+str(int(100*hfx))
+        subname = name+'_'+str(hfx)
         if os.path.exists(os.path.join(hfx_path,subname)): #skip over values that we've already done
             continue
             
@@ -686,15 +686,15 @@ def prep_hfx_resample(path,hfx_values = [0,0.05,0.10,0.15,0.20,0.25,0.30]):
         shutil.copy(os.path.join(source_dir,'scr','optimized.xyz'),subname+'.xyz')
         if spin == 1:
             shutil.copy(os.path.join(source_dir,'scr','c0'),'c0')
-            write_jobscript(name,custom_line = '# -fin c0')
+            write_jobscript(subname,custom_line = '# -fin c0')
         if spin != 1:
             shutil.copyfile(os.path.join(source_dir,'scr','ca0'),os.path.join('ca0'))
             shutil.copyfile(os.path.join(source_dir,'scr','cb0'),os.path.join('cb0'))
-            write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
+            write_jobscript(subname,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
-        write_input(name,charge,spin,solvent = solvent, guess = True, 
+        write_input(subname,charge,spin,solvent = solvent, guess = True, 
             run_type = run_type, method = method, levela = levelshifta, 
-            levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis)
+            levelb = levelshiftb, hfx = hfx/100. ,thresholds = convergence_thresholds, basis = basis)
         jobscripts.append(os.path.join(os.getcwd(),subname+'_jobscript'))
     
     os.chdir(home)
@@ -815,7 +815,7 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
             tight_thresholds ="min_converge_gmax "+thresholds[0]+"\nmin_converge_grms "+thresholds[1]+"\nmin_converge_dmax "+thresholds[2]+"\nmin_converge_drms "+thresholds[3]+"\nmin_converge_e "+thresholds[4]+"\nconvthre "+thresholds[5]
             text = text[:-1]+['\n',tight_thresholds+'\n','end']
     
-    if hfx:
+    if type(hfx) == int or type(hfx) == float:
         text = text[:-1] + ['\n',
                             'HFX '+str(hfx)+'\n',
                             '\n']

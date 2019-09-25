@@ -125,7 +125,7 @@ def read_configure(home_directory,outfile_path):
         hfx_resample = True
     
     #Determine global settings for this run
-    max_jobs,max_resub,levela,levelb,method,hfx,octahedral = False,False,False,False,False,False,True
+    max_jobs,max_resub,levela,levelb,method,hfx,octahedral,sleep = False,False,False,False,False,False,True,False
     for configure in [home_configure,local_configure]:
         for line in home_configure:
             if 'max_jobs' in line.split(':'):
@@ -133,15 +133,17 @@ def read_configure(home_directory,outfile_path):
             if 'max_resub' in line.split(':'):
                 max_resub = int(line.split(':')[-1])
             if 'levela' in line.split(':'):
-                levela = int(line.split(':')[-1])
+                levela = float(line.split(':')[-1])
             if 'levelb' in line.split(':'):
-                levelb = int(line.split(':')[-1])
+                levelb = float(line.split(':')[-1])
             if 'method' in line.split(':'):
-                method = int(line.split(':')[-1])
+                method = line.split(':')[-1]
             if 'hfx' in line.split(':'):
-                hfx = int(line.split(':')[-1])
+                hfx = float(line.split(':')[-1])
             if 'octahedral' in line.split(':'):
-                octahedral = int(line.split(':')[-1])
+                octahedral = line.split(':')[-1]
+            if 'sleep' in line.split(':'):
+                sleep = int(line.split(':')[-1])
     #If global settings not specified, choose defaults:
         if not max_jobs:
             max_jobs = 50 - 1 
@@ -155,11 +157,13 @@ def read_configure(home_directory,outfile_path):
             method = 'b3lyp'
         if not hfx:
             hfx = 0.20
+        if not sleep:
+            sleep = 7200
         #Octahedral defaults to True in original variable initiation
                 
     return {'solvent':solvent,'vertEA':vertEA,'vertIP':vertIP,'thermo':thermo,'dissociation':dissociation,
             'hfx_resample':hfx_resample,'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
-            'levelb':levelb,'method':method,'hfx':hfx,'octahedral':octahedral}
+            'levelb':levelb,'method':method,'hfx':hfx,'octahedral':octahedral,'sleep':sleep}
 
 def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
     
@@ -411,7 +415,7 @@ def resub_tighter(outfile_path):
     ultratight_path = os.path.join(parent_directory,parent_name+'_ultratight',parent_name+'_ultratight.out')
     
     if os.path.exists(ultratight_path): #This ultratight resubmission has happend before, need to archive the results
-        save_scr(ultratight_path)
+        save_scr(ultratight_path, rewrite_inscr = False)
         save_run(ultratight_path)
         history = resub_history()
         history.read(ultratight_path)
@@ -436,7 +440,7 @@ def resub_thermo(outfile_path):
     #Similar to simple resub, but specific for addressing thermo gradient errors
     #Checks for the existance of an ultratight version of this run. If it exists, uses the most up to date version for the new thermo run
     
-    save_scr(outfile_path)
+    save_scr(outfile_path, rewrite_inscr = False)
     save_run(outfile_path)
     history = resub_history()
     history.read(outfile_path)
@@ -488,7 +492,7 @@ def prep_derivative_jobs(directory,list_of_outfiles):
         name = name.rsplit('.',1)[0]
         name = name.split('_')
         
-        if 'solventSP' in name or 'vertEA' in name or 'vertIP' in name or 'thermo' in name or 'kp' in name or 'rm' in name or 'ultratight' in name:
+        if 'solventSP' in name or 'vertEA' in name or 'vertIP' in name or 'thermo' in name or 'kp' in name or 'rm' in name or 'ultratight' in name or 'HFXresampling' in name:
             return False
         else:
             return True
@@ -578,9 +582,10 @@ def main():
         print('**********************************')
         print("******** "+str(number_resubmitted)+" Jobs Submitted ********")
         print('**********************************')
-        sys.stdout.flush()
-        
-        time.sleep(7200) #sleep for two hours
+        print 'sleeping for: '+str(configure_dict['sleep'])
+	sys.stdout.flush()
+       
+        time.sleep(configure_dict['sleep']) #sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
         
         #Terminate the script if it is no longer submitting jobs
         completeness_status,_ = tools.check_completeness()
