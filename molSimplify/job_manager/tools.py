@@ -645,9 +645,10 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
         shutil.copyfile(path,subname+'.out')
         shutil.copyfile(path.rsplit('.',1)[0]+'_jobscript',subname+'_jobscript')
         shutil.copyfile(path.rsplit('.',1)[0]+'.in',subname+'.in')
-        shutil.copyfile(path.rsplit('.',1)[0]+'.xyz',subname+'.xyz')
         shutil.copytree(os.path.join(os.path.split(path)[0],'scr'),'scr')
-    
+        if os.path.exists(path.rsplit('.',1)[0]+'.xyz'):
+            shutil.copyfile(path.rsplit('.',1)[0]+'.xyz',subname+'.xyz')
+     
     #Find the hfx resampling values that we're ready to generate
     hfx_values_to_generate = []
     existing_resampled_values = glob.glob(os.path.join(hfx_path,name+'_*'))
