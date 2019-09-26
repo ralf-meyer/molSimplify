@@ -91,7 +91,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
         ## ligand ACs
         #print('get ligand ACs')
-        results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=True,name=False,
+        results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,name=False,
                                                                   flag_name=False,
                                                                   custom_ligand_dict=custom_ligand_dict,
                                                                   NumB=NumB)
