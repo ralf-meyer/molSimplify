@@ -231,7 +231,7 @@ def read_outfile(outfile_path):
                 print outfile_path
                 counter = 0
             else:
-                raise ValueError('.out file type not recognized!')
+                raise ValueError('.out file type not recognized for file: '+outfile_path)
     output_type = ['TeraChem','ORCA'][counter]
     if output_type == 'ORCA':
         raise Exception(outfile_path)
@@ -251,14 +251,18 @@ def read_outfile(outfile_path):
         
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
         name = name.rsplit('.',1)[0]
-        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing',
-                                                                                        'Maximum component of gradient is too large'],[2,2,4,3,0],last_line=True)
+        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy = output.wordgrab(['FINAL','S-SQUARED:',
+                                                                                        'S-SQUARED:','processing',
+                                                                                        'Maximum component of gradient is too large',
+                                                                                        'C-PCM contribution to final energy:'],
+                                                                                        [2,2,4,3,0,4],last_line=True)
         if thermo_grad_error:
             thermo_grad_error = True
         else:
             thermo_grad_error = False
         if s_squared_ideal:
             s_squared_ideal = float(s_squared_ideal.strip(')'))
+        implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
             
         min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
         
@@ -297,6 +301,7 @@ def read_outfile(outfile_path):
     return_dict['min_energy'] = try_float(min_energy)
     return_dict['scf_error'] = scf_error
     return_dict['thermo_grad_error'] = thermo_grad_error
+    return_dict['solvation_energy'] = implicit_solvation_energy
     return return_dict
 
 def read_infile(outfile_path):
