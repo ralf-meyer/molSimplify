@@ -627,7 +627,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             error_var = np.var(errors)
             error_list.append(error_var)
         except:
-            error_list.append(10000)
+            error_list.append(0) ### perfect fit plane may suffer matrix singularity issues.
     if loud:
         print('combos below')
         print(combo_list)
@@ -1377,10 +1377,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     ##### The 4 that have the least variance are flagged as the eq plane.
                     mat_b = np.matrix(b).T
                     mat_A = np.matrix(A)
-                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
-                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
-                    error_var = np.var(errors)
-                    error_list.append(error_var)
+                    try:
+                        fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                        errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                        error_var = np.var(errors)
+                        error_list.append(error_var)
+                    except:
+                        #### This will catch if it errors due to a singular matrix. Means the fit is perfect.
+                        #### If the fit is perfect, then it is the equatorial plane. Assigned this way.
+                        error_list.append(0)
                 if loud:
                     print('combos below')
                     print(combo_list)
@@ -1460,11 +1465,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ##### The 4 that have the least variance are flagged as the eq plane.
                 mat_b = np.matrix(b).T
                 mat_A = np.matrix(A)
-                fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
-                fitlist.append(fit)
-                errors = np.squeeze(np.array(mat_b - mat_A * fit))
-                error_var = np.var(errors)
-                error_list.append(error_var)
+                try:
+                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                    error_var = np.var(errors)
+                    error_list.append(error_var)
+                except:
+                    #### This will catch if it errors due to a singular matrix. Means the fit is perfect.
+                    #### If the fit is perfect, then it is the equatorial plane. Assigned this way.
+                    error_list.append(0)
             if loud:
                 print('combos below')
                 print(combo_list)
