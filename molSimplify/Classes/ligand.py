@@ -302,10 +302,13 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                     ##### The 4 that have the least variance are flagged as the eq plane.
                     mat_b = np.matrix(b).T
                     mat_A = np.matrix(A)
-                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
-                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
-                    error_var = np.var(errors)
-                    error_list.append(error_var)
+                    try:
+                        fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                        errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                        error_var = np.var(errors)
+                        error_list.append(error_var)
+                    except:
+                        error_list.append(0)
                 if loud:
                     print('combos below')
                     print(combo_list)
@@ -495,6 +498,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
 def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False):
     ####### This ligand assignment code handles octahedral complexes consistently.
     ####### It should be able to assign any octahedral complex
+    angle_cutoff = 130
     valid = True
     hexadentate = False
     pentadentate = False
@@ -741,7 +745,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
                     #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
                     test_angle = np.sort(np.array(angle_list))[::-1][1]
-                    if test_angle < 140:
+                    if test_angle < angle_cutoff:
                         seesaw = True
                         #### In the seesaw, the two furthest apart are denoted as axial. 
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
@@ -833,7 +837,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
                     #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
                     test_angle = np.sort(np.array(angle_list))[::-1][1]
-                    if test_angle < 140:
+                    if test_angle < angle_cutoff:
                         seesaw = True
                         #### In the seesaw, the two furthest apart are denoted as axial. 
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
@@ -890,7 +894,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                             print('pair of atoms, then angle', pair, angle)
                         angle_list.append(angle)
                     test_angle = np.sort(np.array(angle_list))[::-1][0]
-                    if test_angle < 140:
+                    if test_angle < angle_cutoff:
                         planar = False
                         if len(two_repeats) == 2: ### will only be true for 3+2+1 case
                             print('now in the 3+2+1 case finding the opposite...')
@@ -944,7 +948,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                             #### will be across the tridentate. Thus the equatorial plane will be defined
                             #### as the planar tridentate plus one connection atom for the bidentate
                             #### The monodentate and the second bidentate connecting atoms are denoted axial.
-                            if test_angle > 140:
+                            if test_angle > angle_cutoff:
                                 monodentate_eq_con = current_con
                                 monodentate_eq_idx = mono_dentate_idx
                     if planar:
@@ -994,16 +998,16 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             #### The tridentate can either be planar or not. If planar, it will have at least one
             #### angle that is close to 180 between connecting atoms, through the metal.
             test_angle = np.sort(np.array(angle_list))[::-1][0]
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 planar = False
                 full_angle_list = []
                 full_con_list = []
                 tri_full_con_list = []
                 for mono_dentate_idx in mono_dentate_idx_set:
-                    print(mono_dentate_idx,mono_dentate_idx_set)
                     current_con = ligcons[mono_dentate_idx]
                     p1 = np.array(mol.getAtom(current_con[0]).coords())
-                    print('monocon',current_con,tridentate_cons)
+                    if loud:
+                        print('monocon',current_con,tridentate_cons)
                     angle_list = []
                     for k, tri_con in enumerate(tridentate_cons):
                         p2 = np.squeeze(np.array(coord_list[k]))
@@ -1016,7 +1020,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     #### will be across the tridentate. Thus the equatorial plane will be defined
                     #### as the planar tridentate plus one connection atom for the bidentate
                     #### The monodentate and the second bidentate connecting atoms are denoted axial.
-                    if test_angle > 140:
+                    if test_angle > angle_cutoff:
                         full_angle_list.append(test_angle)
                         full_con_list.append(current_con[0])
                         tri_full_con_list.append(tridentate_cons[np.squeeze(np.array(full_angle_list)).argsort()[-3:][::-1][0]])
@@ -1048,7 +1052,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     #### will be across the tridentate. Thus the equatorial plane will be defined
                     #### as the planar tridentate plus one connection atom for the bidentate
                     #### The monodentate and the second bidentate connecting atoms are denoted axial.
-                    if test_angle > 140:
+                    if test_angle > angle_cutoff:
                         monodentate_eq_con = current_con
                         monodentate_eq_idx = mono_dentate_idx
             if planar:
@@ -1093,7 +1097,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             test_angle = np.sort(np.array(angle_list))[::-1][1]
             if loud:
                 print('ANGLE LIST',angle_list, 'sorted',np.sort(np.array(angle_list))[::-1])
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 seesaw = True
                 temp_cons = bidentate_cons1+bidentate_cons2
                 axial_pair = [temp_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
@@ -1144,7 +1148,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
             #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
             test_angle = np.sort(np.array(angle_list))[::-1][1]
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 seesaw = True
                 #### In the seesaw, the two furthest apart are denoted as axial. 
                 #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
@@ -1196,7 +1200,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             #### The tridentate can either be planar or not. If planar, it will have at least one
             #### angle that is close to 180 between connecting atoms, through the metal.
             test_angle = np.sort(np.array(angle_list))[::-1][0]
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 planar = False
                 coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
                 p1 = np.array(mol.getAtom(monodentate_cons[0]).coords())
@@ -1230,7 +1234,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     #### will be across the tridentate. Thus the equatorial plane will be defined
                     #### as the planar tridentate plus one connection atom for the bidentate
                     #### The monodentate and the second bidentate connecting atoms are denoted axial.
-                    if test_angle > 140:
+                    if test_angle > angle_cutoff:
                         bidentate_eq_con = [bi_con]
                         bidentate_ax_con = [list(set(bidentate_cons) - set([bi_con]))[0]]
             if planar:
@@ -1314,11 +1318,12 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     print('pair of atoms, then angle', pair, angle)
                 angle_list.append(angle)
             test_angle = np.sort(np.array(angle_list))[::-1][0]
+
             #### Like the above 3+2+1 case, the tridentate must be classified into planar or not.
             #### If not planar, both ligands are both axial and equatorial.
             #### If planar, the ligand that falls on the eq_points (as found above), is only equatorial,
             #### but the tridentate ligand with one equatorial position and two axial is classified as both.
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 planar = False
             else:
                 planar = True
