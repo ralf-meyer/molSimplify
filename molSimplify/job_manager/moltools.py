@@ -9,12 +9,9 @@ import subprocess
 import pandas as pd
 import shutil
 import time
-import tools
+import molSimplify.job_manager.tools as tools
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown
-from resub_history import resub_history
-from text_parse import textfile
-import tools
 
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
@@ -53,17 +50,9 @@ def read_run(outfile_PATH):
         
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-    def not_nohup(path):
-        #The nohup.out file gets caught in the find statement
-        #use this function so that we only get TeraChem.outs
-        endpath = os.path.split(path)[-1]
-        if 'nohup.out' in endpath:
-            return False
-        else:
-            return True
             
     outfiles = tools.find('*.out',directory)
-    outfiles = filter(not_nohup,outfiles)
+    outfiles = filter(tools.not_nohup,outfiles)
     results = map(read_run,outfiles)
     summary = pd.DataFrame(results)
     
@@ -79,13 +68,19 @@ def prep_ligand_breakown(outfile_path):
     results = tools.read_outfile(outfile_path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
-        
-    charge,spinmult,solvent,run_type = tools.read_infile(outfile_path)
+    
+    
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     
     base = os.path.split(outfile_path)[0]
     name = os.path.split(outfile_path)[-1][:-4]
+    
+    breakdown_folder = os.path.join(base,name+'_dissociation')
+    
+    if os.path.isdir(breakdown_folder):
+        return ['Ligand dissociation directory already exists']
     
     optimxyz = os.path.join(base,'scr','optim.xyz')
     tools.extract_optimized_geo(optimxyz)
@@ -93,18 +88,13 @@ def prep_ligand_breakown(outfile_path):
     mol = mol3D()
     mol.readfromxyz(os.path.join(base,'scr','optimized.xyz'))
     
-    ligand_idxs,_,_ = ligand_breakdown(mol)
+    ligand_idxs,_,_ = ligand_breakdown(mol,silent=True)
     
     ligand_syms = []
     for ii in ligand_idxs:
         ligand_syms.append([mol.getAtom(i).symbol() for i in ii])
         
     ligand_names = name_ligands(ligand_syms)
-    
-    breakdown_folder = os.path.join(base,name+'_dissociation')
-    
-    # ~ if os.path.isdir(breakdown_folder):
-        # ~ return ['Ligand dissociation directory already exists']
     
     if not os.path.isdir(breakdown_folder):
         os.mkdir(breakdown_folder)
@@ -147,7 +137,9 @@ def prep_ligand_breakown(outfile_path):
             local_mol.copymol3D(mol)
             local_mol.deleteatoms(ligand[1])
             local_mol.writexyz(local_name+'.xyz')
-            tools.write_input(local_name,metal_charge,metal_spin,run_type = 'energy', method = 'b3lyp', solvent = solvent)
+            tools.write_input(local_name,metal_charge,metal_spin,run_type = 'energy', method = method, solvent = solvent,
+                              levela = levelshifta, levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,
+                              multibasis = multibasis)
             tools.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
@@ -165,7 +157,9 @@ def prep_ligand_breakown(outfile_path):
             deletion_indices = list(set(range(local_mol.natoms))-set(ligand[1]))
             local_mol.deleteatoms(deletion_indices)
             local_mol.writexyz(local_name+'.xyz')
-            tools.write_input(local_name,ligand_charge,ligand_spin,run_type = 'energy', method = 'b3lyp', solvent = solvent)
+            tools.write_input(local_name,ligand_charge,ligand_spin,run_type = 'energy', method = method, solvent = solvent,
+                              levela = levelshifta, levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,
+                              multibasis = multibasis)
             tools.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
