@@ -1472,6 +1472,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 mat_A = np.matrix(A)
                 try:
                     fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                    fitlist.append(fit)
                     errors = np.squeeze(np.array(mat_b - mat_A * fit))
                     error_var = np.var(errors)
                     error_list.append(error_var)
