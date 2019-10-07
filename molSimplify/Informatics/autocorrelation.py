@@ -408,11 +408,16 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True, catoms=None,
 
 
 def multimetal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
-                                    func=autocorrelation, modifier=False):
+                                    func=autocorrelation, modifier=False,additional_elements=False):
     autocorrelation_vector = np.zeros(d + 1)
     n_met = len(mol.findMetal())
+    metal_list = mol.findMetal()
+    if additional_elements:
+        for element in additional_elements:
+            metal_list += mol.findAtomsbySymbol(element)
+        n_met = len(metal_list)
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
-    for metal_ind in mol.findMetal():
+    for metal_ind in metal_list:
         autocorrelation_vector = + func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
     autocorrelation_vector = np.divide(autocorrelation_vector, n_met)
     return (autocorrelation_vector)
@@ -507,12 +512,16 @@ def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
 
 
 def multimetal_only_deltametric(mol, prop, d, oct=True, catoms=None,
-                                func=deltametric, modifier=False):
+                                func=deltametric, modifier=False,additional_elements=False):
     deltametric_vector = np.zeros(d + 1)
     n_met = len(mol.findMetal())
-
+    metal_list = mol.findMetal()
+    if additional_elements:
+        for element in additional_elements:
+            metal_list += mol.findAtomsbySymbol(element)
+        n_met = len(metal_list)
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
-    for metal_ind in mol.findMetal():
+    for metal_ind in metal_list:
         deltametric_vector += func(mol, w, metal_ind, d, oct=oct,
                                    catoms=catoms)
     deltametric_vector = np.divide(deltametric_vector, n_met)
@@ -1306,7 +1315,7 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, name=False, 
 
 
 def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False,
-                                    modifier=False, NumB=False):
+                                    modifier=False, NumB=False,additional_elements=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
@@ -1316,7 +1325,7 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
-        metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct, modifier=modifier)
+        metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct, modifier=modifier,additional_elements=additional_elements)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1359,14 +1368,14 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
     return results_dictionary
 
 
-def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False):
+def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False,additional_elements=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     for ii, properties in enumerate(allowed_strings):
-        metal_ac = multimetal_only_autocorrelation(mol, properties, depth, oct=oct)
+        metal_ac = multimetal_only_autocorrelation(mol, properties, depth, oct=oct,additional_elements=additional_elements)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1530,14 +1539,14 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
     return results_dictionary
 
 
-def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
+def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False, additional_elements=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     for ii, properties in enumerate(allowed_strings):
-        metal_ac = multimetal_only_deltametric(mol, properties, depth, oct=oct)
+        metal_ac = multimetal_only_deltametric(mol, properties, depth, oct=oct,additional_elements=additional_elements)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1553,11 +1562,14 @@ def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=Fal
 def generate_full_complex_autocorrelations(mol, loud,
                                            depth=4, oct=True,
                                            flag_name=False, modifier=False,
-                                           use_dist=False, NumB=False):
+                                           use_dist=False, NumB=False, Zeff=True):
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size', 'effective_nuclear_charge']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S', 'Zeff']
+    if Zeff == False:
+        labels_strings.remove('Zeff')
+        allowed_strings.remove('effective_nuclear_charge')
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
