@@ -413,7 +413,7 @@ def multimetal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
     n_met = len(mol.findMetal())
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
     for metal_ind in mol.findMetal():
-        autocorrelation_vector = + func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
+        autocorrelation_vector += func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
     autocorrelation_vector = np.divide(autocorrelation_vector, n_met)
     return (autocorrelation_vector)
 
@@ -427,7 +427,7 @@ def multiatom_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
     n_met = len(metal_list)
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
     for metal_ind in metal_list:
-        autocorrelation_vector = + func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
+        autocorrelation_vector += func(mol, w, metal_ind, d, oct=oct, catoms=catoms)
     autocorrelation_vector = np.divide(autocorrelation_vector, n_met)
     return (autocorrelation_vector)
 
