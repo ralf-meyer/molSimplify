@@ -329,6 +329,93 @@ def read_infile(outfile_path):
         multibasis = inp.lines[multibasis[0]+1:multibasis[1]]
     return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis
 
+#Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
+#The global configure file should be in the same directory where resub() is called
+#The local configure file should be in the same directory as the .out file
+def read_configure(home_directory,outfile_path):
+    
+    def load_configure_file(directory):
+        def strip_new_line(string):
+            if string[-1] == '\n':
+                return string[:-1]
+            else:
+                return string
+                
+        if directory == 'in place':
+            directory = os.getcwd()
+            
+        configure = os.path.join(directory,'configure')
+        if os.path.isfile(configure):
+            f = open(configure,'r')
+            configure = f.readlines()
+            f.close()
+            configure = map(strip_new_line,configure)
+            return configure
+        else:
+            return []
+    
+    home_configure = load_configure_file(home_directory)
+    if outfile_path:
+        local_configure = load_configure_file(os.path.split(outfile_path)[0])
+    else:
+        local_configure = []
+    
+    #Determine which derivative jobs are requested
+    solvent,vertEA,vertIP,thermo,dissociation,hfx_resample = False,False,False,False,False,False
+    if 'solvent' in home_configure or 'Solvent' in home_configure or 'solvent' in local_configure or 'Solvent' in local_configure:
+        solvent = True
+    if 'vertEA' in home_configure or 'VertEA' in home_configure or 'vertEA' in local_configure or 'VertEA' in local_configure:
+        vertEA = True
+    if 'vertIP' in home_configure or 'VertIP' in home_configure or 'vertIP' in local_configure or 'VertIP' in local_configure:
+        vertIP = True
+    if 'thermo' in home_configure or 'Thermo' in home_configure or 'thermo' in local_configure or 'Thermo' in local_configure:
+        thermo = True
+    if 'dissociation' in home_configure or 'Dissociation' in home_configure or 'dissociation' in local_configure or 'Dissociation' in local_configure:
+        dissociation = True
+    if 'hfx_resample' in home_configure or 'HFX_resample' in home_configure or 'hfx_resample' in local_configure or 'HFX_resample' in local_configure:
+        hfx_resample = True
+    
+    #Determine global settings for this run
+    max_jobs,max_resub,levela,levelb,method,hfx,geo_check,sleep = False,False,False,False,False,False,False,False
+    for configure in [home_configure,local_configure]:
+        for line in home_configure:
+            if 'max_jobs' in line.split(':'):
+                max_jobs = int(line.split(':')[-1]) - 1
+            if 'max_resub' in line.split(':'):
+                max_resub = int(line.split(':')[-1])
+            if 'levela' in line.split(':'):
+                levela = float(line.split(':')[-1])
+            if 'levelb' in line.split(':'):
+                levelb = float(line.split(':')[-1])
+            if 'method' in line.split(':'):
+                method = line.split(':')[-1]
+            if 'hfx' in line.split(':'):
+                hfx = float(line.split(':')[-1])
+            if 'geo_check' in line.split(':'):
+                geo_check = line.split(':')[-1]
+            if 'sleep' in line.split(':'):
+                sleep = int(line.split(':')[-1])
+    #If global settings not specified, choose defaults:
+        if not max_jobs:
+            max_jobs = 50 - 1 
+        if not max_resub:
+            max_resub = 5
+        if not levela:
+            levela = 0.25
+        if not levelb:
+            levelb = 0.25
+        if not method:
+            method = 'b3lyp'
+        if not hfx:
+            hfx = 0.20
+        if not sleep:
+            sleep = 7200
+        #Octahedral defaults to True in original variable initiation
+                
+    return {'solvent':solvent,'vertEA':vertEA,'vertIP':vertIP,'thermo':thermo,'dissociation':dissociation,
+            'hfx_resample':hfx_resample,'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
+            'levelb':levelb,'method':method,'hfx':hfx,'geo_check':geo_check,'sleep':sleep}
+
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges
     PATH = convert_to_absolute_path(PATH)
