@@ -57,6 +57,21 @@ def create_summary(directory='in place'):
     summary = pd.DataFrame(results)
     
     return summary
+
+def apply_geo_check(base_resub_directory,job_outfile_path):
+    
+    configure_dict = tools.read_configure(base_resub_directory,job_outfile_path)
+    
+    if configure_dict['geo_check']: #If a geometry check is requested, do it
+        
+        if configure_dict['geo_check'] in ['Oct','oct','Octahedral','octahedral']:
+            return read_run(outfile_PATH)['Is_Oct']
+        else:
+            print 'Geometry check request: '+configure_dict['geo_check']+' not recognized!'
+            print 'Passing job: '+job_outfile_path+' without a geometry check!'
+            return True
+    else: #If no geo check requested, then rate all geometries as good
+        return True
     
 def prep_ligand_breakown(outfile_path):
     #Given a path to the outfile of a finished run, this preps the files for rigid ligand dissociation energies of all ligands

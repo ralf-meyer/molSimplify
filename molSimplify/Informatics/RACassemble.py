@@ -72,7 +72,7 @@ def assemble_connectivity_from_parts(metal_mol, custom_ligand_dict):
 #  @param custom_ligand_dict optional dict defining ligands (see below)
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
-def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False):
+def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False):
         descriptor_names = []
         descriptors = []
         ## misc descriptors
@@ -85,7 +85,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         
         ## full ACs
         results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
-                                                                    modifier=ox_modifier, NumB=NumB)
+                                                                    modifier=ox_modifier, NumB=NumB, Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'f','all')
 
@@ -94,7 +94,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,name=False,
                                                                   flag_name=False,
                                                                   custom_ligand_dict=custom_ligand_dict,
-                                                                  NumB=NumB)
+                                                                  NumB=NumB, Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
@@ -106,7 +106,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
        
         results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,
                                                               custom_ligand_dict=custom_ligand_dict,
-                                                              NumB=NumB)
+                                                              NumB=NumB, Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,

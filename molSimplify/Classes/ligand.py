@@ -53,6 +53,7 @@ class ligand:
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     # this function takes an octahedral
     # complex and returns ligands
+    loud = False
     metal_index = mol.findMetal()[0]
     bondedatoms = mol.getBondedAtomsSmart(metal_index, oct=True)
     # print('!!!!!boundatoms', bondedatoms)
@@ -301,10 +302,13 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                     ##### The 4 that have the least variance are flagged as the eq plane.
                     mat_b = np.matrix(b).T
                     mat_A = np.matrix(A)
-                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
-                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
-                    error_var = np.var(errors)
-                    error_list.append(error_var)
+                    try:
+                        fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                        errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                        error_var = np.var(errors)
+                        error_list.append(error_var)
+                    except:
+                        error_list.append(0)
                 if loud:
                     print('combos below')
                     print(combo_list)
@@ -491,9 +495,10 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
 
-def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False):
+def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False):
     ####### This ligand assignment code handles octahedral complexes consistently.
     ####### It should be able to assign any octahedral complex
+    angle_cutoff = 130
     valid = True
     hexadentate = False
     pentadentate = False
@@ -571,7 +576,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 all_ligand_counts[j] = ligand_counts[i]
     ### Here, obtain a flat last of all connecting atoms (should be of length 6 for octahedral complexes)
     flat_ligcons = [item for sublist in ligcons for item in sublist]
-    ### Obtain coordinates for the connecting atoms
+    ### Obtain coordinates for the connecting atoms. Flat coord list ends up being used for comparisons.
     flat_coord_list = np.array([mol.getAtom(ii).coords() for ii in flat_ligcons])
     if loud:
         print('consistent coord LIST!')
@@ -600,13 +605,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     #### Next, fit each of these planes with a best fit plane. 
     #### The plane that fits best will be the equatorial plane by default. 
     #### In some cases, the plane must be overruled (i.e seesaw tetradentates)
-    #### For those cases, the plane is handled correctly within the subcode.
+    #### For special cases like the seesaw, there is consistent handling such that
+    #### there is consistent behavior for the ones within the same ligand class.
     error_list = []
     combo_list = []
     fitlist = []
     for i, combo in enumerate(point_combos):
         combo_list.append(combo)
-        print('combo', combo)
+        if loud:
+            print('combo',combo)
         A = []
         b = []
         m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
@@ -624,14 +631,16 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             error_var = np.var(errors)
             error_list.append(error_var)
         except:
-            error_list.append(10000)
+            error_list.append(0) ### perfect fit plane may suffer matrix singularity issues.
     if loud:
         print('combos below')
         print(combo_list)
         print('errors next, argmin combo selected')
         print(error_list)
     #### Find the points that correspond to the best fit plane through 4 points.
-    #### Eq points are used later.
+    #### Eq points are used later. Eq points has the number of the connection atoms 
+    #### across from each other. It pulls from a list of 0, 1, 2, 3, 4, 5, and gets 
+    #### which 4 are the atoms that are in the equatorial plane.
     eq_points = combo_list[np.argmin(np.array(error_list))]
     if loud:
         print(('unique ligands' + str(unique_ligands)))
@@ -651,84 +660,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             ax_con_list = [ligcons[j] for j in ax_lig_list]
         elif n_unique_ligs == 2:
             print('monodentate 5+1')
-            print(ligand_counts, unique_ligands)
+            if loud:
+                print(ligand_counts,unique_ligands)
             eq_lig_list = list()
-            if max(ligand_counts) in [5, 4]:
-                for i, ligand_count in enumerate(ligand_counts):
-                    temp_unique = unique_ligands[i]
-                    for j, built_ligs in enumerate(built_ligand_list):
-                        sym_list = [atom.symbol() for atom in
-                                    built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
-                        if sym_list != temp_unique:
-                            continue
-                        elif (ligand_count in [4, 5]) and len(eq_lig_list) < 4:
-                            print('recognized!')
-                            eq_lig_list.append(j)
-                            eq_con_list.append(ligcons[j])
-                        elif len(ax_lig_list) < 2:
-                            ax_lig_list.append(j)
-                            ax_con_list.append(ligcons[j])
-        elif n_unique_ligs == 3:
-            print('monodentate 4+1+1')
-            #### Need to identify if in seesaw-style configuration or planar configuration
-            if max(ligand_counts) == 4:
-                four_repeats = list()
-                for i, ligand_count in enumerate(ligand_counts):
-                    temp_unique = unique_ligands[i]
-                    for j, built_ligs in enumerate(built_ligand_list):
-                        sym_list = [atom.symbol() for atom in
-                                    built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
-                        if sym_list != temp_unique:
-                            continue
-                        elif (ligand_count == 4) and len(four_repeats) < 4:
-                            four_repeats.append(j)
-                print('this is four repeats', four_repeats)
-                four_repeats_cons = [ligcons[j] for j in four_repeats]
-                pair_combos = list(combinations([0, 1, 2, 3], 2))
-                angle_list = []
-                pair_list = []
-                coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in four_repeats_cons])
-                for i, pair in enumerate(pair_combos):
-                    pair_list.append(list(pair))
-                    p1 = np.squeeze(np.array(coord_list[list(pair)[0]]))
-                    p2 = np.squeeze(np.array(coord_list[list(pair)[1]]))
-                    m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
-                    v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
-                    v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
-                    # print('v1v2',v1u,v2u)
-                    angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
-                    if loud:
-                        print('pair of atoms, then angle', pair, angle)
-                    angle_list.append(angle)
-                #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
-                #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
-                #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
-                test_angle = np.sort(np.array(angle_list))[::-1][1]
-                if test_angle < 140:
-                    seesaw = True
-                    #### In the seesaw, the two furthest apart are denoted as axial. 
-                    #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
-                    axial_pair = [four_repeats_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
-                else:
-                    seesaw = False
-                    #### In the planar set, the two monodentates are axial, and tetradentate is equatorial.
-                    axial_pair = list(set(allowed) - set(four_repeats))
-                if not seesaw:
-                    print('all repeated monodentates in eq plane')
-                    eq_lig_list = four_repeats
-                    eq_con_list = four_repeats_cons  ### ADDED
-                    ax_lig_list = axial_pair
-                    ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
-                else:  # 2 points in eq plane, seesaw case
-                    ### currently this is inconsistent with 
-                    print('two repeated monodentates in eq plane')
-                    eq_plane_cons = list(set(flat_ligcons) - set([val[0] for val in axial_pair]))
-                    eq_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] in eq_plane_cons]
-                    eq_lig_list = [i for i in range(len(ligcons)) if ligcons[i] in eq_plane_cons]
-                    ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_plane_cons]
-                    ax_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] not in eq_plane_cons]
-            #### Currently, the 3+1+1+1 case is not handled generally. Must fix. -Aditya
-            else:
+            if use_z:
                 minz = 500
                 maxz = -500
                 if loud:
@@ -759,14 +694,434 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 eq_con_list = [ligcons[i] for i in allowed]
                 ax_lig_list = [top_lig, bot_lig]
                 ax_con_list = [top_con, bot_con]
+            else:
+                if max(ligand_counts) == 5:
+                    for i, ligand_count in enumerate(ligand_counts):
+                        temp_unique = unique_ligands[i]
+                        for j, built_ligs in enumerate(built_ligand_list):
+                            sym_list = [atom.symbol() for atom in
+                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
+                            if sym_list != temp_unique:
+                                continue
+                            elif (ligand_count == 5) and len(eq_lig_list) < 4:
+                                #### In the 5+1 monodentate case, 4 of the 5 are assigned to be equatorial, 
+                                #### last two are assigned to be axial
+                                eq_lig_list.append(j)
+                                eq_con_list.append(ligcons[j])
+                            elif len(ax_lig_list) < 2:
+                                ax_lig_list.append(j)
+                                ax_con_list.append(ligcons[j])
+                else: ### This can be either seesaw configuration or planar configuration, 4+2 cases
+                    four_repeats = list()
+                    for i, ligand_count in enumerate(ligand_counts):
+                        temp_unique = unique_ligands[i]
+                        for j, built_ligs in enumerate(built_ligand_list):
+                            sym_list = [atom.symbol() for atom in
+                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
+                            if sym_list != temp_unique:
+                                continue
+                            elif (ligand_count == 4) and len(four_repeats) < 4:
+                                four_repeats.append(j)
+                    if loud:
+                        print('this is four repeats',four_repeats)
+                    four_repeats_cons = [ligcons[j] for j in four_repeats]
+                    pair_combos = list(combinations([0, 1, 2, 3], 2))
+                    angle_list = []
+                    pair_list = []
+                    coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in four_repeats_cons])
+                    for i, pair in enumerate(pair_combos):
+                        pair_list.append(list(pair))
+                        p1 = np.squeeze(np.array(coord_list[list(pair)[0]]))
+                        p2 = np.squeeze(np.array(coord_list[list(pair)[1]]))
+                        m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                        # print('v1v2',v1u,v2u)
+                        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                        if loud:
+                            print('pair of atoms, then angle', pair, angle)
+                        angle_list.append(angle)
+                    #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+                    #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
+                    #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
+                    test_angle = np.sort(np.array(angle_list))[::-1][1]
+                    if test_angle < angle_cutoff:
+                        seesaw = True
+                        #### In the seesaw, the two furthest apart are denoted as axial. 
+                        #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
+                        axial_pair = [four_repeats_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
+                    else:
+                        seesaw = False
+                        #### In the planar set, the two monodentates are axial, and tetradentate is equatorial.
+                        axial_pair = list(set(allowed) - set(four_repeats))
+                    if not seesaw:
+                        print('all repeated monodentates in eq plane')
+                        eq_lig_list = four_repeats
+                        eq_con_list = four_repeats_cons  ### ADDED
+                        ax_lig_list = axial_pair
+                        ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
+                    else:  # 2 points in eq plane, seesaw case
+                        ### currently this is inconsistent with 
+                        print('two repeated monodentates in eq plane')
+                        eq_plane_cons = list(set(flat_ligcons) - set([val[0] for val in axial_pair]))
+                        eq_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] in eq_plane_cons]
+                        eq_lig_list = [i for i in range(len(ligcons)) if ligcons[i] in eq_plane_cons]
+                        ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_plane_cons]
+                        ax_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] not in eq_plane_cons]
+        elif n_unique_ligs == 3:
+            print('monodentate 4+1+1')
+            #### Need to identify if in seesaw-style configuration or planar configuration
+            if use_z:
+                minz = 500
+                maxz = -500
+                if loud:
+                    print('monodentate case')
+                allowed = list(range(0, 6))
+                not_eq = list()
+                for j, built_ligs in enumerate(built_ligand_list):
+                    this_z = sum([mol.getAtom(ii).coords()[2]
+                                  for ii in ligcons[j]]) / len(ligcons[j])
+                    if this_z < minz:
+                        minz = this_z
+                        bot_lig = j
+                        bot_con = ligcons[j]
+                    if loud:
+                        print(('updating bot axial to ' + str(bot_lig)))
+                    if this_z > maxz:
+                        maxz = this_z
+                        top_lig = j
+                        top_con = ligcons[j]
+                    if loud:
+                        print(('updating top axial to ' + str(top_lig)))
+                not_eq.append(bot_lig)
+                not_eq.append(top_lig)
+                allowed = [x for x in allowed if ((x not in not_eq))]
+                if len(allowed) != 4:
+                    print(('error in decomp of monodentate case!', allowed))
+                eq_lig_list = allowed
+                eq_con_list = [ligcons[i] for i in allowed]
+                ax_lig_list = [top_lig, bot_lig]
+                ax_con_list = [top_con, bot_con]
+            else: 
+                if max(ligand_counts) == 4:
+                    four_repeats = list()
+                    for i, ligand_count in enumerate(ligand_counts):
+                        temp_unique = unique_ligands[i]
+                        for j, built_ligs in enumerate(built_ligand_list):
+                            sym_list = [atom.symbol() for atom in
+                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
+                            if sym_list != temp_unique:
+                                continue
+                            elif (ligand_count == 4) and len(four_repeats) < 4:
+                                four_repeats.append(j)
+                    if loud:
+                        print('this is four repeats',four_repeats)
+                    four_repeats_cons = [ligcons[j] for j in four_repeats]
+                    pair_combos = list(combinations([0, 1, 2, 3], 2))
+                    angle_list = []
+                    pair_list = []
+                    coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in four_repeats_cons])
+                    for i, pair in enumerate(pair_combos):
+                        pair_list.append(list(pair))
+                        p1 = np.squeeze(np.array(coord_list[list(pair)[0]]))
+                        p2 = np.squeeze(np.array(coord_list[list(pair)[1]]))
+                        m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                        # print('v1v2',v1u,v2u)
+                        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                        if loud:
+                            print('pair of atoms, then angle', pair, angle)
+                        angle_list.append(angle)
+                    #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+                    #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
+                    #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
+                    test_angle = np.sort(np.array(angle_list))[::-1][1]
+                    if test_angle < angle_cutoff:
+                        seesaw = True
+                        #### In the seesaw, the two furthest apart are denoted as axial. 
+                        #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
+                        axial_pair = [four_repeats_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
+                    else:
+                        seesaw = False
+                        #### In the planar set, the two monodentates are axial, and tetradentate is equatorial.
+                        axial_pair = list(set(allowed) - set(four_repeats))
+                    if not seesaw:
+                        print('all repeated monodentates in eq plane')
+                        eq_lig_list = four_repeats
+                        eq_con_list = four_repeats_cons  ### ADDED
+                        ax_lig_list = axial_pair
+                        ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
+                    else:  # 2 points in eq plane, seesaw case
+                        ### currently this is inconsistent with 
+                        print('two repeated monodentates in eq plane')
+                        eq_plane_cons = list(set(flat_ligcons) - set([val[0] for val in axial_pair]))
+                        eq_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] in eq_plane_cons]
+                        eq_lig_list = [i for i in range(len(ligcons)) if ligcons[i] in eq_plane_cons]
+                        ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_plane_cons]
+                        ax_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] not in eq_plane_cons]
+                else:
+                    three_repeats = list()
+                    two_repeats = list()
+                    for i, ligand_count in enumerate(ligand_counts):
+                        temp_unique = unique_ligands[i]
+                        for j, built_ligs in enumerate(built_ligand_list):
+                            sym_list = [atom.symbol() for atom in
+                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)]
+                            if sym_list != temp_unique:
+                                continue
+                            elif (ligand_count == 3) and len(three_repeats) < 3:
+                                three_repeats.append(j)
+                            elif (ligand_count == 2) and len(two_repeats) < 2:
+                                two_repeats.append(j)
+                    if loud:
+                        print('this is three repeats',three_repeats)
+                    three_repeats_cons = [ligcons[j] for j in three_repeats]
+                    pair_combos = list(combinations([0, 1, 2], 2))
+                    angle_list = []
+                    pair_list = []
+                    coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in three_repeats_cons])
+                    for i, pair in enumerate(pair_combos):
+                        pair_list.append(list(pair))
+                        p1 = np.squeeze(np.array(coord_list[list(pair)[0]]))
+                        p2 = np.squeeze(np.array(coord_list[list(pair)[1]]))
+                        m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                        # print('v1v2',v1u,v2u)
+                        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                        if loud:
+                            print('pair of atoms, then angle', pair, angle)
+                        angle_list.append(angle)
+                    test_angle = np.sort(np.array(angle_list))[::-1][0]
+                    if test_angle < angle_cutoff:
+                        planar = False
+                        if len(two_repeats) == 2: ### will only be true for 3+2+1 case
+                            print('now in the 3+2+1 case finding the opposite...')
+                            two_repeats_cons = [ligcons[j] for j in two_repeats]
+                            coord_list_two = np.array([mol.getAtom(ii[0]).coords() for ii in two_repeats_cons])
+                            coord_list_three = np.array([mol.getAtom(ii[0]).coords() for ii in three_repeats_cons])
+                            angle_list = []
+                            tri_bi_pair = []
+                            m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                            pair_combos = [(0, 0),(0, 1),(0, 2),(1, 0),(1, 1),(1, 2)]
+                            for k, pair in enumerate(pair_combos):
+                                p1 = np.squeeze(np.array(coord_list_two[pair[0]]))
+                                p2 = np.squeeze(np.array(coord_list_three[pair[1]]))
+                                v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                                v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                                angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                                angle_list.append(angle)
+
+                            #### If not planar, one connection atom (for the monodentate ligand) will be opposite
+                            #### the connections for the tridentate ligands. Assigning this atom as the opposite monodentate.
+                            #### If not planar, considering the plane with the bidentate to be equatorial.
+                            top_2_angles = np.squeeze(np.array(angle_list)).argsort()[-2:][::-1]
+                            first_pair = pair_combos[top_2_angles[0]]
+                            second_pair = pair_combos[top_2_angles[1]]
+                            conlist = list()
+                            # conlist.append(three_repeats_cons[+two_repeats_cons[tri_bi_pair[top_2_angles[0]][1]]
+                            conlist += two_repeats_cons[first_pair[0]]+three_repeats_cons[first_pair[1]]
+                            conlist += two_repeats_cons[second_pair[0]]+three_repeats_cons[second_pair[1]]
+                            if loud:
+                                print('eq points reassigned',conlist)
+                            eq_points = [j for j in allowed if ligcons[j][0] in conlist]
+                    else:
+                        planar = True
+                        mono_dentate_idx_set = list(set(allowed)-set(three_repeats))
+                        coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in three_repeats_cons])
+                        m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                        mono_con_list = []
+                        for mono_dentate_idx in mono_dentate_idx_set:
+                            current_con = ligcons[mono_dentate_idx]
+                            mono_con_list.append(current_con[0])
+                            p1 = np.array(mol.getAtom(current_con[0]).coords())
+                            angle_list = []
+                            for k, tri_con in enumerate(three_repeats_cons):
+                                p2 = np.squeeze(np.array(coord_list[k]))
+                                v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                                v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                                angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                                angle_list.append(angle)
+                            test_angle = np.sort(np.array(angle_list))[::-1][0]
+                            #### If the tridentate is planar, only one of the bidentate connecting atoms
+                            #### will be across the tridentate. Thus the equatorial plane will be defined
+                            #### as the planar tridentate plus one connection atom for the bidentate
+                            #### The monodentate and the second bidentate connecting atoms are denoted axial.
+                            if test_angle > angle_cutoff:
+                                monodentate_eq_con = current_con
+                                monodentate_eq_idx = mono_dentate_idx
+                    if planar:
+                        eq_lig_list = three_repeats+[monodentate_eq_idx]
+                        eq_con_list = three_repeats_cons+[monodentate_eq_con]  ### ADDED
+                        ax_con_list = [[val] for val in mono_con_list if val not in monodentate_eq_con]
+                        # ax_lig_list = list(set(mono_dentate_idx_set)-set([monodentate_eq_idx]))
+                        ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_con_list]
+                    else:
+                        ### any equatorial plane will have 2 of the 3 equivalent ones, so take the eq plane
+                        eq_lig_list = eq_points
+                        eq_con_list = [ligcons[j] for j in eq_lig_list]
+                        # ax_lig_list = list(set(allowed)-set(eq_points))
+                        ax_lig_list = [val for i, val in enumerate(allowed) if val not in eq_points]
+                        ax_con_list = [ligcons[j] for j in ax_lig_list]
         else:  ### with more than 4 ligands, the ax/eq breaks down. Just going to stick with def of eq plane.
             print('monodentate more than 3 unique')
             eq_ligcons = list(set([flat_ligcons[j] for j in eq_points]))
             eq_lig_list = eq_points
             eq_con_list = [ligcons[j] for j in eq_lig_list]
-            print('this is eq con list')
-            ax_lig_list = list(set(allowed) - set(eq_points))
+            ax_lig_list = list(set(allowed)-set(eq_points))
             ax_con_list = [ligcons[j] for j in ax_lig_list]
+    elif (n_ligs == 4): # 2+2+1+1 and 3+1+1+1 cases
+        allowed = range(0,4)
+        if max(ligdents) == 3:
+            print('3+1+1+1 case')
+            tridentate_ligand_idx = np.argmax(ligdents)
+            tridentate_cons = ligcons[tridentate_ligand_idx]
+            mono_dentate_idx_set = list(set(range(len(ligdents)))-set([tridentate_ligand_idx]))
+            monodentate_cons = [ligcons[val] for val in mono_dentate_idx_set]
+            pair_combos = list(combinations([0, 1, 2], 2))
+            angle_list = []
+            pair_list = []
+            coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
+            for i, pair in enumerate(pair_combos):
+                pair_list.append(list(pair))
+                p1 = np.squeeze(np.array(coord_list[list(pair)[0]]))
+                p2 = np.squeeze(np.array(coord_list[list(pair)[1]]))
+                m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                # print('v1v2',v1u,v2u)
+                angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                if loud:
+                    print('pair of atoms, then angle', pair, angle)
+                angle_list.append(angle)
+            #### The tridentate can either be planar or not. If planar, it will have at least one
+            #### angle that is close to 180 between connecting atoms, through the metal.
+            test_angle = np.sort(np.array(angle_list))[::-1][0]
+            if test_angle < angle_cutoff:
+                planar = False
+                full_angle_list = []
+                full_con_list = []
+                tri_full_con_list = []
+                for mono_dentate_idx in mono_dentate_idx_set:
+                    current_con = ligcons[mono_dentate_idx]
+                    p1 = np.array(mol.getAtom(current_con[0]).coords())
+                    if loud:
+                        print('monocon',current_con,tridentate_cons)
+                    angle_list = []
+                    for k, tri_con in enumerate(tridentate_cons):
+                        p2 = np.squeeze(np.array(coord_list[k]))
+                        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                        angle_list.append(angle)
+                    test_angle = np.sort(np.array(angle_list))[::-1][0]
+                    #### If the tridentate is planar, only one of the bidentate connecting atoms
+                    #### will be across the tridentate. Thus the equatorial plane will be defined
+                    #### as the planar tridentate plus one connection atom for the bidentate
+                    #### The monodentate and the second bidentate connecting atoms are denoted axial.
+                    if test_angle > angle_cutoff:
+                        full_angle_list.append(test_angle)
+                        full_con_list.append(current_con[0])
+                        tri_full_con_list.append(tridentate_cons[np.squeeze(np.array(full_angle_list)).argsort()[-3:][::-1][0]])
+                opposite_angle_indices = np.squeeze(np.array(full_angle_list)).argsort()[-3:][::-1]
+                mono_lig1 = mono_dentate_idx_set[opposite_angle_indices[0]]
+                mono_lig2 = mono_dentate_idx_set[opposite_angle_indices[1]]
+                tri_lig_con = [tri_full_con_list[opposite_angle_indices[0]],tri_full_con_list[opposite_angle_indices[1]]]
+                tri_lig_ax_con = [val for val in ligcons[tridentate_ligand_idx] if val not in tri_lig_con]
+            else:
+                print('planar')
+                planar = True
+                coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
+                m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                mono_con_list = []
+                for mono_dentate_idx in mono_dentate_idx_set:
+                    print(mono_dentate_idx,mono_dentate_idx_set)
+                    current_con = ligcons[mono_dentate_idx]
+                    mono_con_list.append(current_con[0])
+                    p1 = np.array(mol.getAtom(current_con[0]).coords())
+                    angle_list = []
+                    for k, tri_con in enumerate(tridentate_cons):
+                        p2 = np.squeeze(np.array(coord_list[k]))
+                        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                        angle_list.append(angle)
+                    test_angle = np.sort(np.array(angle_list))[::-1][0]
+                    #### If the tridentate is planar, only one of the bidentate connecting atoms
+                    #### will be across the tridentate. Thus the equatorial plane will be defined
+                    #### as the planar tridentate plus one connection atom for the bidentate
+                    #### The monodentate and the second bidentate connecting atoms are denoted axial.
+                    if test_angle > angle_cutoff:
+                        monodentate_eq_con = current_con
+                        monodentate_eq_idx = mono_dentate_idx
+            if planar:
+                eq_lig_list = [tridentate_ligand_idx, monodentate_eq_idx]
+                eq_con_list = [tridentate_cons, monodentate_eq_con]  ### ADDED
+                ax_lig_list = [val for val in mono_dentate_idx_set if val not in [monodentate_eq_idx]]
+                ax_con_list = [[val] for val in mono_con_list if val not in monodentate_eq_con]
+            else:
+                ### any equatorial plane will have 2 of the 3 equivalent ones, so take the eq plane
+                ax_mono_lig = list(set(allowed)-set([tridentate_ligand_idx,mono_lig1,mono_lig2]))[0]
+                eq_lig_list = [tridentate_ligand_idx, mono_lig1, mono_lig2]
+                eq_con_list = [tri_lig_con,ligcons[mono_lig1],ligcons[mono_lig2]]
+                ax_lig_list = [tridentate_ligand_idx, ax_mono_lig]
+                ax_con_list = [tri_lig_ax_con, ligcons[ax_mono_lig]]
+        elif max(ligdents) == 2:
+            #### Need to handle case with both equatorial and triple-bidentate style.
+            print('2+2+1+1 case')
+            allowed = range(0, 4)
+            bidentate_ligand_idx1 = np.squeeze(np.array(ligdents)).argsort()[-2:][::-1][0]
+            bidentate_ligand_idx2 = np.squeeze(np.array(ligdents)).argsort()[-2:][::-1][1]
+            bidentate_cons1 = ligcons[bidentate_ligand_idx1]
+            bidentate_cons2 = ligcons[bidentate_ligand_idx2]
+            pair_combos = list(combinations([0, 1, 2, 3], 2))
+            angle_list = []
+            pair_list = []
+            coord_list = np.array([mol.getAtom(ii).coords() for ii in bidentate_cons1]+[mol.getAtom(ii).coords() for ii in bidentate_cons2])
+            for i, pair in enumerate(pair_combos):
+                pair_list.append(list(pair))
+                p1 = np.squeeze(np.array(coord_list[list(pair)[0]]))
+                p2 = np.squeeze(np.array(coord_list[list(pair)[1]]))
+                m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
+                v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+                v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+                # print('v1v2',v1u,v2u)
+                angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+                if loud:
+                    print('pair of atoms, then angle', pair, angle)
+                angle_list.append(angle)
+            #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+            #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
+            #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
+            test_angle = np.sort(np.array(angle_list))[::-1][1]
+            if loud:
+                print('ANGLE LIST',angle_list, 'sorted',np.sort(np.array(angle_list))[::-1])
+            if test_angle < angle_cutoff:
+                seesaw = True
+                temp_cons = bidentate_cons1+bidentate_cons2
+                axial_pair = [temp_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
+            else:
+                seesaw = False
+            if not seesaw:
+                print('non seesaw')
+                eq_lig_list = [bidentate_ligand_idx1,bidentate_ligand_idx2]
+                eq_con_list = [bidentate_cons1,bidentate_cons2]  ### ADDED
+                ax_lig_list = list(set(allowed)-set([bidentate_ligand_idx1,bidentate_ligand_idx2]))
+                ax_con_list = [ligcons[j] for j in ax_lig_list] 
+            else:  # 2 points in eq plane, seesaw case
+                eq_ligcons = set([flat_ligcons[j] for j in eq_points])
+                eq_con_bidentate_list = [list(set(ligcons[0]).intersection(eq_ligcons)),
+                                         list(set(ligcons[1]).intersection(eq_ligcons)),
+                                         list(set(ligcons[2]).intersection(eq_ligcons)),
+                                         list(set(ligcons[3]).intersection(eq_ligcons))]
+                eq_con_bidentate_list = [val for val in eq_con_bidentate_list if len(val)>0]
+                eq_con_list = eq_con_bidentate_list
+                flat_eq_con_list = [item for sublist in eq_con_list for item in sublist]
+                eq_lig_list = [j for j, val in enumerate(ligcons) if len(set(val).intersection(set(flat_eq_con_list)))>0]
+                ax_con_list = [[val] for val in flat_ligcons if val not in flat_eq_con_list]
+                flat_ax_con_list = [item for sublist in ax_con_list for item in sublist]
+                ax_lig_list = [j for j, val in enumerate(ligcons) if len(set(val).intersection(set(flat_ax_con_list)))>0]
     elif (n_ligs == 3):  # triple bidentate or 4+1+1, can be seesaw/planar or 3+2+1
         if max(ligdents) == 4:
             print('4+1+1 case')
@@ -793,7 +1148,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
             #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
             test_angle = np.sort(np.array(angle_list))[::-1][1]
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 seesaw = True
                 #### In the seesaw, the two furthest apart are denoted as axial. 
                 #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
@@ -845,7 +1200,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             #### The tridentate can either be planar or not. If planar, it will have at least one
             #### angle that is close to 180 between connecting atoms, through the metal.
             test_angle = np.sort(np.array(angle_list))[::-1][0]
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 planar = False
                 coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
                 p1 = np.array(mol.getAtom(monodentate_cons[0]).coords())
@@ -879,7 +1234,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     #### will be across the tridentate. Thus the equatorial plane will be defined
                     #### as the planar tridentate plus one connection atom for the bidentate
                     #### The monodentate and the second bidentate connecting atoms are denoted axial.
-                    if test_angle > 140:
+                    if test_angle > angle_cutoff:
                         bidentate_eq_con = [bi_con]
                         bidentate_ax_con = [list(set(bidentate_cons) - set([bi_con]))[0]]
             if planar:
@@ -963,11 +1318,12 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     print('pair of atoms, then angle', pair, angle)
                 angle_list.append(angle)
             test_angle = np.sort(np.array(angle_list))[::-1][0]
+
             #### Like the above 3+2+1 case, the tridentate must be classified into planar or not.
             #### If not planar, both ligands are both axial and equatorial.
             #### If planar, the ligand that falls on the eq_points (as found above), is only equatorial,
             #### but the tridentate ligand with one equatorial position and two axial is classified as both.
-            if test_angle < 140:
+            if test_angle < angle_cutoff:
                 planar = False
             else:
                 planar = True
@@ -1026,10 +1382,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     ##### The 4 that have the least variance are flagged as the eq plane.
                     mat_b = np.matrix(b).T
                     mat_A = np.matrix(A)
-                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
-                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
-                    error_var = np.var(errors)
-                    error_list.append(error_var)
+                    try:
+                        fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                        errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                        error_var = np.var(errors)
+                        error_list.append(error_var)
+                    except:
+                        #### This will catch if it errors due to a singular matrix. Means the fit is perfect.
+                        #### If the fit is perfect, then it is the equatorial plane. Assigned this way.
+                        error_list.append(0)
                 if loud:
                     print('combos below')
                     print(combo_list)
@@ -1109,11 +1470,16 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ##### The 4 that have the least variance are flagged as the eq plane.
                 mat_b = np.matrix(b).T
                 mat_A = np.matrix(A)
-                fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
-                fitlist.append(fit)
-                errors = np.squeeze(np.array(mat_b - mat_A * fit))
-                error_var = np.var(errors)
-                error_list.append(error_var)
+                try:
+                    fit = (mat_A.T * mat_A).I * mat_A.T * mat_b
+                    fitlist.append(fit)
+                    errors = np.squeeze(np.array(mat_b - mat_A * fit))
+                    error_var = np.var(errors)
+                    error_list.append(error_var)
+                except:
+                    #### This will catch if it errors due to a singular matrix. Means the fit is perfect.
+                    #### If the fit is perfect, then it is the equatorial plane. Assigned this way.
+                    error_list.append(0)
             if loud:
                 print('combos below')
                 print(combo_list)
