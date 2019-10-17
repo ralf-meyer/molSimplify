@@ -782,8 +782,8 @@ def lig_load(userligand, licores=None):
             flig = resource_filename(Requirement.parse(
                 "molSimplify"), "molSimplify/Ligands/" + dbentry[0])
         # check if ligand xyz/mol file exists
-        #print('looking for '+flig)
-        if not glob.glob(flig):
+        print('looking for '+flig)
+        if not os.path.isfile(flig):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
             print(emsg)
             return False, emsg
