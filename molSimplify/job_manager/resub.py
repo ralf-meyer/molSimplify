@@ -418,8 +418,7 @@ def prep_derivative_jobs(directory,list_of_outfiles):
     jobs = filter(check_original,list_of_outfiles)
     
     for job in jobs:
-        results = moltools.read_run(job)
-        if not moltools.apply_geo_check(directory,list_of_outfiles):
+        if not moltools.apply_geo_check(directory,job):
             print job+' Does not appear to have a good geometry! Not generating derivative jobs...'
             continue
         

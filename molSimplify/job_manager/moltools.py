@@ -65,7 +65,7 @@ def apply_geo_check(base_resub_directory,job_outfile_path):
     if configure_dict['geo_check']: #If a geometry check is requested, do it
         
         if configure_dict['geo_check'] in ['Oct','oct','Octahedral','octahedral']:
-            return read_run(outfile_PATH)['Is_Oct']
+            return read_run(job_outfile_path)['Is_Oct']
         else:
             print 'Geometry check request: '+configure_dict['geo_check']+' not recognized!'
             print 'Passing job: '+job_outfile_path+' without a geometry check!'
