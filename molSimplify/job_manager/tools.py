@@ -262,7 +262,8 @@ def read_outfile(outfile_path):
             thermo_grad_error = False
         if s_squared_ideal:
             s_squared_ideal = float(s_squared_ideal.strip(')'))
-        implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
+        if implicit_solvation_energy:
+            implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
             
         min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
         
