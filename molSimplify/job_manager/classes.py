@@ -99,10 +99,12 @@ class textfile:
                     else:
                         matching_value = line.split()
                     
-                    if keyword_number not in results.keys():
-                        results[keyword_number] = [matching_value]
-                    else:
-                        results[keyword_number].append(matching_value)
+                    #Normal Procedure
+                    if not matching_index:
+                        if keyword_number not in results.keys():
+                            results[keyword_number] = [matching_value]
+                        else:
+                            results[keyword_number].append(matching_value)
                     
                     #Special procedure for returning the index of matching lines instead of the matching values
                     if matching_index:
