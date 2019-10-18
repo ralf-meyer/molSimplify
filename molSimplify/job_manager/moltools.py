@@ -58,21 +58,76 @@ def create_summary(directory='in place'):
     
     return summary
 
-def apply_geo_check(base_resub_directory,job_outfile_path):
+def apply_geo_check(job_outfile_path,geometry):
     
-    configure_dict = tools.read_configure(base_resub_directory,job_outfile_path)
-    
-    if configure_dict['geo_check']: #If a geometry check is requested, do it
-        
-        if configure_dict['geo_check'] in ['Oct','oct','Octahedral','octahedral']:
+    if geometry: #The geometry variable is set to False if no geo check is requested for this job
+        if geometry in ['Oct','oct','Octahedral','octahedral']:
             return read_run(job_outfile_path)['Is_Oct']
         else:
             print 'Geometry check request: '+configure_dict['geo_check']+' not recognized!'
             print 'Passing job: '+job_outfile_path+' without a geometry check!'
             return True
-    else: #If no geo check requested, then rate all geometries as good
+    else:
+        print 'No geomery check requested for job: '+job_outfile_path
+        print 'Passing job without a geometry check'
         return True
+        
+def get_metal_and_bonded_atoms_oct(job_outfile,geometry = None):
+    #given the path to the outfile of a job, returns a the metal atom index and a list of indices for the metal bonded atoms
+    #indices are zero-indexed...Terachem uses 1 indexed lists
     
+    xyz_path = job_outfile.rsplit('.',1)[0]+'.xyz'
+    mol = mol3D()
+    mol.readfromxyz(xyz_path)
+    metal_index = mol.findMetal()[0]
+    
+    if geometry in ['Oct','oct','Octahedral','octahedral']:
+        bonded_atom_indices = mol.getBondedAtomsOct(metal_index)
+    else:
+        print 'Warning, generic getBondedAtoms() used for: '+job_outfile+'. Check behavior'
+        bonded_atom_indices = mol.getBondedAtoms(metal_index)
+        
+    return metal_index,bonded_atoms_indices
+
+def check_completeness(directory = 'in place', max_resub = 5):
+    completeness = tools.check_completeness(directory,max_resub)
+    
+    #The check_completeness() function in tools doesn't check the geometries (because it's molSimplify dependent)
+    #Apply the check here to finished and spin contaminated geometries, then update the completeness dictionary
+    
+    finished = completeness['Finished']
+    spin_contaminated = completeness['Spin_contaminated']
+    needs_resub = completeness['Resub']
+    
+    bad_geos = []
+    new_finished = []
+    new_spin_contaminated = []
+    new_needs_resub = []
+    for job in finished:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_finished.append(job)
+        else:
+            bad_geos.append(job)
+    for job in spin_contaminated:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_spin_contaminated.append(job)
+        else:
+            bad_geos.append(job)
+    for job in needs_resub:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_needs_resub.append(job)
+        else:
+            bad_geos.append(job)
+    
+    completeness['Finished'] = new_finished
+    completeness['Spin_contaminated'] = new_spin_contaminated
+    completeness['Resub'] = new_needs_resub
+    completeness['Bad_geos'] = bad_geos
+    return completeness
+            
 def prep_ligand_breakown(outfile_path):
     #Given a path to the outfile of a finished run, this preps the files for rigid ligand dissociation energies of all ligands
     #Returns a list of the PATH(s) to the jobscript(s) to start the rigid ligand calculations
@@ -85,7 +140,7 @@ def prep_ligand_breakown(outfile_path):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     
