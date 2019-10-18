@@ -72,7 +72,7 @@ def apply_geo_check(job_outfile_path,geometry):
         print 'Passing job without a geometry check'
         return True
         
-def get_metal_and_bonded_atoms_oct(job_outfile,geometry = None):
+def get_metal_and_bonded_atoms(job_outfile,geometry = None):
     #given the path to the outfile of a job, returns a the metal atom index and a list of indices for the metal bonded atoms
     #indices are zero-indexed...Terachem uses 1 indexed lists
     

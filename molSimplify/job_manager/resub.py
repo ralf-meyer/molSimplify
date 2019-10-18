@@ -377,7 +377,7 @@ def resub_bad_geo(outfile_path,home_directory):
         if not goal_geo:
             raise Exception('Goal geometry not specified, job '+outfile_path+' should not have been labelled bad geo!')
         else:
-            metal_index,bonded_atom_indices = moltools.get_metal_and_bonded_atoms_oct(outfile_path,goal_geo)
+            metal_index,bonded_atom_indices = moltools.get_metal_and_bonded_atoms(outfile_path,goal_geo)
             #convert indexes from zero-indexed to one-indexed
             metal_index += 1
             bonded_atom_indices = [index + 1 for index in bonded_atom_indices]
