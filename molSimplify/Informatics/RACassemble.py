@@ -116,13 +116,13 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         #print('getting metal ACs')
         results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
                                                              modifier=ox_modifier,
-                                                             NumB=NumB)
+                                                             NumB=NumB,Zeff=Zeff)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['results'],'mc','all')
  
         results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
                                                          modifier=ox_modifier,
-                                                         NumB=NumB)
+                                                         NumB=NumB,Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 
