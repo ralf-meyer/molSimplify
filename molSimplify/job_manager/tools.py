@@ -135,7 +135,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
         if os.path.isfile(path.rsplit('.',1)[0]+'.pickle'):
             history = resub_history()
             history.read(path)
-            if history.resub_number > max_resub-1:
+            if history.resub_number >= max_resub:
                 return True
         else:
             return False

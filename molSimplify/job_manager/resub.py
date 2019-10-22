@@ -12,36 +12,6 @@ import time
 import sys
 from molSimplify.job_manager.classes import resub_history
 
-## Save the outfile within the resub_history pickel object
-def save_run(outfile_path):
-    history = resub_history()
-    history.read(outfile_path)
-    
-    f = open(outfile_path,'r')
-    out_lines = f.readlines()
-    f.close()
-    history.outfiles.append(out_lines)
-    
-    infile_path = outfile_path.rsplit('.',1)[0]+'.in'
-    f = open(infile_path,'r')
-    in_lines = f.readlines()
-    f.close()
-    history.infiles.append(in_lines)
-    
-    jobscript_path = outfile_path.rsplit('.',1)[0]+'_jobscript'
-    f = open(jobscript_path,'r')
-    job_lines = f.readlines()
-    f.close()
-    history.jobscripts.append(job_lines)
-    
-    xyz_path = outfile_path.rsplit('.',1)[0]+'.xyz'
-    f = open(xyz_path,'r')
-    xyz_lines = f.readlines()
-    f.close()
-    history.xyzs.append(xyz_lines)
-    
-    history.save()
-
 ## Archive the scr file so it isn't overwritten in future resubs
 #  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
 def save_scr(outfile_path, rewrite_inscr = True):
@@ -78,7 +48,45 @@ def save_scr(outfile_path, rewrite_inscr = True):
         
         return scr_path+'_'+new_scr
 
-def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
+## Save the outfile within the resub_history pickel object
+def save_run(outfile_path, rewrite_inscr = True):
+    
+    save_scr(outfile_path, rewrite_inscr = rewrite_inscr)
+    
+    history = resub_history()
+    history.read(outfile_path)
+    
+    f = open(outfile_path,'r')
+    out_lines = f.readlines()
+    f.close()
+    history.outfiles.append(out_lines)
+    
+    infile_path = outfile_path.rsplit('.',1)[0]+'.in'
+    f = open(infile_path,'r')
+    in_lines = f.readlines()
+    f.close()
+    history.infiles.append(in_lines)
+    
+    jobscript_path = outfile_path.rsplit('.',1)[0]+'_jobscript'
+    f = open(jobscript_path,'r')
+    job_lines = f.readlines()
+    f.close()
+    history.jobscripts.append(job_lines)
+    
+    xyz_path = outfile_path.rsplit('.',1)[0]+'.xyz'
+    f = open(xyz_path,'r')
+    xyz_lines = f.readlines()
+    f.close()
+    history.xyzs.append(xyz_lines)
+    
+    history.save()
+
+def resub(directory = 'in place'):
+    
+    
+    configure_dict = tools.read_configure(directory,None)
+    max_resub = configure_dict['max_resub']
+    max_jobs = configure_dict['max_jobs']
     
     #Takes a directory, resubmits errors, scf failures, and spin contaminated cases
     completeness = moltools.check_completeness(directory,max_resub)
@@ -130,7 +138,7 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
             continue
         resub_tmp = resub_spin(error)
         if resub_tmp:
-            print('Bad fianl geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
+            print('Bad final geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
             print('')
         resubmitted.append(resub_tmp)
         
@@ -194,8 +202,7 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
     
 def simple_resub(outfile_path):
     #Resubmits a job without changing parameters. Particularly useful for CUDA errors.
-    save_scr(outfile_path, rewrite_inscr = False)
-    save_run(outfile_path)
+    save_run(outfile_path, rewrite_inscr = False)
     history = resub_history()
     history.read(outfile_path)
     history.resub_number += 1
@@ -209,7 +216,6 @@ def simple_resub(outfile_path):
     
 def clean_resub(outfile_path):
     #Resubmits a job with default parameters, useful for undoing level shift or hfx alterations
-    save_scr(outfile_path)
     save_run(outfile_path)
     history = resub_history()
     history.read(outfile_path)
@@ -266,11 +272,10 @@ def resub_spin(outfile_path):
         history.save()
     if 'Needs clean resub' in history.notes:
         resubbed_before = True
-        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed'
+        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed - requesting resub_spin() after clean resubmission round'
         history.save()
         
     if not resubbed_before:
-        save_scr(outfile_path)
         save_run(outfile_path)
         history.resub_number += 1
         history.status = 'HFX altered to assist convergence'
@@ -310,11 +315,10 @@ def resub_scf(outfile_path):
         history.save()
     if 'Needs clean resub' in history.notes:
         resubbed_before = True
-        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed'
+        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed - requesting resub_scf() after clean resubmission round'
         history.save()
         
     if not resubbed_before:
-        save_scr(outfile_path)
         save_run(outfile_path)
         history.resub_number += 1
         history.status = 'Level shifts adjusted to assist convergence'
@@ -353,11 +357,10 @@ def resub_bad_geo(outfile_path,home_directory):
         history.save()
     if 'Needs clean resub' in history.notes:
         resubbed_before = True
-        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed'
+        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed - requesting resub_bad_geo after clean resubmission round'
         history.save()
         
     if not resubbed_before:
-        save_scr(outfile_path)
         save_run(outfile_path)
         history.resub_number += 1
         history.status = 'Constraints added to help convergence'
@@ -411,8 +414,7 @@ def resub_tighter(outfile_path):
     ultratight_path = os.path.join(parent_directory,parent_name+'_ultratight',parent_name+'_ultratight.out')
     
     if os.path.exists(ultratight_path): #This ultratight resubmission has happend before, need to archive the results
-        save_scr(ultratight_path, rewrite_inscr = False)
-        save_run(ultratight_path)
+        save_run(ultratight_path, rewrite_inscr = False)
         history = resub_history()
         history.read(ultratight_path)
         history.resub_number += 1
@@ -436,8 +438,7 @@ def resub_thermo(outfile_path):
     #Similar to simple resub, but specific for addressing thermo gradient errors
     #Checks for the existance of an ultratight version of this run. If it exists, uses the most up to date version for the new thermo run
     
-    save_scr(outfile_path, rewrite_inscr = False)
-    save_run(outfile_path)
+    save_run(outfile_path, rewrite_inscr = False)
     history = resub_history()
     history.read(outfile_path)
     history.resub_number += 1
@@ -550,17 +551,15 @@ def main():
         print("****** Assessing Job Status ******")
         print('**********************************')
         time1 = time.time()
-
-        configure_dict = tools.read_configure('in place',None)
                 
-        number_resubmitted = resub(max_jobs = configure_dict['max_jobs'],max_resub = configure_dict['max_resub']) 
+        number_resubmitted = resub() 
         
         print('**********************************')
         print("******** "+str(number_resubmitted)+" Jobs Submitted ********")
         print('**********************************')
         print('job cycle took: '+str(time.time()-time1))
         print('sleeping for: '+str(configure_dict['sleep']))
-	sys.stdout.flush()
+        sys.stdout.flush()
        
         time.sleep(configure_dict['sleep']) #sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
         
