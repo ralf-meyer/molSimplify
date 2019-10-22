@@ -133,7 +133,7 @@ def resub(directory = 'in place'):
         resubmitted.append(resub_tmp)
         
     #Resub spin contaminated cases
-    for error in bad_geos:
+    for error in spin_contaminated:
         if len(active)+np.sum(resubmitted) > max_jobs:
             continue
         resub_tmp = resub_spin(error)
@@ -561,6 +561,7 @@ def main():
         print('sleeping for: '+str(configure_dict['sleep']))
         sys.stdout.flush()
        
+       configure_dict = tools.read_configure('in place',None)
         time.sleep(configure_dict['sleep']) #sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
         
         #Terminate the script if it is no longer submitting jobs

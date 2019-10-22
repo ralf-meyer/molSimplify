@@ -839,7 +839,7 @@ def extract_optimized_geo(PATH, custom_name = False):
     lines.reverse()
     if len(lines) == 0:
         lines = []
-        print('optim.xyz is emptry for: ' +PATH)
+        print('optim.xyz is empty for: ' +PATH)
     else:
         for i in range(len(lines)):
             if 'frame' in lines[i].split():
