@@ -128,7 +128,7 @@ def resub(directory = 'in place'):
             continue
         resub_tmp = resub_bad_geo(error,directory)
         if resub_tmp:
-            print('Spin contamination identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted HFX')
+            print('Bad final geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
             print('')
         resubmitted.append(resub_tmp)
         
@@ -138,7 +138,7 @@ def resub(directory = 'in place'):
             continue
         resub_tmp = resub_spin(error)
         if resub_tmp:
-            print('Bad final geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
+            print('Spin contamination identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted HFX')
             print('')
         resubmitted.append(resub_tmp)
         
@@ -277,6 +277,8 @@ def resub_spin(outfile_path):
         
     if not resubbed_before:
         save_run(outfile_path)
+        history = resub_history()
+        history.read(outfile_path)
         history.resub_number += 1
         history.status = 'HFX altered to assist convergence'
         history.needs_resub = True
@@ -320,6 +322,8 @@ def resub_scf(outfile_path):
         
     if not resubbed_before:
         save_run(outfile_path)
+        history = resub_history()
+        history.read(outfile_path)
         history.resub_number += 1
         history.status = 'Level shifts adjusted to assist convergence'
         history.needs_resub = True
@@ -362,6 +366,8 @@ def resub_bad_geo(outfile_path,home_directory):
         
     if not resubbed_before:
         save_run(outfile_path)
+        history = resub_history()
+        history.read(outfile_path)
         history.resub_number += 1
         history.status = 'Constraints added to help convergence'
         history.needs_resub = True
@@ -557,11 +563,11 @@ def main():
         print('**********************************')
         print("******** "+str(number_resubmitted)+" Jobs Submitted ********")
         print('**********************************')
+        
         print('job cycle took: '+str(time.time()-time1))
+        configure_dict = tools.read_configure('in place',None)
         print('sleeping for: '+str(configure_dict['sleep']))
         sys.stdout.flush()
-       
-       configure_dict = tools.read_configure('in place',None)
         time.sleep(configure_dict['sleep']) #sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
         
         #Terminate the script if it is no longer submitting jobs
