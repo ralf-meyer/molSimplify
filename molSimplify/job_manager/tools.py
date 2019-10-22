@@ -894,13 +894,18 @@ def pull_optimized_geos(PATHs = []):
     
 def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solvent = False, 
                 guess = False, custom_line = None, levela = 0.25, levelb = 0.25,
-                thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None
-                multibasis = False):
+                thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
+                multibasis = False, alternate_coordinates = False):
     #Writes a generic terachem input file
     #solvent indicates whether to set solvent calculations True or False
     
     if spinmult != 1:
         method = 'u'+method
+
+    if alternate_coordinates:
+        coordinates = alternate_coordinates
+    else:
+        coordinates = name+'.xyz'
         
     input_file = open(name+'.in','w')
     text = ['levelshiftvalb '+str(levelb)+'\n',
@@ -945,7 +950,7 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
         
     if constraints:
         constraints = [line if line.endswith('\n') else line+'\n' for line in constraints]
-        text = text[:-1] + ['\n','$constraint_freeze\n'] + multibasis + ['$end\n','end']
+        text = text[:-1] + ['\n','$constraint_freeze\n'] +constraints + ['$end\n','end']
 
     if type(hfx) == int or type(hfx) == float:
         text = text[:-1] + ['\n',
