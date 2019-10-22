@@ -164,6 +164,12 @@ def check_completeness(directory = 'in place', max_resub = 5):
     chronic_errors = filter(check_chronic_failure,outfiles)
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     
+    #Look for additional active jobs that haven't yet generated outfiles
+    jobscript_list = find('*_jobscript',directory)
+    jobscript_list = [i.rsplit('_',1)[0] for i in jobscript_list]
+    extra_active_jobs = filter(check_active,jobscript_list)
+    active_jobs.extend(extra_active_jobs)
+
     #Sort out conflicts in order of reverse priority
     #A job only gets labelled as finished if it's in no other category
     #A job always gets labelled as active if it fits that criteria, even if it's in every other category too
@@ -204,16 +210,19 @@ def qsub(jobscript_list):
     if type(jobscript_list) != list:
         jobscript_list = [jobscript_list]
     
+    stdouts = []
     for i in jobscript_list:
         home = os.getcwd()
         os.chdir(os.path.split(i)[0])
         jobscript = os.path.split(i)[1]
-        stdout = call_bash('qsub '+jobscript)
-        print stdout
+        stdout,stderr = call_bash('qsub '+jobscript,error=True)
+        stdouts.append(stdout)
+        if len(stderr) > 0:
+            raise Exception(stderr)
         os.chdir(home)
         time.sleep(1)
         
-    return None
+    return stdouts
 
 def check_original(job):
     #Returns true if this job is an original job
