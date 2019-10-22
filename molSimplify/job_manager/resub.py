@@ -382,13 +382,13 @@ def resub_bad_geo(outfile_path,home_directory):
             metal_index += 1
             bonded_atom_indices = [index + 1 for index in bonded_atom_indices]
             #Convert to TeraChem input syntax
-            constraints = ['bond '+str(metal_index)+'_'+str(index)+'\n' for index in bonded_atoms_indices]
+            constraints = ['bond '+str(metal_index)+'_'+str(index)+'\n' for index in bonded_atom_indices]
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
 
-        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type,
+        tools.write_input(name=name,charge=charge,spinmult=spin,solvent = solvent,run_type = run_type,
                           levela = levelshifta, levelb = levelshiftb, method = method, thresholds = criteria, hfx = hfx, basis = basis,
                           multibasis = multibasis, constraints = constraints)
                           
@@ -481,6 +481,8 @@ def resub_thermo(outfile_path):
 def prep_derivative_jobs(directory,list_of_outfiles):
     
     for job in list_of_outfiles:
+        configure_dict = tools.read_configure(directory,job)
+
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job)
         if configure_dict['vertEA']:
@@ -547,7 +549,8 @@ def main():
         print('**********************************')
         print("****** Assessing Job Status ******")
         print('**********************************')
-        
+        time1 = time.time()
+
         configure_dict = tools.read_configure('in place',None)
                 
         number_resubmitted = resub(max_jobs = configure_dict['max_jobs'],max_resub = configure_dict['max_resub']) 
@@ -555,13 +558,14 @@ def main():
         print('**********************************')
         print("******** "+str(number_resubmitted)+" Jobs Submitted ********")
         print('**********************************')
-        print 'sleeping for: '+str(configure_dict['sleep'])
+        print('job cycle took: '+str(time.time()-time1))
+        print('sleeping for: '+str(configure_dict['sleep']))
 	sys.stdout.flush()
        
         time.sleep(configure_dict['sleep']) #sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
         
         #Terminate the script if it is no longer submitting jobs
-        completeness_status,_ = tools.check_completeness()
+        completeness_status = tools.check_completeness()
         active_jobs = completeness_status['Active']
         if len(active_jobs) == 0 and number_resubmitted ==0:
             break

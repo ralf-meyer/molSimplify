@@ -26,8 +26,8 @@ def read_run(outfile_PATH):
         mol = mol3D()
         mol.readfromxyz(optimized_path)
         geo_check_dict = mol.dict_oct_check_st
-        geo_check_dict['max_del_sig_angle'] = 90
-        geo_check_dict['oct_angle_devi_max'] = 35
+        #geo_check_dict['max_del_sig_angle'] = 90
+        #geo_check_dict['oct_angle_devi_max'] = 35
         
         IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,
                                               silent = True)
@@ -87,7 +87,7 @@ def get_metal_and_bonded_atoms_oct(job_outfile,geometry = None):
         print 'Warning, generic getBondedAtoms() used for: '+job_outfile+'. Check behavior'
         bonded_atom_indices = mol.getBondedAtoms(metal_index)
         
-    return metal_index,bonded_atoms_indices
+    return metal_index,bonded_atom_indices
 
 def check_completeness(directory = 'in place', max_resub = 5):
     completeness = tools.check_completeness(directory,max_resub)
