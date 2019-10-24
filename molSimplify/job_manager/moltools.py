@@ -16,6 +16,11 @@ from molSimplify.Classes.ligand import ligand_breakdown
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
     results = tools.read_outfile(outfile_PATH)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = tools.read_infile(outfile_PATH)
+    results['levela'],results['levelb'] = levelshifta,levelshiftb
+    results['method'],results['hfx'] = method,hfx
+    results['constraints'] = constraints
+    
     
     optim_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','optim.xyz')
     
