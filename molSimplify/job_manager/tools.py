@@ -62,15 +62,26 @@ def convert_to_absolute_path(path):
     return path
 
 
-def list_active_jobs():
+def list_active_jobs(ids = False):
     #  @return A list of active jobs for the current user. By job name
     
     job_report = textfile() 
     job_report.lines = call_bash("qstat -r")
     
-    name = job_report.wordgrab('jobname:',2)[0]
+    names = job_report.wordgrab('jobname:',2)[0]
+    
+    if ids:
+        job_ids = []
+        for name in names:
+            for counter in range(len(job_report.lines)):
+                if name in job_report.lines[counter]:
+                    job_id = job_report.lines[counter-1].split()[0]
+                    job_ids.append(job_id)
+        if len(names) != len(job_ids):
+            raise Exception('An error has occurred in listing active jobs!')
+        return names,job_ids
         
-    return name
+    return names
 
 def check_completeness(directory = 'in place', max_resub = 5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
@@ -294,7 +305,8 @@ def read_outfile(outfile_path):
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = is_finished[2:]
         
-        is_scf_error = output.wordgrab('DISS','whole line')
+        is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
+        is_scf_error = [output.lines[i].split() for i in is_scf_error]
         if type(is_scf_error) == list and len(is_scf_error) > 0:
             for scf in is_scf_error:
                 if ('failed' in scf) and ('converge' in scf) and ('iterations,' in scf) and ('ADIIS' in scf):
