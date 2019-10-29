@@ -2513,7 +2513,6 @@ class mol3D:
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
               silent = False):
-        #skip = ["lig_distort"] #start skipping RMSD check
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
