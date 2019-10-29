@@ -13,6 +13,7 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.autocorrelation import*
 from molSimplify.Informatics.misc_descriptors import*
 from molSimplify.Informatics.graph_analyze import*
+from molSimplify.Informatics.rac155_geo import*
 
 ## Gets the connectivity matrix of an octahedral complex without geo
 #  @param metal_mol mol3D() for the metal
@@ -71,26 +72,29 @@ def assemble_connectivity_from_parts(metal_mol, custom_ligand_dict):
 #  @param custom_ligand_dict optional dict defining ligands (see below)
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
-def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False):
+def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False):
         descriptor_names = []
         descriptors = []
         ## misc descriptors
-        results_dictionary = generate_all_ligand_misc(this_complex,loud=False,custom_ligand_dict=custom_ligand_dict)
+        results_dictionary = generate_all_ligand_misc(this_complex,loud=False,
+                                                      custom_ligand_dict=custom_ligand_dict)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
         
         ## full ACs
-        results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False, modifier=ox_modifier)
+        results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
+                                                                    modifier=ox_modifier, NumB=NumB, Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'f','all')
 
         ## ligand ACs
         #print('get ligand ACs')
-        results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=True,name=False,
+        results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,name=False,
                                                                   flag_name=False,
-                                                                  custom_ligand_dict=custom_ligand_dict)
+                                                                  custom_ligand_dict=custom_ligand_dict,
+                                                                  NumB=NumB, Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
@@ -100,7 +104,9 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
        
-        results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,custom_ligand_dict=custom_ligand_dict)
+        results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,
+                                                              custom_ligand_dict=custom_ligand_dict,
+                                                              NumB=NumB, Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
@@ -108,11 +114,15 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
        
         ## metal ACs
         #print('getting metal ACs')
-        results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False, modifier=ox_modifier)
+        results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
+                                                             modifier=ox_modifier,
+                                                             NumB=NumB,Zeff=Zeff)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['results'],'mc','all')
  
-        results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False, modifier=ox_modifier)
+        results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
+                                                         modifier=ox_modifier,
+                                                         NumB=NumB,Zeff=Zeff)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 
@@ -126,6 +136,28 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')    
         return descriptor_names, descriptors
 
+
+## Gets only the graph-based RAC155-RACs of an octahedral complex without/without geo
+#  @param this_complex mol3D() we want RACs for
+#  @param custom_ligand_dict optional dict defining ligands (see below)
+#  @return descriptor_names_rac155 updated names
+#  @return descriptors_rac155 updated RACs
+def get_rac155_graph_based(this_complex, custom_ligand_dict=False,ox_modifier=False):
+    descriptor_names,descriptors = get_descriptor_vector(this_complex,
+                                                         custom_ligand_dict=custom_ligand_dict,
+                                                         ox_modifier=False)
+    descriptor_names_rac155 = []
+    descriptors_rac155 = []
+    try:
+        for i,item in enumerate(descriptor_names):
+            if item in rac155_list:
+                descriptor_names_rac155.append(item)
+                descriptors_rac155.append(descriptors[i])
+    except IndexError:
+        descriptor_names_rac155, descriptors_rac155 = None,None
+        print('Complex could not featurize to all rac155 descriptors')
+
+    return descriptor_names_rac155, descriptors_rac155
 
 ## Gets the derivatives of RACs of an octahedral complex with geo only!
 #  @param this_complex mol3D() we want derivatives for 

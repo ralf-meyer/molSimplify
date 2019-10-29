@@ -12,7 +12,8 @@
 from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.distgeom import *
 from molSimplify.Scripts.io import *
-# ?from molSimplify.Scripts.nn_prep import *
+if not sys.version_info >= (3,0):
+    from molSimplify.Scripts.nn_prep import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.rundiag import *
 from molSimplify.Classes import globalvars
@@ -20,6 +21,7 @@ from molSimplify.Classes import mol3D
 from molSimplify.Informatics.decoration_manager import*
 from molSimplify.Informatics.RACassemble import *
 from molSimplify.Scripts.krr_prep import *
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
 import os
 import sys
 import time

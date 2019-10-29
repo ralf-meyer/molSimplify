@@ -7,6 +7,7 @@ import sys
 import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
 from molSimplify.Scripts.geometry import vecangle, distance, kabsch
 from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
 from molSimplify.Classes.atom3D import *
@@ -96,7 +97,7 @@ def comp_two_angle_array(input_angle, target_angle):
 # the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle):
     del_arr = []
-    # print("input_arr", input_arr)
+    # print("input_arr", len(input_arr))
     for ii, input_angle in enumerate(input_arr):
         out_angle, sum_del, max_del_angle = comp_two_angle_array(
             input_angle, target_angle)
@@ -128,6 +129,7 @@ def loop_target_angle_arr(input_arr, target_arr):
         sum_del.append(del_angle)
         catoms_arr.append(catoms)
         max_del_sig_angle_arr.append(max_del_sig_angle)
+    # print("!!!!", catoms_arr, target_arr)
     return output_arr, sum_del, catoms_arr, max(max_del_sig_angle_arr)
 
 
