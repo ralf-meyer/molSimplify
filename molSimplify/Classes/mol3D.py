@@ -1630,6 +1630,43 @@ class mol3D:
                     print('cannot find atom type')
                     sys.exit()
                 self.addAtom(atom)
+    
+    # Load molecule from xyz file
+    #
+    #  Consider using getOBMol, which is more general, instead.
+    #  @param self The object pointer
+    #  @param filename Filename
+    def readfromstring(self, xyzstring):
+        # print('!!!!', filename)
+        globs = globalvars()
+        amassdict = globs.amass()
+        self.graph = []
+        s = xyzstring.split('\n')
+        try:
+            s.remove('')
+        except:
+            pass
+        s = [str(val)+'\n' for val in s]
+        for line in s[0:]:
+            line_split = line.split()
+            if len(line_split) == 4 and line_split[0]:
+                # this looks for unique atom IDs in files
+                lm = re.search(r'\d+$', line_split[0])
+                # if the string ends in digits m will be a Match object, or None otherwise.
+                if lm is not None:
+                    symb = re.sub('\d+', '', line_split[0])
+                    number = lm.group()
+                    # print('sym and number ' +str(symb) + ' ' + str(number))
+                    globs = globalvars()
+                    atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
+                                  name=line_split[0])
+                elif line_split[0] in list(amassdict.keys()):
+                    atom = atom3D(line_split[0], [float(line_split[1]), float(
+                        line_split[2]), float(line_split[3])])
+                else:
+                    print('cannot find atom type')
+                    sys.exit()
+                self.addAtom(atom)
 
     def readfromtxt(self, txt):
         # print('!!!!', filename)
