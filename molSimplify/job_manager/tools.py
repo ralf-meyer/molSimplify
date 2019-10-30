@@ -89,7 +89,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
     outfiles = find('*.out',directory)
     outfiles = filter(not_nohup,outfiles)
     
-    resuts_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
+    results_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
     results_tmp = zip(outfiles,results_tmp)
     results_dict = dict()
     for outfile,tmp in results_tmp:
@@ -205,7 +205,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
     
     results = {'Finished':finished,'Active':active_jobs,'Error':errors,'Resub':needs_resub,
             'Spin_contaminated':spin_contaminated, 'Chronic_error':chronic_errors, 
-            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting, 'SCF_Errror':scf_errors}
+            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting, 'SCF_Error':scf_errors}
     
     #inverted_results = invert_dictionary(results)
     waiting = [{i:grab_waiting(i)} for i in waiting]
@@ -325,7 +325,10 @@ def read_outfile(outfile_path,short_ouput=False):
                 finished = is_finished[2:]
         
         is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
-        is_scf_error = [output.lines[i].split() for i in is_scf_error]
+        if is_scf_error[0]:
+            is_scf_error = [output.lines[i].split() for i in is_scf_error]
+	else:
+            is_scf_error = []
         if type(is_scf_error) == list and len(is_scf_error) > 0:
             for scf in is_scf_error:
                 if ('failed' in scf) and ('converge' in scf) and ('iterations,' in scf) and ('ADIIS' in scf):
@@ -440,11 +443,11 @@ def read_configure(home_directory,outfile_path):
         hfx_resample = True
     
     #Determine global settings for this run
-    max_jobs,max_resub,levela,levelb,method,hfx,geo_check,sleep = False,False,False,False,False,False,False,False
+    max_jobs,max_resub,levela,levelb,method,hfx,geo_check,sleep,job_recovery = False,False,False,False,False,False,False,False,[]
     for configure in [home_configure,local_configure]:
         for line in home_configure:
             if 'max_jobs' in line.split(':'):
-                max_jobs = int(line.split(':')[-1]) - 1
+                max_jobs = int(line.split(':')[-1])
             if 'max_resub' in line.split(':'):
                 max_resub = int(line.split(':')[-1])
             if 'levela' in line.split(':'):
@@ -483,7 +486,8 @@ def read_configure(home_directory,outfile_path):
                 
     return {'solvent':solvent,'vertEA':vertEA,'vertIP':vertIP,'thermo':thermo,'dissociation':dissociation,
             'hfx_resample':hfx_resample,'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
-            'levelb':levelb,'method':method,'hfx':hfx,'geo_check':geo_check,'sleep':sleep}
+            'levelb':levelb,'method':method,'hfx':hfx,'geo_check':geo_check,'sleep':sleep,
+            'job_recovery':job_recovery}
 
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges

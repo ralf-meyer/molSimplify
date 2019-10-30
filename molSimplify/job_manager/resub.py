@@ -368,7 +368,7 @@ def resub_scf(outfile_path):
 def resub_bad_geo(outfile_path,home_directory):
     #Resubmits a job that's converged to a bad geometry with additional contraints
     history = resub_history()
-    history.read(outfile_path, rewrite_inscr = False)
+    history.read(outfile_path)
     resubbed_before = False
     if 'Bad geometry detected, adding constraints and trying again' in history.notes:
         resubbed_before = True
@@ -380,7 +380,7 @@ def resub_bad_geo(outfile_path,home_directory):
         history.save()
         
     if not resubbed_before:
-        save_run(outfile_path)
+        save_run(outfile_path, rewrite_inscr = True)
         history = resub_history()
         history.read(outfile_path)
         history.resub_number += 1
@@ -546,10 +546,11 @@ def reset(outfile_path):
                 break #break when all scr_? files are found.
                 
         shutil.move(outfile_path,outfile_path[:-4]+'.old') #rename old out so it isn't found in .out searches
+        shutil.move(outfile_path[:-4]+'_jobscript',outfile_path[:-4]+'_oldjob') #rename old jobscript so it isn't thought to be  job that hasn't started yet
         move.append(outfile_path[:-4]+'.old')
         move.append(outfile_path[:-4]+'.xyz')
         move.append(outfile_path[:-4]+'.in')
-        move.append(outfile_path[:-4]+'_jobscript')
+        move.append(outfile_path[:-4]+'_oldjob')
         if os.path.isdir(os.path.join(os.path.split(outfile_path)[0],'inscr')):
             move.append(os.path.join(os.path.split(outfile_path)[0],'inscr'))
         move.extend(queue_output)
