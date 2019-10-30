@@ -85,6 +85,9 @@ def resub(directory = 'in place'):
     
     
     configure_dict = tools.read_configure(directory,None)
+    print 'Global Configure File Found:'
+    print configure_dict
+
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
     
@@ -96,7 +99,7 @@ def resub(directory = 'in place'):
     active = completeness['Active'] #These are jobs which are currently running
     thermo_grad_error = completeness['Thermo_grad_error'] #These are thermo jobs encountering the thermo grad error
     waiting = completeness['Waiting'] #These are jobs which are or were waiting for another job to finish before continuing.
-    bad_geos = completeness['Bad_geos'] #These are jobs which finished, but converged to a bad geometry
+    bad_geos = completeness['Bad_geos'] #These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
     
     #Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
@@ -106,7 +109,7 @@ def resub(directory = 'in place'):
     #Resub scf convergence errors and unidentified errors
     resubmitted = [] #Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
     for error in errors:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         results = tools.read_outfile(error)
         if results['scf_error']:
@@ -124,7 +127,7 @@ def resub(directory = 'in place'):
     
     #Resub jobs which converged to bad geometries with additional constraints
     for error in bad_geos:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = resub_bad_geo(error,directory)
         if resub_tmp:
@@ -134,7 +137,7 @@ def resub(directory = 'in place'):
         
     #Resub spin contaminated cases
     for error in spin_contaminated:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = resub_spin(error)
         if resub_tmp:
@@ -144,7 +147,7 @@ def resub(directory = 'in place'):
         
     #Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = clean_resub(error)
         if resub_tmp:
@@ -154,7 +157,7 @@ def resub(directory = 'in place'):
         
     #Create a job with a tighter convergence threshold for failed thermo jobs
     for error in thermo_grad_error:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = resub_tighter(error)
         if resub_tmp:
@@ -190,7 +193,7 @@ def resub(directory = 'in place'):
             to_submit.append(job)
     submitted = []
     for job in to_submit:
-        if len(submitted)+len(active)+np.sum(resubmitted) > max_jobs:
+        if len(submitted)+len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         print('Initial sumbission for job: '+os.path.split(job)[-1])
         tools.qsub(job)
@@ -338,7 +341,7 @@ def resub_scf(outfile_path):
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
-        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type,
+        tools.write_input(name=name,charge=charge,spinmult=spin,solvent = solvent,run_type = run_type,
                           levela = 1.0, levelb = 0.1, method = method, thresholds = criteria, hfx = hfx, basis = basis,
                           multibasis = multibasis,constraints=constraints)
                           
@@ -542,7 +545,10 @@ def reset(outfile_path):
         move.append(scr_path)
         for path in move:
             #move the paths to their new location, Random numbers prevent clashes
-            shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
+            try:
+                shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
+            except:
+                print 'No file found for: '+path
             
         
         #Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run

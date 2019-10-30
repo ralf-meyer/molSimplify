@@ -443,7 +443,10 @@ def read_configure(home_directory,outfile_path):
             if 'sleep' in line.split(':'):
                 sleep = int(line.split(':')[-1])
             if 'job_recovery' in line.split(':'):
-                job_recovery = literal_eval(line.split(':')[-1])
+                job_recovery = line.split(':')[-1]
+                #convert the string form of a python list to an actual list
+                job_recovery = job_recovery[1:-1]
+                job_recovery = job_recovery.split(',')
     #If global settings not specified, choose defaults:
         if not max_jobs:
             max_jobs = 50 
