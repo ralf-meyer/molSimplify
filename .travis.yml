@@ -37,5 +37,5 @@ script:
   - python setup.py test
   - molsimplify -h
 
-notifications:
-          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO  
+#notifications:
+#          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO  
