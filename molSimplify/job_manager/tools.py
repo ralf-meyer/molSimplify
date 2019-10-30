@@ -7,6 +7,7 @@ import pandas as pd
 import shutil
 import time
 from molSimplify.job_manager.classes import resub_history,textfile
+from ast import literal_eval
 
 def not_nohup(path):
     #The nohup.out file gets caught in the find statement
@@ -284,11 +285,12 @@ def read_outfile(outfile_path):
         
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
         name = name.rsplit('.',1)[0]
-        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy = output.wordgrab(['FINAL','S-SQUARED:',
+        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy,geo_opt_cycles = output.wordgrab(['FINAL','S-SQUARED:',
                                                                                         'S-SQUARED:','processing',
                                                                                         'Maximum component of gradient is too large',
-                                                                                        'C-PCM contribution to final energy:'],
-                                                                                        [2,2,4,3,0,4],last_line=True)
+                                                                                        'C-PCM contribution to final energy:',
+                                                                                        'Optimization Cycle'],
+                                                                                        [2,2,4,3,0,4,3],last_line=True)
         if thermo_grad_error:
             thermo_grad_error = True
         else:
@@ -337,6 +339,7 @@ def read_outfile(outfile_path):
     return_dict['scf_error'] = scf_error
     return_dict['thermo_grad_error'] = thermo_grad_error
     return_dict['solvation_energy'] = implicit_solvation_energy
+    return_dict['optimization_cycles'] = geo_opt_cycles
     return return_dict
 
 def read_infile(outfile_path):
@@ -439,9 +442,11 @@ def read_configure(home_directory,outfile_path):
                 geo_check = line.split(':')[-1]
             if 'sleep' in line.split(':'):
                 sleep = int(line.split(':')[-1])
+            if 'job_recovery' in line.split(':'):
+                job_recovery = literal_eval(line.split(':')[-1])
     #If global settings not specified, choose defaults:
         if not max_jobs:
-            max_jobs = 50 - 1 
+            max_jobs = 50 
         if not max_resub:
             max_resub = 5
         if not levela:

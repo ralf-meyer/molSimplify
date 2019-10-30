@@ -505,7 +505,6 @@ def prep_derivative_jobs(directory,list_of_outfiles):
         
 def reset(outfile_path):
     #Returns the run to the state it was after a given run
-    #reference runs as integers, starting from zero
     
     pickle_path = outfile_path.rsplit('.',1)[0]+'.pickle'
     if os.path.isfile(pickle_path):
@@ -514,6 +513,13 @@ def reset(outfile_path):
         old_path = os.path.join(os.path.split(outfile_path)[0],'pre_reset')
         if not os.path.isdir(old_path):
             os.mkdir(old_path)
+        
+        #Find all the stdout and stderr files related to previous runs.
+        queue_output = glob.glob(outfile_path.rsplit('.',1)[0]+'.e*')
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.pe*'))
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.po*'))
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.o*'))
+        queue_output = [i for i in queue_output if i[-1] in ['1','2','3','4','5','6','7','8','9','0']]
         
         #remove all files from states after the specified state
         move = []
@@ -526,6 +532,12 @@ def reset(outfile_path):
                 
         shutil.move(outfile_path,outfile_path[:-4]+'.old') #rename old out so it isn't found in .out searches
         move.append(outfile_path[:-4]+'.old')
+        move.append(outfile_path[:-4]+'.xyz')
+        move.append(outfile_path[:-4]+'.in')
+        move.append(outfile_path[:-4]+'_jobscript')
+        if os.path.isdir(os.path.join(os.path.split(outfile_path)[0],'inscr')):
+            move.append(os.path.join(os.path.split(outfile_path)[0],'inscr'))
+        move.extend(queue_output)
         scr_path = os.path.join(os.path.split(outfile_path)[0],'scr')
         move.append(scr_path)
         for path in move:
@@ -533,13 +545,30 @@ def reset(outfile_path):
             shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
             
         
+        #Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run
         history = resub_history()
         history.read(pickle_path)
         outfile = history.outfiles[0]
+        infile = history.infiles[0]
+        jobscript = history.jobscripts[0]
+        xyz = history.xyzs[0]
         writer = open(outfile_path,'w')
         for i in outfile:
             writer.write(i)
         writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'.in','w')
+        for i in infile:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'.xyz','w')
+        for i in xyz:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'_jobscript','w')
+        for i in jobscript:
+            writer.write(i)
+        writer.close()
+        
         shutil.move(scr_path+'_0',scr_path)
         shutil.move(pickle_path,os.path.join(old_path,str(np.random.randint(999999999))+'_resub_history'))
 
