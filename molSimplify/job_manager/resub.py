@@ -94,6 +94,7 @@ def resub(directory = 'in place'):
     #Takes a directory, resubmits errors, scf failures, and spin contaminated cases
     completeness = moltools.check_completeness(directory,max_resub)
     errors = completeness['Error'] #These are calculations which failed to complete
+    scf_errors = completeness['SCF_Error'] #These are calculations which failed to complete and appear to have an scf error
     need_resub = completeness['Resub'] #These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated'] #These are finished jobs with spin contaminated solutions
     active = completeness['Active'] #These are jobs which are currently running
@@ -106,22 +107,27 @@ def resub(directory = 'in place'):
     needs_derivative_jobs = filter(tools.check_original,finished)
     prep_derivative_jobs(directory,needs_derivative_jobs)
     
-    #Resub scf convergence errors and unidentified errors
     resubmitted = [] #Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
+
+    #Resub unidentified errors
     for error in errors:
         if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        results = tools.read_outfile(error)
-        if results['scf_error']:
+        resub_tmp = simple_resub(error)
+        if resub_tmp:
+            print('Unidentified error in job: '+os.path.split(error)[-1]+' -Resubmitting')
+            print('')
+        resubmitted.append(resub_tmp)
+
+    #Resub scf convergence errors
+    for error in scf_errors:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
+            continue
+        local_configure = tools.read_configure(directory,None)
+        if 'scf' in local_configure['job_recovery']:
             resub_tmp = resub_scf(error)
             if resub_tmp:
                 print('SCF error identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted levelshifts')
-                print('')
-            resubmitted.append(resub_tmp)
-        else:
-            resub_tmp = simple_resub(error)
-            if resub_tmp:
-                print('Unidentified error in job: '+os.path.split(error)[-1]+' -Resubmitting')
                 print('')
             resubmitted.append(resub_tmp)
     
@@ -129,21 +135,25 @@ def resub(directory = 'in place'):
     for error in bad_geos:
         if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        resub_tmp = resub_bad_geo(error,directory)
-        if resub_tmp:
-            print('Bad final geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
-            print('')
-        resubmitted.append(resub_tmp)
+        local_configure = tools.read_configure(directory,None)
+        if 'bad_geo' in local_configure['job_recovery']:
+            resub_tmp = resub_bad_geo(error,directory)
+            if resub_tmp:
+                print('Bad final geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
+                print('')
+            resubmitted.append(resub_tmp)
         
     #Resub spin contaminated cases
     for error in spin_contaminated:
         if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        resub_tmp = resub_spin(error)
-        if resub_tmp:
-            print('Spin contamination identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted HFX')
-            print('')
-        resubmitted.append(resub_tmp)
+        local_configure = tools.read_configure(directory,None)
+        if 'spin_contaminated' in local_configure['job_recovery']:
+            resub_tmp = resub_spin(error)
+            if resub_tmp:
+                print('Spin contamination identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted HFX')
+                print('')
+            resubmitted.append(resub_tmp)
         
     #Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
@@ -159,11 +169,13 @@ def resub(directory = 'in place'):
     for error in thermo_grad_error:
         if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        resub_tmp = resub_tighter(error)
-        if resub_tmp:
-            print('Job '+os.path.split(error)[-1]+' needs a better initial geo. Creating a geometry run with tighter convergence criteria')
-            print('')
-        resubmitted.append(resub_tmp)
+        local_configure = tools.read_configure(directory,None)
+        if 'thermo_grad_error' in local_configure['job_recovery']:
+            resub_tmp = resub_tighter(error)
+            if resub_tmp:
+                print('Job '+os.path.split(error)[-1]+' needs a better initial geo. Creating a geometry run with tighter convergence criteria')
+                print('')
+            resubmitted.append(resub_tmp)
         
     #Look at jobs in "waiting," resume them if the job they were waiting for is finished
     #Currently, this should only ever be thermo jobs waiting for an ultratight job
@@ -279,7 +291,7 @@ def resub_spin(outfile_path):
         history.save()
         
     if not resubbed_before:
-        save_run(outfile_path)
+        save_run(outfile_path, rewrite_inscr = False)
         history = resub_history()
         history.read(outfile_path)
         history.resub_number += 1
@@ -324,7 +336,7 @@ def resub_scf(outfile_path):
         history.save()
         
     if not resubbed_before:
-        save_run(outfile_path)
+        save_run(outfile_path, rewrite_inscr = False)
         history = resub_history()
         history.read(outfile_path)
         history.resub_number += 1
@@ -356,7 +368,7 @@ def resub_scf(outfile_path):
 def resub_bad_geo(outfile_path,home_directory):
     #Resubmits a job that's converged to a bad geometry with additional contraints
     history = resub_history()
-    history.read(outfile_path)
+    history.read(outfile_path, rewrite_inscr = False)
     resubbed_before = False
     if 'Bad geometry detected, adding constraints and trying again' in history.notes:
         resubbed_before = True

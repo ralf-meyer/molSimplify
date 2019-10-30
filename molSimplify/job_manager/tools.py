@@ -89,7 +89,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
     outfiles = find('*.out',directory)
     outfiles = filter(not_nohup,outfiles)
     
-    results_tmp = map(read_outfile,outfiles)
+    resuts_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
     results_tmp = zip(outfiles,results_tmp)
     results_dict = dict()
     for outfile,tmp in results_tmp:
@@ -159,6 +159,13 @@ def check_completeness(directory = 'in place', max_resub = 5):
                 if abs(results['s_squared'] - results['s_squared_ideal']) > 1:
                     return True
         return False
+
+    def check_scf_error(path,results_dict=results_dict):
+        results = results_dict[path]
+        if results['scf_error']:
+            return True
+        else:
+            return False
         
     def check_thermo_grad_error(path,results_dict=results_dict):
         results = results_dict[path]
@@ -175,20 +182,22 @@ def check_completeness(directory = 'in place', max_resub = 5):
     thermo_grad_errors = filter(check_thermo_grad_error,outfiles)
     chronic_errors = filter(check_chronic_failure,outfiles)
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
+    scf_errors = filter(check_scf_error,errors)
     
     #Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript',directory)
-    jobscript_list = [i.rsplit('_',1)[0] for i in jobscript_list]
+    jobscript_list = [i.rsplit('_',1)[0]+'.out' for i in jobscript_list]
     extra_active_jobs = filter(check_active,jobscript_list)
     active_jobs.extend(extra_active_jobs)
 
     #Sort out conflicts in order of reverse priority
     #A job only gets labelled as finished if it's in no other category
     #A job always gets labelled as active if it fits that criteria, even if it's in every other category too
-    finished = list(set(finished)- set(spin_contaminated) - set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    needs_resub = list(set(needs_resub) - set(spin_contaminated) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    spin_contaminated = list(set(spin_contaminated) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    errors = list(set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    finished = list(set(finished)- set(needs_resub) - set(spin_contaminated) - set(errors)- set(scf_errors)  - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    needs_resub = list(set(needs_resub) - set(spin_contaminated) - set(errors)- set(scf_errors)  - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    spin_contaminated = list(set(spin_contaminated) - set(errors)- set(scf_errors)  - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    errors = list(set(errors) - set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    scf_errors = list(set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
     thermo_grad_errors = list(set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
     waiting = list(set(waiting) - set(chronic_errors) - set(active_jobs))
     chronic_errors = list(set(chronic_errors) - set(active_jobs))
@@ -196,7 +205,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
     
     results = {'Finished':finished,'Active':active_jobs,'Error':errors,'Resub':needs_resub,
             'Spin_contaminated':spin_contaminated, 'Chronic_error':chronic_errors, 
-            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting}
+            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting, 'SCF_Errror':scf_errors}
     
     #inverted_results = invert_dictionary(results)
     waiting = [{i:grab_waiting(i)} for i in waiting]
@@ -249,7 +258,7 @@ def check_original(job):
     else:
         return True
 
-def read_outfile(outfile_path):
+def read_outfile(outfile_path,short_ouput=False):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
@@ -280,17 +289,25 @@ def read_outfile(outfile_path):
     scf_error = False
     time = None
     thermo_grad_error = False
+    implicit_solvation_energy = None
+    geo_opt_cycles = None
 
     if output_type == 'TeraChem':
         
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
         name = name.rsplit('.',1)[0]
-        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy,geo_opt_cycles = output.wordgrab(['FINAL','S-SQUARED:',
+        if not short_ouput:
+            finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy,geo_opt_cycles = output.wordgrab(['FINAL',
+                                                                                        'S-SQUARED:',
                                                                                         'S-SQUARED:','processing',
                                                                                         'Maximum component of gradient is too large',
                                                                                         'C-PCM contribution to final energy:',
                                                                                         'Optimization Cycle'],
                                                                                         [2,2,4,3,0,4,3],last_line=True)
+        if short_ouput:
+            s_squared,s_squared_ideal,thermo_grad_error = output.wordgrab(['S-SQUARED:','S-SQUARED:','Maximum component of gradient is too large'],
+                                                                           [2,4,0],last_line=True)
+
         if thermo_grad_error:
             thermo_grad_error = True
         else:
