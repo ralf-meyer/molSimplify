@@ -27,6 +27,9 @@ install:
   - source activate test-environment
   - conda config --add channels hjkgroup
   - conda install -c openbabel openbabel  
+  - conda install pyyaml
+  - conda install tensorflow=1.14.0
+  - conda install keras
   - conda build conda-recipe
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
