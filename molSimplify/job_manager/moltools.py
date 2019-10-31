@@ -31,8 +31,6 @@ def read_run(outfile_PATH):
         mol = mol3D()
         mol.readfromxyz(optimized_path)
         geo_check_dict = mol.dict_oct_check_st
-        #geo_check_dict['max_del_sig_angle'] = 90
-        #geo_check_dict['oct_angle_devi_max'] = 35
         
         IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,
                                               silent = True)
@@ -66,12 +64,41 @@ def create_summary(directory='in place'):
 def apply_geo_check(job_outfile_path,geometry):
     
     if geometry: #The geometry variable is set to False if no geo check is requested for this job
-        if geometry in ['Oct','oct','Octahedral','octahedral']:
-            return read_run(job_outfile_path)['Is_Oct']
+
+        optim_path = os.path.join(os.path.split(job_outfile_path)[0],'scr','optim.xyz')
+        
+        if os.path.isfile(optim_path):
+            tools.extract_optimized_geo(optim_path)
+            optimized_path = os.path.join(os.path.split(optim_path)[0],'optimized.xyz')
+        
+            mol = mol3D()
+            mol.readfromxyz(optimized_path)
         else:
-            print 'Geometry check request: '+configure_dict['geo_check']+' not recognized!'
-            print 'Passing job: '+job_outfile_path+' without a geometry check!'
+            #If the optim.xyz doesn't exist, assume that it's a single point and should pass geo check
             return True
+
+        if geometry in ['Oct','oct','Octahedral','octahedral']:
+            geo_check_dict = mol.dict_oct_check_st
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
+            if IsOct:
+                return True
+            else:
+                return False
+
+        if geometry in ['Bidentate_oct','Bidentate_Oct','bidentate_Oct','bidentate_oct']:
+            #Loosened geo check dict appropriate for bidentates
+            geo_check_dict = {'num_coord_metal': 6,
+                         'rmsd_max': 3, 'atom_dist_max': 0.45,
+                         'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
+                         'dist_del_eq': 0.35, 'dist_del_all': 1,
+                         'devi_linear_avrg': 20, 'devi_linear_max': 28}
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
+            if IsOct:
+                return True
+            else:
+                return False
+        else:
+            raise Exception('A check has not been implemented for geometry: '+geoemtry)
     else:
         print 'No geomery check requested for job: '+job_outfile_path
         print 'Passing job without a geometry check'
