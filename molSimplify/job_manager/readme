@@ -22,3 +22,12 @@ The configure file can live within subdirectories, if derivative jobs are only n
 Job manager reads the configure at the job run time as well as the root directory.
 
 Must be in the directory of the configure, and then call molSimplify/job_manager/resub.py -- this will follow the configure file and execute on the working tree as described above.
+
+If loading the module (in a python script), do the following:
+
+import molSimplify.job_manager.resub as resub
+resub.main()
+
+The job manager uses the unique name as a queue identifier. Thus, it will not submit a job with a specific unique name, if that unique name is already in the queue. This will prevent the same job from being resubmitted while it is still running. 
+
+Killing the job manager by using ctrl-c should be ok to stop the manager from running. By default, it cycles with a sleep period of 2 hr.
