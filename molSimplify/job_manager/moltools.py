@@ -181,8 +181,8 @@ def prep_ligand_breakown(outfile_path):
     
     breakdown_folder = os.path.join(base,name+'_dissociation')
     
-    if os.path.isdir(breakdown_folder):
-        return ['Ligand dissociation directory already exists']
+    #if os.path.isdir(breakdown_folder):
+    #    return ['Ligand dissociation directory already exists']
     
     optimxyz = os.path.join(base,'scr','optim.xyz')
     tools.extract_optimized_geo(optimxyz)

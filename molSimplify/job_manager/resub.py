@@ -291,7 +291,7 @@ def resub_spin(outfile_path):
         history.save()
     if 'HFXresampling' in outfile_path:
         resubbed_before = True
-        history.status os.path.split(outfile_path)[-1]+' is spin contaminated, but submitting with lower HFX does not make sense for HFX resampling jobs'
+        history.status = os.path.split(outfile_path)[-1]+' is spin contaminated, but submitting with lower HFX does not make sense for HFX resampling jobs'
         history.save()    
     if not resubbed_before:
         save_run(outfile_path, rewrite_inscr = False)
