@@ -280,7 +280,7 @@ def read_outfile(outfile_path,short_ouput=False):
         raise Exception(outfile_path)
     
     name = None
-    finished = None
+    finished = False
     charge = None
     finalenergy = None
     min_energy = None
@@ -322,7 +322,7 @@ def read_outfile(outfile_path,short_ouput=False):
         is_finished = output.wordgrab(['finished:'],'whole_line',last_line=True)[0]
         if is_finished:
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
-                finished = is_finished[2:]
+                finished = True
         
         is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
         if is_scf_error[0]:
