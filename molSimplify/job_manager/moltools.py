@@ -16,6 +16,11 @@ from molSimplify.Classes.ligand import ligand_breakdown
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
     results = tools.read_outfile(outfile_PATH)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = tools.read_infile(outfile_PATH)
+    results['levela'],results['levelb'] = levelshifta,levelshiftb
+    results['method'],results['hfx'] = method,hfx
+    results['constraints'] = constraints
+    
     
     optim_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','optim.xyz')
     
@@ -26,8 +31,6 @@ def read_run(outfile_PATH):
         mol = mol3D()
         mol.readfromxyz(optimized_path)
         geo_check_dict = mol.dict_oct_check_st
-        geo_check_dict['max_del_sig_angle'] = 90
-        geo_check_dict['oct_angle_devi_max'] = 35
         
         IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,
                                               silent = True)
@@ -58,21 +61,105 @@ def create_summary(directory='in place'):
     
     return summary
 
-def apply_geo_check(base_resub_directory,job_outfile_path):
+def apply_geo_check(job_outfile_path,geometry):
     
-    configure_dict = tools.read_configure(base_resub_directory,job_outfile_path)
-    
-    if configure_dict['geo_check']: #If a geometry check is requested, do it
+    if geometry: #The geometry variable is set to False if no geo check is requested for this job
+
+        optim_path = os.path.join(os.path.split(job_outfile_path)[0],'scr','optim.xyz')
         
-        if configure_dict['geo_check'] in ['Oct','oct','Octahedral','octahedral']:
-            return read_run(outfile_PATH)['Is_Oct']
+        if os.path.isfile(optim_path):
+            tools.extract_optimized_geo(optim_path)
+            optimized_path = os.path.join(os.path.split(optim_path)[0],'optimized.xyz')
+        
+            mol = mol3D()
+            mol.readfromxyz(optimized_path)
         else:
-            print 'Geometry check request: '+configure_dict['geo_check']+' not recognized!'
-            print 'Passing job: '+job_outfile_path+' without a geometry check!'
+            #If the optim.xyz doesn't exist, assume that it's a single point and should pass geo check
             return True
-    else: #If no geo check requested, then rate all geometries as good
+
+        if geometry in ['Oct','oct','Octahedral','octahedral']:
+            geo_check_dict = mol.dict_oct_check_st
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
+            if IsOct:
+                return True
+            else:
+                return False
+
+        if geometry in ['Bidentate_oct','Bidentate_Oct','bidentate_Oct','bidentate_oct']:
+            #Loosened geo check dict appropriate for bidentates
+            geo_check_dict = {'num_coord_metal': 6,
+                         'rmsd_max': 3, 'atom_dist_max': 0.45,
+                         'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
+                         'dist_del_eq': 0.35, 'dist_del_all': 1,
+                         'devi_linear_avrg': 20, 'devi_linear_max': 28}
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
+            if IsOct:
+                return True
+            else:
+                return False
+        else:
+            raise Exception('A check has not been implemented for geometry: '+geoemtry)
+    else:
+        print 'No geomery check requested for job: '+job_outfile_path
+        print 'Passing job without a geometry check'
         return True
+        
+def get_metal_and_bonded_atoms(job_outfile,geometry = None):
+    #given the path to the outfile of a job, returns a the metal atom index and a list of indices for the metal bonded atoms
+    #indices are zero-indexed...Terachem uses 1 indexed lists
     
+    xyz_path = job_outfile.rsplit('.',1)[0]+'.xyz'
+    mol = mol3D()
+    mol.readfromxyz(xyz_path)
+    metal_index = mol.findMetal()[0]
+    
+    if geometry in ['Oct','oct','Octahedral','octahedral']:
+        bonded_atom_indices = mol.getBondedAtomsOct(metal_index)
+    else:
+        print 'Warning, generic getBondedAtoms() used for: '+job_outfile+'. Check behavior'
+        bonded_atom_indices = mol.getBondedAtoms(metal_index)
+        
+    return metal_index,bonded_atom_indices
+
+def check_completeness(directory = 'in place', max_resub = 5):
+    completeness = tools.check_completeness(directory,max_resub)
+    
+    #The check_completeness() function in tools doesn't check the geometries (because it's molSimplify dependent)
+    #Apply the check here to finished and spin contaminated geometries, then update the completeness dictionary
+    
+    finished = completeness['Finished']
+    spin_contaminated = completeness['Spin_contaminated']
+    needs_resub = completeness['Resub']
+    
+    bad_geos = []
+    new_finished = []
+    new_spin_contaminated = []
+    new_needs_resub = []
+    for job in finished:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_finished.append(job)
+        else:
+            bad_geos.append(job)
+    for job in spin_contaminated:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_spin_contaminated.append(job)
+        else:
+            bad_geos.append(job)
+    for job in needs_resub:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_needs_resub.append(job)
+        else:
+            bad_geos.append(job)
+    
+    completeness['Finished'] = new_finished
+    completeness['Spin_contaminated'] = new_spin_contaminated
+    completeness['Resub'] = new_needs_resub
+    completeness['Bad_geos'] = bad_geos
+    return completeness
+            
 def prep_ligand_breakown(outfile_path):
     #Given a path to the outfile of a finished run, this preps the files for rigid ligand dissociation energies of all ligands
     #Returns a list of the PATH(s) to the jobscript(s) to start the rigid ligand calculations
@@ -85,7 +172,7 @@ def prep_ligand_breakown(outfile_path):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     
@@ -94,8 +181,8 @@ def prep_ligand_breakown(outfile_path):
     
     breakdown_folder = os.path.join(base,name+'_dissociation')
     
-    if os.path.isdir(breakdown_folder):
-        return ['Ligand dissociation directory already exists']
+    #if os.path.isdir(breakdown_folder):
+    #    return ['Ligand dissociation directory already exists']
     
     optimxyz = os.path.join(base,'scr','optim.xyz')
     tools.extract_optimized_geo(optimxyz)

@@ -7,6 +7,7 @@ import pandas as pd
 import shutil
 import time
 from molSimplify.job_manager.classes import resub_history,textfile
+from ast import literal_eval
 
 def not_nohup(path):
     #The nohup.out file gets caught in the find statement
@@ -62,22 +63,33 @@ def convert_to_absolute_path(path):
     return path
 
 
-def list_active_jobs():
+def list_active_jobs(ids = False):
     #  @return A list of active jobs for the current user. By job name
     
     job_report = textfile() 
     job_report.lines = call_bash("qstat -r")
     
-    name = job_report.wordgrab('jobname:',2)[0]
+    names = job_report.wordgrab('jobname:',2)[0]
+    
+    if ids:
+        job_ids = []
+        for name in names:
+            for counter in range(len(job_report.lines)):
+                if name in job_report.lines[counter]:
+                    job_id = job_report.lines[counter-1].split()[0]
+                    job_ids.append(job_id)
+        if len(names) != len(job_ids):
+            raise Exception('An error has occurred in listing active jobs!')
+        return names,job_ids
         
-    return name
+    return names
 
 def check_completeness(directory = 'in place', max_resub = 5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find('*.out',directory)
     outfiles = filter(not_nohup,outfiles)
     
-    results_tmp = map(read_outfile,outfiles)
+    results_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
     results_tmp = zip(outfiles,results_tmp)
     results_dict = dict()
     for outfile,tmp in results_tmp:
@@ -135,7 +147,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
         if os.path.isfile(path.rsplit('.',1)[0]+'.pickle'):
             history = resub_history()
             history.read(path)
-            if history.resub_number > max_resub-1:
+            if history.resub_number >= max_resub:
                 return True
         else:
             return False
@@ -147,6 +159,13 @@ def check_completeness(directory = 'in place', max_resub = 5):
                 if abs(results['s_squared'] - results['s_squared_ideal']) > 1:
                     return True
         return False
+
+    def check_scf_error(path,results_dict=results_dict):
+        results = results_dict[path]
+        if results['scf_error']:
+            return True
+        else:
+            return False
         
     def check_thermo_grad_error(path,results_dict=results_dict):
         results = results_dict[path]
@@ -163,14 +182,22 @@ def check_completeness(directory = 'in place', max_resub = 5):
     thermo_grad_errors = filter(check_thermo_grad_error,outfiles)
     chronic_errors = filter(check_chronic_failure,outfiles)
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
+    scf_errors = filter(check_scf_error,errors)
     
+    #Look for additional active jobs that haven't yet generated outfiles
+    jobscript_list = find('*_jobscript',directory)
+    jobscript_list = [i.rsplit('_',1)[0]+'.out' for i in jobscript_list]
+    extra_active_jobs = filter(check_active,jobscript_list)
+    active_jobs.extend(extra_active_jobs)
+
     #Sort out conflicts in order of reverse priority
     #A job only gets labelled as finished if it's in no other category
     #A job always gets labelled as active if it fits that criteria, even if it's in every other category too
-    finished = list(set(finished)- set(spin_contaminated) - set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    spin_contaminated = list(set(spin_contaminated) - set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    needs_resub = list(set(needs_resub) - set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    errors = list(set(errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    finished = list(set(finished)- set(needs_resub) - set(spin_contaminated) - set(errors)- set(scf_errors)  - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    needs_resub = list(set(needs_resub) - set(spin_contaminated) - set(errors)- set(scf_errors)  - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    spin_contaminated = list(set(spin_contaminated) - set(errors)- set(scf_errors)  - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    errors = list(set(errors) - set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
+    scf_errors = list(set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
     thermo_grad_errors = list(set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
     waiting = list(set(waiting) - set(chronic_errors) - set(active_jobs))
     chronic_errors = list(set(chronic_errors) - set(active_jobs))
@@ -178,13 +205,13 @@ def check_completeness(directory = 'in place', max_resub = 5):
     
     results = {'Finished':finished,'Active':active_jobs,'Error':errors,'Resub':needs_resub,
             'Spin_contaminated':spin_contaminated, 'Chronic_error':chronic_errors, 
-            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting}
+            'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting, 'SCF_Error':scf_errors}
     
-    inverted_results = invert_dictionary(results)
+    #inverted_results = invert_dictionary(results)
     waiting = [{i:grab_waiting(i)} for i in waiting]
     results['Waiting'] = waiting
     
-    return results,inverted_results
+    return results
     
 
 def find(key,directory = 'in place'):
@@ -204,18 +231,34 @@ def qsub(jobscript_list):
     if type(jobscript_list) != list:
         jobscript_list = [jobscript_list]
     
+    stdouts = []
     for i in jobscript_list:
         home = os.getcwd()
         os.chdir(os.path.split(i)[0])
         jobscript = os.path.split(i)[1]
-        stdout = call_bash('qsub '+jobscript)
-        print stdout
+        stdout,stderr = call_bash('qsub '+jobscript,error=True)
+        stdouts.append(stdout)
+        if len(stderr) > 0:
+            raise Exception(stderr)
         os.chdir(home)
         time.sleep(1)
         
-    return None
+    return stdouts
 
-def read_outfile(outfile_path):
+def check_original(job):
+    #Returns true if this job is an original job
+    #Returns false if this job is already a derivative job
+    
+    name = os.path.split(job)[-1]
+    name = name.rsplit('.',1)[0]
+    name = name.split('_')
+    
+    if 'solventSP' in name or 'vertEA' in name or 'vertIP' in name or 'thermo' in name or 'kp' in name or 'rm' in name or 'ultratight' in name or 'HFXresampling' in name:
+        return False
+    else:
+        return True
+
+def read_outfile(outfile_path,short_ouput=False):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
@@ -246,23 +289,33 @@ def read_outfile(outfile_path):
     scf_error = False
     time = None
     thermo_grad_error = False
+    implicit_solvation_energy = None
+    geo_opt_cycles = None
 
     if output_type == 'TeraChem':
         
         name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
         name = name.rsplit('.',1)[0]
-        finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy = output.wordgrab(['FINAL','S-SQUARED:',
+        if not short_ouput:
+            finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,implicit_solvation_energy,geo_opt_cycles = output.wordgrab(['FINAL',
+                                                                                        'S-SQUARED:',
                                                                                         'S-SQUARED:','processing',
                                                                                         'Maximum component of gradient is too large',
-                                                                                        'C-PCM contribution to final energy:'],
-                                                                                        [2,2,4,3,0,4],last_line=True)
+                                                                                        'C-PCM contribution to final energy:',
+                                                                                        'Optimization Cycle'],
+                                                                                        [2,2,4,3,0,4,3],last_line=True)
+        if short_ouput:
+            s_squared,s_squared_ideal,thermo_grad_error = output.wordgrab(['S-SQUARED:','S-SQUARED:','Maximum component of gradient is too large'],
+                                                                           [2,4,0],last_line=True)
+
         if thermo_grad_error:
             thermo_grad_error = True
         else:
             thermo_grad_error = False
         if s_squared_ideal:
             s_squared_ideal = float(s_squared_ideal.strip(')'))
-        implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
+        if implicit_solvation_energy:
+            implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
             
         min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
         
@@ -271,7 +324,11 @@ def read_outfile(outfile_path):
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = is_finished[2:]
         
-        is_scf_error = output.wordgrab('DISS','whole line')
+        is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
+        if is_scf_error[0]:
+            is_scf_error = [output.lines[i].split() for i in is_scf_error]
+	else:
+            is_scf_error = []
         if type(is_scf_error) == list and len(is_scf_error) > 0:
             for scf in is_scf_error:
                 if ('failed' in scf) and ('converge' in scf) and ('iterations,' in scf) and ('ADIIS' in scf):
@@ -302,6 +359,7 @@ def read_outfile(outfile_path):
     return_dict['scf_error'] = scf_error
     return_dict['thermo_grad_error'] = thermo_grad_error
     return_dict['solvation_energy'] = implicit_solvation_energy
+    return_dict['optimization_cycles'] = geo_opt_cycles
     return return_dict
 
 def read_infile(outfile_path):
@@ -327,7 +385,16 @@ def read_infile(outfile_path):
         multibasis = False
     else:
         multibasis = inp.lines[multibasis[0]+1:multibasis[1]]
-    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis
+    
+    constraints = inp.wordgrab(['$constraint_freeze','$end'],[0,0],last_line=True,matching_index=True)
+    if not constraints[0]:
+        constraints = False
+    else:
+        constraints = inp.lines[constraints[0]+1:constraints[1]]
+    
+    if constraints and multibasis:
+        raise Exception('The current implementation of tools.read_infile() is known to behave poorly when an infile specifies both a multibasis and constraints')
+    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints
 
 #Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
 #The global configure file should be in the same directory where resub() is called
@@ -376,11 +443,11 @@ def read_configure(home_directory,outfile_path):
         hfx_resample = True
     
     #Determine global settings for this run
-    max_jobs,max_resub,levela,levelb,method,hfx,geo_check,sleep = False,False,False,False,False,False,False,False
+    max_jobs,max_resub,levela,levelb,method,hfx,geo_check,sleep,job_recovery = False,False,False,False,False,False,False,False,[]
     for configure in [home_configure,local_configure]:
         for line in home_configure:
             if 'max_jobs' in line.split(':'):
-                max_jobs = int(line.split(':')[-1]) - 1
+                max_jobs = int(line.split(':')[-1])
             if 'max_resub' in line.split(':'):
                 max_resub = int(line.split(':')[-1])
             if 'levela' in line.split(':'):
@@ -395,9 +462,14 @@ def read_configure(home_directory,outfile_path):
                 geo_check = line.split(':')[-1]
             if 'sleep' in line.split(':'):
                 sleep = int(line.split(':')[-1])
+            if 'job_recovery' in line.split(':'):
+                job_recovery = line.split(':')[-1]
+                #convert the string form of a python list to an actual list
+                job_recovery = job_recovery[1:-1]
+                job_recovery = job_recovery.split(',')
     #If global settings not specified, choose defaults:
         if not max_jobs:
-            max_jobs = 50 - 1 
+            max_jobs = 50 
         if not max_resub:
             max_resub = 5
         if not levela:
@@ -414,7 +486,8 @@ def read_configure(home_directory,outfile_path):
                 
     return {'solvent':solvent,'vertEA':vertEA,'vertIP':vertIP,'thermo':thermo,'dissociation':dissociation,
             'hfx_resample':hfx_resample,'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
-            'levelb':levelb,'method':method,'hfx':hfx,'geo_check':geo_check,'sleep':sleep}
+            'levelb':levelb,'method':method,'hfx':hfx,'geo_check':geo_check,'sleep':sleep,
+            'job_recovery':job_recovery}
 
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges
@@ -468,7 +541,7 @@ def prep_vertical_ip(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
         
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = read_infile(path)
     
     if spin == 1:
         new_spin = [2]
@@ -494,7 +567,8 @@ def prep_vertical_ip(path, solvent = False):
             
             write_input(name,charge+1,calc,solvent = solvent, guess = False, 
                 run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,multibasis=multibasis)
+                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,multibasis=multibasis,
+                constraints = constraints)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -514,7 +588,7 @@ def prep_vertical_ea(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = read_infile(path)
     
     if spin == 1:
         new_spin = [2]
@@ -540,7 +614,8 @@ def prep_vertical_ea(path, solvent = False):
             
             write_input(name,charge-1,calc,solvent = solvent, guess = False, 
                 run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis, multibasis = multibasis)
+                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis, 
+                multibasis = multibasis, constraints = constraints)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -560,7 +635,7 @@ def prep_solvent_sp(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -587,7 +662,8 @@ def prep_solvent_sp(path):
     
     write_input(name,charge,spin,solvent = True, guess = True, 
                 run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis, multibasis = multibasis)
+                levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis, 
+                multibasis = multibasis, constraints = constraints)
     
     os.chdir(home)
     
@@ -604,7 +680,7 @@ def prep_thermo(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -631,7 +707,8 @@ def prep_thermo(path):
     
     write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = 'frequencies', method = method, levela = levelshifta, 
-                levelb = levelshiftb, hfx = hfx, basis = basis, multibasis = multibasis)
+                levelb = levelshiftb, hfx = hfx, basis = basis, multibasis = multibasis,
+                constraints = constraints)
     
     os.chdir(home)
     
@@ -648,7 +725,7 @@ def prep_ultratight(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds, multibasis = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -679,7 +756,8 @@ def prep_ultratight(path):
         
         write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = run_type, method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, multibasis = multibasis)
+                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, 
+                multibasis = multibasis, constraints = constraints)
         
         #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
         f = open(name+'.out','w')
@@ -691,12 +769,12 @@ def prep_ultratight(path):
     
     else: #This has been run before, further tighten the convergence criteria
         os.chdir(PATH)
-        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = read_infile(os.path.join(PATH,name+'.out'))
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints = read_infile(os.path.join(PATH,name+'.out'))
         criteria = [str(i/2.) for i in criteria]
         
         write_input(name,charge,spin,solvent = solvent, guess = True, 
                 run_type = run_type, method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, multibasis = multibasis)
+                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, multibasis = multibasis,constraints = constraints)
         tools.extract_optimized_geo(os.path.join(PATH,'scr','optim.xyz'))
         shutil.copy(os.path.join(PATH,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
         
@@ -717,7 +795,7 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     #Check the state of the calculation and ensure than hfx resampling is valid
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis = read_infile(path)
+    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints = read_infile(path)
     if method != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
     if not hfx:
@@ -793,7 +871,8 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
     
         write_input(subname,charge,spin,solvent = solvent, guess = True, 
             run_type = run_type, method = method, levela = levelshifta, 
-            levelb = levelshiftb, hfx = hfx/100. ,thresholds = convergence_thresholds, basis = basis, multibasis = multibasis)
+            levelb = levelshiftb, hfx = hfx/100. ,thresholds = convergence_thresholds, basis = basis, 
+            multibasis = multibasis, constraints = constraints)
         jobscripts.append(os.path.join(os.getcwd(),subname+'_jobscript'))
     
     os.chdir(home)
@@ -810,7 +889,7 @@ def extract_optimized_geo(PATH, custom_name = False):
     lines.reverse()
     if len(lines) == 0:
         lines = []
-        print('optim.xyz is emptry for: ' +PATH)
+        print('optim.xyz is empty for: ' +PATH)
     else:
         for i in range(len(lines)):
             if 'frame' in lines[i].split():
@@ -865,14 +944,14 @@ def pull_optimized_geos(PATHs = []):
     
 def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solvent = False, 
                 guess = False, custom_line = None, levela = 0.25, levelb = 0.25,
-                thresholds = None, basis = 'lacvps_ecp', hfx = None,alternate_coordinates = False,
-                multibasis = False):
+                thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
+                multibasis = False, alternate_coordinates = False):
     #Writes a generic terachem input file
     #solvent indicates whether to set solvent calculations True or False
     
     if spinmult != 1:
         method = 'u'+method
-        
+
     if alternate_coordinates:
         coordinates = alternate_coordinates
     else:
@@ -918,7 +997,11 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
     if multibasis:
         multibasis = [line if line.endswith('\n') else line+'\n' for line in multibasis]
         text = text[:-1] + ['\n','$multibasis\n'] + multibasis + ['$end\n','end']
-    
+        
+    if constraints:
+        constraints = [line if line.endswith('\n') else line+'\n' for line in constraints]
+        text = text[:-1] + ['\n','$constraint_freeze\n'] +constraints + ['$end\n','end']
+
     if type(hfx) == int or type(hfx) == float:
         text = text[:-1] + ['\n',
                             'HFX '+str(hfx)+'\n',

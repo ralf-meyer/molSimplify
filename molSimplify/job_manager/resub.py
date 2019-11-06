@@ -12,36 +12,6 @@ import time
 import sys
 from molSimplify.job_manager.classes import resub_history
 
-## Save the outfile within the resub_history pickel object
-def save_run(outfile_path):
-    history = resub_history()
-    history.read(outfile_path)
-    
-    f = open(outfile_path,'r')
-    out_lines = f.readlines()
-    f.close()
-    history.outfiles.append(out_lines)
-    
-    infile_path = outfile_path.rsplit('.',1)[0]+'.in'
-    f = open(infile_path,'r')
-    in_lines = f.readlines()
-    f.close()
-    history.infiles.append(in_lines)
-    
-    jobscript_path = outfile_path.rsplit('.',1)[0]+'_jobscript'
-    f = open(jobscript_path,'r')
-    job_lines = f.readlines()
-    f.close()
-    history.jobscripts.append(job_lines)
-    
-    xyz_path = outfile_path.rsplit('.',1)[0]+'.xyz'
-    f = open(xyz_path,'r')
-    xyz_lines = f.readlines()
-    f.close()
-    history.xyzs.append(xyz_lines)
-    
-    history.save()
-
 ## Archive the scr file so it isn't overwritten in future resubs
 #  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
 def save_scr(outfile_path, rewrite_inscr = True):
@@ -78,53 +48,116 @@ def save_scr(outfile_path, rewrite_inscr = True):
         
         return scr_path+'_'+new_scr
 
-def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
+## Save the outfile within the resub_history pickel object
+def save_run(outfile_path, rewrite_inscr = True):
+    
+    save_scr(outfile_path, rewrite_inscr = rewrite_inscr)
+    
+    history = resub_history()
+    history.read(outfile_path)
+    
+    f = open(outfile_path,'r')
+    out_lines = f.readlines()
+    f.close()
+    history.outfiles.append(out_lines)
+    
+    infile_path = outfile_path.rsplit('.',1)[0]+'.in'
+    f = open(infile_path,'r')
+    in_lines = f.readlines()
+    f.close()
+    history.infiles.append(in_lines)
+    
+    jobscript_path = outfile_path.rsplit('.',1)[0]+'_jobscript'
+    f = open(jobscript_path,'r')
+    job_lines = f.readlines()
+    f.close()
+    history.jobscripts.append(job_lines)
+    
+    xyz_path = outfile_path.rsplit('.',1)[0]+'.xyz'
+    f = open(xyz_path,'r')
+    xyz_lines = f.readlines()
+    f.close()
+    history.xyzs.append(xyz_lines)
+    
+    history.save()
+
+def resub(directory = 'in place'):
+    
+    
+    configure_dict = tools.read_configure(directory,None)
+    print 'Global Configure File Found:'
+    print configure_dict
+
+    max_resub = configure_dict['max_resub']
+    max_jobs = configure_dict['max_jobs']
     
     #Takes a directory, resubmits errors, scf failures, and spin contaminated cases
-    completeness,inverted_completeness = tools.check_completeness(directory,max_resub)
+    completeness = moltools.check_completeness(directory,max_resub)
     errors = completeness['Error'] #These are calculations which failed to complete
+    scf_errors = completeness['SCF_Error'] #These are calculations which failed to complete and appear to have an scf error
     need_resub = completeness['Resub'] #These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated'] #These are finished jobs with spin contaminated solutions
     active = completeness['Active'] #These are jobs which are currently running
     thermo_grad_error = completeness['Thermo_grad_error'] #These are thermo jobs encountering the thermo grad error
     waiting = completeness['Waiting'] #These are jobs which are or were waiting for another job to finish before continuing.
+    bad_geos = completeness['Bad_geos'] #These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
     
     #Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
-    prep_derivative_jobs(directory,finished)
+    needs_derivative_jobs = filter(tools.check_original,finished)
+    prep_derivative_jobs(directory,needs_derivative_jobs)
     
-    #Resub scf convergence errors and unidentified errors
     resubmitted = [] #Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
+
+    #Resub unidentified errors
     for error in errors:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        results = tools.read_outfile(error)
-        if results['scf_error']:
+        resub_tmp = simple_resub(error)
+        if resub_tmp:
+            print('Unidentified error in job: '+os.path.split(error)[-1]+' -Resubmitting')
+            print('')
+        resubmitted.append(resub_tmp)
+
+    #Resub scf convergence errors
+    for error in scf_errors:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
+            continue
+        local_configure = tools.read_configure(directory,None)
+        if 'scf' in local_configure['job_recovery']:
             resub_tmp = resub_scf(error)
             if resub_tmp:
                 print('SCF error identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted levelshifts')
                 print('')
             resubmitted.append(resub_tmp)
-        else:
-            resub_tmp = simple_resub(error)
+    
+    #Resub jobs which converged to bad geometries with additional constraints
+    for error in bad_geos:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
+            continue
+        local_configure = tools.read_configure(directory,None)
+        if 'bad_geo' in local_configure['job_recovery']:
+            resub_tmp = resub_bad_geo(error,directory)
             if resub_tmp:
-                print('Unidentified error in job: '+os.path.split(error)[-1]+' -Resubmitting')
+                print('Bad final geometry in job: '+os.path.split(error)[-1]+' -Resubmitting from initial structure with additional constraints')
                 print('')
             resubmitted.append(resub_tmp)
-            
+        
     #Resub spin contaminated cases
     for error in spin_contaminated:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        resub_tmp = resub_spin(error)
-        if resub_tmp:
-            print('Spin contamination identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted HFX')
-            print('')
-        resubmitted.append(resub_tmp)
+        local_configure = tools.read_configure(directory,None)
+        if 'spin_contaminated' in local_configure['job_recovery']:
+            resub_tmp = resub_spin(error)
+            if resub_tmp:
+                print('Spin contamination identified in job: '+os.path.split(error)[-1]+' -Resubmitting with adjusted HFX')
+                print('')
+            resubmitted.append(resub_tmp)
         
     #Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = clean_resub(error)
         if resub_tmp:
@@ -134,13 +167,15 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
         
     #Create a job with a tighter convergence threshold for failed thermo jobs
     for error in thermo_grad_error:
-        if len(active)+np.sum(resubmitted) > max_jobs:
+        if len(active)+np.sum(resubmitted) >= max_jobs:
             continue
-        resub_tmp = resub_tighter(error)
-        if resub_tmp:
-            print('Job '+os.path.split(error)[-1]+' needs a better initial geo. Creating a geometry run with tighter convergence criteria')
-            print('')
-        resubmitted.append(resub_tmp)
+        local_configure = tools.read_configure(directory,None)
+        if 'thermo_grad_error' in local_configure['job_recovery']:
+            resub_tmp = resub_tighter(error)
+            if resub_tmp:
+                print('Job '+os.path.split(error)[-1]+' needs a better initial geo. Creating a geometry run with tighter convergence criteria')
+                print('')
+            resubmitted.append(resub_tmp)
         
     #Look at jobs in "waiting," resume them if the job they were waiting for is finished
     #Currently, this should only ever be thermo jobs waiting for an ultratight job
@@ -170,7 +205,7 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
             to_submit.append(job)
     submitted = []
     for job in to_submit:
-        if len(submitted)+len(active)+np.sum(resubmitted) > max_jobs:
+        if len(submitted)+len(active)+np.sum(resubmitted) >= max_jobs:
             continue
         print('Initial sumbission for job: '+os.path.split(job)[-1])
         tools.qsub(job)
@@ -182,8 +217,7 @@ def resub(directory = 'in place',max_jobs = 50,max_resub = 5):
     
 def simple_resub(outfile_path):
     #Resubmits a job without changing parameters. Particularly useful for CUDA errors.
-    save_scr(outfile_path, rewrite_inscr = False)
-    save_run(outfile_path)
+    save_run(outfile_path, rewrite_inscr = False)
     history = resub_history()
     history.read(outfile_path)
     history.resub_number += 1
@@ -197,7 +231,6 @@ def simple_resub(outfile_path):
     
 def clean_resub(outfile_path):
     #Resubmits a job with default parameters, useful for undoing level shift or hfx alterations
-    save_scr(outfile_path)
     save_run(outfile_path)
     history = resub_history()
     history.read(outfile_path)
@@ -210,7 +243,7 @@ def clean_resub(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints = tools.read_infile(outfile_path)
     
     home = os.getcwd()
     if len(directory) > 0: #if the string is blank, then we're already in the correct directory
@@ -230,14 +263,14 @@ def clean_resub(outfile_path):
                           guess = 'inscr/c0', alternate_coordinates = coordinates,
                           thresholds = criteria, basis = basis, method = configure_dict['method'],
                           levela = configure_dict['levela'], levelb = configure_dict['levelb'],
-                          multibasis = multibasis)
+                          multibasis = multibasis, constraints = None)
                           
     else:
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, 
                           guess = 'inscr/ca0 inscr/cb0', alternate_coordinates =coordinates,
                           thresholds = criteria, basis = basis, method = configure_dict['method'],
                           levela = configure_dict['levela'], levelb = configure_dict['levelb'],
-                          multibasis = multibasis)
+                          multibasis = multibasis, constraints = None)
     tools.write_jobscript(name,custom_line = '# -fin inscr/')
     os.chdir(home)
     tools.qsub(root+'_jobscript')
@@ -250,10 +283,20 @@ def resub_spin(outfile_path):
     resubbed_before = False
     if 'Spin contaminated, lowering HFX to aid convergence' in history.notes:
         resubbed_before = True
-        
+        history.status = os.path.split(outfile_path)[-1]+' has been submitted with lower HFX and still converges to a spin contaminated solution'
+        history.save()
+    if 'Needs clean resub' in history.notes:
+        resubbed_before = True
+        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed - requesting resub_spin() after clean resubmission round'
+        history.save()
+    if 'HFXresampling' in outfile_path:
+        resubbed_before = True
+        history.status = os.path.split(outfile_path)[-1]+' is spin contaminated, but submitting with lower HFX does not make sense for HFX resampling jobs'
+        history.save()    
     if not resubbed_before:
-        save_scr(outfile_path)
-        save_run(outfile_path)
+        save_run(outfile_path, rewrite_inscr = False)
+        history = resub_history()
+        history.read(outfile_path)
         history.resub_number += 1
         history.status = 'HFX altered to assist convergence'
         history.needs_resub = True
@@ -264,13 +307,14 @@ def resub_spin(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
+        charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
         tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type, method = 'blyp',
-                          thresholds = criteria, basis = basis, levela = levelshifta, levelb = levelshiftb, multibasis=multibasis)
+                          thresholds = criteria, basis = basis, levela = levelshifta, levelb = levelshiftb, multibasis=multibasis,
+                          constraints=constraints)
         
         tools.write_jobscript(name)
         os.chdir(home)
@@ -278,8 +322,6 @@ def resub_spin(outfile_path):
         return True
         
     else:
-        history.status = os.path.split(outfile_path)[-1]+' has been submitted with lower HFX and still converges to a spin contaminated solution'
-        history.save()
         return False
         
 def resub_scf(outfile_path):
@@ -289,10 +331,17 @@ def resub_scf(outfile_path):
     resubbed_before = False
     if 'SCF convergence error, level shifts adjusted to aid convergence' in history.notes:
         resubbed_before = True
+        history.status = os.path.split(outfile_path)[-1]+' has been submitted with levels shifted and is still encountering an scf error'
+        history.save()
+    if 'Needs clean resub' in history.notes:
+        resubbed_before = True
+        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed - requesting resub_scf() after clean resubmission round'
+        history.save()
         
     if not resubbed_before:
-        save_scr(outfile_path)
-        save_run(outfile_path)
+        save_run(outfile_path, rewrite_inscr = False)
+        history = resub_history()
+        history.read(outfile_path)
         history.resub_number += 1
         history.status = 'Level shifts adjusted to assist convergence'
         history.needs_resub = True
@@ -302,14 +351,14 @@ def resub_scf(outfile_path):
         root = outfile_path.rsplit('.',1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints = tools.read_infile(outfile_path)
         
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
-        tools.write_input(name=name,charge=charge,spinmult=spinmult,solvent = solvent,run_type = run_type,
+        tools.write_input(name=name,charge=charge,spinmult=spin,solvent = solvent,run_type = run_type,
                           levela = 1.0, levelb = 0.1, method = method, thresholds = criteria, hfx = hfx, basis = basis,
-                          multibasis = multibasis)
+                          multibasis = multibasis,constraints=constraints)
                           
         tools.write_jobscript(name)
         os.chdir(home)
@@ -317,8 +366,65 @@ def resub_scf(outfile_path):
         return True
         
     else:
-        history.status = os.path.split(outfile_path)[-1]+' has been submitted with levels shifted and is still encountering an scf error'
+        return False
+        
+def resub_bad_geo(outfile_path,home_directory):
+    #Resubmits a job that's converged to a bad geometry with additional contraints
+    history = resub_history()
+    history.read(outfile_path)
+    resubbed_before = False
+    if 'Bad geometry detected, adding constraints and trying again' in history.notes:
+        resubbed_before = True
+        history.status = os.path.split(outfile_path)[-1]+" has been submitted with additional constraints and still isn't a good geometry"
         history.save()
+    if 'Needs clean resub' in history.notes:
+        resubbed_before = True
+        history.status = os.path.split(outfile_path)[-1]+' job recovery has failed - requesting resub_bad_geo after clean resubmission round'
+        history.save()
+        
+    if not resubbed_before:
+        save_run(outfile_path, rewrite_inscr = True)
+        history = resub_history()
+        history.read(outfile_path)
+        history.resub_number += 1
+        history.status = 'Constraints added to help convergence'
+        history.needs_resub = True
+        history.notes.append('Bad geometry detected, adding constraints and trying again')
+        history.save()
+        
+        root = outfile_path.rsplit('.',1)[0]
+        name = os.path.split(root)[-1]
+        directory = os.path.split(outfile_path)[0]
+        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints = tools.read_infile(outfile_path)
+        
+        if constraints:
+            raise Exception('resub.py does not currently support the use of external atom constraints. These will be overwritten by clean_resub() during job recovery')
+        
+        goal_geo = tools.read_configure(home_directory,outfile_path)['geo_check']
+        if not goal_geo:
+            raise Exception('Goal geometry not specified, job '+outfile_path+' should not have been labelled bad geo!')
+        else:
+            metal_index,bonded_atom_indices = moltools.get_metal_and_bonded_atoms(outfile_path,goal_geo)
+            #convert indexes from zero-indexed to one-indexed
+            metal_index += 1
+            bonded_atom_indices = [index + 1 for index in bonded_atom_indices]
+            #Convert to TeraChem input syntax
+            constraints = ['bond '+str(metal_index)+'_'+str(index)+'\n' for index in bonded_atom_indices]
+        
+        home = os.getcwd()
+        if len(directory) > 0: #if the string is blank, then we're already in the correct directory
+            os.chdir(directory)
+
+        tools.write_input(name=name,charge=charge,spinmult=spin,solvent = solvent,run_type = run_type,
+                          levela = levelshifta, levelb = levelshiftb, method = method, thresholds = criteria, hfx = hfx, basis = basis,
+                          multibasis = multibasis, constraints = constraints)
+                          
+        tools.write_jobscript(name)
+        os.chdir(home)
+        tools.qsub(root+'_jobscript')
+        return True
+        
+    else:
         return False
 
 def resub_tighter(outfile_path):
@@ -332,8 +438,7 @@ def resub_tighter(outfile_path):
     ultratight_path = os.path.join(parent_directory,parent_name+'_ultratight',parent_name+'_ultratight.out')
     
     if os.path.exists(ultratight_path): #This ultratight resubmission has happend before, need to archive the results
-        save_scr(ultratight_path, rewrite_inscr = False)
-        save_run(ultratight_path)
+        save_run(ultratight_path, rewrite_inscr = False)
         history = resub_history()
         history.read(ultratight_path)
         history.resub_number += 1
@@ -357,8 +462,7 @@ def resub_thermo(outfile_path):
     #Similar to simple resub, but specific for addressing thermo gradient errors
     #Checks for the existance of an ultratight version of this run. If it exists, uses the most up to date version for the new thermo run
     
-    save_scr(outfile_path, rewrite_inscr = False)
-    save_run(outfile_path)
+    save_run(outfile_path, rewrite_inscr = False)
     history = resub_history()
     history.read(outfile_path)
     history.resub_number += 1
@@ -375,7 +479,7 @@ def resub_thermo(outfile_path):
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
     ultratight_dir = os.path.join(parent_directory,parent_name+'_ultratight')
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints = tools.read_infile(outfile_path)
     
     if os.path.exists(ultratight_dir):
         if os.path.exists(os.path.join(ultratight_dir,'scr','optim.xyz')):
@@ -401,30 +505,9 @@ def resub_thermo(outfile_path):
 
 def prep_derivative_jobs(directory,list_of_outfiles):
     
-    def check_original(job):
-        #Returns true if this job is an original job
-        #Returns false if this job is already a derivative job
-        
-        name = os.path.split(job)[-1]
-        name = name.rsplit('.',1)[0]
-        name = name.split('_')
-        
-        if 'solventSP' in name or 'vertEA' in name or 'vertIP' in name or 'thermo' in name or 'kp' in name or 'rm' in name or 'ultratight' in name or 'HFXresampling' in name:
-            return False
-        else:
-            return True
-        
-    
-    jobs = filter(check_original,list_of_outfiles)
-    
-    for job in jobs:
-        results = moltools.read_run(job)
-        if not moltools.apply_geo_check(directory,list_of_outfiles):
-            print job+' Does not appear to have a good geometry! Not generating derivative jobs...'
-            continue
-        
+    for job in list_of_outfiles:
         configure_dict = tools.read_configure(directory,job)
-        
+
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job)
         if configure_dict['vertEA']:
@@ -440,7 +523,6 @@ def prep_derivative_jobs(directory,list_of_outfiles):
         
 def reset(outfile_path):
     #Returns the run to the state it was after a given run
-    #reference runs as integers, starting from zero
     
     pickle_path = outfile_path.rsplit('.',1)[0]+'.pickle'
     if os.path.isfile(pickle_path):
@@ -449,6 +531,13 @@ def reset(outfile_path):
         old_path = os.path.join(os.path.split(outfile_path)[0],'pre_reset')
         if not os.path.isdir(old_path):
             os.mkdir(old_path)
+        
+        #Find all the stdout and stderr files related to previous runs.
+        queue_output = glob.glob(outfile_path.rsplit('.',1)[0]+'.e*')
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.pe*'))
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.po*'))
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.o*'))
+        queue_output = [i for i in queue_output if i[-1] in ['1','2','3','4','5','6','7','8','9','0']]
         
         #remove all files from states after the specified state
         move = []
@@ -460,21 +549,48 @@ def reset(outfile_path):
                 break #break when all scr_? files are found.
                 
         shutil.move(outfile_path,outfile_path[:-4]+'.old') #rename old out so it isn't found in .out searches
+        shutil.move(outfile_path[:-4]+'_jobscript',outfile_path[:-4]+'_oldjob') #rename old jobscript so it isn't thought to be  job that hasn't started yet
         move.append(outfile_path[:-4]+'.old')
+        move.append(outfile_path[:-4]+'.xyz')
+        move.append(outfile_path[:-4]+'.in')
+        move.append(outfile_path[:-4]+'_oldjob')
+        if os.path.isdir(os.path.join(os.path.split(outfile_path)[0],'inscr')):
+            move.append(os.path.join(os.path.split(outfile_path)[0],'inscr'))
+        move.extend(queue_output)
         scr_path = os.path.join(os.path.split(outfile_path)[0],'scr')
         move.append(scr_path)
         for path in move:
             #move the paths to their new location, Random numbers prevent clashes
-            shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
+            try:
+                shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
+            except:
+                print 'No file found for: '+path
             
         
+        #Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run
         history = resub_history()
         history.read(pickle_path)
         outfile = history.outfiles[0]
+        infile = history.infiles[0]
+        jobscript = history.jobscripts[0]
+        xyz = history.xyzs[0]
         writer = open(outfile_path,'w')
         for i in outfile:
             writer.write(i)
         writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'.in','w')
+        for i in infile:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'.xyz','w')
+        for i in xyz:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'_jobscript','w')
+        for i in jobscript:
+            writer.write(i)
+        writer.close()
+        
         shutil.move(scr_path+'_0',scr_path)
         shutil.move(pickle_path,os.path.join(old_path,str(np.random.randint(999999999))+'_resub_history'))
 
@@ -491,21 +607,22 @@ def main():
         print('**********************************')
         print("****** Assessing Job Status ******")
         print('**********************************')
-        
-        configure_dict = tools.read_configure('in place',None)
+        time1 = time.time()
                 
-        number_resubmitted = resub(max_jobs = configure_dict['max_jobs'],max_resub = configure_dict['max_resub']) 
+        number_resubmitted = resub() 
         
         print('**********************************')
         print("******** "+str(number_resubmitted)+" Jobs Submitted ********")
         print('**********************************')
-        print 'sleeping for: '+str(configure_dict['sleep'])
-	sys.stdout.flush()
-       
+        
+        print('job cycle took: '+str(time.time()-time1))
+        configure_dict = tools.read_configure('in place',None)
+        print('sleeping for: '+str(configure_dict['sleep']))
+        sys.stdout.flush()
         time.sleep(configure_dict['sleep']) #sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
         
         #Terminate the script if it is no longer submitting jobs
-        completeness_status,_ = tools.check_completeness()
+        completeness_status = tools.check_completeness()
         active_jobs = completeness_status['Active']
         if len(active_jobs) == 0 and number_resubmitted ==0:
             break
