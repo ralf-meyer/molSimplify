@@ -637,18 +637,19 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
             values = globs.amass()[keys][1]
             prop_dict.update({keys: values})
     elif prop == 'effective_nuclear_charge':  # Uses number of valence electrons
-        if not modifier:
-            at_keys = globs.amass().keys()
-            for keys in at_keys:
-                values = globs.amass()[keys][3]
-                prop_dict.update({keys: values})
-        else:
-            at_keys = globs.amass().keys()
-            for keys in at_keys:
-                values = globs.amass()[keys][3]
-                if keys in modifier.keys():
-                    values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
-                prop_dict.update({keys: values})
+        # if not modifier:
+        at_keys = globs.amass().keys()
+        for keys in at_keys:
+            values = globs.amass()[keys][3]
+            prop_dict.update({keys: values}) 
+        ####### 11/06/2019 -- Adjusted Zeff RACs to not adjust on oxidation state. Confounded with O RACs. #####
+        # # else:
+        #     at_keys = globs.amass().keys()
+        #     for keys in at_keys:
+        #         values = globs.amass()[keys][3]
+        #         if keys in modifier.keys():
+        #             values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
+        #         prop_dict.update({keys: values})
     elif prop == 'ox_nuclear_charge':
         if not modifier:
             print('Error, must give modifier with ox_nuclear_charge')
@@ -1590,8 +1591,8 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+        allowed_strings += ['effective_nuclear_charge']
+        labels_strings += ['Zeff']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
