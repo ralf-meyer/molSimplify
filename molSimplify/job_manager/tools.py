@@ -368,7 +368,7 @@ def read_infile(outfile_path):
     charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,dispersion = inp.wordgrab(['charge ', 'spinmult ','pcm ',
                                                                                         'run ','levelshiftvala ',
                                                                                         'levelshiftvalb ','method ',
-                                                                                        'HFX ', 'basis '],[1,1,0,1,1,1,1,1,1,1],last_line=True)
+                                                                                        'HFX ', 'basis ','dispersion '],[1,1,0,1,1,1,1,1,1,1],last_line=True)
     charge,spinmult = int(charge),int(spinmult)
     if solvent:
         solvent = True
@@ -489,7 +489,7 @@ def read_configure(home_directory,outfile_path):
     return {'solvent':solvent,'vertEA':vertEA,'vertIP':vertIP,'thermo':thermo,'dissociation':dissociation,
             'hfx_resample':hfx_resample,'max_jobs':max_jobs,'max_resub':max_resub,'levela':levela,
             'levelb':levelb,'method':method,'hfx':hfx,'geo_check':geo_check,'sleep':sleep,
-            'job_recovery':job_recovery,dispersion['dispersion']}
+            'job_recovery':job_recovery,'dispersion':dispersion}
 
 def read_charges(PATH):
     #Takes the path to either the outfile or the charge_mull.xls and returns the charges
@@ -997,7 +997,7 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
             text = text[:-1]+['\n',tight_thresholds+'\n','end']
     
     if dispersion:
-    	text = text[-1]+['dispersion'+'\n','end']
+    	text = text[:-1]+['dispersion '+dispersion+'\n','end']
 
     if multibasis:
         multibasis = [line if line.endswith('\n') else line+'\n' for line in multibasis]
