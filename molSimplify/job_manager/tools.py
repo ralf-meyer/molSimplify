@@ -365,10 +365,11 @@ def read_outfile(outfile_path,short_ouput=False):
 def read_infile(outfile_path):
     root = outfile_path.rsplit('.',1)[0]
     inp = textfile(root+'.in')
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,dispersion = inp.wordgrab(['charge ', 'spinmult ','pcm ',
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,dispersion,coordinates = inp.wordgrab(['charge ', 'spinmult ','pcm ',
                                                                                         'run ','levelshiftvala ',
                                                                                         'levelshiftvalb ','method ',
-                                                                                        'HFX ', 'basis ','dispersion '],[1,1,0,1,1,1,1,1,1,1],last_line=True)
+                                                                                        'HFX ', 'basis ','dispersion ',
+                                                                                        'coordinates '],[1,1,0,1,1,1,1,1,1,1,1],last_line=True)
     charge,spinmult = int(charge),int(spinmult)
     if solvent:
         solvent = True
@@ -394,7 +395,7 @@ def read_infile(outfile_path):
     
     if constraints and multibasis:
         raise Exception('The current implementation of tools.read_infile() is known to behave poorly when an infile specifies both a multibasis and constraints')
-    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion
+    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates
 
 #Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
 #The global configure file should be in the same directory where resub() is called
