@@ -976,6 +976,9 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
             'charge '+str(charge)+'\n',
             'method '+method+'\n',
             'new_minimizer yes\n',
+            'ml_prop yes\n',
+            'poptype mulliken\n',
+            'bond_order_list yes\n',
             'end']
     
     if custom_line:
