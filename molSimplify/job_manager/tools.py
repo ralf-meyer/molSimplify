@@ -1051,6 +1051,7 @@ def write_jobscript(name,custom_line = None,alternate_infile = False,alternate_c
             '# -fin '+alternate_infile+'.in\n',
             '# -fin ' + coordinates + '\n',
             '# -fout scr/\n',
+            'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n',
             'terachem '+alternate_infile+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
     if custom_line:
