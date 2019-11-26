@@ -27,6 +27,7 @@ requirements:
     - pandas
     - keras
     - scipy
+    - pyyaml
     
 
 test:
