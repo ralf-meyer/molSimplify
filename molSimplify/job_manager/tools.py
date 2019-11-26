@@ -976,6 +976,9 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
             'charge '+str(charge)+'\n',
             'method '+method+'\n',
             'new_minimizer yes\n',
+            'ml_prop yes\n',
+            'poptype mulliken\n',
+            'bond_order_list yes\n',
             'end']
     
     if custom_line:
@@ -1048,6 +1051,7 @@ def write_jobscript(name,custom_line = None,alternate_infile = False,alternate_c
             '# -fin '+alternate_infile+'.in\n',
             '# -fin ' + coordinates + '\n',
             '# -fout scr/\n',
+            'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n',
             'terachem '+alternate_infile+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
     if custom_line:
