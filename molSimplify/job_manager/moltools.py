@@ -16,7 +16,7 @@ from molSimplify.Classes.ligand import ligand_breakdown
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
     results = tools.read_outfile(outfile_PATH)
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = tools.read_infile(outfile_PATH)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates = tools.read_infile(outfile_PATH)
     results['levela'],results['levelb'] = levelshifta,levelshiftb
     results['method'],results['hfx'] = method,hfx
     results['constraints'] = constraints
@@ -172,7 +172,7 @@ def prep_ligand_breakown(outfile_path):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = tools.read_infile(outfile_path)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates = tools.read_infile(outfile_path)
     charge = int(charge)
     spinmult = int(spinmult)    
     

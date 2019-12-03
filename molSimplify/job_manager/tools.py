@@ -67,18 +67,21 @@ def list_active_jobs(ids = False):
     #  @return A list of active jobs for the current user. By job name
     
     job_report = textfile() 
-    job_report.lines = call_bash("qstat -r")
+    try:
+        job_report.lines = call_bash("qstat -r")
+    except:
+        job_report.lines = []
     
     names = job_report.wordgrab('jobname:',2)[0]
     
     if ids:
         job_ids = []
-        for name in names:
-            for counter in range(len(job_report.lines)):
-                if name in job_report.lines[counter]:
-                    job_id = job_report.lines[counter-1].split()[0]
-                    job_ids.append(job_id)
+        line_indices_of_jobnames = job_report.wordgrab('jobname:',2,matching_index=True)[0]
+        for line_index in line_indices_of_jobnames:
+            job_ids.append(int(job_report.lines[line_index-1].split()[0]))
         if len(names) != len(job_ids):
+            print len(names)
+            print len(job_ids)
             raise Exception('An error has occurred in listing active jobs!')
         return names,job_ids
         
@@ -95,11 +98,7 @@ def check_completeness(directory = 'in place', max_resub = 5):
     for outfile,tmp in results_tmp:
         results_dict[outfile]=tmp
         
-    try:
-        active_jobs = list_active_jobs()
-    except:
-        active_jobs = [] #Try/accept necesssary to use locally
-        print('WARNING, active jobs list not queried!')
+    active_jobs = list_active_jobs()
     
     
     def check_finished(path,results_dict=results_dict):
@@ -173,12 +172,13 @@ def check_completeness(directory = 'in place', max_resub = 5):
             return True
         else:
             return False
-        
+    
     active_jobs = filter(check_active,outfiles)
     finished = filter(check_finished,outfiles)
     needs_resub = filter(check_needs_resub,outfiles)
     waiting = filter(check_waiting,outfiles)
     spin_contaminated = filter(check_spin_contaminated,outfiles)
+    all_scf_errors = filter(check_scf_error,outfiles)
     thermo_grad_errors = filter(check_thermo_grad_error,outfiles)
     chronic_errors = filter(check_chronic_failure,outfiles)
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
@@ -207,9 +207,11 @@ def check_completeness(directory = 'in place', max_resub = 5):
             'Spin_contaminated':spin_contaminated, 'Chronic_error':chronic_errors, 
             'Thermo_grad_error':thermo_grad_errors, 'Waiting':waiting, 'SCF_Error':scf_errors}
     
+    #There are two special categories which operate a bit differently: waiting "SCF_Errors_Including_Active"
     #inverted_results = invert_dictionary(results)
     waiting = [{i:grab_waiting(i)} for i in waiting]
     results['Waiting'] = waiting
+    results['SCF_Errors_Including_Active']=all_scf_errors
     
     return results
     
@@ -1051,6 +1053,7 @@ def write_jobscript(name,custom_line = None,alternate_infile = False,alternate_c
             '# -fin '+alternate_infile+'.in\n',
             '# -fin ' + coordinates + '\n',
             '# -fout scr/\n',
+            'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n',
             'terachem '+alternate_infile+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
