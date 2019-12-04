@@ -259,6 +259,69 @@ def check_original(job):
         return False
     else:
         return True
+def extract_optimized_geo(PATH, custom_name = False):
+    #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
+    #The file is written to the same directory as contained optim.xyz
+    
+    optim = open(PATH,'r')
+    lines = optim.readlines()
+    optim.close()
+    lines.reverse()
+    if len(lines) == 0:
+        lines = []
+        print('optim.xyz is empty for: ' +PATH)
+    else:
+        for i in range(len(lines)):
+            if 'frame' in lines[i].split():
+                break
+        lines = lines[:i+2]
+        lines.reverse()
+    homedir = os.path.split(PATH)[0]
+
+    if custom_name:
+        basedir = os.path.split(homedir)[0]
+        xyz = glob.glob(os.path.join(basedir,'*.xyz'))[0]
+        xyz = os.path.split(xyz)[-1]
+        name = xyz[:-4]+'_optimized.xyz'
+    else:
+        name = 'optimized.xyz'
+    
+    optimized = open(os.path.join(homedir,name),'w')
+    for i in lines:
+        optimized.write(i)
+    optimized.close()
+    
+    return lines
+    
+def pull_optimized_geos(PATHs = []):
+    #Given a PATH or list of PATHs to optim.xyz files, these will grab the optimized geometries and move them into a local folder called optimized_geos
+    if type(PATHs) != list:
+        PATHs = [PATHs]
+    if len(PATHs) == 0:
+        PATHs = find('optim.xyz') #Default behaviour will pull all optims in the current directory
+        
+    if os.path.isdir('opimized_geos'):
+        raise Exception('optimized_geos already exists!')
+    
+    os.mkdir('optimized_geos')
+    home = os.getcwd()
+    for Path in PATHs:
+        extract_optimized_geo(Path)
+        scr_path = os.path.split(Path)[0]
+        homedir = os.path.split(scr_path)[0]
+        initial_xyz = glob.glob(os.path.join(homedir,'*.xyz'))
+        if len(initial_xyz) != 1:
+            print 'Name could not be identified for: '+Path
+            print 'Naming with a random 6 digit number'
+            name = str(np.random.randint(999999))+'_optimized.xyz'
+        else:
+            initial_xyz = initial_xyz[0]
+            name = os.path.split(initial_xyz)[-1]
+            name = name.rsplit('.',1)[0]
+            name += '_optimized.xyz'
+        
+        shutil.move(os.path.join(os.path.split(Path)[0],'optimized.xyz'),os.path.join(home,'optimized_geos',name))
+
 
 def read_outfile(outfile_path,short_ouput=False):
     ## Reads TeraChem and ORCA outfiles
@@ -552,6 +615,139 @@ def create_summary(directory='in place'):
     summary = pd.DataFrame(results)
     
     return summary
+
+def write_input(input_dictionary = None, name = None,charge = None,spinmult,
+                run_type = 'energy', method = 'b3lyp', solvent = False, 
+                guess = False, custom_line = None, levelshifta = 0.25, levelshiftb = 0.25,
+                convergence_thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
+                multibasis = False, coordinates = False, dispersion = False):
+    #Writes a generic terachem input file
+    #The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
+    #"Custom line" can be used to add additional lines to the infile and is not treated by an input dictionary
+    #Note that the infile dictionary can have an additional key, "name", which is not poulated by read_infile()
+    #If name is specified, the coordinates are generated based on the name, rather than based on the coordinates variable
+    
+    #If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
+    if input_dictionary:
+            for prop,prop_name in zip([charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,
+                          basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates],
+                          ['charge','spinmult','solvent','run_type','levelshifta','levelshiftb','method','hfx',
+                           'basis','convergence_thresholds','multibasis','constraints','dispersion','coordinates']):
+                if prop_name in input_dictionary.keys():
+                    prop = input_dictionary[name]
+                if 'name' in input_dictionary.keys():
+                    name = input_dictionary['name']
+    if not charge or not spinmult or (not name and not coordinates):
+        print('Name: '+name)
+        print('Charge: '+charge)
+        print('Spinmult: '+spinmult)
+        raise Exception('Minimum parameters not specified for writing infile')
+
+    if spinmult != 1:
+        method = 'u'+method
+
+    if name:
+        coordinates = name+'.xyz'
+        
+    input_file = open(name+'.in','w')
+    text = ['levelshiftvalb '+str(levelshiftb)+'\n',
+            'levelshiftvala '+str(levelshifta)+'\n',
+            'nbo yes\n',
+            'run '+run_type+'\n',
+            'scf diis+a\n',
+            'coordinates '+coordinates+'\n',
+            'levelshift yes\n',
+            'gpus 1\n',
+            'spinmult '+str(spinmult) +'\n',
+            'scrdir ./scr\n',
+            'basis '+basis+'\n',
+            'timings yes\n',
+            'charge '+str(charge)+'\n',
+            'method '+method+'\n',
+            'new_minimizer yes\n',
+            'ml_prop yes\n',
+            'poptype mulliken\n',
+            'bond_order_list yes\n',
+            'end']
+    
+    if custom_line:
+        text = text[:15]+[custom_line+'\n']+text[15:]
+    if guess:
+        if type(guess) == bool:
+            if spinmult == 1:
+                guess = 'c0'
+            else:
+                guess = 'ca0 cb0'
+        text = text[:-1] + ['guess ' + guess + '\n',
+                            'end']
+    if run_type != 'ts':
+        text = text[:-1] + ['maxit 500\n',
+                            'end']
+                            
+    if type(convergence_thresholds) == list:
+        if convergence_thresholds[0]:
+            convergence_thresholds = [line if line.endswith('\n') else line+'\n' for line in convergence_thresholds]
+            tight_thresholds ="min_converge_gmax "+thresholds[0]+"min_converge_grms "+thresholds[1]+"min_converge_dmax "+thresholds[2]+"min_converge_drms "+thresholds[3]+"min_converge_e "+thresholds[4]+"convthre "+thresholds[5]
+            text = text[:-1]+['\n',tight_thresholds,'end']
+    
+    if dispersion:
+        text = text[:-1]+['dispersion '+dispersion+'\n','end']
+
+    if multibasis:
+        multibasis = [line if line.endswith('\n') else line+'\n' for line in multibasis]
+        text = text[:-1] + ['\n','$multibasis\n'] + multibasis + ['$end\n','end']
+        
+    if constraints:
+        constraints = [line if line.endswith('\n') else line+'\n' for line in constraints]
+        text = text[:-1] + ['\n','$constraint_freeze\n'] +constraints + ['$end\n','end']
+
+    if type(hfx) == int or type(hfx) == float:
+        text = text[:-1] + ['\n',
+                            'HFX '+str(hfx)+'\n',
+                            'end']
+                            
+    if solvent: #Adds solvent correction, if requested
+        text = text[:-1] + ['\n',
+                            'pcm cosmo\n',
+                            'epsilon 80\n',
+                            'pcm_radii read\n',
+                            'pcm_radii_file /home/harperd/pcm_radii\n',
+                            'end']
+    for lines in text:
+        input_file.write(lines)
+    input_file.close()
+    
+def write_jobscript(name,custom_line = None,time_limit='96:00:00',sleep= False):
+    #Writes a generic terachem jobscript
+    #custom line allows the addition of extra lines just before the export statement
+        
+    jobscript = open(name+'_jobscript','w')
+    text = ['#$ -S /bin/bash\n',
+            '#$ -N '+name+'\n',
+            '#$ -cwd\n',
+            '#$ -R y\n',
+            '#$ -l h_rt='+time_limit+'\n',
+            '#$ -l h_rss=8G\n',
+            '#$ -q gpus|gpusnew|gpusnewer\n',
+            '#$ -l gpus=1\n',
+            '#$ -pe smp 1\n',
+            '# -fin '+name+'.in\n',
+            '# -fin ' +name+'.xyz\n',
+            '# -fout scr/\n',
+            'source /etc/profile.d/modules.sh\n',
+            'module load terachem/tip\n',
+            'export OMP_NUM_THREADS=1\n',
+            'terachem '+alternate_infile+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
+    if custom_line:
+        if type(custom_line) == list:
+            text = text[:12]+custom_line+text[12:]
+        else:
+            text = text[:12]+[custom_line+'\n']+text[12:]
+    if sleep:
+        text = text+['sleep 300\n'] #For very short jobs, sleep for 5 minutes after completion to keep the queue happy
+    for i in text:
+        jobscript.write(i)
+    jobscript.close()
 
 
 def prep_vertical_ip(path):
@@ -915,199 +1111,3 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
     os.chdir(home)
     
     return jobscripts
-
-def extract_optimized_geo(PATH, custom_name = False):
-    #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
-    #The file is written to the same directory as contained optim.xyz
-    
-    optim = open(PATH,'r')
-    lines = optim.readlines()
-    optim.close()
-    lines.reverse()
-    if len(lines) == 0:
-        lines = []
-        print('optim.xyz is empty for: ' +PATH)
-    else:
-        for i in range(len(lines)):
-            if 'frame' in lines[i].split():
-                break
-        lines = lines[:i+2]
-        lines.reverse()
-    homedir = os.path.split(PATH)[0]
-
-    if custom_name:
-        basedir = os.path.split(homedir)[0]
-        xyz = glob.glob(os.path.join(basedir,'*.xyz'))[0]
-        xyz = os.path.split(xyz)[-1]
-        name = xyz[:-4]+'_optimized.xyz'
-    else:
-        name = 'optimized.xyz'
-    
-    optimized = open(os.path.join(homedir,name),'w')
-    for i in lines:
-        optimized.write(i)
-    optimized.close()
-    
-    return lines
-    
-def pull_optimized_geos(PATHs = []):
-    #Given a PATH or list of PATHs to optim.xyz files, these will grab the optimized geometries and move them into a local folder called optimized_geos
-    if type(PATHs) != list:
-        PATHs = [PATHs]
-    if len(PATHs) == 0:
-        PATHs = find('optim.xyz') #Default behaviour will pull all optims in the current directory
-        
-    if os.path.isdir('opimized_geos'):
-        raise Exception('optimized_geos already exists!')
-    
-    os.mkdir('optimized_geos')
-    home = os.getcwd()
-    for Path in PATHs:
-        extract_optimized_geo(Path)
-        scr_path = os.path.split(Path)[0]
-        homedir = os.path.split(scr_path)[0]
-        initial_xyz = glob.glob(os.path.join(homedir,'*.xyz'))
-        if len(initial_xyz) != 1:
-            print 'Name could not be identified for: '+Path
-            print 'Naming with a random 6 digit number'
-            name = str(np.random.randint(999999))+'_optimized.xyz'
-        else:
-            initial_xyz = initial_xyz[0]
-            name = os.path.split(initial_xyz)[-1]
-            name = name.rsplit('.',1)[0]
-            name += '_optimized.xyz'
-        
-        shutil.move(os.path.join(os.path.split(Path)[0],'optimized.xyz'),os.path.join(home,'optimized_geos',name))
-    
-def write_input(input_dictionary = None, name = None,charge = None,spinmult,
-                run_type = 'energy', method = 'b3lyp', solvent = False, 
-                guess = False, custom_line = None, levelshifta = 0.25, levelshiftb = 0.25,
-                convergence_thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
-                multibasis = False, coordinates = False, dispersion = False):
-    #Writes a generic terachem input file
-    #The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
-    #"Custom line" can be used to add additional lines to the infile and is not treated by an input dictionary
-    #Note that the infile dictionary can have an additional key, "name", which is not poulated by read_infile()
-    #If name is specified, the coordinates are generated based on the name, rather than based on the coordinates variable
-    
-    #If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
-    if input_dictionary:
-            for prop,prop_name in zip([charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,
-                          basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates],
-                          ['charge','spinmult','solvent','run_type','levelshifta','levelshiftb','method','hfx',
-                           'basis','convergence_thresholds','multibasis','constraints','dispersion','coordinates']):
-                if prop_name in input_dictionary.keys():
-                    prop = input_dictionary[name]
-                if 'name' in input_dictionary.keys():
-                    name = input_dictionary['name']
-    if not charge or not spinmult or (not name and not coordinates):
-        print('Name: '+name)
-        print('Charge: '+charge)
-        print('Spinmult: '+spinmult)
-        raise Exception('Minimum parameters not specified for writing infile')
-
-    if spinmult != 1:
-        method = 'u'+method
-
-    if name:
-        coordinates = name+'.xyz'
-        
-    input_file = open(name+'.in','w')
-    text = ['levelshiftvalb '+str(levelshiftb)+'\n',
-            'levelshiftvala '+str(levelshifta)+'\n',
-            'nbo yes\n',
-            'run '+run_type+'\n',
-            'scf diis+a\n',
-            'coordinates '+coordinates+'\n',
-            'levelshift yes\n',
-            'gpus 1\n',
-            'spinmult '+str(spinmult) +'\n',
-            'scrdir ./scr\n',
-            'basis '+basis+'\n',
-            'timings yes\n',
-            'charge '+str(charge)+'\n',
-            'method '+method+'\n',
-            'new_minimizer yes\n',
-            'ml_prop yes\n',
-            'poptype mulliken\n',
-            'bond_order_list yes\n',
-            'end']
-    
-    if custom_line:
-        text = text[:15]+[custom_line+'\n']+text[15:]
-    if guess:
-        if type(guess) == bool:
-            if spinmult == 1:
-                guess = 'c0'
-            else:
-                guess = 'ca0 cb0'
-        text = text[:-1] + ['guess ' + guess + '\n',
-                            'end']
-    if run_type != 'ts':
-        text = text[:-1] + ['maxit 500\n',
-                            'end']
-                            
-    if type(convergence_thresholds) == list:
-        if convergence_thresholds[0]:
-            convergence_thresholds = [line if line.endswith('\n') else line+'\n' for line in convergence_thresholds]
-            tight_thresholds ="min_converge_gmax "+thresholds[0]+"min_converge_grms "+thresholds[1]+"min_converge_dmax "+thresholds[2]+"min_converge_drms "+thresholds[3]+"min_converge_e "+thresholds[4]+"convthre "+thresholds[5]
-            text = text[:-1]+['\n',tight_thresholds,'end']
-    
-    if dispersion:
-    	text = text[:-1]+['dispersion '+dispersion+'\n','end']
-
-    if multibasis:
-        multibasis = [line if line.endswith('\n') else line+'\n' for line in multibasis]
-        text = text[:-1] + ['\n','$multibasis\n'] + multibasis + ['$end\n','end']
-        
-    if constraints:
-        constraints = [line if line.endswith('\n') else line+'\n' for line in constraints]
-        text = text[:-1] + ['\n','$constraint_freeze\n'] +constraints + ['$end\n','end']
-
-    if type(hfx) == int or type(hfx) == float:
-        text = text[:-1] + ['\n',
-                            'HFX '+str(hfx)+'\n',
-                            'end']
-                            
-    if solvent: #Adds solvent correction, if requested
-        text = text[:-1] + ['\n',
-                            'pcm cosmo\n',
-                            'epsilon 80\n',
-                            'pcm_radii read\n',
-                            'pcm_radii_file /home/harperd/pcm_radii\n',
-                            'end']
-    for lines in text:
-        input_file.write(lines)
-    input_file.close()
-    
-def write_jobscript(name,custom_line = None,time_limit='96:00:00',sleep= False):
-    #Writes a generic terachem jobscript
-    #custom line allows the addition of extra lines just before the export statement
-        
-    jobscript = open(name+'_jobscript','w')
-    text = ['#$ -S /bin/bash\n',
-            '#$ -N '+name+'\n',
-            '#$ -cwd\n',
-            '#$ -R y\n',
-            '#$ -l h_rt='+time_limit+'\n',
-            '#$ -l h_rss=8G\n',
-            '#$ -q gpus|gpusnew|gpusnewer\n',
-            '#$ -l gpus=1\n',
-            '#$ -pe smp 1\n',
-            '# -fin '+name+'.in\n',
-            '# -fin ' +name+'.xyz\n',
-            '# -fout scr/\n',
-            'source /etc/profile.d/modules.sh\n',
-            'module load terachem/tip\n',
-            'export OMP_NUM_THREADS=1\n',
-            'terachem '+alternate_infile+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
-    if custom_line:
-        if type(custom_line) == list:
-            text = text[:12]+custom_line+text[12:]
-        else:
-            text = text[:12]+[custom_line+'\n']+text[12:]
-    if sleep:
-        text = text+['sleep 300\n'] #For very short jobs, sleep for 5 minutes after completion to keep the queue happy
-    for i in text:
-        jobscript.write(i)
-    jobscript.close()
