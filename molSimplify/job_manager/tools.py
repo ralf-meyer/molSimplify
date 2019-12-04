@@ -365,18 +365,28 @@ def read_outfile(outfile_path,short_ouput=False):
     return return_dict
 
 def read_infile(outfile_path):
+    #Takes the path to either the outfile or the infile of a job
+    #Returns a dictionary of the job settings included in that infile
+
     root = outfile_path.rsplit('.',1)[0]
     inp = textfile(root+'.in')
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,dispersion,coordinates = inp.wordgrab(['charge ', 'spinmult ','pcm ',
-                                                                                        'run ','levelshiftvala ',
-                                                                                        'levelshiftvalb ','method ',
-                                                                                        'HFX ', 'basis ','dispersion ',
-                                                                                        'coordinates '],[1,1,0,1,1,1,1,1,1,1,1],last_line=True)
+    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,dispersion,coordinates,guess = inp.wordgrab(
+                                                                                        ['charge ', 'spinmult ','pcm ',
+                                                                                         'run ','levelshiftvala ',
+                                                                                         'levelshiftvalb ','method ',
+                                                                                         'HFX ', 'basis ','dispersion ',
+                                                                                         'coordinates ','guess '],
+                                                                                        [1,1,0,1,1,1,1,1,1,1,1,1],
+                                                                                         last_line=True)
     charge,spinmult = int(charge),int(spinmult)
     if solvent:
         solvent = True
     else:
         solvent = False
+    if guess:
+        guess = True
+    else:
+        guess = False
     if method[0] == 'u':
         method = method[1:]
         
@@ -397,7 +407,15 @@ def read_infile(outfile_path):
     
     if constraints and multibasis:
         raise Exception('The current implementation of tools.read_infile() is known to behave poorly when an infile specifies both a multibasis and constraints')
-    return charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates
+
+    return_dict = {}
+
+    for prop,prop_name in zip([charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,
+                          basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates,guess],
+                          ['charge','spinmult','solvent','run_type','levelshifta','levelshiftb','method','hfx',
+                           'basis','convergence_thresholds','multibasis','constraints','dispersion','coordinates','guess']):
+        return_dict[prop_name] = prop
+    return return_dict
 
 #Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
 #The global configure file should be in the same directory where resub() is called
@@ -536,7 +554,7 @@ def create_summary(directory='in place'):
     return summary
 
 
-def prep_vertical_ip(path, solvent = False):
+def prep_vertical_ip(path):
     #Given a path to the outfile of a finished run, this preps the files for a corresponding vertical IP run
     #Returns a list of the PATH(s) to the jobscript(s) to start the vertical IP calculations(s)
     home = os.getcwd()
@@ -546,7 +564,7 @@ def prep_vertical_ip(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
         
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = read_infile(path)
+    infile_dict = read_infile(path)
     
     if spin == 1:
         new_spin = [2]
@@ -570,10 +588,11 @@ def prep_vertical_ip(path, solvent = False):
             
             shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
             
-            write_input(name,charge+1,calc,solvent = solvent, guess = False, 
-                run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,multibasis=multibasis,
-                constraints = constraints,dispersion=dispersion)
+            local_infile_dict = copy.copy(infile_dict)
+            local_infile_dict['charge'],local_infile_dict['guess'] = infile_dict['charge']+1,False
+            local_infile_dict['run_type'],local_infile_dict['spinmult'] = 'energy',calc
+            local_infile_dict['name'] = name
+            write_input(local_infile_dict)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -593,7 +612,7 @@ def prep_vertical_ea(path, solvent = False):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = read_infile(path)
+    infile_dict = read_infile(path)
     
     if spin == 1:
         new_spin = [2]
@@ -617,10 +636,12 @@ def prep_vertical_ea(path, solvent = False):
             
             shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
             
-            write_input(name,charge-1,calc,solvent = solvent, guess = False, 
-                run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis, 
-                multibasis = multibasis, constraints = constraints,dispersion=dispersion)
+            local_infile_dict = copy.copy(infile_dict)
+            local_infile_dict['charge'],local_infile_dict['guess'] = infile_dict['charge']-1,False
+            local_infile_dict['run_type'],local_infile_dict['spinmult'] = 'energy',calc
+            local_infile_dict['name'] = name
+
+            write_input(local_infile_dict)
             write_jobscript(name)
             
             jobscripts.append(os.path.join(PATH,name+'_jobscript'))
@@ -640,7 +661,7 @@ def prep_solvent_sp(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = read_infile(path)
+    infile_dict = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -657,18 +678,20 @@ def prep_solvent_sp(path):
     os.chdir(PATH)    
     
     shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
-    if spin == 1:
+    if infile_dict['spinmult'] == 1:
         shutil.copyfile(os.path.join(base,'scr','c0'),os.path.join(PATH,'c0'))
         write_jobscript(name,custom_line = '# -fin c0')
-    if spin != 1:
+    if infile_dict['spinmult'] != 1:
         shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
         write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
-    write_input(name,charge,spin,solvent = True, guess = True, 
-                run_type = 'energy', method = method, levela = levelshifta, 
-                levelb = levelshiftb, hfx = hfx,thresholds = convergence_thresholds, basis = basis, 
-                multibasis = multibasis, constraints = constraints,dispersion=dispersion)
+    local_infile_dict = copy.copy(infile_dict)
+    local_infile_dict['solvent'],local_infile_dict['guess'] = True,True
+    local_infile_dict['run_type'] = 'energy'
+    local_infile_dict['name'] = name
+
+    write_input(local_infile_dict)
     
     os.chdir(home)
     
@@ -685,7 +708,7 @@ def prep_thermo(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = read_infile(path)
+    infile_dict = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -710,10 +733,12 @@ def prep_thermo(path):
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
         write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
-    write_input(name,charge,spin,solvent = solvent, guess = True, 
-                run_type = 'frequencies', method = method, levela = levelshifta, 
-                levelb = levelshiftb, hfx = hfx, basis = basis, multibasis = multibasis,
-                constraints = constraints,dispersion=dispersion)
+    local_infile_dict = copy.copy(infile_dict)
+    local_infile_dict['guess'] = True
+    local_infile_dict['run_type'] = 'frequencies'
+    local_infile_dict['name'] = name
+
+    write_input(local_infile_dict)
     
     os.chdir(home)
     
@@ -730,7 +755,7 @@ def prep_ultratight(path):
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion = read_infile(path)
+    infile_dict = read_infile(path)
     
     base = os.path.split(path)[0]
     
@@ -759,10 +784,12 @@ def prep_ultratight(path):
         
         criteria = ['2.25e-04','1.5e-04','0.9e-03','0.6e-03','0.5e-06','1.5e-05']
         
-        write_input(name,charge,spin,solvent = solvent, guess = True, 
-                run_type = run_type, method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, 
-                multibasis = multibasis, constraints = constraints,dispersion=dispersion)
+        local_infile_dict = copy.copy(infile_dict)
+        local_infile_dict['guess'] = True
+        local_infile_dict['convergence_thresholds'] = criteria
+        local_infile_dict['name'] = name
+
+        write_input(local_infile_dict)
         
         #Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
         f = open(name+'.out','w')
@@ -774,12 +801,16 @@ def prep_ultratight(path):
     
     else: #This has been run before, further tighten the convergence criteria
         os.chdir(PATH)
-        charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,criteria,multibasis,constraints,dispersion = read_infile(os.path.join(PATH,name+'.out'))
-        criteria = [str(i/2.) for i in criteria]
+        infile_dict = read_infile(os.path.join(PATH,name+'.out'))
+        criteria = [str(float(i)/2.) for i in local_infile_dict['convergence_thresholds']]
         
-        write_input(name,charge,spin,solvent = solvent, guess = True, 
-                run_type = run_type, method = method, levela = levelshifta, 
-                levelb = levelshiftb, thresholds = criteria, hfx = hfx, basis = basis, multibasis = multibasis,constraints = constraints,dispersion=dispersion)
+
+        local_infile_dict = copy.copy(infile_dict)
+        local_infile_dict['guess'] = True
+        local_infile_dict['convergence_thresholds'] = criteria
+        local_infile_dict['name'] = name
+        write_input(local_infile_dict)
+
         tools.extract_optimized_geo(os.path.join(PATH,'scr','optim.xyz'))
         shutil.copy(os.path.join(PATH,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
         
@@ -800,12 +831,12 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     #Check the state of the calculation and ensure than hfx resampling is valid 
-    charge,spin,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion= read_infile(path)
+    infile_dict = read_infile(path)
     if method != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
-    if not hfx:
-        hfx = 20
-    if hfx not in hfx_values:
+    if not infile_dict['hfx']:
+        infile_dict['hfx'] = 20
+    if infile_dict['hfx'] not in hfx_values:
         raise Exception('HFX resampling list does not contain the original hfx value!')
     
     #Now, start generating the base directory to hold all the hfx resampling values
@@ -874,10 +905,11 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
             shutil.copyfile(os.path.join(source_dir,'scr','cb0'),os.path.join('cb0'))
             write_jobscript(subname,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
     
-        write_input(subname,charge,spin,solvent = solvent, guess = True, 
-            run_type = run_type, method = method, levela = levelshifta, 
-            levelb = levelshiftb, hfx = hfx/100. ,thresholds = convergence_thresholds, basis = basis, 
-            multibasis = multibasis, constraints = constraints,dispersion = dispersion)
+        local_infile_dict = copy.copy(infile_dict)
+        local_infile_dict['guess'] = True
+        local_infile_dict['hfx'] = hfx/100.
+        local_infile_dict['name'] = subname
+        write_input(local_infile_dict)
         jobscripts.append(os.path.join(os.getcwd(),subname+'_jobscript'))
     
     os.chdir(home)
@@ -947,24 +979,42 @@ def pull_optimized_geos(PATHs = []):
         
         shutil.move(os.path.join(os.path.split(Path)[0],'optimized.xyz'),os.path.join(home,'optimized_geos',name))
     
-def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solvent = False, 
-                guess = False, custom_line = None, levela = 0.25, levelb = 0.25,
-                thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
-                multibasis = False, alternate_coordinates = False, dispersion = False):
+def write_input(input_dictionary = None, name = None,charge = None,spinmult,
+                run_type = 'energy', method = 'b3lyp', solvent = False, 
+                guess = False, custom_line = None, levelshifta = 0.25, levelshiftb = 0.25,
+                convergence_thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
+                multibasis = False, coordinates = False, dispersion = False):
     #Writes a generic terachem input file
-    #solvent indicates whether to set solvent calculations True or False
+    #The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
+    #"Custom line" can be used to add additional lines to the infile and is not treated by an input dictionary
+    #Note that the infile dictionary can have an additional key, "name", which is not poulated by read_infile()
+    #If name is specified, the coordinates are generated based on the name, rather than based on the coordinates variable
     
+    #If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
+    if input_dictionary:
+            for prop,prop_name in zip([charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,
+                          basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates],
+                          ['charge','spinmult','solvent','run_type','levelshifta','levelshiftb','method','hfx',
+                           'basis','convergence_thresholds','multibasis','constraints','dispersion','coordinates']):
+                if prop_name in input_dictionary.keys():
+                    prop = input_dictionary[name]
+                if 'name' in input_dictionary.keys():
+                    name = input_dictionary['name']
+    if not charge or not spinmult or (not name and not coordinates):
+        print('Name: '+name)
+        print('Charge: '+charge)
+        print('Spinmult: '+spinmult)
+        raise Exception('Minimum parameters not specified for writing infile')
+
     if spinmult != 1:
         method = 'u'+method
 
-    if alternate_coordinates:
-        coordinates = alternate_coordinates
-    else:
+    if name:
         coordinates = name+'.xyz'
         
     input_file = open(name+'.in','w')
-    text = ['levelshiftvalb '+str(levelb)+'\n',
-            'levelshiftvala '+str(levela)+'\n',
+    text = ['levelshiftvalb '+str(levelshiftb)+'\n',
+            'levelshiftvala '+str(levelshifta)+'\n',
             'nbo yes\n',
             'run '+run_type+'\n',
             'scf diis+a\n',
@@ -997,10 +1047,11 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
         text = text[:-1] + ['maxit 500\n',
                             'end']
                             
-    if type(thresholds) == list:
-        if thresholds[0]:
-            tight_thresholds ="min_converge_gmax "+thresholds[0]+"\nmin_converge_grms "+thresholds[1]+"\nmin_converge_dmax "+thresholds[2]+"\nmin_converge_drms "+thresholds[3]+"\nmin_converge_e "+thresholds[4]+"\nconvthre "+thresholds[5]
-            text = text[:-1]+['\n',tight_thresholds+'\n','end']
+    if type(convergence_thresholds) == list:
+        if convergence_thresholds[0]:
+            convergence_thresholds = [line if line.endswith('\n') else line+'\n' for line in convergence_thresholds]
+            tight_thresholds ="min_converge_gmax "+thresholds[0]+"min_converge_grms "+thresholds[1]+"min_converge_dmax "+thresholds[2]+"min_converge_drms "+thresholds[3]+"min_converge_e "+thresholds[4]+"convthre "+thresholds[5]
+            text = text[:-1]+['\n',tight_thresholds,'end']
     
     if dispersion:
     	text = text[:-1]+['dispersion '+dispersion+'\n','end']
@@ -1029,16 +1080,9 @@ def write_input(name,charge,spinmult,run_type = 'energy', method = 'b3lyp', solv
         input_file.write(lines)
     input_file.close()
     
-def write_jobscript(name,custom_line = None,alternate_infile = False,alternate_coordinates = False,time_limit='96:00:00',sleep= False):
+def write_jobscript(name,custom_line = None,time_limit='96:00:00',sleep= False):
     #Writes a generic terachem jobscript
     #custom line allows the addition of extra lines just before the export statement
-    if not alternate_infile:
-        alternate_infile = name
-        
-    if alternate_coordinates:
-        coordinates = alternate_coordinates
-    else:
-        coordinates = name+'.xyz'
         
     jobscript = open(name+'_jobscript','w')
     text = ['#$ -S /bin/bash\n',
@@ -1050,8 +1094,8 @@ def write_jobscript(name,custom_line = None,alternate_infile = False,alternate_c
             '#$ -q gpus|gpusnew|gpusnewer\n',
             '#$ -l gpus=1\n',
             '#$ -pe smp 1\n',
-            '# -fin '+alternate_infile+'.in\n',
-            '# -fin ' + coordinates + '\n',
+            '# -fin '+name+'.in\n',
+            '# -fin ' +name+'.xyz\n',
             '# -fout scr/\n',
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',

@@ -16,10 +16,10 @@ from molSimplify.Classes.ligand import ligand_breakdown
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
     results = tools.read_outfile(outfile_PATH)
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates = tools.read_infile(outfile_PATH)
-    results['levela'],results['levelb'] = levelshifta,levelshiftb
-    results['method'],results['hfx'] = method,hfx
-    results['constraints'] = constraints
+    infile_dict = tools.read_infile(outfile_PATH)
+    results['levela'],results['levelb'] = infile_dict['levelshifta'],infile_dict['levelshiftb']
+    results['method'],results['hfx'] = infile_dict['method'],infile_dict['hfx']
+    results['constraints'] = infile_dict['constraints']
     
     
     optim_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','optim.xyz')
@@ -172,17 +172,17 @@ def prep_ligand_breakown(outfile_path):
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates = tools.read_infile(outfile_path)
-    charge = int(charge)
-    spinmult = int(spinmult)    
+    infile_dict = tools.read_infile(outfile_path)
+    charge = int(infile_dict['charge'])
+    spinmult = int(infile_dict['spinmult'])    
     
     base = os.path.split(outfile_path)[0]
     name = os.path.split(outfile_path)[-1][:-4]
     
     breakdown_folder = os.path.join(base,name+'_dissociation')
     
-    #if os.path.isdir(breakdown_folder):
-    #    return ['Ligand dissociation directory already exists']
+    if os.path.isdir(breakdown_folder):
+       return ['Ligand dissociation directory already exists']
     
     optimxyz = os.path.join(base,'scr','optim.xyz')
     tools.extract_optimized_geo(optimxyz)
@@ -239,9 +239,14 @@ def prep_ligand_breakown(outfile_path):
             local_mol.copymol3D(mol)
             local_mol.deleteatoms(ligand[1])
             local_mol.writexyz(local_name+'.xyz')
-            tools.write_input(local_name,metal_charge,metal_spin,run_type = 'energy', method = method, solvent = solvent,
-                              levela = levelshifta, levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,
-                              multibasis = multibasis,dispersion=dispersion)
+
+            local_infile_dict = copy.copy(infile_dict)
+            local_infile_dict['name'] = local_name
+            local_infile_dict['charge'],local_infile_dict['spinmult'] = metal_charge,metal_spin
+            local_infile_dict['run_type'] = 'energy'
+            local_infile_dict['constraints'],local_infile_dict['convergence_thresholds'] = False,False
+
+            tools.write_input(local_infile_dict)
             tools.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
@@ -259,9 +264,14 @@ def prep_ligand_breakown(outfile_path):
             deletion_indices = list(set(range(local_mol.natoms))-set(ligand[1]))
             local_mol.deleteatoms(deletion_indices)
             local_mol.writexyz(local_name+'.xyz')
-            tools.write_input(local_name,ligand_charge,ligand_spin,run_type = 'energy', method = method, solvent = solvent,
-                              levela = levelshifta, levelb = levelshiftb, thresholds = convergence_thresholds, hfx = hfx, basis = basis,
-                              multibasis = multibasis,dispersion=dispersion)
+
+            local_infile_dict = copy.copy(infile_dict)
+            local_infile_dict['name'] = local_name
+            local_infile_dict['charge'],local_infile_dict['spinmult'] = ligand_charge,ligand_spin
+            local_infile_dict['run_type'] = 'energy'
+            local_infile_dict['constraints'],local_infile_dict['convergence_thresholds'] = False,False
+
+            tools.write_input(local_infile_dict)
             tools.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
