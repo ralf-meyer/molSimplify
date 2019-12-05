@@ -191,7 +191,7 @@ def main():
         print("****** Assessing Job Status ******")
         print('**********************************')
         time1 = time.time()
-        fil = open('Complete','w')
+        fil = open('complete','w')
         fil.write('Active')
         fil.close()
                 
@@ -218,7 +218,7 @@ def main():
     print('**********************************')
     print("****** Normal Terminatation ******")
     print('**********************************')
-    fil = open('Complete','w')
+    fil = open('complete','w')
     fil.write('True')
     fil.close()
 
