@@ -11,5 +11,5 @@ levelb:0.25
 method:b3lyp
 hfx:0.2
 sleep:1000
-geo_check:oct -- or -- geo_check:bidentate_oct
+geo_check:bidentate_oct
 job_recovery:[bad_geo,spin_contaminated,scf,thermo_grad_error]

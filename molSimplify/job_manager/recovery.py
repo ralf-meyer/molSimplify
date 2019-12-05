@@ -1,10 +1,177 @@
 #!/usr/bin/env python
 import os
 import shutil
+import glob
+import numpy as np
 import molSimplify.job_manager.tools as tools
 import molSimplify.job_manager.moltools as moltools
 from molSimplify.job_manager.classes import resub_history
 
+
+def load_history(PATH):
+    #takes the path to either an outfile or the resub_history pickle
+    #returns the resub_history class object
+    
+    history = resub_history()
+    history.read(PATH)
+    return history
+
+## Archive the scr file so it isn't overwritten in future resubs
+#  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
+def save_scr(outfile_path, rewrite_inscr = True):
+    root = os.path.split(outfile_path)[0]
+    scr_path = os.path.join(root,'scr')
+    
+    if os.path.isdir(scr_path):
+        #extract the optimized geometry, if it exists
+        optim = glob.glob(os.path.join(scr_path,'optim.xyz'))
+        if len(optim) > 0:
+            tools.extract_optimized_geo(optim[0])
+        
+        if rewrite_inscr:
+            #save the files necessary to resub the job to a folder called inscr
+            save_paths = []
+            save_paths.extend(glob.glob(os.path.join(scr_path,'c0')))
+            save_paths.extend(glob.glob(os.path.join(scr_path,'ca0')))
+            save_paths.extend(glob.glob(os.path.join(scr_path,'cb0')))
+            save_paths.extend(glob.glob(os.path.join(scr_path,'optimized.xyz')))
+            if os.path.isdir(os.path.join(root,'inscr')):
+                shutil.rmtree(os.path.join(root,'inscr'))
+            os.mkdir(os.path.join(root,'inscr'))
+            for path in save_paths:
+                shutil.copy(path,os.path.join(root,'inscr',os.path.split(path)[-1]))
+        
+        #archive the scr under a new name so that we can write a new one
+        old_scrs = glob.glob(scr_path+'_*')
+        old_scrs = [int(i[-1]) for i in old_scrs]
+        if len(old_scrs) > 0:
+            new_scr = str(max(old_scrs)+1)
+        else:
+            new_scr = '0'
+        shutil.move(scr_path,scr_path+'_'+new_scr)
+        
+        return scr_path+'_'+new_scr
+
+## Save the outfile within the resub_history pickel object
+def save_run(outfile_path, rewrite_inscr = True):
+
+    def write(list_of_lines,path):
+        fil = open(path,'w')
+        for i in list_of_lines:
+            fil.write(i)
+        fil.close()
+    
+    scr_path = save_scr(outfile_path, rewrite_inscr = rewrite_inscr)
+    
+    history = resub_history()
+    history.read(outfile_path)
+    
+    f = open(outfile_path,'r')
+    out_lines = f.readlines()
+    f.close()
+    history.outfiles.append(out_lines)
+    
+    infile_path = outfile_path.rsplit('.',1)[0]+'.in'
+    f = open(infile_path,'r')
+    in_lines = f.readlines()
+    f.close()
+    history.infiles.append(in_lines)
+    
+    jobscript_path = outfile_path.rsplit('.',1)[0]+'_jobscript'
+    f = open(jobscript_path,'r')
+    job_lines = f.readlines()
+    f.close()
+    history.jobscripts.append(job_lines)
+    
+    xyz_path = outfile_path.rsplit('.',1)[0]+'.xyz'
+    f = open(xyz_path,'r')
+    xyz_lines = f.readlines()
+    f.close()
+    history.xyzs.append(xyz_lines)
+    
+    history.save()
+
+    #Additionally, write this information to textfile so it's earch to find
+    home = os.getcwd()
+    os.chdir(scr_path)
+    write(out_lines,'old_outfile')
+    write(in_lines,'old_infile')
+    write(job_lines,'old_job')
+    write(xyz_lines,'old_xyz')
+    os.chdir(home)
+
+def reset(outfile_path):
+    #Returns the run to the state it was after the first run, before job recovery acted on it
+    
+    pickle_path = outfile_path.rsplit('.',1)[0]+'.pickle'
+    if os.path.isfile(pickle_path):
+        
+        print 'Resetting run: '+os.path.split(outfile_path)[-1].rsplit('.',1)[0]
+        old_path = os.path.join(os.path.split(outfile_path)[0],'pre_reset')
+        if not os.path.isdir(old_path):
+            os.mkdir(old_path)
+        
+        #Find all the stdout and stderr files related to previous runs.
+        queue_output = glob.glob(outfile_path.rsplit('.',1)[0]+'.e*')
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.pe*'))
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.po*'))
+        queue_output.extend(glob.glob(outfile_path.rsplit('.',1)[0]+'.o*'))
+        queue_output = [i for i in queue_output if i[-1] in ['1','2','3','4','5','6','7','8','9','0']]
+        
+        #remove all files from states after the specified state
+        move = []
+        identifier = 1
+        while True:
+            move.extend(glob.glob(os.path.join(os.path.split(outfile_path)[0],'scr_'+str(identifier))))
+            identifier += 1
+            if len(glob.glob(os.path.join(os.path.split(outfile_path)[0],'scr_'+str(identifier)))) == 0:
+                break #break when all scr_? files are found.
+                
+        shutil.move(outfile_path,outfile_path[:-4]+'.old') #rename old out so it isn't found in .out searches
+        shutil.move(outfile_path[:-4]+'_jobscript',outfile_path[:-4]+'_oldjob') #rename old jobscript so it isn't thought to be  job that hasn't started yet
+        move.append(outfile_path[:-4]+'.old')
+        move.append(outfile_path[:-4]+'.xyz')
+        move.append(outfile_path[:-4]+'.in')
+        move.append(outfile_path[:-4]+'_oldjob')
+        if os.path.isdir(os.path.join(os.path.split(outfile_path)[0],'inscr')):
+            move.append(os.path.join(os.path.split(outfile_path)[0],'inscr'))
+        move.extend(queue_output)
+        scr_path = os.path.join(os.path.split(outfile_path)[0],'scr')
+        move.append(scr_path)
+        for path in move:
+            #move the paths to their new location, Random numbers prevent clashes
+            try:
+                shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
+            except:
+                print 'No file found for: '+path
+            
+        
+        #Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run
+        history = resub_history()
+        history.read(pickle_path)
+        outfile = history.outfiles[0]
+        infile = history.infiles[0]
+        jobscript = history.jobscripts[0]
+        xyz = history.xyzs[0]
+        writer = open(outfile_path,'w')
+        for i in outfile:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'.in','w')
+        for i in infile:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'.xyz','w')
+        for i in xyz:
+            writer.write(i)
+        writer.close()
+        writer = open(outfile_path.rsplit('.',1)[0]+'_jobscript','w')
+        for i in jobscript:
+            writer.write(i)
+        writer.close()
+        
+        shutil.move(scr_path+'_0',scr_path)
+        shutil.move(pickle_path,os.path.join(old_path,str(np.random.randint(999999999))+'_resub_history'))
 
 def simple_resub(outfile_path):
     #Resubmits a job without changing parameters. Particularly useful for CUDA errors.
@@ -53,9 +220,9 @@ def clean_resub(outfile_path):
     infile_dict['method'] = configure_dict['method']
     infile_dict['levelshifta'],infile_dict['levelshiftb'] = configure_dict['levela'],configure_dict['levelb']
     infile_dict['dispersion'] = configure_dict['dispersion']
-    infile_dict['convergence_threshold'] = False
+    infile_dict['constraints'] = False
 
-    if spinmult == 1:
+    if infile_dict['spinmult'] == 1:
         infile_dict['guess'] = 'inscr/c0'
         tools.write_input(infile_dict)  
     else:
@@ -148,7 +315,7 @@ def resub_scf(outfile_path):
         home = os.getcwd()
         if len(directory) > 0: #if the string is blank, then we're already in the correct directory
             os.chdir(directory)
-        infile_dict['levelshifta'],infile_dict['levelshiftb'] = 1.0,0,1
+        infile_dict['levelshifta'],infile_dict['levelshiftb'] = 1.0,0.1
         tools.write_input(infile_dict)
                           
         tools.write_jobscript(name)
@@ -278,9 +445,9 @@ def resub_thermo(outfile_path):
         else:
             raise Exception('Unable to identify the ultratight geometry for run: '+outfile_path)
             
-        if spinmult == 1 and os.path.exists(os.path.join(ultratight_dir,'scr','c0')):
+        if infile_dict['spinmult'] == 1 and os.path.exists(os.path.join(ultratight_dir,'scr','c0')):
             shutil.copy(os.path.join(ultratight_dir,'scr','c0'),os.path.join(directory,'c0'))
-        elif spinmult != 1 and os.path.exists(os.path.join(ultratight_dir,'scr','ca0')) and os.path.exists(os.path.join(ultratight_dir,'scr','cb0')):
+        elif infile_dict['spinmult'] != 1 and os.path.exists(os.path.join(ultratight_dir,'scr','ca0')) and os.path.exists(os.path.join(ultratight_dir,'scr','cb0')):
             shutil.copy(os.path.join(ultratight_dir,'scr','ca0'),os.path.join(directory,'ca0'))
             shutil.copy(os.path.join(ultratight_dir,'scr','cb0'),os.path.join(directory,'cb0'))
         else:

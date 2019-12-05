@@ -73,10 +73,12 @@ def list_active_jobs(ids = False):
         job_report.lines = []
     
     names = job_report.wordgrab('jobname:',2)[0]
+    names =[i for i in names if i] #filters out NoneTypes
     
     if ids:
         job_ids = []
         line_indices_of_jobnames = job_report.wordgrab('jobname:',2,matching_index=True)[0]
+        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i] #filters out NoneTypes
         for line_index in line_indices_of_jobnames:
             job_ids.append(int(job_report.lines[line_index-1].split()[0]))
         if len(names) != len(job_ids):
@@ -232,7 +234,8 @@ def qsub(jobscript_list):
     #Handles cases where a single jobscript is submitted instead of a list
     if type(jobscript_list) != list:
         jobscript_list = [jobscript_list]
-    
+    jobscript_list = [convert_to_absolute_path(i) for i in jobscript_list]
+
     stdouts = []
     for i in jobscript_list:
         home = os.getcwd()
@@ -616,7 +619,7 @@ def create_summary(directory='in place'):
     
     return summary
 
-def write_input(input_dictionary = None, name = None,charge = None,spinmult,
+def write_input(input_dictionary = dict(), name = None,charge = None,spinmult=None,
                 run_type = 'energy', method = 'b3lyp', solvent = False, 
                 guess = False, custom_line = None, levelshifta = 0.25, levelshiftb = 0.25,
                 convergence_thresholds = None, basis = 'lacvps_ecp', hfx = None, constraints = None,
@@ -627,86 +630,95 @@ def write_input(input_dictionary = None, name = None,charge = None,spinmult,
     #Note that the infile dictionary can have an additional key, "name", which is not poulated by read_infile()
     #If name is specified, the coordinates are generated based on the name, rather than based on the coordinates variable
     
+    infile = dict()
     #If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
-    if input_dictionary:
-            for prop,prop_name in zip([charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,
-                          basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates],
-                          ['charge','spinmult','solvent','run_type','levelshifta','levelshiftb','method','hfx',
-                           'basis','convergence_thresholds','multibasis','constraints','dispersion','coordinates']):
-                if prop_name in input_dictionary.keys():
-                    prop = input_dictionary[name]
-                if 'name' in input_dictionary.keys():
-                    name = input_dictionary['name']
-    if not charge or not spinmult or (not name and not coordinates):
-        print('Name: '+name)
-        print('Charge: '+charge)
-        print('Spinmult: '+spinmult)
+    for prop,prop_name in zip([charge,spinmult,solvent,run_type,levelshifta,levelshiftb,method,hfx,
+                               basis,convergence_thresholds,multibasis,constraints,dispersion,coordinates,
+                               guess,custom_line,name],
+                              ['charge','spinmult','solvent','run_type','levelshifta','levelshiftb','method','hfx',
+                               'basis','convergence_thresholds','multibasis','constraints','dispersion','coordinates',
+                               'guess','custom_line','name']):
+        if prop_name in input_dictionary.keys():
+            infile[prop_name] = input_dictionary[prop_name]
+        else:
+            infile[prop_name] = prop
+
+    if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (not infile['name'] and not infile['coordinates']):
+        print('Name: '+infile['name'])
+        print('Charge: '+str(infile['charge']))
+        print('Spinmult: '+str(infile['spinmult']))
         raise Exception('Minimum parameters not specified for writing infile')
+    if type(infile['charge']) != int or type(infile['spinmult']) != int:
+        print('Charge Type: '+str(type(infile['charge'])))
+        print('Spinmult Type: '+str(type(infile['spinmult'])))
+        raise Exception('Spin and Charge should both be integers!')
 
-    if spinmult != 1:
-        method = 'u'+method
+    if infile['spinmult'] != 1:
+        infile['method'] = 'u'+infile['method']
 
-    if name:
-        coordinates = name+'.xyz'
+    if infile['name']:
+        infile['coordinates'] = infile['name']+'.xyz'
+    if not infile['name']:
+        infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.',1)[0]
         
-    input_file = open(name+'.in','w')
-    text = ['levelshiftvalb '+str(levelshiftb)+'\n',
-            'levelshiftvala '+str(levelshifta)+'\n',
+    input_file = open(infile['name']+'.in','w')
+    text = ['levelshiftvalb '+str(infile['levelshiftb'])+'\n',
+            'levelshiftvala '+str(infile['levelshifta'])+'\n',
             'nbo yes\n',
-            'run '+run_type+'\n',
+            'run '+infile['run_type']+'\n',
             'scf diis+a\n',
-            'coordinates '+coordinates+'\n',
+            'coordinates '+infile['coordinates']+'\n',
             'levelshift yes\n',
             'gpus 1\n',
-            'spinmult '+str(spinmult) +'\n',
+            'spinmult '+str(infile['spinmult']) +'\n',
             'scrdir ./scr\n',
-            'basis '+basis+'\n',
+            'basis '+infile['basis']+'\n',
             'timings yes\n',
-            'charge '+str(charge)+'\n',
-            'method '+method+'\n',
+            'charge '+str(infile['charge'])+'\n',
+            'method '+infile['method']+'\n',
             'new_minimizer yes\n',
             'ml_prop yes\n',
             'poptype mulliken\n',
             'bond_order_list yes\n',
             'end']
     
-    if custom_line:
-        text = text[:15]+[custom_line+'\n']+text[15:]
-    if guess:
-        if type(guess) == bool:
-            if spinmult == 1:
-                guess = 'c0'
+    if infile['custom_line']:
+        text = text[:15]+[infile['custom_line']+'\n']+text[15:]
+    if infile['guess']:
+        if type(infile['guess']) == bool:
+            if infile['spinmult'] == 1:
+                infile['guess'] = 'c0'
             else:
-                guess = 'ca0 cb0'
-        text = text[:-1] + ['guess ' + guess + '\n',
+                infile['guess'] = 'ca0 cb0'
+        text = text[:-1] + ['guess ' + infile['guess'] + '\n',
                             'end']
-    if run_type != 'ts':
+    if infile['run_type'] != 'ts':
         text = text[:-1] + ['maxit 500\n',
                             'end']
                             
-    if type(convergence_thresholds) == list:
-        if convergence_thresholds[0]:
-            convergence_thresholds = [line if line.endswith('\n') else line+'\n' for line in convergence_thresholds]
+    if type(infile['convergence_thresholds']) == list:
+        if infile['convergence_thresholds'][0]:
+            thresholds = [line if line.endswith('\n') else line+'\n' for line in infile['convergence_thresholds']]
             tight_thresholds ="min_converge_gmax "+thresholds[0]+"min_converge_grms "+thresholds[1]+"min_converge_dmax "+thresholds[2]+"min_converge_drms "+thresholds[3]+"min_converge_e "+thresholds[4]+"convthre "+thresholds[5]
             text = text[:-1]+['\n',tight_thresholds,'end']
     
-    if dispersion:
-        text = text[:-1]+['dispersion '+dispersion+'\n','end']
+    if infile['dispersion']:
+        text = text[:-1]+['dispersion '+infile['dispersion']+'\n','end']
 
-    if multibasis:
-        multibasis = [line if line.endswith('\n') else line+'\n' for line in multibasis]
+    if infile['multibasis']:
+        multibasis = [line if line.endswith('\n') else line+'\n' for line in infile['multibasis']]
         text = text[:-1] + ['\n','$multibasis\n'] + multibasis + ['$end\n','end']
         
-    if constraints:
-        constraints = [line if line.endswith('\n') else line+'\n' for line in constraints]
+    if infile['constraints']:
+        constraints = [line if line.endswith('\n') else line+'\n' for line in infile['constraints']]
         text = text[:-1] + ['\n','$constraint_freeze\n'] +constraints + ['$end\n','end']
 
-    if type(hfx) == int or type(hfx) == float:
+    if type(infile['hfx']) == int or type(infile['hfx']) == float:
         text = text[:-1] + ['\n',
-                            'HFX '+str(hfx)+'\n',
+                            'HFX '+str(infile['hfx'])+'\n',
                             'end']
                             
-    if solvent: #Adds solvent correction, if requested
+    if infile['solvent']: #Adds solvent correction, if requested
         text = text[:-1] + ['\n',
                             'pcm cosmo\n',
                             'epsilon 80\n',
@@ -737,7 +749,7 @@ def write_jobscript(name,custom_line = None,time_limit='96:00:00',sleep= False):
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n',
-            'terachem '+alternate_infile+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
+            'terachem '+name+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
     if custom_line:
         if type(custom_line) == list:
             text = text[:12]+custom_line+text[12:]
@@ -762,10 +774,10 @@ def prep_vertical_ip(path):
         
     infile_dict = read_infile(path)
     
-    if spin == 1:
+    if infile_dict['spinmult'] == 1:
         new_spin = [2]
     else:
-        new_spin = [spin-1,spin+1]
+        new_spin = [infile_dict['spinmult']-1,infile_dict['spinmult']+1]
     
     base = os.path.split(path)[0]
     
@@ -810,10 +822,10 @@ def prep_vertical_ea(path, solvent = False):
     
     infile_dict = read_infile(path)
     
-    if spin == 1:
+    if infile_dict['spinmult'] == 1:
         new_spin = [2]
     else:
-        new_spin = [spin-1,spin+1]
+        new_spin = [infile_dict['spinmult']-1,infile_dict['spinmult']+1]
     
     base = os.path.split(path)[0]
     
@@ -921,10 +933,10 @@ def prep_thermo(path):
     os.chdir(PATH)    
     
     shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
-    if spin == 1:
+    if infile_dict['spinmult'] == 1:
         shutil.copyfile(os.path.join(base,'scr','c0'),os.path.join(PATH,'c0'))
         write_jobscript(name,custom_line = '# -fin c0')
-    if spin != 1:
+    if infile_dict['spinmult'] != 1:
         shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
         shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
         write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
@@ -970,10 +982,10 @@ def prep_ultratight(path):
             raise Exception('This tightened convergence run appears to already exist. Aborting...')
             
         shutil.copyfile(os.path.join(base,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
-        if spin == 1:
+        if infile_dict['spinmult'] == 1:
             shutil.copyfile(os.path.join(base,'scr','c0'),os.path.join(PATH,'c0'))
             write_jobscript(name,custom_line = '# -fin c0')
-        if spin != 1:
+        elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(base,'scr','ca0'),os.path.join(PATH,'ca0'))
             shutil.copyfile(os.path.join(base,'scr','cb0'),os.path.join(PATH,'cb0'))
             write_jobscript(name,custom_line = ['# -fin ca0\n','# -fin cb0\n'])
@@ -1028,7 +1040,7 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
     
     #Check the state of the calculation and ensure than hfx resampling is valid 
     infile_dict = read_infile(path)
-    if method != 'b3lyp':
+    if infile_dict['method'] != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
     if not infile_dict['hfx']:
         infile_dict['hfx'] = 20
@@ -1043,7 +1055,7 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
     os.chdir(hfx_path)    
     
     #Make the directory for the original calculation
-    subname = name+'_'+str(hfx)
+    subname = name+'_'+str(infile_dict['hfx'])
     PATH = os.path.join(hfx_path,subname)
     if not os.path.isdir(PATH):
         os.mkdir(PATH)
@@ -1093,10 +1105,10 @@ def prep_hfx_resample(path,hfx_values = [0,5,10,15,20,25,30]):
         extract_optimized_geo(optimxyz)
         
         shutil.copy(os.path.join(source_dir,'scr','optimized.xyz'),subname+'.xyz')
-        if spin == 1:
+        if infile_dict['spinmult'] == 1:
             shutil.copy(os.path.join(source_dir,'scr','c0'),'c0')
             write_jobscript(subname,custom_line = '# -fin c0')
-        if spin != 1:
+        elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(source_dir,'scr','ca0'),os.path.join('ca0'))
             shutil.copyfile(os.path.join(source_dir,'scr','cb0'),os.path.join('cb0'))
             write_jobscript(subname,custom_line = ['# -fin ca0\n','# -fin cb0\n'])

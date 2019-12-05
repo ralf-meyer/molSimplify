@@ -130,11 +130,13 @@ def check_completeness(directory = 'in place', max_resub = 5):
     finished = completeness['Finished']
     spin_contaminated = completeness['Spin_contaminated']
     needs_resub = completeness['Resub']
+    unfinished = completeness['Error']
     
     bad_geos = []
     new_finished = []
     new_spin_contaminated = []
     new_needs_resub = []
+    new_unfinished = []
     for job in finished:
         goal_geo = tools.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
@@ -153,10 +155,17 @@ def check_completeness(directory = 'in place', max_resub = 5):
             new_needs_resub.append(job)
         else:
             bad_geos.append(job)
-    
+    for job in unfinished:
+        goal_geo = tools.read_configure(directory,job)['geo_check']
+        if apply_geo_check(job,goal_geo):
+            new_unfinished.append(job)
+        else:
+            bad_geos.append(job)
+
     completeness['Finished'] = new_finished
     completeness['Spin_contaminated'] = new_spin_contaminated
     completeness['Resub'] = new_needs_resub
+    completeness['Error'] = new_unfinished
     completeness['Bad_geos'] = bad_geos
     return completeness
             
