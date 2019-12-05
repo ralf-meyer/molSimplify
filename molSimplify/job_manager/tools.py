@@ -1010,7 +1010,7 @@ def prep_ultratight(path):
     else: #This has been run before, further tighten the convergence criteria
         os.chdir(PATH)
         infile_dict = read_infile(os.path.join(PATH,name+'.out'))
-        criteria = [str(float(i)/2.) for i in local_infile_dict['convergence_thresholds']]
+        criteria = [str(float(i)/2.) for i in infile_dict['convergence_thresholds']]
         
 
         local_infile_dict = copy.copy(infile_dict)
@@ -1019,7 +1019,7 @@ def prep_ultratight(path):
         local_infile_dict['name'] = name
         write_input(local_infile_dict)
 
-        tools.extract_optimized_geo(os.path.join(PATH,'scr','optim.xyz'))
+        extract_optimized_geo(os.path.join(PATH,'scr','optim.xyz'))
         shutil.copy(os.path.join(PATH,'scr','optimized.xyz'),os.path.join(PATH,name+'.xyz'))
         
         os.chdir(home)

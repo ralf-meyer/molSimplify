@@ -53,7 +53,7 @@ def save_scr(outfile_path, rewrite_inscr = True):
         return scr_path+'_'+new_scr
 
 ## Save the outfile within the resub_history pickel object
-def save_run(outfile_path, rewrite_inscr = True):
+def save_run(outfile_path, rewrite_inscr = True, save_scr_flag = True):
 
     def write(list_of_lines,path):
         fil = open(path,'w')
@@ -61,7 +61,10 @@ def save_run(outfile_path, rewrite_inscr = True):
             fil.write(i)
         fil.close()
     
-    scr_path = save_scr(outfile_path, rewrite_inscr = rewrite_inscr)
+    if save_scr_flag:
+        scr_path = save_scr(outfile_path, rewrite_inscr = rewrite_inscr)
+    else:
+        scr_path = os.path.join(os.path.split(outfile_path)[0],'scr')
     
     history = resub_history()
     history.read(outfile_path)
@@ -394,8 +397,11 @@ def resub_tighter(outfile_path):
     parent_path = os.path.join(parent_directory,parent_name+'.out')
     ultratight_path = os.path.join(parent_directory,parent_name+'_ultratight',parent_name+'_ultratight.out')
     
+    scr_needs_to_be_saved = False
     if os.path.exists(ultratight_path): #This ultratight resubmission has happend before, need to archive the results
-        save_run(ultratight_path, rewrite_inscr = False)
+        save_run(ultratight_path, rewrite_inscr = False, save_scr_flag = False)
+        scr_needs_to_be_saved = True #Need to save the scr AFTER prepping the new ultratight run. This helps keep compatibility with other functions
+
         history = resub_history()
         history.read(ultratight_path)
         history.resub_number += 1
@@ -405,6 +411,8 @@ def resub_tighter(outfile_path):
         history.save()
         
     jobscript = tools.prep_ultratight(parent_path) #Prep tighter convergence run
+    if scr_needs_to_be_saved:
+        save_scr(ultratight_path,rewrite_inscr=False)
     tools.qsub(jobscript) #Submit tighter convergence run
     
     #Set the original thermo run to wait for the ultratight run to finish
