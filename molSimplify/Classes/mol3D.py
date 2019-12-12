@@ -1632,7 +1632,7 @@ class mol3D:
                     print('cannot find atom type')
                     sys.exit()
                 self.addAtom(atom)
-    
+
     # Load molecule from xyz file
     #
     #  Consider using getOBMol, which is more general, instead.
@@ -1648,7 +1648,7 @@ class mol3D:
             s.remove('')
         except:
             pass
-        s = [str(val)+'\n' for val in s]
+        s = [str(val) + '\n' for val in s]
         for line in s[0:]:
             line_split = line.split()
             if len(line_split) == 4 and line_split[0]:
@@ -2040,7 +2040,7 @@ class mol3D:
 
     # Initialize the geometry check dictionary according to the dict_oct_check_st.
     def geo_dict_initialization(self):
-        for key in self.dict_oct_check_st:
+        for key in self.dict_oct_check_st[self.dict_oct_check_st.keys()[0]]:
             self.geo_dict[key] = -1
         self.dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
         self.dict_catoms_shape = {'oct_angle_devi_max': -1,
@@ -2604,7 +2604,12 @@ class mol3D:
                 dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
+        eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+        if not maxdent > 1:
+            choice = 'mono'
+        else:
+            choice = 'multi'
+        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
                                                                         num_coord=6,
                                                                         debug=debug,
                                                                         silent=silent)
@@ -2646,7 +2651,12 @@ class mol3D:
                 dict_angle_linear, dict_orientation = self.check_angle_linear()
             if debug:
                 self.print_geo_dict()
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
+        eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+        if not maxdent > 1:
+            choice = 'mono'
+        else:
+            choice = 'multi'
+        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
                                                                         num_coord=num_coord,
                                                                         debug=debug)
         if not flag_catoms:
@@ -2703,9 +2713,14 @@ class mol3D:
                 catoms_arr=catoms_arr)
             if debug:
                 self.print_geo_dict()
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            if not maxdent > 1:
+                choice = 'mono'
+            else:
+                choice = 'multi'
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check[choice],
                                                                             num_coord=6, debug=debug)
-            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose[choice],
                                                                              num_coord=6, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
@@ -2761,9 +2776,14 @@ class mol3D:
                 catoms_arr=catoms_arr)
             if debug:
                 self.print_geo_dict()
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check,
+            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            if not maxdent > 1:
+                choice = 'mono'
+            else:
+                choice = 'multi'
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check[choice],
                                                                             num_coord=num_coord, debug=debug)
-            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose,
+            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose[choice],
                                                                              num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 

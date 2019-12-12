@@ -95,13 +95,13 @@ periods_dict = {'period_1': period_1, 'period_2': period_2, 'period_3': period_3
 # Group definitions for all element symbols
 # Data from https://en.wikipedia.org/wiki/Group_(periodic_table) (last accessed Sept. 12th 2019)
 
-hydrogen = ['H'] # Note H not typically included in group 1
+hydrogen = ['H']  # Note H not typically included in group 1
 
 group_1 = ['Li', 'Na', 'K', 'Rb', 'Cs', 'Fr']
 
 group_2 = ['Be', 'Mg', 'Ca', 'Sr', 'Ba', 'Ra']
 
-group_3 = ['Sc', 'Y'] # Some IUPAC Initiatives to call either 'La' and 'Ac' grp 3 or 'Lu' and 'Lr
+group_3 = ['Sc', 'Y']  # Some IUPAC Initiatives to call either 'La' and 'Ac' grp 3 or 'Lu' and 'Lr
 
 group_4 = ['Ti', 'Zr', 'Hf', 'Rf']
 
@@ -147,51 +147,50 @@ groups_dict = {'group_1': group_1, 'group_2': group_2, 'group_3': group_3,
                'group_16': group_16, 'group_17': group_17, 'group_18': group_18,
                'lanthanides': lanthanides, 'actinoids': actinoids, 'hydrogen': hydrogen}
 
-
 # Metals (includes alkali, alkaline earth, and transition metals)
-metalslist = [#'Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
-              #'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
-              #'Al', 'al', 'AL', 'aluminum', 'aluminium',
-              #'K', 'k', 'potassium', 'Ca', 'ca', 'CA', 'calcium',
-              #'Rb', 'rb', 'RB', 'rubidium', 'Sr', 'sr', 'SR', 'strontium',
-              #'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
-              #'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium',
-              'Sc', 'sc', 'SC', 'scandium', 'Ti', 'ti', 'TI', 'titanium',
-              'V', 'v', 'vanadium', 'Cr', 'cr', 'CR', 'chromium',
-              'Mn', 'mn', 'MN', 'manganese', 'Fe', 'fe', 'FE', 'iron',
-              'Co', 'co', 'CO', 'cobalt', 'Ni', 'ni', 'NI', 'nickel',
-              'Cu', 'cu', 'CU', 'copper', 'Zn', 'zn', 'ZN', 'zinc',
-              #'Ga', 'ga', 'GA', 'gallium',
-              'Y', 'y', 'yttrium', 'Zr', 'zr', 'ZR', 'zirconium',
-              'Nb', 'nb', 'NB', 'niobium', 'Mo', 'mo', 'MO', 'molybdenum',
-              'Tc', 'tc', 'TC', 'technetium', 'Ru', 'ru', 'RU', 'ruthenium',
-              'Rh', 'rh', 'RH', 'rhodium', 'Pd', 'pd', 'PD', 'palladium',
-              'Ag', 'ag', 'AG', 'silver', 'Cd', 'cd', 'CD', 'cadmium',
-              #'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
-              'Hf', 'hf', 'HF', 'hafnium', 'Ta', 'ta', 'TA', 'tantalum',
-              'W', 'w', 'tungsten', 'Re', 're', 'RE', 'rhenium',
-              'Os', 'os', 'OS', 'osmium', 'Ir', 'ir', 'IR', 'iridium',
-              'Pt', 'pt', 'PT', 'platinum', 'Au', 'au', 'AU', 'gold',
-              'Hg', 'hg', 'HG', 'mercury',
-              #'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead',
-              #'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium',
-              #'La', 'la', 'LA', 'lanthanum',
-              #'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
-              #'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
-              #'Sm', 'sm', 'SM', 'samarium', 'Eu', 'eu', 'EU', 'europium',
-              #'Gd', 'gd', 'GD', 'gadolinium', 'Tb', 'tb', 'TB', 'terbium',
-              #'Dy', 'dy', 'DY', 'dysprosium', 'Ho', 'ho', 'HO', 'holmium',
-              #'Er', 'er', 'ER', 'erbium', 'Tm', 'tm', 'TM', 'thulium',
-              #'Yb', 'yb', 'YB', 'ytterbium', 'Lu', 'lu', 'LU', 'lutetium',
-              #'Ac', 'ac', 'AC', 'actinium', 'Th', 'th', 'TH', 'thorium',
-              #'Pa', 'pa', 'PA', 'proactinium', 'U', 'u', 'uranium',
-              #'Np', 'np', 'NP', 'neptunium', 'Pu', 'pu', 'PU', 'plutonium',
-              #'Am', 'am', 'AM', 'americium', 'Cu', 'cu', 'CU', 'curium',
-              #'Bk', 'bk', 'BK', 'berkelium', 'Cf', 'cf', 'CF', 'californium',
-              #'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
-              #'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
-              #'Lr', 'lr', 'LR', 'lawrencium'
-              ]
+metalslist = [  # 'Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
+    # 'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
+    # 'Al', 'al', 'AL', 'aluminum', 'aluminium',
+    # 'K', 'k', 'potassium', 'Ca', 'ca', 'CA', 'calcium',
+    # 'Rb', 'rb', 'RB', 'rubidium', 'Sr', 'sr', 'SR', 'strontium',
+    # 'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
+    # 'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium',
+    'Sc', 'sc', 'SC', 'scandium', 'Ti', 'ti', 'TI', 'titanium',
+    'V', 'v', 'vanadium', 'Cr', 'cr', 'CR', 'chromium',
+    'Mn', 'mn', 'MN', 'manganese', 'Fe', 'fe', 'FE', 'iron',
+    'Co', 'co', 'CO', 'cobalt', 'Ni', 'ni', 'NI', 'nickel',
+    'Cu', 'cu', 'CU', 'copper', 'Zn', 'zn', 'ZN', 'zinc',
+    # 'Ga', 'ga', 'GA', 'gallium',
+    'Y', 'y', 'yttrium', 'Zr', 'zr', 'ZR', 'zirconium',
+    'Nb', 'nb', 'NB', 'niobium', 'Mo', 'mo', 'MO', 'molybdenum',
+    'Tc', 'tc', 'TC', 'technetium', 'Ru', 'ru', 'RU', 'ruthenium',
+    'Rh', 'rh', 'RH', 'rhodium', 'Pd', 'pd', 'PD', 'palladium',
+    'Ag', 'ag', 'AG', 'silver', 'Cd', 'cd', 'CD', 'cadmium',
+    # 'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
+    'Hf', 'hf', 'HF', 'hafnium', 'Ta', 'ta', 'TA', 'tantalum',
+    'W', 'w', 'tungsten', 'Re', 're', 'RE', 'rhenium',
+    'Os', 'os', 'OS', 'osmium', 'Ir', 'ir', 'IR', 'iridium',
+    'Pt', 'pt', 'PT', 'platinum', 'Au', 'au', 'AU', 'gold',
+    'Hg', 'hg', 'HG', 'mercury',
+    # 'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead',
+    # 'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium',
+    # 'La', 'la', 'LA', 'lanthanum',
+    # 'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
+    # 'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
+    # 'Sm', 'sm', 'SM', 'samarium', 'Eu', 'eu', 'EU', 'europium',
+    # 'Gd', 'gd', 'GD', 'gadolinium', 'Tb', 'tb', 'TB', 'terbium',
+    # 'Dy', 'dy', 'DY', 'dysprosium', 'Ho', 'ho', 'HO', 'holmium',
+    # 'Er', 'er', 'ER', 'erbium', 'Tm', 'tm', 'TM', 'thulium',
+    # 'Yb', 'yb', 'YB', 'ytterbium', 'Lu', 'lu', 'LU', 'lutetium',
+    # 'Ac', 'ac', 'AC', 'actinium', 'Th', 'th', 'TH', 'thorium',
+    # 'Pa', 'pa', 'PA', 'proactinium', 'U', 'u', 'uranium',
+    # 'Np', 'np', 'NP', 'neptunium', 'Pu', 'pu', 'PU', 'plutonium',
+    # 'Am', 'am', 'AM', 'americium', 'Cu', 'cu', 'CU', 'curium',
+    # 'Bk', 'bk', 'BK', 'berkelium', 'Cf', 'cf', 'CF', 'californium',
+    # 'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
+    # 'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
+    # 'Lr', 'lr', 'LR', 'lawrencium'
+]
 
 metals_conv = {'scandium': 'Sc', 'titanium': 'Ti', 'vanadium': 'V', 'chromium': 'Cr', 'manganese': 'Mn',
                'iron': 'Fe', 'cobalt': 'Co', 'nickel': 'Ni', 'copper': 'Cu', 'zinc': 'Zn',
@@ -240,7 +239,7 @@ endict = {"H": 2.20,
           "Gd": 1.20, "Dy": 1.22, "Ho": 1.23, "Er": 1.24, "Tm": 1.25, "Lu": 1.27,
           "Fr": 0.7, "Ra": 0.9, "Ac": 1.1, "Th": 1.3, "Pa": 1.5, "U": 1.38, "Np": 1.36, "Pu": 1.28,
           "Am": 1.3, "Cm": 1.3, "Bk": 1.3, "Cf": 1.3, "Es": 1.3, "Fm": 1.3, "Md": 1.3, "No": 1.3,
-          "Yb": 1.1,"Eu": 1.2,"Tb":1.1,"Te":2.10}
+          "Yb": 1.1, "Eu": 1.2, "Tb": 1.1, "Te": 2.10}
 
 # Roman numerals
 romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4',
@@ -257,39 +256,73 @@ tribonddict = {("C", "C"): 1.27, ("C", "N"): 1.235, ("C", "O"): 1.165, ("N", "N"
                ("N", "C"): 1.235, ("O", "C"): 1.165}
 
 # ---Geo_Check_Metrics------
-dict_oct_check_loose = {'num_coord_metal': 6,
-                        'rmsd_max': 0.4, 'atom_dist_max': 0.6,
-                        'oct_angle_devi_max': 16, 'max_del_sig_angle': 27,
-                        'dist_del_eq': 0.45, 'dist_del_all': 1.25,
-                        'devi_linear_avrg': 35, 'devi_linear_max': 40}
+dict_oct_check_loose = {"mono": {'num_coord_metal': 6,
+                                 'rmsd_max': 0.4, 'atom_dist_max': 0.6,
+                                 'oct_angle_devi_max': 16, 'max_del_sig_angle': 27,
+                                 'dist_del_eq': 0.45, 'dist_del_all': 1.25,
+                                 'devi_linear_avrg': 35, 'devi_linear_max': 40},
+                        "multi": {'num_coord_metal': 6,
+                                  'rmsd_max': 4, 'atom_dist_max': 0.6,
+                                  'oct_angle_devi_max': 20, 'max_del_sig_angle': 35,
+                                  'dist_del_eq': 0.45, 'dist_del_all': 1.25,
+                                  'devi_linear_avrg': 35, 'devi_linear_max': 40}
+                        }
 
-dict_oct_check_st = {'num_coord_metal': 6,
-                     'rmsd_max': 0.3, 'atom_dist_max': 0.45,
-                     'oct_angle_devi_max': 12, 'max_del_sig_angle': 22.5,
-                     'dist_del_eq': 0.35, 'dist_del_all': 1,
-                     'devi_linear_avrg': 20, 'devi_linear_max': 28}  # default cutoff
+dict_oct_check_st = {"mono": {'num_coord_metal': 6,
+                              'rmsd_max': 0.3, 'atom_dist_max': 0.45,
+                              'oct_angle_devi_max': 12, 'max_del_sig_angle': 22.5,
+                              'dist_del_eq': 0.35, 'dist_del_all': 1.5,
+                              'devi_linear_avrg': 20, 'devi_linear_max': 28},
+                     "multi": {'num_coord_metal': 6,
+                               'rmsd_max': 3, 'atom_dist_max': 0.45,
+                               'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
+                               'dist_del_eq': 0.35, 'dist_del_all': 1,
+                               'devi_linear_avrg': 20, 'devi_linear_max': 28}
+                     }
 
-dict_oneempty_check_st = {'num_coord_metal': 5,
-                          'rmsd_max': 0.4, 'atom_dist_max': 0.7,
-                          'oct_angle_devi_max': 15, 'max_del_sig_angle': 18,
-                          'dist_del_eq': 0.5, 'dist_del_all': 1,
-                          'devi_linear_avrg': 10, 'devi_linear_max': 20}
+dict_oneempty_check_st = {"mono": {'num_coord_metal': 5,
+                                   'rmsd_max': 0.4, 'atom_dist_max': 0.7,
+                                   'oct_angle_devi_max': 15, 'max_del_sig_angle': 18,
+                                   'dist_del_eq': 0.5, 'dist_del_all': 1,
+                                   'devi_linear_avrg': 10, 'devi_linear_max': 20},
+                          "multi": {'num_coord_metal': 5,
+                                    'rmsd_max': 0.4, 'atom_dist_max': 0.7,
+                                    'oct_angle_devi_max': 15, 'max_del_sig_angle': 18,
+                                    'dist_del_eq': 0.5, 'dist_del_all': 1,
+                                    'devi_linear_avrg': 10, 'devi_linear_max': 20}
+                          }
 
-dict_oneempty_check_loose = {'num_coord_metal': 5,
-                             'rmsd_max': 0.6, 'atom_dist_max': 0.9,
-                             'oct_angle_devi_max': 20, 'max_del_sig_angle': 27,
-                             'dist_del_eq': 0.6, 'dist_del_all': 1.2,
-                             'devi_linear_avrg': 15, 'devi_linear_max': 28}
+dict_oneempty_check_loose = {"mono": {'num_coord_metal': 5,
+                                      'rmsd_max': 0.6, 'atom_dist_max': 0.9,
+                                      'oct_angle_devi_max': 20, 'max_del_sig_angle': 27,
+                                      'dist_del_eq': 0.6, 'dist_del_all': 1.2,
+                                      'devi_linear_avrg': 15, 'devi_linear_max': 28},
+                             "multi": {'num_coord_metal': 5,
+                                       'rmsd_max': 0.6, 'atom_dist_max': 0.9,
+                                       'oct_angle_devi_max': 20, 'max_del_sig_angle': 27,
+                                       'dist_del_eq': 0.6, 'dist_del_all': 1.2,
+                                       'devi_linear_avrg': 15, 'devi_linear_max': 28}
+                             }
 
-dict_tetra_check_loose = {'num_coord_metal': 4, 'rmsd_max': 0.4,
-                          'oct_angle_devi_max': 16, 'max_del_sig_angle': 27,
-                          'dist_del_all': 1.25,
-                          'devi_linear_avrg': 35, 'devi_linear_max': 40}
+dict_tetra_check_loose = {"mono": {'num_coord_metal': 4, 'rmsd_max': 0.4,
+                                   'oct_angle_devi_max': 16, 'max_del_sig_angle': 27,
+                                   'dist_del_all': 1.25,
+                                   'devi_linear_avrg': 35, 'devi_linear_max': 40},
+                          "multi": {'num_coord_metal': 4, 'rmsd_max': 0.4,
+                                    'oct_angle_devi_max': 16, 'max_del_sig_angle': 27,
+                                    'dist_del_all': 1.25,
+                                    'devi_linear_avrg': 35, 'devi_linear_max': 40}
+                          }
 
-dict_tetra_check_st = {'num_coord_metal': 4, 'rmsd_max': 0.3,
-                       'oct_angle_devi_max': 12, 'max_del_sig_angle': 22.5,
-                       'dist_del_all': 1,
-                       'devi_linear_avrg': 20, 'devi_linear_max': 28}  # default cutoff
+dict_tetra_check_st = {"mono": {'num_coord_metal': 4, 'rmsd_max': 0.3,
+                                'oct_angle_devi_max': 12, 'max_del_sig_angle': 22.5,
+                                'dist_del_all': 1,
+                                'devi_linear_avrg': 20, 'devi_linear_max': 28},
+                       "multi": {'num_coord_metal': 4, 'rmsd_max': 0.3,
+                                 'oct_angle_devi_max': 12, 'max_del_sig_angle': 22.5,
+                                 'dist_del_all': 1,
+                                 'devi_linear_avrg': 20, 'devi_linear_max': 28}
+                       }
 
 dict_staus = {'good': 1, 'bad': 0}
 
