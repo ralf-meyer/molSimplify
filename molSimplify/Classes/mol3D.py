@@ -2040,7 +2040,7 @@ class mol3D:
 
     # Initialize the geometry check dictionary according to the dict_oct_check_st.
     def geo_dict_initialization(self):
-        for key in self.dict_oct_check_st[self.dict_oct_check_st.keys()[0]]:
+        for key in self.dict_oct_check_st[list(self.dict_oct_check_st.keys())[0]]:
             self.geo_dict[key] = -1
         self.dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
         self.dict_catoms_shape = {'oct_angle_devi_max': -1,
