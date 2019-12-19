@@ -24,7 +24,15 @@ def read_run(outfile_PATH):
     
     optim_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','optim.xyz')
     
+    check_geo = False
     if os.path.isfile(optim_path):
+        fil = open(optim_path,'r')
+        lines = fil.readlines()
+        fil.close()
+        if len(lines) > 0:
+            check_geo = True #Only apply geo check if an optimized geometry exists
+
+    if check_geo:
         tools.extract_optimized_geo(optim_path)
         optimized_path = os.path.join(os.path.split(optim_path)[0],'optimized.xyz')
     
@@ -55,7 +63,7 @@ def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
             
     outfiles = tools.find('*.out',directory)
-    outfiles = filter(tools.not_nohup,outfiles)
+    outfiles = filter(tools.check_valid_outfile,outfiles)
     results = map(read_run,outfiles)
     summary = pd.DataFrame(results)
     

@@ -9,11 +9,11 @@ import time
 from molSimplify.job_manager.classes import resub_history,textfile
 from ast import literal_eval
 
-def not_nohup(path):
+def check_valid_outfile(path):
     #The nohup.out file gets caught in the find statement
     #use this function so that we only get TeraChem.outs
     endpath = os.path.split(path)[-1]
-    if 'nohup.out' in endpath:
+    if 'nohup.out' in endpath or endpath.startswith('.'):
         return False
     else:
         return True
@@ -92,7 +92,7 @@ def list_active_jobs(ids = False):
 def check_completeness(directory = 'in place', max_resub = 5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find('*.out',directory)
-    outfiles = filter(not_nohup,outfiles)
+    outfiles = filter(check_valid_outfile,outfiles)
     
     results_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
     results_tmp = zip(outfiles,results_tmp)
@@ -613,7 +613,7 @@ def read_mullpop(PATH):
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
     outfiles = find('*.out',directory)
-    outfiles = filter(not_nohup,outfiles)
+    outfiles = filter(check_valid_outfile,outfiles)
     results = map(read_outfile,outfiles)
     summary = pd.DataFrame(results)
     
