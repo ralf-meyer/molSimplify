@@ -15,11 +15,11 @@ def ensure_dir(dirpath):
         os.makedirs(dirpath)
 
 
-def not_nohup(path):
-    # The nohup.out file gets caught in the find statement
-    # use this function so that we only get TeraChem.outs
+def check_valid_outfile(path):
+    #The nohup.out file gets caught in the find statement
+    #use this function so that we only get TeraChem.outs
     endpath = os.path.split(path)[-1]
-    if 'nohup.out' in endpath:
+    if 'nohup.out' in endpath or endpath.startswith('.'):
         return False
     else:
         return True
@@ -102,11 +102,11 @@ def list_active_jobs(ids=False):
 
 def check_completeness(directory='in place', max_resub=5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
-    outfiles = find('*.out', directory)
-    outfiles = filter(not_nohup, outfiles)
+    outfiles = find('*.out',directory)
+    outfiles = filter(check_valid_outfile,outfiles)
 
-    results_tmp = [read_outfile(outfile, short_ouput=True) for outfile in outfiles]
-    results_tmp = zip(outfiles, results_tmp)
+    results_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
+    results_tmp = zip(outfiles,results_tmp)
     results_dict = dict()
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
@@ -643,10 +643,10 @@ def read_mullpop(PATH):
 
 
 def create_summary(directory='in place'):
-    # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-    outfiles = find('*.out', directory)
-    outfiles = filter(not_nohup, outfiles)
-    results = map(read_outfile, outfiles)
+    #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
+    outfiles = find('*.out',directory)
+    outfiles = filter(check_valid_outfile,outfiles)
+    results = map(read_outfile,outfiles)
     summary = pd.DataFrame(results)
 
     return summary
