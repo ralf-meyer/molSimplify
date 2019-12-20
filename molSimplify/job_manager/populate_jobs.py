@@ -122,6 +122,8 @@ def populate_single_job(basedir, job, db):
                 charge = int(tmcdoc["charge"])
                 spin = int(tmcdoc["spin"])
                 energy = float(tmcdoc["energy"])
+                wfn = tmcdoc['wavefunction']
+                ss_act, ss_target = float(tmcdoc["ss_act"]), float(tmcdoc["ss_target"])
                 write_xyz_from_db(geodir, jobname, tmcdoc["opt_geo"])
             except:
                 recover = False
