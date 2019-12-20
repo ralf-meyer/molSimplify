@@ -71,6 +71,7 @@ def resub(directory='in place'):
         'Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
+    nactive = len(tools.list_active_jobs()) #number of active jobs, counting bundled jobs as a single job
 
     # Kill SCF errors in progress, which are wasting computational resources
     all_scf_errors = completeness[
@@ -87,7 +88,7 @@ def resub(directory='in place'):
 
     # Resub unidentified errors
     for error in errors:
-        if len(active) + np.sum(resubmitted) >= max_jobs:
+        if nactive + np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = recovery.simple_resub(error)
         if resub_tmp:
@@ -97,7 +98,7 @@ def resub(directory='in place'):
 
     # Resub scf convergence errors
     for error in scf_errors:
-        if len(active) + np.sum(resubmitted) >= max_jobs:
+        if nactive + np.sum(resubmitted) >= max_jobs:
             continue
         local_configure = tools.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
@@ -110,7 +111,7 @@ def resub(directory='in place'):
 
     # Resub jobs which converged to bad geometries with additional constraints
     for error in bad_geos:
-        if len(active) + np.sum(resubmitted) >= max_jobs:
+        if nactive + np.sum(resubmitted) >= max_jobs:
             continue
         local_configure = tools.read_configure(directory, None)
         if 'bad_geo' in local_configure['job_recovery']:
@@ -123,7 +124,7 @@ def resub(directory='in place'):
 
     # Resub spin contaminated cases
     for error in spin_contaminated:
-        if len(active) + np.sum(resubmitted) >= max_jobs:
+        if nactive + np.sum(resubmitted) >= max_jobs:
             continue
         local_configure = tools.read_configure(directory, None)
         if 'spin_contaminated' in local_configure['job_recovery']:
@@ -136,7 +137,7 @@ def resub(directory='in place'):
 
     # Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
-        if len(active) + np.sum(resubmitted) >= max_jobs:
+        if nactive + np.sum(resubmitted) >= max_jobs:
             continue
         resub_tmp = recovery.clean_resub(error)
         if resub_tmp:
@@ -146,7 +147,7 @@ def resub(directory='in place'):
 
     # Create a job with a tighter convergence threshold for failed thermo jobs
     for error in thermo_grad_error:
-        if len(active) + np.sum(resubmitted) >= max_jobs:
+        if nactive + np.sum(resubmitted) >= max_jobs:
             continue
         local_configure = tools.read_configure(directory, None)
         if 'thermo_grad_error' in local_configure['job_recovery']:
@@ -160,6 +161,8 @@ def resub(directory='in place'):
     # Look at jobs in "waiting," resume them if the job they were waiting for is finished
     # Currently, this should only ever be thermo jobs waiting for an ultratight job
     for waiting_dict in waiting:
+        if nactive + np.sum(resubmitted) >= max_jobs:
+            continue
         if len(waiting_dict.keys()) > 1:
             raise Exception('Waiting job list improperly constructed')
         job = waiting_dict.keys()[0]
@@ -187,12 +190,12 @@ def resub(directory='in place'):
 
     short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
     long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
-    bundled_jobscripts = tools.bundled_jobscripts(short_jobs_to_submit)
+    bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(),short_jobs_to_submit)
     to_submit = long_jobs_to_submit + bundled_jobscripts
 
     submitted = []
     for job in to_submit:
-        if len(submitted) + len(active) + np.sum(resubmitted) >= max_jobs:
+        if len(submitted) + nactive + np.sum(resubmitted) >= max_jobs:
             continue
         print('Initial sumbission for job: ' + os.path.split(job)[-1])
         tools.qsub(job)

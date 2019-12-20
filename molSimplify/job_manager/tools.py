@@ -101,14 +101,14 @@ def list_active_jobs(ids=False,home_directory=False,parse_bundles=False):
         return names, job_ids
 
     if parse_bundles:
-        bundles = [i for i in names if i.endswith('_bundle')]
+        bundles = [i for i in names if i.startswith('bundle_')]
         names = [i for i in names if i not in bundles]
 
         for bundle in bundles:
             info_path = glob.glob(os.path.join(home_directory,'bundle',bundle,'*_info'))[0]
             fil = open(info_path,'r')
             lines = fil.readlines()
-            lines = [i[:-1] for i in lines if i.endswith('\n') else i]
+            lines = [i[:-1] if i.endswith('\n') else i for i in lines]
             fil.close()
             names.extend(lines)
 
@@ -126,7 +126,10 @@ def check_completeness(directory='in place', max_resub=5):
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
 
-    active_jobs = list_active_jobs()
+    if directory=='in place':
+        active_jobs = list_active_jobs(home_directory=os.getcwd(),parse_bundles=True)
+    else:
+        active_jobs = list_active_jobs(home_directory=directory,parse_bundles=True)
 
     def check_finished(path, results_dict=results_dict):
         # Return True if the outfile corresponds to a complete job, False otherwise
@@ -260,7 +263,6 @@ def find(key, directory='in place'):
 
 def qsub(jobscript_list):
     ## Takes a list of paths to jobscripts (like output by find) and submits them with qsub
-
     # Handles cases where a single jobscript is submitted instead of a list
     if type(jobscript_list) != list:
         jobscript_list = [jobscript_list]
@@ -289,7 +291,7 @@ def check_original(job):
     name = name.rsplit('.', 1)[0]
     name = name.split('_')
 
-    dependent_jobs = ['solventSP', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
+    dependent_jobs = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
                       'functional']
     if any(j in name for j in dependent_jobs):
         return False
@@ -301,7 +303,7 @@ def check_short_single_point(job):
     name = name.rsplit('.',1)[0]
     name = name.split('_')
 
-    short_jobs = ['solventSP', 'kp', 'rm', 'functional', 'vertEA', 'vertIP']
+    short_jobs = ['solvent', 'kp', 'rm', 'functional', 'vertEA', 'vertIP']
     if any(j in name for j in short_jobs):
         return True
     else:
@@ -821,8 +823,7 @@ def write_jobscript(name,custom_line = None,time_limit='96:00:00',terachem_line=
             text = text[:12] + custom_line + text[12:]
         else:
             text = text[:12] + [custom_line + '\n'] + text[12:]
-    if sleep:
-        text = text + ['sleep 300\n']  # For very short jobs, sleep for 5 minutes after completion to keep the queue happy
+
     for i in text:
         jobscript.write(i)
     jobscript.close()
@@ -830,36 +831,44 @@ def write_jobscript(name,custom_line = None,time_limit='96:00:00',terachem_line=
 def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 50):
 
     number_of_bundles = int(float(len(jobscript_paths))/float(max_bundle_size))
-    print('Bundling '+str(len(jobscript_paths)+' into '+str(number_of_bundles)+' jobscript(s)'))
+    print('Bundling '+str(len(jobscript_paths))+' into '+str(number_of_bundles+1)+' jobscript(s)')
 
-    bundles = []
+    bundles,i,many_bundles = [],0,False
     for i in range(number_of_bundles):
         bundles.append(jobscript_paths[max_bundle_size*i:max_bundle_size*(i+1)])
-    bundles.append(jobscript_paths[max_bundle_size*(i+1):])
+        many_bundles = True
+    if many_bundles:
+        bundles.append(jobscript_paths[max_bundle_size*(i+1):])
+    else:
+        bundles = [jobscript_paths]
 
     output_jobscripts = []
     for bundle in bundles:
         output_jobscripts.append(sub_bundle_jobscripts(home_directory,bundle))
 
+    return output_jobscripts
+
 
 def sub_bundle_jobscripts(home_directory,jobscript_paths):
     #Takes a list of jobscript paths, and bundles them into a single jobscript
     #Records information about which jobs were bundled together in the run's home directory
-
     if not os.path.isdir(os.path.join(home_directory,'bundle')):
         os.mkdir(os.path.join(home_directory,'bundle'))
     jobscript_paths = [convert_to_absolute_path(i) for i in jobscript_paths]
 
     existing_bundles = glob.glob(os.path.join(home_directory,'bundle','*'))
     existing_bundles = [i for i in existing_bundles if os.path.isdir(i)]
-    existing_bundle_numbers = [int(i.split('_')[0]) for i in existing_bundles]
+    if len(existing_bundles) > 0:
+        existing_bundle_numbers = [int(os.path.split(i)[-1].split('_')[-1]) for i in existing_bundles]
+    else:
+        existing_bundle_numbers = [0]
 
     #Create a directory for this jobscript bundle
-    os.mkdir(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle'))
+    os.mkdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
 
 
     #Record info about how the jobs are being bundled
-    fil = open(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle',str(max(existing_bundle_numbers)+1)+'_bundle_info'))
+    fil = open(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1),'bundle_'+str(max(existing_bundle_numbers)+1)+'_info'),'w')
     for i in jobscript_paths[:-1]:
         fil.write(os.path.split(i)[-1].rsplit('_',1)[0]+'\n')
     fil.write(os.path.split(jobscript_paths[-1])[-1].rsplit('_',1)[0])
@@ -867,18 +876,20 @@ def sub_bundle_jobscripts(home_directory,jobscript_paths):
 
     #Write a jobscript for the job bundle
     home = os.getcwd()
-    os.chdir(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle'))
-    write_jobscript(str(max(existing_bundle_numbers)+1)+'_bundle',terachem_line=False)
-    fil = open(str(max(existing_bundle_numbers)+1)+'_bundle','a')
+    os.chdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
+    write_jobscript(str('bundle_'+str(max(existing_bundle_numbers)+1)),terachem_line=False)
+    shutil.move('bundle_'+str(max(existing_bundle_numbers)+1)+'_jobscript','bundle_'+str(max(existing_bundle_numbers)+1))
+    fil = open('bundle_'+str(max(existing_bundle_numbers)+1),'a')
     for i in jobscript_paths:
-        infile = i.rsplit('.',1)[0]+'.in'
-        outfile = i.rsplit('.',1)[0]+'.out'
-        text = 'terachem '+infile+' > '+outfile
+        infile = i.rsplit('_',1)[0]+'.in'
+        outfile = i.rsplit('_',1)[0]+'.out'
+        directory = os.path.split(i)[0]
+        text = 'cd '+directory+'\n'+'terachem '+infile+' > '+outfile
         fil.write(text+'\n')
     fil.close()
     os.chdir(home)
 
-    return os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle',str(max(existing_bundle_numbers)+1)+'_bundle')
+    return os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1),'bundle_'+str(max(existing_bundle_numbers)+1))
 
 def prep_vertical_ip(path):
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical IP run
@@ -1010,7 +1021,7 @@ def prep_solvent_sp(path, solvents=[78.9]):
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
-    solname = results['name'] + '_solventSP'
+    solname = results['name'] + '_solvent'
     solvent_base_path = os.path.join(base, solname)
     if os.path.isdir(solvent_base_path):
         return ['Directory for solvent single point already exists']

@@ -1,4 +1,5 @@
-solvent
+solvent 10.3 78.9
+functionalsSP wpbeh camb3lyp wb97x
 vertEA
 vertIP
 thermo
