@@ -187,8 +187,8 @@ def resub(directory='in place'):
 
     short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
     long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
-    
-
+    bundled_jobscripts = tools.bundled_jobscripts(short_jobs_to_submit)
+    to_submit = long_jobs_to_submit + bundled_jobscripts
 
     submitted = []
     for job in to_submit:

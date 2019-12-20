@@ -73,8 +73,11 @@ def convert_to_absolute_path(path):
     return path
 
 
-def list_active_jobs(ids=False):
+def list_active_jobs(ids=False,home_directory=False,parse_bundles=False):
     #  @return A list of active jobs for the current user. By job name
+
+    if (ids and parse_bundles) or (parse_bundles and not home_directory):
+        raise Exception('Incompatible options passed to list_active_jobs()')
 
     job_report = textfile()
     try:
@@ -96,6 +99,18 @@ def list_active_jobs(ids=False):
             print len(job_ids)
             raise Exception('An error has occurred in listing active jobs!')
         return names, job_ids
+
+    if parse_bundles:
+        bundles = [i for i in names if i.endswith('_bundle')]
+        names = [i for i in names if i not in bundles]
+
+        for bundle in bundles:
+            info_path = glob.glob(os.path.join(home_directory,'bundle',bundle,'*_info'))[0]
+            fil = open(info_path,'r')
+            lines = fil.readlines()
+            lines = [i[:-1] for i in lines if i.endswith('\n') else i]
+            fil.close()
+            names.extend(lines)
 
     return names
 
@@ -286,10 +301,11 @@ def check_short_single_point(job):
     name = name.rsplit('.',1)[0]
     name = name.split('_')
 
-    if 'solventSP' in name or 'vertEA' in name or 'vertIP' in name or name or 'kp' in name or 'rm' in name or 'ultratight' in name:
-        return False
-    else:
+    short_jobs = ['solventSP', 'kp', 'rm', 'functional', 'vertEA', 'vertIP']
+    if any(j in name for j in short_jobs):
         return True
+    else:
+        return False
 
 def extract_optimized_geo(PATH, custom_name = False):
     #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
@@ -845,14 +861,14 @@ def sub_bundle_jobscripts(home_directory,jobscript_paths):
     #Record info about how the jobs are being bundled
     fil = open(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle',str(max(existing_bundle_numbers)+1)+'_bundle_info'))
     for i in jobscript_paths[:-1]:
-        fil.write(i+'\n')
-    fil.write(jobscript_paths[-1])
+        fil.write(os.path.split(i)[-1].rsplit('_',1)[0]+'\n')
+    fil.write(os.path.split(jobscript_paths[-1])[-1].rsplit('_',1)[0])
     fil.close()
 
     #Write a jobscript for the job bundle
     home = os.getcwd()
     os.chdir(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle'))
-    write_jobscript(str(max(existing_bundle_numbers)+1)+'_bundle')
+    write_jobscript(str(max(existing_bundle_numbers)+1)+'_bundle',terachem_line=False)
     fil = open(str(max(existing_bundle_numbers)+1)+'_bundle','a')
     for i in jobscript_paths:
         infile = i.rsplit('.',1)[0]+'.in'
