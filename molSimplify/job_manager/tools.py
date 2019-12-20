@@ -262,6 +262,17 @@ def check_original(job):
         return False
     else:
         return True
+
+def check_short_single_point(job):
+    name = os.path.split(job)[-1]
+    name = name.rsplit('.',1)[0]
+    name = name.split('_')
+
+    if 'solventSP' in name or 'vertEA' in name or 'vertIP' in name or name or 'kp' in name or 'rm' in name or 'ultratight' in name:
+        return False
+    else:
+        return True
+
 def extract_optimized_geo(PATH, custom_name = False):
     #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
     #The file is written to the same directory as contained optim.xyz
@@ -729,7 +740,7 @@ def write_input(input_dictionary = dict(), name = None,charge = None,spinmult=No
         input_file.write(lines)
     input_file.close()
     
-def write_jobscript(name,custom_line = None,time_limit='96:00:00',sleep= False):
+def write_jobscript(name,custom_line = None,time_limit='96:00:00',terachem_line=True):
     #Writes a generic terachem jobscript
     #custom line allows the addition of extra lines just before the export statement
         
@@ -750,17 +761,71 @@ def write_jobscript(name,custom_line = None,time_limit='96:00:00',sleep= False):
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n',
             'terachem '+name+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
+    if not terachem_line:
+        text = text[:-1]
+
     if custom_line:
         if type(custom_line) == list:
             text = text[:12]+custom_line+text[12:]
         else:
             text = text[:12]+[custom_line+'\n']+text[12:]
-    if sleep:
-        text = text+['sleep 300\n'] #For very short jobs, sleep for 5 minutes after completion to keep the queue happy
+
     for i in text:
         jobscript.write(i)
     jobscript.close()
 
+def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 50):
+
+    number_of_bundles = int(float(len(jobscript_paths))/float(max_bundle_size))
+    print('Bundling '+str(len(jobscript_paths)+' into '+str(number_of_bundles)+' jobscript(s)'))
+
+    bundles = []
+    for i in range(number_of_bundles):
+        bundles.append(jobscript_paths[max_bundle_size*i:max_bundle_size*(i+1)])
+    bundles.append(jobscript_paths[max_bundle_size*(i+1):])
+
+    output_jobscripts = []
+    for bundle in bundles:
+        output_jobscripts.append(sub_bundle_jobscripts(home_directory,bundle))
+
+
+def sub_bundle_jobscripts(home_directory,jobscript_paths):
+    #Takes a list of jobscript paths, and bundles them into a single jobscript
+    #Records information about which jobs were bundled together in the run's home directory
+
+    if not os.path.isdir(os.path.join(home_directory,'bundle')):
+        os.mkdir(os.path.join(home_directory,'bundle'))
+    jobscript_paths = [convert_to_absolute_path(i) for i in jobscript_paths]
+
+    existing_bundles = glob.glob(os.path.join(home_directory,'bundle','*'))
+    existing_bundles = [i for i in existing_bundles if os.path.isdir(i)]
+    existing_bundle_numbers = [int(i.split('_')[0]) for i in existing_bundles]
+
+    #Create a directory for this jobscript bundle
+    os.mkdir(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle'))
+
+
+    #Record info about how the jobs are being bundled
+    fil = open(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle',str(max(existing_bundle_numbers)+1)+'_bundle_info'))
+    for i in jobscript_paths[:-1]:
+        fil.write(i+'\n')
+    fil.write(jobscript_paths[-1])
+    fil.close()
+
+    #Write a jobscript for the job bundle
+    home = os.getcwd()
+    os.chdir(os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle'))
+    write_jobscript(str(max(existing_bundle_numbers)+1)+'_bundle')
+    fil = open(str(max(existing_bundle_numbers)+1)+'_bundle','a')
+    for i in jobscript_paths:
+        infile = i.rsplit('.',1)[0]+'.in'
+        outfile = i.rsplit('.',1)[0]+'.out'
+        text = 'terachem '+infile+' > '+outfile
+        fil.write(text+'\n')
+    fil.close()
+    os.chdir(home)
+
+    return os.path.join(home_directory,'bundle',str(max(existing_bundle_numbers)+1)+'_bundle',str(max(existing_bundle_numbers)+1)+'_bundle')
 
 def prep_vertical_ip(path):
     #Given a path to the outfile of a finished run, this preps the files for a corresponding vertical IP run

@@ -171,6 +171,12 @@ def resub(directory = 'in place'):
     for job in jobscripts:
         if not os.path.isfile(job.rsplit('_',1)[0]+'.out') and not os.path.split(job.rsplit('_',1)[0])[-1] in active_jobs:
             to_submit.append(job)
+
+    short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
+    long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
+    
+
+
     submitted = []
     for job in to_submit:
         if len(submitted)+len(active)+np.sum(resubmitted) >= max_jobs:
