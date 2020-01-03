@@ -5,7 +5,7 @@ import glob
 import numpy as np
 import shutil
 from molSimplify.Classes.mol3D import *
-from tools import *
+from .tools import *
 from molSimplifyAD.utils.pymongo_tools import connect2db, query_lowestE_converged
 
 
@@ -107,7 +107,8 @@ def populate_single_job(basedir, job, db):
     if not os.path.isdir(geodir):
         os.makedirs(geodir)
     iscsd = isCSD(job['ligstr'])
-    query_constraints = {"metal": job['metal'], "spin": job["spin"], "ligstr": job["ligstr"], "alpha": 20}
+    query_constraints = {"metal": job['metal'], "spin": job["spin"], "ligstr": job["ligstr"], "alpha": 20,
+                         "wavefunction": {"$exists": True}}
     if not iscsd:
         query_constraints.update({"ox": job["ox"]})
         jobname = "_".join([job['metal'], str(job['ox']), str(job['spin']), job['ligstr']])
@@ -151,7 +152,6 @@ def populate_single_job(basedir, job, db):
         print("folder exist.")
     else:
         print('WARNING: cannot recover %s' % jobname)
-
     os.chdir(basedir)
 
 

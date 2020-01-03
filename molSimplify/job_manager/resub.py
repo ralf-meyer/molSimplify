@@ -30,7 +30,6 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
 def prep_derivative_jobs(directory, list_of_outfiles):
     for job in list_of_outfiles:
         configure_dict = tools.read_configure(directory, job)
-        print(configure_dict)
 
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job, configure_dict['solvent'])
