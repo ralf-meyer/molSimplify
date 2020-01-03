@@ -980,7 +980,8 @@ class mol3D:
                     print(('metal in  cat ' + str(atom.symbol()) +
                            ' and rat ' + str(ratom.symbol())))
                     print(('maximum bonded distance is ' + str(distance_max)))
-
+                if atom.symbol() == 'He' or ratom.symbol() == 'He':
+                    distance_max = 1.5 * (atom.rad + ratom.rad)
                 if d < distance_max and i != ind:
                     # trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
@@ -988,7 +989,7 @@ class mol3D:
                             print('invalid due to hydrogens: ')
                             print((atom.symbol()))
                             print((ratom.symbol()))
-                        valid = False
+                        valid = False ### Hydrogen catom control
                     if d < distance_max and i != ind and valid:
                         if atom.symbol() in ["C", "S", "N"]:
                             if debug:
@@ -2263,8 +2264,8 @@ class mol3D:
         if debug:
             print(('ligand_list opt in symbols:', liglist_atom))
             print(('ligand_list init in symbols: ', liglist_init_atom))
-            print(("catoms opt: ", catoms))
-            print(("catoms init: ", catoms_init))
+            print(("catoms opt: ", catoms, [self.getAtom(x).symbol() for x in catoms]))
+            print(("catoms init: ", catoms_init, [self.getAtom(x).symbol() for x in catoms_init]))
             print(("catoms diff: ", set(catoms) - set(catoms_init),
                    len(set(catoms) - set(catoms_init))))
         liglist_shifted = []
