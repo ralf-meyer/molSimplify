@@ -409,19 +409,19 @@ class globalvars:
         ###### check for ~/.molSimplify ######
         if glob.glob(homedir + '/.' + self.PROGRAM):
             f = open(homedir + '/.' + self.PROGRAM, 'r')
-            s = filter(None, f.read().splitlines())
+            s = [_f for _f in f.read().splitlines() if _f]
             d = dict()
             for ss in s:
-                sp = filter(None, ss.split('='))
+                sp = [_f for _f in ss.split('=') if _f]
                 try:
                     d[sp[0]] = sp[1]
                 except:
                     pass
-            if 'CHEMDBDIR' in d.keys():
+            if 'CHEMDBDIR' in list(d.keys()):
                 self.chemdbdir = d['CHEMDBDIR']
-            if 'MULTIWFN' in d.keys():
+            if 'MULTIWFN' in list(d.keys()):
                 self.multiwfn = "'" + d['MULTIWFN'] + "'"
-            if 'CUSTOM_DATA_PATH' in d.keys():
+            if 'CUSTOM_DATA_PATH' in list(d.keys()):
                 self.custom_path = d['CUSTOM_DATA_PATH']
         else:
             self.installdir = cdir

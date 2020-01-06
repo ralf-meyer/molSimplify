@@ -364,7 +364,7 @@ def getcubes(molf, folder, gui, flog):
         resd = resd.replace('/', '_')
         cubedir = folder+'/Cube_files/'
         flog.write('Processing '+resf+'\n')
-        print('Processing ', resf)
+        print(('Processing ', resf))
         if gui:
             gui.iWtxt.setText('Processing '+resf+'\n'+gui.iWtxt.toPlainText())
             gui.app.processEvents()
@@ -434,7 +434,7 @@ def getwfnprops(molf, folder, gui, flog):
         resdp = resd
         resd = resd.replace('/', '_')
         #################################################
-        print('Processing ', resf)
+        print(('Processing ', resf))
         flog.write('Processing '+resf+'\n')
         if gui:
             gui.iWtxt.setText('Processing '+resd+'\n'+gui.iWtxt.toPlainText())
@@ -514,7 +514,7 @@ def getcharges(molf, folder, gui, flog):
                     break
         #################################################
         outfile1 = folder+'/Charge_files/'+resd+'-chH.txt'
-        print('Processing ', resdp)
+        print(('Processing ', resdp))
         flog.write('Processing '+resdp+'\n')
         if gui:
             gui.iWtxt.setText('Processing '+resf+'\n'+gui.iWtxt.toPlainText())
@@ -617,7 +617,7 @@ def deloc(molf, folder, gui, flog):
         resd = resd.replace('/', '_')+'_'+moln
         print(resd)
         outfile = folder+'/Deloc_files/'+resd+'-deloc.txt'
-        print('Processing  '+resd+' and writing output to '+outfile)
+        print(('Processing  '+resd+' and writing output to '+outfile))
         flog.write('Processing  '+resd+'\n')
         if gui:
             gui.iWtxt.setText('Processing '+resd+'\n'+gui.iWtxt.toPlainText())

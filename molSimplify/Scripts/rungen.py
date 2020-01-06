@@ -300,8 +300,8 @@ def multigenruns(rundir, args, globs):
                 args.keepHs.append(keepHs_dict[ligand])
 
             print('**************************************************************')
-            print('******************* Generating isomer ' +
-                  str(counter+1) + '! *******************')
+            print(('******************* Generating isomer ' +
+                  str(counter+1) + '! *******************'))
             print('**************************************************************')
             emsg = rungen(rundir, args, fname, globs)
         return emsg
@@ -392,7 +392,7 @@ def draw_supervisor(args, rundir):
         if len(args.substrate) > 1:
             print('Due to technical limitations, we will draw only the first substrate.')
         print('Drawing the substrate.')
-        print(args.substrate[0])
+        print((args.substrate[0]))
         substrate, emsg = substr_load(args.substrate[0])
         substrate.draw_svg(args.substrate[0])
     else:
@@ -538,7 +538,7 @@ def rungen(rundir, args, chspfname, globs):
             try:
                 os.mkdir(rootcheck)
             except:
-                print('Directory '+rootcheck+' can not be created. Exiting..\n')
+                print(('Directory '+rootcheck+' can not be created. Exiting..\n'))
                 return
             # check for actual directory
         if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
@@ -670,7 +670,7 @@ def rungen(rundir, args, chspfname, globs):
                                  rootdir+' was skipped.')
                 qq.setParent(args.gui.wmain)
             else:
-                print('Folder '+rootdir+' was skipped..\n')
+                print(('Folder '+rootdir+' was skipped..\n'))
     return emsg
 
 # ## Transition state generation

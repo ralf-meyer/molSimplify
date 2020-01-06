@@ -28,7 +28,7 @@ def call_molsimplify(geodir, job, jobname):
                              '-spin ' + str(job["spin"]), '-oxstate ' + str(job["ox"]),
                              "-ffoption " + "b", ' -ff UFF',
                              "-name", tmp_name])
-    print("call: ", bash_command)
+    print(("call: ", bash_command))
     bash_command = bash_command.split()
     subprocess.call(bash_command)
 
@@ -44,7 +44,7 @@ def call_molsimplify(geodir, job, jobname):
     if not charge:
         raise ValueError("No charge is extracted from terachem input: ", inner_folder_path + '/terachem_input')
     shutil.copyfile(xyz_path, geodir + '/' + jobname + '.xyz')
-    print(xyz_path, geodir + '/' + jobname + '.xyz')
+    print((xyz_path, geodir + '/' + jobname + '.xyz'))
     return charge
 
 
@@ -118,7 +118,7 @@ def populate_single_job(basedir, job, db):
     if not db == None:
         tmcdoc = query_lowestE_converged(db, collection='oct', constraints=query_constraints)
         if not tmcdoc == None:
-            print("Bingo! Optimized geometry found in db: ", query_constraints)
+            print(("Bingo! Optimized geometry found in db: ", query_constraints))
             try:
                 charge = int(tmcdoc["charge"])
                 spin = int(tmcdoc["spin"])
@@ -151,7 +151,7 @@ def populate_single_job(basedir, job, db):
     elif os.path.isdir(rundir):
         print("folder exist.")
     else:
-        print('WARNING: cannot recover %s' % jobname)
+        print(('WARNING: cannot recover %s' % jobname))
     os.chdir(basedir)
 
 

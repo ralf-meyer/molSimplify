@@ -5,7 +5,7 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from structgen import *
+from .structgen import *
 from molSimplify.Scripts.io import *
 import argparse
 import sys

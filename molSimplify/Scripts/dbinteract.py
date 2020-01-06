@@ -42,14 +42,14 @@ def setupdb(dbselect):
     dbfs = [dbm for dbm in dbmatches if '.fs' in dbm]
     # print('thefile list' + str(dbfiles))
     if len(dbsdf) == 0:
-        print(dbselect + ' sdf database file missing from ' + dbdir +
-              '. Please make sure file ' + dbselect + '.sdf is there..')
+        print((dbselect + ' sdf database file missing from ' + dbdir +
+              '. Please make sure file ' + dbselect + '.sdf is there..'))
         dbf1 = False
     else:
         dbf1 = dbdir + dbsdf[0]
     if len(dbfs) == 0:
-        print(dbselect + ' fastsearch database file missing from ' + dbdir +
-              '. Please make sure file ' + dbselect + '.fs is there, it speeds up search significantly..')
+        print((dbselect + ' fastsearch database file missing from ' + dbdir +
+              '. Please make sure file ' + dbselect + '.fs is there, it speeds up search significantly..'))
         dbf2 = False
     else:
         dbf2 = dbdir + dbfs[0]
@@ -291,7 +291,7 @@ def checkels(fname, allowedels):
             f.write(ss + '\n')
             nf = nf + 1
     f.close()
-    print('Element filter returns', str(nf), 'results')
+    print(('Element filter returns', str(nf), 'results'))
     return 0
 
 
@@ -447,8 +447,8 @@ def dbsearch(rundir, args, globs):
             qqb = mQDialogWarn('Warning', "No database file found within " +
                                globs.chemdbdir + '. Search not possible.')
             qqb.setParent(args.gui.DBWindow)
-        print("No database file found within " +
-              globs.chemdbdir + '. Search not possible.')
+        print(("No database file found within " +
+              globs.chemdbdir + '. Search not possible.'))
         return True
     # if args.dbsim:
     # print('similarity searching')
@@ -483,8 +483,8 @@ def dbsearch(rundir, args, globs):
                 smistr = f.read()
                 f.close()
             else:
-                print('File ' + args.dbsmarts +
-                      ' does not exist. Check your input.')
+                print(('File ' + args.dbsmarts +
+                      ' does not exist. Check your input.'))
                 print('Substructure search terminating..')
                 return 1
         elif ('.mol' in args.dbsmarts or '.xyz' in args.dbsmarts):
@@ -493,8 +493,8 @@ def dbsearch(rundir, args, globs):
 
                 smistr = pymol.write("smi")
             else:
-                print('File ' + args.dbsmarts +
-                      ' does not exist. Check your input.')
+                print(('File ' + args.dbsmarts +
+                      ' does not exist. Check your input.'))
                 print('Substructure search terminating..')
                 return True
         else:

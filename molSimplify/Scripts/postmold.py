@@ -49,7 +49,7 @@ def getrange(idx, atoms):
 def parse(folder, molf):
     metals = ['Sc', 'SC', 'Ti', 'TI', 'V', 'Cr', 'CR', 'Mn', 'MN',
               'Fe', 'FE', 'Co', 'CO', 'Ni', 'NI', 'Cu', 'CU', 'Zn', 'ZN']
-    print("Parsing "+molf.split('.molden')[0])
+    print(("Parsing "+molf.split('.molden')[0]))
     # get coordinates of metal
     f = open(molf, 'r')
     sm = f.read().splitlines()

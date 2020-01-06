@@ -2378,8 +2378,8 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     lig3Dtmp, en_final = ffopt(
         args.ff, lig3Dtmp, [], 1, [], False, [], 0, args.debug)
     if en_final - en_start > 20:
-        print('Warning: Complex may be strained. Ligand strain energy (kcal/mol) = ' +
-              str(en_final - en_start))
+        print(('Warning: Complex may be strained. Ligand strain energy (kcal/mol) = ' +
+              str(en_final - en_start)))
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3Dtmp)
     return lig3D_aligned
@@ -2643,7 +2643,7 @@ def cleave_tridentate(lig3D, catoms):
 def mcomplex(args, ligs, ligoc, licores, globs):
     this_diag = run_diag()
     if globs.debug:
-        print('\nGenerating complex with ligands and occupations:', ligs, ligoc)
+        print(('\nGenerating complex with ligands and occupations:', ligs, ligoc))
     if args.gui:
         args.gui.iWtxt.setText('\nGenerating complex with core:'+args.core +
                                ' and ligands: ' + ' '.join(ligs)+'\n'+args.gui.iWtxt.toPlainText())
@@ -3174,7 +3174,7 @@ def msubcomplex(args, core3D, substrate, sub_i, subcatoms, mlig, subcatoms_ext, 
     subcores = getsubcores()
     this_diag = run_diag()
     if globs.debug:
-        print('\nGenerating TS complex with substrate and mlig:', substrate, mlig)
+        print(('\nGenerating TS complex with substrate and mlig:', substrate, mlig))
     if args.gui:
         args.gui.iWtxt.setText('\nGenerating complex with core:'+args.core+' and ligands: ' + ' '.join(arg.ligs)+'\n' +
                                args.gui.iWtxt.toPlainText())
@@ -3710,8 +3710,8 @@ def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=
     if not args.reportonly:
         sanity, d0 = core3D.sanitycheck(True)
         if sanity:
-            print('WARNING: Generated complex is not good! Minimum distance between atoms:' +
-                  "{0:.2f}".format(d0)+'A\n')
+            print(('WARNING: Generated complex is not good! Minimum distance between atoms:' +
+                  "{0:.2f}".format(d0)+'A\n'))
             if args.gui:
                 ssmsg = 'Generated complex in folder '+rootdir + \
                     ' is no good! Minimum distance between atoms:' + \
@@ -3875,7 +3875,7 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
             print('You have specified multidentate SMILES ligand(s).')
             print('We will automatically find suitable conformer(s) for coordination.')
             for n in range(1, int(args.nconfs)+1):
-                print('Generating conformer '+str(n)+' of '+args.nconfs+':')
+                print(('Generating conformer '+str(n)+' of '+args.nconfs+':'))
                 strfiles, emsg, this_diag = structgen_one(
                     strfiles, args, rootdir, ligands, ligoc, globs, sernum, n)
                 print(strfiles)
@@ -4025,7 +4025,7 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
                 if not(newmol.overlapcheck(core3D, 1)):
                     break
                 if totits > 200:
-                    print("WARNING: Overlapping in molecules for file "+fname+str(i))
+                    print(("WARNING: Overlapping in molecules for file "+fname+str(i)))
                     break
                 totits += 1
             if (i > 0):
@@ -4055,6 +4055,6 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
         args.gui.iWtxt.setText('In folder '+pfold+' generated ' +
                                str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
-    print('\nIn folder '+pfold+' generated ', Nogeom, ' structure(s)!')
+    print(('\nIn folder '+pfold+' generated ', Nogeom, ' structure(s)!'))
 
     return strfiles, emsg, this_diag

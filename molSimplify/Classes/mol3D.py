@@ -1915,7 +1915,7 @@ class mol3D:
         ss = ''  # initialize returning string
         natoms = self.natoms
         if not ordering:
-            ordering = range(natoms)
+            ordering = list(range(natoms))
         if ignoreX:
             natoms -= sum([1 for i in self.atoms if i.sym == "X"])
 
@@ -2078,7 +2078,7 @@ class mol3D:
                 for _ind in _catoms:
                     if dist2catoms[ind][_ind] < 1.3:
                         tmp.update({_ind: dist2metal[_ind]})
-                _catoms_set.add(min(tmp.items(), key=lambda x: x[1])[0])
+                _catoms_set.add(min(list(tmp.items()), key=lambda x: x[1])[0])
             _catoms = list(_catoms_set)
             min_bond_dist = 2.0  ## This need double check with Aditya/ Michael
             if len(dist2metal) > 0:
@@ -2101,8 +2101,8 @@ class mol3D:
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
         if debug:
-            print("self.catoms: ", self.catoms)
-            print("self.num_coord_metal: ", self.num_coord_metal)
+            print(("self.catoms: ", self.catoms))
+            print(("self.num_coord_metal: ", self.num_coord_metal))
 
     # Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
     # Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
@@ -2155,7 +2155,7 @@ class mol3D:
         for idx, ele in enumerate(th_output_arr):
             theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
         theta_trunc_arr = theta_arr
-        theta_trunc_arr_T = list(map(list, zip(*theta_trunc_arr)))
+        theta_trunc_arr_T = list(map(list, list(zip(*theta_trunc_arr))))
         oct_catoms = theta_trunc_arr_T[0]
         oct_angle_devi = theta_trunc_arr_T[1]
         oct_angle_all = theta_trunc_arr_T[2]
@@ -2424,7 +2424,7 @@ class mol3D:
                 ind_next = self.find_the_other_ind(catoms[:], metal_ind)
                 _catoms = self.getBondedAtomsSmart(ind_next)
                 # print("~~~~", (self.atoms[ind].sym, self.atoms[ind_next].sym))
-                if (self.atoms[ind].sym, self.atoms[ind_next].sym) in self.globs.tribonddict().keys():
+                if (self.atoms[ind].sym, self.atoms[ind_next].sym) in list(self.globs.tribonddict().keys()):
                     dist = np.linalg.norm(np.array(self.atoms[ind].coords()) - np.array(self.atoms[ind_next].coords()))
                     if dist > self.globs.tribonddict()[(self.atoms[ind].sym, self.atoms[ind_next].sym)]:
                         endcheck = True
@@ -2552,7 +2552,7 @@ class mol3D:
         print('=======End of printing geo_check_results========')
 
     def print_dict(self, _dict):
-        for key, value in _dict.items():
+        for key, value in list(_dict.items()):
             print(('%s: ' % key, value))
 
     # Final geometry check call for octahedral structures.
@@ -2813,7 +2813,7 @@ class mol3D:
         unique_symbols = dict()
         for atoms in self.getAtoms():
             if atoms.symbol() in atomorder:
-                if not atoms.symbol() in unique_symbols.keys():
+                if not atoms.symbol() in list(unique_symbols.keys()):
                     unique_symbols[atoms.symbol()] = 1
                 else:
                     unique_symbols[atoms.symbol(
@@ -2881,7 +2881,7 @@ class mol3D:
                         if int(ll[0]) == int(ll[1]):
                             self.bv_dict.update({int(ll[0]): float(ll[2])})
         else:
-            print("bofile does not exist.", bofile)
+            print(("bofile does not exist.", bofile))
         for ii in range(self.natoms):
             # self.ve_dict.update({ii: globs.amass()[self.atoms[ii].symbol()][3]})
             self.ve_dict.update({ii: bonds_organic[self.atoms[ii].symbol()]})
@@ -2906,7 +2906,7 @@ class mol3D:
                     if len(ll) == 3 and ll[0].isdigit():
                         self.charge_dict.update({int(ll[0]) - 1: float(ll[2])})
         else:
-            print("chargefile does not exist.", chargefile)
+            print(("chargefile does not exist.", chargefile))
 
     def get_symmetry_denticity(self):
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign

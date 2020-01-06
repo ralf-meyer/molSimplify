@@ -27,8 +27,8 @@ def checkinput(args, calctype="base"):
     if calctype == "base":
         # check core
         if not args.core:
-            print(
-                'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores())
+            print((
+                'WARNING: No core specified. Defaulting to Fe. Available cores are: '+getcores()))
             args.core = ['fe']
         # convert full element name to symbol for cores:
         if args.core[0].lower() in list(metals_conv.keys()):
@@ -41,8 +41,8 @@ def checkinput(args, calctype="base"):
             # check oxidation state
             if not args.oxstate:
                 try:
-                    print('WARNING: No oxidation state specified. Defaulting to ' +
-                          globs.defaultoxstate[args.core[0].lower()])
+                    print(('WARNING: No oxidation state specified. Defaulting to ' +
+                          globs.defaultoxstate[args.core[0].lower()]))
                     args.oxstate = globs.defaultoxstate[args.core[0].lower()]
                 except:
                     print('WARNING: No oxidation state specified. Defaulting to 2')
@@ -57,8 +57,8 @@ def checkinput(args, calctype="base"):
                     if mtlsdlist[args.core[0].lower()]-max(0, int(oxstatenum)-2) in defaultspins:
                         defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower(
                         )]-max(0, int(oxstatenum)-2)]
-                        print(
-                            'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate)
+                        print((
+                            'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate))
                         print(
                             'Please check this against our ANN output (where available)')
                     else:
@@ -135,8 +135,8 @@ def checkinput(args, calctype="base"):
                 args.lig = ['water']
 
             if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
-                print('WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: ' +
-                      globs.defaultgeometry[int(args.coord)][1])
+                print(('WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: ' +
+                      globs.defaultgeometry[int(args.coord)][1]))
                 args.geometry = globs.defaultgeometry[int(args.coord)][0]
             if args.geometry and not args.coord:
                 if args.geometry not in geomnames and args.geometry not in geomshorts:
@@ -151,8 +151,8 @@ def checkinput(args, calctype="base"):
                         args.coord = coords[geomnames.index(args.geometry)]
                     except:
                         args.coord = coords[geomshorts.index(args.geometry)]
-                    print(
-                        'WARNING: No coordination number specified. Defaulting to '+str(args.coord))
+                    print((
+                        'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
             # check number of ligands
             if args.coord and not args.ligocc:
                 print(('WARNING: No ligand numbers specified. Defaulting to ' +
@@ -166,8 +166,8 @@ def checkinput(args, calctype="base"):
             args.substrate[0], 0, args.subcatoms)
         # check core
         if not args.core:
-            print(
-                'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores())
+            print((
+                'WARNING: No core specified. Defaulting to Fe. \nAvailable cores are: '+getcores()))
             args.core = ['fe']
         if args.core[0][0].upper()+args.core[0][1:].lower() in elementsbynum:
             # convert to titlecase
@@ -175,8 +175,8 @@ def checkinput(args, calctype="base"):
             # check oxidation state
             if not args.oxstate:
                 try:
-                    print('WARNING: No oxidation state specified. Defaulting to ' +
-                          globs.defaultoxstate[args.core[0].lower()])
+                    print(('WARNING: No oxidation state specified. Defaulting to ' +
+                          globs.defaultoxstate[args.core[0].lower()]))
                     args.oxstate = globs.defaultoxstate[args.core[0].lower()]
                 except:
                     print('WARNING: No oxidation state specified. Defaulting to 2')
@@ -191,8 +191,8 @@ def checkinput(args, calctype="base"):
                     if mtlsdlist[args.core[0].lower()]-max(0, int(oxstatenum)-2) in defaultspins:
                         defaultspinstate = defaultspins[mtlsdlist[args.core[0].lower(
                         )]-max(0, int(oxstatenum)-2)]
-                        print(
-                            'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate)
+                        print((
+                            'WARNING: No spin multiplicity specified. Defaulting to '+defaultspinstate))
                         print(
                             'Please check this against our ANN output (where available)')
                     else:
@@ -278,8 +278,8 @@ def checkinput(args, calctype="base"):
                         ('WARNING: No coordination number specified. Calculating from lig, ligocc, and subcatoms and found ' + str(toccs) + '.'))
                     args.coord = toccs
             if args.coord and (not args.geometry or (args.geometry not in geomnames and args.geometry not in geomshorts)):
-                print('WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: ' +
-                      globs.defaultgeometry[int(args.coord)][1])
+                print(('WARNING: No or unknown coordination geometry specified. Defining coordination geometry based on found coordination number: ' +
+                      globs.defaultgeometry[int(args.coord)][1]))
                 args.geometry = globs.defaultgeometry[int(args.coord)][0]
             if args.geometry and not args.coord:
                 coords, geomnames, geomshorts, geomgroups = getgeoms()
@@ -295,8 +295,8 @@ def checkinput(args, calctype="base"):
                         args.coord = coords[geomnames.index(args.geometry)]
                     except:
                         args.coord = coords[geomshorts.index(args.geometry)]
-                    print(
-                        'WARNING: No coordination number specified. Defaulting to '+str(args.coord))
+                    print((
+                        'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
             # check number of ligands
             if args.coord and not args.ligocc:
                 print(('WARNING: No ligand numbers specified. Defaulting to ' +

@@ -335,7 +335,7 @@ def deltametric_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
 
 def full_autocorrelation(mol, prop, d, oct=oct, modifier=False, use_dist=False):
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
-    index_set = range(0, mol.natoms)
+    index_set = list(range(0, mol.natoms))
     autocorrelation_vector = np.zeros(d + 1)
     for centers in index_set:
         autocorrelation_vector += autocorrelation(mol, w, centers, d, oct=oct, use_dist=use_dist)
@@ -344,7 +344,7 @@ def full_autocorrelation(mol, prop, d, oct=oct, modifier=False, use_dist=False):
 
 def full_autocorrelation_derivative(mol, prop, d, oct=oct, modifier=False):
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
-    index_set = range(0, mol.natoms)
+    index_set = list(range(0, mol.natoms))
     autocorrelation_derivative_mat = np.zeros((d + 1, mol.natoms))
     for centers in index_set:
         autocorrelation_derivative_mat += autocorrelation_derivative(mol, w, centers, d, oct=oct)
@@ -552,7 +552,7 @@ def metal_only_layer_density(mol, prop, d, oct=True):
     density_vector = np.zeros(d)
     try:
         metal_ind = mol.findMetal()[0]
-        print('metal_index is: %d' % metal_ind)
+        print(('metal_index is: %d' % metal_ind))
         w = construct_property_vector(mol, prop, oct=oct)
         density_vector = layer_density_in_3D(mol, w, metal_ind, d, oct=oct)
     except:
@@ -621,24 +621,24 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
     w = np.zeros(mol.natoms)
     done = False
     if not prop in allowed_strings:
-        print('error, property  ' + str(prop) + ' is not a vaild choice')
-        print(' options are  ' + str(allowed_strings))
+        print(('error, property  ' + str(prop) + ' is not a vaild choice'))
+        print((' options are  ' + str(allowed_strings)))
         return False
     if prop == 'electronegativity':
         prop_dict = globs.endict()
     elif prop == 'size':
-        at_keys = globs.amass().keys()
+        at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][2]
             prop_dict.update({keys: values})
     elif prop == 'nuclear_charge':
-        at_keys = globs.amass().keys()
+        at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][1]
             prop_dict.update({keys: values})
     elif prop == 'effective_nuclear_charge':  # Uses number of valence electrons
         # if not modifier:
-        at_keys = globs.amass().keys()
+        at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][3]
             prop_dict.update({keys: values}) 
@@ -655,14 +655,14 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
             print('Error, must give modifier with ox_nuclear_charge')
             return False
         else:
-            at_keys = globs.amass().keys()
+            at_keys = list(globs.amass().keys())
             for keys in at_keys:
                 values = globs.amass()[keys][1]
-                if keys in modifier.keys():
+                if keys in list(modifier.keys()):
                     values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
                 prop_dict.update({keys: values})
     elif prop == 'ident':
-        at_keys = globs.amass().keys()
+        at_keys = list(globs.amass().keys())
         for keys in at_keys:
             prop_dict.update({keys: 1})
     elif prop == 'topology':
@@ -826,14 +826,14 @@ def find_ligand_autocorrelation_derivatives_oct(mol, prop, loud, depth, name=Fal
         ax_ligand_ac_full_derivative = full_autocorrelation_derivative(ax_ligand_list[i].mol, prop, depth)
         ## now we need to map back to full positions
         for ii, row in enumerate(ax_ligand_ac_full_derivative):
-            for original_ids in ax_ligand_list[i].ext_int_dict.keys():
+            for original_ids in list(ax_ligand_list[i].ext_int_dict.keys()):
                 ax_full_j[ii, original_ids] += np.divide(row[ax_ligand_list[i].ext_int_dict[original_ids]], n_ax)
 
     for i in range(0, n_eq):  # for each eq ligand
         ## now we need to map back to full positions
         eq_ligand_eq_full_derivative = full_autocorrelation_derivative(eq_ligand_list[i].mol, prop, depth)
         for ii, row in enumerate(eq_ligand_eq_full_derivative):
-            for original_ids in eq_ligand_list[i].ext_int_dict.keys():
+            for original_ids in list(eq_ligand_list[i].ext_int_dict.keys()):
                 eq_full_j[ii, original_ids] += np.divide(row[eq_ligand_list[i].ext_int_dict[original_ids]], n_eq)
 
     # ligand connection ACs
@@ -842,7 +842,7 @@ def find_ligand_autocorrelation_derivatives_oct(mol, prop, loud, depth, name=Fal
                                                                            ax_con_int_list[i])
         ## now we need to map back to full positions
         for ii, row in enumerate(ax_ligand_ac_con_derivative):
-            for original_ids in ax_ligand_list[i].ext_int_dict.keys():
+            for original_ids in list(ax_ligand_list[i].ext_int_dict.keys()):
                 ax_con_j[ii, original_ids] += np.divide(row[ax_ligand_list[i].ext_int_dict[original_ids]], n_ax)
 
     for i in range(0, n_eq):
@@ -850,7 +850,7 @@ def find_ligand_autocorrelation_derivatives_oct(mol, prop, loud, depth, name=Fal
                                                                            eq_con_int_list[i])
         ## now we need to map back to full positions
         for ii, row in enumerate(eq_ligand_ac_con_derivative):
-            for original_ids in eq_ligand_list[i].ext_int_dict.keys():
+            for original_ids in list(eq_ligand_list[i].ext_int_dict.keys()):
                 eq_con_j[ii, original_ids] += np.divide(row[eq_ligand_list[i].ext_int_dict[original_ids]], n_eq)
 
     return ax_full_j, eq_full_j, ax_con_j, eq_con_j
@@ -1002,14 +1002,14 @@ def find_ligand_deltametric_derivatives_oct(mol, prop, loud, depth, name=False, 
                                                                        ax_con_int_list[i])
         ## now we need to map back to full positions
         for ii, row in enumerate(ax_ligand_ac_con_derivative):
-            for original_ids in ax_ligand_list[i].ext_int_dict.keys():
+            for original_ids in list(ax_ligand_list[i].ext_int_dict.keys()):
                 ax_con_j[ii, original_ids] += np.divide(row[ax_ligand_list[i].ext_int_dict[original_ids]], n_ax)
 
     for i in range(0, n_eq):
         eq_ligand_ac_con_derivative = atom_only_deltametric_derivative(eq_ligand_list[i].mol, prop, depth,
                                                                        eq_con_int_list[i])
         for ii, row in enumerate(eq_ligand_ac_con_derivative):
-            for original_ids in eq_ligand_list[i].ext_int_dict.keys():
+            for original_ids in list(eq_ligand_list[i].ext_int_dict.keys()):
                 eq_con_j[ii, original_ids] += np.divide(row[eq_ligand_list[i].ext_int_dict[original_ids]], n_eq)
 
     return ax_con_j, eq_con_j

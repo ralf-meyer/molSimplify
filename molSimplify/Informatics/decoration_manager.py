@@ -40,7 +40,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     decoration_index = [decoration_index[i] for i in sort_order]
     decoration=[decoration[i] for i in sort_order]
     if args.debug:
-        print('decoration_index  is  ' + str(decoration_index))
+        print(('decoration_index  is  ' + str(decoration_index)))
     
     licores = getlicores()
     lig,emsg = lig_load(lig,licores)
@@ -50,16 +50,16 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     merged_ligand = mol3D()
     merged_ligand.copymol3D(lig)
     for i,dec in enumerate(decoration):
-        print('** decoration number ' +str(i)+ ' attaching ' + dec + ' at site '+str(decoration_index[i]) 
-    + '**\n')
+        print(('** decoration number ' +str(i)+ ' attaching ' + dec + ' at site '+str(decoration_index[i]) 
+    + '**\n'))
         dec,emsg = lig_load(dec,licores)
         dec.convert2mol3D() # convert to mol3D
         if args.debug:
             print(i)
             print(decoration_index)
 
-            print(merged_ligand.getAtom(decoration_index[i]).symbol())
-            print(merged_ligand.getAtom(decoration_index[i]).coords())
+            print((merged_ligand.getAtom(decoration_index[i]).symbol()))
+            print((merged_ligand.getAtom(decoration_index[i]).coords()))
             merged_ligand.writexyz('basic.xyz')
         #dec.writexyz('dec' + str(i) + '.xyz')
         Hs = dec.getHsbyIndex(0)
@@ -145,8 +145,8 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         dec = decb
         if args.debug:
             dec.writexyz('dec_aligned' + str(i) + '.xyz')
-            print('natoms before delete ' + str(merged_ligand.natoms))
-            print('obmol before delete at  ' + str(decoration_index[i]) + ' is '  + str(merged_ligand.OBMol.NumAtoms()))
+            print(('natoms before delete ' + str(merged_ligand.natoms)))
+            print(('obmol before delete at  ' + str(decoration_index[i]) + ' is '  + str(merged_ligand.OBMol.NumAtoms())))
         ## store connectivity for deleted H
         BO_mat = merged_ligand.populateBOMatrix()
         row_deleted = BO_mat[decoration_index[i]]

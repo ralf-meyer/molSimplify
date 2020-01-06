@@ -88,7 +88,7 @@ class textfile:
             indices = [indices]
             
         results = dict()
-        zipped_values = zip(keywords,indices,range(len(keywords)))
+        zipped_values = list(zip(keywords,indices,list(range(len(keywords)))))
         
         for counter,line in enumerate(self.lines):
             for keyword,index,keyword_number in zipped_values:
@@ -101,14 +101,14 @@ class textfile:
                     
                     #Normal Procedure
                     if not matching_index:
-                        if keyword_number not in results.keys():
+                        if keyword_number not in list(results.keys()):
                             results[keyword_number] = [matching_value]
                         else:
                             results[keyword_number].append(matching_value)
                     
                     #Special procedure for returning the index of matching lines instead of the matching values
                     if matching_index:
-                        if keyword_number not in results.keys():
+                        if keyword_number not in list(results.keys()):
                             results[keyword_number] = [counter]
                         else:
                             results[keyword_number].append(counter)
@@ -118,18 +118,18 @@ class textfile:
             raise ValueError('Warning, incompatible options selected in text parsing')
         
         if last_line:
-            for keyword_number in results.keys():
+            for keyword_number in list(results.keys()):
                 results[keyword_number] = results[keyword_number][-1]
         if first_line:
-            for keyword_number in results.keys():
+            for keyword_number in list(results.keys()):
                 results[keyword_number] = results[keyword_number][0]
         if min_value:
-            for keyword_number in results.keys():
+            for keyword_number in list(results.keys()):
                 results[keyword_number] = min(results[keyword_number])
                 
         results_to_return = []
         for key in range(len(keywords)):
-            if key in results.keys():
+            if key in list(results.keys()):
                 results_to_return.append(results[key])
             else:
                 if last_line or min_value or first_line:

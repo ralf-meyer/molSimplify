@@ -63,8 +63,8 @@ def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
             
     outfiles = tools.find('*.out',directory)
-    outfiles = filter(tools.check_valid_outfile,outfiles)
-    results = map(read_run,outfiles)
+    outfiles = list(filter(tools.check_valid_outfile,outfiles))
+    results = list(map(read_run,outfiles))
     summary = pd.DataFrame(results)
     
     return summary
@@ -108,8 +108,8 @@ def apply_geo_check(job_outfile_path,geometry):
         else:
             raise Exception('A check has not been implemented for geometry: '+geoemtry)
     else:
-        print 'No geomery check requested for job: '+job_outfile_path
-        print 'Passing job without a geometry check'
+        print('No geomery check requested for job: '+job_outfile_path)
+        print('Passing job without a geometry check')
         return True
         
 def get_metal_and_bonded_atoms(job_outfile,geometry = None):
@@ -124,7 +124,7 @@ def get_metal_and_bonded_atoms(job_outfile,geometry = None):
     if geometry in ['Oct','oct','Octahedral','octahedral']:
         bonded_atom_indices = mol.getBondedAtomsOct(metal_index)
     else:
-        print 'Warning, generic getBondedAtoms() used for: '+job_outfile+'. Check behavior'
+        print('Warning, generic getBondedAtoms() used for: '+job_outfile+'. Check behavior')
         bonded_atom_indices = mol.getBondedAtoms(metal_index)
         
     return metal_index,bonded_atom_indices
@@ -225,7 +225,7 @@ def prep_ligand_breakown(outfile_path):
         #Assign charges to use during the breakdown for special cases...oxygen, hydroxide, peroxide, and acac
         #All other ligands are currently assigned charge 0
         ligand_charges = {'O1':-2, 'H1O1':-1, 'H1O2':-1, 'C5H7O2':-1}
-        if ligand[0] in ligand_charges.keys():
+        if ligand[0] in list(ligand_charges.keys()):
             ligand_charge = ligand_charges[ligand[0]]
         else:
             ligand_charge = 0
@@ -236,7 +236,7 @@ def prep_ligand_breakown(outfile_path):
             ligand_spin,metal_spin = 1,1
         else:
             ligand_spinmults = {'O2':3}
-            if ligand[0] in ligand_spinmults.keys():
+            if ligand[0] in list(ligand_spinmults.keys()):
                 ligand_spin = ligand_spinmults[ligand[0]]
             else:
                 ligand_spin = 1
@@ -313,7 +313,7 @@ def name_ligands(nested_list):
             formula += str(counter)
         return formula
     
-    ligand_formulas = map(convert_to_formula,nested_list)
+    ligand_formulas = list(map(convert_to_formula,nested_list))
     
     duplicates = []
     for i in ligand_formulas:

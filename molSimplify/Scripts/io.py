@@ -46,8 +46,8 @@ def printgeoms():
     for i, g in enumerate(coords):
         geomgroups[int(g)-1].append(geomshorts[i])
     for i, g in enumerate(geomnames):
-        print("Coordination: %s, geometry: %s,\t short name: %s " %
-              (coords[i], g, geomshorts[i]))
+        print(("Coordination: %s, geometry: %s,\t short name: %s " %
+              (coords[i], g, geomshorts[i])))
     print('')
 
 # Get available geometries
@@ -782,7 +782,7 @@ def lig_load(userligand, licores=None):
             flig = resource_filename(Requirement.parse(
                 "molSimplify"), "molSimplify/Ligands/" + dbentry[0])
         # check if ligand xyz/mol file exists
-        print('looking for '+flig)
+        print(('looking for '+flig))
         if not os.path.isfile(flig):
             emsg = "We can't find the ligand structure file %s right now! Something is amiss. Exiting..\n" % flig
             print(emsg)

@@ -21,7 +21,7 @@ import struct
 # py 2/3 interop
 import sys
 if sys.version_info[0] >= 3:
-    unicode = str
+    str = str
 
 # Get screen size
 
@@ -345,7 +345,7 @@ class mQLineEditL(QComboBox):
 
         def filter(text):
             self.pFilterModel.setFilterFixedString(str(text))
-        self.lineEdit().textEdited[unicode].connect(filter)
+        self.lineEdit().textEdited[str].connect(filter)
         self.completer.activated.connect(self.on_completer_activated)
         self.addItems(licores)
         self.setCurrentText(txt)  # set text to empty

@@ -372,7 +372,7 @@ def findshape(args, master_ligand):
             break
         else:
             bind += 1*int(args.ligocc[counter])*int(i.denticity)
-    binding_locations = (np.array(range(master_denticity)))+bind
+    binding_locations = (np.array(list(range(master_denticity))))+bind
 
     metal_coords = np.array(core[0])
     ligating_coords = []

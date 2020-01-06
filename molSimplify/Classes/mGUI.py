@@ -44,7 +44,7 @@ class mGUI():
         self.initGUI(app)
         globs = globalvars()  # global variables
         if not os.path.exists(globs.rundir):
-            print(globs.rundir)
+            print((globs.rundir))
             os.makedirs(globs.rundir)
     # builds the gui
 
@@ -341,7 +341,7 @@ class mGUI():
             f = resource_filename(Requirement.parse(
                 "molSimplify"), "molSimplify/Ligands/ligands.dict")
         qcav0 = getligroups(readdict(f))
-        qcav = filter(None, qcav0.split(' '))
+        qcav = [_f for _f in qcav0.split(' ') if _f]
         self.etliggrp = mQComboBox(qcav, ctip, 12)
         self.grid.addWidget(self.rtliggrp, 9, 15, 1, 1)
         self.grid.addWidget(self.etliggrp, 9, 16, 1, 1)
@@ -1723,11 +1723,11 @@ class mGUI():
             dent = int(snew[0])-1
             xyzl = ''
             for ii in range(0, dent+1):
-                l = filter(None, re.split(' |\t', snew[2+ii]))
+                l = [_f for _f in re.split(' |\t', snew[2+ii]) if _f]
                 xyzl += l[1]+' '+l[2]+' '+l[3]+'\n'
             # write new entry in coordinations.dict
             s.append(str(dent)+': '+gname+' '+gshort)
-            ssort = filter(None, list(sorted(s[1:])))
+            ssort = [_f for _f in list(sorted(s[1:])) if _f]
             globs = globalvars()
             if globs.custom_path:
                 f = globs.custom_path + "/Data/coordinations.dict"
@@ -1799,11 +1799,11 @@ class mGUI():
             snew = ''
             srem = ''
             for ss in s.splitlines():
-                sl = filter(None, ss.split(' '))
+                sl = [_f for _f in ss.split(' ') if _f]
                 if gname.lower() != sl[1] and gshort.lower() != sl[2]:
                     snew += ss+'\n'
                 else:
-                    srem = filter(None, ss.split(' ')[-1])
+                    srem = [_f for _f in ss.split(' ')[-1] if _f]
             globs = globalvars()
             if globs.custom_path:
                 f = globs.custom_path + "/Data/coordinations.dict"
@@ -1963,7 +1963,7 @@ class mGUI():
             rows = self.lgrid.rowCount()
             # Clear existing widgets in layout
             if rows > 1:
-                for i in reversed(range(self.lgrid.count())):
+                for i in reversed(list(range(self.lgrid.count()))):
                     self.lgrid.itemAt(i).widget().setParent(None)
 
             args['-lig'] = args['-lig'].replace(' ', '')
@@ -1973,7 +1973,7 @@ class mGUI():
             for l in lls:
                 if '.smi' in l:
                     f = open(l, 'r')
-                    smis = filter(None, f.read().splitlines())
+                    smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
                     liglist.append(l)
@@ -1983,9 +1983,9 @@ class mGUI():
             ligs = []
             for l in liglist:
                 # check in simple dictionary
-                if l in simpleligs.keys():
+                if l in list(simpleligs.keys()):
                     l = simpleligs[l][0]
-                if isinstance(l, unicode):
+                if isinstance(l, str):
                     ll = unicodedata.normalize(
                         'NFKD', l).encode('ascii', 'ignore')
                 else:
@@ -2043,7 +2043,7 @@ class mGUI():
             rows = self.lgrid.rowCount()
             # Clear existing widgets in layout
             if rows > 1:
-                for i in reversed(range(self.lgrid.count())):
+                for i in reversed(list(range(self.lgrid.count()))):
                     self.lgrid.itemAt(i).widget().setParent(None)
             self.c1p = mQPixmap(gfname)
             self.lgrid.addWidget(self.c1p, 0, 0)
@@ -2079,7 +2079,7 @@ class mGUI():
             for l in lls:
                 if '.smi' in l:
                     f = open(l, 'r')
-                    smis = filter(None, f.read().splitlines())
+                    smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
                     liglist.append(l)
@@ -2087,7 +2087,7 @@ class mGUI():
             licores = getlicores()
             ligs = []
             for l in liglist:
-                if isinstance(l, unicode):
+                if isinstance(l, str):
                     ll = unicodedata.normalize(
                         'NFKD', l).encode('ascii', 'ignore')
                 else:
