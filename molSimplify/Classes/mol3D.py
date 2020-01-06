@@ -566,7 +566,7 @@ class mol3D:
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
-                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=True)
+                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=atom_specific_cutoffs)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i, debug=False)
                 for j in index_set:
