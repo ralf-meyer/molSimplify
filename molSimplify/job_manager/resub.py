@@ -70,11 +70,10 @@ def resub(directory='in place'):
         'Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
-    nactive = len(tools.list_active_jobs())  # number of active jobs, counting bundled jobs as a single job
+    nactive = tools.get_number_active() #number of active jobs, counting bundled jobs as a single job
 
     # Kill SCF errors in progress, which are wasting computational resources
-    all_scf_errors = completeness[
-        'SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
+    all_scf_errors = completeness['SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
     scf_errors_to_kill = [scf_err for scf_err in all_scf_errors if scf_err not in scf_errors]
     names_to_kill = [os.path.split(scf_err)[-1].rsplit('.', 1)[0] for scf_err in scf_errors_to_kill]
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
@@ -181,7 +180,7 @@ def resub(directory='in place'):
     # Submit jobs which haven't yet been submitted
     to_submit = []
     jobscripts = tools.find('*_jobscript')
-    active_jobs = tools.list_active_jobs()
+    active_jobs = tools.list_active_jobs(home_directory=directory,parse_bundles=True)
     for job in jobscripts:
         if not os.path.isfile(job.rsplit('_', 1)[0] + '.out') and not os.path.split(job.rsplit('_', 1)[0])[
                                                                           -1] in active_jobs:
@@ -189,7 +188,10 @@ def resub(directory='in place'):
 
     short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
     long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
-    bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(), short_jobs_to_submit)
+    if len(short_jobs_to_submit) > 0:
+        bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(),short_jobs_to_submit)
+    else:
+        bundled_jobscripts = []
     to_submit = long_jobs_to_submit + bundled_jobscripts
 
     submitted = []

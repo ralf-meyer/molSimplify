@@ -78,6 +78,8 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     if (ids and parse_bundles) or (parse_bundles and not home_directory):
         raise Exception('Incompatible options passed to list_active_jobs()')
+    if home_directory == 'in place':
+        home_directory = os.getcwd()
 
     job_report = textfile()
     try:
@@ -100,8 +102,14 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
             raise Exception('An error has occurred in listing active jobs!')
         return names, job_ids
 
-    if parse_bundles:
+    if parse_bundles and os.path.isfile(os.path.join(home_directory,'bundle','bundle_id')):
+
+        fil = open(os.path.join(home_directory,'bundle','bundle_id'),'r')
+        identifier = fil.readlines()[0]
+        fil.close()  
+
         bundles = [i for i in names if i.startswith('bundle_')]
+        bundles = [i.rsplit('_',1)[0] for i in names if i.endswith(identifier)]
         names = [i for i in names if i not in bundles]
 
         for bundle in bundles:
@@ -114,6 +122,36 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     return names
 
+def get_number_active():
+    active_jobs = list_active_jobs()
+    def check_active(path, active_jobs=active_jobs):
+    # Given a path, checks if it's in the queue currently:
+        name = os.path.split(path)[-1]
+        name = name.rsplit('.', 1)[0]
+        if name in active_jobs:
+            return True
+        else:
+            return False
+
+    outfiles = find('*.out')
+    outfiles = filter(check_valid_outfile,outfiles)
+
+    active_non_bundles = [i for i in outfiles if check_active(i)]
+
+    if os.path.isdir('bundle'):
+        fil = open(os.path.join('bundle','bundle_id'))
+        identifier = fil.readlines()[0]
+        if identifier.endswith('\n'):
+            identifier = identifier[:-1]
+        fil.close()
+
+        active_bundles = [i for i in active_jobs if i.startswith('bundle_')]
+        active_bundles = [i for i in active_jobs if i.endswith(identifier)]
+        active_jobs = active_bundles+active_non_bundles
+
+        return len(active_jobs)
+    else:
+        return len(active_non_bundles)
 
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
@@ -126,10 +164,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
 
-    if directory == 'in place':
-        active_jobs = list_active_jobs(home_directory=os.getcwd(), parse_bundles=True)
-    else:
-        active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
+    active_jobs = list_active_jobs(home_directory=directory,parse_bundles=True)
 
     def check_finished(path, results_dict=results_dict):
         # Return True if the outfile corresponds to a complete job, False otherwise
@@ -842,9 +877,10 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line
     jobscript.close()
 
 
-def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=50):
-    number_of_bundles = int(float(len(jobscript_paths)) / float(max_bundle_size))
-    print(('Bundling ' + str(len(jobscript_paths)) + ' into ' + str(number_of_bundles + 1) + ' jobscript(s)'))
+def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 10):
+
+    number_of_bundles = int(float(len(jobscript_paths))/float(max_bundle_size))
+    print('Bundling '+str(len(jobscript_paths))+' short jobs into '+str(number_of_bundles+1)+' jobscript(s)')
 
     bundles, i, many_bundles = [], 0, False
     for i in range(number_of_bundles):
@@ -862,11 +898,20 @@ def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=50):
     return output_jobscripts
 
 
-def sub_bundle_jobscripts(home_directory, jobscript_paths):
-    # Takes a list of jobscript paths, and bundles them into a single jobscript
-    # Records information about which jobs were bundled together in the run's home directory
-    if not os.path.isdir(os.path.join(home_directory, 'bundle')):
-        os.mkdir(os.path.join(home_directory, 'bundle'))
+
+def sub_bundle_jobscripts(home_directory,jobscript_paths):
+    #Takes a list of jobscript paths, and bundles them into a single jobscript
+    #Records information about which jobs were bundled together in the run's home directory
+    if not os.path.isdir(os.path.join(home_directory,'bundle')):
+        os.mkdir(os.path.join(home_directory,'bundle'))
+        fil = open(os.path.join(home_directory,'bundle','bundle_id'),'w')
+        fil.write(str(np.random.randint(100000000000)))
+        fil.close()
+    fil = open(os.path.join(home_directory,'bundle','bundle_id'),'r')
+    identifier = fil.readlines()[0]
+    fil.close()  
+
+
     jobscript_paths = [convert_to_absolute_path(i) for i in jobscript_paths]
 
     existing_bundles = glob.glob(os.path.join(home_directory, 'bundle', '*'))
@@ -889,11 +934,10 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
 
     # Write a jobscript for the job bundle
     home = os.getcwd()
-    os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
-    write_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)), terachem_line=False)
-    shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_jobscript',
-                'bundle_' + str(max(existing_bundle_numbers) + 1))
-    fil = open('bundle_' + str(max(existing_bundle_numbers) + 1), 'a')
+    os.chdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
+    write_jobscript(str('bundle_'+str(max(existing_bundle_numbers)+1))+'_'+identifier,terachem_line=False,time_limit='12:00:00')
+    shutil.move('bundle_'+str(max(existing_bundle_numbers)+1)+'_'+identifier+'_jobscript','bundle_'+str(max(existing_bundle_numbers)+1))
+    fil = open('bundle_'+str(max(existing_bundle_numbers)+1),'a')
     for i in jobscript_paths:
         infile = i.rsplit('_', 1)[0] + '.in'
         outfile = i.rsplit('_', 1)[0] + '.out'
