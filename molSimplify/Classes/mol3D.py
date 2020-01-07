@@ -1641,7 +1641,7 @@ class mol3D:
         globs = globalvars()
         amassdict = globs.amass()
         graph = []
-        with open(filename,'r') as f:
+        with open(filename, 'r') as f:
             s = f.read().splitlines()
         read_atoms = False
         read_bonds = False
@@ -1660,25 +1660,25 @@ class mol3D:
                 atom_symbol2 = atom_symbol2.split('.')[0]
                 if atom_symbol1 in list(amassdict.keys()):
                     atom = atom3D(atom_symbol1, [float(s_line[2]), float(
-                    s_line[3]), float(s_line[4])])
+                        s_line[3]), float(s_line[4])])
                 elif atom_symbol2 in list(amassdict.keys()):
                     atom = atom3D(atom_symbol2, [float(s_line[2]), float(
-                    s_line[3]), float(s_line[4])])
+                        s_line[3]), float(s_line[4])])
                 else:
                     print('cannot find atom type')
                     sys.exit()
                 self.addAtom(atom)
             if '<TRIPOS>ATOM' in line:
                 read_atoms = True
-            if read_bonds: # Read in bonds to molecular graph
-                s_line=line.split()
-                graph[int(s_line[1])-1,int(s_line[2])-1] = 1
-                graph[int(s_line[2])-1,int(s_line[1])-1] = 1
+            if read_bonds:  # Read in bonds to molecular graph
+                s_line = line.split()
+                graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
+                graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
             if '<TRIPOS>BOND' in line:
                 read_bonds = True
                 # initialize molecular graph
-                graph = np.zeros((self.natoms,self.natoms))
-        if isinstance(graph,np.ndarray): # Enforce mol2 molecular graph if it exists
+                graph = np.zeros((self.natoms, self.natoms))
+        if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
         else:
             self.graph = []
@@ -2641,8 +2641,11 @@ class mol3D:
             self.num_coord_metal = len(catoms_arr)
         if not init_mol == None:
             init_mol.get_num_coord_metal(debug=debug)
+            catoms_init = init_mol.catoms
+        else:
+            catoms_init = [0, 0, 0, 0, 0, 0]
         self.geo_dict_initialization()
-        if len(init_mol.catoms) >= 6:
+        if len(catoms_init) >= 6:
             if self.num_coord_metal >= 6:
                 # if not rmsd_max == 'lig_mismatch':
                 if True:
