@@ -547,6 +547,7 @@ class mol3D:
         self.ffopt = mol0.ffopt
         self.OBMol = mol0.OBMol
         self.name = mol0.name
+        self.graph = mol0.graph
 
     # Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
@@ -842,7 +843,8 @@ class mol3D:
             distance_max = 1.1 * (atom.rad + ratom.rad)
         if atom.symbol() == "I" or ratom.symbol() == "I" and not (
                 atom.symbol() == "I" and ratom.symbol() == "I"):
-            distance_max = 1.05 * (atom.rad + ratom.rad)
+            # Very strict cutoff for bonds involving iodine
+            distance_max = 0.95 * (atom.rad + ratom.rad)
         if atom.symbol() == "I" and ratom.symbol() == "I":
             distance_max = 3
             # print(distance_max)
