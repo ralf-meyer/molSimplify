@@ -16,8 +16,8 @@ def ensure_dir(dirpath):
 
 
 def check_valid_outfile(path):
-    #The nohup.out file gets caught in the find statement
-    #use this function so that we only get TeraChem.outs
+    # The nohup.out file gets caught in the find statement
+    # use this function so that we only get TeraChem.outs
     endpath = os.path.split(path)[-1]
     if 'nohup.out' in endpath or endpath.startswith('.'):
         return False
@@ -73,7 +73,7 @@ def convert_to_absolute_path(path):
     return path
 
 
-def list_active_jobs(ids=False,home_directory=False,parse_bundles=False):
+def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     #  @return A list of active jobs for the current user. By job name
 
     if (ids and parse_bundles) or (parse_bundles and not home_directory):
@@ -105,8 +105,8 @@ def list_active_jobs(ids=False,home_directory=False,parse_bundles=False):
         names = [i for i in names if i not in bundles]
 
         for bundle in bundles:
-            info_path = glob.glob(os.path.join(home_directory,'bundle',bundle,'*_info'))[0]
-            fil = open(info_path,'r')
+            info_path = glob.glob(os.path.join(home_directory, 'bundle', bundle, '*_info'))[0]
+            fil = open(info_path, 'r')
             lines = fil.readlines()
             lines = [i[:-1] if i.endswith('\n') else i for i in lines]
             fil.close()
@@ -115,21 +115,21 @@ def list_active_jobs(ids=False,home_directory=False,parse_bundles=False):
     return names
 
 
-def check_completeness(directory='in place', max_resub=5):
+def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
-    outfiles = find('*.out',directory)
-    outfiles = list(filter(check_valid_outfile,outfiles))
+    outfiles = find('*.out', directory)
+    outfiles = list(filter(check_valid_outfile, outfiles))
 
-    results_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
-    results_tmp = list(zip(outfiles,results_tmp))
+    results_tmp = [read_outfile(outfile, short_ouput=True) for outfile in outfiles]
+    results_tmp = list(zip(outfiles, results_tmp))
     results_dict = dict()
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
 
-    if directory=='in place':
-        active_jobs = list_active_jobs(home_directory=os.getcwd(),parse_bundles=True)
+    if directory == 'in place':
+        active_jobs = list_active_jobs(home_directory=os.getcwd(), parse_bundles=True)
     else:
-        active_jobs = list_active_jobs(home_directory=directory,parse_bundles=True)
+        active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
 
     def check_finished(path, results_dict=results_dict):
         # Return True if the outfile corresponds to a complete job, False otherwise
@@ -181,9 +181,13 @@ def check_completeness(directory='in place', max_resub=5):
 
     def check_spin_contaminated(path, results_dict=results_dict):
         results = results_dict[path]
+        if configure_dict and "ss_cutoff" in configure_dict:
+            ss_cutoff = configure_dict['ss_cutoff']
+        else:
+            ss_cutoff = 1.0
         if results['finished']:
             if type(results['s_squared_ideal']) == float:
-                if abs(results['s_squared'] - results['s_squared_ideal']) > 1:
+                if abs(results['s_squared'] - results['s_squared_ideal']) > ss_cutoff:
                     return True
         return False
 
@@ -298,9 +302,10 @@ def check_original(job):
     else:
         return True
 
+
 def check_short_single_point(job):
     name = os.path.split(job)[-1]
-    name = name.rsplit('.',1)[0]
+    name = name.rsplit('.', 1)[0]
     name = name.split('_')
 
     short_jobs = ['solvent', 'kp', 'rm', 'functional', 'vertEA', 'vertIP']
@@ -309,11 +314,12 @@ def check_short_single_point(job):
     else:
         return False
 
-def extract_optimized_geo(PATH, custom_name = False):
-    #Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
-    #The file is written to the same directory as contained optim.xyz
-    
-    optim = open(PATH,'r')
+
+def extract_optimized_geo(PATH, custom_name=False):
+    # Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
+    # The file is written to the same directory as contained optim.xyz
+
+    optim = open(PATH, 'r')
     lines = optim.readlines()
     optim.close()
     lines.reverse()
@@ -587,6 +593,7 @@ def read_configure(home_directory, outfile_path):
 
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
+    ss_cutoff = False
     for configure in [home_configure, local_configure]:
         for line in home_configure:
             if 'max_jobs' in line.split(':'):
@@ -612,6 +619,8 @@ def read_configure(home_directory, outfile_path):
                 job_recovery = job_recovery.split(',')
             if 'dispersion' in line.split(':'):
                 dispersion = line.split(':')[-1]
+            if 'ss_cutoff' in line.split(':'):
+                ss_cutoff = float(line.split(':')[-1])
         # If global settings not specified, choose defaults:
         if not max_jobs:
             max_jobs = 50
@@ -627,12 +636,15 @@ def read_configure(home_directory, outfile_path):
             hfx = 0.20
         if not sleep:
             sleep = 7200
+        if not ss_cutoff:
+            ss_cutoff = 1.0
         # Octahedral defaults to True in original variable initiation
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
             'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
-            'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP}
+            'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
+            'ss_cutoff': ss_cutoff}
 
 
 def read_charges(PATH):
@@ -670,10 +682,10 @@ def read_mullpop(PATH):
 
 
 def create_summary(directory='in place'):
-    #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-    outfiles = find('*.out',directory)
-    outfiles = list(filter(check_valid_outfile,outfiles))
-    results = list(map(read_outfile,outfiles))
+    # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
+    outfiles = find('*.out', directory)
+    outfiles = list(filter(check_valid_outfile, outfiles))
+    results = list(map(read_outfile, outfiles))
     summary = pd.DataFrame(results)
 
     return summary
@@ -793,12 +805,13 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     for lines in text:
         input_file.write(lines)
     input_file.close()
-    
-def write_jobscript(name,custom_line = None,time_limit='96:00:00',terachem_line=True):
-    #Writes a generic terachem jobscript
-    #custom line allows the addition of extra lines just before the export statement
-        
-    jobscript = open(name+'_jobscript','w')
+
+
+def write_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
+    # Writes a generic terachem jobscript
+    # custom line allows the addition of extra lines just before the export statement
+
+    jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
             '#$ -N ' + name + '\n',
             '#$ -cwd\n',
@@ -814,7 +827,7 @@ def write_jobscript(name,custom_line = None,time_limit='96:00:00',terachem_line=
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n',
-            'terachem '+name+'.in '+'> $SGE_O_WORKDIR/' + name + '.out\n']
+            'terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
     if not terachem_line:
         text = text[:-1]
 
@@ -828,68 +841,71 @@ def write_jobscript(name,custom_line = None,time_limit='96:00:00',terachem_line=
         jobscript.write(i)
     jobscript.close()
 
-def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 50):
 
-    number_of_bundles = int(float(len(jobscript_paths))/float(max_bundle_size))
-    print(('Bundling '+str(len(jobscript_paths))+' into '+str(number_of_bundles+1)+' jobscript(s)'))
+def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=50):
+    number_of_bundles = int(float(len(jobscript_paths)) / float(max_bundle_size))
+    print(('Bundling ' + str(len(jobscript_paths)) + ' into ' + str(number_of_bundles + 1) + ' jobscript(s)'))
 
-    bundles,i,many_bundles = [],0,False
+    bundles, i, many_bundles = [], 0, False
     for i in range(number_of_bundles):
-        bundles.append(jobscript_paths[max_bundle_size*i:max_bundle_size*(i+1)])
+        bundles.append(jobscript_paths[max_bundle_size * i:max_bundle_size * (i + 1)])
         many_bundles = True
     if many_bundles:
-        bundles.append(jobscript_paths[max_bundle_size*(i+1):])
+        bundles.append(jobscript_paths[max_bundle_size * (i + 1):])
     else:
         bundles = [jobscript_paths]
 
     output_jobscripts = []
     for bundle in bundles:
-        output_jobscripts.append(sub_bundle_jobscripts(home_directory,bundle))
+        output_jobscripts.append(sub_bundle_jobscripts(home_directory, bundle))
 
     return output_jobscripts
 
 
-def sub_bundle_jobscripts(home_directory,jobscript_paths):
-    #Takes a list of jobscript paths, and bundles them into a single jobscript
-    #Records information about which jobs were bundled together in the run's home directory
-    if not os.path.isdir(os.path.join(home_directory,'bundle')):
-        os.mkdir(os.path.join(home_directory,'bundle'))
+def sub_bundle_jobscripts(home_directory, jobscript_paths):
+    # Takes a list of jobscript paths, and bundles them into a single jobscript
+    # Records information about which jobs were bundled together in the run's home directory
+    if not os.path.isdir(os.path.join(home_directory, 'bundle')):
+        os.mkdir(os.path.join(home_directory, 'bundle'))
     jobscript_paths = [convert_to_absolute_path(i) for i in jobscript_paths]
 
-    existing_bundles = glob.glob(os.path.join(home_directory,'bundle','*'))
+    existing_bundles = glob.glob(os.path.join(home_directory, 'bundle', '*'))
     existing_bundles = [i for i in existing_bundles if os.path.isdir(i)]
     if len(existing_bundles) > 0:
         existing_bundle_numbers = [int(os.path.split(i)[-1].split('_')[-1]) for i in existing_bundles]
     else:
         existing_bundle_numbers = [0]
 
-    #Create a directory for this jobscript bundle
-    os.mkdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
+    # Create a directory for this jobscript bundle
+    os.mkdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
 
-
-    #Record info about how the jobs are being bundled
-    fil = open(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1),'bundle_'+str(max(existing_bundle_numbers)+1)+'_info'),'w')
+    # Record info about how the jobs are being bundled
+    fil = open(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1),
+                            'bundle_' + str(max(existing_bundle_numbers) + 1) + '_info'), 'w')
     for i in jobscript_paths[:-1]:
-        fil.write(os.path.split(i)[-1].rsplit('_',1)[0]+'\n')
-    fil.write(os.path.split(jobscript_paths[-1])[-1].rsplit('_',1)[0])
+        fil.write(os.path.split(i)[-1].rsplit('_', 1)[0] + '\n')
+    fil.write(os.path.split(jobscript_paths[-1])[-1].rsplit('_', 1)[0])
     fil.close()
 
-    #Write a jobscript for the job bundle
+    # Write a jobscript for the job bundle
     home = os.getcwd()
-    os.chdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
-    write_jobscript(str('bundle_'+str(max(existing_bundle_numbers)+1)),terachem_line=False)
-    shutil.move('bundle_'+str(max(existing_bundle_numbers)+1)+'_jobscript','bundle_'+str(max(existing_bundle_numbers)+1))
-    fil = open('bundle_'+str(max(existing_bundle_numbers)+1),'a')
+    os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
+    write_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)), terachem_line=False)
+    shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_jobscript',
+                'bundle_' + str(max(existing_bundle_numbers) + 1))
+    fil = open('bundle_' + str(max(existing_bundle_numbers) + 1), 'a')
     for i in jobscript_paths:
-        infile = i.rsplit('_',1)[0]+'.in'
-        outfile = i.rsplit('_',1)[0]+'.out'
+        infile = i.rsplit('_', 1)[0] + '.in'
+        outfile = i.rsplit('_', 1)[0] + '.out'
         directory = os.path.split(i)[0]
-        text = 'cd '+directory+'\n'+'terachem '+infile+' > '+outfile
-        fil.write(text+'\n')
+        text = 'cd ' + directory + '\n' + 'terachem ' + infile + ' > ' + outfile
+        fil.write(text + '\n')
     fil.close()
     os.chdir(home)
 
-    return os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1),'bundle_'+str(max(existing_bundle_numbers)+1))
+    return os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1),
+                        'bundle_' + str(max(existing_bundle_numbers) + 1))
+
 
 def prep_vertical_ip(path):
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical IP run

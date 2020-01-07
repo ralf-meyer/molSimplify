@@ -58,7 +58,7 @@ def resub(directory='in place'):
     max_jobs = configure_dict['max_jobs']
 
     # Get the state of all jobs being managed by this instance of the job manager
-    completeness = moltools.check_completeness(directory, max_resub)
+    completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness[
         'SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
@@ -70,7 +70,7 @@ def resub(directory='in place'):
         'Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
-    nactive = len(tools.list_active_jobs()) #number of active jobs, counting bundled jobs as a single job
+    nactive = len(tools.list_active_jobs())  # number of active jobs, counting bundled jobs as a single job
 
     # Kill SCF errors in progress, which are wasting computational resources
     all_scf_errors = completeness[
@@ -189,7 +189,7 @@ def resub(directory='in place'):
 
     short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
     long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
-    bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(),short_jobs_to_submit)
+    bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(), short_jobs_to_submit)
     to_submit = long_jobs_to_submit + bundled_jobscripts
 
     submitted = []
