@@ -67,12 +67,14 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     ligdents = []
     ligcons = []
     for atom in bondedatoms:
-        print(('this atom type is ' + mol.getAtom(atom).symbol()))
-        print(('conection number ' + str(atom) + " of " + str(bondedatoms)))
+        if not silent:
+            print(('this atom type is ' + mol.getAtom(atom).symbol()))
+            print(('conection number ' + str(atom) + " of " + str(bondedatoms)))
         fragment = mol.findsubMol(atom, metal_index)
         this_cons = [x for x in fragment if (x in bondedatoms)]
-        print(('fragment',fragment))
-        print(('this_cons',this_cons))
+        if not silent:
+            print(('fragment',fragment))
+            print(('this_cons',this_cons))
         unique = True
         for i, unique_ligands in enumerate(liglist):
             if sorted(fragment) == sorted(unique_ligands):
@@ -1472,6 +1474,39 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 else:
                     ax_con_list.append([lig_con])
                     ax_lig_list.append(lig_ref)
+        ####### Code in case further atom-wise bond-length constraints wanted ######
+        # else: # All eq same symbol. Ensure axial are flagged as two different bond lengths.
+        #     con_bond_lengths = [np.round(mol.getDistToMetal(x,metal_index),6) for x in flat_ligcons]
+        #     bl_set = list(set(con_bond_lengths)) # Check if there are 2 different bond lengths
+        #     if len(bl_set) == 2 and (con_bond_lengths.count(bl_set[0])==2
+        #                              or con_bond_lengths.count(bl_set[1])==2):
+        #         con_bls = np.array(con_bond_lengths)
+        #         type1_idxs = np.where(con_bls==bl_set[0])[0]
+        #         type2_idxs = np.where(con_bls==bl_set[1])[0]
+        #         if len(type1_idxs) > len(type2_idxs):
+        #             eq_ligcons = [flat_ligcons[i] for i in type1_idxs]
+        #             ax_ligcons = list(set(flat_ligcons)-set(eq_ligcons))
+        #         else:
+        #             eq_ligcons = [flat_ligcons[i] for i in type2_idxs]
+        #             ax_ligcons = list(set(flat_ligcons)-set(eq_ligcons))
+        #         eq_lig_list = list()
+        #         eq_con_list = list()
+        #         for lig_con in eq_ligcons:
+        #             lig_ref = flat_lig_refs[flat_ligcons.index(lig_con)]
+        #             if lig_ref in eq_lig_list:
+        #                 eq_con_list[eq_lig_list.index(lig_ref)].append(lig_con)
+        #             else:
+        #                 eq_con_list.append([lig_con])
+        #                 eq_lig_list.append(lig_ref)
+        #         ax_lig_list = list()
+        #         ax_con_list = list()
+        #         for lig_con in ax_ligcons:
+        #             lig_ref = flat_lig_refs[flat_ligcons.index(lig_con)]
+        #             if lig_ref in ax_lig_list:
+        #                 ax_con_list[ax_lig_list.index(lig_ref)].append(lig_con)
+        #             else:
+        #                 ax_con_list.append([lig_con])
+        #                 ax_lig_list.append(lig_ref)
     # Build ligand list for ax/eq positions, compile all information
     ax_ligand_list = [built_ligand_list[i] for i in ax_lig_list]
     eq_ligand_list = [built_ligand_list[i] for i in eq_lig_list]
