@@ -16,7 +16,7 @@ from molSimplify.Classes.atom3D import*
 HF_to_Kcal_mol = 627.5095
 def create_columb_matrix(mol):
     ## create Coulomb matrix from mol3D information
-    index_set = range(0,mol.natoms)
+    index_set = list(range(0,mol.natoms))
     ## fetch the database of nuclear charges
     globs =globalvars() 
     amassdict = globs.amass()

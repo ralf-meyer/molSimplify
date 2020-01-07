@@ -160,7 +160,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             eq_tcat = tcats[0]
             eq_occs.append(2)
         elif len(unique_ligs) == 2:
-            for key in unique_dict.keys():
+            for key in list(unique_dict.keys()):
                 if unique_dict[key] == 1:
                     axial_ligs.append(key)
                     ax_dent = 2
@@ -183,23 +183,23 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             this_occ = occs[i]
             if debug:
                 print('\n')
-                print('iteration  ' + str(i))
-                print('this_lig  ' + str(this_lig))
-                print('this_dent  ' + str(this_dent))
-                print('this_occ  ' + str(this_occ))
-                print('this backbone atom  ' +
-                      str(this_bat) + ' from ' + str(batlist))
+                print(('iteration  ' + str(i)))
+                print(('this_lig  ' + str(this_lig)))
+                print(('this_dent  ' + str(this_dent)))
+                print(('this_occ  ' + str(this_occ)))
+                print(('this backbone atom  ' +
+                      str(this_bat) + ' from ' + str(batlist)))
             # mulitple points
             if len(this_bat) > 1:
                 if debug:
-                    print('adding ' + str(this_lig) + ' to equitorial')
+                    print(('adding ' + str(this_lig) + ' to equitorial'))
                 equitorial_ligs.append(this_lig)
                 eq_dent = 4
                 eq_tcat = tcats[i]
                 eq_occs.append(1)
                 equitorial_ind_list.append(i)
             if debug:
-                print('adding ' + str(this_lig) + ' to axial')
+                print(('adding ' + str(this_lig) + ' to axial'))
             axial_ligs.append(this_lig)
             ax_dent = 1
             ax_tcat = tcats[i]
@@ -267,10 +267,10 @@ def check_metal(metal, oxidation_state):
     supported_metal_dict = {"fe": [2, 3], "mn": [2, 3], "cr": [2, 3],
                             "co": [2, 3], "ni": [2]}
     romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5', 'VI': '6'}
-    if oxidation_state in romans.keys():
+    if oxidation_state in list(romans.keys()):
         oxidation_state = romans[oxidation_state]
     outcome = False
-    if metal in supported_metal_dict.keys():
+    if metal in list(supported_metal_dict.keys()):
         #        print('metal in',supported_metal_dict[metal])
         if int(oxidation_state) in supported_metal_dict[metal]:
             outcome = True
@@ -429,7 +429,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             ax_lig3D.convert2mol3D()  # mol3D representation of ligand
             for jj in range(0, ax_occs[ii]):
                 ax_ligands_list.append(this_lig)
-        print('Obtained the net ligand charge, which is... ', net_lig_charge)
+        print(('Obtained the net ligand charge, which is... ', net_lig_charge))
         if args.debug:
             print('ax_ligands_list:')
             print(ax_ligands_list)
@@ -829,16 +829,16 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             current_time = time.time()
             oxo20_ANN_time = current_time - last_time
             last_time = current_time
-            print('oxo20 ANN took ' +
-                  "{0:.2f}".format(oxo20_ANN_time) + ' seconds')
+            print(('oxo20 ANN took ' +
+                  "{0:.2f}".format(oxo20_ANN_time) + ' seconds'))
         # oxo20_dist = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
         oxo20_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
             last_time = current_time
-            print('min oxo20 dist took ' +
-                  "{0:.2f}".format(min_dist_time) + ' seconds')
+            print(('min oxo20 dist took ' +
+                  "{0:.2f}".format(min_dist_time) + ' seconds'))
         ANN_attributes.update({'oxo20': oxo20[0][0]})
         ANN_attributes.update({'oxo20_dist': oxo20_dist})
         # _ = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
@@ -850,16 +850,16 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             current_time = time.time()
             homo_empty_ANN_time = current_time - last_time
             last_time = current_time
-            print('homo_empty ANN took ' +
-                  "{0:.2f}".format(homo_empty_ANN_time) + ' seconds')
+            print(('homo_empty ANN took ' +
+                  "{0:.2f}".format(homo_empty_ANN_time) + ' seconds'))
         # homo_empty_dist = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
         homo_empty_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
             last_time = current_time
-            print('min homo_empty dist took ' +
-                  "{0:.2f}".format(min_dist_time) + ' seconds')
+            print(('min homo_empty dist took ' +
+                  "{0:.2f}".format(min_dist_time) + ' seconds'))
         ANN_attributes.update({'homo_empty': homo_empty[0][0]})
         ANN_attributes.update({'homo_empty_dist': homo_empty_dist})
         # _ = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
@@ -938,16 +938,16 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("**************       CATALYTIC ANN ACTIVATED!      ****************")
         print("*********** Currently advising on Oxo and HAT energies ************")
         print("*******************************************************************")
-        print("ANN predicts a Oxo20 energy of " + "{0:.2f}".format(float(oxo20[0])) + ' kcal/mol at ' + "{0:.2f}".format(alpha) + '% HFX')
+        print(("ANN predicts a Oxo20 energy of " + "{0:.2f}".format(float(oxo20[0])) + ' kcal/mol at ' + "{0:.2f}".format(alpha) + '% HFX'))
         print(Oxo20_ANN_trust_message)
-        print('Distance to Oxo20 training data in the latent space is ' + "{0:.2f}".format(oxo20_dist))
-        print("ANN predicts a empty site beta HOMO level of " + "{0:.2f}".format(float(homo_empty[0])) + ' eV at ' + "{0:.2f}".format(alpha) + '% HFX')
+        print(('Distance to Oxo20 training data in the latent space is ' + "{0:.2f}".format(oxo20_dist)))
+        print(("ANN predicts a empty site beta HOMO level of " + "{0:.2f}".format(float(homo_empty[0])) + ' eV at ' + "{0:.2f}".format(alpha) + '% HFX'))
         print(homo_empty_ANN_trust_message)
-        print('Distance to empty site beta HOMO level training data in the latent space is ' +
-              "{0:.2f}".format(homo_empty_dist))
+        print(('Distance to empty site beta HOMO level training data in the latent space is ' +
+              "{0:.2f}".format(homo_empty_dist)))
         print('-------------------------------------------------------------------')
-        print("ANN predicts a oxo formation energy of " + "{0:.2f}".format(
-            float(oxo[0])) + ' kcal/mol at ' + "{0:.2f}".format(alpha) + '% HFX')
+        print(("ANN predicts a oxo formation energy of " + "{0:.2f}".format(
+            float(oxo[0])) + ' kcal/mol at ' + "{0:.2f}".format(alpha) + '% HFX'))
         print(Oxo_ANN_trust_message)
         print(('Distance to oxo training data in the latent space is ' +
                "{0:.2f}".format(oxo_dist)))

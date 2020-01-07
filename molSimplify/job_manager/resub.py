@@ -18,12 +18,12 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
         kill_names = [kill_names]
 
     active_jobs, active_ids = tools.list_active_jobs(ids=True)
-    active_jobs = zip(active_jobs, active_ids)
+    active_jobs = list(zip(active_jobs, active_ids))
 
     jobs_to_kill = [[name, id_] for name, id_ in active_jobs if name in kill_names]
 
     for name, id_ in jobs_to_kill:
-        print message1 + name + message2
+        print(message1 + name + message2)
         tools.call_bash('qdel ' + str(id_))
 
 
@@ -51,8 +51,8 @@ def resub(directory='in place'):
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
 
     configure_dict = tools.read_configure(directory, None)
-    print 'Global Configure File Found:'
-    print configure_dict
+    print('Global Configure File Found:')
+    print(configure_dict)
 
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
@@ -79,7 +79,7 @@ def resub(directory='in place'):
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
 
     # Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
-    needs_derivative_jobs = filter(tools.check_original, finished)
+    needs_derivative_jobs = list(filter(tools.check_original, finished))
     prep_derivative_jobs(directory, needs_derivative_jobs)
 
     resubmitted = []  # Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
@@ -90,7 +90,7 @@ def resub(directory='in place'):
             continue
         resub_tmp = recovery.simple_resub(error)
         if resub_tmp:
-            print('Unidentified error in job: ' + os.path.split(error)[-1] + ' -Resubmitting')
+            print(('Unidentified error in job: ' + os.path.split(error)[-1] + ' -Resubmitting'))
             print('')
         resubmitted.append(resub_tmp)
 
@@ -102,8 +102,8 @@ def resub(directory='in place'):
         if 'scf' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_scf(error)
             if resub_tmp:
-                print('SCF error identified in job: ' + os.path.split(error)[
-                    -1] + ' -Resubmitting with adjusted levelshifts')
+                print(('SCF error identified in job: ' + os.path.split(error)[
+                    -1] + ' -Resubmitting with adjusted levelshifts'))
                 print('')
             resubmitted.append(resub_tmp)
 
@@ -115,8 +115,8 @@ def resub(directory='in place'):
         if 'bad_geo' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_bad_geo(error, directory)
             if resub_tmp:
-                print('Bad final geometry in job: ' + os.path.split(error)[
-                    -1] + ' -Resubmitting from initial structure with additional constraints')
+                print(('Bad final geometry in job: ' + os.path.split(error)[
+                    -1] + ' -Resubmitting from initial structure with additional constraints'))
                 print('')
             resubmitted.append(resub_tmp)
 
@@ -128,8 +128,8 @@ def resub(directory='in place'):
         if 'spin_contaminated' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_spin(error)
             if resub_tmp:
-                print('Spin contamination identified in job: ' + os.path.split(error)[
-                    -1] + ' -Resubmitting with adjusted HFX')
+                print(('Spin contamination identified in job: ' + os.path.split(error)[
+                    -1] + ' -Resubmitting with adjusted HFX'))
                 print('')
             resubmitted.append(resub_tmp)
 
@@ -139,7 +139,7 @@ def resub(directory='in place'):
             continue
         resub_tmp = recovery.clean_resub(error)
         if resub_tmp:
-            print('Job ' + os.path.split(error)[-1] + ' needs to be rerun with typical paramters. -Resubmitting')
+            print(('Job ' + os.path.split(error)[-1] + ' needs to be rerun with typical paramters. -Resubmitting'))
             print('')
         resubmitted.append(resub_tmp)
 
@@ -151,8 +151,8 @@ def resub(directory='in place'):
         if 'thermo_grad_error' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_tighter(error)
             if resub_tmp:
-                print('Job ' + os.path.split(error)[
-                    -1] + ' needs a better initial geo. Creating a geometry run with tighter convergence criteria')
+                print(('Job ' + os.path.split(error)[
+                    -1] + ' needs a better initial geo. Creating a geometry run with tighter convergence criteria'))
                 print('')
             resubmitted.append(resub_tmp)
 
@@ -161,9 +161,9 @@ def resub(directory='in place'):
     for waiting_dict in waiting:
         if nactive + np.sum(resubmitted) >= max_jobs:
             continue
-        if len(waiting_dict.keys()) > 1:
+        if len(list(waiting_dict.keys())) > 1:
             raise Exception('Waiting job list improperly constructed')
-        job = waiting_dict.keys()[0]
+        job = list(waiting_dict.keys())[0]
         waiting_for = waiting_dict[job]
         if waiting_for in finished:
             history = load_history(job)
@@ -198,7 +198,7 @@ def resub(directory='in place'):
     for job in to_submit:
         if len(submitted) + nactive + np.sum(resubmitted) >= max_jobs:
             continue
-        print('Initial sumbission for job: ' + os.path.split(job)[-1])
+        print(('Initial sumbission for job: ' + os.path.split(job)[-1]))
         tools.qsub(job)
         submitted.append(True)
 
@@ -221,12 +221,12 @@ def main():
         number_resubmitted, number_active = resub()
 
         print('**********************************')
-        print("******** " + str(number_resubmitted) + " Jobs Submitted ********")
+        print(("******** " + str(number_resubmitted) + " Jobs Submitted ********"))
         print('**********************************')
 
-        print('job cycle took: ' + str(time.time() - time1))
+        print(('job cycle took: ' + str(time.time() - time1)))
         configure_dict = tools.read_configure('in place', None)
-        print('sleeping for: ' + str(configure_dict['sleep']))
+        print(('sleeping for: ' + str(configure_dict['sleep'])))
         sys.stdout.flush()
         time.sleep(configure_dict[
                        'sleep'])  # sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)

@@ -547,11 +547,12 @@ class mol3D:
         self.ffopt = mol0.ffopt
         self.OBMol = mol0.OBMol
         self.name = mol0.name
+        self.graph = mol0.graph
 
     # Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
     #  @oct flag to control  special oct-metal bonds
-    def createMolecularGraph(self, oct=True):
+    def createMolecularGraph(self, oct=True, atom_specific_cutoffs=False):
         if not len(self.graph):
             index_set = list(range(0, self.natoms))
             A = np.zeros((self.natoms, self.natoms))
@@ -566,7 +567,7 @@ class mol3D:
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
-                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
+                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=atom_specific_cutoffs)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i, debug=False)
                 for j in index_set:
@@ -827,6 +828,28 @@ class mol3D:
                 nats.append(i)
         return nats
 
+
+    def getBondCutoff(self, atom, ratom):
+        distance_max = 1.15 * (atom.rad + ratom.rad)
+        if atom.symbol() == "C" and not ratom.symbol() == "H":
+            distance_max = min(2.75, distance_max)
+        if ratom.symbol() == "C" and not atom.symbol() == "H":
+            distance_max = min(2.75, distance_max)
+        if ratom.symbol() == "H" and atom.ismetal:
+            # tight cutoff for metal-H bonds
+            distance_max = 1.1 * (atom.rad + ratom.rad)
+        if atom.symbol() == "H" and ratom.ismetal:
+            # tight cutoff for metal-H bonds
+            distance_max = 1.1 * (atom.rad + ratom.rad)
+        if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+                atom.symbol() == "I" and ratom.symbol() == "I"):
+            # Very strict cutoff for bonds involving iodine
+            distance_max = 0.95 * (atom.rad + ratom.rad)
+        if atom.symbol() == "I" and ratom.symbol() == "I":
+            distance_max = 3
+            # print(distance_max)
+        return distance_max
+
     # Gets atoms bonded to a specific atom
     #
     #  This is determined based on element-specific distance cutoffs, rather than predefined valences.
@@ -846,23 +869,24 @@ class mol3D:
             nats = []
             for i, atom in enumerate(self.atoms):
                 d = distance(ratom.coords(), atom.coords())
-                distance_max = 1.15 * (atom.rad + ratom.rad)
-                if atom.symbol() == "C" and not ratom.symbol() == "H":
-                    distance_max = min(2.75, distance_max)
-                if ratom.symbol() == "C" and not atom.symbol() == "H":
-                    distance_max = min(2.75, distance_max)
-                if ratom.symbol() == "H" and atom.ismetal:
-                    # tight cutoff for metal-H bonds
-                    distance_max = 1.1 * (atom.rad + ratom.rad)
-                if atom.symbol() == "H" and ratom.ismetal:
-                    # tight cutoff for metal-H bonds
-                    distance_max = 1.1 * (atom.rad + ratom.rad)
-                if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-                        atom.symbol() == "I" and ratom.symbol() == "I"):
-                    distance_max = 1.05 * (atom.rad + ratom.rad)
-                if atom.symbol() == "I" and ratom.symbol() == "I":
-                    distance_max = 3
-                    # print(distance_max)
+                distance_max = self.getBondCutoff(atom, ratom)
+                #distance_max = 1.15 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "C" and not ratom.symbol() == "H":
+                #    distance_max = min(2.75, distance_max)
+                #if ratom.symbol() == "C" and not atom.symbol() == "H":
+                #    distance_max = min(2.75, distance_max)
+                #if ratom.symbol() == "H" and atom.ismetal:
+                #    # tight cutoff for metal-H bonds
+                #    distance_max = 1.1 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "H" and ratom.ismetal:
+                #    # tight cutoff for metal-H bonds
+                #    distance_max = 1.1 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+                #        atom.symbol() == "I" and ratom.symbol() == "I"):
+                #    distance_max = 1.05 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "I" and ratom.symbol() == "I":
+                #    distance_max = 3
+                #    # print(distance_max)
                 if (d < distance_max and i != ind):
                     nats.append(i)
         return nats
@@ -945,7 +969,7 @@ class mol3D:
     #  @param CN Coordination number of reference atom (default 6)
     #  @param debug Debug flag (default False)
     #  @return List of indices of bonded atoms
-    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False):
+    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
         # INPUT
         #   - ind: index of reference atom
         #   - CN: known coordination number of complex (default 6)
@@ -960,7 +984,10 @@ class mol3D:
             d = distance(ratom.coords(), atom.coords())
             # default interatomic radius
             # for non-metalics
-            distance_max = 1.15 * (atom.rad + ratom.rad)  ## Not consistent with getBondedAtoms?
+            if atom_specific_cutoffs:
+                distance_max = self.getBondCutoff(atom, ratom)
+            else:
+                distance_max = 1.15 * (atom.rad + ratom.rad)  ## Not consistent with getBondedAtoms?
             if atom.ismetal() or ratom.ismetal():
                 # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
                 # if atom.symbol() in dist_allowed.keys():
@@ -980,7 +1007,8 @@ class mol3D:
                     print(('metal in  cat ' + str(atom.symbol()) +
                            ' and rat ' + str(ratom.symbol())))
                     print(('maximum bonded distance is ' + str(distance_max)))
-
+                if atom.symbol() == 'He' or ratom.symbol() == 'He':
+                    distance_max = 1.5 * (atom.rad + ratom.rad)
                 if d < distance_max and i != ind:
                     # trim Hydrogens
                     if atom.symbol() == 'H' or ratom.symbol() == 'H':
@@ -988,7 +1016,7 @@ class mol3D:
                             print('invalid due to hydrogens: ')
                             print((atom.symbol()))
                             print((ratom.symbol()))
-                        valid = False
+                        valid = False  ### Hydrogen catom control
                     if d < distance_max and i != ind and valid:
                         if atom.symbol() in ["C", "S", "N"]:
                             if debug:
@@ -1086,17 +1114,17 @@ class mol3D:
     #  @param self The object pointer
     #  @param ind Index of reference atom
     #  @return List of indices of bonded atoms
-    def getBondedAtomsnotH(self, ind):
+    def getBondedAtomsnotH(self, ind, metal_multiplier=1.35, nonmetal_multiplier=1.15):
         ratom = self.getAtom(ind)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
             d = distance(ratom.coords(), atom.coords())
-            distance_max = 1.15 * (atom.rad + ratom.rad)
+            #distance_max = 1.15 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
-                distance_max = 1.35 * (atom.rad + ratom.rad)
+                distance_max = metal_multiplier * (atom.rad + ratom.rad)
             else:
-                distance_max = 1.15 * (atom.rad + ratom.rad)
+                distance_max = nonmetal_multiplier * (atom.rad + ratom.rad)
             if (d < distance_max and i != ind and atom.sym != 'H'):
                 nats.append(i)
         return nats
@@ -1633,6 +1661,55 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
+    # Load molecule from mol2 file
+    #
+    def readfrommol2(self, filename):
+        # print('!!!!', filename)
+        globs = globalvars()
+        amassdict = globs.amass()
+        graph = []
+        with open(filename, 'r') as f:
+            s = f.read().splitlines()
+        read_atoms = False
+        read_bonds = False
+        for line in s:
+            # Get Atoms First
+            if '<TRIPOS>BOND' in line:
+                read_atoms = False
+            if '<TRIPOS>SUBSTRUCTURE' in line:
+                read_bonds = False
+            if read_atoms:
+                s_line = line.split()
+                # Check redundancy in Chemical Symbols
+                atom_symbol1 = re.sub('[0-9]+[A-Z]+', '', line.split()[1])
+                atom_symbol1 = re.sub('[0-9]+', '', atom_symbol1)
+                atom_symbol2 = line.split()[5]
+                atom_symbol2 = atom_symbol2.split('.')[0]
+                if atom_symbol1 in list(amassdict.keys()):
+                    atom = atom3D(atom_symbol1, [float(s_line[2]), float(
+                        s_line[3]), float(s_line[4])])
+                elif atom_symbol2 in list(amassdict.keys()):
+                    atom = atom3D(atom_symbol2, [float(s_line[2]), float(
+                        s_line[3]), float(s_line[4])])
+                else:
+                    print('cannot find atom type')
+                    sys.exit()
+                self.addAtom(atom)
+            if '<TRIPOS>ATOM' in line:
+                read_atoms = True
+            if read_bonds:  # Read in bonds to molecular graph
+                s_line = line.split()
+                graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
+                graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
+            if '<TRIPOS>BOND' in line:
+                read_bonds = True
+                # initialize molecular graph
+                graph = np.zeros((self.natoms, self.natoms))
+        if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
+            self.graph = graph
+        else:
+            self.graph = []
+
     # Load molecule from xyz file
     #
     #  Consider using getOBMol, which is more general, instead.
@@ -1914,7 +1991,7 @@ class mol3D:
         ss = ''  # initialize returning string
         natoms = self.natoms
         if not ordering:
-            ordering = range(natoms)
+            ordering = list(range(natoms))
         if ignoreX:
             natoms -= sum([1 for i in self.atoms if i.sym == "X"])
 
@@ -2077,7 +2154,7 @@ class mol3D:
                 for _ind in _catoms:
                     if dist2catoms[ind][_ind] < 1.3:
                         tmp.update({_ind: dist2metal[_ind]})
-                _catoms_set.add(min(tmp.items(), key=lambda x: x[1])[0])
+                _catoms_set.add(min(list(tmp.items()), key=lambda x: x[1])[0])
             _catoms = list(_catoms_set)
             min_bond_dist = 2.0  ## This need double check with Aditya/ Michael
             if len(dist2metal) > 0:
@@ -2100,8 +2177,8 @@ class mol3D:
         self.catoms = catoms
         self.num_coord_metal = len(catoms)
         if debug:
-            print("self.catoms: ", self.catoms)
-            print("self.num_coord_metal: ", self.num_coord_metal)
+            print(("self.catoms: ", self.catoms))
+            print(("self.num_coord_metal: ", self.num_coord_metal))
 
     # Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
     # Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
@@ -2139,9 +2216,14 @@ class mol3D:
             th_input_arr.append([self.catoms[idx1], theta_tmp])
         # This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
         # When we have the customized catoms_arr, it will not change anything.
-        # print("!!!th_input_arr", th_input_arr)
-        th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
-            th_input_arr, angle_ref)
+        # print("!!!th_input_arr", th_input_arr, len(th_input_arr))
+        if True:
+            th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
+                th_input_arr, angle_ref)
+        # except IndexError:
+        #     th_output_arr = angle_ref
+        #     sum_del_angle = [180 for ii in range(len(angle_ref))]
+        #     catoms_arr = [-1 for ]
         self.catoms = catoms_arr
         if debug:
             print(('th:', th_output_arr))
@@ -2154,7 +2236,7 @@ class mol3D:
         for idx, ele in enumerate(th_output_arr):
             theta_arr.append([catoms_arr[idx], sum_del_angle[idx], ele])
         theta_trunc_arr = theta_arr
-        theta_trunc_arr_T = list(map(list, zip(*theta_trunc_arr)))
+        theta_trunc_arr_T = list(map(list, list(zip(*theta_trunc_arr))))
         oct_catoms = theta_trunc_arr_T[0]
         oct_angle_devi = theta_trunc_arr_T[1]
         oct_angle_all = theta_trunc_arr_T[2]
@@ -2263,8 +2345,8 @@ class mol3D:
         if debug:
             print(('ligand_list opt in symbols:', liglist_atom))
             print(('ligand_list init in symbols: ', liglist_init_atom))
-            print(("catoms opt: ", catoms))
-            print(("catoms init: ", catoms_init))
+            print(("catoms opt: ", catoms, [self.getAtom(x).symbol() for x in catoms]))
+            print(("catoms init: ", catoms_init, [self.getAtom(x).symbol() for x in catoms_init]))
             print(("catoms diff: ", set(catoms) - set(catoms_init),
                    len(set(catoms) - set(catoms_init))))
         liglist_shifted = []
@@ -2423,7 +2505,7 @@ class mol3D:
                 ind_next = self.find_the_other_ind(catoms[:], metal_ind)
                 _catoms = self.getBondedAtomsSmart(ind_next)
                 # print("~~~~", (self.atoms[ind].sym, self.atoms[ind_next].sym))
-                if (self.atoms[ind].sym, self.atoms[ind_next].sym) in self.globs.tribonddict().keys():
+                if (self.atoms[ind].sym, self.atoms[ind_next].sym) in list(self.globs.tribonddict().keys()):
                     dist = np.linalg.norm(np.array(self.atoms[ind].coords()) - np.array(self.atoms[ind_next].coords()))
                     if dist > self.globs.tribonddict()[(self.atoms[ind].sym, self.atoms[ind_next].sym)]:
                         endcheck = True
@@ -2551,7 +2633,7 @@ class mol3D:
         print('=======End of printing geo_check_results========')
 
     def print_dict(self, _dict):
-        for key, value in _dict.items():
+        for key, value in list(_dict.items()):
             print(('%s: ' % key, value))
 
     # Final geometry check call for octahedral structures.
@@ -2584,35 +2666,45 @@ class mol3D:
         if not catoms_arr == None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
-        self.geo_dict_initialization()
-        if self.num_coord_metal >= 6:
-            # if not rmsd_max == 'lig_mismatch':
-            if True:
-                self.num_coord_metal = 6
-                if not 'FCS' in skip:
-                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                                  catoms_arr, debug=debug)
-            if not init_mol == None:
-                if not 'lig_distort' in skip:
-                    dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                            flag_loose=flag_loose,
-                                                            flag_lbd=flag_lbd,
-                                                            debug=debug,
-                                                            BondedOct=BondedOct,
-                                                            flag_deleteH=flag_deleteH)
-            if not 'lig_linear' in skip:
-                dict_angle_linear, dict_orientation = self.check_angle_linear()
-            if debug:
-                self.print_geo_dict()
-        eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
-        if not maxdent > 1:
-            choice = 'mono'
+        if not init_mol == None:
+            init_mol.get_num_coord_metal(debug=debug)
+            catoms_init = init_mol.catoms
         else:
-            choice = 'multi'
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
-                                                                        num_coord=6,
-                                                                        debug=debug,
-                                                                        silent=silent)
+            catoms_init = [0, 0, 0, 0, 0, 0]
+        self.geo_dict_initialization()
+        if len(catoms_init) >= 6:
+            if self.num_coord_metal >= 6:
+                # if not rmsd_max == 'lig_mismatch':
+                if True:
+                    self.num_coord_metal = 6
+                    if not 'FCS' in skip:
+                        dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                      catoms_arr, debug=debug)
+                if not init_mol == None:
+                    if not 'lig_distort' in skip:
+                        dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                                flag_loose=flag_loose,
+                                                                flag_lbd=flag_lbd,
+                                                                debug=debug,
+                                                                BondedOct=BondedOct,
+                                                                flag_deleteH=flag_deleteH)
+                if not 'lig_linear' in skip:
+                    dict_angle_linear, dict_orientation = self.check_angle_linear()
+                if debug:
+                    self.print_geo_dict()
+            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            if not maxdent > 1:
+                choice = 'mono'
+            else:
+                choice = 'multi'
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
+                                                                            num_coord=6,
+                                                                            debug=debug,
+                                                                            silent=silent)
+        else:
+            flag_oct = 0
+            flag_list = ["bad_init_geo"]
+            dict_oct_info = {"num_coord_metal": "bad_init_geo"}
         if not flag_catoms:
             return flag_oct, flag_list, dict_oct_info
         else:
@@ -2812,7 +2904,7 @@ class mol3D:
         unique_symbols = dict()
         for atoms in self.getAtoms():
             if atoms.symbol() in atomorder:
-                if not atoms.symbol() in unique_symbols.keys():
+                if not atoms.symbol() in list(unique_symbols.keys()):
                     unique_symbols[atoms.symbol()] = 1
                 else:
                     unique_symbols[atoms.symbol(
@@ -2880,7 +2972,7 @@ class mol3D:
                         if int(ll[0]) == int(ll[1]):
                             self.bv_dict.update({int(ll[0]): float(ll[2])})
         else:
-            print("bofile does not exist.", bofile)
+            print(("bofile does not exist.", bofile))
         for ii in range(self.natoms):
             # self.ve_dict.update({ii: globs.amass()[self.atoms[ii].symbol()][3]})
             self.ve_dict.update({ii: bonds_organic[self.atoms[ii].symbol()]})
@@ -2905,7 +2997,7 @@ class mol3D:
                     if len(ll) == 3 and ll[0].isdigit():
                         self.charge_dict.update({int(ll[0]) - 1: float(ll[2])})
         else:
-            print("chargefile does not exist.", chargefile)
+            print(("chargefile does not exist.", chargefile))
 
     def get_symmetry_denticity(self):
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign

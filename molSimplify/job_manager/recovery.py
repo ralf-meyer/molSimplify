@@ -109,7 +109,7 @@ def reset(outfile_path):
     pickle_path = outfile_path.rsplit('.',1)[0]+'.pickle'
     if os.path.isfile(pickle_path):
         
-        print 'Resetting run: '+os.path.split(outfile_path)[-1].rsplit('.',1)[0]
+        print('Resetting run: '+os.path.split(outfile_path)[-1].rsplit('.',1)[0])
         old_path = os.path.join(os.path.split(outfile_path)[0],'pre_reset')
         if not os.path.isdir(old_path):
             os.mkdir(old_path)
@@ -146,7 +146,7 @@ def reset(outfile_path):
             try:
                 shutil.move(path,os.path.join(old_path,str(np.random.randint(999999999))+'_'+os.path.split(path)[-1]))
             except:
-                print 'No file found for: '+path
+                print('No file found for: '+path)
             
         
         #Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run

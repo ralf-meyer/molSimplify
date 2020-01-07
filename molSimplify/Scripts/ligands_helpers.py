@@ -80,8 +80,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             hexadentate = True
         else:
             valid = False
-            print('bad denticities: ' + str(ligdents))
-            print('max denticities: ' + str(min(ligdents)))
+            print(('bad denticities: ' + str(ligdents)))
+            print(('max denticities: ' + str(min(ligdents))))
     if n_ligs > 3 and min(ligdents) > 1:
         valid = False
         print(('too many ligs ' + str((n_ligs))))
@@ -274,20 +274,20 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                 else:
                     bot_idx = list(set(range(5))-set(not_ax_points))[0]
                     if loud:
-                        print('This is bot_idx',bot_idx)
+                        print(('This is bot_idx',bot_idx))
                     bot_lig = j
                     bot_con = [ligcons[j][bot_idx]]
 
         allowed = list(set(allowed)-set(not_eq))
         if loud:
-            print('this is the allowed list', allowed, not_eq)
+            print(('this is the allowed list', allowed, not_eq))
         eq_lig_list = allowed
         eq_con_list = [
             list(set([ligcons[i] for i in allowed][0]) - set(top_con) - set(bot_con))]
         ax_lig_list = [top_lig, bot_lig]
         ax_con_list = [top_con, bot_con]
         if loud:
-            print('con lists', eq_con_list, ax_con_list)
+            print(('con lists', eq_con_list, ax_con_list))
         ###########################################################################################
         # In the above, the pentadentate ligand is classified as both axial and equatorial.       #
         # The lc atoms are decided by the z-position. Thus the pentadentate ligand has 4 eq-lc    #
@@ -319,7 +319,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                 # print('v1v2',v1u,v2u)
                 angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
                 if loud:
-                    print('pair of atoms, then angle',pair,angle)
+                    print(('pair of atoms, then angle',pair,angle))
                 angle_list.append(angle)
             argsort_angle_list = np.squeeze(np.array(angle_list)).argsort()[-3:][::-1]
             point_combos = [pair_list[argsort_angle_list[0]]+pair_list[argsort_angle_list[1]],
@@ -369,11 +369,11 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                     squared_dist = np.sum((np.array(adjusted_coords)-np.array(plane_coords))**2)
                     dist = np.squeeze(np.sqrt(squared_dist))
                     if loud:
-                        print('dist',dist)
+                        print(('dist',dist))
                     ax_dist.append(dist)
                 perpdist.append(np.mean(ax_dist))
             if loud:
-                print("Perpendicular distance is",perpdist, perpcombo, len(perpdist), len(best_fit_planes))
+                print(("Perpendicular distance is",perpdist, perpcombo, len(perpdist), len(best_fit_planes)))
             not_ax_points = combo_list[perpcombo[np.argmax(np.array(perpdist))]]
             if len(set(not_ax_points)) != 4:
                 print('The equatorial plane is not being assigned correctly. Please check.')
@@ -382,21 +382,21 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                 bot_idx = list(set(range(6))-set(not_ax_points))[0]
                 top_idx = list(set(range(6))-set(not_ax_points))[1]
                 if loud:
-                    print('This is bot_idx',bot_idx)
+                    print(('This is bot_idx',bot_idx))
                 bot_lig = j
                 top_lig = j
                 bot_con = [ligcons[j][bot_idx]]
                 top_con = [ligcons[j][top_idx]]
         allowed = list(set(allowed)-set(not_eq))
         if loud:
-            print('this is the allowed list', allowed, not_eq)
+            print(('this is the allowed list', allowed, not_eq))
         eq_lig_list = [top_lig]
         eq_con_list = eq_con_list = [
             list(set([ligcons[0][i] for i in not_ax_points]))]
         ax_lig_list = [top_lig, bot_lig]
         ax_con_list = [top_con, bot_con]
         if loud:
-            print('con lists', eq_con_list, ax_con_list)
+            print(('con lists', eq_con_list, ax_con_list))
 
     ############### DONE WITH CLASSIFICATION ######
     # ax_lig=ligand_records[ligand_counts.index(2)]

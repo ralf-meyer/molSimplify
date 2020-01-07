@@ -49,7 +49,7 @@ def postproc(rundir, args, globs):
     resf = t.splitlines()
     logfile = pdir+"/post.log"
     if not os.path.isdir(pdir):
-        print('\nSpecified directory '+pdir+' does not exist..\n\n')
+        print(('\nSpecified directory '+pdir+' does not exist..\n\n'))
         if args.gui:
             args.gui.iWtxt.setText(
                 '\nSpecified directory '+pdir+' does not exist.\n\n'+args.gui.iWtxt.toPlainText())

@@ -1026,12 +1026,12 @@ def axes_angle_align(payload, cand_ind, align_ind, align_target, angle):
     new_payload.copymol3D(payload)
     align_chord = vecdiff(new_payload.getAtom(
         cand_ind).coords(), new_payload.getAtom(align_ind).coords())
-    print('align coord:' + str(align_chord))
+    print(('align coord:' + str(align_chord)))
     align_chord[2] = 0  # project into X-Y
-    print('align coord, proj ' + str(align_chord))
-    print('align target ' + str(align_target))
+    print(('align coord, proj ' + str(align_chord)))
+    print(('align target ' + str(align_target)))
     normal_vect = numpy.cross(align_chord, align_target)
-    print('vec angle id ' + str(vecangle(align_chord, align_target)))
+    print(('vec angle id ' + str(vecangle(align_chord, align_target))))
     rotate_angle = vecangle(align_chord, align_target) + angle
     print(('my angle is ' + str(rotate_angle) + ' nv is ' + str(normal_vect)))
     # Rotates molecule about axis defined by direction vector and point on axis

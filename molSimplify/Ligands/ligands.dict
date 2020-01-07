@@ -9,7 +9,7 @@ acetylacetone:acac.mol,acac,0 5,build functionalize bidentate,BA,-1
 alanine:alanine.mol,Ala,3,build functionalize aminoacid,BA,0
 alanineB:alanine.mol,Ala,3 11,build functionalize aminoacid,BA,0
 amine:amine.mol,ami,0,functionalize small,N,-1
-azide:azide.mol,azide,1,functionalize small,N,-1
+azide:azide.mol,azide,0,functionalize small,BA,-1
 methylamine:methylamine.mol,methylamine,1,functionalize small,N,0
 ethylamine:ethylamine.mol,ethylamine,1,functionalize small,N,0
 nethanolamine:nethanolamine.mol,nethanolamine,1,functionalize small,N,0
@@ -99,6 +99,7 @@ glutamine:glutamine.mol,Gln,3,build functionalize aminoacid,BA,0
 glutamineB:glutamine.mol,Gln,3 19,build functionalize aminoacid,BA,0
 glycine:glycine.mol,Gly,8,build functionalize aminoacid,BA,0
 glycineB:glycine.mol,Gly,8 3,build functionalize aminoacid,BA,0
+helium:helium.mol,he,0,build functionalize small,N,0
 histidine:histidine.mol,His,9,build functionalize aminoacid,BA,1
 hydrocyanide:hydrocyanide.mol,hydc,1,build small,N,0
 hydroisocyanide:hydroisocyanide.mol,hisc,0,build small,N,0
@@ -113,7 +114,7 @@ imine:imine.mol,imi,0,functionalize small,N
 iminodiacetic:iminodiacetic.mol,iminodiacetic,0 1,build bidentate, BA, -2
 isoleucine:isoleucine.mol,Ile,3,build functionalize aminoacid,BA,0
 isoleucineB:isoleucine.mol,Ile,3 21,build functionalize aminoacid,BA,0
-isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,N
+isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,BA,-1
 ncs:isothiocyanate.mol,ithcynt,0,build functionalize small,N
 leucine:leucine.mol,Leu,21,build functionalize aminoacid,BA,0
 leucineB:leucine.mol,Leu,3 21,build functionalize aminoacid,BA,0
@@ -198,7 +199,7 @@ terpyridine:terpy.mol,trpy,0 1 2,build tridentate,BA,0
 dihydrofuran:dihydrofuran.mol,dihydrofuran,0,build bulkymono,A,0
 tetrahydrofuran:tetrahydrofuran.mol,tetrahydrofuran,0,build bulkymono,A,0
 thiane:thiane.mol,thiane,0,build,functionalize small,N,0
-thiocyanate:thiocyanate.mol,thcynt,0,build functionalize small,N,-1
+thiocyanate:thiocyanate.mol,thcynt,0,build functionalize small,BA,-1
 scn:thiocyanate.mol,thcynt,0,build functionalize small,N,-1
 thiol:thiol.mol,thil,0,build functionalize small,N,-1
 thiopyridine:thiopyridine.mol,thiopyrd,3,build organic,BA,0
@@ -248,3 +249,13 @@ o2:o2.xyz,o2,0, build small inorganic,B,0
 n4py:n4py.xyz,n4py,5 15 25 35 41, build functionalize tetra dentate,BA,0
 test:test.xyz,test,10 14,build,BA,-1
 rotaxane:Rotaxane7.mol,rotaxane,39,build,N,0
+nco-:nco-.mol,nco-,0,build functionalize small,N,-1
+no2-:no2-.mol,no2-,0,build functionalize small,N,-1
+o2-:o2-.mol,o2-,0,build functionalize small,N,-2
+s2-:s2-.mol,s2-,0,build functionalize small,N,-2
+hs-:hs-.mol,hs-,0,build functionalize small,N,-1
+h2s:h2s.mol,h2s,0,build functionalize small,N,0
+ph2-:ph2-.mol,ph2-,0,build functionalize small,N,-1
+ph3:ph3.mol,ph3,0,build functionalize small,N,0
+nitrito:nitrito.mol,nitrito,0,build functionalize small,N,-1
+hydrogen:hydrogen.mol,hydrogen,0,build functionalize small,N,-1

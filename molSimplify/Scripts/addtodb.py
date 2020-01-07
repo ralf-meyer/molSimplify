@@ -38,28 +38,28 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
         print('To add to database, you need to set a custom path. Please enter a writeable file path:')
-        new_path = input('path=')
+        new_path = eval(input('path='))
         globs.add_custom_path(new_path)
         copy_to_custom_path()
 
     lipath = globs.custom_path + "/Ligands/ligands.dict"
     licores = readdict(lipath)
     ligands_folder = globs.custom_path + "/Ligands/"
-    print("ligands_folder is : " + str(ligands_folder))
+    print(("ligands_folder is : " + str(ligands_folder)))
     # check if ligand exists
-    if sminame in licores.keys():
+    if sminame in list(licores.keys()):
         emsg = 'Ligand '+sminame+' already existing in ligands database.'
         emsg += ' To replace, delete the existing entry first.'
         return emsg
     else:
         # get connection atoms
-        ccats = filter(None, re.split(' |,|\t', smicat))
+        ccats = [_f for _f in re.split(' |,|\t', smicat) if _f]
         # get groups
-        groups = filter(None, re.split(' |,|\t', smigrps))
+        groups = [_f for _f in re.split(' |,|\t', smigrps) if _f]
         grp = 'all '+' '.join(groups)
         grp += ' '+smictg
         if smicat == '':
-            cats = range(0, int(smident))
+            cats = list(range(0, int(smident)))
         else:
             cats = [int(a)-1 for a in ccats]
         cs = [str(a) for a in cats]
@@ -78,12 +78,12 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
         lig.convert2mol3D()  # convert to mol3D
 
         shortname = sminame
-        print("smimol is "+str(smimol))
-        print("sminame is "+str(sminame))
+        print(("smimol is "+str(smimol)))
+        print(("sminame is "+str(sminame)))
         # sanitize ff options:
         if not ffopt in ["A", "B", "BA"]:
-            print('warning: incompatible ffopt choice. Options are ' +
-                  str(["A", "B", "BA", "N"]))
+            print(('warning: incompatible ffopt choice. Options are ' +
+                  str(["A", "B", "BA", "N"])))
             sys.exit(1)
 
         # new entry for dictionary
@@ -132,19 +132,19 @@ def addtocdb(smimol, sminame, smicat):
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
         print('To add to database, you need to set a custom path. Please enter a writeable file path:')
-        new_path = input('path=')
+        new_path = eval(input('path='))
         globs.add_custom_path(new_path)
         copy_to_custom_path()
     cpath = globs.custom_path + "/Cores/cores.dict"
     mcores = readdict(cpath)
     cores_folder = globs.custom_path + "/Cores/"
     # check if core exists
-    if sminame in mcores.keys():
+    if sminame in list(mcores.keys()):
         emsg = 'Core '+sminame+' already existing in core database.'
         return emsg
     else:
         # get connection atoms
-        ccats = filter(None, re.split(' |,|\t', smicat))
+        ccats = [_f for _f in re.split(' |,|\t', smicat) if _f]
         cats = [int(a)-1 for a in ccats]
         if len(cats) == 0:
             cats = [0]
@@ -195,14 +195,14 @@ def addtobdb(smimol, sminame):
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
         print('To add to database, you need to set a custom path. Please enter a writeable file path:')
-        new_path = input('path=')
+        new_path = eval(input('path='))
         globs.add_custom_path(new_path)
         copy_to_custom_path()
     bpath = globs.custom_path + "/Bind/bind.dict"
     bindcores = readdict(bpath)
     bind_folder = globs.custom_path + "/Bind/"
     # check if binding species exists
-    if sminame in bindcores.keys():
+    if sminame in list(bindcores.keys()):
         emsg = 'Molecule '+sminame+' already existing in binding species database.'
         return emsg
     else:
@@ -262,7 +262,7 @@ def removefromDB(sminame, ropt):
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
         print('To database, you need to set a custom path. Please enter a writeable file path:')
-        new_path = input('path=')
+        new_path = eval(input('path='))
         globs.add_custom_path(new_path)
         copy_to_custom_path()
     li_path = globs.custom_path + "/Ligands/ligands.dict"

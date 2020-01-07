@@ -36,14 +36,14 @@ def try_float(obj):
 
 def invert_dictionary(dictionary):
     new_dict = dict()
-    for key in dictionary.keys():
+    for key in list(dictionary.keys()):
         if type(dictionary[key]) == list:
             for entry in dictionary[key]:
-                if entry in new_dict.keys():
+                if entry in list(new_dict.keys()):
                     raise Exception('Dictionary inversion failed, values do not serve as unique keys')
                 new_dict[entry] = key
         else:
-            if dictionary[key] in new_dict.keys():
+            if dictionary[key] in list(new_dict.keys()):
                 raise Exception('Dictionary inversion failed, values do not serve as unique keys')
             new_dict[dictionary[key]] = key
     return new_dict
@@ -97,8 +97,8 @@ def list_active_jobs(ids=False,home_directory=False,parse_bundles=False):
         for line_index in line_indices_of_jobnames:
             job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
         if len(names) != len(job_ids):
-            print len(names)
-            print len(job_ids)
+            print(len(names))
+            print(len(job_ids))
             raise Exception('An error has occurred in listing active jobs!')
         return names, job_ids
 
@@ -156,10 +156,10 @@ def get_number_active():
 def check_completeness(directory='in place', max_resub=5):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find('*.out',directory)
-    outfiles = filter(check_valid_outfile,outfiles)
+    outfiles = list(filter(check_valid_outfile,outfiles))
 
     results_tmp = [read_outfile(outfile,short_ouput=True) for outfile in outfiles]
-    results_tmp = zip(outfiles,results_tmp)
+    results_tmp = list(zip(outfiles,results_tmp))
     results_dict = dict()
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
@@ -236,21 +236,21 @@ def check_completeness(directory='in place', max_resub=5):
         else:
             return False
 
-    active_jobs = filter(check_active, outfiles)
-    finished = filter(check_finished, outfiles)
-    needs_resub = filter(check_needs_resub, outfiles)
-    waiting = filter(check_waiting, outfiles)
-    spin_contaminated = filter(check_spin_contaminated, outfiles)
-    all_scf_errors = filter(check_scf_error, outfiles)
-    thermo_grad_errors = filter(check_thermo_grad_error, outfiles)
-    chronic_errors = filter(check_chronic_failure, outfiles)
+    active_jobs = list(filter(check_active, outfiles))
+    finished = list(filter(check_finished, outfiles))
+    needs_resub = list(filter(check_needs_resub, outfiles))
+    waiting = list(filter(check_waiting, outfiles))
+    spin_contaminated = list(filter(check_spin_contaminated, outfiles))
+    all_scf_errors = list(filter(check_scf_error, outfiles))
+    thermo_grad_errors = list(filter(check_thermo_grad_error, outfiles))
+    chronic_errors = list(filter(check_chronic_failure, outfiles))
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
-    scf_errors = filter(check_scf_error, errors)
+    scf_errors = list(filter(check_scf_error, errors))
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
     jobscript_list = [i.rsplit('_', 1)[0] + '.out' for i in jobscript_list]
-    extra_active_jobs = filter(check_active, jobscript_list)
+    extra_active_jobs = list(filter(check_active, jobscript_list))
     active_jobs.extend(extra_active_jobs)
 
     # Sort out conflicts in order of reverse priority
@@ -354,7 +354,7 @@ def extract_optimized_geo(PATH, custom_name = False):
     lines.reverse()
     if len(lines) == 0:
         lines = []
-        print('optim.xyz is empty for: ' + PATH)
+        print(('optim.xyz is empty for: ' + PATH))
     else:
         for i in range(len(lines)):
             if 'frame' in lines[i].split():
@@ -397,8 +397,8 @@ def pull_optimized_geos(PATHs=[]):
         homedir = os.path.split(scr_path)[0]
         initial_xyz = glob.glob(os.path.join(homedir, '*.xyz'))
         if len(initial_xyz) != 1:
-            print 'Name could not be identified for: ' + Path
-            print 'Naming with a random 6 digit number'
+            print('Name could not be identified for: ' + Path)
+            print('Naming with a random 6 digit number')
             name = str(np.random.randint(999999)) + '_optimized.xyz'
         else:
             initial_xyz = initial_xyz[0]
@@ -421,8 +421,8 @@ def read_outfile(outfile_path, short_ouput=False):
             break
         if counter == 1:
             if 'nohup' in outfile_path:
-                print 'Warning! Nohup file caught in outfile processing'
-                print outfile_path
+                print('Warning! Nohup file caught in outfile processing')
+                print(outfile_path)
                 counter = 0
             else:
                 raise ValueError('.out file type not recognized for file: ' + outfile_path)
@@ -591,7 +591,7 @@ def read_configure(home_directory, outfile_path):
             f = open(configure, 'r')
             configure = f.readlines()
             f.close()
-            configure = map(strip_new_line, configure)
+            configure = list(map(strip_new_line, configure))
             return configure
         else:
             return []
@@ -707,8 +707,8 @@ def read_mullpop(PATH):
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
     outfiles = find('*.out',directory)
-    outfiles = filter(check_valid_outfile,outfiles)
-    results = map(read_outfile,outfiles)
+    outfiles = list(filter(check_valid_outfile,outfiles))
+    results = list(map(read_outfile,outfiles))
     summary = pd.DataFrame(results)
 
     return summary
@@ -735,20 +735,20 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates',
                                 'guess', 'custom_line', 'name']):
-        if prop_name in input_dictionary.keys():
+        if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
         else:
             infile[prop_name] = prop
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
             not infile['name'] and not infile['coordinates']):
-        print('Name: ' + infile['name'])
-        print('Charge: ' + str(infile['charge']))
-        print('Spinmult: ' + str(infile['spinmult']))
+        print(('Name: ' + infile['name']))
+        print(('Charge: ' + str(infile['charge'])))
+        print(('Spinmult: ' + str(infile['spinmult'])))
         raise Exception('Minimum parameters not specified for writing infile')
     if type(infile['charge']) != int or type(infile['spinmult']) != int:
-        print('Charge Type: ' + str(type(infile['charge'])))
-        print('Spinmult Type: ' + str(type(infile['spinmult'])))
+        print(('Charge Type: ' + str(type(infile['charge']))))
+        print(('Spinmult Type: ' + str(type(infile['spinmult']))))
         raise Exception('Spin and Charge should both be integers!')
 
     if infile['spinmult'] != 1:

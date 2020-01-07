@@ -758,7 +758,7 @@ def ogen(args, strfiles, method):
             unrestricted = True
         else:
             jobparams['method'] = 'B3LYP'
-    print(args.method, method, jobparams['method'])
+    print((args.method, method, jobparams['method']))
     # Check runtype and we accept both ORCA and terachem naming convention
     if (args.runtyp and 'energy' in args.runtyp.lower()):
         jobparams['run'] = 'Sp'
@@ -974,7 +974,7 @@ def molcgen(args, strfiles, method):
         jobparams['method'] = method
     else:
         jobparams['method'] = 'CASSCF'
-    print(args.method, method, jobparams['method'])
+    print((args.method, method, jobparams['method']))
     # Check runtype
     if (args.runtyp and 'energy' in args.runtyp.lower()):
         jobparams['run'] = 'energy'

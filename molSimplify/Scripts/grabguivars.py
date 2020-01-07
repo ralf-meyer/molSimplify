@@ -123,7 +123,7 @@ def setligands(gui, ligs, ligoccs, lcats, kHs, MLb, lang, lname):
 def writeinputc(args, fname):
     f = open(fname, 'w')
     f.write("# Input file generated from GUI options\n")
-    for key, val in args.items():
+    for key, val in list(args.items()):
         if len(val) > 0:
             vals = val.splitlines()
             for v in vals:
@@ -138,7 +138,7 @@ def writeinputc(args, fname):
 def writeinputp(args, fname):
     f = open(fname, 'w')
     f.write("# Input file generated from GUI options\n")
-    for key, val in args.items():
+    for key, val in list(args.items()):
         f.write(key+' '+val+'\n')
     f.close()
 
@@ -153,7 +153,7 @@ def writeinputf(args):
     dd = "# Input file generated from GUI options at " + \
         time.strftime('%m/%d/%Y %H:%M')+'\n'
     ff.write(dd)
-    for key, val in args.items():
+    for key, val in list(args.items()):
         if len(val) > 0:
             vals = val.splitlines()
             for v in vals:
@@ -239,7 +239,7 @@ def grabguivars(gui):
             if gui.chch.getState():
                 args['-calccharge'] = 'yes'
             args['-spin'] = gui.etqctspin.text()
-            print(gui.qctcalc.currentText())
+            print((gui.qctcalc.currentText()))
             args['-runtyp'] = gui.qctcalc.currentText()
             args['-method'] = gui.etqctmethod.text()
             args['-basis'] = gui.etqctbasis.text()

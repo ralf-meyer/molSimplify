@@ -87,7 +87,7 @@ class run_diag:
                 if not self.ANN_flag:
                     report.append('ANN reason, ' + str(self.ANN_reason))
                 else:
-                    for keys in self.ANN_attributes.keys():
+                    for keys in list(self.ANN_attributes.keys()):
                         report.append(str(keys) + ', ' +
                                       str(self.ANN_attributes[keys]))
             if self.catalysis_is_set:
@@ -97,7 +97,7 @@ class run_diag:
                     report.append('Catalytic ANN reason, ' +
                                   str(self.catalysis_reason))
                 else:
-                    for keys in self.ANN_attributes.keys():
+                    for keys in list(self.ANN_attributes.keys()):
                         report.append(str(keys) + ', ' +
                                       str(self.ANN_attributes[keys]))
             if self.bl_is_set:

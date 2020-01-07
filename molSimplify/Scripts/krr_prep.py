@@ -243,11 +243,11 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # stats
-    mean_X_dict = dict(zip(headers, mean_X))
-    std_X_dict = dict(zip(headers, std_X))
+    mean_X_dict = dict(list(zip(headers, mean_X)))
+    std_X_dict = dict(list(zip(headers, std_X)))
     stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
     stats = [mean_X_dict, std_X_dict, mean_y, std_y]
-    stat_dict = dict(zip(stat_names, stats))
+    stat_dict = dict(list(zip(stat_names, stats)))
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
@@ -263,7 +263,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     importances = X_norm_train_impts[idxes]
     features_sel = headers[idxes]
     # importance
-    impt_dict = dict(zip(features_sel, importances))
+    impt_dict = dict(list(zip(features_sel, importances)))
     X_norm_train_sel = X_norm_train.T[idxes].T
     X_norm_test_sel = X_norm_test.T[idxes].T
     # training with krr
@@ -321,14 +321,14 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
     X_norm_train_sel_names = features_sel
     X_norm_train_sel_dict = dict(
-        zip(X_norm_train_sel_names, X_norm_train_sel.T))
+        list(zip(X_norm_train_sel_names, X_norm_train_sel.T)))
     trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
-    train_dict = dict(zip(train_names, trains))
+    train_dict = dict(list(zip(train_names, trains)))
     test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
     X_norm_test_sel_names = features_sel
-    X_norm_test_sel_dict = dict(zip(X_norm_test_sel_names, X_norm_test_sel.T))
+    X_norm_test_sel_dict = dict(list(zip(X_norm_test_sel_names, X_norm_test_sel.T)))
     tests = [X_norm_test_sel_dict, y_test_data, y_test_pred]
-    test_dict = dict(zip(test_names, tests))
+    test_dict = dict(list(zip(test_names, tests)))
     # performance
     score_train = regr.score(X_norm_train_sel, y_norm_train)
     score_test = regr.score(X_norm_test_sel, y_norm_test)
@@ -336,7 +336,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     MAE_test = mean_absolute_error(y_test_data, y_test_pred)
     perm_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
     perms = [score_train, score_test, MAE_train, MAE_test]
-    perm_dict = dict(zip(perm_names, perms))
+    perm_dict = dict(list(zip(perm_names, perms)))
 
     return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
 
@@ -374,11 +374,11 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # stats
-    mean_X_dict = dict(zip(headers, mean_X))
-    std_X_dict = dict(zip(headers, std_X))
+    mean_X_dict = dict(list(zip(headers, mean_X)))
+    std_X_dict = dict(list(zip(headers, std_X)))
     stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
     stats = [mean_X_dict, std_X_dict, mean_y, std_y]
-    stat_dict = dict(zip(stat_names, stats))
+    stat_dict = dict(list(zip(stat_names, stats)))
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
@@ -404,10 +404,10 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
             importances = X_norm_train_impts[idxes]
             features_sel = headers[idxes]
             # importance
-            impt_dict = dict(zip(features_sel, importances))
+            impt_dict = dict(list(zip(features_sel, importances)))
             X_norm_train_sel = X_norm_train.T[idxes].T
             X_norm_test_sel = X_norm_test.T[idxes].T
-            print(sorted(impt_dict, key=impt_dict.get))
+            print((sorted(impt_dict, key=impt_dict.get)))
             print(impt_dict)
         else:
             idxes = [headers.tolist().index(feature_name)
@@ -484,7 +484,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
         # test_dict = dict(zip(test_names, tests))
         y_name = ['y_train_data', 'y_train_pred', 'y_test_data', 'y_test_pred']
         y = [y_train_data, y_train_pred, y_test_data, y_test_pred]
-        y_dict = dict(zip(y_name, y))
+        y_dict = dict(list(zip(y_name, y)))
         ys.append(y_dict)
         # performance
         # score_train = regr.score(X_norm_train_sel, y_norm_train)
@@ -498,7 +498,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
         MAEs_test_i.append(i)
         print((str(i) + '/' + str(total_i)))
         i += 1
-    perm_dict = dict(zip(MAEs_test_i, MAEs_test))
+    perm_dict = dict(list(zip(MAEs_test_i, MAEs_test)))
 
     # return stat_dict, impt_dict, train_dict, test_dict, perm_dict, regr
     return impt_dict, perm_dict, ys
@@ -539,11 +539,11 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
     mean_y = np.mean(y, axis=0)
     std_y = np.std(y, axis=0)
     # stats
-    mean_X_dict = dict(zip(headers, mean_X))
-    std_X_dict = dict(zip(headers, std_X))
+    mean_X_dict = dict(list(zip(headers, mean_X)))
+    std_X_dict = dict(list(zip(headers, std_X)))
     stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
     stats = [mean_X_dict, std_X_dict, mean_y, std_y]
-    stat_dict = dict(zip(stat_names, stats))
+    stat_dict = dict(list(zip(stat_names, stats)))
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
@@ -562,7 +562,7 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
         importances = X_norm_train_impts[idxes]
         features_sel = headers[idxes]
         # importance
-        impt_dict = dict(zip(features_sel, importances))
+        impt_dict = dict(list(zip(features_sel, importances)))
         # idxes = range(len(X_norm_train.T))
         X_norm_train_sel = X_norm_train.T[idxes].T
         X_norm_test_sel = X_norm_test.T[idxes].T
@@ -581,15 +581,15 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
         train_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
         X_norm_train_sel_names = features_sel
         X_norm_train_sel_dict = dict(
-            zip(X_norm_train_sel_names, X_norm_train_sel.T))
+            list(zip(X_norm_train_sel_names, X_norm_train_sel.T)))
         trains = [X_norm_train_sel_dict, y_train_data, y_train_pred]
-        train_dict = dict(zip(train_names, trains))
+        train_dict = dict(list(zip(train_names, trains)))
         test_names = ['X_norm_sel_dict', 'y_data', 'y_pred']
         X_norm_test_sel_names = features_sel
         X_norm_test_sel_dict = dict(
-            zip(X_norm_test_sel_names, X_norm_test_sel.T))
+            list(zip(X_norm_test_sel_names, X_norm_test_sel.T)))
         tests = [X_norm_test_sel_dict, y_test_data, y_test_pred]
-        test_dict = dict(zip(test_names, tests))
+        test_dict = dict(list(zip(test_names, tests)))
         # performance
         score_train = regr.score(X_norm_train_sel, y_norm_train)
         score_test = regr.score(X_norm_test_sel, y_norm_test)
@@ -597,7 +597,7 @@ def gbr_model_training(csvf, colnum_i_label, colnum_j_label, colnum_desc):
         MAE_test = mean_absolute_error(y_test_data, y_test_pred)
         perm_names = ['score_train', 'score_test', 'MAE_train', 'MAE_test']
         perms = [score_train, score_test, MAE_train, MAE_test]
-        perm_dict = dict(zip(perm_names, perms))
+        perm_dict = dict(list(zip(perm_names, perms)))
         scores.append(score_test)
         results.append([stat_dict, impt_dict, train_dict,
                         test_dict, perm_dict, regr])
@@ -651,11 +651,11 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
                 for descriptor_name in descriptor_names:
                     desc_names.append(descriptor_name + '_' + str(idx_i))
                 descs += descriptors
-            desc_dict = dict(zip(desc_names, descs))
+            desc_dict = dict(list(zip(desc_names, descs)))
             descs = []
             Xs_train_sel = []
-            d2s = [0] * len(Xs_train.values()[0])
-            for key in impt_dict.keys():
+            d2s = [0] * len(list(Xs_train.values())[0])
+            for key in list(impt_dict.keys()):
                 desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
                     desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
                 descs.append(desc)
@@ -672,7 +672,7 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
             bondl = regr.predict([descs]) * std_y + mean_y
             bondl_keys.append(fidx)
             bondls.append(bondl)
-    bondl_dict = dict(zip(bondl_keys, bondls))
+    bondl_dict = dict(list(zip(bondl_keys, bondls)))
 
     return bondl_dict, ds
 
@@ -719,8 +719,8 @@ def krr_model_predict(core3D, spin, mligcatom):
             mean_X = [float(ele) for ele in line]
         if i == 2:
             std_X = [float(ele) for ele in line]
-    mean_X_dict = dict(zip(feature_names, mean_X))
-    std_X_dict = dict(zip(feature_names, std_X))
+    mean_X_dict = dict(list(zip(feature_names, mean_X)))
+    std_X_dict = dict(list(zip(feature_names, std_X)))
     # load feature names
     f_stats = fpath + '/hat_feature_names.csv'
     f = open(f_stats, 'r')
@@ -753,8 +753,8 @@ def krr_model_predict(core3D, spin, mligcatom):
             mean_X2 = [float(ele) for ele in line]
         if i == 2:
             std_X2 = [float(ele) for ele in line]
-    mean_X2_dict = dict(zip(feature_names, mean_X))
-    std_X2_dict = dict(zip(feature_names, std_X))
+    mean_X2_dict = dict(list(zip(feature_names, mean_X)))
+    std_X2_dict = dict(list(zip(feature_names, std_X)))
     # load feature2 names
     f_stats = fpath + '/hat2_feature_names.csv'
     f = open(f_stats, 'r')
@@ -797,7 +797,7 @@ def krr_model_predict(core3D, spin, mligcatom):
                 for descriptor_name in descriptor_names:
                     desc_names.append(descriptor_name + '_' + str(idx_i))
                 descs += descriptors
-            desc_dict = dict(zip(desc_names, descs))
+            desc_dict = dict(list(zip(desc_names, descs)))
             descs = []
             Xs_train_sel = []
             d2s = [0] * len(Xs_train[0])
@@ -833,7 +833,7 @@ def krr_model_predict(core3D, spin, mligcatom):
                     ds2.append(d2)
                 bondl2 = regr2.predict([descs]) * std_y2 + mean_y2
 
-    bondl_dict = dict(zip(bondl_keys, bondls))
+    bondl_dict = dict(list(zip(bondl_keys, bondls)))
 
     return bondl_dict, bondl2, ds1, ds2
 
@@ -966,7 +966,7 @@ def invoke_KRR_from_mol3d_dQ(mol, charge):
         bondl = y_norm_test[0][0]
         bondls.append(bondl)
 
-    bondl_dict = dict(zip(keys, bondls))
+    bondl_dict = dict(list(zip(keys, bondls)))
 
     return bondl_dict
 

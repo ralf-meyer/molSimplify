@@ -246,7 +246,7 @@ def nbopost(resfiles, folder, gui, flog):
         resfp = os.path.relpath(resf, folder)
         resd = resf.rsplit('/', 1)[0]
         resfold = os.path.relpath(resd, folder)
-        print('Processing ', resfp)
+        print(('Processing ', resfp))
         flog.write('Processing '+resfp+'\n')
         if gui:
             gui.iWtxt.setText('Processing '+resfp+'\n'+gui.iWtxt.toPlainText())
@@ -298,7 +298,7 @@ def terapost(resfiles, folder, gui, flog):
         resfp = os.path.relpath(resf, folder)
         resd = resf.rsplit('/', 1)[0]
         resfold = os.path.relpath(resd, folder)
-        print('Processing ', resfp)
+        print(('Processing ', resfp))
         flog.write('Processing '+resfp+'\n')
         if gui:
             gui.iWtxt.setText('Processing '+resfp+'\n'+gui.iWtxt.toPlainText())
@@ -402,7 +402,7 @@ def gampost(resfiles, folder, gui, flog):
         if gui:
             gui.iWtxt.setText('Processing '+resfp+'\n'+gui.iWtxt.toPlainText())
             gui.app.processEvents()
-        print('Processing '+resfp)
+        print(('Processing '+resfp))
         flog.write('Processing '+resfp+'\n')
         if len(resfold) > 1:
             resfold = resfold[-2]

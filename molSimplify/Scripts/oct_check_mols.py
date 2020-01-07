@@ -51,7 +51,7 @@ def readfromtxt(mol, txt):
                 # globs = globalvars()
                 atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                               name=line_split[0])
-            elif line_split[0] in en_dict.keys():
+            elif line_split[0] in list(en_dict.keys()):
                 atom = atom3D(line_split[0], [float(line_split[1]), float(
                     line_split[2]), float(line_split[3])])
             else:
@@ -476,7 +476,7 @@ def dict_check_processing(dict_info, dict_check, std_not_use,
     flag_list = []
     for key, values in list(dict_check.items()):
         if not dict_info[key] == 'banned_by_user':
-            print(dict_info[key])
+            print((dict_info[key]))
             print(values)
             if dict_info[key] > values:
                 flag_list.append(key)

@@ -225,7 +225,7 @@ elementsbynum = ['H', 'He',
                  'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'Uut', 'Fl', 'Uup', 'Lv', 'Uus', 'Uuo']
 
 # Electronegativity (Pauling) by atom symbol
-endict = {"H": 2.20,
+endict = {"H": 2.20, "He": 4.16,
           "Li": 0.98, "Be": 1.57, "B": 2.04, "C": 2.55, "N": 3.04, "O": 3.44, "F": 3.98,
           "Na": 0.93, "Mg": 1.31, "Al": 1.61, "Si": 1.90, "P": 2.19, "S": 2.58, "Cl": 3.16,
           "K": 0.82, "Ca": 1.00, "Sc": 1.36, "Ti": 1.54, "V": 1.63, "Cr": 1.66,
@@ -409,19 +409,19 @@ class globalvars:
         ###### check for ~/.molSimplify ######
         if glob.glob(homedir + '/.' + self.PROGRAM):
             f = open(homedir + '/.' + self.PROGRAM, 'r')
-            s = filter(None, f.read().splitlines())
+            s = [_f for _f in f.read().splitlines() if _f]
             d = dict()
             for ss in s:
-                sp = filter(None, ss.split('='))
+                sp = [_f for _f in ss.split('=') if _f]
                 try:
                     d[sp[0]] = sp[1]
                 except:
                     pass
-            if 'CHEMDBDIR' in d.keys():
+            if 'CHEMDBDIR' in list(d.keys()):
                 self.chemdbdir = d['CHEMDBDIR']
-            if 'MULTIWFN' in d.keys():
+            if 'MULTIWFN' in list(d.keys()):
                 self.multiwfn = "'" + d['MULTIWFN'] + "'"
-            if 'CUSTOM_DATA_PATH' in d.keys():
+            if 'CUSTOM_DATA_PATH' in list(d.keys()):
                 self.custom_path = d['CUSTOM_DATA_PATH']
         else:
             self.installdir = cdir
