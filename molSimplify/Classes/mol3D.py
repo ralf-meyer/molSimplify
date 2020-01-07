@@ -547,11 +547,12 @@ class mol3D:
         self.ffopt = mol0.ffopt
         self.OBMol = mol0.OBMol
         self.name = mol0.name
+        self.graph = mol0.graph
 
     # Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
     #  @oct flag to control  special oct-metal bonds
-    def createMolecularGraph(self, oct=True):
+    def createMolecularGraph(self, oct=True, atom_specific_cutoffs=False):
         if not len(self.graph):
             index_set = list(range(0, self.natoms))
             A = np.zeros((self.natoms, self.natoms))
@@ -566,7 +567,7 @@ class mol3D:
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
-                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False)
+                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=atom_specific_cutoffs)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i, debug=False)
                 for j in index_set:
@@ -827,6 +828,28 @@ class mol3D:
                 nats.append(i)
         return nats
 
+
+    def getBondCutoff(self, atom, ratom):
+        distance_max = 1.15 * (atom.rad + ratom.rad)
+        if atom.symbol() == "C" and not ratom.symbol() == "H":
+            distance_max = min(2.75, distance_max)
+        if ratom.symbol() == "C" and not atom.symbol() == "H":
+            distance_max = min(2.75, distance_max)
+        if ratom.symbol() == "H" and atom.ismetal:
+            # tight cutoff for metal-H bonds
+            distance_max = 1.1 * (atom.rad + ratom.rad)
+        if atom.symbol() == "H" and ratom.ismetal:
+            # tight cutoff for metal-H bonds
+            distance_max = 1.1 * (atom.rad + ratom.rad)
+        if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+                atom.symbol() == "I" and ratom.symbol() == "I"):
+            # Very strict cutoff for bonds involving iodine
+            distance_max = 0.95 * (atom.rad + ratom.rad)
+        if atom.symbol() == "I" and ratom.symbol() == "I":
+            distance_max = 3
+            # print(distance_max)
+        return distance_max
+
     # Gets atoms bonded to a specific atom
     #
     #  This is determined based on element-specific distance cutoffs, rather than predefined valences.
@@ -846,23 +869,24 @@ class mol3D:
             nats = []
             for i, atom in enumerate(self.atoms):
                 d = distance(ratom.coords(), atom.coords())
-                distance_max = 1.15 * (atom.rad + ratom.rad)
-                if atom.symbol() == "C" and not ratom.symbol() == "H":
-                    distance_max = min(2.75, distance_max)
-                if ratom.symbol() == "C" and not atom.symbol() == "H":
-                    distance_max = min(2.75, distance_max)
-                if ratom.symbol() == "H" and atom.ismetal:
-                    # tight cutoff for metal-H bonds
-                    distance_max = 1.1 * (atom.rad + ratom.rad)
-                if atom.symbol() == "H" and ratom.ismetal:
-                    # tight cutoff for metal-H bonds
-                    distance_max = 1.1 * (atom.rad + ratom.rad)
-                if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-                        atom.symbol() == "I" and ratom.symbol() == "I"):
-                    distance_max = 1.05 * (atom.rad + ratom.rad)
-                if atom.symbol() == "I" and ratom.symbol() == "I":
-                    distance_max = 3
-                    # print(distance_max)
+                distance_max = self.getBondCutoff(atom, ratom)
+                #distance_max = 1.15 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "C" and not ratom.symbol() == "H":
+                #    distance_max = min(2.75, distance_max)
+                #if ratom.symbol() == "C" and not atom.symbol() == "H":
+                #    distance_max = min(2.75, distance_max)
+                #if ratom.symbol() == "H" and atom.ismetal:
+                #    # tight cutoff for metal-H bonds
+                #    distance_max = 1.1 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "H" and ratom.ismetal:
+                #    # tight cutoff for metal-H bonds
+                #    distance_max = 1.1 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+                #        atom.symbol() == "I" and ratom.symbol() == "I"):
+                #    distance_max = 1.05 * (atom.rad + ratom.rad)
+                #if atom.symbol() == "I" and ratom.symbol() == "I":
+                #    distance_max = 3
+                #    # print(distance_max)
                 if (d < distance_max and i != ind):
                     nats.append(i)
         return nats
@@ -945,7 +969,7 @@ class mol3D:
     #  @param CN Coordination number of reference atom (default 6)
     #  @param debug Debug flag (default False)
     #  @return List of indices of bonded atoms
-    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False):
+    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
         # INPUT
         #   - ind: index of reference atom
         #   - CN: known coordination number of complex (default 6)
@@ -960,7 +984,10 @@ class mol3D:
             d = distance(ratom.coords(), atom.coords())
             # default interatomic radius
             # for non-metalics
-            distance_max = 1.15 * (atom.rad + ratom.rad)  ## Not consistent with getBondedAtoms?
+            if atom_specific_cutoffs:
+                distance_max = self.getBondCutoff(atom, ratom)
+            else:
+                distance_max = 1.15 * (atom.rad + ratom.rad)  ## Not consistent with getBondedAtoms?
             if atom.ismetal() or ratom.ismetal():
                 # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
                 # if atom.symbol() in dist_allowed.keys():
@@ -1087,17 +1114,17 @@ class mol3D:
     #  @param self The object pointer
     #  @param ind Index of reference atom
     #  @return List of indices of bonded atoms
-    def getBondedAtomsnotH(self, ind):
+    def getBondedAtomsnotH(self, ind, metal_multiplier=1.35, nonmetal_multiplier=1.15):
         ratom = self.getAtom(ind)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
             d = distance(ratom.coords(), atom.coords())
-            distance_max = 1.15 * (atom.rad + ratom.rad)
+            #distance_max = 1.15 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
-                distance_max = 1.35 * (atom.rad + ratom.rad)
+                distance_max = metal_multiplier * (atom.rad + ratom.rad)
             else:
-                distance_max = 1.15 * (atom.rad + ratom.rad)
+                distance_max = nonmetal_multiplier * (atom.rad + ratom.rad)
             if (d < distance_max and i != ind and atom.sym != 'H'):
                 nats.append(i)
         return nats
