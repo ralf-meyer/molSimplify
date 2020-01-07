@@ -1634,6 +1634,55 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
+    # Load molecule from mol2 file
+    #
+    def readfrommol2(self, filename):
+        # print('!!!!', filename)
+        globs = globalvars()
+        amassdict = globs.amass()
+        graph = []
+        with open(filename,'r') as f:
+            s = f.read().splitlines()
+        read_atoms = False
+        read_bonds = False
+        for line in s:
+            # Get Atoms First
+            if '<TRIPOS>BOND' in line:
+                read_atoms = False
+            if '<TRIPOS>SUBSTRUCTURE' in line:
+                read_bonds = False
+            if read_atoms:
+                s_line = line.split()
+                # Check redundancy in Chemical Symbols
+                atom_symbol1 = re.sub('[0-9]+[A-Z]+', '', line.split()[1])
+                atom_symbol1 = re.sub('[0-9]+', '', atom_symbol1)
+                atom_symbol2 = line.split()[5]
+                atom_symbol2 = atom_symbol2.split('.')[0]
+                if atom_symbol1 in list(amassdict.keys()):
+                    atom = atom3D(atom_symbol1, [float(s_line[2]), float(
+                    s_line[3]), float(s_line[4])])
+                elif atom_symbol2 in list(amassdict.keys()):
+                    atom = atom3D(atom_symbol2, [float(s_line[2]), float(
+                    s_line[3]), float(s_line[4])])
+                else:
+                    print('cannot find atom type')
+                    sys.exit()
+                self.addAtom(atom)
+            if '<TRIPOS>ATOM' in line:
+                read_atoms = True
+            if read_bonds: # Read in bonds to molecular graph
+                s_line=line.split()
+                graph[int(s_line[1])-1,int(s_line[2])-1] = 1
+                graph[int(s_line[2])-1,int(s_line[1])-1] = 1
+            if '<TRIPOS>BOND' in line:
+                read_bonds = True
+                # initialize molecular graph
+                graph = np.zeros((self.natoms,self.natoms))
+        if isinstance(graph,np.ndarray): # Enforce mol2 molecular graph if it exists
+            self.graph = graph
+        else:
+            self.graph = []
+
     # Load molecule from xyz file
     #
     #  Consider using getOBMol, which is more general, instead.
