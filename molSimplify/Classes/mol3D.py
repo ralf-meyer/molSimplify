@@ -989,7 +989,7 @@ class mol3D:
                             print('invalid due to hydrogens: ')
                             print((atom.symbol()))
                             print((ratom.symbol()))
-                        valid = False ### Hydrogen catom control
+                        valid = False  ### Hydrogen catom control
                     if d < distance_max and i != ind and valid:
                         if atom.symbol() in ["C", "S", "N"]:
                             if debug:
@@ -2140,9 +2140,14 @@ class mol3D:
             th_input_arr.append([self.catoms[idx1], theta_tmp])
         # This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
         # When we have the customized catoms_arr, it will not change anything.
-        # print("!!!th_input_arr", th_input_arr)
-        th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
-            th_input_arr, angle_ref)
+        # print("!!!th_input_arr", th_input_arr, len(th_input_arr))
+        if True:
+            th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
+                th_input_arr, angle_ref)
+        # except IndexError:
+        #     th_output_arr = angle_ref
+        #     sum_del_angle = [180 for ii in range(len(angle_ref))]
+        #     catoms_arr = [-1 for ]
         self.catoms = catoms_arr
         if debug:
             print(('th:', th_output_arr))
@@ -2585,35 +2590,42 @@ class mol3D:
         if not catoms_arr == None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
+        if not init_mol == None:
+            init_mol.get_num_coord_metal(debug=debug)
         self.geo_dict_initialization()
-        if self.num_coord_metal >= 6:
-            # if not rmsd_max == 'lig_mismatch':
-            if True:
-                self.num_coord_metal = 6
-                if not 'FCS' in skip:
-                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                                  catoms_arr, debug=debug)
-            if not init_mol == None:
-                if not 'lig_distort' in skip:
-                    dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                            flag_loose=flag_loose,
-                                                            flag_lbd=flag_lbd,
-                                                            debug=debug,
-                                                            BondedOct=BondedOct,
-                                                            flag_deleteH=flag_deleteH)
-            if not 'lig_linear' in skip:
-                dict_angle_linear, dict_orientation = self.check_angle_linear()
-            if debug:
-                self.print_geo_dict()
-        eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
-        if not maxdent > 1:
-            choice = 'mono'
+        if len(init_mol.catoms) >= 6:
+            if self.num_coord_metal >= 6:
+                # if not rmsd_max == 'lig_mismatch':
+                if True:
+                    self.num_coord_metal = 6
+                    if not 'FCS' in skip:
+                        dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                      catoms_arr, debug=debug)
+                if not init_mol == None:
+                    if not 'lig_distort' in skip:
+                        dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
+                                                                flag_loose=flag_loose,
+                                                                flag_lbd=flag_lbd,
+                                                                debug=debug,
+                                                                BondedOct=BondedOct,
+                                                                flag_deleteH=flag_deleteH)
+                if not 'lig_linear' in skip:
+                    dict_angle_linear, dict_orientation = self.check_angle_linear()
+                if debug:
+                    self.print_geo_dict()
+            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            if not maxdent > 1:
+                choice = 'mono'
+            else:
+                choice = 'multi'
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
+                                                                            num_coord=6,
+                                                                            debug=debug,
+                                                                            silent=silent)
         else:
-            choice = 'multi'
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
-                                                                        num_coord=6,
-                                                                        debug=debug,
-                                                                        silent=silent)
+            flag_oct = 0
+            flag_list = ["bad_init_geo"]
+            dict_oct_info = {"num_coord_metal": "bad_init_geo"}
         if not flag_catoms:
             return flag_oct, flag_list, dict_oct_info
         else:
