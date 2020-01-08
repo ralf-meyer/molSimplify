@@ -6,9 +6,9 @@
 ######## Defines methods for assembling    ###############
 ########     RACs from lists of ligands    ###############
 ##########################################################
+from __future__ import print_function
 import numpy as np
 import sys
-from __future__ import print_function
 
 from molSimplify.Classes import mol3D
 from molSimplify.Informatics.autocorrelation import*
