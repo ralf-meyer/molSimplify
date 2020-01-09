@@ -68,7 +68,7 @@ def mybash(cmd):
 class mol3D:
     # Constructor
     #  @param self The object pointer
-    def __init__(self):
+    def __init__(self, use_atom_specific_cutoffs=False):
         # List of atom3D objects
         self.atoms = []
         # Number of atoms
@@ -133,6 +133,7 @@ class mol3D:
         self.dict_catoms_shape = dict()
         self.dict_orientation = dict()
         self.dict_angle_linear = dict()
+        self.use_atom_specific_cutoffs = use_atom_specific_cutoffs
 
     # Performs angle centric manipulation
     #
@@ -548,11 +549,12 @@ class mol3D:
         self.OBMol = mol0.OBMol
         self.name = mol0.name
         self.graph = mol0.graph
+        self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
     # Create molecular graph (connectivity matrix) from mol3D info
     #  @param self The object pointer
     #  @oct flag to control  special oct-metal bonds
-    def createMolecularGraph(self, oct=True, atom_specific_cutoffs=False):
+    def createMolecularGraph(self, oct=True):
         if not len(self.graph):
             index_set = list(range(0, self.natoms))
             A = np.zeros((self.natoms, self.natoms))
@@ -567,7 +569,7 @@ class mol3D:
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
-                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=atom_specific_cutoffs)
+                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=self.use_atom_specific_cutoffs)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i, debug=False)
                 for j in index_set:
