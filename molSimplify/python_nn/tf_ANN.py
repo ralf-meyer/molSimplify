@@ -26,6 +26,31 @@ import time
 
 
 ## Functions
+
+def perform_ANN_prediction(RAC_dataframe, predictor_name):
+    # Performs a correctly normalized/rescaled prediction for a property specified by predictor_name
+    # predictor_name can be a name like ls_ii, hs_iii, homo, oxo, hat, etc.
+    # RAC_dataframe may contain superfluous RAC features. RAC features do not need to be ordered in any particular manner.
+
+    # Load model data 
+    train_vars = load_ANN_variables(predictor_name)
+    train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor_name)
+    my_ANN = load_keras_ann(predictor_name)
+    
+    # Check if any RAC elements are missing from the provided dataframe
+    missing_labels = [i for i in train_vars if i not in RAC_dataframe.columns]
+    if len(missing_labels) > 0:
+        raise ValueError('Please supply missing columns in your RAC dataframe: %s' % missing_labels)
+        
+    # Prepare inputs
+    RAC_subset_for_ANN = RAC_dataframe.loc[:,train_vars]
+    normalized_input = data_normalize(RAC_subset_for_ANN, train_mean_x, train_var_x)
+    
+    # Rescale output
+    rescaled_output = data_rescale(my_ANN.predict(normalized_input), train_mean_y, train_var_y)
+    return rescaled_output
+
+
 def matrix_loader(path,rownames=False):
     ## loads matrix with rowname option
     if rownames:
