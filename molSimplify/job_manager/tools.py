@@ -491,7 +491,7 @@ def read_outfile(outfile_path,short_ouput=False):
         is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
         if is_scf_error[0]:
             is_scf_error = [output.lines[i].split() for i in is_scf_error]
-    else:
+        else:
             is_scf_error = []
         if type(is_scf_error) == list and len(is_scf_error) > 0:
             for scf in is_scf_error:
