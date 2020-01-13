@@ -427,8 +427,8 @@ def read_outfile(outfile_path,short_ouput=False):
             break
         if counter == 1:
             if 'nohup' in outfile_path:
-                print 'Warning! Nohup file caught in outfile processing'
-                print outfile_path
+                print('Warning! Nohup file caught in outfile processing')
+                print(outfile_path)
                 counter = 0
             else:
                 raise ValueError('.out file type not recognized for file: '+outfile_path)
