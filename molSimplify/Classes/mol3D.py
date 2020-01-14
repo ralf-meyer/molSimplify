@@ -569,7 +569,8 @@ class mol3D:
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
-                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False, atom_specific_cutoffs=self.use_atom_specific_cutoffs)
+                        this_bonded_atoms = self.getBondedAtomsOct(i, debug=False,
+                                                                   atom_specific_cutoffs=self.use_atom_specific_cutoffs)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i, debug=False)
                 for j in index_set:
@@ -830,7 +831,6 @@ class mol3D:
                 nats.append(i)
         return nats
 
-
     def getBondCutoff(self, atom, ratom):
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
@@ -872,21 +872,21 @@ class mol3D:
             for i, atom in enumerate(self.atoms):
                 d = distance(ratom.coords(), atom.coords())
                 distance_max = self.getBondCutoff(atom, ratom)
-                #distance_max = 1.15 * (atom.rad + ratom.rad)
-                #if atom.symbol() == "C" and not ratom.symbol() == "H":
+                # distance_max = 1.15 * (atom.rad + ratom.rad)
+                # if atom.symbol() == "C" and not ratom.symbol() == "H":
                 #    distance_max = min(2.75, distance_max)
-                #if ratom.symbol() == "C" and not atom.symbol() == "H":
+                # if ratom.symbol() == "C" and not atom.symbol() == "H":
                 #    distance_max = min(2.75, distance_max)
-                #if ratom.symbol() == "H" and atom.ismetal:
+                # if ratom.symbol() == "H" and atom.ismetal:
                 #    # tight cutoff for metal-H bonds
                 #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                #if atom.symbol() == "H" and ratom.ismetal:
+                # if atom.symbol() == "H" and ratom.ismetal:
                 #    # tight cutoff for metal-H bonds
                 #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                #if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+                # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
                 #        atom.symbol() == "I" and ratom.symbol() == "I"):
                 #    distance_max = 1.05 * (atom.rad + ratom.rad)
-                #if atom.symbol() == "I" and ratom.symbol() == "I":
+                # if atom.symbol() == "I" and ratom.symbol() == "I":
                 #    distance_max = 3
                 #    # print(distance_max)
                 if (d < distance_max and i != ind):
@@ -1122,7 +1122,7 @@ class mol3D:
         nats = []
         for i, atom in enumerate(self.atoms):
             d = distance(ratom.coords(), atom.coords())
-            #distance_max = 1.15 * (atom.rad + ratom.rad)
+            # distance_max = 1.15 * (atom.rad + ratom.rad)
             if atom.ismetal() or ratom.ismetal():
                 distance_max = metal_multiplier * (atom.rad + ratom.rad)
             else:
@@ -2699,12 +2699,12 @@ class mol3D:
                 choice = 'mono'
             else:
                 choice = 'multi'
-                
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
+
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
                                                                             num_coord=6,
                                                                             debug=debug,
                                                                             silent=silent)
-            
+
         else:
             flag_oct = 0
             flag_list = ["bad_init_geo"]
@@ -2731,30 +2731,43 @@ class mol3D:
             print("Warning: your are skipping following geometry checks:")
             print(skip)
         self.get_num_coord_metal(debug=debug)
+        if not catoms_arr == None:
+            self.catoms = catoms_arr
+            self.num_coord_metal = len(catoms_arr)
+        if not init_mol == None:
+            init_mol.get_num_coord_metal(debug=debug)
+            catoms_init = init_mol.catoms
+        else:
+            catoms_init = [0 for i in range(num_coord)]
         self.geo_dict_initialization()
         print(angle_ref)
-        if self.num_coord_metal >= num_coord:
-            if True:
-                self.num_coord_metal = num_coord
-                if not 'FCS' in skip:
-                    dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                                  debug=debug)
-            if not init_mol == None:
-                if not 'lig_distort' in skip:
-                    dict_lig_distort = self.ligand_comp_org(
-                        init_mol, flag_deleteH=flag_deleteH, debug=debug)
-            if not 'lig_linear' in skip:
-                dict_angle_linear, dict_orientation = self.check_angle_linear()
-            if debug:
-                self.print_geo_dict()
-        eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
-        if not maxdent > 1:
-            choice = 'mono'
+        if len(catoms_init) >= num_coord:
+            if self.num_coord_metal >= num_coord:
+                if True:
+                    self.num_coord_metal = num_coord
+                    if not 'FCS' in skip:
+                        dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                                                                      debug=debug)
+                if not init_mol == None:
+                    if not 'lig_distort' in skip:
+                        dict_lig_distort = self.ligand_comp_org(
+                            init_mol, flag_deleteH=flag_deleteH, debug=debug)
+                if not 'lig_linear' in skip:
+                    dict_angle_linear, dict_orientation = self.check_angle_linear()
+                if debug:
+                    self.print_geo_dict()
+            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            if not maxdent > 1:
+                choice = 'mono'
+            else:
+                choice = 'multi'
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
+                                                                            num_coord=num_coord,
+                                                                            debug=debug)
         else:
-            choice = 'multi'
-        flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
-                                                                        num_coord=num_coord,
-                                                                        debug=debug)
+            flag_oct = 0
+            flag_list = ["bad_init_geo"]
+            dict_oct_info = {"num_coord_metal": "bad_init_geo"}
         if not flag_catoms:
             return flag_oct, flag_list, dict_oct_info
         else:
