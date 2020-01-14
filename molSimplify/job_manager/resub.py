@@ -60,8 +60,7 @@ def resub(directory='in place'):
     # Get the state of all jobs being managed by this instance of the job manager
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     errors = completeness['Error']  # These are calculations which failed to complete
-    scf_errors = completeness[
-        'SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
+    scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
     need_resub = completeness['Resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
     active = completeness['Active']  # These are jobs which are currently running

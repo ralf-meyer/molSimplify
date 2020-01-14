@@ -94,14 +94,15 @@ def save_run(outfile_path, rewrite_inscr = True, save_scr_flag = True):
     
     history.save()
 
-    #Additionally, write this information to textfile so it's earch to find
-    home = os.getcwd()
-    os.chdir(scr_path)
-    write(out_lines,'old_outfile')
-    write(in_lines,'old_infile')
-    write(job_lines,'old_job')
-    write(xyz_lines,'old_xyz')
-    os.chdir(home)
+    if scr_path:
+        #Additionally, write this information to textfile so it's earch to find
+        home = os.getcwd()
+        os.chdir(scr_path)
+        write(out_lines,'old_outfile')
+        write(in_lines,'old_infile')
+        write(job_lines,'old_job')
+        write(xyz_lines,'old_xyz')
+        os.chdir(home)
 
 def reset(outfile_path):
     #Returns the run to the state it was after the first run, before job recovery acted on it

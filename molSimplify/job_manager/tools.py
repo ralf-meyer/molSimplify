@@ -448,11 +448,15 @@ def read_outfile(outfile_path,short_ouput=False):
     thermo_grad_error = False
     implicit_solvation_energy = None
     geo_opt_cycles = None
+    thermo_vib = None
+    thermo_vib_f = None
+    thermo_suspect = None
 
+    name = os.path.split(outfile_path)[-1]
+    name = name.rsplit('.',1)[0]
     if output_type == 'TeraChem':
         
-        name,charge = output.wordgrab(['Startfile','charge:'],[4,2],first_line=True)
-        name = name.rsplit('.',1)[0]
+        charge = output.wordgrab(['charge:'],[2],first_line=True)
         if not short_ouput:
             (finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,
              implicit_solvation_energy,geo_opt_cycles,
