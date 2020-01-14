@@ -2719,7 +2719,7 @@ class mol3D:
     # Inputs and outputs are the same as IsOct.
     def IsStructure(self, init_mol=None, dict_check=False,
                     angle_ref=False, num_coord=5,
-                    flag_catoms=False, debug=False,
+                    flag_catoms=False, catoms_arr=None, debug=False,
                     skip=False, flag_deleteH=True):
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
@@ -2746,7 +2746,7 @@ class mol3D:
                 if True:
                     self.num_coord_metal = num_coord
                     if not 'FCS' in skip:
-                        dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
+                        dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                                       debug=debug)
                 if not init_mol == None:
                     if not 'lig_distort' in skip:
