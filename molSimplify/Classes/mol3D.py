@@ -2653,10 +2653,8 @@ class mol3D:
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
               silent=False):
-        user_provided_dict_check = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
-            user_provided_dict_check = False
         if not angle_ref:
             angle_ref = self.oct_angle_ref
         if not skip:
@@ -2702,16 +2700,11 @@ class mol3D:
             else:
                 choice = 'multi'
                 
-            if user_provided_dict_check:
-                flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
-                                                                                num_coord=6,
-                                                                                debug=debug,
-                                                                                silent=silent)
-            else:
-                flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
-                                                                                num_coord=6,
-                                                                                debug=debug,
-                                                                                silent=silent)
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check,
+                                                                            num_coord=6,
+                                                                            debug=debug,
+                                                                            silent=silent)
+            
         else:
             flag_oct = 0
             flag_list = ["bad_init_geo"]

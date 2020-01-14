@@ -85,7 +85,7 @@ def apply_geo_check(job_outfile_path,geometry):
             return True
 
         if geometry in ['Oct','oct','Octahedral','octahedral']:
-            geo_check_dict = mol.dict_oct_check_st['mono']
+            geo_check_dict = mol.dict_oct_check_st
             IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
             if IsOct:
                 return True
@@ -99,7 +99,13 @@ def apply_geo_check(job_outfile_path,geometry):
                          'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
                          'dist_del_eq': 0.35, 'dist_del_all': 1,
                          'devi_linear_avrg': 20, 'devi_linear_max': 28}
-            IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
+            outer_dict_flags = mol.dict_oct_check_st.keys()
+            final_dict = dict()
+            for key in outer_dict_flags:
+                final_dict[key] = geo_check_dict
+
+
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = final_dict,silent = True)
             if IsOct:
                 return True
             else:
