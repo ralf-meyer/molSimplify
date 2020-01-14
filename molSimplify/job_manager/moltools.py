@@ -38,7 +38,7 @@ def read_run(outfile_PATH):
     
         mol = mol3D()
         mol.readfromxyz(optimized_path)
-        geo_check_dict = mol.dict_oct_check_st
+        geo_check_dict = mol.dict_oct_check_st['mono']
         
         IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,
                                               silent = True)
@@ -61,7 +61,7 @@ def read_run(outfile_PATH):
         
 def create_summary(directory='in place'):
     #Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-            
+    
     outfiles = tools.find('*.out',directory)
     outfiles = list(filter(tools.check_valid_outfile,outfiles))
     results = list(map(read_run,outfiles))
@@ -70,7 +70,6 @@ def create_summary(directory='in place'):
     return summary
 
 def apply_geo_check(job_outfile_path,geometry):
-    
     if geometry: #The geometry variable is set to False if no geo check is requested for this job
 
         optim_path = os.path.join(os.path.split(job_outfile_path)[0],'scr','optim.xyz')
@@ -100,7 +99,13 @@ def apply_geo_check(job_outfile_path,geometry):
                          'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
                          'dist_del_eq': 0.35, 'dist_del_all': 1,
                          'devi_linear_avrg': 20, 'devi_linear_max': 28}
-            IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
+            outer_dict_flags = mol.dict_oct_check_st.keys()
+            final_dict = dict()
+            for key in outer_dict_flags:
+                final_dict[key] = geo_check_dict
+
+
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = final_dict,silent = True)
             if IsOct:
                 return True
             else:
@@ -129,8 +134,8 @@ def get_metal_and_bonded_atoms(job_outfile,geometry = None):
         
     return metal_index,bonded_atom_indices
 
-def check_completeness(directory = 'in place', max_resub = 5):
-    completeness = tools.check_completeness(directory,max_resub)
+def check_completeness(directory = 'in place', max_resub = 5, configure_dict=False):
+    completeness = tools.check_completeness(directory,max_resub, configure_dict=configure_dict)
     
     #The check_completeness() function in tools doesn't check the geometries (because it's molSimplify dependent)
     #Apply the check here to finished and spin contaminated geometries, then update the completeness dictionary

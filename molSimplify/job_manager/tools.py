@@ -415,14 +415,14 @@ def pull_optimized_geos(PATHs=[]):
         shutil.move(os.path.join(os.path.split(Path)[0], 'optimized.xyz'), os.path.join(home, 'optimized_geos', name))
 
 
-def read_outfile(outfile_path, short_ouput=False):
+def read_outfile(outfile_path,short_ouput=False):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
-
+    
     output = textfile(outfile_path)
-    output_type = output.wordgrab(['TeraChem', 'ORCA'], 'whole_line')
-    for counter, match in enumerate(output_type):
+    output_type = output.wordgrab(['TeraChem','ORCA'],'whole_line')
+    for counter,match in enumerate(output_type):
         if match[0]:
             break
         if counter == 1:
@@ -431,11 +431,11 @@ def read_outfile(outfile_path, short_ouput=False):
                 print(outfile_path)
                 counter = 0
             else:
-                raise ValueError('.out file type not recognized for file: ' + outfile_path)
-    output_type = ['TeraChem', 'ORCA'][counter]
+                raise ValueError('.out file type not recognized for file: '+outfile_path)
+    output_type = ['TeraChem','ORCA'][counter]
     if output_type == 'ORCA':
         raise Exception(outfile_path)
-
+    
     name = None
     finished = False
     charge = None
@@ -448,42 +448,51 @@ def read_outfile(outfile_path, short_ouput=False):
     thermo_grad_error = False
     implicit_solvation_energy = None
     geo_opt_cycles = None
+    thermo_vib = None
+    thermo_vib_f = None
+    thermo_suspect = None
 
+    name = os.path.split(outfile_path)[-1]
+    name = name.rsplit('.',1)[0]
     if output_type == 'TeraChem':
-
-        name, charge = output.wordgrab(['Startfile', 'charge:'], [4, 2], first_line=True)
-        name = name.rsplit('.', 1)[0]
+        
+        charge = output.wordgrab(['charge:'],[2],first_line=True)
         if not short_ouput:
-            finalenergy, s_squared, s_squared_ideal, time, thermo_grad_error, implicit_solvation_energy, geo_opt_cycles = output.wordgrab(
-                ['FINAL',
-                 'S-SQUARED:',
-                 'S-SQUARED:', 'processing',
-                 'Maximum component of gradient is too large',
-                 'C-PCM contribution to final energy:',
-                 'Optimization Cycle'],
-                [2, 2, 4, 3, 0, 4, 3], last_line=True)
+            (finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,
+             implicit_solvation_energy,geo_opt_cycles,
+             thermo_vib,thermo_vib_f,thermo_suspect) = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing',
+                                                                        'Maximum component of gradient is too large',
+                                                                        'C-PCM contribution to final energy:',
+                                                                        'Optimization Cycle','Thermal vibrational energy',
+                                                                        'Thermal vibrational free energy',
+                                                                        'Thermochemical Analysis is Suspect'],
+                                                                        [2,2,4,3,0,4,3,7,10,0],last_line=True)
         if short_ouput:
-            s_squared, s_squared_ideal, thermo_grad_error = output.wordgrab(
-                ['S-SQUARED:', 'S-SQUARED:', 'Maximum component of gradient is too large'],
-                [2, 4, 0], last_line=True)
+            s_squared,s_squared_ideal,thermo_grad_error = output.wordgrab(['S-SQUARED:','S-SQUARED:','Maximum component of gradient is too large'],
+                                                                           [2,4,0],last_line=True)
 
         if thermo_grad_error:
             thermo_grad_error = True
         else:
             thermo_grad_error = False
+        if thermo_suspect:
+            thermo_suspect = True
+        else:
+            thermo_suspect = False
+
         if s_squared_ideal:
             s_squared_ideal = float(s_squared_ideal.strip(')'))
         if implicit_solvation_energy:
             implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
-
-        min_energy = output.wordgrab('FINAL', 2, min_value=True)[0]
-
-        is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
+            
+        min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
+        
+        is_finished = output.wordgrab(['finished:'],'whole_line',last_line=True)[0]
         if is_finished:
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
-
-        is_scf_error = output.wordgrab('DIIS', 5, matching_index=True)[0]
+        
+        is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
         if is_scf_error[0]:
             is_scf_error = [output.lines[i].split() for i in is_scf_error]
         else:
@@ -494,19 +503,18 @@ def read_outfile(outfile_path, short_ouput=False):
                     scf = scf[5]
                     scf = int(scf.split('+')[0])
                     if scf > 5000:
-                        scf_error = [True, scf]
-
+                        scf_error = [True,scf]
+                    
     if output_type == 'ORCA':
-        finalenergy, s_squared, s_squared_ideal = output.wordgrab(['FINAL', '<S**2>', 'S*(S+1)'], [8, 13, 12],
-                                                                  last_line=True)
+        finalenergy,s_squared,s_squared_ideal = output.wordgrab(['FINAL','<S**2>','S*(S+1)'],[8,13,12],last_line=True)
         timekey = 'TIME:'
-        if type(output.wordgrab(timekey, 'whole_line')) == list:
-            time = (float(output.wordgrab(timekey, 3), last_line=True) * 24 * 60 * 60
-                    + float(output.wordgrab(timekey, 5), last_line=True) * 60 * 60
-                    + float(output.wordgrab(timekey, 7, last_line=True)) * 60
-                    + float(output.wordgrab(timekey, 9, last_line=True))
-                    + float(output.wordgrab(timekey, 11, last_line=True)) * 0.001)
-
+        if type(output.wordgrab(timekey,'whole_line')) == list: 
+            time = (float(output.wordgrab(timekey,3),last_line=True)*24*60*60
+                   +float(output.wordgrab(timekey,5),last_line=True)*60*60
+                   +float(output.wordgrab(timekey,7,last_line=True))*60
+                   +float(output.wordgrab(timekey,9,last_line=True))
+                   +float(output.wordgrab(timekey,11,last_line=True))*0.001)
+        
     return_dict = {}
     return_dict['name'] = name
     return_dict['charge'] = try_float(charge)
@@ -520,6 +528,9 @@ def read_outfile(outfile_path, short_ouput=False):
     return_dict['thermo_grad_error'] = thermo_grad_error
     return_dict['solvation_energy'] = implicit_solvation_energy
     return_dict['optimization_cycles'] = geo_opt_cycles
+    return_dict['thermo_vib_energy'] = try_float(thermo_vib)
+    return_dict['thermo_vib_free_energy'] = try_float(thermo_vib_f)
+    return_dict['thermo_suspect'] = thermo_suspect
     return return_dict
 
 
