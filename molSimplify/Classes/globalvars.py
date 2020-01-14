@@ -288,12 +288,12 @@ dict_oct_check_loose = {"mono": {'num_coord_metal': 6,
 dict_oct_check_st = {"mono": {'num_coord_metal': 6,
                               'rmsd_max': 0.3, 'atom_dist_max': 0.45,
                               'oct_angle_devi_max': 12, 'max_del_sig_angle': 22.5,
-                              'dist_del_eq': 0.35, 'dist_del_all': 1.5,
+                              'dist_del_eq': 0.35, 'dist_del_all': 1.0,
                               'devi_linear_avrg': 20, 'devi_linear_max': 28},
                      "multi": {'num_coord_metal': 6,
                                'rmsd_max': 3, 'atom_dist_max': 0.45,
                                'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
-                               'dist_del_eq': 0.35, 'dist_del_all': 1,
+                               'dist_del_eq': 0.35, 'dist_del_all': 1.0,
                                'devi_linear_avrg': 20, 'devi_linear_max': 28}
                      }
 
