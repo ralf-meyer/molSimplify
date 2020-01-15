@@ -177,29 +177,32 @@ def resub(directory='in place'):
             resubmitted.append(False)
 
     # Submit jobs which haven't yet been submitted
-    to_submit = []
-    jobscripts = tools.find('*_jobscript')
-    active_jobs = tools.list_active_jobs(home_directory=directory,parse_bundles=True)
-    for job in jobscripts:
-        if not os.path.isfile(job.rsplit('_', 1)[0] + '.out') and not os.path.split(job.rsplit('_', 1)[0])[
-                                                                          -1] in active_jobs:
-            to_submit.append(job)
+    if not nactive+np.sum(resubmitted) >= max_jobs:
+        to_submit = []
+        jobscripts = tools.find('*_jobscript')
+        active_jobs = tools.list_active_jobs(home_directory=directory,parse_bundles=True)
+        for job in jobscripts:
+            if not os.path.isfile(job.rsplit('_', 1)[0] + '.out') and not os.path.split(job.rsplit('_', 1)[0])[
+                                                                              -1] in active_jobs:
+                to_submit.append(job)
 
-    short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
-    long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
-    if len(short_jobs_to_submit) > 0:
-        bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(),short_jobs_to_submit)
+        short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
+        long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
+        if len(short_jobs_to_submit) > 0:
+            bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(),short_jobs_to_submit)
+        else:
+            bundled_jobscripts = []
+        to_submit = bundled_jobscripts + long_jobs_to_submit
+
+        submitted = []
+        for job in to_submit:
+            if len(submitted) + nactive + np.sum(resubmitted) >= max_jobs:
+                continue
+            print(('Initial sumbission for job: ' + os.path.split(job)[-1]))
+            tools.qsub(job)
+            submitted.append(True)
     else:
-        bundled_jobscripts = []
-    to_submit = long_jobs_to_submit + bundled_jobscripts
-
-    submitted = []
-    for job in to_submit:
-        if len(submitted) + nactive + np.sum(resubmitted) >= max_jobs:
-            continue
-        print(('Initial sumbission for job: ' + os.path.split(job)[-1]))
-        tools.qsub(job)
-        submitted.append(True)
+        submitted = []
 
     number_resubmitted = np.sum(np.array(resubmitted + submitted))
     # ~ print str(number_resubmitted)+' Jobs submitted'

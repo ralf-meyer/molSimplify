@@ -21,7 +21,22 @@ def read_run(outfile_PATH):
     results['method'],results['hfx'] = infile_dict['method'],infile_dict['hfx']
     results['constraints'] = infile_dict['constraints']
     
-    
+    mullpop_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','mullpop')
+    if os.path.exists(mullpop_path):
+        mullpops = tools.read_mullpop(outfile_PATH)
+        metal_types = ['Cr','Mn','Fe','Co','Ni','Mo','Tc','Ru','Rh']
+        metals = [i for i in mullpops if i.split()[0] in metal_types]
+        if len(metals) > 1:
+            results['metal_spin'] = np.nan
+        elif len(metals) == 0:
+            pass
+        else:
+            results['metal_spin'] = float(metals[0].split()[-1])
+    else:
+        results['metal_spin'] = np.nan
+
+
+
     optim_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','optim.xyz')
     
     check_geo = False
@@ -38,9 +53,8 @@ def read_run(outfile_PATH):
     
         mol = mol3D()
         mol.readfromxyz(optimized_path)
-        geo_check_dict = mol.dict_oct_check_st['mono']
         
-        IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,
+        IsOct,flag_list,oct_check = mol.IsOct(dict_check = mol.dict_oct_check_st,
                                               silent = True)
         
         if IsOct:

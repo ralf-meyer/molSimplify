@@ -456,7 +456,9 @@ def read_outfile(outfile_path,short_ouput=False):
     name = name.rsplit('.',1)[0]
     if output_type == 'TeraChem':
         
-        charge = output.wordgrab(['charge:'],[2],first_line=True)
+        charge = output.wordgrab(['charge:'],[2],first_line=True)[0]
+        if charge:
+            charge = int(charge)
         if not short_ouput:
             (finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,
              implicit_solvation_energy,geo_opt_cycles,
@@ -714,27 +716,20 @@ def read_mullpop(PATH):
     if len(PATH.rsplit('.', 1)) > 1:
         if PATH.rsplit('.', 1)[1] == 'out':
             PATH = os.path.join(os.path.split(PATH)[0], 'scr', 'mullpop')
-    try:
-        mullpop = textfile(PATH)
-        split_lines = [i.split() for i in mullpop.lines]
-        if len(split_lines[2]) == 6:
-            pops = [i[1] + ' ' + i[5] for i in split_lines[1:-2]]
-        else:
-            pops = [i[1] + ' ' + i[5] + ' ' + i[9] for i in split_lines[2:-2]]
 
-        return pops
-    except:
-        return []
+    mullpop = textfile(PATH)
+    ### If multiple frames in mullpop, grab last frame
+    total_lines = mullpop.wordgrab(['------------ ---------- ----------'],[1],matching_index=True)[0]
+    if len(total_lines) > 1:
+        mullpop.lines = mullpop.lines[total_lines[-2]+2:]
 
+    split_lines = [i.split() for i in mullpop.lines]
+    if len(split_lines[2]) == 6:
+        pops = [i[1] + ' ' + i[5] for i in split_lines[1:-2]]
+    else:
+        pops = [i[1] + ' ' + i[5] + ' ' + i[9] for i in split_lines[2:-2]]
 
-def create_summary(directory='in place'):
-    # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-    outfiles = find('*.out', directory)
-    outfiles = list(filter(check_valid_outfile, outfiles))
-    results = list(map(read_outfile, outfiles))
-    summary = pd.DataFrame(results)
-
-    return summary
+    return pops
 
 
 def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
@@ -891,16 +886,19 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line
 def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 10):
 
     number_of_bundles = int(float(len(jobscript_paths))/float(max_bundle_size))
-    print('Bundling '+str(len(jobscript_paths))+' short jobs into '+str(number_of_bundles+1)+' jobscript(s)')
 
     bundles, i, many_bundles = [], 0, False
     for i in range(number_of_bundles):
         bundles.append(jobscript_paths[max_bundle_size * i:max_bundle_size * (i + 1)])
         many_bundles = True
     if many_bundles:
-        bundles.append(jobscript_paths[max_bundle_size * (i + 1):])
-    else:
+        total_length = [len(ii) for ii in bundles]
+        total_length = np.sum(np.array(total_length))
+        if total_length != len(jobscript_paths): #Triggers when the number of jobscripts is not divisable by the bundle size
+            bundles.append(jobscript_paths[max_bundle_size * (i + 1):])
+    else: #Triggers when there are fewere jobscripts than the bundle size
         bundles = [jobscript_paths]
+    print('Bundling '+str(len(jobscript_paths))+' short jobs into '+str(len(bundles))+' jobscript(s)')
 
     output_jobscripts = []
     for bundle in bundles:
