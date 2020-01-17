@@ -23,6 +23,7 @@ import json
 import pandas as pd
 import glob
 import time
+import scipy
 
 
 ## Functions
@@ -90,6 +91,19 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
     results_df = pd.DataFrame(results_allocation, index=RAC_dataframe.index)
     RAC_dataframe_with_results = RAC_dataframe.join(results_df)
     return RAC_dataframe_with_results
+
+def get_error_params(latent_distances, errors):
+    '''
+    Get the maximum-likelihood parameters for an error model N(a+b*(latent_distance)).
+    Inputs: latent_distances (vector), errors (vector)
+    Output: [a, b]
+    '''
+    def log_likelihood(params):
+        a = params[0]
+        b = params[1]
+        return -np.nansum(scipy.stats.norm.logpdf(errors, loc=0, scale=a+latent_distances*b))
+    results = scipy.optimize.minimize(log_likelihood, np.array([0.2, 0.01]), bounds=[(1e-9,None), (1e-9, None)])
+    return results.x
 
 def matrix_loader(path,rownames=False):
     ## loads matrix with rowname option
