@@ -27,29 +27,69 @@ import time
 
 ## Functions
 
-def perform_ANN_prediction(RAC_dataframe, predictor_name):
-    # Performs a correctly normalized/rescaled prediction for a property specified by predictor_name
-    # predictor_name can be a name like ls_ii, hs_iii, homo, oxo, hat, etc.
-    # RAC_dataframe may contain superfluous RAC features. RAC features do not need to be ordered in any particular manner.
-
-    # Load model data 
+def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
+    # Performs a correctly normalized/rescaled prediction for a property specified by predictor_name.
+    # Also calculates latent vector and smallest latent distance from training data.
+    # RAC_dataframe can contain anything (e.g. a database pull) as long as it also contains the required RAC features. 
+    # Predictor_name can be a name like ls_ii, hs_iii, homo, oxo, hat, etc.
+    # Input dataframe must have all RAC features in individual columns, or as dictionaries in a single column specified by `RAC_column`.
+    # Will not execute if RAC features are missing.
+    
+    # Returns: RAC_dataframe with new columns added:
+    ## predictor_name_latent_vector
+    ## predictor_name_min_latent_distance,
+    ## predictor_name_prediction
+    
+    assert type(RAC_dataframe) == pd.DataFrame
     train_vars = load_ANN_variables(predictor_name)
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor_name)
     my_ANN = load_keras_ann(predictor_name)
-    
+
     # Check if any RAC elements are missing from the provided dataframe
     missing_labels = [i for i in train_vars if i not in RAC_dataframe.columns]
-    if len(missing_labels) > 0:
-        raise ValueError('Please supply missing columns in your RAC dataframe: %s' % missing_labels)
-        
-    # Prepare inputs
-    RAC_subset_for_ANN = RAC_dataframe.loc[:,train_vars]
-    normalized_input = data_normalize(RAC_subset_for_ANN, train_mean_x, train_var_x)
-    
-    # Rescale output
-    rescaled_output = data_rescale(my_ANN.predict(normalized_input), train_mean_y, train_var_y)
-    return rescaled_output
 
+    if len(missing_labels) > 0:
+        # Try checking if there is anything in the column `RAC_column`. If so, deserialize it and re-run.
+        if RAC_column in RAC_dataframe.columns:
+            deserialized_RACs = pd.DataFrame.from_records(RAC_dataframe[RAC_column].values, index=RAC_dataframe.index)
+            deserialized_RACs = deserialized_RACs.astype(float)
+            RAC_dataframe = RAC_dataframe.join(deserialized_RACs)
+            return perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs')
+        else:
+            raise ValueError('Please supply missing variables in your RAC dataframe: %s' % missing_labels)
+    if 'alpha' in train_vars:
+        if any(RAC_dataframe.alpha > 1):
+            raise ValueError('Alpha is too large - should be between 0 and 1.')
+
+    RAC_subset_for_ANN = RAC_dataframe.loc[:,train_vars].astype(float)
+    normalized_input = data_normalize(RAC_subset_for_ANN, train_mean_x, train_var_x)
+    ANN_prediction = my_ANN.predict(normalized_input)
+    rescaled_output = data_rescale(ANN_prediction, train_mean_y, train_var_y)
+    
+    # Get latent vectors for training data and queried data
+    train_x = load_training_data(predictor_name)
+    train_x = pd.DataFrame(train_x, columns=train_vars).astype(float)
+    get_outputs = K.function([my_ANN.layers[0].input, K.learning_phase()],
+                             [my_ANN.layers[len(my_ANN.layers) - 2].output])
+    normalized_train = data_normalize(train_x, train_mean_x, train_var_x)
+    training_latent = get_outputs([normalized_train, 0])[0]
+    query_latent = get_outputs([normalized_input, 0])[0]
+
+    # Append all results to dataframe
+    results_allocation = [None for i in range(len(RAC_dataframe))]
+    for i in range(len(RAC_dataframe)):
+        results_dict = {}
+        min_latent_distance = min(np.linalg.norm(training_latent - query_latent[i][:], axis=1))
+        results_dict['%s_latent_vector' % predictor_name] = query_latent[i]
+        results_dict['%s_min_latent_distance' % predictor_name] = min_latent_distance
+        output_value = rescaled_output[i]
+        if len(output_value) == 1: # squash array of length 1 to the value it contains
+            output_value = output_value[0]
+        results_dict['%s_prediction' % predictor_name] = output_value
+        results_allocation[i] = results_dict
+    results_df = pd.DataFrame(results_allocation, index=RAC_dataframe.index)
+    RAC_dataframe_with_results = RAC_dataframe.join(results_df)
+    return RAC_dataframe_with_results
 
 def matrix_loader(path,rownames=False):
     ## loads matrix with rowname option
