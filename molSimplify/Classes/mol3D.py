@@ -1665,13 +1665,16 @@ class mol3D:
 
     # Load molecule from mol2 file
     #
-    def readfrommol2(self, filename):
+    def readfrommol2(self, filename, readstring=False):
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
         graph = []
-        with open(filename, 'r') as f:
-            s = f.read().splitlines()
+        if readstring:
+            s = filename.splitlines()
+        else:
+            with open(filename, 'r') as f:
+                s = f.read().splitlines()
         read_atoms = False
         read_bonds = False
         for line in s:
