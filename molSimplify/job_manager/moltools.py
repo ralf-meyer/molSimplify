@@ -10,20 +10,21 @@ import pandas as pd
 import shutil
 import time
 import molSimplify.job_manager.tools as tools
+import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown
 
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
-    results = tools.read_outfile(outfile_PATH)
-    infile_dict = tools.read_infile(outfile_PATH)
+    results = tools.manager_io.read_outfile(outfile_PATH)
+    infile_dict = tools.manager_io.read_infile(outfile_PATH)
     results['levela'],results['levelb'] = infile_dict['levelshifta'],infile_dict['levelshiftb']
     results['method'],results['hfx'] = infile_dict['method'],infile_dict['hfx']
     results['constraints'] = infile_dict['constraints']
     
     mullpop_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','mullpop')
     if os.path.exists(mullpop_path):
-        mullpops = tools.read_mullpop(outfile_PATH)
+        mullpops = tools.manager_io.read_mullpop(outfile_PATH)
         metal_types = ['Cr','Mn','Fe','Co','Ni','Mo','Tc','Ru','Rh']
         metals = [i for i in mullpops if i.split()[0] in metal_types]
         if len(metals) > 1:
@@ -165,25 +166,25 @@ def check_completeness(directory = 'in place', max_resub = 5, configure_dict=Fal
     new_needs_resub = []
     new_unfinished = []
     for job in finished:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_finished.append(job)
         else:
             bad_geos.append(job)
     for job in spin_contaminated:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_spin_contaminated.append(job)
         else:
             bad_geos.append(job)
     for job in needs_resub:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_needs_resub.append(job)
         else:
             bad_geos.append(job)
     for job in unfinished:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_unfinished.append(job)
         else:
@@ -203,12 +204,12 @@ def prep_ligand_breakown(outfile_path):
     home = os.getcwd()
     outfile_path = tools.convert_to_absolute_path(outfile_path)
     
-    results = tools.read_outfile(outfile_path)
+    results = tools.manager_io.read_outfile(outfile_path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    infile_dict = tools.read_infile(outfile_path)
+    infile_dict = tools.manager_io.read_infile(outfile_path)
     charge = int(infile_dict['charge'])
     spinmult = int(infile_dict['spinmult'])    
     
@@ -282,8 +283,8 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'],local_infile_dict['convergence_thresholds'] = False,False
 
-            tools.write_input(local_infile_dict)
-            tools.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
+            tools.manager_io.write_input(local_infile_dict)
+            tools.manager_io.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
         
@@ -307,8 +308,8 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'],local_infile_dict['convergence_thresholds'] = False,False
 
-            tools.write_input(local_infile_dict)
-            tools.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
+            tools.manager_io.write_input(local_infile_dict)
+            tools.manager_io.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
     os.chdir(home)
