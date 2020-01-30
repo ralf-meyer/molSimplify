@@ -205,19 +205,14 @@ def read_infile(outfile_path):
                 'The current implementation of tools.read_infile() is known to behave poorly when an infile specifies both a multibasis and constraints')
 
     elif qm_code == 'orca':
-        ligand_basis, metal_basis, run_type, method, parallel_environment, charge, spinmult, coordinates = inp.wordgrab(['! MULLIKEN']*4+[r'%pal']+[r'xyzfile']*3,
-                                                                                                                        [2,3,4,5,2,1,2,3],last_line=True)
-
-        if ligand_basis == '6-31G*' and metal_basis =='LANL2DZ':
-            basis = 'lacvps_ecp'
-        else:
-            raise Exception('read_infile() is unable to parse this basis set/ecp combo: '+ligand_basis+' '+metal_basis)
+        ligand_basis, run_type, method, parallel_environment, charge, spinmult, coordinates = inp.wordgrab(['! MULLIKEN']*3+[r'%pal']+[r'xyzfile']*3,
+                                                                                                                        [2,3,4,2,1,2,3],last_line=True)
 
         charge,spinmult = int(charge),int(spinmult)
         if run_type == 'opt':
             run_type = 'minimize'
 
-        levelshift,solvent = inp.wordgrab([r'%scf',r'%cpcm'],[0]*2,
+        levelshift,solvent,metal_basis = inp.wordgrab([r'%scf',r'%cpcm',r'%basis'],[0]*3,
                                            matching_index=True,last_line=True)
 
         if levelshift:
@@ -228,8 +223,17 @@ def read_infile(outfile_path):
             solvent = inp.lines[solvent+1]
             solvent = solvent.split()
             solvent = solvent[1]
+        if metal_basis:
+            metal_basis = inp.lines[metal_basis+1]
+            metal_basis = metal_basis.split()
+            metal_basis = metal_basis[2]
+            metal_basis = metal_basis[1:-1]
 
         levelshifta,levelshiftb = levelshift,levelshift
+        if ligand_basis == '6-31G*' and metal_basis =='LANL2DZ':
+            basis = 'lacvps_ecp'
+        else:
+            raise Exception('read_infile() is unable to parse this basis set/ecp combo: '+ligand_basis+' '+metal_basis)
 
         #The following settings should not appear in a orca infile because they are not specified in the write_input() functionality for orca
         hfx,convergence_thresholds,multibasis,dispersion,guess,constraints = None,None,None,None,None,None
@@ -531,6 +535,13 @@ def write_orca_input(infile_dictionary):
     else:
         raise Exception(infile['basis']+'not implemented in the job manager for use with orca!')
 
+    #Determine the atoms which need to have an effective core potential added
+    metals = ['Sc','Ti','V', 'Cr','Mn','Fe','Co','Ni','Cu','Zn',
+              'Y', 'Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd']
+    metal_basis_line = ''
+    for metal in metals:
+        metal_basis_line += ('  NewGTO '+metal+' "'+metal_basis+'" end\n')
+
     #Convert the keywords for run_type from terachem to orca
     if infile['run_type'] == 'minimize':
         infile['run_type'] = 'opt'
@@ -546,19 +557,21 @@ def write_orca_input(infile_dictionary):
     if not infile['name']:
         infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
 
+
     input_file = open(infile['name'] + '.in', 'w')
     #Note that max core is set to 2000MB, this is 2/3 of the amount allocated in the jobscript (on a per processor basis)
     #The SCF is known (according to the ORCA manual) to exceed allotted memory, so this provides some wiggle room
     if not infile['solvent']:
-        first_line = r'! MULLIKEN '+ligand_basis+' '+metal_basis+' '+infile['run_type']+' '+infile['method']+' printbasis\n'
+        first_line = r'! MULLIKEN '+ligand_basis+' '+infile['run_type']+' '+infile['method']+' printbasis\n'
     else:
-        first_line = r'! MULLIKEN '+ligand_basis+' '+metal_basis+' '+infile['run_type']+' '+infile['method']+' CPCM printbasis\n'
+        first_line = r'! MULLIKEN '+ligand_basis+' '+infile['run_type']+' '+infile['method']+' CPCM printbasis\n'
     text = ['#ORCA input\n',
             first_line,
             r'%'+'maxcore 2000\n',
             r'%'+'pal nprocs '+str(infile['parallel_environment'])+' end\n',
             r'*'+'xyzfile '+str(infile['charge'])+' '+str(infile['spinmult'])+' '+infile['name']+'.xyz\n\n',
-            r'%'+'scf\n  Shift Shift '+str(infile['levelshifta'])+' ErrOff 0.1 end\nend\n\n']
+            r'%'+'scf\n  Shift Shift '+str(infile['levelshifta'])+' ErrOff 0.1 end\nend\n\n',
+            r'%'+'basis\n'+metal_basis_line+'end\n\n']
 
     if infile['solvent']:
         text += [r'%'+'cpcm\n  epsilon '+str(infile['solvent'])+'\nend\n\n']
