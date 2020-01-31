@@ -99,7 +99,7 @@ def apply_geo_check(job_outfile_path,geometry):
             #If the optim.xyz doesn't exist, assume that it's a single point and should pass geo check
             return True
 
-        if geometry.caitalize() in ['Oct','Octahedral']:
+        if geometry.capitalize() in ['Oct','Octahedral']:
             geo_check_dict = mol.dict_oct_check_st
             IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
             if IsOct:

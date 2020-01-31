@@ -476,7 +476,7 @@ def sub_bundle_jobscripts(home_directory,jobscript_paths):
     # Write a jobscript for the job bundle
     home = os.getcwd()
     os.chdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
-    manager_io.write_jobscript(str('bundle_'+str(max(existing_bundle_numbers)+1))+'_'+identifier,terachem_line=False,time_limit='12:00:00')
+    manager_io.write_terachem_jobscript(str('bundle_'+str(max(existing_bundle_numbers)+1))+'_'+identifier,terachem_line=False,time_limit='12:00:00')
     shutil.move('bundle_'+str(max(existing_bundle_numbers)+1)+'_'+identifier+'_jobscript','bundle_'+str(max(existing_bundle_numbers)+1))
     fil = open('bundle_'+str(max(existing_bundle_numbers)+1),'a')
     for i in jobscript_paths:

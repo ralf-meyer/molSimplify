@@ -598,7 +598,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
     else:
         raise Exception('QM code: '+qm_code+' not recognized for jobscript writing!')
 
-def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00'):
+def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
             '#$ -N ' + name + '\n',
@@ -614,8 +614,9 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00'):
             '# -fout scr/\n',
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
-            'export OMP_NUM_THREADS=1\n',
-            'terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+            'export OMP_NUM_THREADS=1\n']
+    if terachem_line:
+            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:
