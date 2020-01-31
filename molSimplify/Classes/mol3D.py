@@ -3020,10 +3020,11 @@ class mol3D:
             print(("chargefile does not exist.", chargefile))
 
     def get_symmetry_denticity(self):
-        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
+        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
         liglist, ligdents, ligcons = ligand_breakdown(self)
         try:
-            _, eq_ligand_list, _, _, _, _, _, _, _ = ligand_assign(self, liglist, ligdents, ligcons)
+            _, _, _, _, _, _, _, eq_con_list, _ = ligand_assign_consistent(self, liglist, ligdents, ligcons)
+            flat_eq_ligcons = [x for sublist in eq_con_list for x in sublist]
             assigned = True
         except:
             assigned = False
@@ -3031,15 +3032,17 @@ class mol3D:
             maxdent = max(ligdents)
         else:
             maxdent = 0
-        eqsym = True
+        eqsym = None
         homoleptic = True
         if assigned:
-            for lig in eq_ligand_list[1:]:
-                if not connectivity_match(eq_ligand_list[0].index_list, lig.index_list, self, self):
-                    eqsym = False
-                    homoleptic = False
-        else:
-            eqsym = None
+            metal_ind = self.findMetal()[0]
+            n_eq_syms = len(list(set([self.getAtom(x).sym for x in flat_eq_ligcons])))
+            flat_eq_dists = [np.round(self.getDistToMetal(x,metal_ind),6) for x in flat_eq_ligcons]
+            minmax_eq_plane=max(flat_eq_dists)-min(flat_eq_dists)
+            if (n_eq_syms < 2) and (minmax_eq_plane < 0.2): # Match eq plane symbols and eq plane dists
+                eqsym = True
+            else:
+                eqsym = False
         if eqsym:
             for lig in liglist[1:]:
                 if not connectivity_match(liglist[0], lig, self, self):
