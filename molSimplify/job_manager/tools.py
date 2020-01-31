@@ -114,6 +114,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     return names
 
 def get_number_active():
+    #gets the number of jobs in the queue for this user, only counts jobs from this job directory
     active_jobs = list_active_jobs()
     def check_active(path, active_jobs=active_jobs):
     # Given a path, checks if it's in the queue currently:
@@ -143,6 +144,15 @@ def get_number_active():
         return len(active_jobs)
     else:
         return len(active_non_bundles)
+
+def get_total_queue_usage():
+    #gets the number of jobs in the queue for this user, regardless of where they originate
+    username = call_bash('whoami')[0]
+    
+    jobs = call_bash("qstat -u '"+username+"'",version=2)
+    jobs = [i for i in jobs if username in i.split()]
+
+    return len(jobs)
 
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
