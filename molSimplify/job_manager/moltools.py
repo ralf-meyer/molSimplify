@@ -99,7 +99,7 @@ def apply_geo_check(job_outfile_path,geometry):
             #If the optim.xyz doesn't exist, assume that it's a single point and should pass geo check
             return True
 
-        if geometry in ['Oct','oct','Octahedral','octahedral']:
+        if geometry.capitalize() in ['Oct','Octahedral']:
             geo_check_dict = mol.dict_oct_check_st
             IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
             if IsOct:
@@ -107,7 +107,7 @@ def apply_geo_check(job_outfile_path,geometry):
             else:
                 return False
 
-        if geometry in ['Bidentate_oct','Bidentate_Oct','bidentate_Oct','bidentate_oct']:
+        elif geometry.capitalize() == 'Bidentate_oct':
             #Loosened geo check dict appropriate for bidentates
             geo_check_dict = {'num_coord_metal': 6,
                          'rmsd_max': 3, 'atom_dist_max': 0.45,
@@ -125,6 +125,26 @@ def apply_geo_check(job_outfile_path,geometry):
                 return True
             else:
                 return False
+
+        elif geometry.capitalize() == 'Tridentate_oct':
+            #Extra loosened geo check dict appropriate for Tridentates
+            geo_check_dict = {'num_coord_metal': 6,
+                 'rmsd_max': 3, 'atom_dist_max': 0.45,
+                 'oct_angle_devi_max': 25, 'max_del_sig_angle': 50,
+                 'dist_del_eq': 0.35, 'dist_del_all': 1,
+                 'devi_linear_avrg': 20, 'devi_linear_max': 28}
+            outer_dict_flags = mol.dict_oct_check_st.keys()
+            final_dict = dict()
+            for key in outer_dict_flags:
+                final_dict[key] = geo_check_dict
+
+
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = final_dict,silent = True)
+            if IsOct:
+                return True
+            else:
+                return False
+
         else:
             raise Exception('A check has not been implemented for geometry: '+geoemtry)
     else:

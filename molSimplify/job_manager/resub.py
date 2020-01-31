@@ -52,11 +52,11 @@ def resub(directory='in place'):
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
 
     configure_dict = tools.manager_io.read_configure(directory, None)
-    print('Global Configure File Found:')
-    print(configure_dict)
 
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
+    hard_job_limit = configure_dict['hard_job_limit']
+    hit_queue_limit = False #Describes if this run has limitted the number of jobs submitted to work well with the queue
 
     # Get the state of all jobs being managed by this instance of the job manager
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
@@ -86,7 +86,8 @@ def resub(directory='in place'):
 
     # Resub unidentified errors
     for error in errors:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         resub_tmp = recovery.simple_resub(error)
         if resub_tmp:
@@ -96,7 +97,8 @@ def resub(directory='in place'):
 
     # Resub scf convergence errors
     for error in scf_errors:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         local_configure = tools.manager_io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
@@ -109,7 +111,8 @@ def resub(directory='in place'):
 
     # Resub jobs which converged to bad geometries with additional constraints
     for error in bad_geos:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         local_configure = tools.manager_io.read_configure(directory, None)
         if 'bad_geo' in local_configure['job_recovery']:
@@ -122,7 +125,8 @@ def resub(directory='in place'):
 
     # Resub spin contaminated cases
     for error in spin_contaminated:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         local_configure = tools.manager_io.read_configure(directory, None)
         if 'spin_contaminated' in local_configure['job_recovery']:
@@ -135,7 +139,8 @@ def resub(directory='in place'):
 
     # Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         resub_tmp = recovery.clean_resub(error)
         if resub_tmp:
@@ -145,7 +150,8 @@ def resub(directory='in place'):
 
     # Create a job with a tighter convergence threshold for failed thermo jobs
     for error in thermo_grad_error:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         local_configure = tools.manager_io.read_configure(directory, None)
         if 'thermo_grad_error' in local_configure['job_recovery']:
@@ -159,14 +165,15 @@ def resub(directory='in place'):
     # Look at jobs in "waiting," resume them if the job they were waiting for is finished
     # Currently, this should only ever be thermo jobs waiting for an ultratight job
     for waiting_dict in waiting:
-        if nactive + np.sum(resubmitted) >= max_jobs:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
             continue
         if len(list(waiting_dict.keys())) > 1:
             raise Exception('Waiting job list improperly constructed')
         job = list(waiting_dict.keys())[0]
         waiting_for = waiting_dict[job]
         if waiting_for in finished:
-            history = load_history(job)
+            history = recovery.load_history(job)
             history.waiting = None
             history.save()
             results_for_this_job = tools.manager_io.read_outfile(job)
@@ -178,7 +185,7 @@ def resub(directory='in place'):
             resubmitted.append(False)
 
     # Submit jobs which haven't yet been submitted
-    if not nactive+np.sum(resubmitted) >= max_jobs:
+    if not ((nactive+np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
         to_submit = []
         jobscripts = tools.find('*_jobscript')
         active_jobs = tools.list_active_jobs(home_directory=directory,parse_bundles=True)
@@ -197,17 +204,19 @@ def resub(directory='in place'):
 
         submitted = []
         for job in to_submit:
-            if len(submitted) + nactive + np.sum(resubmitted) >= max_jobs:
+            if ((len(submitted) + nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)) >= hard_job_limit):
+                hit_queue_limit = True
                 continue
             print(('Initial sumbission for job: ' + os.path.split(job)[-1]))
             tools.qsub(job)
             submitted.append(True)
     else:
+        hit_queue_limit = True
         submitted = []
 
     number_resubmitted = np.sum(np.array(resubmitted + submitted))
     # ~ print str(number_resubmitted)+' Jobs submitted'
-    return int(number_resubmitted), int(len(completeness['Active']))
+    return int(number_resubmitted), int(len(completeness['Active'])), hit_queue_limit
 
 
 def main():
@@ -221,7 +230,7 @@ def main():
         fil.write('Active')
         fil.close()
 
-        number_resubmitted, number_active = resub()
+        number_resubmitted, number_active, hit_queue_limit = resub()
 
         print('**********************************')
         print(("******** " + str(number_resubmitted) + " Jobs Submitted ********"))
@@ -235,7 +244,7 @@ def main():
                        'sleep'])  # sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
 
         # Terminate the script if it is no longer submitting jobs
-        if number_resubmitted == 0 and number_active == 0:
+        if number_resubmitted == 0 and number_active == 0 and not hit_queue_limit:
             counter += 1
         else:
             counter = 0

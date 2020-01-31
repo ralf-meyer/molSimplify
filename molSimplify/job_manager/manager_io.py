@@ -301,7 +301,7 @@ def read_configure(home_directory, outfile_path):
 
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
-    ss_cutoff = False
+    ss_cutoff,hard_job_limit = False,False
     for configure in [home_configure, local_configure]:
         for line in home_configure:
             if 'max_jobs' in line.split(':'):
@@ -329,6 +329,8 @@ def read_configure(home_directory, outfile_path):
                 dispersion = line.split(':')[-1]
             if 'ss_cutoff' in line.split(':'):
                 ss_cutoff = float(line.split(':')[-1])
+            if 'hard_job_limit' in line.split(':'):
+                hard_job_limit = int(line.split(':')[-1])
 
         # If global settings not specified, choose defaults:
         if not max_jobs:
@@ -347,12 +349,14 @@ def read_configure(home_directory, outfile_path):
             sleep = 7200
         if not ss_cutoff:
             ss_cutoff = 1.0
+        if not hard_job_limit:
+            hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
             'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
             'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
-            'ss_cutoff': ss_cutoff}
+            'ss_cutoff': ss_cutoff, 'hard_job_limit':hard_job_limit}
 
 
 def read_charges(PATH):
@@ -594,7 +598,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
     else:
         raise Exception('QM code: '+qm_code+' not recognized for jobscript writing!')
 
-def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00'):
+def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
             '#$ -N ' + name + '\n',
@@ -610,8 +614,9 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00'):
             '# -fout scr/\n',
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
-            'export OMP_NUM_THREADS=1\n',
-            'terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+            'export OMP_NUM_THREADS=1\n']
+    if terachem_line:
+            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:
