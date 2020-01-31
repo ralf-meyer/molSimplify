@@ -350,7 +350,7 @@ def read_configure(home_directory, outfile_path):
         if not ss_cutoff:
             ss_cutoff = 1.0
         if not hard_job_limit:
-            hard_job_limit = 200
+            hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
