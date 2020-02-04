@@ -24,7 +24,7 @@ def convert_to_absolute_path(path):
 
     return path
     
-def read_outfile(outfile_path,short_ouput=False):
+def read_outfile(outfile_path,short_ouput=False,long_output=True):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
@@ -58,6 +58,7 @@ def read_outfile(outfile_path,short_ouput=False):
     thermo_vib = None
     thermo_vib_f = None
     thermo_suspect = None
+    metal_orbital_occupation = None
 
     name = os.path.split(outfile_path)[-1]
     name = name.rsplit('.',1)[0]
@@ -113,6 +114,30 @@ def read_outfile(outfile_path,short_ouput=False):
                     scf = int(scf.split('+')[0])
                     if scf > 5000:
                         scf_error = [True,scf]
+        if long_output:
+            metals = ['Sc','Ti','V', 'Cr','Mn','Fe','Co','Ni','Cu','Zn',
+                      'Y', 'Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd']
+            nbo_start,nbo_end = output.wordgrab(['NATURAL POPULATIONS:  Natural atomic orbital occupancies',
+                                                 'Summary of Natural Population Analysis:'],'whole_line',
+                                                 matching_index=True,first_line=True)
+            if nbo_start and nbo_end:
+                nbo_lines = output.lines[nbo_start:nbo_end]
+                nbo_lines = [line for line in nbo_lines if len(line.split()) > 0] #filter out empty lines
+                nbo_lines = [line for line in nbo_lines if line.split()[0].isdigit()] #filter only results lines
+                nbo_lines = [line for line in nbo_lines if line.split()[1] in metals] #filter only metal results
+                nbo_lines = [line for line in nbo_lines if line.split()[4] == 'Val('] #filter only valence orbitals
+
+                if len(nbo_lines) > 0:
+                    metal_orbital_occupation = dict()
+                    for line in nbo_lines:
+                        key = line.split()[1]+'_'+line.split()[2]+'_'+line.split()[3]
+                        if key in metal_orbital_occupation.keys():
+                            raise Exception(outfile_path+' '+key+': Same key found twice in nbo parsing!')
+                        if len(line.split()) > 8: #for open shell systems
+                            metal_orbital_occupation[key] = [float(line.split()[-3]),float(line.split()[-1])]
+                        else: #For closed shell systems
+                            metal_orbital_occupation[key] = [float(line.split()[-2]),float(0)]
+
                     
     if output_type == 'ORCA':
         finished,finalenergy,s_squared,s_squared_ideal,implicit_solvation_energy = output.wordgrab(['****ORCA TERMINATED NORMALLY****','FINAL','<S**2>','S*(S+1)','CPCM Dielectric    :'],
@@ -150,6 +175,7 @@ def read_outfile(outfile_path,short_ouput=False):
     return_dict['thermo_vib_energy'] = try_float(thermo_vib)
     return_dict['thermo_vib_free_energy'] = try_float(thermo_vib_f)
     return_dict['thermo_suspect'] = thermo_suspect
+    return_dict['metal_orbital_occupation'] = metal_orbital_occupation
     return return_dict
 
 

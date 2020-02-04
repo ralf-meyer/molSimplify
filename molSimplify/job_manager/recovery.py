@@ -221,6 +221,7 @@ def clean_resub(outfile_path):
     
     configure_dict = tools.manager_io.read_configure('in_place',outfile_path)
     
+    infile_dict['name'] = name
     infile_dict['coordinates']=coordinates
     infile_dict['method'] = configure_dict['method']
     infile_dict['levelshifta'],infile_dict['levelshiftb'] = configure_dict['levela'],configure_dict['levelb']

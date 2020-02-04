@@ -709,6 +709,9 @@ def prep_functionals_sp(path, functionalsSP):
         local_infile_dict['method'] = func
 
         manager_io.write_input(local_infile_dict)
+        fil = open('configure','w')
+        fil.write('method:'+func)
+        fil.close()
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     return jobscripts
