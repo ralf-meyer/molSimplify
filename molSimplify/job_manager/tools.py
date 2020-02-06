@@ -25,19 +25,40 @@ def check_valid_outfile(path):
     else:
         return True
 
-def invert_dictionary(dictionary):
-    new_dict = dict()
-    for key in list(dictionary.keys()):
-        if type(dictionary[key]) == list:
-            for entry in dictionary[key]:
-                if entry in list(new_dict.keys()):
-                    raise Exception('Dictionary inversion failed, values do not serve as unique keys')
-                new_dict[entry] = key
-        else:
-            if dictionary[key] in list(new_dict.keys()):
-                raise Exception('Dictionary inversion failed, values do not serve as unique keys')
-            new_dict[dictionary[key]] = key
-    return new_dict
+def priority_sort(lst_of_lsts):
+    # Takes a list of lists
+    # This function ensures that each entry occurs in only one list
+    # If an entry occurs in multiple lists, it is retained in the list which appears first in the list of lists
+
+    lst_of_lsts.reverse() #reverse the list so low priority occurs first
+
+    new_lst_of_lsts = []
+    for counter in range(len(lst_of_lsts)):
+        local_lst = lst_of_lsts[counter]
+        higher_priority_lists = lst_of_lsts[counter+1:]
+
+        for high_priority in higher_priority_lists:
+            local_lst = list(set(local_lst)-set(high_priority))
+
+        new_lst_of_lsts.append(local_lst)
+
+    new_lst_of_lsts.reverse() #undo the original reversal
+
+    return new_lst_of_lsts
+
+# def invert_dictionary(dictionary):
+#     new_dict = dict()
+#     for key in list(dictionary.keys()):
+#         if type(dictionary[key]) == list:
+#             for entry in dictionary[key]:
+#                 if entry in list(new_dict.keys()):
+#                     raise Exception('Dictionary inversion failed, values do not serve as unique keys')
+#                 new_dict[entry] = key
+#         else:
+#             if dictionary[key] in list(new_dict.keys()):
+#                 raise Exception('Dictionary inversion failed, values do not serve as unique keys')
+#             new_dict[dictionary[key]] = key
+#     return new_dict
 
 
 def call_bash(string, error=False, version=1):
@@ -261,28 +282,18 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # Sort out conflicts in order of reverse priority
     # A job only gets labelled as finished if it's in no other category
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
-    finished = list(set(finished) - set(needs_resub) - set(spin_contaminated) - set(errors) - set(scf_errors) - set(
-        thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    needs_resub = list(
-        set(needs_resub) - set(spin_contaminated) - set(errors) - set(scf_errors) - set(thermo_grad_errors) - set(
-            waiting) - set(chronic_errors) - set(active_jobs))
-    spin_contaminated = list(
-        set(spin_contaminated) - set(errors) - set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(
-            chronic_errors) - set(active_jobs))
-    errors = list(
-        set(errors) - set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    scf_errors = list(set(scf_errors) - set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    thermo_grad_errors = list(set(thermo_grad_errors) - set(waiting) - set(chronic_errors) - set(active_jobs))
-    waiting = list(set(waiting) - set(chronic_errors) - set(active_jobs))
-    chronic_errors = list(set(chronic_errors) - set(active_jobs))
-    active_jobs = list(set(active_jobs))
 
-    results = {'Finished': finished, 'Active': active_jobs, 'Error': errors, 'Resub': needs_resub,
-               'Spin_contaminated': spin_contaminated, 'Chronic_error': chronic_errors,
-               'Thermo_grad_error': thermo_grad_errors, 'Waiting': waiting, 'SCF_Error': scf_errors}
+    priority_list = [active_jobs,chronic_errors,waiting,thermo_grad_errors,
+                     scf_errors,errors,spin_contaminated,needs_resub,finished]
+    priority_list_names = ['active_jobs','chronic_errors','waiting','thermo_grad_errors',
+                           'scf_errors','errors','spin_contaminated','needs_resub','finished']
+    priority_list = priority_sort(priority_list)
 
-    # There are two special categories which operate a bit differently: waiting "SCF_Errors_Including_Active"
-    # inverted_results = invert_dictionary(results)
+    results = dict():
+    for key,lst in zip(priority_list_names,priority_list):
+        results[key] = lst
+
+    # There are two special categories which operate a bit differently: waiting and "SCF_Errors_Including_Active"
     waiting = [{i: grab_waiting(i)} for i in waiting]
     results['Waiting'] = waiting
     results['SCF_Errors_Including_Active'] = all_scf_errors
