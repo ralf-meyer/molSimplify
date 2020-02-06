@@ -23,12 +23,12 @@ def convert_to_absolute_path(path):
         path = os.path.join(os.getcwd(), path)
 
     return path
-    
+
 def read_outfile(outfile_path,short_ouput=False,long_output=True):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
-    
+
     output = textfile(outfile_path)
     output_type = output.wordgrab(['TeraChem','ORCA'],['whole_line','whole_line'])
     for counter,match in enumerate(output_type):
@@ -42,7 +42,7 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
             else:
                 raise ValueError('.out file type not recognized for file: '+outfile_path)
     output_type = ['TeraChem','ORCA'][counter]
-    
+
     name = None
     finished = False
     charge = None
@@ -59,11 +59,12 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
     thermo_vib_f = None
     thermo_suspect = None
     orbital_occupation = None
+    oscillating_scf_error = False
 
     name = os.path.split(outfile_path)[-1]
     name = name.rsplit('.',1)[0]
     if output_type == 'TeraChem':
-        
+
         charge = output.wordgrab(['charge:'],[2],first_line=True)[0]
         if charge:
             charge = int(charge)
@@ -81,6 +82,11 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
             s_squared,s_squared_ideal,thermo_grad_error = output.wordgrab(['S-SQUARED:','S-SQUARED:','Maximum component of gradient is too large'],
                                                                           [2,4,0],last_line=True)
 
+        oscillating_scf = get_scf_progress(outfile)
+        if oscillating_scf:
+            oscillating_scf_error = True
+        else:
+            oscillating_scf_error  = False
         if thermo_grad_error:
             thermo_grad_error = True
         else:
@@ -94,14 +100,14 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
             s_squared_ideal = float(s_squared_ideal.strip(')'))
         if implicit_solvation_energy:
             implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
-            
+
         min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
-        
+
         is_finished = output.wordgrab(['finished:'],'whole_line',last_line=True)[0]
         if is_finished:
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
-        
+
         is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
         if is_scf_error[0]:
             is_scf_error = [output.lines[i].split() for i in is_scf_error]
@@ -135,7 +141,7 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
                         else: #For closed shell systems
                             orbital_occupation[key] = [float(line.split()[-2]),float(0)]
 
-                    
+
     if output_type == 'ORCA':
         finished,finalenergy,s_squared,s_squared_ideal,implicit_solvation_energy = output.wordgrab(['****ORCA TERMINATED NORMALLY****','FINAL','<S**2>','S*(S+1)','CPCM Dielectric    :'],
                                                                                                    [0,-1,-1,-1,3],last_line=True)
@@ -143,19 +149,19 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
             finished = True
 
         timekey = output.wordgrab('TOTAL RUN TIME:','whole_line',last_line=True)[0]
-        if type(timekey) == list: 
+        if type(timekey) == list:
             time = (float(timekey[3])*24*60*60
                    +float(timekey[5])*60*60
                    +float(timekey[7])*60
                    +float(timekey[9])
                    +float(timekey[11])*0.001)
-        
+
         charge = output.wordgrab(['Sum of atomic charges         :'],[-1],last_line=True)[0]
         charge = int(round(charge,0)) #Round to nearest integer value (it should always be very close)
 
         opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY',-1)[0]
         geo_opt_cycles,min_energy = len(opt_energies),min(opt_energies)
-        
+
     return_dict = {}
     return_dict['name'] = name
     return_dict['charge'] = charge
@@ -173,6 +179,7 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
     return_dict['thermo_vib_free_energy'] = try_float(thermo_vib_f)
     return_dict['thermo_suspect'] = thermo_suspect
     return_dict['orbital_occupation'] = orbital_occupation
+    return_dict['oscillating_scf_error'] = oscillating_scf_error
     return return_dict
 
 
@@ -424,7 +431,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 guess=False, custom_line=None, levelshifta=0.25, levelshiftb=0.25,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
-                parallel_environment=4):
+                parallel_environment=4, precision='dynamic', dftgrid=1, dynamicgrid='yes'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
     # "Custom line" can be used to add additional lines to the infile and is not treated by an input dictionary
@@ -435,10 +442,11 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     # If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
     for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates,
-                                guess, custom_line, qm_code, parallel_environment, name],
+                                guess, custom_line, qm_code, parallel_environment, name, precision, dftgrid, dynamicgrid],
                                ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method','hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
-                                'coordinates','guess', 'custom_line', 'qm_code', 'parallel_environment','name']):
+                                'coordinates','guess', 'custom_line', 'qm_code', 'parallel_environment','name',
+                                'precision', 'dftgrid', 'dynamicgrid']):
         if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
         else:
@@ -464,7 +472,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
 
 def write_terachem_input(infile_dictionary):
     infile = infile_dictionary
-    
+
     if infile['spinmult'] != 1:
         infile['method'] = 'u' + infile['method']
 
@@ -488,6 +496,9 @@ def write_terachem_input(infile_dictionary):
             'timings yes\n',
             'charge ' + str(infile['charge']) + '\n',
             'method ' + infile['method'] + '\n',
+            'precision ' + infile['precision'] + '\n',
+            'dftgrid ' + infile['dftgrid'] + '\n',
+            'dynamicgrid ' + infile['dynamicgrid'] + '\n',
             'new_minimizer yes\n',
             'ml_prop yes\n',
             'poptype mulliken\n',
@@ -689,3 +700,30 @@ def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel
     for i in text:
         jobscript.write(i)
     jobscript.close()
+
+
+def get_scf_progress(outfile):
+    flag = False
+    with open(outfile, 'r') as fo:
+        start = False
+        for line in fo:
+            ll = line.split()
+            if "Start SCF Iterations" in line:
+                start = True
+                energy_this_scf = []
+            if len(ll) == 11 and ll[0].isdigit() and start:
+                energy_this_scf.append(float(ll[-2]))
+            if "FINAL ENERGY:" in line and start:
+                start = False
+                # print(energy_this_scf)
+                flag = is_oscalite(energy_this_scf)
+                if flag:
+                    break
+    return flag
+
+
+def is_oscalite(energy_this_scf):
+    flag = False
+    if np.std(energy_this_scf) > 1:
+        flag = True
+    return flag
