@@ -16,7 +16,7 @@ from molSimplify.Classes.ligand import ligand_breakdown
 
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
-    results = tools.manager_io.read_outfile(outfile_PATH)
+    results = tools.manager_io.read_outfile(outfile_PATH,long_output=True)
     infile_dict = tools.manager_io.read_infile(outfile_PATH)
     results['levela'],results['levelb'] = infile_dict['levelshifta'],infile_dict['levelshiftb']
     results['method'],results['hfx'] = infile_dict['method'],infile_dict['hfx']
