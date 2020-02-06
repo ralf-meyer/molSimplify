@@ -81,11 +81,13 @@ class textfile:
         # The first list is the keywords to look for
         # The second list is the indices to pull from the matching lines
         #  Returns a list of the resulting values. Numeric values are automatically converted to floats
+        # Function is most intuitive when ONE of the following is set to True (last_line,first_line,min_value)
+        #     Otherwise, the list will be nested one more time than you may expect
         
         if type(keywords) != list:
             keywords = [keywords]
         if type(indices) != list:
-            indices = [indices]
+            indices = [indices]*len(keywords)
             
         results = dict()
         zipped_values = list(zip(keywords,indices,list(range(len(keywords)))))

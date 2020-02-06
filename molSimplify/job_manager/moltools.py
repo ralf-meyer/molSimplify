@@ -10,18 +10,34 @@ import pandas as pd
 import shutil
 import time
 import molSimplify.job_manager.tools as tools
+import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown
 
 def read_run(outfile_PATH):
     #Evaluates all aspects of a run using the outfile and derivative files
-    results = tools.read_outfile(outfile_PATH)
-    infile_dict = tools.read_infile(outfile_PATH)
+    results = tools.manager_io.read_outfile(outfile_PATH,long_output=True)
+    infile_dict = tools.manager_io.read_infile(outfile_PATH)
     results['levela'],results['levelb'] = infile_dict['levelshifta'],infile_dict['levelshiftb']
     results['method'],results['hfx'] = infile_dict['method'],infile_dict['hfx']
     results['constraints'] = infile_dict['constraints']
     
-    
+    mullpop_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','mullpop')
+    if os.path.exists(mullpop_path):
+        mullpops = tools.manager_io.read_mullpop(outfile_PATH)
+        metal_types = ['Cr','Mn','Fe','Co','Ni','Mo','Tc','Ru','Rh']
+        metals = [i for i in mullpops if i.split()[0] in metal_types]
+        if len(metals) > 1:
+            results['metal_spin'] = np.nan
+        elif len(metals) == 0:
+            pass
+        else:
+            results['metal_spin'] = float(metals[0].split()[-1])
+    else:
+        results['metal_spin'] = np.nan
+
+
+
     optim_path = os.path.join(os.path.split(outfile_PATH)[0],'scr','optim.xyz')
     
     check_geo = False
@@ -38,9 +54,8 @@ def read_run(outfile_PATH):
     
         mol = mol3D()
         mol.readfromxyz(optimized_path)
-        geo_check_dict = mol.dict_oct_check_st['mono']
         
-        IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,
+        IsOct,flag_list,oct_check = mol.IsOct(dict_check = mol.dict_oct_check_st,
                                               silent = True)
         
         if IsOct:
@@ -84,7 +99,7 @@ def apply_geo_check(job_outfile_path,geometry):
             #If the optim.xyz doesn't exist, assume that it's a single point and should pass geo check
             return True
 
-        if geometry in ['Oct','oct','Octahedral','octahedral']:
+        if geometry.capitalize() in ['Oct','Octahedral']:
             geo_check_dict = mol.dict_oct_check_st
             IsOct,flag_list,oct_check = mol.IsOct(dict_check = geo_check_dict,silent = True)
             if IsOct:
@@ -92,7 +107,7 @@ def apply_geo_check(job_outfile_path,geometry):
             else:
                 return False
 
-        if geometry in ['Bidentate_oct','Bidentate_Oct','bidentate_Oct','bidentate_oct']:
+        elif geometry.capitalize() == 'Bidentate_oct':
             #Loosened geo check dict appropriate for bidentates
             geo_check_dict = {'num_coord_metal': 6,
                          'rmsd_max': 3, 'atom_dist_max': 0.45,
@@ -110,6 +125,26 @@ def apply_geo_check(job_outfile_path,geometry):
                 return True
             else:
                 return False
+
+        elif geometry.capitalize() == 'Tridentate_oct':
+            #Extra loosened geo check dict appropriate for Tridentates
+            geo_check_dict = {'num_coord_metal': 6,
+                 'rmsd_max': 3, 'atom_dist_max': 0.45,
+                 'oct_angle_devi_max': 25, 'max_del_sig_angle': 50,
+                 'dist_del_eq': 0.35, 'dist_del_all': 1,
+                 'devi_linear_avrg': 20, 'devi_linear_max': 28}
+            outer_dict_flags = mol.dict_oct_check_st.keys()
+            final_dict = dict()
+            for key in outer_dict_flags:
+                final_dict[key] = geo_check_dict
+
+
+            IsOct,flag_list,oct_check = mol.IsOct(dict_check = final_dict,silent = True)
+            if IsOct:
+                return True
+            else:
+                return False
+
         else:
             raise Exception('A check has not been implemented for geometry: '+geoemtry)
     else:
@@ -151,25 +186,25 @@ def check_completeness(directory = 'in place', max_resub = 5, configure_dict=Fal
     new_needs_resub = []
     new_unfinished = []
     for job in finished:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_finished.append(job)
         else:
             bad_geos.append(job)
     for job in spin_contaminated:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_spin_contaminated.append(job)
         else:
             bad_geos.append(job)
     for job in needs_resub:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_needs_resub.append(job)
         else:
             bad_geos.append(job)
     for job in unfinished:
-        goal_geo = tools.read_configure(directory,job)['geo_check']
+        goal_geo = tools.manager_io.read_configure(directory,job)['geo_check']
         if apply_geo_check(job,goal_geo):
             new_unfinished.append(job)
         else:
@@ -189,12 +224,12 @@ def prep_ligand_breakown(outfile_path):
     home = os.getcwd()
     outfile_path = tools.convert_to_absolute_path(outfile_path)
     
-    results = tools.read_outfile(outfile_path)
+    results = tools.manager_io.read_outfile(outfile_path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     
     
-    infile_dict = tools.read_infile(outfile_path)
+    infile_dict = tools.manager_io.read_infile(outfile_path)
     charge = int(infile_dict['charge'])
     spinmult = int(infile_dict['spinmult'])    
     
@@ -268,8 +303,8 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'],local_infile_dict['convergence_thresholds'] = False,False
 
-            tools.write_input(local_infile_dict)
-            tools.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
+            tools.manager_io.write_input(local_infile_dict)
+            tools.manager_io.write_jobscript(local_name,time_limit = '12:00:00', sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
         
@@ -293,8 +328,8 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'],local_infile_dict['convergence_thresholds'] = False,False
 
-            tools.write_input(local_infile_dict)
-            tools.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
+            tools.manager_io.write_input(local_infile_dict)
+            tools.manager_io.write_jobscript(local_name,time_limit = '12:00:00',sleep = True)
             jobscripts.append(local_name+'.in')
             os.chdir('..')
     os.chdir(home)
