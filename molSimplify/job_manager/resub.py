@@ -62,7 +62,7 @@ def resub(directory='in place'):
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
-    need_resub = completeness['Resub']  # These are calculations with level shifts changed or hfx exchange changed
+    need_resub = completeness['Needs_resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
     active = completeness['Active']  # These are jobs which are currently running
     thermo_grad_error = completeness['Thermo_grad_error']  # These are thermo jobs encountering the thermo grad error

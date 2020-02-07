@@ -177,7 +177,7 @@ def check_completeness(directory = 'in place', max_resub = 5, configure_dict=Fal
     
     finished = completeness['Finished']
     spin_contaminated = completeness['Spin_contaminated']
-    needs_resub = completeness['Resub']
+    needs_resub = completeness['Needs_resub']
     unfinished = completeness['Error']
     
     bad_geos = []

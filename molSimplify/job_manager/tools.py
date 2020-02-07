@@ -285,11 +285,11 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
 
     priority_list = [active_jobs,chronic_errors,waiting,thermo_grad_errors,
                      scf_errors,errors,spin_contaminated,needs_resub,finished]
-    priority_list_names = ['active_jobs','chronic_errors','waiting','thermo_grad_errors',
-                           'scf_errors','errors','spin_contaminated','needs_resub','finished']
+    priority_list_names = ['Active','Chronic_errors','Waiting','Thermo_grad_error',
+                           'SCF_Error','Error','Spin_contaminated','Needs_resub','Finished']
     priority_list = priority_sort(priority_list)
 
-    results = dict():
+    results = dict()
     for key,lst in zip(priority_list_names,priority_list):
         results[key] = lst
 
