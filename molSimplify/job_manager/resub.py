@@ -62,6 +62,7 @@ def resub(directory='in place'):
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
+    oscillating_scf_errors = completeness['Oscillating_SCF_Error']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
     need_resub = completeness['Needs_resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
     active = completeness['Active']  # These are jobs which are currently running
@@ -94,6 +95,20 @@ def resub(directory='in place'):
             print(('Unidentified error in job: ' + os.path.split(error)[-1] + ' -Resubmitting'))
             print('')
         resubmitted.append(resub_tmp)
+
+    # Resub oscillating_scf convergence errors
+    for error in oscillating_scf_errors:
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+            hit_queue_limit = True
+            continue
+        local_configure = tools.manager_io.read_configure(directory, None)
+        if 'scf' in local_configure['job_recovery']:
+            resub_tmp = recovery.resub_oscillating_scf(error)
+            if resub_tmp:
+                print(('Oscillating SCF error identified in job: ' + os.path.split(error)[
+                    -1] + ' -Resubmitting with adjusted precision and grid.'))
+                print('')
+            resubmitted.append(resub_tmp)
 
     # Resub scf convergence errors
     for error in scf_errors:

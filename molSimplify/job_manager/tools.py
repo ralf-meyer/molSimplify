@@ -118,7 +118,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
         fil = open(os.path.join(home_directory,'bundle','bundle_id'),'r')
         identifier = fil.readlines()[0]
-        fil.close()  
+        fil.close()
 
         bundles = [i for i in names if i.startswith('bundle_')]
         bundles = [i.rsplit('_',1)[0] for i in names if i.endswith(identifier)]
@@ -169,7 +169,7 @@ def get_number_active():
 def get_total_queue_usage():
     #gets the number of jobs in the queue for this user, regardless of where they originate
     username = call_bash('whoami')[0]
-    
+
     jobs = call_bash("qstat -u '"+username+"'",version=2)
     jobs = [i for i in jobs if username in i.split()]
 
@@ -248,6 +248,13 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
                     return True
         return False
 
+    def check_oscillating_scf_error(path, results_dict=results_dict):
+        results = results_dict[path]
+        if results['oscillating_scf_error']:
+            return True
+        else:
+            return False
+
     def check_scf_error(path, results_dict=results_dict):
         results = results_dict[path]
         if results['scf_error']:
@@ -272,6 +279,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     chronic_errors = list(filter(check_chronic_failure, outfiles))
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     scf_errors = list(filter(check_scf_error, errors))
+    oscillating_scf_errors = list(filter(check_oscillating_scf_error, errors))
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
@@ -284,9 +292,15 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
 
     priority_list = [active_jobs,chronic_errors,waiting,thermo_grad_errors,
+<<<<<<< HEAD
                      scf_errors,errors,spin_contaminated,needs_resub,finished]
     priority_list_names = ['Active','Chronic_errors','Waiting','Thermo_grad_error',
                            'SCF_Error','Error','Spin_contaminated','Needs_resub','Finished']
+=======
+                     oscillating_scf_errors, scf_errors,errors,spin_contaminated,needs_resub,finished]
+    priority_list_names = ['active_jobs','chronic_errors','waiting','thermo_grad_errors',
+                           'oscillating_scf_errors', 'scf_errors', 'errors','spin_contaminated','needs_resub','finished']
+>>>>>>> 664056c45d2a57697232ee17ce69671556c18ba2
     priority_list = priority_sort(priority_list)
 
     results = dict()
@@ -461,7 +475,7 @@ def sub_bundle_jobscripts(home_directory,jobscript_paths):
         fil.close()
     fil = open(os.path.join(home_directory,'bundle','bundle_id'),'r')
     identifier = fil.readlines()[0]
-    fil.close()  
+    fil.close()
 
 
     jobscript_paths = [convert_to_absolute_path(i) for i in jobscript_paths]
