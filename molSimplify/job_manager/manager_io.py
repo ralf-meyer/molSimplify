@@ -86,7 +86,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 ['S-SQUARED:', 'S-SQUARED:', 'Maximum component of gradient is too large'],
                 [2, 4, 0], last_line=True)
 
-        oscillating_scf = get_scf_progress(outfile)
+        oscillating_scf = get_scf_progress(outfile_path)
         if oscillating_scf:
             oscillating_scf_error = True
         else:
