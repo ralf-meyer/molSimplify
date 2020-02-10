@@ -9,6 +9,7 @@ import time
 from molSimplify.job_manager.classes import resub_history, textfile
 from ast import literal_eval
 
+
 def try_float(obj):
     # Converts an object to a floating point if possible
     try:
@@ -24,14 +25,15 @@ def convert_to_absolute_path(path):
 
     return path
 
-def read_outfile(outfile_path,short_ouput=False,long_output=True):
+
+def read_outfile(outfile_path, short_ouput=False, long_output=True):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
 
     output = textfile(outfile_path)
-    output_type = output.wordgrab(['TeraChem','ORCA'],['whole_line','whole_line'])
-    for counter,match in enumerate(output_type):
+    output_type = output.wordgrab(['TeraChem', 'ORCA'], ['whole_line', 'whole_line'])
+    for counter, match in enumerate(output_type):
         if match[0]:
             break
         if counter == 1:
@@ -40,8 +42,8 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
                 print(outfile_path)
                 counter = 0
             else:
-                raise ValueError('.out file type not recognized for file: '+outfile_path)
-    output_type = ['TeraChem','ORCA'][counter]
+                raise ValueError('.out file type not recognized for file: ' + outfile_path)
+    output_type = ['TeraChem', 'ORCA'][counter]
 
     name = None
     finished = False
@@ -62,31 +64,33 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
     oscillating_scf_error = False
 
     name = os.path.split(outfile_path)[-1]
-    name = name.rsplit('.',1)[0]
+    name = name.rsplit('.', 1)[0]
     if output_type == 'TeraChem':
 
-        charge = output.wordgrab(['charge:'],[2],first_line=True)[0]
+        charge = output.wordgrab(['charge:'], [2], first_line=True)[0]
         if charge:
             charge = int(charge)
         if not short_ouput:
-            (finalenergy,s_squared,s_squared_ideal,time,thermo_grad_error,
-             implicit_solvation_energy,geo_opt_cycles,
-             thermo_vib,thermo_vib_f,thermo_suspect) = output.wordgrab(['FINAL','S-SQUARED:','S-SQUARED:','processing',
-                                                                        'Maximum component of gradient is too large',
-                                                                        'C-PCM contribution to final energy:',
-                                                                        'Optimization Cycle','Thermal vibrational energy',
-                                                                        'Thermal vibrational free energy',
-                                                                        'Thermochemical Analysis is Suspect'],
-                                                                        [2,2,4,3,0,4,3,7,10,0],last_line=True)
+            (finalenergy, s_squared, s_squared_ideal, time, thermo_grad_error,
+             implicit_solvation_energy, geo_opt_cycles,
+             thermo_vib, thermo_vib_f, thermo_suspect) = output.wordgrab(
+                ['FINAL', 'S-SQUARED:', 'S-SQUARED:', 'processing',
+                 'Maximum component of gradient is too large',
+                 'C-PCM contribution to final energy:',
+                 'Optimization Cycle', 'Thermal vibrational energy',
+                 'Thermal vibrational free energy',
+                 'Thermochemical Analysis is Suspect'],
+                [2, 2, 4, 3, 0, 4, 3, 7, 10, 0], last_line=True)
         if short_ouput:
-            s_squared,s_squared_ideal,thermo_grad_error = output.wordgrab(['S-SQUARED:','S-SQUARED:','Maximum component of gradient is too large'],
-                                                                          [2,4,0],last_line=True)
+            s_squared, s_squared_ideal, thermo_grad_error = output.wordgrab(
+                ['S-SQUARED:', 'S-SQUARED:', 'Maximum component of gradient is too large'],
+                [2, 4, 0], last_line=True)
 
         oscillating_scf = get_scf_progress(outfile)
         if oscillating_scf:
             oscillating_scf_error = True
         else:
-            oscillating_scf_error  = False
+            oscillating_scf_error = False
         if thermo_grad_error:
             thermo_grad_error = True
         else:
@@ -101,14 +105,14 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
         if implicit_solvation_energy:
             implicit_solvation_energy = try_float(implicit_solvation_energy.split(':')[-1])
 
-        min_energy = output.wordgrab('FINAL',2,min_value = True)[0]
+        min_energy = output.wordgrab('FINAL', 2, min_value=True)[0]
 
-        is_finished = output.wordgrab(['finished:'],'whole_line',last_line=True)[0]
+        is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
         if is_finished:
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
 
-        is_scf_error = output.wordgrab('DIIS',5,matching_index=True)[0]
+        is_scf_error = output.wordgrab('DIIS', 5, matching_index=True)[0]
         if is_scf_error[0]:
             is_scf_error = [output.lines[i].split() for i in is_scf_error]
         else:
@@ -119,48 +123,48 @@ def read_outfile(outfile_path,short_ouput=False,long_output=True):
                     scf = scf[5]
                     scf = int(scf.split('+')[0])
                     if scf > 5000:
-                        scf_error = [True,scf]
+                        scf_error = [True, scf]
         if long_output:
-            nbo_start,nbo_end = output.wordgrab(['NATURAL POPULATIONS:  Natural atomic orbital occupancies',
-                                                 'Summary of Natural Population Analysis:'],'whole_line',
-                                                 matching_index=True,first_line=True)
+            nbo_start, nbo_end = output.wordgrab(['NATURAL POPULATIONS:  Natural atomic orbital occupancies',
+                                                  'Summary of Natural Population Analysis:'], 'whole_line',
+                                                 matching_index=True, first_line=True)
             if nbo_start and nbo_end:
                 nbo_lines = output.lines[nbo_start:nbo_end]
-                nbo_lines = [line for line in nbo_lines if len(line.split()) > 0] #filter out empty lines
-                nbo_lines = [line for line in nbo_lines if line.split()[0].isdigit()] #filter only results lines
-                nbo_lines = [line for line in nbo_lines if line.split()[4] == 'Val('] #filter only valence orbitals
+                nbo_lines = [line for line in nbo_lines if len(line.split()) > 0]  # filter out empty lines
+                nbo_lines = [line for line in nbo_lines if line.split()[0].isdigit()]  # filter only results lines
+                nbo_lines = [line for line in nbo_lines if line.split()[4] == 'Val(']  # filter only valence orbitals
 
                 if len(nbo_lines) > 0:
                     orbital_occupation = dict()
                     for line in nbo_lines:
-                        key = line.split()[1]+'_'+line.split()[2]+'_'+line.split()[3]
+                        key = line.split()[1] + '_' + line.split()[2] + '_' + line.split()[3]
                         if key in orbital_occupation.keys():
-                            raise Exception(outfile_path+' '+key+': Same key found twice in nbo parsing!')
-                        if len(line.split()) > 8: #for open shell systems
-                            orbital_occupation[key] = [float(line.split()[-3]),float(line.split()[-1])]
-                        else: #For closed shell systems
-                            orbital_occupation[key] = [float(line.split()[-2]),float(0)]
-
+                            raise Exception(outfile_path + ' ' + key + ': Same key found twice in nbo parsing!')
+                        if len(line.split()) > 8:  # for open shell systems
+                            orbital_occupation[key] = [float(line.split()[-3]), float(line.split()[-1])]
+                        else:  # For closed shell systems
+                            orbital_occupation[key] = [float(line.split()[-2]), float(0)]
 
     if output_type == 'ORCA':
-        finished,finalenergy,s_squared,s_squared_ideal,implicit_solvation_energy = output.wordgrab(['****ORCA TERMINATED NORMALLY****','FINAL','<S**2>','S*(S+1)','CPCM Dielectric    :'],
-                                                                                                   [0,-1,-1,-1,3],last_line=True)
+        finished, finalenergy, s_squared, s_squared_ideal, implicit_solvation_energy = output.wordgrab(
+            ['****ORCA TERMINATED NORMALLY****', 'FINAL', '<S**2>', 'S*(S+1)', 'CPCM Dielectric    :'],
+            [0, -1, -1, -1, 3], last_line=True)
         if finished == '****ORCA':
             finished = True
 
-        timekey = output.wordgrab('TOTAL RUN TIME:','whole_line',last_line=True)[0]
+        timekey = output.wordgrab('TOTAL RUN TIME:', 'whole_line', last_line=True)[0]
         if type(timekey) == list:
-            time = (float(timekey[3])*24*60*60
-                   +float(timekey[5])*60*60
-                   +float(timekey[7])*60
-                   +float(timekey[9])
-                   +float(timekey[11])*0.001)
+            time = (float(timekey[3]) * 24 * 60 * 60
+                    + float(timekey[5]) * 60 * 60
+                    + float(timekey[7]) * 60
+                    + float(timekey[9])
+                    + float(timekey[11]) * 0.001)
 
-        charge = output.wordgrab(['Sum of atomic charges         :'],[-1],last_line=True)[0]
-        charge = int(round(charge,0)) #Round to nearest integer value (it should always be very close)
+        charge = output.wordgrab(['Sum of atomic charges         :'], [-1], last_line=True)[0]
+        charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
 
-        opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY',-1)[0]
-        geo_opt_cycles,min_energy = len(opt_energies),min(opt_energies)
+        opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY', -1)[0]
+        geo_opt_cycles, min_energy = len(opt_energies), min(opt_energies)
 
     return_dict = {}
     return_dict['name'] = name
@@ -235,38 +239,40 @@ def read_infile(outfile_path):
                 'The current implementation of tools.read_infile() is known to behave poorly when an infile specifies both a multibasis and constraints')
 
     elif qm_code == 'orca':
-        ligand_basis, run_type, method, parallel_environment, charge, spinmult, coordinates = inp.wordgrab(['! MULLIKEN']*3+[r'%pal']+[r'xyzfile']*3,
-                                                                                                                        [2,3,4,2,1,2,3],last_line=True)
+        ligand_basis, run_type, method, parallel_environment, charge, spinmult, coordinates = inp.wordgrab(
+            ['! MULLIKEN'] * 3 + [r'%pal'] + [r'xyzfile'] * 3,
+            [2, 3, 4, 2, 1, 2, 3], last_line=True)
 
-        charge,spinmult = int(charge),int(spinmult)
+        charge, spinmult = int(charge), int(spinmult)
         if run_type == 'opt':
             run_type = 'minimize'
 
-        levelshift,solvent,metal_basis = inp.wordgrab([r'%scf',r'%cpcm',r'%basis'],[0]*3,
-                                           matching_index=True,last_line=True)
+        levelshift, solvent, metal_basis = inp.wordgrab([r'%scf', r'%cpcm', r'%basis'], [0] * 3,
+                                                        matching_index=True, last_line=True)
 
         if levelshift:
-            levelshift = inp.lines[levelshift+1]
+            levelshift = inp.lines[levelshift + 1]
             levelshift = levelshift.split()
             levelshift = levelshift[2]
         if solvent:
-            solvent = inp.lines[solvent+1]
+            solvent = inp.lines[solvent + 1]
             solvent = solvent.split()
             solvent = solvent[1]
         if metal_basis:
-            metal_basis = inp.lines[metal_basis+1]
+            metal_basis = inp.lines[metal_basis + 1]
             metal_basis = metal_basis.split()
             metal_basis = metal_basis[2]
             metal_basis = metal_basis[1:-1]
 
-        levelshifta,levelshiftb = levelshift,levelshift
-        if ligand_basis == '6-31G*' and metal_basis =='LANL2DZ':
+        levelshifta, levelshiftb = levelshift, levelshift
+        if ligand_basis == '6-31G*' and metal_basis == 'LANL2DZ':
             basis = 'lacvps_ecp'
         else:
-            raise Exception('read_infile() is unable to parse this basis set/ecp combo: '+ligand_basis+' '+metal_basis)
+            raise Exception(
+                'read_infile() is unable to parse this basis set/ecp combo: ' + ligand_basis + ' ' + metal_basis)
 
-        #The following settings should not appear in a orca infile because they are not specified in the write_input() functionality for orca
-        hfx,convergence_thresholds,multibasis,dispersion,guess,constraints = None,None,None,None,None,None
+        # The following settings should not appear in a orca infile because they are not specified in the write_input() functionality for orca
+        hfx, convergence_thresholds, multibasis, dispersion, guess, constraints = None, None, None, None, None, None
 
     return_dict = {}
 
@@ -331,7 +337,7 @@ def read_configure(home_directory, outfile_path):
 
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
-    ss_cutoff,hard_job_limit = False,False
+    ss_cutoff, hard_job_limit = False, False
     for configure in [home_configure, local_configure]:
         for line in home_configure:
             if 'max_jobs' in line.split(':'):
@@ -386,7 +392,7 @@ def read_configure(home_directory, outfile_path):
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
             'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
             'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
-            'ss_cutoff': ss_cutoff, 'hard_job_limit':hard_job_limit}
+            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit}
 
 
 def read_charges(PATH):
@@ -413,9 +419,9 @@ def read_mullpop(PATH):
 
     mullpop = textfile(PATH)
     ### If multiple frames in mullpop, grab last frame
-    total_lines = mullpop.wordgrab(['------------ ---------- ----------'],[1],matching_index=True)[0]
+    total_lines = mullpop.wordgrab(['------------ ---------- ----------'], [1], matching_index=True)[0]
     if len(total_lines) > 1:
-        mullpop.lines = mullpop.lines[total_lines[-2]+2:]
+        mullpop.lines = mullpop.lines[total_lines[-2] + 2:]
 
     split_lines = [i.split() for i in mullpop.lines]
     if len(split_lines[2]) == 6:
@@ -442,10 +448,12 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     # If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
     for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates,
-                                guess, custom_line, qm_code, parallel_environment, name, precision, dftgrid, dynamicgrid],
-                               ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method','hfx',
+                                guess, custom_line, qm_code, parallel_environment, name, precision, dftgrid,
+                                dynamicgrid],
+                               ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
+                                'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
-                                'coordinates','guess', 'custom_line', 'qm_code', 'parallel_environment','name',
+                                'coordinates', 'guess', 'custom_line', 'qm_code', 'parallel_environment', 'name',
                                 'precision', 'dftgrid', 'dynamicgrid']):
         if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
@@ -468,7 +476,8 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     elif infile['qm_code'] == 'orca':
         write_orca_input(infile)
     else:
-        raise Exception('QM code: '+infile['qm_code']+' not recognized!')
+        raise Exception('QM code: ' + infile['qm_code'] + ' not recognized!')
+
 
 def write_terachem_input(infile_dictionary):
     infile = infile_dictionary
@@ -554,33 +563,35 @@ def write_terachem_input(infile_dictionary):
         input_file.write(lines)
     input_file.close()
 
+
 def write_orca_input(infile_dictionary):
     infile = infile_dictionary
 
-    #The orca input writting isn't as smart as the Terachem input writting
-    #Ensure that the orca input isn't passed a keyword that it doesn't know how to handle yet
+    # The orca input writting isn't as smart as the Terachem input writting
+    # Ensure that the orca input isn't passed a keyword that it doesn't know how to handle yet
     if str(infile['levelshifta']) != str(infile['levelshiftb']):
-        raise Exception('ORCA input does not support 2 different levelshift values for openshell systems! '+str(infile['levelshifta'])+' '+str(infile['levelshiftb']))
-    for element in ['constraints','dispersion','hfx','multibasis','convergence_thresholds','guess']:
+        raise Exception('ORCA input does not support 2 different levelshift values for openshell systems! ' + str(
+            infile['levelshifta']) + ' ' + str(infile['levelshiftb']))
+    for element in ['constraints', 'dispersion', 'hfx', 'multibasis', 'convergence_thresholds', 'guess']:
         if element in infile.keys():
             if infile[element]:
-                raise Exception('Keyword ('+element+') not yet implemented for orca in the job manager')
+                raise Exception('Keyword (' + element + ') not yet implemented for orca in the job manager')
 
-    #ORCA requires explicit definition of the ECP and non-ecp basis
+    # ORCA requires explicit definition of the ECP and non-ecp basis
     if infile['basis'] == 'lacvps_ecp':
         ligand_basis = '6-31G*'
         metal_basis = 'LANL2DZ'
     else:
-        raise Exception(infile['basis']+'not implemented in the job manager for use with orca!')
+        raise Exception(infile['basis'] + 'not implemented in the job manager for use with orca!')
 
-    #Determine the atoms which need to have an effective core potential added
-    metals = ['Sc','Ti','V', 'Cr','Mn','Fe','Co','Ni','Cu','Zn',
-              'Y', 'Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd']
+    # Determine the atoms which need to have an effective core potential added
+    metals = ['Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
+              'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd']
     metal_basis_line = ''
     for metal in metals:
-        metal_basis_line += ('  NewGTO '+metal+' "'+metal_basis+'" end\n')
+        metal_basis_line += ('  NewGTO ' + metal + ' "' + metal_basis + '" end\n')
 
-    #Convert the keywords for run_type from terachem to orca
+    # Convert the keywords for run_type from terachem to orca
     if infile['run_type'] == 'minimize':
         infile['run_type'] = 'opt'
 
@@ -589,30 +600,31 @@ def write_orca_input(infile_dictionary):
     if not infile['name']:
         infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
 
-    #Last bit of infile dictionary prep
+    # Last bit of infile dictionary prep
     if infile['name']:
         infile['coordinates'] = infile['name'] + '.xyz'
     if not infile['name']:
         infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
 
-
     input_file = open(infile['name'] + '.in', 'w')
-    #Note that max core is set to 2000MB, this is 2/3 of the amount allocated in the jobscript (on a per processor basis)
-    #The SCF is known (according to the ORCA manual) to exceed allotted memory, so this provides some wiggle room
+    # Note that max core is set to 2000MB, this is 2/3 of the amount allocated in the jobscript (on a per processor basis)
+    # The SCF is known (according to the ORCA manual) to exceed allotted memory, so this provides some wiggle room
     if not infile['solvent']:
-        first_line = r'! MULLIKEN '+ligand_basis+' '+infile['run_type']+' '+infile['method']+' printbasis\n'
+        first_line = r'! MULLIKEN ' + ligand_basis + ' ' + infile['run_type'] + ' ' + infile['method'] + ' printbasis\n'
     else:
-        first_line = r'! MULLIKEN '+ligand_basis+' '+infile['run_type']+' '+infile['method']+' CPCM printbasis\n'
+        first_line = r'! MULLIKEN ' + ligand_basis + ' ' + infile['run_type'] + ' ' + infile[
+            'method'] + ' CPCM printbasis\n'
     text = ['#ORCA input\n',
             first_line,
-            r'%'+'maxcore 2000\n',
-            r'%'+'pal nprocs '+str(infile['parallel_environment'])+' end\n',
-            r'*'+'xyzfile '+str(infile['charge'])+' '+str(infile['spinmult'])+' '+infile['name']+'.xyz\n\n',
-            r'%'+'scf\n  Shift Shift '+str(infile['levelshifta'])+' ErrOff 0.1 end\nend\n\n',
-            r'%'+'basis\n'+metal_basis_line+'end\n\n']
+            r'%' + 'maxcore 2000\n',
+            r'%' + 'pal nprocs ' + str(infile['parallel_environment']) + ' end\n',
+            r'*' + 'xyzfile ' + str(infile['charge']) + ' ' + str(infile['spinmult']) + ' ' + infile[
+                'name'] + '.xyz\n\n',
+            r'%' + 'scf\n  Shift Shift ' + str(infile['levelshifta']) + ' ErrOff 0.1 end\nend\n\n',
+            r'%' + 'basis\n' + metal_basis_line + 'end\n\n']
 
     if infile['solvent']:
-        text += [r'%'+'cpcm\n  epsilon '+str(infile['solvent'])+'\nend\n\n']
+        text += [r'%' + 'cpcm\n  epsilon ' + str(infile['solvent']) + '\nend\n\n']
     if infile['custom_line']:
         text = text + [infile['custom_line'] + '\n']
 
@@ -628,9 +640,11 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit)
     elif qm_code == 'orca':
-        write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit, parallel_environment=parallel_environment)
+        write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
+                             parallel_environment=parallel_environment)
     else:
-        raise Exception('QM code: '+qm_code+' not recognized for jobscript writing!')
+        raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
+
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
     jobscript = open(name + '_jobscript', 'w')
@@ -650,7 +664,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n']
     if terachem_line:
-            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:
@@ -662,20 +676,22 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
         jobscript.write(i)
     jobscript.close()
 
-def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel_environment=4):
-    #Write a generic orca jobscript
 
-    memory_allocation = str(int(parallel_environment)*3) #allocate memory based on 192 GB for 64 processors on the new cpu nodes
+def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel_environment=4):
+    # Write a generic orca jobscript
+
+    memory_allocation = str(
+        int(parallel_environment) * 3)  # allocate memory based on 192 GB for 64 processors on the new cpu nodes
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
             '#$ -N ' + name + '\n',
             '#$ -cwd\n',
             '#$ -R y\n',
             '#$ -l h_rt=' + time_limit + '\n',
-            '#$ -l h_rss='+memory_allocation+'G\n',
+            '#$ -l h_rss=' + memory_allocation + 'G\n',
             '#$ -q cpus\n',
             '#$ -l cpus=1\n',
-            '#$ -pe smp '+str(parallel_environment)+'\n',
+            '#$ -pe smp ' + str(parallel_environment) + '\n',
             '# -fin ' + name + '.in\n',
             '# -fin ' + name + '.xyz\n\n',
             'source /etc/profile.d/modules.sh\n',
@@ -683,13 +699,13 @@ def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel
             'module module load orca\n',
             'export PATH=/home2/harperd/software/openmpi/bin:$PATH\n',
             'export LD_LIBRARY_PATH=/home2/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
-            '/opt/orca/orca_4_1_2_linux_x86-64_openmpi313/orca '+name+'.in  > $SGE_O_WORKDIR/'+name+'.out\n\n',
+            '/opt/orca/orca_4_1_2_linux_x86-64_openmpi313/orca ' + name + '.in  > $SGE_O_WORKDIR/' + name + '.out\n\n',
             'mkdir $SGE_O_WORKDIR/scr\n',
-            'cp '+name+'.trj $SGE_O_WORKDIR/scr/optim.xyz\n',
-            'cp '+name+'.gbw $SGE_O_WORKDIR/scr/\n',
-            'cp '+name+'.prop $SGE_O_WORKDIR/scr/\n',
-            'cp '+name+'.opt $SGE_O_WORKDIR/scr/\n',
-            'cp '+name+'_property.txt $SGE_O_WORKDIR/scr/\n']
+            'cp ' + name + '.trj $SGE_O_WORKDIR/scr/optim.xyz\n',
+            'cp ' + name + '.gbw $SGE_O_WORKDIR/scr/\n',
+            'cp ' + name + '.prop $SGE_O_WORKDIR/scr/\n',
+            'cp ' + name + '.opt $SGE_O_WORKDIR/scr/\n',
+            'cp ' + name + '_property.txt $SGE_O_WORKDIR/scr/\n']
 
     if custom_line:
         if type(custom_line) == list:
@@ -704,6 +720,7 @@ def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel
 
 def get_scf_progress(outfile):
     flag = False
+    flag_linecheck = False
     with open(outfile, 'r') as fo:
         start = False
         for line in fo:
@@ -719,11 +736,20 @@ def get_scf_progress(outfile):
                 flag = is_oscalite(energy_this_scf)
                 if flag:
                     break
-    return flag
+    with open(outfile, 'r') as fo:
+        for line in fo:
+            if "WARNING: Final energy is higher than the lowest energy by" in line:
+                e = float(line.split()[-1].strip("."))
+                if e > 1:
+                    flag_linecheck = True
+    return (flag and flag_linecheck)
 
 
 def is_oscalite(energy_this_scf):
     flag = False
-    if np.std(energy_this_scf) > 1:
-        flag = True
+    try:
+        if np.std(energy_this_scf) > 1:
+            flag = True
+    except:
+        pass
     return flag
