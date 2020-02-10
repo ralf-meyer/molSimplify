@@ -292,9 +292,15 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
 
     priority_list = [active_jobs,chronic_errors,waiting,thermo_grad_errors,
+<<<<<<< HEAD
+                     scf_errors,errors,spin_contaminated,needs_resub,finished]
+    priority_list_names = ['Active','Chronic_errors','Waiting','Thermo_grad_error',
+                           'SCF_Error','Error','Spin_contaminated','Needs_resub','Finished']
+=======
                      oscillating_scf_errors, scf_errors,errors,spin_contaminated,needs_resub,finished]
     priority_list_names = ['active_jobs','chronic_errors','waiting','thermo_grad_errors',
                            'oscillating_scf_errors', 'scf_errors', 'errors','spin_contaminated','needs_resub','finished']
+>>>>>>> 664056c45d2a57697232ee17ce69671556c18ba2
     priority_list = priority_sort(priority_list)
 
     results = dict()

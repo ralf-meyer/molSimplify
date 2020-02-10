@@ -1238,6 +1238,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 #### the connections for the tridentate ligands. Assigning this atom as the opposite monodentate.
                 #### If not planar, considering the plane with the bidentate to be equatorial.
                 opposite_monodentate = [tridentate_cons[np.argmax(np.array(angle_list))]]
+                tridentate_cons.remove(tridentate_cons[np.argmax(np.array(angle_list))])
             else: # Planar
                 planar = True
                 coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
