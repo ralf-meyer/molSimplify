@@ -148,8 +148,8 @@ def apply_geo_check(job_outfile_path,geometry):
         else:
             raise Exception('A check has not been implemented for geometry: '+geoemtry)
     else:
-        print('No geomery check requested for job: '+job_outfile_path)
-        print('Passing job without a geometry check')
+        #print('No geomery check requested for job: '+job_outfile_path)
+        #print('Passing job without a geometry check')
         return True
         
 def get_metal_and_bonded_atoms(job_outfile,geometry = None):

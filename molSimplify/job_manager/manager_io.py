@@ -86,7 +86,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 ['S-SQUARED:', 'S-SQUARED:', 'Maximum component of gradient is too large'],
                 [2, 4, 0], last_line=True)
 
-        oscillating_scf = get_scf_progress(outfile)
+        oscillating_scf = get_scf_progress(outfile_path)
         if oscillating_scf:
             oscillating_scf_error = True
         else:
@@ -504,10 +504,10 @@ def write_terachem_input(infile_dictionary):
             'basis ' + infile['basis'] + '\n',
             'timings yes\n',
             'charge ' + str(infile['charge']) + '\n',
-            'method ' + infile['method'] + '\n',
-            'precision ' + infile['precision'] + '\n',
-            'dftgrid ' + infile['dftgrid'] + '\n',
-            'dynamicgrid ' + infile['dynamicgrid'] + '\n',
+            'method ' + str(infile['method']) + '\n',
+            'precision ' + str(infile['precision']) + '\n',
+            'dftgrid ' + str(infile['dftgrid']) + '\n',
+            'dynamicgrid ' + str(infile['dynamicgrid']) + '\n',
             'new_minimizer yes\n',
             'ml_prop yes\n',
             'poptype mulliken\n',
