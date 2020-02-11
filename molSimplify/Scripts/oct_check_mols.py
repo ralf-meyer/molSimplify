@@ -4,6 +4,7 @@ import os
 import time
 import re
 import sys
+import copy
 import numpy as np
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Classes.ligand import *
@@ -61,6 +62,12 @@ def readfromtxt(mol, txt):
     return mol
 
 
+def find_nearest_ind(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
+
+
 # description: select the closest elements in input_arr compared
 # to the target array. Is used to screen atoms that
 # might construct an octehedral structure. Used to select
@@ -68,24 +75,26 @@ def readfromtxt(mol, txt):
 # input: two array of float. dim(input_arr) >= dim(target_arr)
 # output: output_arr that is most similar to target_arr after filtering,
 # summation for the difference for output_arr and target_arr
-def comp_two_angle_array(input_angle, target_angle):
-    _i = input_angle[1][:]
+def comp_two_angle_array(input_angle, target_angle, catoms_map, picked):
+    _angs = input_angle[1][:]
+    angs = copy.copy(_angs)
     # print('target_angle', input_angle, target_angle)
     del_act = []
-    output_angle = []
+    output_angle, output_ind = [], []
     for idx, ele in enumerate(target_angle):
         del_arr = []
-        for _idx, _ele in enumerate(_i):
+        for _idx, _ele in enumerate(_angs):
             del_arr.append([abs(ele - _ele), _idx, _ele])
         del_arr.sort()
         posi = del_arr[0][1]
-        _i.pop(posi)
+        _angs.pop(posi)
         # print('!!!input_a:', input_angle[1])
         del_act.append(del_arr[0][0])
         output_angle.append(del_arr[0][2])
+    output_ind = [find_nearest_ind(angs, x) for x in output_angle]
     max_del_angle = max(del_act)
     sum_del = sum(del_act) / len(target_angle)
-    return output_angle, sum_del, max_del_angle
+    return output_angle, output_ind, sum_del, max_del_angle
 
 
 # description: Given the target_angle, choose the input_angle that has
@@ -95,20 +104,25 @@ def comp_two_angle_array(input_angle, target_angle):
 # output:      output_angle: the input_angle that has the smallest deviation compared
 # to target_arr. del_angle: the deviation. catoms: the connecting antom for
 # the output_angle.
-def comp_angle_pick_one_best(input_arr, target_angle):
+def comp_angle_pick_one_best(input_arr, target_angle, catoms_map, picked):
     del_arr = []
-    # print("input_arr", len(input_arr))
+    picked_inds = [catoms_map[x] for x in picked]
+    # print("picked: ", picked, picked_inds)
+    # print("input_arr", input_arr, len(input_arr))
     for ii, input_angle in enumerate(input_arr):
-        out_angle, sum_del, max_del_angle = comp_two_angle_array(
-            input_angle, target_angle)
-        del_arr.append([sum_del, ii, max_del_angle, out_angle])
+        out_angle, output_ind, sum_del, max_del_angle = comp_two_angle_array(
+            input_angle, target_angle, catoms_map, picked)
+        del_arr.append([sum_del, ii, max_del_angle, out_angle, output_ind])
     del_arr.sort()
     # print("del_arr", del_arr)
-    posi = del_arr[0][1]
-    del_angle = del_arr[0][0]
+    for idx, _arr in enumerate(del_arr):
+        if set(picked_inds).issubset(set(_arr[-1])):
+            break
+    posi = del_arr[idx][1]
+    del_angle = del_arr[idx][0]
     output_angle = input_arr[posi][1]
     catoms = input_arr[posi][0]
-    max_del_sig_angle = del_arr[0][2]
+    max_del_sig_angle = del_arr[idx][2]
     # print('!!!!posi', input_arr[posi])
     # print('!!!!out:', del_angle, del_arr[0][3])
     input_arr.pop(posi)
@@ -117,14 +131,16 @@ def comp_angle_pick_one_best(input_arr, target_angle):
 
 # description: Loop the target_angle in target_arr.
 # output: three lists corresponding to the outputs of comp_angle_pick_one_best.
-def loop_target_angle_arr(input_arr, target_arr):
+def loop_target_angle_arr(input_arr, target_arr, catoms_map):
     output_arr = []
     sum_del = []
     catoms_arr = []
     max_del_sig_angle_arr = []
     for idx, ele in enumerate(target_arr):
         output_angle, del_angle, catoms, max_del_sig_angle = comp_angle_pick_one_best(
-            input_arr, ele)
+            input_arr, ele, catoms_map, picked=catoms_arr)
+        # print("catoms: ", catoms)
+        # print("max_del_sig_angle: ", max_del_sig_angle)
         output_arr.append(output_angle)
         sum_del.append(del_angle)
         catoms_arr.append(catoms)
@@ -272,7 +288,7 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
         # _elapsed = (time.clock() - _start)
         # print('time on lig_breakdoen:', _elapsed)
         liglist, ligdents, ligcons = liglist_init[:
-                                                  ], ligdents_init[:], ligcons_init[:]
+                                     ], ligdents_init[:], ligcons_init[:]
         liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
                         for ele in liglist]
         liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
@@ -331,9 +347,9 @@ def is_linear_ligand(mol, ind):
         elif len(_catoms) == 2:
             ind_next2 = find_the_other_ind(_catoms[:], ind)
             vec1 = np.array(mol.getAtomCoords(ind)) - \
-                np.array(mol.getAtomCoords(ind_next))
+                   np.array(mol.getAtomCoords(ind_next))
             vec2 = np.array(mol.getAtomCoords(ind_next2)) - \
-                np.array(mol.getAtomCoords(ind_next))
+                   np.array(mol.getAtomCoords(ind_next))
             ang = vecangle(vec1, vec2)
             if ang > 170:
                 flag = True
@@ -508,7 +524,7 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
         quit()
     num_coord_metal = 6
     oct_angle_devi, oct_dist_del, max_del_sig_angle = [
-        -1, -1], [-1, -1, -1, -1], -1
+                                                          -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if not file_init_geo == None:
@@ -576,7 +592,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
         num_coord_metal = len(catoms_arr)
 
     oct_angle_devi, oct_dist_del, max_del_sig_angle = [
-        -1, -1], [-1, -1, -1, -1], -1
+                                                          -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     catoms_arr = catoms
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
@@ -623,7 +639,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
     num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
 
     struct_angle_devi, struct_dist_del, max_del_sig_angle = [
-        -1, -1], [-1, -1, -1, -1], -1
+                                                                -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if num_coord_metal >= num_coord:
@@ -670,7 +686,7 @@ def loop_structure(_path, path_init_geo):
         for name in sorted(files):
             if name.split('.')[1] == 'xyz':
                 unique_num, oxstate, spinmult = name.split('_')[0], name.split('_')[
-                    4][1:], name.split('_')[5][2:]
+                                                                        4][1:], name.split('_')[5][2:]
                 print((unique_num, oxstate, spinmult))
                 file_in = '%s/%s' % (dirpath, name)
                 # ---You may add the function to find initial geo here.

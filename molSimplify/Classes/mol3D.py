@@ -2210,7 +2210,9 @@ class mol3D:
             coord = self.getAtomCoords(atom)
             catom_coord.append(coord)
         th_input_arr = []
+        catoms_map = {}
         for idx1, coord1 in enumerate(catom_coord):
+            catoms_map.update({self.catoms[idx1]: idx1}) # {atom_ind_in_mol: ind_in_angle_list}
             delr1 = (np.array(coord1) - np.array(metal_coord)).tolist()
             theta_tmp = []
             for idx2, coord2 in enumerate(catom_coord):
@@ -2218,13 +2220,16 @@ class mol3D:
                     delr2 = (np.array(coord2) - np.array(metal_coord)).tolist()
                     theta = vecangle(delr1, delr2)
                     theta_tmp.append(theta)
+                else:
+                    theta_tmp.append(-1)
             th_input_arr.append([self.catoms[idx1], theta_tmp])
         # This will help pick out 6 catoms that forms the closest shape compared to the desired structure.
         # When we have the customized catoms_arr, it will not change anything.
         # print("!!!th_input_arr", th_input_arr, len(th_input_arr))
+        # print("!!!catoms_map: ", catoms_map)
         if True:
             th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
-                th_input_arr, angle_ref)
+                th_input_arr, angle_ref, catoms_map)
         # except IndexError:
         #     th_output_arr = angle_ref
         #     sum_del_angle = [180 for ii in range(len(angle_ref))]
@@ -3020,6 +3025,7 @@ class mol3D:
             print(("chargefile does not exist.", chargefile))
 
     def get_symmetry_denticity(self):
+        self.writexyz("test.xyz")
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
         liglist, ligdents, ligcons = ligand_breakdown(self)
         try:
@@ -3037,9 +3043,9 @@ class mol3D:
         if assigned:
             metal_ind = self.findMetal()[0]
             n_eq_syms = len(list(set([self.getAtom(x).sym for x in flat_eq_ligcons])))
-            flat_eq_dists = [np.round(self.getDistToMetal(x,metal_ind),6) for x in flat_eq_ligcons]
-            minmax_eq_plane=max(flat_eq_dists)-min(flat_eq_dists)
-            if (n_eq_syms < 2) and (minmax_eq_plane < 0.2): # Match eq plane symbols and eq plane dists
+            flat_eq_dists = [np.round(self.getDistToMetal(x, metal_ind), 6) for x in flat_eq_ligcons]
+            minmax_eq_plane = max(flat_eq_dists) - min(flat_eq_dists)
+            if (n_eq_syms < 2) and (minmax_eq_plane < 0.2):  # Match eq plane symbols and eq plane dists
                 eqsym = True
             else:
                 eqsym = False
