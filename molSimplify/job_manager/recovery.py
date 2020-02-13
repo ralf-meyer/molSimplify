@@ -6,6 +6,7 @@ import numpy as np
 import molSimplify.job_manager.tools as tools
 import molSimplify.job_manager.moltools as moltools
 from molSimplify.job_manager.classes import resub_history
+import molSimplify.job_manager.manager_io as manager_io
 
 
 def load_history(PATH):
@@ -210,7 +211,7 @@ def clean_resub(outfile_path):
     root = outfile_path.rsplit('.', 1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
-    infile_dict = tools.read_infile(outfile_path)
+    infile_dict = manager_io.read_infile(outfile_path)
 
     home = os.getcwd()
     if len(directory) > 0:  # if the string is blank, then we're already in the correct directory
@@ -223,7 +224,7 @@ def clean_resub(outfile_path):
     else:
         raise ValueError('No coordinates idenfied for clean in resubmission in directory ' + os.getcwd())
 
-    configure_dict = tools.read_configure('in_place', outfile_path)
+    configure_dict = manager_io.read_configure('in_place', outfile_path)
 
     infile_dict['coordinates'] = coordinates
     infile_dict['method'] = configure_dict['method']
@@ -233,12 +234,12 @@ def clean_resub(outfile_path):
 
     if infile_dict['spinmult'] == 1:
         infile_dict['guess'] = 'inscr/c0'
-        tools.write_input(infile_dict)
+        manager_io.write_input(infile_dict)
     else:
         infile_dict['guess'] = 'inscr/ca0 inscr/cb0'
-        tools.write_input(infile_dict)
+        manager_io.write_input(infile_dict)
 
-    tools.write_jobscript(name, custom_line='# -fin inscr/')
+    manager_io.write_jobscript(name, custom_line='# -fin inscr/')
     os.chdir(home)
     tools.qsub(root + '_jobscript')
     return True
@@ -278,16 +279,16 @@ def resub_spin(outfile_path):
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        infile_dict = tools.read_infile(outfile_path)
+        infile_dict = manager_io.read_infile(outfile_path)
 
         home = os.getcwd()
         if len(directory) > 0:  # if the string is blank, then we're already in the correct directory
             os.chdir(directory)
 
         infile_dict['method'] = 'blyp'
-        tools.write_input(infile_dict)
+        manager_io.write_input(infile_dict)
 
-        tools.write_jobscript(name)
+        manager_io.write_jobscript(name)
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
@@ -325,15 +326,15 @@ def resub_scf(outfile_path):
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        infile_dict = tools.read_infile(outfile_path)
+        infile_dict = manager_io.read_infile(outfile_path)
 
         home = os.getcwd()
         if len(directory) > 0:  # if the string is blank, then we're already in the correct directory
             os.chdir(directory)
         infile_dict['levelshifta'], infile_dict['levelshiftb'] = 1.0, 0.1
-        tools.write_input(infile_dict)
+        manager_io.write_input(infile_dict)
 
-        tools.write_jobscript(name)
+        manager_io.write_jobscript(name)
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
@@ -371,15 +372,15 @@ def resub_oscillating_scf(outfile_path):
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        infile_dict = tools.read_infile(outfile_path)
+        infile_dict = manager_io.read_infile(outfile_path)
 
         home = os.getcwd()
         if len(directory) > 0:  # if the string is blank, then we're already in the correct directory
             os.chdir(directory)
         infile_dict['precision'], infile_dict['dftgrid'], infile_dict['dynamicgrid'] = "double", 5, "no"
-        tools.write_input(infile_dict)
+        manager_io.write_input(infile_dict)
 
-        tools.write_jobscript(name)
+        manager_io.write_jobscript(name)
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
@@ -416,13 +417,13 @@ def resub_bad_geo(outfile_path, home_directory):
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
-        infile_dict = tools.read_infile(outfile_path)
+        infile_dict = manager_io.read_infile(outfile_path)
 
         if infile_dict['constraints']:
             raise Exception(
                 'resub.py does not currently support the use of external atom constraints. These will be overwritten by clean_resub() during job recovery')
 
-        goal_geo = tools.read_configure(home_directory, outfile_path)['geo_check']
+        goal_geo = manager_io.read_configure(home_directory, outfile_path)['geo_check']
         if not goal_geo:
             raise Exception(
                 'Goal geometry not specified, job ' + outfile_path + ' should not have been labelled bad geo!')
@@ -439,9 +440,9 @@ def resub_bad_geo(outfile_path, home_directory):
             os.chdir(directory)
 
         infile_dict['constraints'] = constraints
-        tools.write_input(infile_dict)
+        manager_io.write_input(infile_dict)
 
-        tools.write_jobscript(name)
+        manager_io.write_jobscript(name)
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
@@ -507,7 +508,7 @@ def resub_thermo(outfile_path):
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
     ultratight_dir = os.path.join(parent_directory, parent_name + '_ultratight')
 
-    infile_dict = tools.read_infile(outfile_path)
+    infile_dict = manager_io.read_infile(outfile_path)
 
     if os.path.exists(ultratight_dir):
         if os.path.exists(os.path.join(ultratight_dir, 'scr', 'optim.xyz')):

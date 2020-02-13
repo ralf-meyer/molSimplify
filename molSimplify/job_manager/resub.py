@@ -30,7 +30,7 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
 
 def prep_derivative_jobs(directory, list_of_outfiles):
     for job in list_of_outfiles:
-        configure_dict = tools.manager_io.read_configure(directory, job)
+        configure_dict = manager_io.read_configure(directory, job)
 
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job, configure_dict['solvent'])
@@ -51,7 +51,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
 def resub(directory='in place'):
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
 
-    configure_dict = tools.manager_io.read_configure(directory, None)
+    configure_dict = manager_io.read_configure(directory, None)
 
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
@@ -101,7 +101,7 @@ def resub(directory='in place'):
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = tools.manager_io.read_configure(directory, None)
+        local_configure = manager_io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_oscillating_scf(error)
             if resub_tmp:
@@ -115,7 +115,7 @@ def resub(directory='in place'):
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = tools.manager_io.read_configure(directory, None)
+        local_configure = manager_io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_scf(error)
             if resub_tmp:
@@ -129,7 +129,7 @@ def resub(directory='in place'):
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = tools.manager_io.read_configure(directory, None)
+        local_configure = manager_io.read_configure(directory, None)
         if 'bad_geo' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_bad_geo(error, directory)
             if resub_tmp:
@@ -143,7 +143,7 @@ def resub(directory='in place'):
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = tools.manager_io.read_configure(directory, None)
+        local_configure = manager_io.read_configure(directory, None)
         if 'spin_contaminated' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_spin(error)
             if resub_tmp:
@@ -168,7 +168,7 @@ def resub(directory='in place'):
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = tools.manager_io.read_configure(directory, None)
+        local_configure = manager_io.read_configure(directory, None)
         if 'thermo_grad_error' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_tighter(error)
             if resub_tmp:
@@ -191,7 +191,7 @@ def resub(directory='in place'):
             history = recovery.load_history(job)
             history.waiting = None
             history.save()
-            results_for_this_job = tools.manager_io.read_outfile(job)
+            results_for_this_job = manager_io.read_outfile(job)
             if results_for_this_job['thermo_grad_error']:
                 resubmitted.append(recovery.resub_thermo(job))
             else:
@@ -252,7 +252,7 @@ def main():
         print('**********************************')
 
         print(('job cycle took: ' + str(time.time() - time1)))
-        configure_dict = tools.manager_io.read_configure('in place', None)
+        configure_dict = manager_io.read_configure('in place', None)
         print(('sleeping for: ' + str(configure_dict['sleep'])))
         sys.stdout.flush()
         time.sleep(configure_dict[
