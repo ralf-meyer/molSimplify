@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-
+#import warnings
+#warnings.simplefilter('error', RuntimeWarning)
 import os
 import glob
 import numpy as np
