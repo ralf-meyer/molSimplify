@@ -20,31 +20,33 @@ def check_valid_outfile(path):
     # The nohup.out file gets caught in the find statement
     # use this function so that we only get TeraChem.outs
     endpath = os.path.split(path)[-1]
-    if 'nohup.out' in endpath or endpath.startswith('.'):
+    if 'nohup.out' in endpath or endpath.startswith('.') or any("_v%d." % x in endpath for x in range(10)):
         return False
     else:
         return True
+
 
 def priority_sort(lst_of_lsts):
     # Takes a list of lists
     # This function ensures that each entry occurs in only one list
     # If an entry occurs in multiple lists, it is retained in the list which appears first in the list of lists
 
-    lst_of_lsts.reverse() #reverse the list so low priority occurs first
+    lst_of_lsts.reverse()  # reverse the list so low priority occurs first
 
     new_lst_of_lsts = []
     for counter in range(len(lst_of_lsts)):
         local_lst = lst_of_lsts[counter]
-        higher_priority_lists = lst_of_lsts[counter+1:]
+        higher_priority_lists = lst_of_lsts[counter + 1:]
 
         for high_priority in higher_priority_lists:
-            local_lst = list(set(local_lst)-set(high_priority))
+            local_lst = list(set(local_lst) - set(high_priority))
 
         new_lst_of_lsts.append(local_lst)
 
-    new_lst_of_lsts.reverse() #undo the original reversal
+    new_lst_of_lsts.reverse()  # undo the original reversal
 
     return new_lst_of_lsts
+
 
 # def invert_dictionary(dictionary):
 #     new_dict = dict()
@@ -114,14 +116,14 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
             raise Exception('An error has occurred in listing active jobs!')
         return names, job_ids
 
-    if parse_bundles and os.path.isfile(os.path.join(home_directory,'bundle','bundle_id')):
+    if parse_bundles and os.path.isfile(os.path.join(home_directory, 'bundle', 'bundle_id')):
 
-        fil = open(os.path.join(home_directory,'bundle','bundle_id'),'r')
+        fil = open(os.path.join(home_directory, 'bundle', 'bundle_id'), 'r')
         identifier = fil.readlines()[0]
         fil.close()
 
         bundles = [i for i in names if i.startswith('bundle_')]
-        bundles = [i.rsplit('_',1)[0] for i in names if i.endswith(identifier)]
+        bundles = [i.rsplit('_', 1)[0] for i in names if i.endswith(identifier)]
         names = [i for i in names if i not in bundles]
 
         for bundle in bundles:
@@ -134,11 +136,13 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     return names
 
+
 def get_number_active():
-    #gets the number of jobs in the queue for this user, only counts jobs from this job directory
+    # gets the number of jobs in the queue for this user, only counts jobs from this job directory
     active_jobs = list_active_jobs()
+
     def check_active(path, active_jobs=active_jobs):
-    # Given a path, checks if it's in the queue currently:
+        # Given a path, checks if it's in the queue currently:
         name = os.path.split(path)[-1]
         name = name.rsplit('.', 1)[0]
         if name in active_jobs:
@@ -147,12 +151,12 @@ def get_number_active():
             return False
 
     outfiles = find('*.out')
-    outfiles = filter(check_valid_outfile,outfiles)
+    outfiles = filter(check_valid_outfile, outfiles)
 
     active_non_bundles = [i for i in outfiles if check_active(i)]
 
     if os.path.isdir('bundle'):
-        fil = open(os.path.join('bundle','bundle_id'))
+        fil = open(os.path.join('bundle', 'bundle_id'))
         identifier = fil.readlines()[0]
         if identifier.endswith('\n'):
             identifier = identifier[:-1]
@@ -160,20 +164,22 @@ def get_number_active():
 
         active_bundles = [i for i in active_jobs if i.startswith('bundle_')]
         active_bundles = [i for i in active_jobs if i.endswith(identifier)]
-        active_jobs = active_bundles+active_non_bundles
+        active_jobs = active_bundles + active_non_bundles
 
         return len(active_jobs)
     else:
         return len(active_non_bundles)
 
+
 def get_total_queue_usage():
-    #gets the number of jobs in the queue for this user, regardless of where they originate
+    # gets the number of jobs in the queue for this user, regardless of where they originate
     username = call_bash('whoami')[0]
 
-    jobs = call_bash("qstat -u '"+username+"'",version=2)
+    jobs = call_bash("qstat -u '" + username + "'", version=2)
     jobs = [i for i in jobs if username in i.split()]
 
     return len(jobs)
+
 
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
@@ -185,8 +191,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     results_dict = dict()
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
+        # print(outfile, tmp['oscillating_scf_error'])
 
-    active_jobs = list_active_jobs(home_directory=directory,parse_bundles=True)
+    active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
 
     def check_finished(path, results_dict=results_dict):
         # Return True if the outfile corresponds to a complete job, False otherwise
@@ -275,11 +282,12 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     waiting = list(filter(check_waiting, outfiles))
     spin_contaminated = list(filter(check_spin_contaminated, outfiles))
     all_scf_errors = list(filter(check_scf_error, outfiles))
+    oscillating_scf_errors = list(filter(check_oscillating_scf_error, outfiles))
     thermo_grad_errors = list(filter(check_thermo_grad_error, outfiles))
     chronic_errors = list(filter(check_chronic_failure, outfiles))
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     scf_errors = list(filter(check_scf_error, errors))
-    oscillating_scf_errors = list(filter(check_oscillating_scf_error, errors))
+    print("oscillating_scf_errors: ", oscillating_scf_errors)
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
@@ -291,14 +299,15 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # A job only gets labelled as finished if it's in no other category
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
 
-    priority_list = [active_jobs,chronic_errors,waiting,thermo_grad_errors,
-                     oscillating_scf_errors,scf_errors,errors,spin_contaminated,needs_resub,finished]
-    priority_list_names = ['Active','Chronic_errors','Waiting','Thermo_grad_error',
-                           'oscillating_scf_errors', 'SCF_Error','Error','Spin_contaminated','Needs_resub','Finished']
+    priority_list = [active_jobs, chronic_errors, waiting, thermo_grad_errors,
+                     oscillating_scf_errors, scf_errors, errors, spin_contaminated, needs_resub, finished]
+    priority_list_names = ['Active', 'Chronic_errors', 'Waiting', 'Thermo_grad_error',
+                           'oscillating_scf_errors', 'SCF_Error', 'Error', 'Spin_contaminated', 'Needs_resub',
+                           'Finished']
     priority_list = priority_sort(priority_list)
 
     results = dict()
-    for key,lst in zip(priority_list_names,priority_list):
+    for key, lst in zip(priority_list_names, priority_list):
         results[key] = lst
 
     # There are two special categories which operate a bit differently: waiting and "SCF_Errors_Including_Active"
@@ -434,9 +443,9 @@ def pull_optimized_geos(PATHs=[]):
 
         shutil.move(os.path.join(os.path.split(Path)[0], 'optimized.xyz'), os.path.join(home, 'optimized_geos', name))
 
-def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 10):
 
-    number_of_bundles = int(float(len(jobscript_paths))/float(max_bundle_size))
+def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=10):
+    number_of_bundles = int(float(len(jobscript_paths)) / float(max_bundle_size))
 
     bundles, i, many_bundles = [], 0, False
     for i in range(number_of_bundles):
@@ -445,11 +454,12 @@ def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 10):
     if many_bundles:
         total_length = [len(ii) for ii in bundles]
         total_length = np.sum(np.array(total_length))
-        if total_length != len(jobscript_paths): #Triggers when the number of jobscripts is not divisable by the bundle size
+        if total_length != len(
+                jobscript_paths):  # Triggers when the number of jobscripts is not divisable by the bundle size
             bundles.append(jobscript_paths[max_bundle_size * (i + 1):])
-    else: #Triggers when there are fewere jobscripts than the bundle size
+    else:  # Triggers when there are fewere jobscripts than the bundle size
         bundles = [jobscript_paths]
-    print('Bundling '+str(len(jobscript_paths))+' short jobs into '+str(len(bundles))+' jobscript(s)')
+    print('Bundling ' + str(len(jobscript_paths)) + ' short jobs into ' + str(len(bundles)) + ' jobscript(s)')
 
     output_jobscripts = []
     for bundle in bundles:
@@ -458,19 +468,17 @@ def bundle_jobscripts(home_directory,jobscript_paths,max_bundle_size = 10):
     return output_jobscripts
 
 
-
-def sub_bundle_jobscripts(home_directory,jobscript_paths):
-    #Takes a list of jobscript paths, and bundles them into a single jobscript
-    #Records information about which jobs were bundled together in the run's home directory
-    if not os.path.isdir(os.path.join(home_directory,'bundle')):
-        os.mkdir(os.path.join(home_directory,'bundle'))
-        fil = open(os.path.join(home_directory,'bundle','bundle_id'),'w')
+def sub_bundle_jobscripts(home_directory, jobscript_paths):
+    # Takes a list of jobscript paths, and bundles them into a single jobscript
+    # Records information about which jobs were bundled together in the run's home directory
+    if not os.path.isdir(os.path.join(home_directory, 'bundle')):
+        os.mkdir(os.path.join(home_directory, 'bundle'))
+        fil = open(os.path.join(home_directory, 'bundle', 'bundle_id'), 'w')
         fil.write(str(np.random.randint(100000000000)))
         fil.close()
-    fil = open(os.path.join(home_directory,'bundle','bundle_id'),'r')
+    fil = open(os.path.join(home_directory, 'bundle', 'bundle_id'), 'r')
     identifier = fil.readlines()[0]
     fil.close()
-
 
     jobscript_paths = [convert_to_absolute_path(i) for i in jobscript_paths]
 
@@ -494,10 +502,12 @@ def sub_bundle_jobscripts(home_directory,jobscript_paths):
 
     # Write a jobscript for the job bundle
     home = os.getcwd()
-    os.chdir(os.path.join(home_directory,'bundle','bundle_'+str(max(existing_bundle_numbers)+1)))
-    manager_io.write_terachem_jobscript(str('bundle_'+str(max(existing_bundle_numbers)+1))+'_'+identifier,terachem_line=False,time_limit='12:00:00')
-    shutil.move('bundle_'+str(max(existing_bundle_numbers)+1)+'_'+identifier+'_jobscript','bundle_'+str(max(existing_bundle_numbers)+1))
-    fil = open('bundle_'+str(max(existing_bundle_numbers)+1),'a')
+    os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
+    manager_io.write_terachem_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)) + '_' + identifier,
+                                        terachem_line=False, time_limit='12:00:00')
+    shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_' + identifier + '_jobscript',
+                'bundle_' + str(max(existing_bundle_numbers) + 1))
+    fil = open('bundle_' + str(max(existing_bundle_numbers) + 1), 'a')
     for i in jobscript_paths:
         infile = i.rsplit('_', 1)[0] + '.in'
         outfile = i.rsplit('_', 1)[0] + '.out'
@@ -643,14 +653,19 @@ def prep_solvent_sp(path, solvents=[78.9]):
     # Now, start generating the new directory
     solname = results['name'] + '_solvent'
     solvent_base_path = os.path.join(base, solname)
+    # print(solvent_base_path)
     if os.path.isdir(solvent_base_path):
-        return ['Directory for solvent single point already exists']
-    os.mkdir(solvent_base_path)
+        # print('Directory for solvent single point already exists')
+        pass
+    else:
+        os.mkdir(solvent_base_path)
     os.chdir(solvent_base_path)
 
     jobscripts = []
     for sol_val in solvents:
         PATH = os.path.join(solvent_base_path, str(sol_val).replace('.', '_'))
+        if os.path.isdir(PATH):
+            continue
         ensure_dir(PATH)
         name = results['name'] + "_solvent_" + str(sol_val)
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
@@ -677,6 +692,7 @@ def prep_solvent_sp(path, solvents=[78.9]):
         manager_io.write_input(local_infile_dict)
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
+    os.chdir(home)
     return jobscripts
 
 
@@ -696,13 +712,17 @@ def prep_functionals_sp(path, functionalsSP):
     funcname = results['name'] + '_functionalsSP'
     functional_base_path = os.path.join(base, funcname)
     if os.path.isdir(functional_base_path):
-        return ['Directory for functional single point already exists']
-    os.mkdir(functional_base_path)
+        # print('Directory for functional single point already exists')
+        pass
+    else:
+        os.mkdir(functional_base_path)
     os.chdir(functional_base_path)
 
     jobscripts = []
     for func in functionalsSP:
         PATH = os.path.join(functional_base_path, str(func))
+        if os.path.isdir(PATH):
+            continue
         ensure_dir(PATH)
         name = results['name'] + "_functional_" + str(func)
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
@@ -728,11 +748,12 @@ def prep_functionals_sp(path, functionalsSP):
         local_infile_dict['method'] = func
 
         manager_io.write_input(local_infile_dict)
-        fil = open('configure','w')
-        fil.write('method:'+func)
+        fil = open('configure', 'w')
+        fil.write('method:' + func)
         fil.close()
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
+    os.chdir(home)
     return jobscripts
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#import warnings
-#warnings.simplefilter('error', RuntimeWarning)
+# import warnings
+# warnings.simplefilter('error', RuntimeWarning)
 import os
 import glob
 import numpy as np
@@ -32,7 +32,6 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
 def prep_derivative_jobs(directory, list_of_outfiles):
     for job in list_of_outfiles:
         configure_dict = manager_io.read_configure(directory, job)
-
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job, configure_dict['solvent'])
         if configure_dict['functionalsSP']:
@@ -57,13 +56,16 @@ def resub(directory='in place'):
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
     hard_job_limit = configure_dict['hard_job_limit']
-    hit_queue_limit = False #Describes if this run has limitted the number of jobs submitted to work well with the queue
+    hit_queue_limit = False  # Describes if this run has limitted the number of jobs submitted to work well with the queue
 
     # Get the state of all jobs being managed by this instance of the job manager
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
+    # print(completeness)
     errors = completeness['Error']  # These are calculations which failed to complete
-    scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
-    oscillating_scf_errors = completeness['oscillating_scf_errors']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
+    scf_errors = completeness[
+        'SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
+    oscillating_scf_errors = completeness[
+        'oscillating_scf_errors']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
     need_resub = completeness['Needs_resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
     active = completeness['Active']  # These are jobs which are currently running
@@ -72,10 +74,11 @@ def resub(directory='in place'):
         'Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
-    nactive = tools.get_number_active() #number of active jobs, counting bundled jobs as a single job
+    nactive = tools.get_number_active()  # number of active jobs, counting bundled jobs as a single job
 
     # Kill SCF errors in progress, which are wasting computational resources
-    all_scf_errors = completeness['SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
+    all_scf_errors = completeness[
+        'SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
     scf_errors_to_kill = [scf_err for scf_err in all_scf_errors if scf_err not in scf_errors]
     names_to_kill = [os.path.split(scf_err)[-1].rsplit('.', 1)[0] for scf_err in scf_errors_to_kill]
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
@@ -88,7 +91,8 @@ def resub(directory='in place'):
 
     # Resub unidentified errors
     for error in errors:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         resub_tmp = recovery.simple_resub(error)
@@ -99,8 +103,10 @@ def resub(directory='in place'):
 
     # Resub oscillating_scf convergence errors
     for error in oscillating_scf_errors:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
+            print("Max resubbed or NA")
             continue
         local_configure = manager_io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
@@ -113,7 +119,8 @@ def resub(directory='in place'):
 
     # Resub scf convergence errors
     for error in scf_errors:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = manager_io.read_configure(directory, None)
@@ -127,7 +134,8 @@ def resub(directory='in place'):
 
     # Resub jobs which converged to bad geometries with additional constraints
     for error in bad_geos:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = manager_io.read_configure(directory, None)
@@ -141,7 +149,8 @@ def resub(directory='in place'):
 
     # Resub spin contaminated cases
     for error in spin_contaminated:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = manager_io.read_configure(directory, None)
@@ -155,7 +164,8 @@ def resub(directory='in place'):
 
     # Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         resub_tmp = recovery.clean_resub(error)
@@ -166,7 +176,8 @@ def resub(directory='in place'):
 
     # Create a job with a tighter convergence threshold for failed thermo jobs
     for error in thermo_grad_error:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = manager_io.read_configure(directory, None)
@@ -181,7 +192,8 @@ def resub(directory='in place'):
     # Look at jobs in "waiting," resume them if the job they were waiting for is finished
     # Currently, this should only ever be thermo jobs waiting for an ultratight job
     for waiting_dict in waiting:
-        if ((nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+        if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
         if len(list(waiting_dict.keys())) > 1:
@@ -201,10 +213,11 @@ def resub(directory='in place'):
             resubmitted.append(False)
 
     # Submit jobs which haven't yet been submitted
-    if not ((nactive+np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+    if not ((nactive + np.sum(resubmitted)) >= max_jobs) or (
+            (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
         to_submit = []
         jobscripts = tools.find('*_jobscript')
-        active_jobs = tools.list_active_jobs(home_directory=directory,parse_bundles=True)
+        active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
         for job in jobscripts:
             if not os.path.isfile(job.rsplit('_', 1)[0] + '.out') and not os.path.split(job.rsplit('_', 1)[0])[
                                                                               -1] in active_jobs:
@@ -213,14 +226,15 @@ def resub(directory='in place'):
         short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
         long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
         if len(short_jobs_to_submit) > 0:
-            bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(),short_jobs_to_submit)
+            bundled_jobscripts = tools.bundle_jobscripts(os.getcwd(), short_jobs_to_submit)
         else:
             bundled_jobscripts = []
         to_submit = bundled_jobscripts + long_jobs_to_submit
 
         submitted = []
         for job in to_submit:
-            if ((len(submitted) + nactive + np.sum(resubmitted)) >= max_jobs) or ((tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)) >= hard_job_limit):
+            if ((len(submitted) + nactive + np.sum(resubmitted)) >= max_jobs) or (
+                    (tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)) >= hard_job_limit):
                 hit_queue_limit = True
                 continue
             print(('Initial sumbission for job: ' + os.path.split(job)[-1]))
