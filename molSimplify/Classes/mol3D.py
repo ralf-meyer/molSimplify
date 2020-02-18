@@ -2212,7 +2212,7 @@ class mol3D:
         th_input_arr = []
         catoms_map = {}
         for idx1, coord1 in enumerate(catom_coord):
-            catoms_map.update({self.catoms[idx1]: idx1}) # {atom_ind_in_mol: ind_in_angle_list}
+            catoms_map.update({self.catoms[idx1]: idx1})  # {atom_ind_in_mol: ind_in_angle_list}
             delr1 = (np.array(coord1) - np.array(metal_coord)).tolist()
             theta_tmp = []
             for idx2, coord2 in enumerate(catom_coord):
@@ -3025,13 +3025,16 @@ class mol3D:
             print(("chargefile does not exist.", chargefile))
 
     def get_symmetry_denticity(self):
-        self.writexyz("test.xyz")
+        # self.writexyz("test.xyz")
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
         liglist, ligdents, ligcons = ligand_breakdown(self)
         try:
             _, _, _, _, _, _, _, eq_con_list, _ = ligand_assign_consistent(self, liglist, ligdents, ligcons)
-            flat_eq_ligcons = [x for sublist in eq_con_list for x in sublist]
-            assigned = True
+            if len(eq_con_list):
+                flat_eq_ligcons = [x for sublist in eq_con_list for x in sublist]
+                assigned = True
+            else:
+                assigned = False
         except:
             assigned = False
         if ligdents:
@@ -3053,4 +3056,7 @@ class mol3D:
             for lig in liglist[1:]:
                 if not connectivity_match(liglist[0], lig, self, self):
                     homoleptic = False
+        else:
+            homoleptic = False
         return eqsym, maxdent, ligdents, homoleptic
+
