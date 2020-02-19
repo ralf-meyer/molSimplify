@@ -107,6 +107,8 @@ def resub(directory='in place'):
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             print("Max resubbed or NA")
+            # print(nactive + np.sum(resubmitted), max_jobs)
+            # print(tools.get_total_queue_usage() + np.sum(resubmitted), hard_job_limit)
             continue
         local_configure = manager_io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
@@ -215,6 +217,7 @@ def resub(directory='in place'):
     # Submit jobs which haven't yet been submitted
     if not ((nactive + np.sum(resubmitted)) >= max_jobs) or (
             (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+    # if True:
         to_submit = []
         jobscripts = tools.find('*_jobscript')
         active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)

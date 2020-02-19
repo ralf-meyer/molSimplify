@@ -496,7 +496,7 @@ def write_terachem_input(infile_dictionary):
             'nbo yes\n',
             'run ' + infile['run_type'] + '\n',
             'scf diis+a\n',
-            'coordinates ' + infile['coordinates'] + '\n',
+            'coordinates ' + infile['coordinates'].replace("#", "3") + '\n',
             'levelshift yes\n',
             'gpus 1\n',
             'spinmult ' + str(infile['spinmult']) + '\n',
@@ -647,9 +647,13 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
+    name_tmp = name.replace("#", "3")
+    if not name_tmp == name:
+        shutil.copy("%s.in" % name, "%s.in" % name_tmp)
+        shutil.copy("%s.xyz" % name, "%s.xyz" % name_tmp)
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
-            '#$ -N ' + name + '\n',
+            '#$ -N ' + name_tmp + '\n',
             '#$ -cwd\n',
             '#$ -R y\n',
             '#$ -l h_rt=' + time_limit + '\n',
@@ -657,14 +661,15 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             '#$ -q gpus|gpusnew|gpusnewer\n',
             '#$ -l gpus=1\n',
             '#$ -pe smp 1\n',
-            '# -fin ' + name + '.in\n',
-            '# -fin ' + name + '.xyz\n',
+            "# -fin " + "%s.in\n" % name_tmp,
+            "# -fin " + "%s.xyz\n" % name_tmp,
             '# -fout scr/\n',
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
-            'export OMP_NUM_THREADS=1\n']
+            'export OMP_NUM_THREADS=1\n'
+            ]
     if terachem_line:
-        text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        text += ['terachem ' + name_tmp + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:
