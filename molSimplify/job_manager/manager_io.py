@@ -85,7 +85,6 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
             s_squared, s_squared_ideal, thermo_grad_error = output.wordgrab(
                 ['S-SQUARED:', 'S-SQUARED:', 'Maximum component of gradient is too large'],
                 [2, 4, 0], last_line=True)
-
         oscillating_scf = get_scf_progress(outfile_path)
         if oscillating_scf:
             oscillating_scf_error = True
@@ -737,8 +736,7 @@ def get_scf_progress(outfile):
                 energy_this_scf.append(float(ll[-2]))
             if "FINAL ENERGY:" in line and start:
                 start = False
-                # print(energy_this_scf)
-                flag = is_oscalite(energy_this_scf)
+                flag = is_oscillate(energy_this_scf)
                 if flag:
                     break
     with open(outfile, 'r') as fo:
@@ -750,11 +748,8 @@ def get_scf_progress(outfile):
     return (flag and flag_linecheck)
 
 
-def is_oscalite(energy_this_scf):
-    flag = False
-    try:
+def is_oscillate(energy_this_scf):
+    if len(energy_this_scf) > 1:
         if np.std(energy_this_scf) > 1:
-            flag = True
-    except:
-        pass
-    return flag
+            return True
+    return False

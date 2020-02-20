@@ -176,12 +176,10 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # print("completeness: ", completeness)
     # The check_completeness() function in tools doesn't check the geometries (because it's molSimplify dependent)
     # Apply the check here to finished and spin contaminated geometries, then update the completeness dictionary
-
     finished = completeness['Finished']
     spin_contaminated = completeness['Spin_contaminated']
     needs_resub = completeness['Needs_resub']
     unfinished = completeness['Error']
-
     bad_geos = []
     new_finished = []
     new_spin_contaminated = []

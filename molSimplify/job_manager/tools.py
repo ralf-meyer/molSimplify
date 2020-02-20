@@ -287,7 +287,6 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     chronic_errors = list(filter(check_chronic_failure, outfiles))
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     scf_errors = list(filter(check_scf_error, errors))
-    print("oscillating_scf_errors: ", oscillating_scf_errors)
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)

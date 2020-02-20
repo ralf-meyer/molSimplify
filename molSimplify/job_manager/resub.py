@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# import warnings
-# warnings.simplefilter('error', RuntimeWarning)
 import os
 import glob
 import numpy as np
@@ -50,14 +48,11 @@ def prep_derivative_jobs(directory, list_of_outfiles):
 
 def resub(directory='in place'):
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
-
     configure_dict = manager_io.read_configure(directory, None)
-
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
     hard_job_limit = configure_dict['hard_job_limit']
     hit_queue_limit = False  # Describes if this run has limitted the number of jobs submitted to work well with the queue
-
     # Get the state of all jobs being managed by this instance of the job manager
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     # print(completeness)
@@ -75,14 +70,12 @@ def resub(directory='in place'):
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
     nactive = tools.get_number_active()  # number of active jobs, counting bundled jobs as a single job
-
     # Kill SCF errors in progress, which are wasting computational resources
     all_scf_errors = completeness[
         'SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
     scf_errors_to_kill = [scf_err for scf_err in all_scf_errors if scf_err not in scf_errors]
     names_to_kill = [os.path.split(scf_err)[-1].rsplit('.', 1)[0] for scf_err in scf_errors_to_kill]
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
-
     # Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
     needs_derivative_jobs = list(filter(tools.check_original, finished))
     prep_derivative_jobs(directory, needs_derivative_jobs)
@@ -106,9 +99,6 @@ def resub(directory='in place'):
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
-            print("Max resubbed or NA")
-            # print(nactive + np.sum(resubmitted), max_jobs)
-            # print(tools.get_total_queue_usage() + np.sum(resubmitted), hard_job_limit)
             continue
         local_configure = manager_io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
@@ -217,7 +207,6 @@ def resub(directory='in place'):
     # Submit jobs which haven't yet been submitted
     if not ((nactive + np.sum(resubmitted)) >= max_jobs) or (
             (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
-    # if True:
         to_submit = []
         jobscripts = tools.find('*_jobscript')
         active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
