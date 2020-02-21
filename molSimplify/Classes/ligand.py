@@ -1786,8 +1786,8 @@ def get_lig_symmetry(mol,loud=False):
         else:
             outstring = 'Error2211'
     elif max_dent == 2 and len(ligdents) == 5:
-        # 21111, 2|11|t11, 2|11|c11, 2|111|m1, 2|111|f1
-        # 2|1111|
+        # 21111, 2|11|t11, 2|11|c11t, 2|11|c11c , 2|111|m1, 2|111|f1
+        # 2|1111|, 2|11|c|11|t, 2|11|c|11|c
         if liglist[np.argmax(ligdents)] == ax_ligand_list[0].index_list:
             outstring = '2t1111'
         elif n_unique_ligs == 5:
@@ -1796,12 +1796,23 @@ def get_lig_symmetry(mol,loud=False):
             if compare_ligs(ax_ligand_list): # trans
                 outstring = '2|11|t11'
             else:
-                outstring = '2|11|c11'
+                if compare_ligs(eq_ligand_list): # trans different monodentates
+                    outstring = '2|11|c11t'
+                else:
+                    outstring = '2|11|c11c'
         elif n_unique_ligs == 3:
-            if compare_ligs(ax_ligand_list): # mer
-                outstring = '2|111|m1'
+            if max(unique_counts) == 3:
+                if compare_ligs(ax_ligand_list): # mer
+                    outstring = '2|111|m1'
+                else:
+                    outstring = '2|111|f1'
+            elif max(unique_counts) == 2:
+                if compare_ligs(ax_ligand_list): # trans
+                    outstring = '2|11|c|11|t'
+                else:
+                    outstring = '2|11|c|11|c'
             else:
-                outstring = '2|111|f1'
+                outsrting = 'Error21111'
         elif n_unique_ligs == 2:
             outstring = '2|1111|'
         else:
@@ -1824,7 +1835,7 @@ def get_lig_symmetry(mol,loud=False):
             else:
                 outstring = 'Error|11|1111'
         elif n_unique_ligs == 4:
-            # |11|c|11|t11, |11|c|11|c11, |11|t|11|t11, 
+            # |11|c|11|t11, |11|c|11|c11t, |11|c|11|c11c, |11|t|11|t11, 
             # |111|f/m111
             if max(unique_counts) == 3: # fac/mer
                 mer = False
@@ -1845,7 +1856,18 @@ def get_lig_symmetry(mol,loud=False):
                 elif trans_count == 1:
                     outstring = '|11|c|11|t11'
                 elif trans_count == 0:
-                    outstring = '|11|c|11|c11'
+                    planes = [eq_ligand_list,[eq_ligand_list[0]]+[eq_ligand_list[2]]+ax_ligand_list,
+                              [eq_ligand_list[1]]+[eq_ligand_list[3]]+ax_ligand_list]
+                    plane_counts = 0
+                    for plane in planes:
+                        if compare_ligs(plane):
+                            plane_counts += 1
+                    if plane_counts == 1:
+                        outstring = '|11|c|11|c11t'
+                    elif plane_counts == 2:
+                        outstring = '|11|c|11|c11c'
+                    else:
+                        outstring = 'Error|11|c|11|c11'
                 else:
                     outstring = 'Error|11||11|11'
             else:
