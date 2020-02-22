@@ -1964,6 +1964,36 @@ class mol3D:
                     break
         return overlap, mind
 
+    def sanitycheckCSD(self,oct=True,angle1=67.5,angle2=135):
+        """
+        Check that the molecule passes basic angle tests in line with CSD pulls
+        input: oct (bool: if octahedral test)
+        input: angle1 (low angle cutoff)
+        input: angle2 (high angle cutoff)
+        output: sane (bool: if sane octahedral molecule)
+        """
+        metalind = self.findMetal()[0]
+        metalcons = self.getBondedAtoms(metalind)
+        sane = True
+        if len(metalcons) != 6 and oct:
+            sane = False
+        else:
+            metal_coord = self.getAtomCoords(metalind)
+            metalcons_coords = [self.getAtomCoords(i) for i in metalcons]
+            for idx1, coord1 in enumerate(metalcons_coords):
+                delr1 = (np.array(coord1) - np.array(metal_coord)).tolist()
+                theta_tmp = []
+                for idx2, coord2 in enumerate(metalcons_coords):
+                    if idx2 != idx1:
+                        delr2 = (np.array(coord2) - np.array(metal_coord)).tolist()
+                        theta = vecangle(delr1, delr2)
+                        theta_tmp.append(theta)
+                count1 = len(np.where(np.array(theta_tmp)>angle1)[0])
+                count2 = len(np.where(np.array(theta_tmp)>angle2)[0])
+                if count1 < 5 or count2 != 1:
+                    sane = False
+        return sane
+
     # Translate all atoms by given vector.
     #  @param self The object pointer
     #  @param dxyz Translation vector
