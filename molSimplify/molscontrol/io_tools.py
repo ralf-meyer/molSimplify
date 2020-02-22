@@ -96,7 +96,7 @@ def get_geo_metrics(init_mol, job_info, geofile, frame=-1):
     _mol = mol3D()
     _mol.copymol3D(mol_now)
     flag_oct, _, dict_oct_info = _mol.IsOct(init_mol=init_mol)
-    eqsym, maxdent, ligdents, homoleptic = init_mol.get_symmetry_denticity()
+    eqsym, maxdent, ligdents, homoleptic, ligsym = init_mol.get_symmetry_denticity()
     if not maxdent > 1:
         choice = 'mono'
     else:

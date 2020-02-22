@@ -2306,7 +2306,8 @@ class mol3D:
                        flag_lbd=True, debug=False, depth=3,
                        check_whole=False):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
-        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
+        from molSimplify.Classes.ligand import ligand_breakdown#, ligand_assign
+        from molSimplify.Classes.ligand import ligand_assign_consistent as ligand_assign
         flag_match = True
         self.my_mol_trunc = mol3D()
         self.my_mol_trunc.copymol3D(self)
@@ -2702,7 +2703,7 @@ class mol3D:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
                     self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            eqsym, maxdent, ligdents, homoleptic, ligsymmetry = self.get_symmetry_denticity()
             if not maxdent > 1:
                 choice = 'mono'
             else:
@@ -2764,7 +2765,7 @@ class mol3D:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
                     self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            eqsym, maxdent, ligdents, homoleptic, ligsymmetry = self.get_symmetry_denticity()
             if not maxdent > 1:
                 choice = 'mono'
             else:
@@ -2830,7 +2831,7 @@ class mol3D:
                 catoms_arr=catoms_arr)
             if debug:
                 self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            eqsym, maxdent, ligdents, homoleptic, ligsymmetry = self.get_symmetry_denticity()
             if not maxdent > 1:
                 choice = 'mono'
             else:
@@ -2893,7 +2894,7 @@ class mol3D:
                 catoms_arr=catoms_arr)
             if debug:
                 self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic = self.get_symmetry_denticity()
+            eqsym, maxdent, ligdents, homoleptic, ligsymmetry = self.get_symmetry_denticity()
             if not maxdent > 1:
                 choice = 'mono'
             else:
@@ -3024,9 +3025,31 @@ class mol3D:
         else:
             print(("chargefile does not exist.", chargefile))
 
+    def get_mol_graph_det(self,oct=True):
+        globs = globalvars()
+        amassdict = globs.amass()
+        if not len(self.graph):
+            self.createMolecularGraph(oct=oct)
+        tmpgraph = np.copy(self.graph)
+        syms = self.symvect()
+        weights = [amassdict[x][0] for x in syms] 
+        ##### Add hydrogen tolerance???
+        inds = np.nonzero(tmpgraph)
+        for j in range(len(syms)):
+            tmpgraph[j,j] = weights[j]
+        for i,x in enumerate(inds[0]):
+            y = inds[1][i]
+            tmpgraph[x,y] = weights[x]*weights[y]
+        det = np.linalg.det(tmpgraph)
+        if 'e+' in str(det):
+            safedet=str(det).split('e+')[0][0:13]+'e+'+str(det).split('e+')[1]
+        else:
+            safedet=str(det)[0:13]
+        return safedet
+
     def get_symmetry_denticity(self):
         # self.writexyz("test.xyz")
-        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
+        from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent, get_lig_symmetry
         liglist, ligdents, ligcons = ligand_breakdown(self)
         try:
             _, _, _, _, _, _, _, eq_con_list, _ = ligand_assign_consistent(self, liglist, ligdents, ligcons)
@@ -3043,6 +3066,7 @@ class mol3D:
             maxdent = 0
         eqsym = None
         homoleptic = True
+        ligsymmetry = None
         if assigned:
             metal_ind = self.findMetal()[0]
             n_eq_syms = len(list(set([self.getAtom(x).sym for x in flat_eq_ligcons])))
@@ -3052,11 +3076,12 @@ class mol3D:
                 eqsym = True
             else:
                 eqsym = False
+            ligsymmetry = get_lig_symmetry(self)
         if eqsym:
             for lig in liglist[1:]:
                 if not connectivity_match(liglist[0], lig, self, self):
                     homoleptic = False
         else:
             homoleptic = False
-        return eqsym, maxdent, ligdents, homoleptic
+        return eqsym, maxdent, ligdents, homoleptic, ligsymmetry
 
