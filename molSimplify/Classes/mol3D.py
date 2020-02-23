@@ -3070,11 +3070,17 @@ class mol3D:
         for i,x in enumerate(inds[0]):
             y = inds[1][i]
             tmpgraph[x,y] = weights[x]*weights[y]
-        det = np.linalg.det(tmpgraph)
+        with np.errstate(over='raise'):
+            try:
+                det = np.linalg.det(tmpgraph)
+            except:
+                (sign,det) = np.linalg.slogdet(tmpgraph)
+                if sign!=0:
+                    det = sign*det
         if 'e+' in str(det):
-            safedet=str(det).split('e+')[0][0:13]+'e+'+str(det).split('e+')[1]
+            safedet=str(det).split('e+')[0][0:12]+'e+'+str(det).split('e+')[1]
         else:
-            safedet=str(det)[0:13]
+            safedet=str(det)[0:12]
         return safedet
 
     def get_symmetry_denticity(self):
