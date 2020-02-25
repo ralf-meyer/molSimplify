@@ -613,8 +613,14 @@ class mol3D:
     #  @param self The object pointer
     #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
+        self.convert2OBMol()
         for h in sorted(Alist, reverse=True):
-            self.deleteatom(h)
+            self.OBMol.DeleteAtom(self.OBMol.GetAtom(h + 1))
+            self.mass -= self.getAtom(h).mass
+            self.natoms -= 1
+            del (self.atoms[h])
+        self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
+        self.metal = False
 
     # Freezes list of atoms in molecule
     #
