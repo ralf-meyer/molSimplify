@@ -585,7 +585,7 @@ class mol3D:
 
     # Deletes specific atom from molecule
     #
-    #  Also updates mass and number of atoms, and resets the molecular graph.
+    #  Also updates mass and number of atoms, and recreates the molecular graph.
     #  @param self The object pointer
     #  @param atomIdx Index of atom to be deleted
     def deleteatom(self, atomIdx):
@@ -593,7 +593,7 @@ class mol3D:
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
-        self.graph = []
+        self.graph = np.delete(np.delete(self.graph, atomIdx, 0), atomIdx, 1)
         self.metal = False
         del (self.atoms[atomIdx])
 
