@@ -7,7 +7,6 @@ from collections import OrderedDict
 from sklearn.utils.extmath import randomized_svd
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign, ligand_assign_consistent
-from molSimplify.Informatics.RACassemble import assemble_connectivity_from_parts
 from molSimplify.Classes.globalvars import dict_oct_check_st
 
 """

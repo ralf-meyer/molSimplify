@@ -585,7 +585,7 @@ class mol3D:
 
     # Deletes specific atom from molecule
     #
-    #  Also updates mass and number of atoms, and resets the molecular graph.
+    #  Also updates mass and number of atoms, and recreates the molecular graph.
     #  @param self The object pointer
     #  @param atomIdx Index of atom to be deleted
     def deleteatom(self, atomIdx):
@@ -593,7 +593,8 @@ class mol3D:
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
-        self.graph = []
+        if len(self.graph):
+            self.graph = np.delete(np.delete(self.graph, atomIdx, 0), atomIdx, 1)
         self.metal = False
         del (self.atoms[atomIdx])
 
@@ -613,8 +614,15 @@ class mol3D:
     #  @param self The object pointer
     #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
+        self.convert2OBMol()
         for h in sorted(Alist, reverse=True):
-            self.deleteatom(h)
+            self.OBMol.DeleteAtom(self.OBMol.GetAtom(h + 1))
+            self.mass -= self.getAtom(h).mass
+            self.natoms -= 1
+            del (self.atoms[h])
+        if len(self.graph):
+            self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
+        self.metal = False
 
     # Freezes list of atoms in molecule
     #
@@ -632,9 +640,11 @@ class mol3D:
     #  Calls deleteatoms, so ordering of heavy atoms is preserved.
     #  @param self The object pointer
     def deleteHs(self):
+        metalind = self.findMetal()[0]
+        metalcons = self.getBondedAtoms(metalind)
         hlist = []
         for i in range(self.natoms):
-            if self.getAtom(i).sym == 'H':
+            if self.getAtom(i).sym == 'H' and i not in metalcons:
                 hlist.append(i)
         self.deleteatoms(hlist)
 
@@ -2946,9 +2956,13 @@ class mol3D:
 
     def create_mol_with_inds(self, inds):
         molnew = mol3D()
+        inds = sorted(inds)
         for ind in inds:
             atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
             molnew.addAtom(atom)
+        if len(self.graph):
+            delete_inds = [x for x in range(self.natoms) if x not in inds]
+            molnew.graph = np.delete(np.delete(self.graph, delete_inds, 0), delete_inds, 1)
         return molnew
 
     # Writes a psueduo-chemical formula
