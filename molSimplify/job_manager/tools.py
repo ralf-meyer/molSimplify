@@ -1,5 +1,4 @@
-import os
-import glob
+import os,glob,sys
 import copy
 import numpy as np
 import subprocess
@@ -69,6 +68,10 @@ def call_bash(string, error=False, version=1):
     elif version == 2:
         p = subprocess.Popen(string, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
+
+    if sys.version_info > (3,0):
+        out = out.decode('utf-8')
+        err = err.decode('utf-8')
 
     out = out.split('\n')
     if out[-1] == '':
@@ -151,7 +154,7 @@ def get_number_active():
             return False
 
     outfiles = find('*.out')
-    outfiles = filter(check_valid_outfile, outfiles)
+    outfiles = [i for i in outfiles if check_valid_outfile(i)]
 
     active_non_bundles = [i for i in outfiles if check_active(i)]
 
