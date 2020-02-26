@@ -13,7 +13,7 @@
 #  [2] G. Crippen and T. F. Havel, "Distance Geometry and Molecular Conformation", in Chemometrics Research Studies Series, Wiley (1988)
 
 from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.atom3D import atom3D
 import os

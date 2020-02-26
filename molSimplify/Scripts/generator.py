@@ -33,7 +33,7 @@ import inspect
 import argparse
 import openbabel
 from molSimplify.Scripts.rungen import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Scripts.inparse import *
 from molSimplify.Scripts.dbinteract import *
 from molSimplify.Scripts.postproc import *

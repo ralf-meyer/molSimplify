@@ -12,7 +12,7 @@ try:
 except:
     pass
 from molSimplify.Classes.globalvars import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 import os
 import imghdr
 import struct

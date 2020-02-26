@@ -6,7 +6,7 @@
 #  Dpt of Chemical Engineering, MIT
 
 from .structgen import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Scripts.jobgen import *
 from molSimplify.Scripts.qcgen import *
 from molSimplify.Scripts.isomers import generateisomers

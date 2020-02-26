@@ -13,7 +13,7 @@ from numpy import log, arccos, cross, dot, pi
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import *
 from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 import molSimplify.Scripts.structgen ## this is needed for circlular 
                                      ## FF dependence
 ##########################################
