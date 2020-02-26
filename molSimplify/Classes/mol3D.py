@@ -593,7 +593,8 @@ class mol3D:
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
-        self.graph = np.delete(np.delete(self.graph, atomIdx, 0), atomIdx, 1)
+        if len(self.graph):
+            self.graph = np.delete(np.delete(self.graph, atomIdx, 0), atomIdx, 1)
         self.metal = False
         del (self.atoms[atomIdx])
 
@@ -619,7 +620,8 @@ class mol3D:
             self.mass -= self.getAtom(h).mass
             self.natoms -= 1
             del (self.atoms[h])
-        self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
+        if len(self.graph):
+            self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
         self.metal = False
 
     # Freezes list of atoms in molecule
@@ -638,9 +640,11 @@ class mol3D:
     #  Calls deleteatoms, so ordering of heavy atoms is preserved.
     #  @param self The object pointer
     def deleteHs(self):
+        metalind = self.findMetal()[0]
+        metalcons = self.getBondedAtoms(metalind)
         hlist = []
         for i in range(self.natoms):
-            if self.getAtom(i).sym == 'H':
+            if self.getAtom(i).sym == 'H' and i not in metalcons:
                 hlist.append(i)
         self.deleteatoms(hlist)
 
@@ -2952,9 +2956,13 @@ class mol3D:
 
     def create_mol_with_inds(self, inds):
         molnew = mol3D()
+        inds = sorted(inds)
         for ind in inds:
             atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
             molnew.addAtom(atom)
+        if len(self.graph):
+            delete_inds = [x for x in range(self.natoms) if x not in inds]
+            molnew.graph = np.delete(np.delete(self.graph, delete_inds, 0), delete_inds, 1)
         return molnew
 
     # Writes a psueduo-chemical formula
