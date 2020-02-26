@@ -134,6 +134,20 @@ def reset(outfile_path):
             if len(glob.glob(os.path.join(os.path.split(outfile_path)[0], 'scr_' + str(identifier)))) == 0:
                 break  # break when all scr_? files are found.
 
+        # remove all files for derivative jobs spawned based on this job
+        derivative_types = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
+                            'functional']
+        possible = [i for i in glob.glob(os.path.join(os.path.split(outfile_path)[0],'*')) if os.path.isdir(i)]
+        for folder in possible:
+            if os.path.split(outfile_path)[1].rsplit('.',1)[0] in folder:
+                derivative = False
+                for typ in derivative_types:
+                    if typ in folder:
+                        derivative = True
+                if derivative:
+                    shutil.rmtree(folder)
+
+        #rename outfile and jobscript files
         shutil.move(outfile_path, outfile_path[:-4] + '.old')  # rename old out so it isn't found in .out searches
         shutil.move(outfile_path[:-4] + '_jobscript', outfile_path[
                                                       :-4] + '_oldjob')  # rename old jobscript so it isn't thought to be  job that hasn't started yet
