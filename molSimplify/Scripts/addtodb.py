@@ -2,7 +2,7 @@
 #  Adds new molecules to database
 #
 #  Written by Tim Ioannidis for HJK Group
-#  Modified by JP Janet
+#  Modified by JP Janet and Aditya Nandy
 #  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Scripts.geometry import *
@@ -45,7 +45,7 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
     lipath = globs.custom_path + "/Ligands/ligands.dict"
     licores = readdict(lipath)
     ligands_folder = globs.custom_path + "/Ligands/"
-    print(("ligands_folder is : " + str(ligands_folder)))
+    print("ligands_folder is : " + str(ligands_folder))
     # check if ligand exists
     if sminame in list(licores.keys()):
         emsg = 'Ligand '+sminame+' already existing in ligands database.'
@@ -56,7 +56,7 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
         ccats = [_f for _f in re.split(' |,|\t', smicat) if _f]
         # get groups
         groups = [_f for _f in re.split(' |,|\t', smigrps) if _f]
-        grp = 'all '+' '.join(groups)
+        grp = 'build '+' '.join(groups)
         grp += ' '+smictg
         if smicat == '':
             cats = list(range(0, int(smident)))
@@ -66,9 +66,9 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
         css = ' '.join(cs)
         # convert to unicode
         smimol = unicodedata.normalize(
-            'NFKD', smimol).encode('ascii', 'ignore')
+            'NFKD', unicode(smimol)).encode('ascii', 'ignore')
         sminame = unicodedata.normalize(
-            'NFKD', sminame).encode('ascii', 'ignore')
+            'NFKD', unicode(sminame)).encode('ascii', 'ignore')
         if '~' in smimol:
             smimol = smimol.replace('~', os.expanduser('~'))
         # convert ligand from smiles/file
@@ -78,21 +78,21 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
         lig.convert2mol3D()  # convert to mol3D
 
         shortname = sminame
-        print(("smimol is "+str(smimol)))
-        print(("sminame is "+str(sminame)))
+        print("smimol is "+str(smimol))
+        print("sminame is "+str(sminame))
         # sanitize ff options:
         if not ffopt in ["A", "B", "BA"]:
-            print(('warning: incompatible ffopt choice. Options are ' +
-                  str(["A", "B", "BA", "N"])))
+            print('warning: incompatible ffopt choice. Options are ' +
+                  str(["A", "B", "BA", "N"]))
             sys.exit(1)
 
         # new entry for dictionary
         if '.mol' in smimol:
             shutil.copy2(smimol, ligands_folder + sminame+'.mol')
-            snew = sminame+':'+sminame+'.mol,'+shortname+','+css+','+grp+','+ffopt
+            snew = str(sminame)+':'+str(sminame)+'.mol,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
         elif '.xyz' in smimol:
             shutil.copy2(smimol, ligands_folder + sminame+'.xyz')
-            snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
+            snew = str(sminame)+':'+str(sminame)+'.xyz,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
         elif lig.OBMol:
             # write smiles file in Ligands directory
             obConversion = openbabel.OBConversion()
@@ -100,11 +100,11 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
             red = obConversion.Read(lig.OBMol)
             obConversion.WriteFile(lig.OBMol, ligands_folder + sminame+'.smi')
             #lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
-            snew = sminame+':'+sminame+'.smi,'+shortname+','+css+','+grp+','+ffopt
+            snew = str(sminame)+':'+str(sminame)+'.smi,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
         else:
             # write xyz file in Ligands directory
             lig.writexyz(ligands_folder+sminame+'.xyz')  # write xyz file
-            snew = sminame+':'+sminame+'.xyz,'+shortname+','+css+','+grp+','+ffopt
+            snew = str(sminame)+':'+str(sminame)+'.xyz,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
         # update dictionary
 
         f = open(lipath, 'r')
