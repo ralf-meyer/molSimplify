@@ -15,7 +15,7 @@ from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Scripts.generator import startgen
 from molSimplify.Scripts.grabguivars import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Scripts.addtodb import *
 import sys
 import os
