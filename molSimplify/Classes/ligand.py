@@ -18,7 +18,7 @@ class ligand:
     #  @paran dent The denticity of the ligand
     def __init__(self, master_mol, index_list, dent):
         self.master_mol = master_mol
-        self.index_list = sorted(index_list)
+        self.index_list = index_list
         self.dent = dent
         self.ext_int_dict = dict()  # store
 
@@ -40,9 +40,6 @@ class ligand:
             this_ext_int_dict.update({i: j})
             j += 1  # keep count of how many are added
         self.mol = this_mol
-        if len(self.master_mol.graph): # Save graph to ligand mol3D object
-            delete_inds = [x for x in range(self.master_mol.natoms) if x not in self.index_list]
-            self.mol.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
         self.ext_int_dict = this_ext_int_dict
 
 
@@ -84,7 +81,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
                 unique = False
                 matched = i
         if unique:
-            liglist.append(sorted(fragment))
+            liglist.append(fragment)
             ligdents.append(1)
             ligcons.append(this_cons)
         else:
@@ -1771,7 +1768,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         elif n_unique_ligs == 3:
             outstring = '222'
         elif n_unique_ligs == 2:
-            outstring = '|22|2'
+            outstring = '2|22|'
         elif n_unique_ligs == 1:
             outstring='|222|'
         else:
