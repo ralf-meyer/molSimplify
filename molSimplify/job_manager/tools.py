@@ -743,7 +743,7 @@ def prep_functionals_sp(path, functionalsSP):
                 guess = True
 
         local_infile_dict = copy.copy(infile_dict)
-        local_infile_dict['solvent'], local_infile_dict['guess'] = False, guess
+        local_infile_dict['guess'] = guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
