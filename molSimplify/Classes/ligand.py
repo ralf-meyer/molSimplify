@@ -18,7 +18,7 @@ class ligand:
     #  @paran dent The denticity of the ligand
     def __init__(self, master_mol, index_list, dent):
         self.master_mol = master_mol
-        self.index_list = index_list
+        self.index_list = sorted(index_list)
         self.dent = dent
         self.ext_int_dict = dict()  # store
 
@@ -84,7 +84,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
                 unique = False
                 matched = i
         if unique:
-            liglist.append(fragment)
+            liglist.append(sorted(fragment))
             ligdents.append(1)
             ligcons.append(this_cons)
         else:
