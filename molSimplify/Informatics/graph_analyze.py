@@ -45,6 +45,11 @@ def obtain_truncation(mol, con_atoms, hops):
                         added_list.append(bound_atoms)
                     [new_active_set.append(element) for element in this_atoms_neighbors]
             active_set = new_active_set
+    if len(mol.graph):
+        delete_inds = [x for x in range(mol.natoms) if x not in added_list]
+        sort_inds = np.argsort(added_list)
+        trunc_mol.atoms = [trunc_mol.atoms[x] for x in sort_inds]
+        trunc_mol.graph = np.delete(np.delete(mol.graph, delete_inds, 0), delete_inds, 1)
     return trunc_mol
 
 def obtain_truncation_metal(mol, hops):
@@ -77,19 +82,27 @@ def obtain_truncation_metal(mol, hops):
                     added_list.append(bound_atoms)
                 [new_active_set.append(element) for element in this_atoms_neighbors]
         active_set = new_active_set
+    if len(mol.graph):
+        delete_inds = [x for x in range(mol.natoms) if x not in added_list]
+        sort_inds = np.argsort(added_list)
+        trunc_mol.atoms = [trunc_mol.atoms[x] for x in sort_inds]
+        trunc_mol.graph = np.delete(np.delete(mol.graph, delete_inds, 0), delete_inds, 1)
     return trunc_mol
 
 
 
 def create_graph(mol):
-    ## create connectivity matrix from mol3D information
-    index_set = range(0, mol.natoms)
-    A = np.zeros((mol.natoms, mol.natoms))
-    for i in index_set:
-        this_bonded_atoms = mol.getBondedAtomsSmart(i)
-        for j in index_set:
-            if j in this_bonded_atoms:
-                A[i, j] = 1
+    if not len(mol.graph):
+        ## create connectivity matrix from mol3D information
+        index_set = range(0, mol.natoms)
+        A = np.zeros((mol.natoms, mol.natoms))
+        for i in index_set:
+            this_bonded_atoms = mol.getBondedAtomsSmart(i)
+            for j in index_set:
+                if j in this_bonded_atoms:
+                    A[i, j] = 1
+    else:
+        A = mol.graph
     return A
 
 
