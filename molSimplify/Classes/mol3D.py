@@ -2165,13 +2165,13 @@ class mol3D:
             charge_string = 'OBmolTotalCharge'
         ss = '@<TRIPOS>MOLECULE\n{}\n'.format(filename)
         ss += '{}\t{}\t{}\n'.format(self.natoms,int(csg.nnz/2),disjoint_components[0])
-        ss += 'SMALL'
+        ss += 'SMALL\n'
         ss += charge_string + '\n' + '****\n' + 'Generated from molSimplify\n\n'
         ss += '@<TRIPOS>ATOM\n'
         for i,atom in enumerate(self.atoms):
             type_ind = atom_types.index(atom.sym)
             atom_coords = atom.coords()
-            ss += str(i+1) + ' ' + atom.sym+str(atom_type_numbers[type_ind]) + '\t' + \
+            ss += str(i+1) + ' ' + atom.sym+str(int(atom_type_numbers[type_ind])) + '\t' + \
                     '{}  {}  {} '.format(atom_coords[0],atom_coords[1],atom_coords[2]) + \
                     atom.sym + '\t' + atom_groups[i] +' '+atom_group_names[i]+' ' + \
                     str(charges[i]) + '\n'
