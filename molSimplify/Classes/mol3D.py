@@ -2126,6 +2126,80 @@ class mol3D:
         f.write(ss)
         f.close()
 
+    # Write mol2 file from mol3D object
+    # Note: Bond orders all assigned to be 1!!!!!!!!!!!!
+    #
+    # If partial charges are given they are appended
+    # Otherwise the total charge of the complex (either given or OBMol) is 
+    # Assigned to the metal
+    #  @param self The object pointer
+    #  @param filename Filename
+    #  @param writestring Bool to write to a string if True or file if False
+    def writemol2(self, filename, writestring=False):
+        # print('!!!!', filename)
+        from scipy.sparse import csgraph
+        if not len(self.graph):
+            self.createMolecularGraph()
+        csg = csgraph.csgraph_from_dense(self.graph)
+        disjoint_components = csgraph.connected_components(csg)
+        if disjoint_components[0] > 1:
+            atom_group_names = ['RES'+str(x+1) for x in disjoint_components[1]]
+            atom_groups = [str(x+1) for x in disjoint_components[1]]
+        else:
+            atom_group_names = ['RES1']*self.natoms
+            atom_groups = [str(1)]*self.natoms
+        atom_types = list(set(self.symvect()))
+        atom_type_numbers = np.ones(len(atom_types))
+        metal_ind = self.findMetal()[0]
+        if len(self.partialcharges):
+            charges = self.partialcharges
+            charge_string = 'PartialCharges'
+        elif self.charge: # Assign total charge to metal
+            charges = np.zeros(self.natoms)
+            charges[metal_ind] = self.charge
+            charge_string = 'UserTotalCharge'
+        else: # Calc total charge with OBMol, assign to metal
+            self.convert2OBMol()
+            charges = np.zeros(self.natoms)
+            charges[metal_ind] = self.OBMol.GetTotalCharge()
+            charge_string = 'OBmolTotalCharge'
+        ss = '@<TRIPOS>MOLECULE\n{}\n'.format(filename)
+        ss += '{}\t{}\t{}\n'.format(self.natoms,int(csg.nnz/2),disjoint_components[0])
+        ss += 'SMALL'
+        ss += charge_string + '\n' + '****\n' + 'Generated from molSimplify\n\n'
+        ss += '@<TRIPOS>ATOM\n'
+        for i,atom in enumerate(self.atoms):
+            type_ind = atom_types.index(atom.sym)
+            atom_coords = atom.coords()
+            ss += str(i+1) + ' ' + atom.sym+str(atom_type_numbers[type_ind]) + '\t' + \
+                    '{}  {}  {} '.format(atom_coords[0],atom_coords[1],atom_coords[2]) + \
+                    atom.sym + '\t' + atom_groups[i] +' '+atom_group_names[i]+' ' + \
+                    str(charges[i]) + '\n'
+            atom_type_numbers[type_ind] += 1
+        ss += '@<TRIPOS>BOND\n'
+        bonds = csg.nonzero()
+        bond_count = 1
+        for i,b1 in enumerate(bonds[0]):
+            b2 = bonds[1][i]
+            if b2 > b1:
+                ss += str(bond_count)+' '+str(b1+1) + ' '+ str(b2+1) + ' 1\n' # BO == 1!!!!
+                bond_count += 1
+        ss += '@<TRIPOS>SUBSTRUCTURE\n'
+        unique_group_names = np.unique(atom_group_names)
+        for i, name in enumerate(unique_group_names):
+            ss += str(i+1)+' '+name+' '+str(atom_group_names.count(name))+'\n'
+        ss += '\n'
+        if writestring:
+            return ss
+        else:
+            if '.mol2' not in filename:
+                if '.' not in filename:
+                    filename += '.mol2'
+                else:
+                    filename = filename.split('.')[0]+'.mol2'
+            with open(filename,'w') as file1:
+                file1.write(ss)
+
     def closest_H_2_metal(self, delta=0):
         min_dist_H = 3.0
         min_dist_nonH = 3.0
