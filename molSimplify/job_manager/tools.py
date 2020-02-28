@@ -46,22 +46,6 @@ def priority_sort(lst_of_lsts):
 
     return new_lst_of_lsts
 
-
-# def invert_dictionary(dictionary):
-#     new_dict = dict()
-#     for key in list(dictionary.keys()):
-#         if type(dictionary[key]) == list:
-#             for entry in dictionary[key]:
-#                 if entry in list(new_dict.keys()):
-#                     raise Exception('Dictionary inversion failed, values do not serve as unique keys')
-#                 new_dict[entry] = key
-#         else:
-#             if dictionary[key] in list(new_dict.keys()):
-#                 raise Exception('Dictionary inversion failed, values do not serve as unique keys')
-#             new_dict[dictionary[key]] = key
-#     return new_dict
-
-
 def call_bash(string, error=False, version=1):
     if version == 1:
         p = subprocess.Popen(string.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -88,6 +72,16 @@ def convert_to_absolute_path(path):
         path = os.path.join(os.getcwd(), path)
 
     return path
+
+def create_summary(directory='in place'):
+    # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
+
+    outfiles = find('*.out', directory)
+    outfiles = list(filter(check_valid_outfile, outfiles))
+    results = list(map(manager_io.read_outfile, outfiles))
+    summary = pd.DataFrame(results)
+
+    return summary
 
 
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
