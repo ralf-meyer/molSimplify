@@ -1688,6 +1688,7 @@ class mol3D:
                 s = f.read().splitlines()
         read_atoms = False
         read_bonds = False
+        self.charge = 0
         for line in s:
             # Get Atoms First
             if '<TRIPOS>BOND' in line:
@@ -1710,6 +1711,8 @@ class mol3D:
                 else:
                     print('cannot find atom type')
                     sys.exit()
+                self.charge += float(s_line[8])
+                self.partialcharges.append(float(s_line[8]))
                 self.addAtom(atom)
             if '<TRIPOS>ATOM' in line:
                 read_atoms = True
