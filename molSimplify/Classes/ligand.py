@@ -1010,7 +1010,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         ### Consistent with 3+2+1 below by denticity
                         eq_lig_list = eq_points_defined
                         eq_con_list = [ligcons[j] for j in eq_lig_list]
-                        ax_lig_list = [val for i, val in enumerate(allowed) if val not in eq_points]
+                        ax_lig_list = [val for i, val in enumerate(allowed) if val not in eq_points_defined]
                         ax_con_list = [ligcons[j] for j in ax_lig_list]
                 else: # Max mw determines eq plane (2+2+2 different monodentates)
                     eq_lig_list = eq_points_max_mw
