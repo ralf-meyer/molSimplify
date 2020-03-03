@@ -484,7 +484,7 @@ def write_terachem_input(infile_dictionary):
     if infile['spinmult'] != 1:
         infile['method'] = 'u' + infile['method']
 
-    if not infile['coordinates']:
+    if infile['name']:
         infile['coordinates'] = infile['name']+'.xyz'
 
     input_file = open(infile['name'] + '.in', 'w')
