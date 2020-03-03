@@ -4055,6 +4055,6 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
         args.gui.iWtxt.setText('In folder '+pfold+' generated ' +
                                str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
-    print(('\nIn folder '+pfold+' generated ', Nogeom, ' structure(s)!'))
+    print(('\nIn folder '+rootdir+' generated ', Nogeom, ' structure(s)!'))
 
     return strfiles, emsg, this_diag
