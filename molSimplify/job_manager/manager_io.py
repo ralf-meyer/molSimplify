@@ -276,11 +276,11 @@ def read_infile(outfile_path):
 
     return_dict = {}
 
-    for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
+    for prop, prop_name in zip([root,charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates, guess,
                                 qm_code],
-                               ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
-                                'hfx',
+                               ['name','charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
+                                'method', 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'qm_code']):
         return_dict[prop_name] = prop
@@ -461,7 +461,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
             infile[prop_name] = prop
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
-            not infile['name'] and not infile['coordinates']):
+            not infile['name']):
         print(('Name: ' + infile['name']))
         print(('Charge: ' + str(infile['charge'])))
         print(('Spinmult: ' + str(infile['spinmult'])))
@@ -486,9 +486,7 @@ def write_terachem_input(infile_dictionary):
         infile['method'] = 'u' + infile['method']
 
     if infile['name']:
-        infile['coordinates'] = infile['name'] + '.xyz'
-    if not infile['name']:
-        infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
+        infile['coordinates'] = infile['name']+'.xyz'
 
     input_file = open(infile['name'] + '.in', 'w')
     text = ['levelshiftvalb ' + str(infile['levelshiftb']) + '\n',

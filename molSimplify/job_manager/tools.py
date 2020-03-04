@@ -1,5 +1,4 @@
-import os
-import glob
+import os,glob,sys
 import copy
 import numpy as np
 import subprocess
@@ -69,6 +68,10 @@ def call_bash(string, error=False, version=1):
     elif version == 2:
         p = subprocess.Popen(string, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
+
+    if sys.version_info > (3,0):
+        out = out.decode('utf-8')
+        err = err.decode('utf-8')
 
     out = out.split('\n')
     if out[-1] == '':
@@ -151,7 +154,7 @@ def get_number_active():
             return False
 
     outfiles = find('*.out')
-    outfiles = filter(check_valid_outfile, outfiles)
+    outfiles = [i for i in outfiles if check_valid_outfile(i)]
 
     active_non_bundles = [i for i in outfiles if check_active(i)]
 
@@ -538,8 +541,11 @@ def prep_vertical_ip(path):
         new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
 
     base = os.path.split(path)[0]
-
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     ipname = results['name'] + '_vertIP'
@@ -596,7 +602,10 @@ def prep_vertical_ea(path):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     eaname = results['name'] + '_vertEA'
@@ -646,7 +655,10 @@ def prep_solvent_sp(path, solvents=[78.9]):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -703,7 +715,11 @@ def prep_functionals_sp(path, functionalsSP):
 
     infile_dict = manager_io.read_infile(path)
     base = os.path.split(path)[0]
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -766,7 +782,10 @@ def prep_thermo(path):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -811,7 +830,10 @@ def prep_ultratight(path):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -945,7 +967,10 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         else:
             source_dir = os.path.join(hfx_path, lower_hfx)
 
-        optimxyz = os.path.join(source_dir, 'scr', 'optim.xyz')
+        if infile_dict['run_type'] == 'minimize':
+            optimxyz = os.path.join(source_dir, 'scr', 'optim.xyz')
+        else:
+            optimxyz = os.path.join(source_dir, 'scr', 'xyz.xyz')
         extract_optimized_geo(optimxyz)
 
         shutil.copy(os.path.join(source_dir, 'scr', 'optimized.xyz'), subname + '.xyz')

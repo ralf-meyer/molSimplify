@@ -7,7 +7,7 @@
 
 
 from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Classes.globalvars import *
 import os
 import sys
