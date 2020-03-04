@@ -33,6 +33,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
 
     output = textfile(outfile_path)
     output_type = output.wordgrab(['TeraChem', 'ORCA'], ['whole_line', 'whole_line'])
+    # print("output_type: ", output_type)
     for counter, match in enumerate(output_type):
         if match[0]:
             break
@@ -646,13 +647,9 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
-    name_tmp = name.replace("#", "3")
-    if not name_tmp == name:
-        shutil.copy("%s.in" % name, "%s.in" % name_tmp)
-        shutil.copy("%s.xyz" % name, "%s.xyz" % name_tmp)
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
-            '#$ -N ' + name_tmp + '\n',
+            '#$ -N ' + name + '\n',
             '#$ -cwd\n',
             '#$ -R y\n',
             '#$ -l h_rt=' + time_limit + '\n',
@@ -660,15 +657,15 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             '#$ -q gpus|gpusnew|gpusnewer\n',
             '#$ -l gpus=1\n',
             '#$ -pe smp 1\n',
-            "# -fin " + "%s.in\n" % name_tmp,
-            "# -fin " + "%s.xyz\n" % name_tmp,
+            "# -fin " + "%s.in\n" % name,
+            "# -fin " + "%s.xyz\n" % name,
             '# -fout scr/\n',
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n'
             ]
     if terachem_line:
-        text += ['terachem ' + name_tmp + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:

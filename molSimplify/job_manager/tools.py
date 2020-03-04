@@ -681,14 +681,13 @@ def prep_solvent_sp(path, solvents=[78.9]):
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
                 manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
                 guess = True
-
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['solvent'], local_infile_dict['guess'] = sol_val, guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
-
         manager_io.write_input(local_infile_dict)
+
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
@@ -738,15 +737,14 @@ def prep_functionals_sp(path, functionalsSP):
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
                 manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
                 guess = True
-
         local_infile_dict = copy.copy(infile_dict)
-        local_infile_dict['solvent'], local_infile_dict['guess'] = False, guess
+        local_infile_dict['guess'] = guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
         local_infile_dict['method'] = func
-
         manager_io.write_input(local_infile_dict)
+
         fil = open('configure', 'w')
         fil.write('method:' + func)
         fil.close()
@@ -781,6 +779,11 @@ def prep_thermo(path):
     os.chdir(PATH)
 
     shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+    local_infile_dict = copy.copy(infile_dict)
+    local_infile_dict['guess'] = True
+    local_infile_dict['run_type'] = 'frequencies'
+    local_infile_dict['name'] = name
+    manager_io.write_input(local_infile_dict)
     if infile_dict['spinmult'] == 1:
         shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
         manager_io.write_jobscript(name, custom_line='# -fin c0')
@@ -789,15 +792,7 @@ def prep_thermo(path):
         shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
         manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
 
-    local_infile_dict = copy.copy(infile_dict)
-    local_infile_dict['guess'] = True
-    local_infile_dict['run_type'] = 'frequencies'
-    local_infile_dict['name'] = name
-
-    manager_io.write_input(local_infile_dict)
-
     os.chdir(home)
-
     return [os.path.join(PATH, name + '_jobscript')]
 
 
