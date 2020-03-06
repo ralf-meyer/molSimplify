@@ -589,6 +589,10 @@ class mol3D:
     #  @param self The object pointer
     #  @param atomIdx Index of atom to be deleted
     def deleteatom(self, atomIdx):
+        if atomIdx < 0:
+            atomIdx = self.natoms + atomIdx
+        if atomIdx >= self.natoms:
+            raise Exception('mol3D object cannot delete atom '+str(atomIdx)+' because it only has '+str(self.natoms)+' atoms!')
         self.convert2OBMol()
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
