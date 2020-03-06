@@ -618,9 +618,13 @@ class mol3D:
     #  @param self The object pointer
     #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
+        for i in Alist:
+            if i > self.natoms:
+                raise Exception('mol3D object cannot delete atom '+str(i)+' because it only has '+str(self.natoms)+' atoms!')
+        Alist = [self.natoms+i if i<0 else i for i in Alist] #convert negative indexes to positive indexes
         self.convert2OBMol()
         for h in sorted(Alist, reverse=True):
-            self.OBMol.DeleteAtom(self.OBMol.GetAtom(h + 1))
+            self.OBMol.DeleteAtom(self.OBMol.GetAtom(int(h) + 1))
             self.mass -= self.getAtom(h).mass
             self.natoms -= 1
             del (self.atoms[h])
