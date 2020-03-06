@@ -338,8 +338,9 @@ def read_configure(home_directory, outfile_path):
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
     ss_cutoff, hard_job_limit = False, False
+    dissociated_ligand_charges,dissociated_ligand_spinmults = {},{}
     for configure in [home_configure, local_configure]:
-        for line in home_configure:
+        for line in configure:
             if 'max_jobs' in line.split(':'):
                 max_jobs = int(line.split(':')[-1])
             if 'max_resub' in line.split(':'):
@@ -367,32 +368,38 @@ def read_configure(home_directory, outfile_path):
                 ss_cutoff = float(line.split(':')[-1])
             if 'hard_job_limit' in line.split(':'):
                 hard_job_limit = int(line.split(':')[-1])
+            if 'dissociated_ligand_charge' in line.split(':'):
+                dissociated_ligand_charges[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
+            if 'dissociated_ligand_spinmult' in line.split(':'):
+                dissociated_ligand_spinmults[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
 
-        # If global settings not specified, choose defaults:
-        if not max_jobs:
-            max_jobs = 50
-        if not max_resub:
-            max_resub = 5
-        if not levela:
-            levela = 0.25
-        if not levelb:
-            levelb = 0.25
-        if not method:
-            method = 'b3lyp'
-        if not hfx:
-            hfx = 0.20
-        if not sleep:
-            sleep = 7200
-        if not ss_cutoff:
-            ss_cutoff = 1.0
-        if not hard_job_limit:
-            hard_job_limit = 190
+    # If global settings not specified, choose defaults:
+    if not max_jobs:
+        max_jobs = 50
+    if not max_resub:
+        max_resub = 5
+    if not levela:
+        levela = 0.25
+    if not levelb:
+        levelb = 0.25
+    if not method:
+        method = 'b3lyp'
+    if not hfx:
+        hfx = 0.20
+    if not sleep:
+        sleep = 7200
+    if not ss_cutoff:
+        ss_cutoff = 1.0
+    if not hard_job_limit:
+        hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
             'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
             'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
-            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit}
+            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit, 
+            'dissociated_ligand_spinmults': dissociated_ligand_spinmults, 
+            'dissociated_ligand_charges':dissociated_ligand_charges}
 
 
 def read_charges(PATH):

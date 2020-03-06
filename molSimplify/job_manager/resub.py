@@ -43,7 +43,8 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['hfx_resample']:
             tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
-            moltools.prep_ligand_breakown(job)
+            moltools.prep_ligand_breakown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
+                                               dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
 
 
 def resub(directory='in place'):
