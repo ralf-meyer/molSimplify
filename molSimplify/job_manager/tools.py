@@ -86,6 +86,16 @@ def convert_to_absolute_path(path):
 
     return path
 
+def create_summary(directory='in place'):
+    # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
+
+    outfiles = tools.find('*.out', directory)
+    outfiles = list(filter(check_valid_outfile, outfiles))
+    results = list(map(manager_io.read_outfile, outfiles))
+    summary = pd.DataFrame(results)
+
+    return summary
+
 
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     #  @return A list of active jobs for the current user. By job name
