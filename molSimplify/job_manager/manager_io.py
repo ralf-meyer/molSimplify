@@ -33,6 +33,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
 
     output = textfile(outfile_path)
     output_type = output.wordgrab(['TeraChem', 'ORCA'], ['whole_line', 'whole_line'])
+    # print("output_type: ", output_type)
     for counter, match in enumerate(output_type):
         if match[0]:
             break
@@ -275,11 +276,11 @@ def read_infile(outfile_path):
 
     return_dict = {}
 
-    for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
+    for prop, prop_name in zip([root,charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates, guess,
                                 qm_code],
-                               ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
-                                'hfx',
+                               ['name','charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
+                                'method', 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'qm_code']):
         return_dict[prop_name] = prop
@@ -337,8 +338,9 @@ def read_configure(home_directory, outfile_path):
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
     ss_cutoff, hard_job_limit = False, False
+    dissociated_ligand_charges,dissociated_ligand_spinmults = {},{}
     for configure in [home_configure, local_configure]:
-        for line in home_configure:
+        for line in configure:
             if 'max_jobs' in line.split(':'):
                 max_jobs = int(line.split(':')[-1])
             if 'max_resub' in line.split(':'):
@@ -366,32 +368,38 @@ def read_configure(home_directory, outfile_path):
                 ss_cutoff = float(line.split(':')[-1])
             if 'hard_job_limit' in line.split(':'):
                 hard_job_limit = int(line.split(':')[-1])
+            if 'dissociated_ligand_charge' in line.split(':'):
+                dissociated_ligand_charges[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
+            if 'dissociated_ligand_spinmult' in line.split(':'):
+                dissociated_ligand_spinmults[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
 
-        # If global settings not specified, choose defaults:
-        if not max_jobs:
-            max_jobs = 50
-        if not max_resub:
-            max_resub = 5
-        if not levela:
-            levela = 0.25
-        if not levelb:
-            levelb = 0.25
-        if not method:
-            method = 'b3lyp'
-        if not hfx:
-            hfx = 0.20
-        if not sleep:
-            sleep = 7200
-        if not ss_cutoff:
-            ss_cutoff = 1.0
-        if not hard_job_limit:
-            hard_job_limit = 190
+    # If global settings not specified, choose defaults:
+    if not max_jobs:
+        max_jobs = 50
+    if not max_resub:
+        max_resub = 5
+    if not levela:
+        levela = 0.25
+    if not levelb:
+        levelb = 0.25
+    if not method:
+        method = 'b3lyp'
+    if not hfx:
+        hfx = 0.20
+    if not sleep:
+        sleep = 7200
+    if not ss_cutoff:
+        ss_cutoff = 1.0
+    if not hard_job_limit:
+        hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
             'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
             'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
-            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit}
+            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit, 
+            'dissociated_ligand_spinmults': dissociated_ligand_spinmults, 
+            'dissociated_ligand_charges':dissociated_ligand_charges}
 
 
 def read_charges(PATH):
@@ -460,7 +468,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
             infile[prop_name] = prop
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
-            not infile['name'] and not infile['coordinates']):
+            not infile['name']):
         print(('Name: ' + infile['name']))
         print(('Charge: ' + str(infile['charge'])))
         print(('Spinmult: ' + str(infile['spinmult'])))
@@ -485,9 +493,7 @@ def write_terachem_input(infile_dictionary):
         infile['method'] = 'u' + infile['method']
 
     if infile['name']:
-        infile['coordinates'] = infile['name'] + '.xyz'
-    if not infile['name']:
-        infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
+        infile['coordinates'] = infile['name']+'.xyz'
 
     input_file = open(infile['name'] + '.in', 'w')
     text = ['levelshiftvalb ' + str(infile['levelshiftb']) + '\n',
@@ -646,13 +652,9 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
-    name_tmp = name.replace("#", "3")
-    if not name_tmp == name:
-        shutil.copy("%s.in" % name, "%s.in" % name_tmp)
-        shutil.copy("%s.xyz" % name, "%s.xyz" % name_tmp)
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
-            '#$ -N ' + name_tmp + '\n',
+            '#$ -N ' + name + '\n',
             '#$ -cwd\n',
             '#$ -R y\n',
             '#$ -l h_rt=' + time_limit + '\n',
@@ -660,15 +662,15 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             '#$ -q gpus|gpusnew|gpusnewer\n',
             '#$ -l gpus=1\n',
             '#$ -pe smp 1\n',
-            "# -fin " + "%s.in\n" % name_tmp,
-            "# -fin " + "%s.xyz\n" % name_tmp,
+            "# -fin " + "%s.in\n" % name,
+            "# -fin " + "%s.xyz\n" % name,
             '# -fout scr/\n',
             'source /etc/profile.d/modules.sh\n',
             'module load terachem/tip\n',
             'export OMP_NUM_THREADS=1\n'
             ]
     if terachem_line:
-        text += ['terachem ' + name_tmp + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:

@@ -22,8 +22,14 @@ def load_history(PATH):
 #  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
 def save_scr(outfile_path, rewrite_inscr=True):
     root = os.path.split(outfile_path)[0]
+    # print("root: ", root)
+    basepath = os.getcwd()
+    # print("basepath: ", basepath)
+    os.chdir(root)
+    root = './'
     scr_path = os.path.join(root, 'scr')
 
+    print("scr_path: ", scr_path)
     if os.path.isdir(scr_path):
         # extract the optimized geometry, if it exists
         optim = glob.glob(os.path.join(scr_path, 'optim.xyz'))
@@ -46,13 +52,19 @@ def save_scr(outfile_path, rewrite_inscr=True):
         # archive the scr under a new name so that we can write a new one
         old_scrs = glob.glob(scr_path + '_*')
         old_scrs = [int(i[-1]) for i in old_scrs]
+        print("old_scrs: ", old_scrs)
         if len(old_scrs) > 0:
             new_scr = str(max(old_scrs) + 1)
         else:
             new_scr = '0'
+        # print("current_scr: ", scr_path)
+        # print("backup_scr: ", scr_path + '_' + new_scr)
         shutil.move(scr_path, scr_path + '_' + new_scr)
+        os.chdir(basepath)
 
-        return scr_path + '_' + new_scr
+        return os.path.join(os.path.split(outfile_path)[0], 'scr') + '_' + new_scr
+    else:
+        os.chdir(basepath)
 
 
 ## Save the outfile within the resub_history pickel object
@@ -134,6 +146,20 @@ def reset(outfile_path):
             if len(glob.glob(os.path.join(os.path.split(outfile_path)[0], 'scr_' + str(identifier)))) == 0:
                 break  # break when all scr_? files are found.
 
+        # remove all files for derivative jobs spawned based on this job
+        derivative_types = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
+                            'functional']
+        possible = [i for i in glob.glob(os.path.join(os.path.split(outfile_path)[0],'*')) if os.path.isdir(i)]
+        for folder in possible:
+            if os.path.split(outfile_path)[1].rsplit('.',1)[0] in folder:
+                derivative = False
+                for typ in derivative_types:
+                    if typ in folder:
+                        derivative = True
+                if derivative:
+                    shutil.rmtree(folder)
+
+        #rename outfile and jobscript files
         shutil.move(outfile_path, outfile_path[:-4] + '.old')  # rename old out so it isn't found in .out searches
         shutil.move(outfile_path[:-4] + '_jobscript', outfile_path[
                                                       :-4] + '_oldjob')  # rename old jobscript so it isn't thought to be  job that hasn't started yet
@@ -365,7 +391,6 @@ def resub_oscillating_scf(outfile_path):
         history.read(outfile_path)
         history.resub_number += 1
         history.status = 'precision and grid adjusted to assist convergence'
-        history.needs_resub = True
         history.notes.append('SCF convergence error, precision and grid adjusted to aid convergence')
         history.save()
 

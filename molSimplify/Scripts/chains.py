@@ -13,7 +13,7 @@ import inspect
 import argparse
 import openbabel
 from molSimplify.Scripts.rungen import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Scripts.inparse import *
 from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.mol3D import*

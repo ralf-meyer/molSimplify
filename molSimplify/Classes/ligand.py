@@ -18,7 +18,7 @@ class ligand:
     #  @paran dent The denticity of the ligand
     def __init__(self, master_mol, index_list, dent):
         self.master_mol = master_mol
-        self.index_list = index_list
+        self.index_list = sorted(index_list)
         self.dent = dent
         self.ext_int_dict = dict()  # store
 
@@ -40,6 +40,9 @@ class ligand:
             this_ext_int_dict.update({i: j})
             j += 1  # keep count of how many are added
         self.mol = this_mol
+        if len(self.master_mol.graph): # Save graph to ligand mol3D object
+            delete_inds = [x for x in range(self.master_mol.natoms) if x not in self.index_list]
+            self.mol.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
         self.ext_int_dict = this_ext_int_dict
 
 
@@ -81,7 +84,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
                 unique = False
                 matched = i
         if unique:
-            liglist.append(fragment)
+            liglist.append(sorted(fragment))
             ligdents.append(1)
             ligcons.append(this_cons)
         else:
@@ -1007,7 +1010,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         ### Consistent with 3+2+1 below by denticity
                         eq_lig_list = eq_points_defined
                         eq_con_list = [ligcons[j] for j in eq_lig_list]
-                        ax_lig_list = [val for i, val in enumerate(allowed) if val not in eq_points]
+                        ax_lig_list = [val for i, val in enumerate(allowed) if val not in eq_points_defined]
                         ax_con_list = [ligcons[j] for j in ax_lig_list]
                 else: # Max mw determines eq plane (2+2+2 different monodentates)
                     eq_lig_list = eq_points_max_mw
@@ -1604,7 +1607,14 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
 
-def get_lig_symmetry(mol,loud=False):
+def get_lig_symmetry(mol,loud=False,htol=3):
+    """
+    Handles ligand symmetry assignment
+    input: mol (Mol3D object)
+    input: htol (Default 3, tolerance for hydrogens in matching ligands)
+    input: loud (Default False, run ligand_assign_consistent with loud flag)
+    output: outstring (String, ligand symmetry plane)
+    """
     liglist, ligdents, ligcons = ligand_breakdown(mol,BondedOct=True,flag_loose=True)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
         ax_con_int_list, eq_con_int_list, ax_con_list, \
@@ -1616,24 +1626,30 @@ def get_lig_symmetry(mol,loud=False):
     def compare_ligs(ligs):
         unique_ligands = list()
         unique_ligcons = list()
+        unique_hs = list()
         for j, built_ligs in enumerate(ligs):
             # test if ligand is unique without hydrogens added?
             sl = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+            hs = len([item for item in sl if item == 'H'])
+            sl = [item for item in sl if item != 'H']
+            if len(sl) < 1:
+                sl = ['H']
             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
             unique = 1 # Flag for detecting unique ligands
             for i, other_sl in enumerate(unique_ligands):
-                if sl == other_sl and sl_ligcon == unique_ligcons[i]:
+                if sl == other_sl and sl_ligcon == unique_ligcons[i] and np.isclose(hs,unique_hs[i],atol=float(htol)):
                     # Duplicate
                     unique = 0
             if unique == 1:
                 unique_ligands.append(sl)
                 unique_ligcons.append(sl_ligcon)
+                unique_hs.append(hs)
         if len(unique_ligands) < len(ligs):
-            same = True
+            copy_in_list = True
         else:
-            same = False
-        return same
+            copy_in_list = False
+        return copy_in_list
     # Build Ligands and get MWs of ligands
     built_ligand_list = list()
     for i, ligand_indices in enumerate(liglist):
@@ -1646,22 +1662,27 @@ def get_lig_symmetry(mol,loud=False):
     lig_con_symbols_list = list()
     unique_ligcons = list()
     unique_counts = list()
+    unique_hs = list()
     for j, built_ligs in enumerate(built_ligand_list):
         # test if ligand is unique without hydrogens added
         sl = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
-        # Added check for if ligand connecting atoms are also identical
-        sl_ligcons = sorted([atom.symbol() for atom in mol.getAtomwithinds(ligcons[j])])
-        lig_con_symbols_list.append(sl_ligcons)
+        hs = len([item for item in sl if item == 'H'])
+        sl = [item for item in sl if item != 'H']
+        if len(sl) < 1:
+            sl = ['H']
+        ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
+        sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
         unique = 1 # Flag for detecting unique ligands
         for i, other_sl in enumerate(unique_ligands):
-            if sl == other_sl and sl_ligcons == unique_ligcons[i]:
+            if sl == other_sl and sl_ligcon == unique_ligcons[i] and np.isclose(hs,unique_hs[i],atol=float(htol)):
                 # Duplicate
                 unique = 0
                 unique_counts[i] += 1
         if unique == 1:
             unique_ligands.append(sl)
-            unique_ligcons.append(sl_ligcons)
+            unique_ligcons.append(sl_ligcon)
             unique_counts.append(1)
+            unique_hs.append(hs)
     n_unique_ligs = len(unique_ligands) # Number of unique ligands
     max_eq_count = max([len(x) for x in eq_con_list]) # Maximum cons of same lig in eq plane
     if max_dent == 6:
@@ -1750,7 +1771,7 @@ def get_lig_symmetry(mol,loud=False):
         elif n_unique_ligs == 3:
             outstring = '222'
         elif n_unique_ligs == 2:
-            outstring = '2|22|'
+            outstring = '|22|2'
         elif n_unique_ligs == 1:
             outstring='|222|'
         else:

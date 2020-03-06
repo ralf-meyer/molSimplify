@@ -218,7 +218,8 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return completeness
 
 
-def prep_ligand_breakown(outfile_path):
+def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
+                                       dissociated_ligand_spinmults = {}):
     # Given a path to the outfile of a finished run, this preps the files for rigid ligand dissociation energies of all ligands
     # Returns a list of the PATH(s) to the jobscript(s) to start the rigid ligand calculations
 
@@ -262,22 +263,20 @@ def prep_ligand_breakown(outfile_path):
     jobscripts = []
     for ligand in zip(ligand_names, ligand_idxs):
 
-        # Assign charges to use during the breakdown for special cases...oxygen, hydroxide, peroxide, and acac
-        # All other ligands are currently assigned charge 0
-        ligand_charges = {'O1': -2, 'H1O1': -1, 'H1O2': -1, 'C5H7O2': -1}
-        if ligand[0] in list(ligand_charges.keys()):
-            ligand_charge = ligand_charges[ligand[0]]
+        # Assign charges to use during the breakdown for special cases specified in the configure file
+        # All other ligands are assigned charge 0
+        if ligand[0] in list(dissociated_ligand_charges.keys()):
+            ligand_charge = dissociated_ligand_charges[ligand[0]]
         else:
             ligand_charge = 0
         metal_charge = charge - ligand_charge
 
-        # Assign spin, which always remains with the metal except for when an O2 leaves
+        # Assign spin, which always remains with the metal except when the dissociated ligand is defined to have spin (O2 for example)
         if spinmult == 1:  # If the whole complex is restricted, it's components must be restricted as well
             ligand_spin, metal_spin = 1, 1
         else:
-            ligand_spinmults = {'O2': 3}
-            if ligand[0] in list(ligand_spinmults.keys()):
-                ligand_spin = ligand_spinmults[ligand[0]]
+            if ligand[0] in list(dissociated_ligand_spinmults.keys()):
+                ligand_spin = dissociated_ligand_spinmults[ligand[0]]
             else:
                 ligand_spin = 1
 
@@ -293,6 +292,7 @@ def prep_ligand_breakown(outfile_path):
 
             local_mol = mol3D()
             local_mol.copymol3D(mol)
+
             local_mol.deleteatoms(ligand[1])
             local_mol.writexyz(local_name + '.xyz')
 
@@ -303,7 +303,7 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
 
             manager_io.write_input(local_infile_dict)
-            manager_io.write_jobscript(local_name, time_limit='12:00:00', sleep=True)
+            manager_io.write_jobscript(local_name, time_limit='12:00:00')
             jobscripts.append(local_name + '.in')
             os.chdir('..')
 
@@ -328,7 +328,7 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
 
             manager_io.write_input(local_infile_dict)
-            manager_io.write_jobscript(local_name, time_limit='12:00:00', sleep=True)
+            manager_io.write_jobscript(local_name, time_limit='12:00:00')
             jobscripts.append(local_name + '.in')
             os.chdir('..')
     os.chdir(home)

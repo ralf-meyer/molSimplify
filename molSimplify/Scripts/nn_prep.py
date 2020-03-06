@@ -6,7 +6,7 @@
 #  Dpt of Chemical Engineering, MIT
 
 from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.io import *
+from molSimplify.Scripts.molSimplify_io import *
 from molSimplify.Informatics.decoration_manager import*
 from molSimplify.Classes.globalvars import *
 from molSimplify.Informatics.graph_analyze import *

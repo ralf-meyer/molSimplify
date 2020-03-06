@@ -11,7 +11,7 @@ import re
 import argparse
 import sys
 import time
-from .io import *
+from molSimplify.Scripts.molSimplify_io import *
 
 # Check true or false
 #  @param arg String to be checked
