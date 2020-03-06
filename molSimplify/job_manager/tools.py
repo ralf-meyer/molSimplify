@@ -535,8 +535,11 @@ def prep_vertical_ip(path):
         new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
 
     base = os.path.split(path)[0]
-
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     ipname = results['name'] + '_vertIP'
@@ -593,7 +596,10 @@ def prep_vertical_ea(path):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     eaname = results['name'] + '_vertEA'
@@ -643,7 +649,10 @@ def prep_solvent_sp(path, solvents=[78.9]):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -678,14 +687,13 @@ def prep_solvent_sp(path, solvents=[78.9]):
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
                 manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
                 guess = True
-
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['solvent'], local_infile_dict['guess'] = sol_val, guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
-
         manager_io.write_input(local_infile_dict)
+
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
@@ -701,7 +709,11 @@ def prep_functionals_sp(path, functionalsSP):
 
     infile_dict = manager_io.read_infile(path)
     base = os.path.split(path)[0]
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -735,15 +747,14 @@ def prep_functionals_sp(path, functionalsSP):
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
                 manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
                 guess = True
-
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['guess'] = guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
         local_infile_dict['method'] = func
-
         manager_io.write_input(local_infile_dict)
+
         fil = open('configure', 'w')
         fil.write('method:' + func)
         fil.close()
@@ -765,7 +776,10 @@ def prep_thermo(path):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -778,6 +792,11 @@ def prep_thermo(path):
     os.chdir(PATH)
 
     shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+    local_infile_dict = copy.copy(infile_dict)
+    local_infile_dict['guess'] = True
+    local_infile_dict['run_type'] = 'frequencies'
+    local_infile_dict['name'] = name
+    manager_io.write_input(local_infile_dict)
     if infile_dict['spinmult'] == 1:
         shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
         manager_io.write_jobscript(name, custom_line='# -fin c0')
@@ -786,15 +805,7 @@ def prep_thermo(path):
         shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
         manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
 
-    local_infile_dict = copy.copy(infile_dict)
-    local_infile_dict['guess'] = True
-    local_infile_dict['run_type'] = 'frequencies'
-    local_infile_dict['name'] = name
-
-    manager_io.write_input(local_infile_dict)
-
     os.chdir(home)
-
     return [os.path.join(PATH, name + '_jobscript')]
 
 
@@ -813,7 +824,10 @@ def prep_ultratight(path):
 
     base = os.path.split(path)[0]
 
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -947,7 +961,10 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         else:
             source_dir = os.path.join(hfx_path, lower_hfx)
 
-        optimxyz = os.path.join(source_dir, 'scr', 'optim.xyz')
+        if infile_dict['run_type'] == 'minimize':
+            optimxyz = os.path.join(source_dir, 'scr', 'optim.xyz')
+        else:
+            optimxyz = os.path.join(source_dir, 'scr', 'xyz.xyz')
         extract_optimized_geo(optimxyz)
 
         shutil.copy(os.path.join(source_dir, 'scr', 'optimized.xyz'), subname + '.xyz')

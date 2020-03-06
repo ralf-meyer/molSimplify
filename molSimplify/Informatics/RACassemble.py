@@ -74,68 +74,68 @@ def assemble_connectivity_from_parts(metal_mol, custom_ligand_dict):
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
 def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False):
-        descriptor_names = []
-        descriptors = []
-        ## misc descriptors
-        results_dictionary = generate_all_ligand_misc(this_complex,loud=False,
-                                                      custom_ligand_dict=custom_ligand_dict)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
+    descriptor_names = []
+    descriptors = []
+    ## misc descriptors
+    results_dictionary = generate_all_ligand_misc(this_complex,loud=False,
+                                                    custom_ligand_dict=custom_ligand_dict)
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
 
-        ## full ACs
-        results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
-                                                                    modifier=ox_modifier, NumB=NumB, Zeff=Zeff)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['results'],'f','all')
+    ## full ACs
+    results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
+                                                                modifier=ox_modifier, NumB=NumB, Zeff=Zeff)
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['results'],'f','all')
 
-        ## ligand ACs
-        #print('get ligand ACs')
-        results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,name=False,
-                                                                  flag_name=False,
-                                                                  custom_ligand_dict=custom_ligand_dict,
-                                                                  NumB=NumB, Zeff=Zeff)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
+    ## ligand ACs
+    #print('get ligand ACs')
+    results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,name=False,
+                                                                flag_name=False,
+                                                                custom_ligand_dict=custom_ligand_dict,
+                                                                NumB=NumB, Zeff=Zeff)
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
+    descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
+    descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
+    descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
+
+    results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,
+                                                            custom_ligand_dict=custom_ligand_dict,
+                                                            NumB=NumB, Zeff=Zeff)
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
+
+    ## metal ACs
+    #print('getting metal ACs')
+    results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
+                                                            modifier=ox_modifier,
+                                                            NumB=NumB,Zeff=Zeff)
+    descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+
+    results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
+                                                        modifier=ox_modifier,
+                                                        NumB=NumB,Zeff=Zeff)
+    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                        results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+
+    # ## ox-metal ACs, if ox available
+    if ox_modifier:
+        results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
-
-        results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,
-                                                              custom_ligand_dict=custom_ligand_dict,
-                                                              NumB=NumB, Zeff=Zeff)
+                                                        results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+        results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
-
-        ## metal ACs
-        #print('getting metal ACs')
-        results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
-                                                             modifier=ox_modifier,
-                                                             NumB=NumB,Zeff=Zeff)
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-
-        results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
-                                                         modifier=ox_modifier,
-                                                         NumB=NumB,Zeff=Zeff)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
-
-        # ## ox-metal ACs, if ox available
-        if ox_modifier:
-            results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
-            descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-            results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False)
-            descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
-        return descriptor_names, descriptors
+                                                        results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+    return descriptor_names, descriptors
 
 
 ## Gets only the graph-based RAC155-RACs of an octahedral complex without/without geo
@@ -218,75 +218,6 @@ def get_descriptor_derivatives(this_complex,custom_ligand_dict=False,ox_modifier
                                                                                             results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 
     return descriptor_derivative_names, descriptor_derivatives
-
-
-## Gets the RACs of an octahedral complex without/without geo
-#  @param this_complex mol3D() we want RACs for
-#  @param custom_ligand_dict optional dict defining ligands (see below)
-#  @return descriptor_names updated names
-#  @return descriptors updated RACs
-def get_descriptor_vector_dimers(this_complex,custom_ligand_dict=False,custom_ligand_dict_legacy=False,ox_modifier=False):
-        descriptor_names = []
-        descriptors = []
-        ## misc descriptors
-        results_dictionary = generate_all_ligand_misc_dimers(this_complex,loud=False,custom_ligand_dict=custom_ligand_dict)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax1'],'misc','ax1')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax2'],'misc','ax2')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax3'],'misc','ax3')
-
-        ## full ACs
-        results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False, modifier=ox_modifier)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['results'],'f','all')
-
-         ## ligand ACs
-        #print('get ligand ACs')
-        results_dictionary = generate_all_ligand_autocorrs_and_deltametrics_dimers(this_complex,depth=3,loud=True,name=False,
-                                                                                   flag_name=False,
-                                                                                   custom_ligand_dict=custom_ligand_dict)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax1_full'],'f','ax1')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax2_full'],'f','ax2')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_ax3_full'],'f','ax3')
-
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['result_ax1_con'],'lc','ax1')
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['result_ax2_con'],'lc','ax2')
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['result_ax3_con'],'lc','ax3')
-
-        #results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,name=False,custom_ligand_dict=custom_ligand_dict_legacy)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_delta_ax1_con'],'D_lc','ax1')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_delta_ax2_con'],'D_lc','ax2')
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['result_delta_ax3_con'],'D_lc','ax3')
-
-        ## metal ACs
-        #print('getting metal ACs')
-        results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False, modifier=ox_modifier)
-        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-        results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False, modifier=ox_modifier)
-        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
-        # ## ox-metal ACs, if ox available
-        if ox_modifier:
-            results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
-            descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-            results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False)
-            descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                           results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
-
-        return descriptor_names, descriptors
 
 ## utility to add one-hot encoded oxidation state
 ## and d-electron count to some descriptors

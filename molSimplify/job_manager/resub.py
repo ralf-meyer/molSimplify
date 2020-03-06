@@ -229,7 +229,7 @@ def resub(directory='in place'):
                     (tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)) >= hard_job_limit):
                 hit_queue_limit = True
                 continue
-            print(('Initial sumbission for job: ' + os.path.split(job)[-1]))
+            print(('Initial submission for job: ' + os.path.split(job)[-1]))
             tools.qsub(job)
             submitted.append(True)
     else:
