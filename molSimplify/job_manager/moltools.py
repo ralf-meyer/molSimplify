@@ -303,7 +303,7 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
 
             manager_io.write_input(local_infile_dict)
-            manager_io.write_jobscript(local_name, time_limit='12:00:00', sleep=True)
+            manager_io.write_jobscript(local_name, time_limit='12:00:00')
             jobscripts.append(local_name + '.in')
             os.chdir('..')
 
@@ -328,7 +328,7 @@ def prep_ligand_breakown(outfile_path):
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
 
             manager_io.write_input(local_infile_dict)
-            manager_io.write_jobscript(local_name, time_limit='12:00:00', sleep=True)
+            manager_io.write_jobscript(local_name, time_limit='12:00:00')
             jobscripts.append(local_name + '.in')
             os.chdir('..')
     os.chdir(home)
