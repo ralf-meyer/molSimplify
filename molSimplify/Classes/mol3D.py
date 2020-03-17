@@ -2262,11 +2262,13 @@ class mol3D:
     def get_num_coord_metal(self, debug):
         metal_list = self.findMetal()
         metal_ind = self.findMetal()[0]
+        metal_coord = self.getAtomCoords(metal_ind)
         if len(self.graph):
             catoms = self.getBondedAtomsSmart(metal_ind)
         elif len(metal_list) > 0:
-            metal_coord = self.getAtomCoords(metal_ind)
             _catoms = self.getBondedAtomsOct(ind=metal_ind)
+            if debug:
+                print("_catoms: ", _catoms)
             dist2metal = {}
             dist2catoms = {}
             for ind in _catoms:
@@ -2295,7 +2297,7 @@ class mol3D:
                 inds = np.where(dists > min_bond_dist)[0]
                 if inds.shape[0] > 0:
                     min_bond_dist = min(dists[inds])
-            max_bond_dist = min_bond_dist + 1.0
+            max_bond_dist = min_bond_dist + 1.5 ## This is an adjustable param
             catoms = []
             for ind in _catoms:
                 if dist2metal[ind] <= max_bond_dist:

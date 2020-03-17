@@ -78,6 +78,7 @@ def find_nearest_ind(array, value):
 def comp_two_angle_array(input_angle, target_angle, catoms_map, picked):
     _angs = input_angle[1][:]
     angs = copy.copy(_angs)
+    # print("_angs: ", _angs)
     # print('target_angle', input_angle, target_angle)
     del_act = []
     output_angle, output_ind = [], []
@@ -91,7 +92,12 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked):
         # print('!!!input_a:', input_angle[1])
         del_act.append(del_arr[0][0])
         output_angle.append(del_arr[0][2])
-    output_ind = [find_nearest_ind(angs, x) for x in output_angle]
+    # output_ind = [find_nearest_ind(angs, x) for x in output_angle]
+    output_ind = []
+    for x in output_angle:
+        ind = find_nearest_ind(angs, x)
+        output_ind.append(ind)
+        angs[ind] = -1
     max_del_angle = max(del_act)
     sum_del = sum(del_act) / len(target_angle)
     return output_angle, output_ind, sum_del, max_del_angle
@@ -116,8 +122,10 @@ def comp_angle_pick_one_best(input_arr, target_angle, catoms_map, picked):
     del_arr.sort()
     # print("del_arr", del_arr)
     for idx, _arr in enumerate(del_arr):
+        # print("===", idx, _arr)
         if set(picked_inds).issubset(set(_arr[-1])):
             break
+    # print("idx: ", idx)
     posi = del_arr[idx][1]
     del_angle = del_arr[idx][0]
     output_angle = input_arr[posi][1]
