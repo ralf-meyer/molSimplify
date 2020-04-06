@@ -41,9 +41,12 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     decoration=[decoration[i] for i in sort_order]
     if args.debug:
         print(('decoration_index  is  ' + str(decoration_index)))
-    
     licores = getlicores()
-    lig,emsg = lig_load(lig,licores)
+    if not isinstance(lig, mol3D):
+        lig,emsg = lig_load(lig,licores)
+    else:
+        lig.convert2OBMol()
+        lig.charge = lig.OBMol.GetTotalCharge()
     lig.convert2mol3D() # convert to mol3D
    
     ## create new ligand
