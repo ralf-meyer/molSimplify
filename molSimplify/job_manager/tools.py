@@ -117,7 +117,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
         if machine == 'gibraltar':
             job_report.lines = call_bash("qstat -r")
         elif machine in ['comet','bridges']:
-            job_report.lines = call_bash('squeue -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R" -u '+username, 
+            job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+username, 
                                           version=2)
         else: 
             raise ValueError
@@ -209,7 +209,7 @@ def get_total_queue_usage():
     if machine == 'gibraltar':
         jobs = call_bash("qstat -u '" + username + "'", version=2)
     elif machine in ['comet','bridges']:
-        jobs = call_bash('squeue -o "%.18i %.9P %.20j %.8u %.2t %.10M %.6D %R" -u ' + username,
+        jobs = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u ' + username,
                          version=2)
     else:
         raise ValueError('Job manager does not know this machine!')
