@@ -444,7 +444,8 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 guess=False, custom_line=None, levelshifta=0.25, levelshiftb=0.25,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
-                parallel_environment=4, precision='dynamic', dftgrid=1, dynamicgrid='yes'):
+                parallel_environment=4, precision='dynamic', dftgrid=1, dynamicgrid='yes',
+                machine = 'gibraltar'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
     # "Custom line" can be used to add additional lines to the infile and is not treated by an input dictionary
@@ -456,12 +457,12 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates,
                                 guess, custom_line, qm_code, parallel_environment, name, precision, dftgrid,
-                                dynamicgrid],
+                                dynamicgrid, machine],
                                ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
                                 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'custom_line', 'qm_code', 'parallel_environment', 'name',
-                                'precision', 'dftgrid', 'dynamicgrid']):
+                                'precision', 'dftgrid', 'dynamicgrid', 'machine']):
         if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
         else:
@@ -498,12 +499,10 @@ def write_terachem_input(infile_dictionary):
     input_file = open(infile['name'] + '.in', 'w')
     text = ['levelshiftvalb ' + str(infile['levelshiftb']) + '\n',
             'levelshiftvala ' + str(infile['levelshifta']) + '\n',
-            'nbo yes\n',
             'run ' + infile['run_type'] + '\n',
             'scf diis+a\n',
             'coordinates ' + infile['coordinates'].replace("#", "3") + '\n',
             'levelshift yes\n',
-            'gpus 1\n',
             'spinmult ' + str(infile['spinmult']) + '\n',
             'scrdir ./scr\n',
             'basis ' + infile['basis'] + '\n',
@@ -564,6 +563,14 @@ def write_terachem_input(infile_dictionary):
                             'pcm_radii read\n',
                             'pcm_radii_file /home2/harperd/pcm_radii\n',
                             'end']
+    
+    if infile['machine'] in ['gibraltar','bridges']:
+        text = text[:-1] + ['nbo yes\n', 'gpus 1\n','end']
+    elif infile['machine'] in ['comet']:
+        text = text[:-1] + ['gpus 2\n','end']
+    else:
+        raise ValueError('Machine not known!')
+
     for lines in text:
         input_file.write(lines)
     input_file.close()
@@ -638,40 +645,99 @@ def write_orca_input(infile_dictionary):
     input_file.close()
 
 
-def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4):
+def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
+                    machine='gibraltar'):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
-        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit)
+        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, machine=machine)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
-                             parallel_environment=parallel_environment)
+                             parallel_environment=parallel_environment, 
+                             machine=machine)
     else:
         raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
 
 
-def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
+def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
+                             machine='gibraltar'):
     jobscript = open(name + '_jobscript', 'w')
-    text = ['#$ -S /bin/bash\n',
-            '#$ -N ' + name + '\n',
-            '#$ -cwd\n',
-            '#$ -R y\n',
-            '#$ -l h_rt=' + time_limit + '\n',
-            '#$ -l h_rss=8G\n',
-            '#$ -q gpus|gpusnew|gpusnewer\n',
-            '#$ -l gpus=1\n',
-            '#$ -pe smp 1\n',
-            "# -fin " + "%s.in\n" % name,
-            "# -fin " + "%s.xyz\n" % name,
-            '# -fout scr/\n',
-            'source /etc/profile.d/modules.sh\n',
-            'module load terachem/tip\n',
-            'export OMP_NUM_THREADS=1\n'
-            ]
-    if terachem_line:
+    if machine == 'gibraltar':
+        text = ['#$ -S /bin/bash\n',
+                '#$ -N ' + name + '\n',
+                '#$ -cwd\n',
+                '#$ -R y\n',
+                '#$ -l h_rt=' + time_limit + '\n',
+                '#$ -l h_rss=8G\n',
+                '#$ -q gpus|gpusnew|gpusnewer\n',
+                '#$ -l gpus=1\n',
+                '#$ -pe smp 1\n',
+                "# -fin " + "%s.in\n" % name,
+                "# -fin " + "%s.xyz\n" % name,
+                '# -fout scr/\n',
+                'source /etc/profile.d/modules.sh\n',
+                'module load terachem/tip\n',
+                'export OMP_NUM_THREADS=1\n'
+                ]
+    elif machine == 'bridges':
+        if int(time_limit.split(':')[0]) > 45:
+            time_limit = '45:00:00'
+        text = ['#!/bin/bash\n',
+                '#SBATCH -J ' + name + '\n',
+                '#SBATCH -N 1\n',
+                '#SBATCH -p GPU-shared\n',
+                '#SBATCH --ntasks-per-node 1\n'
+                '#SBATCH -t ' + time_limit + '\n',
+                '#SBATCH -C EGRESS\n',
+                '#SBATCH --gres=gpu:k80:1\n\n',
+                'set -x\n',
+                'module load intel/17.4\n',
+                'module load mpi/intel_mpi\n',
+                'module load cuda/9.2\n',
+                'export TeraChem=/home/ffangliu/production/build\n',
+                'export PATH=$TeraChem/bin/:$PATH\n',
+                'export NBOEXE=$TeraChem/nbo6/nbo6.i4.exe\n',
+                'export LD_LIBRARY_PATH=$TeraChem/lib:$LD_LIBRARY_PATH\n'
+                ]
+    elif machine == 'comet':
+        if int(time_limit.split(':')[0]) > 45:
+            time_limit = '45:00:00'
+        text = ['#!/bin/bash\n',
+                '#SBATCH -J ' + name + '\n',
+                '#SBATCH --nodes 1\n',
+                '#SBATCH -p gpu-shared\n',
+                '#SBATCH --mem=16G\n',
+                '#SBATCH --ntasks-per-node=1\n'
+                '#SBATCH -t ' + time_limit + '\n',
+                '#SBATCH --export=ALL\n',
+                '#SBATCH --gres=gpu:2\n\n',
+                'export OMP_NUM_THREADS=2\n',
+                'module purge\n',
+                'export MODULEPATH="/share/apps/compute/modulefiles:${MODULEPATH}"\n',
+                'module load gnu/7.2.0\n',
+                'module load intel/2016.3.210\n',
+                'module load  intelmpi/2016.3.210\n',
+                'module load cuda/9.2\n',
+                'export TeraChem=/oasis/projects/nsf/mit136/fangliu/src/production/build\n',
+                'export PATH=$TeraChem/bin/:$PATH\n',
+                'export NBOEXE=$TeraChem/nbo6/nbo6.i4.exe\n',
+                'export LD_LIBRARY_PATH=$TeraChem/lib:$LD_LIBRARY_PATH\n',
+                'export OpenMM=/oasis/projects/nsf/mit136/fangliu/opt/openmm\n',
+                'export CPATH=$OpenMM/include:$CPATH\n',
+                'export LD_LIBRARY_PATH=$OpenMM/lib:$LD_LIBRARY_PATH\n',
+                'export LIBRARY_PATH=$OpenMM/lib:$LIBRARY_PATH\n',
+                'export PATH=$OpenMM/bin:$PATH\n',
+                'export OPENMM_INCLUDE_PATH=$OpenMM/include\n',
+                'export OPENMM_LIB_PATH=$OpenMM/lib\n',
+                'export OPENMM_PLUGIN_DIR=$OpenMM/lib/plugins\n'
+                ]
+    else:
+        raise ValueError('Job manager does not know how to run Terachem on this machine!')
+    if terachem_line and machine == 'gibraltar':
         text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
-
+    elif terachem_line and machine in ['bridges','comet']:
+        text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
     if custom_line:
         if type(custom_line) == list:
             text = text[:12] + custom_line + text[12:]
@@ -683,36 +749,39 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
     jobscript.close()
 
 
-def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel_environment=4):
+def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel_environment=4,
+                         machine='gibraltar'):
     # Write a generic orca jobscript
 
     memory_allocation = str(
         int(parallel_environment) * 3)  # allocate memory based on 192 GB for 64 processors on the new cpu nodes
     jobscript = open(name + '_jobscript', 'w')
-    text = ['#$ -S /bin/bash\n',
-            '#$ -N ' + name + '\n',
-            '#$ -cwd\n',
-            '#$ -R y\n',
-            '#$ -l h_rt=' + time_limit + '\n',
-            '#$ -l h_rss=' + memory_allocation + 'G\n',
-            '#$ -q cpus\n',
-            '#$ -l cpus=1\n',
-            '#$ -pe smp ' + str(parallel_environment) + '\n',
-            '# -fin ' + name + '.in\n',
-            '# -fin ' + name + '.xyz\n\n',
-            'source /etc/profile.d/modules.sh\n',
-            'module module load intel\n',
-            'module module load orca\n',
-            'export PATH=/home2/harperd/software/openmpi/bin:$PATH\n',
-            'export LD_LIBRARY_PATH=/home2/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
-            '/opt/orca/orca_4_1_2_linux_x86-64_openmpi313/orca ' + name + '.in  > $SGE_O_WORKDIR/' + name + '.out\n\n',
-            'mkdir $SGE_O_WORKDIR/scr\n',
-            'cp ' + name + '.trj $SGE_O_WORKDIR/scr/optim.xyz\n',
-            'cp ' + name + '.gbw $SGE_O_WORKDIR/scr/\n',
-            'cp ' + name + '.prop $SGE_O_WORKDIR/scr/\n',
-            'cp ' + name + '.opt $SGE_O_WORKDIR/scr/\n',
-            'cp ' + name + '_property.txt $SGE_O_WORKDIR/scr/\n']
-
+    if machine == 'gibraltar':
+        text = ['#$ -S /bin/bash\n',
+                '#$ -N ' + name + '\n',
+                '#$ -cwd\n',
+                '#$ -R y\n',
+                '#$ -l h_rt=' + time_limit + '\n',
+                '#$ -l h_rss=' + memory_allocation + 'G\n',
+                '#$ -q cpus\n',
+                '#$ -l cpus=1\n',
+                '#$ -pe smp ' + str(parallel_environment) + '\n',
+                '# -fin ' + name + '.in\n',
+                '# -fin ' + name + '.xyz\n\n',
+                'source /etc/profile.d/modules.sh\n',
+                'module module load intel\n',
+                'module module load orca\n',
+                'export PATH=/home2/harperd/software/openmpi/bin:$PATH\n',
+                'export LD_LIBRARY_PATH=/home2/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
+                '/opt/orca/orca_4_1_2_linux_x86-64_openmpi313/orca ' + name + '.in  > $SGE_O_WORKDIR/' + name + '.out\n\n',
+                'mkdir $SGE_O_WORKDIR/scr\n',
+                'cp ' + name + '.trj $SGE_O_WORKDIR/scr/optim.xyz\n',
+                'cp ' + name + '.gbw $SGE_O_WORKDIR/scr/\n',
+                'cp ' + name + '.prop $SGE_O_WORKDIR/scr/\n',
+                'cp ' + name + '.opt $SGE_O_WORKDIR/scr/\n',
+                'cp ' + name + '_property.txt $SGE_O_WORKDIR/scr/\n']
+    else:
+        raise ValueError('Job manager does not know how to run ORCA on this machine!')
     if custom_line:
         if type(custom_line) == list:
             text = text[:12] + custom_line + text[12:]
