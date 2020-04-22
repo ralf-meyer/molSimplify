@@ -5,7 +5,36 @@ molSimplify is an open source toolkit for the automated, first-principles screen
 
 ## Installation
 
-molSimplify is written in Python using the [Open Babel Toolkit](http://openbabel.org). The graphical user interface is written in PyQt5. We currently recommend installation via the [Conda](https://conda.io/docs/) package management system. Specific instructions are provided at the [Kulik group website](http://hjkgrp.mit.edu/content/new-installation-option-molsimplify). Additional installation options, including instructions for building the dependencies from source are provide in the [user guide](./molSimplify/Docs/Userguide/USER_GUIDE.pdf).
+### via conda
+We currently recommend installation via the [Conda](https://conda.io/docs/) package management system.
+1. Prerequisite: have [Anaconda or miniconda](https://www.anaconda.com/distribution/) installed on your system.
+
+2. Clone molSimplify source from github.
+
+   ```bash
+   git clone https://github.com/hjkgrp/molSimplify.git
+   ```
+   
+3. Go to the folder root folder for MolSimplify, create the conda environment from the yaml file (mols.yml). This step will help you get all the dependecies correct in a newly created conda enviroment named "mols_test". You can specify a different name for this environment at the first line of the yaml file.
+
+   ```bash
+   cd <root directory to moSimplify>/conda-envs
+   conda env create -f mols.yml
+   ```
+4. Activate the conda environment you just created. Go back to the root directory of molSimplify (where the setup.py file locates). Local install with pip.
+   ```bash
+   cd <root directory to moSimplify>
+   pip install -e .
+   ```
+5. To test your installation, you can run the command below at the root directory of molSimplify.
+	```bash
+   python setup.py test
+   ```
+
+### via docker
+We also maintain an active [docker image on dockerhub](https://hub.docker.com/repository/docker/hjkgroup/molsimplify) for plug-and-play use. 
+
+For line by line instructions on an installation via docker, please visit [molSimplify installation webpage of Kulik group](http://hjkgrp.mit.edu/content/installing-molsimplify).
 
 ## Tutorials
 
@@ -16,7 +45,7 @@ A set of tutorials covering common use cases is available at the [Kulik group we
 
 molSimplify is research software. If you use it for work that results in a publication, please cite the following reference:
 
-```
+```json
 @article {molSimplify,
 author = {Ioannidis, Efthymios I. and Gani, Terry Z. H. and Kulik, Heather J.},
 title = {molSimplify: A toolkit for automating discovery in inorganic chemistry},
@@ -30,3 +59,4 @@ pages = {2106--2117},
 year = {2016},
 }
 ```
+

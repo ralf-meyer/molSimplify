@@ -1,0 +1,25 @@
+name: mols_test
+channels:
+  - hjkgroup
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - openbabel=2.4.1
+  - pyqt=5.9.2
+  - pip=20.0.2
+  - python=3.6.8
+  - qt=5.9.7
+  - pip:
+    - gpy==1.9.9  # optional
+    - hyperopt==0.2.3 # optional
+    - keras==2.3.1
+    - matplotlib==3.2.1 # optional
+    - numpy==1.16.4
+    - scikit-learn==0.22.2.post1
+    - scipy==1.4.1
+    - pandas==1.0.3
+    - tensorflow==1.14.0
+    - torch==1.4.0 # optional
+    - torchvision==0.5.0 # optional
+    - umap-learn==0.3.10 # optional
