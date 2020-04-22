@@ -45,7 +45,7 @@ A set of tutorials covering common use cases is available at the [Kulik group we
 
 molSimplify is research software. If you use it for work that results in a publication, please cite the following reference:
 
-```json
+```
 @article {molSimplify,
 author = {Ioannidis, Efthymios I. and Gani, Terry Z. H. and Kulik, Heather J.},
 title = {molSimplify: A toolkit for automating discovery in inorganic chemistry},
