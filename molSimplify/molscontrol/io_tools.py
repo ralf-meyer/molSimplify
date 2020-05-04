@@ -30,6 +30,51 @@ def get_configure():
     return config
 
 
+def get_ss_del(outfile, frame):
+    _frame_now = -1
+    ss_actual, ss_target = 0, 0
+    with open(outfile, 'r') as fo:
+        for line in fo:
+            if "Spin multiplicity:" in line:
+                spin = int(line.split()[-1])
+                if spin == 1:
+                    return {"del_ss": 0}
+            elif "SPIN S-SQUARED:" in line:
+                _frame_now += 1
+                ss_actual = float(line.split()[2])
+                ss_target = float(line.split()[-1].strip(")"))
+            if _frame_now == frame:
+                if not np.isnan(abs(ss_actual-ss_target)):
+                    break
+                else:
+                    frame += 1
+    return {"del_ss": abs(ss_actual-ss_target)}
+
+
+def get_metal_spin_del(mullpopfile, spin, frame, idx=-1):
+    if spin == 1:
+        return {"del_metal_spin": 0}
+    _frame_now = -2
+    metal_spin, idx_spin = 0, 0
+    with open(mullpopfile, 'r') as fo:
+        for line in fo:
+            ll = line.split()
+            if "Spin-Averaged" in line:
+                _frame_now += 1
+                if _frame_now == frame:
+                    del_metal_spin = abs(metal_spin+idx_spin-spin+1)
+                    if not np.isnan(del_metal_spin):
+                        return {"del_metal_spin": del_metal_spin}
+                    else:
+                        frame += 1
+            elif ll[0] == "1":
+                metal_spin = float(ll[-1])
+            elif ll[0] == str(idx):
+                idx_spin = float(ll[-1])
+    del_metal_spin = abs(metal_spin+idx_spin-spin+1)
+    return {"del_metal_spin": del_metal_spin}
+
+
 def read_geometry_to_mol(geofile, frame=-1, txt=False):
     mol = mol3D()
     if not txt:
@@ -129,25 +174,27 @@ def get_bond_order(bofile, job_info, num_sv=4, frame=-1):
     for catom in catoms:
         dict_patterns[catom] = [metal_ind, catom]
     botext = list()
-    with open(bofile, 'r') as fo:
-        if frame == -1:
-            for line in fo:
-                if "bond order list" in line:
-                    botext = list()
-                else:
-                    botext.append(line)
-        else:
-            c = -2
-            for line in fo:
-                if "bond order list" in line:
-                    c += 1
-                    if c == frame:
-                        break
-                    botext = list()
-                else:
-                    botext.append(line)
+    while len(botext) < 2:
+        with open(bofile, 'r') as fo:
+            if frame == -1:
+                for line in fo:
+                    if "bond order list" in line:
+                        botext = list()
+                    else:
+                        botext.append(line)
+            else:
+                c = -2
+                for line in fo:
+                    if "bond order list" in line:
+                        c += 1
+                        if c == frame:
+                            break
+                        botext = list()
+                    else:
+                        botext.append(line)
+        frame += 1
+        # print("botext: ", botext)
     bo_mat = np.zeros(shape=(natoms, natoms))
-    # print("botext: ", botext)
     for line in botext:
         ll = line.split()
         if not (len(ll) == 1 and ll[0].isdigit()):
@@ -176,11 +223,18 @@ def get_gradient(gradfile, job_info, num_sv=3, frame=-1):
     num_lines = natoms + 2
     dict_gradient = OrderedDict()
     catoms = [metal_ind] + job_info['catoms']
-    with open(gradfile, 'r') as fo:
-        if (frame + 1) * num_lines != 0:
-            gradtext = fo.readlines()[frame * num_lines:(frame + 1) * num_lines]
-        else:
-            gradtext = fo.readlines()[frame * num_lines:]
+    gradtext = ["energy -nan"]
+    while "energy -nan" in "".join(gradtext):
+        with open(gradfile, 'r') as fo:
+            if (frame + 1) * num_lines != 0:
+                gradtext = fo.readlines()[frame * num_lines:(frame + 1) * num_lines]
+            else:
+                gradtext = fo.readlines()[frame * num_lines:]
+        with open(gradfile, 'r') as fo:
+            if not len(gradtext):
+                gradtext = fo.readlines()[-1* num_lines:]
+        frame += 1
+        # print("gradtext: ", gradtext)
     grad_mat = np.zeros(shape=(natoms, 3))
     for idx, line in enumerate(gradtext):
         ll = line.split()
@@ -188,6 +242,7 @@ def get_gradient(gradfile, job_info, num_sv=3, frame=-1):
             dict_gradient.update({'grad_rms': float(ll[7][:-1])})
         if idx > 1:
             grad_mat[idx - 2, :] = [float(x) for x in ll[1:]]
+    # print("grad_mat: ", grad_mat)
     U, Sigma, VT = randomized_svd(grad_mat, n_components=num_sv, n_iter=20)
     sigma = Sigma.tolist()
     for sv in range(num_sv):
@@ -221,16 +276,26 @@ def get_mullcharge(chargefile, job_info, frame=-1):
     natoms = job_info['natoms']
     dict_mullcharge = OrderedDict()
     catoms = [metal_ind] + job_info['catoms']
-    with open(chargefile, 'r') as fo:
-        if (frame + 1) * natoms != 0:
-            chargetext = fo.readlines()[frame * natoms:(frame + 1) * natoms]
-        else:
-            chargetext = fo.readlines()[frame * natoms:]
+    chargetext = ["energy -nan"]
+    while "nan" in "".join(chargetext):
+        with open(chargefile, 'r') as fo:
+            if (frame + 1) * natoms != 0:
+                chargetext = fo.readlines()[frame * natoms:(frame + 1) * natoms]
+            else:
+                chargetext = fo.readlines()[frame * natoms:]
+        with open(chargefile, 'r') as fo:
+            if not len(chargetext):
+                chargetext = fo.readlines()[-1* natoms:]
+        frame += 1
+        # print("chargetext: ", chargetext)
     for line in chargetext:
         ll = line.split()
         atom_ind = int(ll[0]) - 1
         if atom_ind in catoms:
-            dict_mullcharge.update({'charge_%d' % atom_ind: float(ll[-1])})
+            if not "nan" in ll[-1]:
+                dict_mullcharge.update({'charge_%d' % atom_ind: float(ll[-1])})
+            else:
+                dict_mullcharge.update({'charge_%d' % atom_ind: 0})
     dict_mullcharge = symmetricalize_dict(job_info, feature_dict=dict_mullcharge)
     return dict_mullcharge
 
@@ -238,6 +303,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
 def symmetricalize_dict(job_info, feature_dict):
     sym_list = ['eq_mean', 'ax_mean']
     catoms = job_info['catoms']
+    # print("feature_dict: ", feature_dict)
     feature_type = get_feature_type(feature_dict)
     for sym in sym_list:
         eq_arr = list()
