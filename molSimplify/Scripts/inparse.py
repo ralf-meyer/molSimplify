@@ -162,6 +162,7 @@ def checkinput(args, calctype="base"):
                     args.ligocc.append(0)
     elif calctype == "tsgen":
         # load substrate for reference
+        print(args.substrate[0],0, args.subcatoms)
         sub, subcatoms, emsg = substr_load(
             args.substrate[0], 0, args.subcatoms)
         # check core

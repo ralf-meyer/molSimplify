@@ -224,6 +224,7 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
     # Returns a list of the PATH(s) to the jobscript(s) to start the rigid ligand calculations
 
     home = os.getcwd()
+    machine = tools.get_machine()
     outfile_path = tools.convert_to_absolute_path(outfile_path)
 
     results = manager_io.read_outfile(outfile_path)
@@ -301,9 +302,10 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
             local_infile_dict['charge'], local_infile_dict['spinmult'] = metal_charge, metal_spin
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
+            local_infile_dict['machine'] = machine
 
             manager_io.write_input(local_infile_dict)
-            manager_io.write_jobscript(local_name, time_limit='12:00:00')
+            manager_io.write_jobscript(local_name, time_limit='12:00:00', machine=machine)
             jobscripts.append(local_name + '.in')
             os.chdir('..')
 
@@ -326,9 +328,10 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
             local_infile_dict['charge'], local_infile_dict['spinmult'] = ligand_charge, ligand_spin
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
-
+            local_infile_dict['machine'] = machine
+            
             manager_io.write_input(local_infile_dict)
-            manager_io.write_jobscript(local_name, time_limit='12:00:00')
+            manager_io.write_jobscript(local_name, time_limit='12:00:00', machine=machine)
             jobscripts.append(local_name + '.in')
             os.chdir('..')
     os.chdir(home)

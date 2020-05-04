@@ -3132,6 +3132,17 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
+    def get_smiles(self, canoncalize=False):
+        # Used to get the SMILES string of a given mol3D object
+        conv = openbabel.OBConversion()
+        conv.SetOutFormat('smi')
+        if canoncalize:
+            conv.SetOutFormat('can')
+        if self.OBMol == False:
+            self.convert2OBMol()
+        smi = conv.WriteString(self.OBMol).split()[0]
+        return smi
+
     def mols_symbols(self):
         self.symbols_dict = {}
         for atom in self.getAtoms():

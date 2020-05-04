@@ -16,6 +16,7 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
     # This function takes a list of job names and kills the jobs associated with them, if the jobs are active
     if type(kill_names) != list:
         kill_names = [kill_names]
+    machine = tools.get_machine()
 
     active_jobs, active_ids = tools.list_active_jobs(ids=True)
     active_jobs = list(zip(active_jobs, active_ids))
@@ -24,8 +25,13 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
 
     for name, id_ in jobs_to_kill:
         print(message1 + name + message2)
-        tools.call_bash('qdel ' + str(id_))
-
+        if machine in ['gibraltar']:
+            tools.call_bash('qdel ' + str(id_))
+        elif machine in ['comet','bridges']:
+            tools.call_bash('scancel '+str(id_))
+        else:
+            raise ValueError('Sardines.')
+        
 
 def prep_derivative_jobs(directory, list_of_outfiles):
     for job in list_of_outfiles:

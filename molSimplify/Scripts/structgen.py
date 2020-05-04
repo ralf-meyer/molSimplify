@@ -1323,7 +1323,7 @@ def align_linear_pi_sub(core3D, mligcatoms_ext, sub3D, atom0, subcatoms, bangle_
         atom0) if i not in subcatoms][0]
     theta10L, u10L = rotation_params(ratom1, ratom0, rL)
     sub3D_aligned = rotate_around_axis(
-        sub3D_aligned, ratom0, u10L, bangle_m3Dsub+theta10L)
+        sub3D_aligned, ratom0, u10L, bangle_m3D+theta10L)
     # agjust the angle among L-C-Ca
     try:
         ratom1 = [sub3D.getAtom(i).coords() for i in sub3D.getBondedAtoms(
@@ -4055,6 +4055,6 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
         args.gui.iWtxt.setText('In folder '+pfold+' generated ' +
                                str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
-    print(('\nIn folder '+pfold+' generated ', Nogeom, ' structure(s)!'))
+    print(('\nIn folder '+rootdir+' generated ', Nogeom, ' structure(s)!'))
 
     return strfiles, emsg, this_diag
