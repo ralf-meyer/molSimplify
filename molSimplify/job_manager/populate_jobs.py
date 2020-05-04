@@ -6,6 +6,7 @@ import numpy as np
 import shutil
 from molSimplify.Classes.mol3D import *
 from .tools import *
+import molSimplify.job_manager.manager_io as manager_io
 from molSimplifyAD.utils.pymongo_tools import connect2db, query_lowestE_converged
 
 
@@ -81,6 +82,7 @@ def generate_fake_results_from_db(rundir, jobname, tmcdoc):
         fo.write("method %s\n" % str(tmcdoc["functional"]))
         fo.write("basis %s\n" % str(tmcdoc["basis"]))
         fo.write("coordinates %s.xyz\n" % jobname)
+        fo.write("run minimize\n")
     outpath = rundir + '/' + jobname + '.out'
     with open(outpath, "w") as fo:
         fo.write("=======This outfile is FAKE and generated artificialy======\n")
@@ -125,7 +127,15 @@ def populate_single_job(basedir, job, db):
                 energy = float(tmcdoc["energy"])
                 wfn = tmcdoc['wavefunction']
                 ss_act, ss_target = float(tmcdoc["ss_act"]), float(tmcdoc["ss_target"])
+                if abs(ss_act - ss_target) > 1 and tmcdoc["ss_flag"] == 1:
+                    recover = False
+                    print("Spin contamination for singlets! (used ub3lyp)")
                 write_xyz_from_db(geodir, jobname, tmcdoc["opt_geo"])
+                wfnpath = "/home/data/wfn/"+ str(tmcdoc['unique_name'])
+                wfnfiles = os.listdir(wfnpath)
+                if not any(x in ["c0", "ca0", "cb0"] and os.stat(wfnpath+'/%s'%x).st_size > 1000 for x in wfnfiles):
+                    recover = False
+                    print("No WFN file found at /home/data/wfn/.")
             except:
                 recover = False
         else:
@@ -148,8 +158,8 @@ def populate_single_job(basedir, job, db):
         if not tmcdoc == None:
             outpath = generate_fake_results_from_db(rundir, jobname, tmcdoc)
         else:
-            tools.write_input(jobname, charge, int(job["spin"]), run_type='minimize', solvent=False)
-            tools.write_jobscript(jobname)
+            manager_io.write_input(jobname, charge, int(job["spin"]), run_type='minimize', solvent=False)
+            manager_io.write_jobscript(jobname)
     elif os.path.isdir(rundir) or os.path.isdir(rundir_p3):
         print("folder exist.")
         populated = False
