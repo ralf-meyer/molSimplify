@@ -138,7 +138,9 @@ def populate_single_job(basedir, job, db):
         else:
             raise ValueError("Cannot generate initial geometry for CSD complex...")
     rundir = basedir + '/' + jobname
-    if not os.path.isdir(rundir) and recover:
+    rundir_p3 = basedir + '/' + jobname.replace("#", "3")
+    populated = True
+    if not os.path.isdir(rundir) and not os.path.isdir(rundir_p3) and recover:
         os.makedirs(rundir)
         shutil.copyfile(geodir + '/' + jobname + '.xyz', rundir + "/" + jobname + ".xyz")
         os.chdir(rundir)
@@ -148,11 +150,14 @@ def populate_single_job(basedir, job, db):
         else:
             tools.write_input(jobname, charge, int(job["spin"]), run_type='minimize', solvent=False)
             tools.write_jobscript(jobname)
-    elif os.path.isdir(rundir):
+    elif os.path.isdir(rundir) or os.path.isdir(rundir_p3):
         print("folder exist.")
+        populated = False
     else:
         print(('WARNING: cannot recover %s' % jobname))
+        populated = False
     os.chdir(basedir)
+    return jobname, populated
 
 
 def populate_list_of_jobs(basedir, jobs, db_communicate=True):

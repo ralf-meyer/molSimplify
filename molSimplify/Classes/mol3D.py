@@ -589,6 +589,10 @@ class mol3D:
     #  @param self The object pointer
     #  @param atomIdx Index of atom to be deleted
     def deleteatom(self, atomIdx):
+        if atomIdx < 0:
+            atomIdx = self.natoms + atomIdx
+        if atomIdx >= self.natoms:
+            raise Exception('mol3D object cannot delete atom '+str(atomIdx)+' because it only has '+str(self.natoms)+' atoms!')
         self.convert2OBMol()
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
@@ -614,9 +618,13 @@ class mol3D:
     #  @param self The object pointer
     #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
+        for i in Alist:
+            if i > self.natoms:
+                raise Exception('mol3D object cannot delete atom '+str(i)+' because it only has '+str(self.natoms)+' atoms!')
+        Alist = [self.natoms+i if i<0 else i for i in Alist] #convert negative indexes to positive indexes
         self.convert2OBMol()
         for h in sorted(Alist, reverse=True):
-            self.OBMol.DeleteAtom(self.OBMol.GetAtom(h + 1))
+            self.OBMol.DeleteAtom(self.OBMol.GetAtom(int(h) + 1))
             self.mass -= self.getAtom(h).mass
             self.natoms -= 1
             del (self.atoms[h])
@@ -2254,11 +2262,13 @@ class mol3D:
     def get_num_coord_metal(self, debug):
         metal_list = self.findMetal()
         metal_ind = self.findMetal()[0]
+        metal_coord = self.getAtomCoords(metal_ind)
         if len(self.graph):
             catoms = self.getBondedAtomsSmart(metal_ind)
         elif len(metal_list) > 0:
-            metal_coord = self.getAtomCoords(metal_ind)
             _catoms = self.getBondedAtomsOct(ind=metal_ind)
+            if debug:
+                print("_catoms: ", _catoms)
             dist2metal = {}
             dist2catoms = {}
             for ind in _catoms:
@@ -2287,7 +2297,7 @@ class mol3D:
                 inds = np.where(dists > min_bond_dist)[0]
                 if inds.shape[0] > 0:
                     min_bond_dist = min(dists[inds])
-            max_bond_dist = min_bond_dist + 1.0
+            max_bond_dist = min_bond_dist + 1.5 ## This is an adjustable param
             catoms = []
             for ind in _catoms:
                 if dist2metal[ind] <= max_bond_dist:
@@ -3094,6 +3104,17 @@ class mol3D:
         # mol3D structure
         self.OBMol = OBMol
         self.convert2mol3D()
+
+    def get_smiles(self, canoncalize=False):
+        # Used to get the SMILES string of a given mol3D object
+        conv = openbabel.OBConversion()
+        conv.SetOutFormat('smi')
+        if canoncalize:
+            conv.SetOutFormat('can')
+        if self.OBMol == False:
+            self.convert2OBMol()
+        smi = conv.WriteString(self.OBMol).split()[0]
+        return smi
 
     def mols_symbols(self):
         self.symbols_dict = {}

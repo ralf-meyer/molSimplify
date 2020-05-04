@@ -21,6 +21,8 @@ def check_valid_outfile(path):
     endpath = os.path.split(path)[-1]
     if 'nohup.out' in endpath or endpath.startswith('.') or any("_v%d." % x in endpath for x in range(10)):
         return False
+    elif 'slurm-' in endpath:
+        return False
     else:
         return True
 
@@ -46,22 +48,6 @@ def priority_sort(lst_of_lsts):
 
     return new_lst_of_lsts
 
-
-# def invert_dictionary(dictionary):
-#     new_dict = dict()
-#     for key in list(dictionary.keys()):
-#         if type(dictionary[key]) == list:
-#             for entry in dictionary[key]:
-#                 if entry in list(new_dict.keys()):
-#                     raise Exception('Dictionary inversion failed, values do not serve as unique keys')
-#                 new_dict[entry] = key
-#         else:
-#             if dictionary[key] in list(new_dict.keys()):
-#                 raise Exception('Dictionary inversion failed, values do not serve as unique keys')
-#             new_dict[dictionary[key]] = key
-#     return new_dict
-
-
 def call_bash(string, error=False, version=1):
     if version == 1:
         p = subprocess.Popen(string.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -82,12 +68,40 @@ def call_bash(string, error=False, version=1):
     else:
         return out
 
+def get_machine():
+    # Gets the identity of the machine job_manager is being run on!
+    hostname = call_bash('hostname')[0]
+    if 'bridges.psc' in hostname:
+        machine = 'bridges'
+    elif 'gibraltar' in hostname:
+        machine = 'gibraltar'
+    elif 'comet' in hostname:
+        machine = 'comet'
+    elif 'home' in hostname:
+        machine = 'gibraltar'
+    else:
+        raise ValueError('Machine Unknown to Job Manager')
+    return machine
+
+# Set user and machine as global variables before analysis
+machine = get_machine()
+username = call_bash('whoami')[0]
 
 def convert_to_absolute_path(path):
     if path[0] != '/':
         path = os.path.join(os.getcwd(), path)
 
     return path
+
+def create_summary(directory='in place'):
+    # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
+
+    outfiles = find('*.out', directory)
+    outfiles = list(filter(check_valid_outfile, outfiles))
+    results = list(map(manager_io.read_outfile, outfiles))
+    summary = pd.DataFrame(results)
+
+    return summary
 
 
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
@@ -97,22 +111,38 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
         raise Exception('Incompatible options passed to list_active_jobs()')
     if home_directory == 'in place':
         home_directory = os.getcwd()
-
+    
     job_report = textfile()
     try:
-        job_report.lines = call_bash("qstat -r")
+        if machine == 'gibraltar':
+            job_report.lines = call_bash("qstat -r")
+        elif machine in ['comet','bridges']:
+            job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+username, 
+                                          version=2)
+        else: 
+            raise ValueError
     except:
         job_report.lines = []
-
-    names = job_report.wordgrab('jobname:', 2)[0]
-    names = [i for i in names if i]  # filters out NoneTypes
-
+    if machine == 'gibraltar':
+        names = job_report.wordgrab('jobname:', 2)[0]
+        names = [i for i in names if i]  # filters out NoneTypes
+    elif machine in ['comet','bridges']:
+        names = job_report.wordgrab(username, 2)[0]
+        names = [i for i in names if i] # filters out NoneTypes
+    else:
+        raise ValueError
     if ids:
         job_ids = []
-        line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
+        if machine == 'gibraltar':
+            line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
+        elif machine in ['comet','bridges']:
+            line_indices_of_jobnames = job_report.wordgrab(username, 2, matching_index=True)[0]
         line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
         for line_index in line_indices_of_jobnames:
-            job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
+            if machine == 'gibraltar':
+                job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
+            elif machine in ['comet','bridges']:
+                job_ids.append(int(job_report.lines[line_index].split()[0]))
         if len(names) != len(job_ids):
             print(len(names))
             print(len(job_ids))
@@ -176,9 +206,13 @@ def get_number_active():
 
 def get_total_queue_usage():
     # gets the number of jobs in the queue for this user, regardless of where they originate
-    username = call_bash('whoami')[0]
-
-    jobs = call_bash("qstat -u '" + username + "'", version=2)
+    if machine == 'gibraltar':
+        jobs = call_bash("qstat -u '" + username + "'", version=2)
+    elif machine in ['comet','bridges']:
+        jobs = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u ' + username,
+                         version=2)
+    else:
+        raise ValueError('Job manager does not know this machine!')
     jobs = [i for i in jobs if username in i.split()]
 
     return len(jobs)
@@ -343,8 +377,12 @@ def qsub(jobscript_list):
         home = os.getcwd()
         os.chdir(os.path.split(i)[0])
         jobscript = os.path.split(i)[1]
-        stdout, stderr = call_bash('qsub ' + jobscript, error=True)
-        stdouts.append(stdout)
+        if machine in ['gibraltar']:
+            stdout, stderr = call_bash('qsub ' + jobscript, error=True)
+            stdouts.append(stdout)
+        elif machine in ['bridges','comet']:
+            stdout, stderr = call_bash('sbatch ' + jobscript, error=True)
+            stdouts.append(stdout)
         if len(stderr) > 0:
             raise Exception(stderr)
         os.chdir(home)
@@ -506,7 +544,7 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
     home = os.getcwd()
     os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
     manager_io.write_terachem_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)) + '_' + identifier,
-                                        terachem_line=False, time_limit='12:00:00')
+                                        terachem_line=False, time_limit='12:00:00',machine=machine)
     shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_' + identifier + '_jobscript',
                 'bundle_' + str(max(existing_bundle_numbers) + 1))
     fil = open('bundle_' + str(max(existing_bundle_numbers) + 1), 'a')
@@ -573,8 +611,9 @@ def prep_vertical_ip(path):
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'energy', calc
                 local_infile_dict['name'] = name
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
+                local_infile_dict['machine'] = machine
                 manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name)
+                manager_io.write_jobscript(name,machine=machine)
 
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
 
@@ -632,9 +671,10 @@ def prep_vertical_ea(path):
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'energy', calc
                 local_infile_dict['name'] = name
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
+                local_infile_dict['machine'] = machine
 
                 manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name)
+                manager_io.write_jobscript(name, machine=machine)
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
     return jobscripts
@@ -685,22 +725,23 @@ def prep_solvent_sp(path, solvents=[78.9]):
         if infile_dict['spinmult'] == 1:
             if os.path.isfile(os.path.join(base, 'scr', 'c0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                manager_io.write_jobscript(name, custom_line='# -fin c0')
+                manager_io.write_jobscript(name, custom_line='# -fin c0', machine=machine)
                 guess = True
         else:
             if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
+                manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=machine)
                 guess = True
-
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['solvent'], local_infile_dict['guess'] = sol_val, guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
+        local_infile_dict['machine'] = machine
 
         manager_io.write_input(local_infile_dict)
+
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
@@ -746,23 +787,24 @@ def prep_functionals_sp(path, functionalsSP):
         if infile_dict['spinmult'] == 1:
             if os.path.isfile(os.path.join(base, 'scr', 'c0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                manager_io.write_jobscript(name, custom_line='# -fin c0')
+                manager_io.write_jobscript(name, custom_line='# -fin c0', machine=machine)
                 guess = True
         else:
             if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
+                manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=machine)
                 guess = True
-
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['guess'] = guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
         local_infile_dict['method'] = func
+        local_infile_dict['machine'] = machine
 
         manager_io.write_input(local_infile_dict)
+
         fil = open('configure', 'w')
         fil.write('method:' + func)
         fil.close()
@@ -800,23 +842,22 @@ def prep_thermo(path):
     os.chdir(PATH)
 
     shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
-    if infile_dict['spinmult'] == 1:
-        shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-        manager_io.write_jobscript(name, custom_line='# -fin c0')
-    if infile_dict['spinmult'] != 1:
-        shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
-        shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-        manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
-
     local_infile_dict = copy.copy(infile_dict)
     local_infile_dict['guess'] = True
     local_infile_dict['run_type'] = 'frequencies'
     local_infile_dict['name'] = name
+    local_infile_dict['machine'] = machine
 
     manager_io.write_input(local_infile_dict)
+    if infile_dict['spinmult'] == 1:
+        shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
+        manager_io.write_jobscript(name, custom_line='# -fin c0', machine=machine)
+    if infile_dict['spinmult'] != 1:
+        shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
+        shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
+        manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=machine)
 
     os.chdir(home)
-
     return [os.path.join(PATH, name + '_jobscript')]
 
 
@@ -855,11 +896,11 @@ def prep_ultratight(path):
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
         if infile_dict['spinmult'] == 1:
             shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-            manager_io.write_jobscript(name, custom_line='# -fin c0')
+            manager_io.write_jobscript(name, custom_line='# -fin c0', machine=machine)
         elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
             shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-            manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
+            manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=machine)
 
         criteria = ['2.25e-04', '1.5e-04', '0.9e-03', '0.6e-03', '0.5e-06', '1.5e-05']
 
@@ -867,6 +908,7 @@ def prep_ultratight(path):
         local_infile_dict['guess'] = True
         local_infile_dict['convergence_thresholds'] = criteria
         local_infile_dict['name'] = name
+        local_infile_dict['machine'] = machine
 
         manager_io.write_input(local_infile_dict)
 
@@ -887,6 +929,7 @@ def prep_ultratight(path):
         local_infile_dict['guess'] = True
         local_infile_dict['convergence_thresholds'] = criteria
         local_infile_dict['name'] = name
+        local_infile_dict['machine'] = machine
         manager_io.write_input(local_infile_dict)
 
         extract_optimized_geo(os.path.join(PATH, 'scr', 'optim.xyz'))
@@ -981,16 +1024,18 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         shutil.copy(os.path.join(source_dir, 'scr', 'optimized.xyz'), subname + '.xyz')
         if infile_dict['spinmult'] == 1:
             shutil.copy(os.path.join(source_dir, 'scr', 'c0'), 'c0')
-            manager_io.write_jobscript(subname, custom_line='# -fin c0')
+            manager_io.write_jobscript(subname, custom_line='# -fin c0', machine=machine)
         elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(source_dir, 'scr', 'ca0'), os.path.join('ca0'))
             shutil.copyfile(os.path.join(source_dir, 'scr', 'cb0'), os.path.join('cb0'))
-            manager_io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'])
+            manager_io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'], 
+                                       machine=machine)
 
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['guess'] = True
         local_infile_dict['hfx'] = hfx / 100.
         local_infile_dict['name'] = subname
+        local_infile_dict['machine'] = machine
         manager_io.write_input(local_infile_dict)
         jobscripts.append(os.path.join(os.getcwd(), subname + '_jobscript'))
 

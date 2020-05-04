@@ -4,8 +4,15 @@ functionalsSP wpbeh camb3lyp wb97x
 vertEA
 vertIP
 thermo
-dissociation
 hfx_resample
+
+dissociation
+dissociated_ligand_charge:O1 -2
+dissociated_ligand_charge:H1O1 -1
+dissociated_ligand_charge:H1O2 -1
+dissociated_ligand_charge:C5H7O2 -1
+dissociated_ligand_spinmult:O2 3
+
 max_jobs:10
 hard_job_limit:200
 max_resub:5
