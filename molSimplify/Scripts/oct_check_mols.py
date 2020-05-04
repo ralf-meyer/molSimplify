@@ -68,14 +68,8 @@ def find_nearest_ind(array, value):
     return idx
 
 
-# description: select the closest elements in input_arr compared
-# to the target array. Is used to screen atoms that
-# might construct an octehedral structure. Used to select
-# m targeting catoms out of n candidates (n > m).
-# input: two array of float. dim(input_arr) >= dim(target_arr)
-# output: output_arr that is most similar to target_arr after filtering,
-# summation for the difference for output_arr and target_arr
-def comp_two_angle_array(input_angle, target_angle, catoms_map, picked):
+# deprecated
+def comp_two_angle_array_(input_angle, target_angle, catoms_map, picked):
     _angs = input_angle[1][:]
     angs = copy.copy(_angs)
     # print("_angs: ", _angs)
@@ -103,6 +97,52 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked):
     return output_angle, output_ind, sum_del, max_del_angle
 
 
+def comp_two_angle_array(input_angle, target_angle, catoms_map, picked_inds):
+    '''
+    input_angle: a list of angle (n_catom_candidates)
+    target_angle: a list of angle (n_catom, < n_catom_candidates)
+    catoms_map: a map of {atom_ind_in_mol, ind_in_angle_list}
+    picked_inds: atom indexes (in the angle list) that have been picked already.
+    ''' 
+    _angs = input_angle[1][:]
+    angs = copy.copy(_angs)
+    picked_angles = [angs[x] for x in picked_inds]
+    picked_inds_rev = [x for _,x in sorted(zip(picked_angles,picked_inds), reverse=True)]
+    _target_angle = copy.copy(target_angle)
+    # print("_angs: ", _angs)
+    # print('target_angle', target_angle)
+    del_act = []
+    output_angle, output_ind = [], []
+    for ind in picked_inds_rev:
+        target_ind = find_nearest_ind(_target_angle, input_angle[1][:][ind])
+        # print(_target_angle[target_ind], angs[ind])
+        del_act.append(abs(_target_angle[target_ind]-angs[ind]))
+        output_angle.append(angs[ind])
+        _target_angle.pop(target_ind)
+    for ind in sorted(picked_inds, reverse=True):
+        _angs.pop(ind)
+    for idx, ele in enumerate(_target_angle):
+        del_arr = []
+        for _idx, _ele in enumerate(_angs):
+            del_arr.append([abs(ele - _ele), _idx, _ele])
+        del_arr.sort()
+        posi = del_arr[0][1]
+        _angs.pop(posi)
+        # print('!!!input_a:', input_angle[1])
+        del_act.append(del_arr[0][0])
+        output_angle.append(del_arr[0][2])
+    # print("del_act: ", del_act)
+    # output_ind = [find_nearest_ind(angs, x) for x in output_angle]
+    output_ind = []
+    for x in output_angle:
+        ind = find_nearest_ind(angs, x)
+        output_ind.append(ind)
+        angs[ind] = -1
+    max_del_angle = max(del_act)
+    sum_del = sum(del_act) / len(target_angle)
+    return output_angle, output_ind, sum_del, max_del_angle
+
+
 # description: Given the target_angle, choose the input_angle that has
 # the smallest angle deviation in input_array. In this process,
 # the input_angle has already been filtered.
@@ -111,21 +151,26 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked):
 # to target_arr. del_angle: the deviation. catoms: the connecting antom for
 # the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle, catoms_map, picked):
+    '''
+    Given the target_angle, choose the input_angle that has the smallest angle deviation 
+    in input_array.
+    input_arr: array of input angles.
+    target_angle: array of target angles.
+    catoms_map: a map of {atom_ind_in_mol, ind_in_angle_list}.
+    picked: atom indexes (in mol3D) that have been picked already.
+    '''
     del_arr = []
     picked_inds = [catoms_map[x] for x in picked]
+    # print("==============")
     # print("picked: ", picked, picked_inds)
     # print("input_arr", input_arr, len(input_arr))
     for ii, input_angle in enumerate(input_arr):
         out_angle, output_ind, sum_del, max_del_angle = comp_two_angle_array(
-            input_angle, target_angle, catoms_map, picked)
+            input_angle, target_angle, catoms_map, picked_inds)
         del_arr.append([sum_del, ii, max_del_angle, out_angle, output_ind])
     del_arr.sort()
     # print("del_arr", del_arr)
-    for idx, _arr in enumerate(del_arr):
-        # print("===", idx, _arr)
-        if set(picked_inds).issubset(set(_arr[-1])):
-            break
-    # print("idx: ", idx)
+    idx = 0
     posi = del_arr[idx][1]
     del_angle = del_arr[idx][0]
     output_angle = input_arr[posi][1]

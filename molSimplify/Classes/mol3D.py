@@ -861,13 +861,13 @@ class mol3D:
         if atom.symbol() == "H" and ratom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
-        if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-                atom.symbol() == "I" and ratom.symbol() == "I"):
-            # Very strict cutoff for bonds involving iodine
-            distance_max = 0.95 * (atom.rad + ratom.rad)
-        if atom.symbol() == "I" and ratom.symbol() == "I":
-            distance_max = 3
-            # print(distance_max)
+        # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
+        #         atom.symbol() == "I" and ratom.symbol() == "I"):
+        #     # Very strict cutoff for bonds involving iodine
+        #     distance_max = 0.95 * (atom.rad + ratom.rad)
+        # if atom.symbol() == "I" and ratom.symbol() == "I":
+        #     distance_max = 3
+        # print(distance_max)
         return distance_max
 
     # Gets atoms bonded to a specific atom
@@ -1010,7 +1010,7 @@ class mol3D:
                 if atom_specific_cutoffs:
                     distance_max = self.getBondCutoff(atom, ratom)
                 else:
-                    distance_max = 1.15 * (atom.rad + ratom.rad)  ## Not consistent with getBondedAtoms?
+                    distance_max = 1.15 * (atom.rad + ratom.rad)
                 if atom.ismetal() or ratom.ismetal():
                     # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
                     # if atom.symbol() in dist_allowed.keys():
@@ -2434,7 +2434,7 @@ class mol3D:
     def match_lig_list(self, init_mol, catoms_arr=None,
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3,
-                       check_whole=False):
+                       check_whole=False, angle_ref=False):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         from molSimplify.Classes.ligand import ligand_breakdown#, ligand_assign
         from molSimplify.Classes.ligand import ligand_assign_consistent as ligand_assign
@@ -2481,8 +2481,8 @@ class mol3D:
         else:
             self.my_mol_trunc.writexyz("final_trunc.xyz")
             self.init_mol_trunc.writexyz("init_trunc.xyz")
-            _, catoms = self.my_mol_trunc.oct_comp(debug=False)
-            _, catoms_init = self.init_mol_trunc.oct_comp(debug=False)
+            _, catoms = self.my_mol_trunc.oct_comp(debug=False, angle_ref=angle_ref)
+            _, catoms_init = self.init_mol_trunc.oct_comp(debug=False, angle_ref=angle_ref)
         if debug:
             print(('ligand_list opt in symbols:', liglist_atom))
             print(('ligand_list init in symbols: ', liglist_init_atom))
@@ -2547,7 +2547,7 @@ class mol3D:
     def ligand_comp_org(self, init_mol, catoms_arr=None,
                         flag_deleteH=True, flag_loose=False,
                         flag_lbd=True, debug=False, depth=3,
-                        BondedOct=False):
+                        BondedOct=False, angle_ref=False):
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         _, _, flag_match = self.match_lig_list(init_mol,
@@ -2557,7 +2557,8 @@ class mol3D:
                                                flag_lbd=flag_lbd,
                                                debug=debug,
                                                depth=depth,
-                                               check_whole=True)
+                                               check_whole=True,
+                                               angle_ref=angle_ref)
         liglist, liglist_init, _ = self.match_lig_list(init_mol,
                                                        catoms_arr=catoms_arr,
                                                        flag_loose=flag_loose,
@@ -2565,7 +2566,8 @@ class mol3D:
                                                        flag_lbd=flag_lbd,
                                                        debug=debug,
                                                        depth=depth,
-                                                       check_whole=False)
+                                                       check_whole=False,
+                                                       angle_ref=angle_ref)
         if debug:
             print(('lig_list:', liglist, len(liglist)))
             print(('lig_list_init:', liglist_init, len(liglist_init)))
@@ -2791,7 +2793,8 @@ class mol3D:
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
-              silent=False):
+              silent=False, use_atom_specific_cutoffs=True):
+        self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
@@ -2820,15 +2823,24 @@ class mol3D:
                     self.num_coord_metal = 6
                     if not 'FCS' in skip:
                         dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                                      catoms_arr, debug=debug)
+                                                                      catoms_arr, 
+                                                                      debug=debug,
+
+                                                                      )
                 if not init_mol == None:
+                    init_mol.use_atom_specific_cutoffs = True
+                    if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                        print("The ordering of atoms in the initial and final geometry is different.")
+                        init_mol = mol3D()
+                        init_mol.copymol3D(self)
                     if not 'lig_distort' in skip:
                         dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                                 flag_loose=flag_loose,
                                                                 flag_lbd=flag_lbd,
                                                                 debug=debug,
                                                                 BondedOct=BondedOct,
-                                                                flag_deleteH=flag_deleteH)
+                                                                flag_deleteH=flag_deleteH,
+                                                                angle_ref=angle_ref,)
                 if not 'lig_linear' in skip:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
@@ -2860,6 +2872,7 @@ class mol3D:
                     angle_ref=False, num_coord=5,
                     flag_catoms=False, catoms_arr=None, debug=False,
                     skip=False, flag_deleteH=True):
+        self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
         if not angle_ref:
@@ -2888,9 +2901,14 @@ class mol3D:
                         dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                                       debug=debug)
                 if not init_mol == None:
+                    init_mol.use_atom_specific_cutoffs = True
+                    if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                        print("The ordering of atoms in the initial and final geometry is different.")
+                        init_mol = mol3D()
+                        init_mol.copymol3D(self)
                     if not 'lig_distort' in skip:
                         dict_lig_distort = self.ligand_comp_org(
-                            init_mol, flag_deleteH=flag_deleteH, debug=debug)
+                            init_mol, flag_deleteH=flag_deleteH, debug=debug, angle_ref=angle_ref)
                 if not 'lig_linear' in skip:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
@@ -2917,6 +2935,7 @@ class mol3D:
     def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=False,
                        std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                        dict_check_loose=False, BondedOct=True, debug=False):
+        self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
         if not angle_ref:
@@ -2945,12 +2964,16 @@ class mol3D:
             self.num_coord_metal = 6
             self.geo_dict_initialization()
             if not init_mol == None:
+                init_mol.use_atom_specific_cutoffs = True
+                if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                    raise ValueError("initial and current geometry does not match in atom ordering!")
                 dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                         flag_loose=flag_loose,
                                                         flag_lbd=flag_lbd,
                                                         catoms_arr=catoms_arr,
                                                         debug=debug,
-                                                        BondedOct=BondedOct)
+                                                        BondedOct=BondedOct,
+                                                        angle_ref=angle_ref)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                               debug=debug)
@@ -3007,19 +3030,22 @@ class mol3D:
             self.num_coord_metal = num_coord
             self.geo_dict_initialization()
             if not init_mol == None:
+                init_mol.use_atom_specific_cutoffs = True
+                if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                    raise ValueError("initial and current geometry does not match in atom ordering!")
                 dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                         flag_loose=flag_loose,
                                                         flag_lbd=flag_lbd,
                                                         catoms_arr=catoms_arr,
                                                         debug=debug,
-                                                        BondedOct=BondedOct)
+                                                        BondedOct=BondedOct,
+                                                        angle_ref=angle_ref)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
                 dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                               debug=debug)
             else:
                 self.num_coord_metal = -1
                 print('!!!!!Should always match. WRONG!!!!!')
-
             dict_angle_linear, dict_orientation = self.check_angle_linear(
                 catoms_arr=catoms_arr)
             if debug:
@@ -3039,6 +3065,7 @@ class mol3D:
         metalind = self.findMetal()[0]
         self.get_num_coord_metal(debug=False)
         catoms = self.catoms
+        # print(catoms, [self.getAtom(x).symbol() for x in catoms])
         if len(catoms) > 6:
             _, catoms = self.oct_comp(debug=False)
         fcs = [metalind] + catoms
@@ -3159,7 +3186,7 @@ class mol3D:
         else:
             print(("chargefile does not exist.", chargefile))
 
-    def get_mol_graph_det(self,oct=True):
+    def get_mol_graph_det(self, oct=True):
         globs = globalvars()
         amassdict = globs.amass()
         if not len(self.graph):
