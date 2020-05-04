@@ -638,12 +638,14 @@ def write_orca_input(infile_dictionary):
     input_file.close()
 
 
-def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4):
+def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', 
+                    parallel_environment=4, cwd=False):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
-        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit)
+        write_terachem_jobscript(name, custom_line=custom_line, 
+                                 time_limit=time_limit, cwd=cwd)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                              parallel_environment=parallel_environment)
@@ -651,7 +653,8 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
         raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
 
 
-def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True):
+def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', 
+                             terachem_line=True, cwd=False):
     jobscript = open(name + '_jobscript', 'w')
     text = ['#$ -S /bin/bash\n',
             '#$ -N ' + name + '\n',
@@ -670,7 +673,12 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             'export OMP_NUM_THREADS=1\n'
             ]
     if terachem_line:
-        text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        if not cwd:
+            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        else:
+            text += ["echo $SGE_O_WORKDIR\n"]
+            text += ['cd $SGE_O_WORKDIR\n']
+            text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
 
     if custom_line:
         if type(custom_line) == list:
