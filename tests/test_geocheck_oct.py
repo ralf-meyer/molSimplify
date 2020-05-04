@@ -83,3 +83,31 @@ def test_example_12(tmpdir):
     thresh = 0.01
     passGeo = hp.runtestgeo_optonly(tmpdir, testName, thresh)
     assert passGeo
+
+
+def test_example_13(tmpdir):
+    testName = "iodine_sulfur"
+    thresh = 0.01
+    passGeo = hp.runtestgeo(tmpdir, testName, thresh)
+    assert passGeo
+
+
+def test_example_14(tmpdir):
+    testName = "oct_comp_greedy"
+    thresh = 0.01
+    passGeo = hp.runtestgeo(tmpdir, testName, thresh)
+    assert passGeo
+
+
+def test_example_15(tmpdir):
+    testName = "atom_ordering_mismatch"
+    thresh = 0.01
+    passGeo = hp.runtestgeo(tmpdir, testName, thresh)
+    assert passGeo
+
+
+def test_example_16(tmpdir):
+    testName = "iodide_radius"
+    thresh = 0.01
+    passGeo = hp.runtestgeo(tmpdir, testName, thresh)
+    assert passGeo

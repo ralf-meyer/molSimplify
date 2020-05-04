@@ -1,0 +1,11 @@
+{
+  "oct_angle_devi_max":  0.6342531030476323,
+  "num_coord_metal": 6,
+  "rmsd_max": 5.649620996631234e-16,
+  "max_del_sig_angle": 1.5751865536932144,
+  "dist_del_eq": 0.0007713568930207693,
+  "devi_linear_max": 1.9534481540599984,
+  "atom_dist_max": "banned_by_user",
+  "devi_linear_avrg": 1.022485980326934,
+  "dist_del_all": 0.038472587107411194
+}
