@@ -66,9 +66,9 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
         css = ' '.join(cs)
         # convert to unicode
         smimol = unicodedata.normalize(
-            'NFKD', unicode(smimol)).encode('ascii', 'ignore')
+            'NFKD', smimol)
         sminame = unicodedata.normalize(
-            'NFKD', unicode(sminame)).encode('ascii', 'ignore')
+            'NFKD', sminame)
         if '~' in smimol:
             smimol = smimol.replace('~', os.expanduser('~'))
         # convert ligand from smiles/file
