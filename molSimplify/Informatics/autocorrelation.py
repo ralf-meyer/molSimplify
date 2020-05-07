@@ -609,7 +609,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
     ##              {"Fe":2, "Co": 3} etc
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology',
-                       'ox_nuclear_charge', 'size', 'vdwrad', 'effective_nuclear_charge',
+                       'ox_nuclear_charge', 'size', 'vdwrad', 'effective_nuclear_charge', 'polarizability',
                        'bondvalence', 'num_bonds', 'bondvalence_devi', 'bodavrg', 'bodstd', 'charge']
     ## note that ident just codes every atom as one, this gives
     ## a purely toplogical index. coord gives the number of
@@ -640,7 +640,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         # if not modifier:
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
-            values = globs.amass()[keys][3]
+            values = globs.amass()[keys][0]
             prop_dict.update({keys: values}) 
         ####### 11/06/2019 -- Adjusted Zeff RACs to not adjust on oxidation state. Confounded with O RACs. #####
         # # else:
@@ -661,6 +661,11 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
                 if keys in list(modifier.keys()):
                     values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
                 prop_dict.update({keys: values})
+    elif prop == 'polarizability':
+        prop_dict =  globs.polarizability()
+        for i, atoms in enumerate(mol.getAtoms()):
+            atom_type = atoms.symbol()
+            w[i] = prop_dict[atom_type]
     elif prop == 'ident':
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
@@ -717,7 +722,6 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         for i, atoms in enumerate(mol.getAtoms()):
             # print('atom # ' + str(i) + " symbol =  " + str(atoms.symbol()))
             w[i] = prop_dict[atoms.symbol()]
-    # print(prop, w)
     return (w)
 
 
@@ -1378,7 +1382,6 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
         result.append(metal_ac)
     if flag_name:
         results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
-        # print(results_dictionary)
     else:
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
@@ -1410,18 +1413,20 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
             result = np.row_stack([result, metal_ac_der])
     if flag_name:
         results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
-        # print(results_dictionary)
     else:
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
 
-def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False):
+def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    if polarizability:
+        allowed_strings += ['polarizability']
+        labels_strings += ['alpha']
     for ii, properties in enumerate(allowed_strings):
         metal_ac = multimetal_only_autocorrelation(mol, properties, depth, oct=oct)
         this_colnames = []
@@ -1431,7 +1436,6 @@ def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name
         result.append(metal_ac)
     if flag_name:
         results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
-        # print(results_dictionary)
     else:
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
@@ -1451,7 +1455,6 @@ def generate_multiatom_autocorrelations(mol, loud, depth=4, oct=True, flag_name=
         result.append(metal_ac)
     if flag_name:
         results_dictionary = {'colnames': colnames, 'results_mc_ac': result}
-        # print(results_dictionary)
     else:
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
@@ -1613,12 +1616,15 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
     return results_dictionary
 
 
-def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False):
+def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    if polarizability:
+        allowed_strings += ['polarizability']
+        labels_strings += ['alpha']
     for ii, properties in enumerate(allowed_strings):
         metal_ac = multimetal_only_deltametric(mol, properties, depth, oct=oct)
         this_colnames = []
@@ -1655,7 +1661,7 @@ def generate_multiatom_deltametrics(mol, loud, depth=4, oct=True, flag_name=Fals
 def generate_full_complex_autocorrelations(mol, loud,
                                            depth=4, oct=True,
                                            flag_name=False, modifier=False,
-                                           use_dist=False, NumB=False, Zeff=False):
+                                           use_dist=False, NumB=False, Zeff=False, polarizability=False):
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
@@ -1666,6 +1672,9 @@ def generate_full_complex_autocorrelations(mol, loud,
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if polarizability:
+        allowed_strings += ["polarizability"]
+        labels_strings += ["alpha"]
     for ii, properties in enumerate(allowed_strings):
         metal_ac = full_autocorrelation(mol, properties, depth,
                                         oct=oct, modifier=modifier,
@@ -1739,7 +1748,7 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
     return results_dictionary
 
 
-def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Zeff = False):
+def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Zeff = False, polarizability=False):
     ## this function gets autocorrelations for a molecule starting
     ## in one single atom only
     # Inputs:
@@ -1756,6 +1765,9 @@ def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, Nu
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if polarizability:
+        allowed_strings += ['polarizability']
+        labels_strings += ['alpha']
     # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_autocorrelation(mol, properties, depth, atomIdx, oct=oct)
@@ -1800,7 +1812,7 @@ def generate_atomonly_autocorrelation_derivatives(mol, atomIdx, loud, depth=4, o
     return results_dictionary
 
 
-def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Zeff=False):
+def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Zeff=False, polarizability=False):
     ## this function gets deltametrics for a molecule starting
     ## in one single atom only
     # Inputs:
@@ -1810,13 +1822,16 @@ def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True, NumB=F
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
-    labels_strings = ['chi', 'Z', 'I', 'T', 'S', 'Zeff']
+    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Zeff:
-        labels_strings+= ['Zeff']
-        allowed_strings['allowed_strings']
+        allowed_strings += ['effective_nuclear_charge']
+        labels_strings += ['Zeff'] 
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if polarizability:
+        allowed_strings += ["polarizability"]
+        labels_strings += ["alpha"]
     # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_deltametric(mol, properties, depth, atomIdx, oct=oct)
