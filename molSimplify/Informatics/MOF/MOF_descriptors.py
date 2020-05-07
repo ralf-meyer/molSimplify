@@ -59,7 +59,6 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
     """""""""
     Loop over all SBUs as identified by subgraphs. Then create the mol3Ds for each SBU.
     """""""""
-
     for i, SBU in enumerate(SBUlist):
         descriptor_names = []
         descriptors = []
@@ -75,6 +74,7 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
             descriptor_names = []
             descriptors = []
             if len(set(SBU).intersection(linker))>0:
+                #### This means that the SBU and linker are connected.
                 temp_mol = mol3D()
                 link_list = []
                 for jj, val2 in enumerate(linker):
@@ -278,7 +278,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
         write2file(path,"/FailedStructures.log",tmpstr)
         return full_names, full_descriptors
 
-    writeXYZandGraph( xyzpath , allatomtypes , cell_v , fcoords , adj_matrix.todense())
+    writeXYZandGraph(xyzpath, allatomtypes, cell_v, fcoords, adj_matrix.todense())
     molcif,_,_,_,_ = import_from_cif(data, True)
     molcif.graph = adj_matrix.todense()
     
@@ -510,7 +510,6 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
         print('Failed to featurize this MOF.')
         full_names = [0]
         full_descriptors = [0]
-
     if (len(full_names) <= 1) and (len(full_descriptors) <= 1):
         tmpstr = "Failed to featurize %s\n"%(name)
         write2file(path,"/FailedStructures.log",tmpstr)
@@ -533,4 +532,3 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
 # keep = [val for val in df.columns.values if ('mc' in val) or ('lc' in val) or ('f-lig' in val) or ('func') in val]
 # df = df[['filename']+keep] ### this gets the 156 RACs reported in the paper. SBU Racs are redundant with mc RACs and are not included.
 # df.to_csv('./full_featurization_frame.csv',index=False) 
-
