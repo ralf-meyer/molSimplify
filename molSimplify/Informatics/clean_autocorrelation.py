@@ -145,8 +145,7 @@ def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, Nu
 def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
                                func=autocorrelation, modifier=False, allow_multi=False):
     autocorrelation_vector = np.zeros(d+1)
-    # try:
-    if True:
+    try:
         n_met = len(mol.findMetal())
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         if allow_multi:
@@ -156,10 +155,9 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, catoms=None,
             autocorrelation_vector = np.divide(autocorrelation_vector, n_met)
         else:
             autocorrelation_vector = func(mol, w, mol.findMetal()[0], d, oct=oct, catoms=catoms)
-
-    # except:
-    #     print('Error, no metal found in mol object!')
-    #     return False
+    except:
+        print('Error, no metal found in mol object!')
+        return False
     return (autocorrelation_vector)
 
 
