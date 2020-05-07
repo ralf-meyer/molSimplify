@@ -529,6 +529,7 @@ def parseinputfile(args):
     args.dbvhyb = False
     args.dbvlinks = False
     args.rprompt = False
+    set_rundir = False
 
     # (we should remove these where posible)
     # THIS NEEDS CLEANING UP TO MINIMIZE DUPLICATION WITH parsecommandline
@@ -553,6 +554,7 @@ def parseinputfile(args):
                 l = l.split(',')
                 args.ccatoms = [int(ll)-1 for ll in l]
             if (l[0] == '-rundir'):
+                set_rundir = True
                 args.rundir = line.split("#")[0].strip('\n')
                 args.rundir = args.rundir.split('-rundir')[1]
                 args.rundir = args.rundir.lstrip(' ')
@@ -1044,6 +1046,8 @@ def parseinputfile(args):
                 args.simple = True
             if (l[0] == '-max_descriptors'):
                 args.max_descriptors = [str(i) for i in l[1:]]
+    if not set_rundir:
+        args.rundir = os.path.join(os.path.abspath('.'),'Runs')
 # Parses command line arguments and prints help information
 #  @param parser Parser object
 #  @return Namespace of arguments

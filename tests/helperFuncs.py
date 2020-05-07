@@ -198,7 +198,8 @@ def jobname(infile):
 
 def jobdir(infile):
     name = jobname(infile)
-    homedir = os.path.expanduser("~")
+    # homedir = os.path.expanduser("~")
+    homedir = os.getcwd()
     mydir = homedir + '/Runs/' + name
     return mydir
 
