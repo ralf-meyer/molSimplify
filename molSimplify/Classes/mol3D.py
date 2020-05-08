@@ -1413,6 +1413,22 @@ class mol3D:
         d = self.getAtom(idx).distance(self.getAtom(metalx))
         return d
 
+    # Gets angle between atoms in molecule
+    #  @param self The object pointer
+    #  @param idx0 Index of first atom
+    #  @param idx1 Index of second (middle)
+    #  @param idx2 Index of third atom
+    #  @return angle between vectors formed by atom0->atom1 and atom2->atom1
+    def getAngle(self,idx0,idx1,idx2):
+        coords0 = self.getAtomCoords(idx0)
+        coords1 = self.getAtomCoords(idx1)
+        coords2 = self.getAtomCoords(idx2)
+        v1 = (np.array(coords0) - np.array(coords1)).tolist()
+        v2 = (np.array(coords2) - np.array(coords1)).tolist()
+        angle = vecangle(v1,v2)
+        return angle
+
+
     # Gets index of closest non-H atom to another atom
     #
     #  Equivalent to getClosestAtomnoHs() except that the index of the reference atom is specified.
@@ -2161,7 +2177,10 @@ class mol3D:
             atom_groups = [str(1)]*self.natoms
         atom_types = list(set(self.symvect()))
         atom_type_numbers = np.ones(len(atom_types))
-        metal_ind = self.findMetal()[0]
+        try:
+            metal_ind = self.findMetal()[0]
+        except:
+            metal_ind = 0
         if len(self.partialcharges):
             charges = self.partialcharges
             charge_string = 'PartialCharges'
