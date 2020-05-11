@@ -44,7 +44,31 @@ class ligand:
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in self.index_list]
             self.mol.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
         self.ext_int_dict = this_ext_int_dict
-
+    
+    # Write out ligand mol2 string and molecular graph determinant
+    # include Metal flagged with Symbol "X" for placeholder status
+    # returns molecular_graph_determinant and ligand_mol2_string
+    def get_lig_mol2(self):
+        this_mol2 = mol3D()
+        this_ext_int_dict = dict()
+        metal_ind = self.master_mol.findMetal()[0]
+        this_mol2_inds = self.index_list.copy()
+        this_mol2_inds.append(metal_ind)
+        this_mol2_inds = sorted(this_mol2_inds)
+        # Add the metal with symbol = 'M'
+        for i in this_mol2_inds:
+            if i == metal_ind:
+                atom = self.master_mol.getAtom(metal_ind)
+                atom.mutate('X')
+                this_mol2.addAtom(atom)
+            else:
+                this_mol2.addAtom(self.master_mol.getAtom(i))
+        if len(self.master_mol.graph): # Save graph to ligand mol3D object
+            delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
+            this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
+        lig_mol_graph_det = this_mol2.get_mol_graph_det()
+        lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
+        return lig_mol_graph_det, lig_mol2_string
 
 ##########
 
