@@ -369,6 +369,26 @@ geo_check_dictionary = {"dict_oct_check_loose": dict_oct_check_loose,
                         "dict_staus": dict_staus,
                         "oct_angle_ref": oct_angle_ref,
                         "oneempty_angle_ref": oneempty_angle_ref}
+all_geometries = {
+    3: ["trigonal planar", "T shape"],
+    4: ["tetrahedral", "square planar"],
+    5: ["trigonal bipyramidal", "square pyramidal", "pentagonal planar"],
+    6: ["octahedral", "pentagonal pyramidal"],
+    7: ["pentagonal bipyramidal"],
+}
+all_angle_refs = {
+    "trigonal planar": [[120, 120] for x in range(3)],
+    "T shape": [[90, 90], [90, 180], [90, 180]],
+    "tetrahedral": [[109.47, 109.47, 109.47] for x in range(4)],
+    "square planar": [[90, 90, 180] for x in range(4)],
+    "seesaw": [[90, 90, 180] for x in range(2)] + [[90, 90, 120] for x in range(2)],
+    "trigonal bipyramidal": [[90, 90, 90, 180] for x in range(2)] + [[120, 120, 90, 90] for x in range(3)],
+    "square pyramidal": [[90, 90, 90, 90]] + [[180, 90, 90, 90] for x in range(4)],
+    "pentagonal planar": [[36, 36, 72, 72] for x in range(5)],
+    "octahedral": [[90, 90, 90, 90, 180] for x in range(6)],
+    "pentagonal pyramidal": [[90, 90, 90, 90, 90]] + [[36, 36, 72, 72, 90] for x in range(5)],
+    "pentagonal bipyramidal": [[90, 90, 90, 90, 90, 180] for x in range(2)] + [[72, 72, 144, 144, 90, 90] for x in range(5)]
+}
 
 
 # Module for running bash commands
@@ -545,6 +565,12 @@ class globalvars:
     #  @return geo check objection  dictionary
     def geo_check_dictionary(self):
         return geo_check_dictionary
+
+    def get_all_geometries(self):
+        return all_geometries
+
+    def get_all_angle_refs(self):
+        return all_angle_refs
 
     # Record custom path in ~/.molSimplify file
     #  @param self The object pointer
