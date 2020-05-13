@@ -3282,3 +3282,47 @@ class mol3D:
             homoleptic = False
         return eqsym, maxdent, ligdents, homoleptic, ligsymmetry
 
+    def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
+                          flag_catoms=False, catoms_arr=None, debug=False,
+                          skip=False):
+        '''
+        Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
+        trigonal bipyramidal(5), square pyramidal(5, one-empty-site), 
+        octahedral(6), pentagonal bipyramidal(7))
+
+        '''
+        all_geometries = globalvars().get_all_geometries()
+        all_angle_refs = globalvars().get_all_angle_refs()
+        angle_deviations = {}
+        if num_coord is not False:
+            if num_coord not in [3, 4, 5, 6, 7]:
+                raise ValueError("The coordination number of %d is out of the scope of geotype detection now."%num_coord)
+            else:
+                if catoms_arr is not None:
+                    if not len(catoms_arr) == num_coord:
+                        raise ValueError("num_coord and the length of catoms_arr do not match.")
+                    possible_geometries = all_geometries[num_coord]
+                    for geotype in possible_geometries:
+                        dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                             catoms_arr=catoms_arr, 
+                                                             debug=debug)
+                        angle_deviations.update({geotype: dict_catoms_shape})
+                else:
+                    for geotype in possible_geometries:
+                        dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                                           catoms_arr=None,
+                                                                           debug=debug)
+                        print("Geocheck assigned catoms: ", catoms_assigned, [self.getAtom(ind).symbol() for ind in catoms_assigned])
+                        angle_deviations.update({geotype: dict_catoms_shape})
+        else:
+            # TODO: Implement the case where we don't know the coordination number.
+            raise KeyError("Not implemented yet. Please at least provide the coordination number.")
+        min_devi, geometry = 10000, False
+        for geotype in angle_deviations:
+            if angle_deviations[geotype]["oct_angle_devi_max"] < min_devi:
+                min_devi = angle_deviations[geotype]["oct_angle_devi_max"]
+                geometry = geotype
+        return geometry, min_devi, angle_deviations
+
+
+
