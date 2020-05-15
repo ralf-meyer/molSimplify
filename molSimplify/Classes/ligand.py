@@ -43,6 +43,9 @@ class ligand:
         if len(self.master_mol.graph): # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in self.index_list]
             self.mol.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
+        if self.master_mol.bo_dict:
+            save_bo_dict = self.master_mol.get_bo_dict_from_inds(self.index_list)
+            self.mol.bo_dict = save_bo_dict
         self.ext_int_dict = this_ext_int_dict
     
     # Write out ligand mol2 string and molecular graph determinant
@@ -66,6 +69,9 @@ class ligand:
         if len(self.master_mol.graph): # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
+        if self.master_mol.bo_dict:
+            save_bo_dict = self.master_mol.get_bo_dict_from_inds(this_mol2_inds)
+            this_mol2.bo_dict = save_bo_dict
         lig_mol_graph_det = this_mol2.get_mol_graph_det()
         lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
         return lig_mol_graph_det, lig_mol2_string
