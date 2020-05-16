@@ -87,6 +87,8 @@ class mol3D:
         self.OBMol = False
         # Holder for bond order matrix
         self.BO_mat = False
+        # Holder for bond order dictionary
+        self.bo_dict = False
         # List of connection atoms
         self.cat = []
         # Denticity
@@ -421,6 +423,45 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
 
+    # Converts mol3D to OBMol through mol2 function.
+    #
+    #  Required for performing openbabel operations on a molecule, such as FF optimizations.
+    #  @param self The object pointer
+    #  @param force_clean bool force no bond info retention
+    #  @param ignoreX bool skip "X" atoms in mol3D conversion
+    def convert2OBMol2(self, force_clean=False, ignoreX=False):
+        # get BO matrix if exits:
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInFormat('mol2')
+        if not len(self.graph):
+            self.createMolecularGraph()
+        if not self.bo_dict: # If bonddict not assigned - Use OBMol to perceive bond orders
+            mol2string = self.writemol2('temporary',writestring=True,bondorders=False,ignoreX=ignoreX)
+            OBMol = openbabel.OBMol()
+            obConversion.ReadString(OBMol,mol2string)
+            OBMol.PerceiveBondOrders()
+            #####
+            obConversion.SetOutFormat('mol2')
+            ss = obConversion.WriteString(self.OBMol)
+            # Update atom types from OBMol
+            lines = ss.split('ATOM\n')[1].split('@<TRIPOS>BOND')[0].split('\n')[:-1]
+            for i,line in enumerate(lines):
+                if '.' in line.split()[5]:
+                    self.atoms[i].name = line.split()[5].split('.')[1]
+            ######
+            self.OBMol = []
+            self.OBMol = OBMol
+            BO_mat = self.populateBOMatrix(bonddict=True)
+            self.BO_mat = BO_mat
+        else:
+            mol2string = self.writemol2('temporary',writestring=True,bondorders=True,ignoreX=ignoreX)
+            OBMol = openbabel.OBMol()
+            obConversion.ReadString(OBMol,mol2string)
+            self.OBMol = []
+            self.OBMol = OBMol
+            BO_mat = self.populateBOMatrix(bonddict=False)
+            self.BO_mat = BO_mat
+
     def resetBondOBMol(self):
         if self.OBMol:
             BO_mat = self.populateBOMatrix()
@@ -456,7 +497,6 @@ class mol3D:
             # BondSafe
             cmol.convert2OBMol(force_clean=False, ignoreX=True)
             mol.convert2OBMol(force_clean=False, ignoreX=True)
-
             n_one = cmol.natoms
             n_two = mol.natoms
             n_tot = n_one + n_two
@@ -527,6 +567,12 @@ class mol3D:
             ss.append(atom.sym)
         return np.array(ss)
 
+    def typevect(self):
+        ss = []
+        for atom in self.atoms:
+            ss.append(atom.name)
+        return np.array(ss)
+
     # Copies properties and atoms of another existing mol3D object into current mol3D object.
     #
     #  WARNING: NEVER EVER USE mol3D = mol0 to do this. It doesn't work.
@@ -549,6 +595,7 @@ class mol3D:
         self.OBMol = mol0.OBMol
         self.name = mol0.name
         self.graph = mol0.graph
+        self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
     # Create molecular graph (connectivity matrix) from mol3D info
@@ -593,7 +640,13 @@ class mol3D:
             atomIdx = self.natoms + atomIdx
         if atomIdx >= self.natoms:
             raise Exception('mol3D object cannot delete atom '+str(atomIdx)+' because it only has '+str(self.natoms)+' atoms!')
-        self.convert2OBMol()
+        if self.bo_dict:
+            self.convert2OBMol2()
+            save_inds = [x for x in range(self.natoms) if x != atomIdx]
+            save_bo_dict = self.get_bo_dict_from_inds(save_inds)
+            self.bo_dict = save_bo_dict
+        else:
+            self.convert2OBMol()
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
@@ -622,7 +675,13 @@ class mol3D:
             if i > self.natoms:
                 raise Exception('mol3D object cannot delete atom '+str(i)+' because it only has '+str(self.natoms)+' atoms!')
         Alist = [self.natoms+i if i<0 else i for i in Alist] #convert negative indexes to positive indexes
-        self.convert2OBMol()
+        if self.bo_dict:
+            self.convert2OBMol2()
+            save_inds = [x for x in range(self.natoms) if x not in Alist]
+            save_bo_dict = self.get_bo_dict_from_inds(save_inds)
+            self.bo_dict = save_bo_dict
+        else:
+            self.convert2OBMol()
         for h in sorted(Alist, reverse=True):
             self.OBMol.DeleteAtom(self.OBMol.GetAtom(int(h) + 1))
             self.mass -= self.getAtom(h).mass
@@ -1413,6 +1472,22 @@ class mol3D:
         d = self.getAtom(idx).distance(self.getAtom(metalx))
         return d
 
+    # Gets angle between atoms in molecule
+    #  @param self The object pointer
+    #  @param idx0 Index of first atom
+    #  @param idx1 Index of second (middle)
+    #  @param idx2 Index of third atom
+    #  @return angle between vectors formed by atom0->atom1 and atom2->atom1
+    def getAngle(self,idx0,idx1,idx2):
+        coords0 = self.getAtomCoords(idx0)
+        coords1 = self.getAtomCoords(idx1)
+        coords2 = self.getAtomCoords(idx2)
+        v1 = (np.array(coords0) - np.array(coords1)).tolist()
+        v2 = (np.array(coords2) - np.array(coords1)).tolist()
+        angle = vecangle(v1,v2)
+        return angle
+
+
     # Gets index of closest non-H atom to another atom
     #
     #  Equivalent to getClosestAtomnoHs() except that the index of the reference atom is specified.
@@ -1590,17 +1665,24 @@ class mol3D:
 
     # Gets a matrix with bond orders from openbabel
     #  @param self The object pointer
+    #  @param bonddict Flag for if the obmol bond dictionary should be saved
     #  @return matrix of bond orders
-    def populateBOMatrix(self):
+    def populateBOMatrix(self,bonddict=False):
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         molBOMat = np.zeros((n, n))
+        bond_dict = dict()
         for bond in obiter:
             these_inds = [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]
             this_order = bond.GetBondOrder()
             molBOMat[these_inds[0] - 1, these_inds[1] - 1] = this_order
             molBOMat[these_inds[1] - 1, these_inds[0] - 1] = this_order
-        return (molBOMat)
+            bond_dict[tuple(sorted([these_inds[0]-1,these_inds[1]-1]))] = this_order
+        if not bonddict:
+            return (molBOMat)
+        else:
+            self.bo_dict = bond_dict
+            return (molBOMat)
 
     # Gets a matrix with bond orders from openbabel augmented with molecular graph
     #  @param self The object pointer
@@ -1683,12 +1765,16 @@ class mol3D:
                 self.addAtom(atom)
 
     # Load molecule from mol2 file
-    #
+    # Now accounts for bond orders as well as atom types (SYBYL)
+    # @param self The object pointer
+    # @param filename The name of the mol2file or string being read in
+    # @param readstring Whether a string of mol2 file is being passed as the filename
     def readfrommol2(self, filename, readstring=False):
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
-        graph = []
+        graph = False
+        bo_dict = False
         if readstring:
             s = filename.splitlines()
         else:
@@ -1709,15 +1795,19 @@ class mol3D:
                 atom_symbol1 = re.sub('[0-9]+[A-Z]+', '', line.split()[1])
                 atom_symbol1 = re.sub('[0-9]+', '', atom_symbol1)
                 atom_symbol2 = line.split()[5]
+                if len(atom_symbol2.split('.')) > 1:
+                    atype = atom_symbol2.split('.')[1]
+                else:
+                    atype = False
                 atom_symbol2 = atom_symbol2.split('.')[0]
                 if atom_symbol1 in list(amassdict.keys()):
                     atom = atom3D(atom_symbol1, [float(s_line[2]), float(
-                        s_line[3]), float(s_line[4])])
+                        s_line[3]), float(s_line[4])],name=atype)
                 elif atom_symbol2 in list(amassdict.keys()):
                     atom = atom3D(atom_symbol2, [float(s_line[2]), float(
-                        s_line[3]), float(s_line[4])])
+                        s_line[3]), float(s_line[4])],name=atype)
                 else:
-                    print('cannot find atom type')
+                    print('Cannot find atom symbol in amassdict')
                     sys.exit()
                 self.charge += float(s_line[8])
                 self.partialcharges.append(float(s_line[8]))
@@ -1728,15 +1818,18 @@ class mol3D:
                 s_line = line.split()
                 graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
                 graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
+                bo_dict[tuple(sorted([int(s_line[1]) - 1, int(s_line[2]) - 1]))] = s_line[3]
             if '<TRIPOS>BOND' in line:
                 read_bonds = True
                 # initialize molecular graph
                 graph = np.zeros((self.natoms, self.natoms))
+                bo_dict = dict()
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
+            self.bo_dict = bo_dict
         else:
             self.graph = []
-
+            self.bo_dict = []
     # Load molecule from xyz file
     #
     #  Consider using getOBMol, which is more general, instead.
@@ -2138,14 +2231,14 @@ class mol3D:
         f.close()
 
     # Write mol2 file from mol3D object
-    # Note: Bond orders all assigned to be 1!!!!!!!!!!!!
-    #
     # If partial charges are given they are appended
     # Otherwise the total charge of the complex (either given or OBMol) is 
     # Assigned to the metal
     #  @param self The object pointer
     #  @param filename Filename
     #  @param writestring Bool to write to a string if True or file if False
+    #  @param ignoreX will delete atom X 
+    #  @param bondorders will dictate if bond orders are written (obmol/assigned) or =1
     def writemol2(self, filename, writestring=False):
         # print('!!!!', filename)
         from scipy.sparse import csgraph
@@ -2161,27 +2254,21 @@ class mol3D:
             atom_groups = [str(1)]*self.natoms
         atom_types = list(set(self.symvect()))
         atom_type_numbers = np.ones(len(atom_types))
-        metals = self.findMetal()
-        if len(metals) == 0:
-            metal_found = False
-            print('--- no metal ---')
-        else:
-            metal_found = True
+        try:
             metal_ind = self.findMetal()[0]
+        except:
+            metal_ind = 0
         if len(self.partialcharges):
             charges = self.partialcharges
             charge_string = 'PartialCharges'
         elif self.charge: # Assign total charge to metal
             charges = np.zeros(self.natoms)
-            if metal_found:
-                ### If a metal exists, assign charge to metal
-                charges[metal_ind] = self.charge
+            charges[metal_ind] = self.charge
             charge_string = 'UserTotalCharge'
         else: # Calc total charge with OBMol, assign to metal
             self.convert2OBMol()
             charges = np.zeros(self.natoms)
-            if metal_found:
-                charges[metal_ind] = self.OBMol.GetTotalCharge()
+            charges[metal_ind] = self.OBMol.GetTotalCharge()
             charge_string = 'OBmolTotalCharge'
         ss = '@<TRIPOS>MOLECULE\n{}\n'.format(filename)
         ss += '{}\t{}\t{}\n'.format(self.natoms,int(csg.nnz/2),disjoint_components[0])
@@ -3079,13 +3166,38 @@ class mol3D:
             _, catoms = self.oct_comp(debug=False)
         fcs = [metalind] + catoms
         return fcs
+    
+    # Recreate bo_dict with correct indicies
+    # @param self The object pointer
+    # @param inds The indicies of the selected submolecule to SAVE
+    # @return new_bo_dict The ported over dictionary with new indicies/bonds deleted
+    def get_bo_dict_from_inds(self,inds):
+        if not self.bo_dict:
+            self.convert2OBMol2()
+        c_bo_dict = self.bo_dict.copy()
+        delete_inds = np.array([x for x in range(self.natoms) if x not in inds])
+        for key in self.bo_dict.keys():
+            if any([True for x in key if x in delete_inds]):
+                del c_bo_dict[key]
+        new_bo_dict = dict()
+        for key,val in c_bo_dict.items():
+            ind1 = key[0]
+            ind2 = key[1]
+            ind1 = ind1 - len(np.where(delete_inds < ind1)[0])
+            ind2 = ind2 - len(np.where(delete_inds < ind2)[0])
+            new_bo_dict[(ind1,ind2)] = val
+        return new_bo_dict
+
 
     def create_mol_with_inds(self, inds):
         molnew = mol3D()
         inds = sorted(inds)
         for ind in inds:
-            atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
+            atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords(),self.atoms[ind].name)
             molnew.addAtom(atom)
+        if self.bo_dict:
+            save_bo_dict = self.get_bo_dict_from_inds(inds)
+            molnew.bo_dict = save_bo_dict
         if len(self.graph):
             delete_inds = [x for x in range(self.natoms) if x not in inds]
             molnew.graph = np.delete(np.delete(self.graph, delete_inds, 0), delete_inds, 1)
@@ -3274,4 +3386,48 @@ class mol3D:
         else:
             homoleptic = False
         return eqsym, maxdent, ligdents, homoleptic, ligsymmetry
+
+    def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
+                          flag_catoms=False, catoms_arr=None, debug=False,
+                          skip=False):
+        '''
+        Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
+        trigonal bipyramidal(5), square pyramidal(5, one-empty-site), 
+        octahedral(6), pentagonal bipyramidal(7))
+
+        '''
+        all_geometries = globalvars().get_all_geometries()
+        all_angle_refs = globalvars().get_all_angle_refs()
+        angle_deviations = {}
+        if num_coord is not False:
+            if num_coord not in [3, 4, 5, 6, 7]:
+                raise ValueError("The coordination number of %d is out of the scope of geotype detection now."%num_coord)
+            else:
+                if catoms_arr is not None:
+                    if not len(catoms_arr) == num_coord:
+                        raise ValueError("num_coord and the length of catoms_arr do not match.")
+                    possible_geometries = all_geometries[num_coord]
+                    for geotype in possible_geometries:
+                        dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                             catoms_arr=catoms_arr, 
+                                                             debug=debug)
+                        angle_deviations.update({geotype: dict_catoms_shape})
+                else:
+                    for geotype in possible_geometries:
+                        dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                                           catoms_arr=None,
+                                                                           debug=debug)
+                        print("Geocheck assigned catoms: ", catoms_assigned, [self.getAtom(ind).symbol() for ind in catoms_assigned])
+                        angle_deviations.update({geotype: dict_catoms_shape})
+        else:
+            # TODO: Implement the case where we don't know the coordination number.
+            raise KeyError("Not implemented yet. Please at least provide the coordination number.")
+        min_devi, geometry = 10000, False
+        for geotype in angle_deviations:
+            if angle_deviations[geotype]["oct_angle_devi_max"] < min_devi:
+                min_devi = angle_deviations[geotype]["oct_angle_devi_max"]
+                geometry = geotype
+        return geometry, min_devi, angle_deviations
+
+
 
