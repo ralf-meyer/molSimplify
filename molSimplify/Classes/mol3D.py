@@ -2161,18 +2161,27 @@ class mol3D:
             atom_groups = [str(1)]*self.natoms
         atom_types = list(set(self.symvect()))
         atom_type_numbers = np.ones(len(atom_types))
-        metal_ind = self.findMetal()[0]
+        metals = self.findMetal()
+        if len(metals) == 0:
+            metal_found = False
+            print('--- no metal ---')
+        else:
+            metal_found = True
+            metal_ind = self.findMetal()[0]
         if len(self.partialcharges):
             charges = self.partialcharges
             charge_string = 'PartialCharges'
         elif self.charge: # Assign total charge to metal
             charges = np.zeros(self.natoms)
-            charges[metal_ind] = self.charge
+            if metal_found:
+                ### If a metal exists, assign charge to metal
+                charges[metal_ind] = self.charge
             charge_string = 'UserTotalCharge'
         else: # Calc total charge with OBMol, assign to metal
             self.convert2OBMol()
             charges = np.zeros(self.natoms)
-            charges[metal_ind] = self.OBMol.GetTotalCharge()
+            if metal_found:
+                charges[metal_ind] = self.OBMol.GetTotalCharge()
             charge_string = 'OBmolTotalCharge'
         ss = '@<TRIPOS>MOLECULE\n{}\n'.format(filename)
         ss += '{}\t{}\t{}\n'.format(self.natoms,int(csg.nnz/2),disjoint_components[0])
@@ -3085,7 +3094,7 @@ class mol3D:
     # Writes a psueduo-chemical formula
     #
     #  @param self The object pointer
-    def make_formula(self):
+    def make_formula(self, latex=True):
         retstr = ""
         atomorder = self.globs.elementsbynum()
         unique_symbols = dict()
@@ -3100,8 +3109,11 @@ class mol3D:
             self.globs.elementsbynum().index(x)))
         skeys = skeys[::-1]
         for sk in skeys:
-            retstr += '\\textrm{' + sk + '}_{' + \
-                      str(int(unique_symbols[sk])) + '}'
+            if latex:
+                retstr += '\\textrm{' + sk + '}_{' + \
+                          str(int(unique_symbols[sk])) + '}'
+            else:
+                retstr += sk+str(int(unique_symbols[sk]))
         return retstr
 
     def read_smiles(self, smiles, ff="mmff94", steps=2500):
