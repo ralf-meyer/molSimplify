@@ -2066,7 +2066,11 @@ class mol3D:
         mind = 1000
         for ii, atom1 in enumerate(self.atoms):
             for jj, atom0 in enumerate(self.atoms):
-                if ii != jj and (distance(atom1.coords(), atom0.coords()) < 0.7 * (atom1.rad + atom0.rad)):
+                if atom1.ismetal() or atom0.ismetal():
+                    cutoff = 0.6
+                else:
+                    cutoff = 0.7
+                if ii != jj and (distance(atom1.coords(), atom0.coords()) < cutoff * (atom1.rad + atom0.rad)):
                     overlap = True
                     if distance(atom1.coords(), atom0.coords()) < mind:
                         mind = distance(atom1.coords(), atom0.coords())
@@ -2079,34 +2083,41 @@ class mol3D:
                     break
         return overlap, mind
 
-    def sanitycheckCSD(self,oct=True,angle1=67.5,angle2=135):
+    def sanitycheckCSD(self,oct=False,angle1=30,angle2=90):
         """
         Check that the molecule passes basic angle tests in line with CSD pulls
         input: oct (bool: if octahedral test)
-        input: angle1 (low angle cutoff)
-        input: angle2 (high angle cutoff)
+        input: angle1 (metal angle cutoff)
+        input: angle2 (organic angle cutoff)
         output: sane (bool: if sane octahedral molecule)
         """
-        metalind = self.findMetal()[0]
-        metalcons = self.getBondedAtoms(metalind)
+        import itertools
+        metalinds = self.findMetal()
+        mcons = []
+        metal_syms = []
+        for metal in metalinds:  
+            metalcons = self.getBondedAtomsSmart(metal,oct=oct)
+            mcons.append(metalcons)
+            metal_syms.append(self.symvect()[metal])
+        overlap, _ = self.sanitycheck(silence=True)
+        heavy_atoms = [i for i,x in enumerate(self.symvect()) if (x!='H') and (x not in metal_syms)]
         sane = True
-        if len(metalcons) != 6 and oct:
-            sane = False
+        if not overlap:
+            for i,metal in enumerate(metalinds):
+                combos = itertools.combinations(mcons[i],2)
+                for combo in combos:
+                    if self.getAngle(combo[0],metal,combo[1]) < angle1:
+                        sane = False
+            if sane:
+                for indx in heavy_atoms:
+                    if len(self.getBondedAtomsSmart(indx)) > 1:
+                        combos = itertools.combinations(self.getBondedAtomsSmart(indx), 2)
+                        for combo in combos:
+                            if self.getAngle(combo[0],indx,combo[1]) < angle2:
+                                sane = False
+                                break
         else:
-            metal_coord = self.getAtomCoords(metalind)
-            metalcons_coords = [self.getAtomCoords(i) for i in metalcons]
-            for idx1, coord1 in enumerate(metalcons_coords):
-                delr1 = (np.array(coord1) - np.array(metal_coord)).tolist()
-                theta_tmp = []
-                for idx2, coord2 in enumerate(metalcons_coords):
-                    if idx2 != idx1:
-                        delr2 = (np.array(coord2) - np.array(metal_coord)).tolist()
-                        theta = vecangle(delr1, delr2)
-                        theta_tmp.append(theta)
-                count1 = len(np.where(np.array(theta_tmp)>angle1)[0])
-                count2 = len(np.where(np.array(theta_tmp)>angle2)[0])
-                if count1 < 5 or count2 != 1:
-                    sane = False
+            sane = False
         return sane
 
     # Translate all atoms by given vector.
