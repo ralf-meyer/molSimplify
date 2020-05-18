@@ -702,6 +702,20 @@ class mol3D:
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
 
+    # Get ligand mol without hydrogens
+    # 
+    # Loops over the atoms and makes a submol that contains 
+    # all of the atoms without the hydrogens:
+    def get_submol_noHs(self):
+        keep_list = []
+        for i in range(self.natoms):
+            if self.getAtom(i).Symbol()=='H':
+                continue
+            else:
+                keep_list.append(i)
+        mol_noHs = self.create_mol_with_inds(keep_list)
+        return mol_noHs
+
     # Deletes all hydrogens from molecule.
     #
     #  Calls deleteatoms, so ordering of heavy atoms is preserved.
