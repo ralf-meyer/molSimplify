@@ -3326,12 +3326,15 @@ class mol3D:
         else:
             print(("chargefile does not exist.", chargefile))
 
-    def get_mol_graph_det(self, oct=True):
+    def get_mol_graph_det(self, oct=True, useBOMat = False):
         globs = globalvars()
         amassdict = globs.amass()
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        tmpgraph = np.copy(self.graph)
+        if useBOMat:
+            tmpgraph = np.copy(self.BO_mat)
+        else:
+            tmpgraph = np.copy(self.graph)
         syms = self.symvect()
         weights = [amassdict[x][0] for x in syms] 
         ##### Add hydrogen tolerance???
@@ -3340,7 +3343,7 @@ class mol3D:
             tmpgraph[j,j] = weights[j]
         for i,x in enumerate(inds[0]):
             y = inds[1][i]
-            tmpgraph[x,y] = weights[x]*weights[y]
+            tmpgraph[x,y] = weights[x]*weights[y]*tmpgraph[x,y]
         with np.errstate(over='raise'):
             try:
                 det = np.linalg.det(tmpgraph)
