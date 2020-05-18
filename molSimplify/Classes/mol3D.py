@@ -87,6 +87,8 @@ class mol3D:
         self.OBMol = False
         # Holder for bond order matrix
         self.BO_mat = False
+        # Holder for bond order dictionary
+        self.bo_dict = False
         # List of connection atoms
         self.cat = []
         # Denticity
@@ -421,6 +423,45 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
 
+    # Converts mol3D to OBMol through mol2 function.
+    #
+    #  Required for performing openbabel operations on a molecule, such as FF optimizations.
+    #  @param self The object pointer
+    #  @param force_clean bool force no bond info retention
+    #  @param ignoreX bool skip "X" atoms in mol3D conversion
+    def convert2OBMol2(self, force_clean=False, ignoreX=False):
+        # get BO matrix if exits:
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInFormat('mol2')
+        if not len(self.graph):
+            self.createMolecularGraph()
+        if not self.bo_dict: # If bonddict not assigned - Use OBMol to perceive bond orders
+            mol2string = self.writemol2('temporary',writestring=True,bondorders=False,ignoreX=ignoreX)
+            OBMol = openbabel.OBMol()
+            obConversion.ReadString(OBMol,mol2string)
+            OBMol.PerceiveBondOrders()
+            #####
+            obConversion.SetOutFormat('mol2')
+            ss = obConversion.WriteString(self.OBMol)
+            # Update atom types from OBMol
+            lines = ss.split('ATOM\n')[1].split('@<TRIPOS>BOND')[0].split('\n')[:-1]
+            for i,line in enumerate(lines):
+                if '.' in line.split()[5]:
+                    self.atoms[i].name = line.split()[5].split('.')[1]
+            ######
+            self.OBMol = []
+            self.OBMol = OBMol
+            BO_mat = self.populateBOMatrix(bonddict=True)
+            self.BO_mat = BO_mat
+        else:
+            mol2string = self.writemol2('temporary',writestring=True,bondorders=True,ignoreX=ignoreX)
+            OBMol = openbabel.OBMol()
+            obConversion.ReadString(OBMol,mol2string)
+            self.OBMol = []
+            self.OBMol = OBMol
+            BO_mat = self.populateBOMatrix(bonddict=False)
+            self.BO_mat = BO_mat
+
     def resetBondOBMol(self):
         if self.OBMol:
             BO_mat = self.populateBOMatrix()
@@ -430,7 +471,7 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
         else:
-            print("OBmol doies not exist")
+            print("OBmol does not exist")
 
     # Combines two molecules
     #
@@ -456,7 +497,6 @@ class mol3D:
             # BondSafe
             cmol.convert2OBMol(force_clean=False, ignoreX=True)
             mol.convert2OBMol(force_clean=False, ignoreX=True)
-
             n_one = cmol.natoms
             n_two = mol.natoms
             n_tot = n_one + n_two
@@ -527,6 +567,12 @@ class mol3D:
             ss.append(atom.sym)
         return np.array(ss)
 
+    def typevect(self):
+        ss = []
+        for atom in self.atoms:
+            ss.append(atom.name)
+        return np.array(ss)
+
     # Copies properties and atoms of another existing mol3D object into current mol3D object.
     #
     #  WARNING: NEVER EVER USE mol3D = mol0 to do this. It doesn't work.
@@ -549,6 +595,7 @@ class mol3D:
         self.OBMol = mol0.OBMol
         self.name = mol0.name
         self.graph = mol0.graph
+        self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
     # Create molecular graph (connectivity matrix) from mol3D info
@@ -593,7 +640,13 @@ class mol3D:
             atomIdx = self.natoms + atomIdx
         if atomIdx >= self.natoms:
             raise Exception('mol3D object cannot delete atom '+str(atomIdx)+' because it only has '+str(self.natoms)+' atoms!')
-        self.convert2OBMol()
+        if self.bo_dict:
+            self.convert2OBMol2()
+            save_inds = [x for x in range(self.natoms) if x != atomIdx]
+            save_bo_dict = self.get_bo_dict_from_inds(save_inds)
+            self.bo_dict = save_bo_dict
+        else:
+            self.convert2OBMol()
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
@@ -622,7 +675,13 @@ class mol3D:
             if i > self.natoms:
                 raise Exception('mol3D object cannot delete atom '+str(i)+' because it only has '+str(self.natoms)+' atoms!')
         Alist = [self.natoms+i if i<0 else i for i in Alist] #convert negative indexes to positive indexes
-        self.convert2OBMol()
+        if self.bo_dict:
+            self.convert2OBMol2()
+            save_inds = [x for x in range(self.natoms) if x not in Alist]
+            save_bo_dict = self.get_bo_dict_from_inds(save_inds)
+            self.bo_dict = save_bo_dict
+        else:
+            self.convert2OBMol()
         for h in sorted(Alist, reverse=True):
             self.OBMol.DeleteAtom(self.OBMol.GetAtom(int(h) + 1))
             self.mass -= self.getAtom(h).mass
@@ -642,6 +701,20 @@ class mol3D:
         #   - Alist: list of atoms to be frozen
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
+
+    # Get ligand mol without hydrogens
+    # 
+    # Loops over the atoms and makes a submol that contains 
+    # all of the atoms without the hydrogens:
+    def get_submol_noHs(self):
+        keep_list = []
+        for i in range(self.natoms):
+            if self.getAtom(i).Symbol()=='H':
+                continue
+            else:
+                keep_list.append(i)
+        mol_noHs = self.create_mol_with_inds(keep_list)
+        return mol_noHs
 
     # Deletes all hydrogens from molecule.
     #
@@ -1606,17 +1679,24 @@ class mol3D:
 
     # Gets a matrix with bond orders from openbabel
     #  @param self The object pointer
+    #  @param bonddict Flag for if the obmol bond dictionary should be saved
     #  @return matrix of bond orders
-    def populateBOMatrix(self):
+    def populateBOMatrix(self,bonddict=False):
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         molBOMat = np.zeros((n, n))
+        bond_dict = dict()
         for bond in obiter:
             these_inds = [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]
             this_order = bond.GetBondOrder()
             molBOMat[these_inds[0] - 1, these_inds[1] - 1] = this_order
             molBOMat[these_inds[1] - 1, these_inds[0] - 1] = this_order
-        return (molBOMat)
+            bond_dict[tuple(sorted([these_inds[0]-1,these_inds[1]-1]))] = this_order
+        if not bonddict:
+            return (molBOMat)
+        else:
+            self.bo_dict = bond_dict
+            return (molBOMat)
 
     # Gets a matrix with bond orders from openbabel augmented with molecular graph
     #  @param self The object pointer
@@ -1699,12 +1779,16 @@ class mol3D:
                 self.addAtom(atom)
 
     # Load molecule from mol2 file
-    #
+    # Now accounts for bond orders as well as atom types (SYBYL)
+    # @param self The object pointer
+    # @param filename The name of the mol2file or string being read in
+    # @param readstring Whether a string of mol2 file is being passed as the filename
     def readfrommol2(self, filename, readstring=False):
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
-        graph = []
+        graph = False
+        bo_dict = False
         if readstring:
             s = filename.splitlines()
         else:
@@ -1725,15 +1809,19 @@ class mol3D:
                 atom_symbol1 = re.sub('[0-9]+[A-Z]+', '', line.split()[1])
                 atom_symbol1 = re.sub('[0-9]+', '', atom_symbol1)
                 atom_symbol2 = line.split()[5]
+                if len(atom_symbol2.split('.')) > 1:
+                    atype = atom_symbol2.split('.')[1]
+                else:
+                    atype = False
                 atom_symbol2 = atom_symbol2.split('.')[0]
                 if atom_symbol1 in list(amassdict.keys()):
                     atom = atom3D(atom_symbol1, [float(s_line[2]), float(
-                        s_line[3]), float(s_line[4])])
+                        s_line[3]), float(s_line[4])],name=atype)
                 elif atom_symbol2 in list(amassdict.keys()):
                     atom = atom3D(atom_symbol2, [float(s_line[2]), float(
-                        s_line[3]), float(s_line[4])])
+                        s_line[3]), float(s_line[4])],name=atype)
                 else:
-                    print('cannot find atom type')
+                    print('Cannot find atom symbol in amassdict')
                     sys.exit()
                 self.charge += float(s_line[8])
                 self.partialcharges.append(float(s_line[8]))
@@ -1744,15 +1832,18 @@ class mol3D:
                 s_line = line.split()
                 graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
                 graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
+                bo_dict[tuple(sorted([int(s_line[1]) - 1, int(s_line[2]) - 1]))] = s_line[3]
             if '<TRIPOS>BOND' in line:
                 read_bonds = True
                 # initialize molecular graph
                 graph = np.zeros((self.natoms, self.natoms))
+                bo_dict = dict()
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
+            self.bo_dict = bo_dict
         else:
             self.graph = []
-
+            self.bo_dict = []
     # Load molecule from xyz file
     #
     #  Consider using getOBMol, which is more general, instead.
@@ -2183,14 +2274,14 @@ class mol3D:
         f.close()
 
     # Write mol2 file from mol3D object
-    # Note: Bond orders all assigned to be 1!!!!!!!!!!!!
-    #
     # If partial charges are given they are appended
     # Otherwise the total charge of the complex (either given or OBMol) is 
     # Assigned to the metal
     #  @param self The object pointer
     #  @param filename Filename
     #  @param writestring Bool to write to a string if True or file if False
+    #  @param ignoreX will delete atom X 
+    #  @param bondorders will dictate if bond orders are written (obmol/assigned) or =1
     def writemol2(self, filename, writestring=False):
         # print('!!!!', filename)
         from scipy.sparse import csgraph
@@ -3118,13 +3209,38 @@ class mol3D:
             _, catoms = self.oct_comp(debug=False)
         fcs = [metalind] + catoms
         return fcs
+    
+    # Recreate bo_dict with correct indicies
+    # @param self The object pointer
+    # @param inds The indicies of the selected submolecule to SAVE
+    # @return new_bo_dict The ported over dictionary with new indicies/bonds deleted
+    def get_bo_dict_from_inds(self,inds):
+        if not self.bo_dict:
+            self.convert2OBMol2()
+        c_bo_dict = self.bo_dict.copy()
+        delete_inds = np.array([x for x in range(self.natoms) if x not in inds])
+        for key in self.bo_dict.keys():
+            if any([True for x in key if x in delete_inds]):
+                del c_bo_dict[key]
+        new_bo_dict = dict()
+        for key,val in c_bo_dict.items():
+            ind1 = key[0]
+            ind2 = key[1]
+            ind1 = ind1 - len(np.where(delete_inds < ind1)[0])
+            ind2 = ind2 - len(np.where(delete_inds < ind2)[0])
+            new_bo_dict[(ind1,ind2)] = val
+        return new_bo_dict
+
 
     def create_mol_with_inds(self, inds):
         molnew = mol3D()
         inds = sorted(inds)
         for ind in inds:
-            atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords())
+            atom = atom3D(self.atoms[ind].symbol(), self.atoms[ind].coords(),self.atoms[ind].name)
             molnew.addAtom(atom)
+        if self.bo_dict:
+            save_bo_dict = self.get_bo_dict_from_inds(inds)
+            molnew.bo_dict = save_bo_dict
         if len(self.graph):
             delete_inds = [x for x in range(self.natoms) if x not in inds]
             molnew.graph = np.delete(np.delete(self.graph, delete_inds, 0), delete_inds, 1)
@@ -3133,7 +3249,7 @@ class mol3D:
     # Writes a psueduo-chemical formula
     #
     #  @param self The object pointer
-    def make_formula(self):
+    def make_formula(self, latex=True):
         retstr = ""
         atomorder = self.globs.elementsbynum()
         unique_symbols = dict()
@@ -3148,8 +3264,11 @@ class mol3D:
             self.globs.elementsbynum().index(x)))
         skeys = skeys[::-1]
         for sk in skeys:
-            retstr += '\\textrm{' + sk + '}_{' + \
-                      str(int(unique_symbols[sk])) + '}'
+            if latex:
+                retstr += '\\textrm{' + sk + '}_{' + \
+                          str(int(unique_symbols[sk])) + '}'
+            else:
+                retstr += sk+str(int(unique_symbols[sk]))
         return retstr
 
     def read_smiles(self, smiles, ff="mmff94", steps=2500):
@@ -3180,14 +3299,19 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
-    def get_smiles(self, canoncalize=False):
+    def get_smiles(self, canoncalize=False, use_mol2 = False):
         # Used to get the SMILES string of a given mol3D object
         conv = openbabel.OBConversion()
         conv.SetOutFormat('smi')
         if canoncalize:
             conv.SetOutFormat('can')
         if self.OBMol == False:
-            self.convert2OBMol()
+            if use_mol2:
+                # Produces a smiles with the enforced BO matrix,
+                # which is needed for correct behavior for fingerprints
+                self.convert2OBMol2()
+            else:
+                self.convert2OBMol()
         smi = conv.WriteString(self.OBMol).split()[0]
         return smi
 
@@ -3245,12 +3369,15 @@ class mol3D:
         else:
             print(("chargefile does not exist.", chargefile))
 
-    def get_mol_graph_det(self, oct=True):
+    def get_mol_graph_det(self, oct=True, useBOMat = False):
         globs = globalvars()
         amassdict = globs.amass()
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        tmpgraph = np.copy(self.graph)
+        if useBOMat:
+            tmpgraph = np.copy(self.BO_mat)
+        else:
+            tmpgraph = np.copy(self.graph)
         syms = self.symvect()
         weights = [amassdict[x][0] for x in syms] 
         ##### Add hydrogen tolerance???
@@ -3259,7 +3386,7 @@ class mol3D:
             tmpgraph[j,j] = weights[j]
         for i,x in enumerate(inds[0]):
             y = inds[1][i]
-            tmpgraph[x,y] = weights[x]*weights[y]
+            tmpgraph[x,y] = weights[x]*weights[y]*tmpgraph[x,y]
         with np.errstate(over='raise'):
             try:
                 det = np.linalg.det(tmpgraph)

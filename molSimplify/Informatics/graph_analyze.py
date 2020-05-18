@@ -50,6 +50,9 @@ def obtain_truncation(mol, con_atoms, hops):
         sort_inds = np.argsort(added_list)
         trunc_mol.atoms = [trunc_mol.atoms[x] for x in sort_inds]
         trunc_mol.graph = np.delete(np.delete(mol.graph, delete_inds, 0), delete_inds, 1)
+    if mol.bo_dict:
+        save_bo_dict = self.master_mol.get_bo_dict_from_inds(added_list)
+        trunc_mol.bo_dict = save_bo_dict
     return trunc_mol
 
 def obtain_truncation_metal(mol, hops):
@@ -87,6 +90,9 @@ def obtain_truncation_metal(mol, hops):
         sort_inds = np.argsort(added_list)
         trunc_mol.atoms = [trunc_mol.atoms[x] for x in sort_inds]
         trunc_mol.graph = np.delete(np.delete(mol.graph, delete_inds, 0), delete_inds, 1)
+    if mol.bo_dict:
+        save_bo_dict = self.master_mol.get_bo_dict_from_inds(added_list)
+        trunc_mol.bo_dict = save_bo_dict
     return trunc_mol
 
 
