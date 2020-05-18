@@ -702,6 +702,20 @@ class mol3D:
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
 
+    # Get ligand mol without hydrogens
+    # 
+    # Loops over the atoms and makes a submol that contains 
+    # all of the atoms without the hydrogens:
+    def get_submol_noHs(self):
+        keep_list = []
+        for i in range(self.natoms):
+            if self.getAtom(i).Symbol()=='H':
+                continue
+            else:
+                keep_list.append(i)
+        mol_noHs = self.create_mol_with_inds(keep_list)
+        return mol_noHs
+
     # Deletes all hydrogens from molecule.
     #
     #  Calls deleteatoms, so ordering of heavy atoms is preserved.
@@ -2120,6 +2134,35 @@ class mol3D:
             sane = False
         return sane
 
+    def isPristine(self,unbonded_min_dist=2):
+        #isPristine() checks if the organic portions of a transition metal complex look good
+        #returns a tuple with 2 entries
+            #1. a boolean describing whether this complex passes (True) or fails (False)
+            #2. a list of failing criteria, described as strings
+        if len(self.graph) == 0:
+            self.createMolecularGraph(oct=False)
+
+        failure_reason = []
+        pristine = True
+        metal_idx = self.findMetal()
+        non_metals = [i for i in range(self.natoms) if i not in metal_idx]
+
+        #Ensure that non-bonded atoms are well-seperated (not close to overlapping or crowded)
+        for atom1 in non_metals:
+            bonds = self.graph[atom1]
+            for atom2 in non_metals:
+                if atom1 == atom2: #ignore pairwise interactions
+                    continue
+                bond = bonds[atom2]
+                if bond < 0.1: #these atoms are not bonded
+                    min_distance = unbonded_min_dist*(self.atoms[atom1].rad+self.atoms[atom2].rad)
+                    d = distance(self.atoms[atom1].coords(),self.atoms[atom2].coords())
+                    if d < min_distance:
+                        failure_reason.append('Crowded organic atoms '+str(atom1)+'-'+str(atom2)+' '+str(round(d,2))+' Angstrom')
+                        pristine = False
+
+        return pristine,failure_reason
+
     # Translate all atoms by given vector.
     #  @param self The object pointer
     #  @param dxyz Translation vector
@@ -3337,12 +3380,15 @@ class mol3D:
         else:
             print(("chargefile does not exist.", chargefile))
 
-    def get_mol_graph_det(self, oct=True):
+    def get_mol_graph_det(self, oct=True, useBOMat = False):
         globs = globalvars()
         amassdict = globs.amass()
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        tmpgraph = np.copy(self.graph)
+        if useBOMat:
+            tmpgraph = np.copy(self.BO_mat)
+        else:
+            tmpgraph = np.copy(self.graph)
         syms = self.symvect()
         weights = [amassdict[x][0] for x in syms] 
         ##### Add hydrogen tolerance???
@@ -3351,7 +3397,7 @@ class mol3D:
             tmpgraph[j,j] = weights[j]
         for i,x in enumerate(inds[0]):
             y = inds[1][i]
-            tmpgraph[x,y] = weights[x]*weights[y]
+            tmpgraph[x,y] = weights[x]*weights[y]*tmpgraph[x,y]
         with np.errstate(over='raise'):
             try:
                 det = np.linalg.det(tmpgraph)
