@@ -471,7 +471,7 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
         else:
-            print("OBmol doies not exist")
+            print("OBmol does not exist")
 
     # Combines two molecules
     #
@@ -3256,14 +3256,19 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
-    def get_smiles(self, canoncalize=False):
+    def get_smiles(self, canoncalize=False, use_mol2 = False):
         # Used to get the SMILES string of a given mol3D object
         conv = openbabel.OBConversion()
         conv.SetOutFormat('smi')
         if canoncalize:
             conv.SetOutFormat('can')
         if self.OBMol == False:
-            self.convert2OBMol()
+            if use_mol2:
+                # Produces a smiles with the enforced BO matrix,
+                # which is needed for correct behavior for fingerprints
+                self.convert2OBMol2()
+            else:
+                self.convert2OBMol()
         smi = conv.WriteString(self.OBMol).split()[0]
         return smi
 
