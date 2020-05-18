@@ -2032,6 +2032,35 @@ class mol3D:
                     sane = False
         return sane
 
+    def isPristine(self,unbonded_min_dist=2):
+        #isPristine() checks if the organic portions of a transition metal complex look good
+        #returns a tuple with 2 entries
+            #1. a boolean describing whether this complex passes (True) or fails (False)
+            #2. a list of failing criteria, described as strings
+        if len(self.graph) == 0:
+            self.createMolecularGraph(oct=False)
+
+        failure_reason = []
+        pristine = True
+        metal_idx = self.findMetal()
+        non_metals = [i for i in range(self.natoms) if i not in metal_idx]
+
+        #Ensure that non-bonded atoms are well-seperated (not close to overlapping or crowded)
+        for atom1 in non_metals:
+            bonds = self.graph[atom1]
+            for atom2 in non_metals:
+                if atom1 == atom2: #ignore pairwise interactions
+                    continue
+                bond = bonds[atom2]
+                if bond < 0.1: #these atoms are not bonded
+                    min_distance = unbonded_min_dist*(self.atoms[atom1].rad+self.atoms[atom2].rad)
+                    d = distance(self.atoms[atom1].coords(),self.atoms[atom2].coords())
+                    if d < min_distance:
+                        failure_reason.append('Crowded organic atoms '+str(atom1)+'-'+str(atom2)+' '+str(round(d,2))+' Angstrom')
+                        pristine = False
+
+        return pristine,failure_reason
+
     # Translate all atoms by given vector.
     #  @param self The object pointer
     #  @param dxyz Translation vector
