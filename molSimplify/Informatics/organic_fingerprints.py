@@ -18,7 +18,7 @@ from molSimplify.Classes.mol3D import mol3D
 # @param --> mol3D class of molecule, returns fingerprint
 def get_morgan(mol, morgan_radius = 4):
     if isinstance(mol,mol3D):
-        smiles = mol.get_smiles()
+        smiles = mol.get_smiles(use_mol2=True)
     elif isinstance(mol,str):
         smiles = mol
     m = Chem.MolFromSmiles(smiles)
@@ -31,7 +31,7 @@ def get_morgan(mol, morgan_radius = 4):
 
 def get_substructure_smiles(mol, atomID, radius):
     if isinstance(mol,mol3D):
-        smiles = mol.get_smiles()
+        smiles = mol.get_smiles(use_mol2=True)
     elif isinstance(mol,str):
         smiles = mol
     m = Chem.MolFromSmiles(smiles)
