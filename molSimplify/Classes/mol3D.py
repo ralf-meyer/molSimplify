@@ -402,7 +402,7 @@ class mol3D:
             # write temp xyz
         fd, tempf = tempfile.mkstemp(suffix=".xyz")
         os.close(fd)
-        # self.writexyz('tempr.xyz', symbsonly=True)
+        self.writexyz('tempr.xyz', symbsonly=True)
         self.writexyz(tempf, symbsonly=True, ignoreX=ignoreX)
 
         obConversion = openbabel.OBConversion()
@@ -830,9 +830,16 @@ class mol3D:
     #  @param atomN Index of separating atom
     #  @return List of indices of atoms in submolecule
     def findsubMol(self, atom0, atomN):
+        '''
+        mol: mol3D object
+        atom0: starting atom index. Note that atom0 cannot be the same as atomN
+        atomN: the atom index at which we break the graph.
+        '''
+        if atom0 == atomN:
+            raise ValueError("atom0 cannot be the same as atomN!")
         subm = []
         conatoms = [atom0]
-        conatoms += self.getBondedAtoms(atom0)  # connected atoms to atom0
+        conatoms += self.getBondedAtomsSmart(atom0)  # connected atoms to atom0
         if atomN in conatoms:
             conatoms.remove(atomN)  # check for atomN and remove
         subm += conatoms  # add to submolecule
@@ -840,7 +847,7 @@ class mol3D:
         while len(conatoms) > 0:  # while list of atoms to check loop
             for atidx in subm:  # loop over initial connected atoms
                 if atidx != atomN:  # check for separation atom
-                    newcon = self.getBondedAtoms(atidx)
+                    newcon = self.getBondedAtomsSmart(atidx)
                     if atomN in newcon:
                         newcon.remove(atomN)
                     for newat in newcon:
@@ -3449,6 +3456,29 @@ class mol3D:
             homoleptic = False
         return eqsym, maxdent, ligdents, homoleptic, ligsymmetry
 
+    def is_sandwich_compound(self):
+        from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        mol_fcs = obtain_truncation_metal(self, hops=1)
+        metal_ind = mol_fcs.findMetal()[0]
+        catoms = list(range(mol_fcs.natoms))
+        catoms.remove(metal_ind)
+        sandwich_ligands, _sl = list(), list()
+        for atom0 in catoms:
+            lig = mol_fcs.findsubMol(atom0=atom0, atomN=metal_ind)
+            if len(lig) >= 3 and not set(lig) in _sl:  # require to be at least a three-member ring
+                full_lig = self.findsubMol(atom0=mol_fcs.mapping_sub2mol[lig[0]], 
+                                           atomN=mol_fcs.mapping_sub2mol[metal_ind])
+                lig_inds_in_obmol = [sorted(full_lig).index(mol_fcs.mapping_sub2mol[x])+1 for x in lig]
+                full_ligmol = self.create_mol_with_inds(full_lig)
+                full_ligmol.convert2OBMol()
+                ringlist = full_ligmol.OBMol.GetSSSR()
+                for obmol_ring in ringlist:
+                    if all([obmol_ring.IsInRing(x) for x in lig_inds_in_obmol]):
+                        sandwich_ligands.append([set(lig), obmol_ring.Size()])
+                        _sl.append(set(lig))
+                        break
+        return len(sandwich_ligands), [{"natoms_connected": len(x[0]), "natoms_ring": x[1]} for x in sandwich_ligands]
+
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
                           skip=False):
@@ -3460,7 +3490,8 @@ class mol3D:
         '''
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
-        angle_deviations = {}
+        summary = {}
+        num_sandwich_lig, natoms_sandwich_lig = False, False
         if num_coord is not False:
             if num_coord not in [3, 4, 5, 6, 7]:
                 raise ValueError("The coordination number of %d is out of the scope of geotype detection now."%num_coord)
@@ -3468,28 +3499,36 @@ class mol3D:
                 if catoms_arr is not None:
                     if not len(catoms_arr) == num_coord:
                         raise ValueError("num_coord and the length of catoms_arr do not match.")
+                    num_sandwich_lig, natoms_sandwich_lig = self.is_sandwich_compound()
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
                                                              catoms_arr=catoms_arr, 
                                                              debug=debug)
-                        angle_deviations.update({geotype: dict_catoms_shape})
+                        summary.update({geotype: dict_catoms_shape})
                 else:
                     for geotype in possible_geometries:
                         dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
                                                                            catoms_arr=None,
                                                                            debug=debug)
                         print("Geocheck assigned catoms: ", catoms_assigned, [self.getAtom(ind).symbol() for ind in catoms_assigned])
-                        angle_deviations.update({geotype: dict_catoms_shape})
+                        summary.update({geotype: dict_catoms_shape})
         else:
             # TODO: Implement the case where we don't know the coordination number.
             raise KeyError("Not implemented yet. Please at least provide the coordination number.")
-        min_devi, geometry = 10000, False
-        for geotype in angle_deviations:
-            if angle_deviations[geotype]["oct_angle_devi_max"] < min_devi:
-                min_devi = angle_deviations[geotype]["oct_angle_devi_max"]
+        angle_devi, geometry = 10000, False
+        for geotype in summary:
+            if summary[geotype]["oct_angle_devi_max"] < angle_devi:
+                angle_devi = summary[geotype]["oct_angle_devi_max"]
                 geometry = geotype
-        return geometry, min_devi, angle_deviations
-
-
-
+        if num_sandwich_lig:
+            geometry = "sandwich"
+            angle_devi = False
+        results = {
+            "geometry": geometry,
+            "angle_devi": angle_devi,
+            "summary": summary,
+            "num_sandwich_lig": num_sandwich_lig,
+            "natoms_sandwich_lig": natoms_sandwich_lig,
+            }
+        return results
