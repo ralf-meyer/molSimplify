@@ -402,7 +402,7 @@ class mol3D:
             # write temp xyz
         fd, tempf = tempfile.mkstemp(suffix=".xyz")
         os.close(fd)
-        self.writexyz('tempr.xyz', symbsonly=True)
+        #self.writexyz('tempr.xyz', symbsonly=True)
         self.writexyz(tempf, symbsonly=True, ignoreX=ignoreX)
 
         obConversion = openbabel.OBConversion()
@@ -829,7 +829,7 @@ class mol3D:
     #  @param atom0 Index of starting atom
     #  @param atomN Index of separating atom
     #  @return List of indices of atoms in submolecule
-    def findsubMol(self, atom0, atomN):
+    def findsubMol(self, atom0, atomN, smart=False):
         '''
         mol: mol3D object
         atom0: starting atom index. Note that atom0 cannot be the same as atomN
@@ -839,7 +839,10 @@ class mol3D:
             raise ValueError("atom0 cannot be the same as atomN!")
         subm = []
         conatoms = [atom0]
-        conatoms += self.getBondedAtomsSmart(atom0)  # connected atoms to atom0
+        if not smart:
+            conatoms += self.getBondedAtoms(atom0)  # connected atoms to atom0
+        else:
+            conatoms += self.getBondedAtomsSmart(atom0)
         if atomN in conatoms:
             conatoms.remove(atomN)  # check for atomN and remove
         subm += conatoms  # add to submolecule
@@ -847,7 +850,10 @@ class mol3D:
         while len(conatoms) > 0:  # while list of atoms to check loop
             for atidx in subm:  # loop over initial connected atoms
                 if atidx != atomN:  # check for separation atom
-                    newcon = self.getBondedAtomsSmart(atidx)
+                    if not smart:
+                        newcon = self.getBondedAtoms(atidx)
+                    else:
+                        newcon = self.getBondedAtomsSmart(atidx)
                     if atomN in newcon:
                         newcon.remove(atomN)
                     for newat in newcon:
@@ -3464,10 +3470,11 @@ class mol3D:
         catoms.remove(metal_ind)
         sandwich_ligands, _sl = list(), list()
         for atom0 in catoms:
-            lig = mol_fcs.findsubMol(atom0=atom0, atomN=metal_ind)
+            lig = mol_fcs.findsubMol(atom0=atom0, atomN=metal_ind, smart=True)
             if len(lig) >= 3 and not set(lig) in _sl:  # require to be at least a three-member ring
                 full_lig = self.findsubMol(atom0=mol_fcs.mapping_sub2mol[lig[0]], 
-                                           atomN=mol_fcs.mapping_sub2mol[metal_ind])
+                                           atomN=mol_fcs.mapping_sub2mol[metal_ind],
+                                           smart=True)
                 lig_inds_in_obmol = [sorted(full_lig).index(mol_fcs.mapping_sub2mol[x])+1 for x in lig]
                 full_ligmol = self.create_mol_with_inds(full_lig)
                 full_ligmol.convert2OBMol()
