@@ -181,7 +181,7 @@ metalslist = [  # 'Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
     'W', 'w', 'tungsten', 'Re', 're', 'RE', 'rhenium',
     'Os', 'os', 'OS', 'osmium', 'Ir', 'ir', 'IR', 'iridium',
     'Pt', 'pt', 'PT', 'platinum', 'Au', 'au', 'AU', 'gold',
-    'Hg', 'hg', 'HG', 'mercury',
+    'Hg', 'hg', 'HG', 'mercury', 'X',
     # 'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead',
     # 'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium',
     # 'La', 'la', 'LA', 'lanthanum',
@@ -371,9 +371,9 @@ geo_check_dictionary = {"dict_oct_check_loose": dict_oct_check_loose,
                         "oneempty_angle_ref": oneempty_angle_ref}
 all_geometries = {
     3: ["trigonal planar", "T shape"],
-    4: ["tetrahedral", "square planar"],
+    4: ["tetrahedral", "square planar", "seesaw", "trigonal pyramidal"],
     5: ["trigonal bipyramidal", "square pyramidal", "pentagonal planar"],
-    6: ["octahedral", "pentagonal pyramidal"],
+    6: ["octahedral", "pentagonal pyramidal", "trigonal prismatic"],
     7: ["pentagonal bipyramidal"],
 }
 all_angle_refs = {
@@ -382,11 +382,13 @@ all_angle_refs = {
     "tetrahedral": [[109.47, 109.47, 109.47] for x in range(4)],
     "square planar": [[90, 90, 180] for x in range(4)],
     "seesaw": [[90, 90, 180] for x in range(2)] + [[90, 90, 120] for x in range(2)],
+    "trigonal pyramidal": [[90, 90, 90]] + [[120, 120, 90] for x in range(3)],
     "trigonal bipyramidal": [[90, 90, 90, 180] for x in range(2)] + [[120, 120, 90, 90] for x in range(3)],
     "square pyramidal": [[90, 90, 90, 90]] + [[180, 90, 90, 90] for x in range(4)],
     "pentagonal planar": [[36, 36, 72, 72] for x in range(5)],
     "octahedral": [[90, 90, 90, 90, 180] for x in range(6)],
     "pentagonal pyramidal": [[90, 90, 90, 90, 90]] + [[36, 36, 72, 72, 90] for x in range(5)],
+    "trigonal prismatic": [[75.3, 86.5, 86.5, 133.3, 133.3] for x in range(6)],
     "pentagonal bipyramidal": [[90, 90, 90, 90, 90, 180] for x in range(2)] + [[72, 72, 144, 144, 90, 90] for x in range(5)]
 }
 

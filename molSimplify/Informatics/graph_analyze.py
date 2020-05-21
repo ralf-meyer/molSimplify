@@ -51,7 +51,7 @@ def obtain_truncation(mol, con_atoms, hops):
         trunc_mol.atoms = [trunc_mol.atoms[x] for x in sort_inds]
         trunc_mol.graph = np.delete(np.delete(mol.graph, delete_inds, 0), delete_inds, 1)
     if mol.bo_dict:
-        save_bo_dict = self.master_mol.get_bo_dict_from_inds(added_list)
+        save_bo_dict = mol.master_mol.get_bo_dict_from_inds(added_list)
         trunc_mol.bo_dict = save_bo_dict
     return trunc_mol
 
@@ -85,16 +85,19 @@ def obtain_truncation_metal(mol, hops):
                     added_list.append(bound_atoms)
                 [new_active_set.append(element) for element in this_atoms_neighbors]
         active_set = new_active_set
+    sort_inds = np.argsort(added_list)
+    mapping_sub2mol = {}
+    for ii, ind in enumerate(sort_inds):
+        mapping_sub2mol.update({ind: added_list[ii]})
+    trunc_mol.mapping_sub2mol = mapping_sub2mol
     if len(mol.graph):
         delete_inds = [x for x in range(mol.natoms) if x not in added_list]
-        sort_inds = np.argsort(added_list)
         trunc_mol.atoms = [trunc_mol.atoms[x] for x in sort_inds]
         trunc_mol.graph = np.delete(np.delete(mol.graph, delete_inds, 0), delete_inds, 1)
-    if mol.bo_dict:
-        save_bo_dict = self.master_mol.get_bo_dict_from_inds(added_list)
-        trunc_mol.bo_dict = save_bo_dict
+    # if mol.bo_dict:
+    #     save_bo_dict = mol.master_mol.get_bo_dict_from_inds(added_list)
+    #     trunc_mol.bo_dict = save_bo_dict
     return trunc_mol
-
 
 
 def create_graph(mol):
