@@ -3530,6 +3530,14 @@ class mol3D:
         return eqsym, maxdent, ligdents, homoleptic, ligsymmetry
 
     def is_sandwich_compound(self):
+        '''
+        Check if a structure is sandwich compound.
+        Request: 1) complexes with ligands where there are at least 
+        three connected non-metal atoms both connected to the metal.
+        2) These >three connected non-metal atoms are in a ring.
+        3) optional: the ring is aromatic
+        4) optional: all the atoms in the base ring are connected to the same metal.
+        '''
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         mol_fcs = obtain_truncation_metal(self, hops=1)
         metal_ind = mol_fcs.findMetal()[0]
@@ -3544,14 +3552,42 @@ class mol3D:
                                            smart=True)
                 lig_inds_in_obmol = [sorted(full_lig).index(mol_fcs.mapping_sub2mol[x])+1 for x in lig]
                 full_ligmol = self.create_mol_with_inds(full_lig)
-                full_ligmol.convert2OBMol()
+                full_ligmol.convert2OBMol2()
                 ringlist = full_ligmol.OBMol.GetSSSR()
                 for obmol_ring in ringlist:
                     if all([obmol_ring.IsInRing(x) for x in lig_inds_in_obmol]):
-                        sandwich_ligands.append([set(lig), obmol_ring.Size()])
+                        sandwich_ligands.append([set(lig), obmol_ring.Size(), obmol_ring.IsAromatic()])
                         _sl.append(set(lig))
                         break
-        return len(sandwich_ligands), [{"natoms_connected": len(x[0]), "natoms_ring": x[1]} for x in sandwich_ligands]
+        num_sandwich_lig = len(sandwich_ligands)
+        info_sandwich_lig = [{"natoms_connected": len(x[0]), "natoms_ring": x[1], "aromatic": x[2]} for x in sandwich_ligands]
+        aromatic = any([x["aromatic"] for x in info_sandwich_lig])
+        allconnect = any([x["natoms_connected"] == x["natoms_ring"] for x in info_sandwich_lig])
+        return num_sandwich_lig, info_sandwich_lig, aromatic, allconnect
+
+    def is_edge_compound(self):
+        '''
+        Check if a structure is edge compound.
+        Request: 1) complexes with ligands where there are at least 
+        two connected non-metal atoms both connected to the metal.
+        '''
+        from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+        if not num_sandwich_lig:
+            mol_fcs = obtain_truncation_metal(self, hops=1)
+            metal_ind = mol_fcs.findMetal()[0]
+            catoms = list(range(mol_fcs.natoms))
+            catoms.remove(metal_ind)
+            edge_ligands, _el = list(), list()
+            for atom0 in catoms:
+                lig = mol_fcs.findsubMol(atom0=atom0, atomN=metal_ind, smart=True)
+                if len(lig) >= 2 and not set(lig) in _el:
+                    edge_ligands.append([set(lig)])
+                    _el.append(set(lig))
+                    break
+            num_edge_lig = len(edge_ligands)
+            info_edge_lig = [{"natoms_connected": len(x[0])} for x in edge_ligands]
+        return num_edge_lig, info_edge_lig
 
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
@@ -3565,7 +3601,7 @@ class mol3D:
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
-        num_sandwich_lig, natoms_sandwich_lig = False, False
+        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = False, False, False, False
         if len(self.graph): # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
@@ -3580,7 +3616,8 @@ class mol3D:
                 if catoms_arr is not None:
                     if not len(catoms_arr) == num_coord:
                         raise ValueError("num_coord and the length of catoms_arr do not match.")
-                    num_sandwich_lig, natoms_sandwich_lig = self.is_sandwich_compound()
+                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+                    num_edge_lig, info_edge_lig = self.is_edge_compound()
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
@@ -3588,7 +3625,7 @@ class mol3D:
                                                              debug=debug)
                         summary.update({geotype: dict_catoms_shape})
                 else:
-                    num_sandwich_lig, natoms_sandwich_lig = self.is_sandwich_compound()
+                    num_sandwich_lig, info_sandwich_lig = self.is_sandwich_compound()
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
@@ -3608,11 +3645,17 @@ class mol3D:
         if num_sandwich_lig:
             geometry = "sandwich"
             angle_devi = False
+        elif num_edge_lig:
+            geometry = "edge"
+            angle_devi = False
         results = {
             "geometry": geometry,
             "angle_devi": angle_devi,
             "summary": summary,
             "num_sandwich_lig": num_sandwich_lig,
-            "natoms_sandwich_lig": natoms_sandwich_lig,
+            "info_sandwich_lig": info_sandwich_lig,
+            "aromatic": aromatic,
+            "allconnect": allconnect,
+            "info_edge_lig": info_edge_lig,
             }
         return results
