@@ -709,7 +709,7 @@ class mol3D:
     def get_submol_noHs(self):
         keep_list = []
         for i in range(self.natoms):
-            if self.getAtom(i).Symbol()=='H':
+            if self.getAtom(i).symbol()=='H':
                 continue
             else:
                 keep_list.append(i)
@@ -3386,7 +3386,27 @@ class mol3D:
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
         if useBOMat:
-            tmpgraph = np.copy(self.BO_mat)
+            if (isinstance(self.BO_mat, bool)) and (isinstance(self.bo_dict, bool)):
+                raise AssertionError('This mol does not have BO information.')
+            elif isinstance(self.bo_dict, dict):
+                ### BO_dict will be prioritized over BO_mat
+                tmpgraph = np.copy(self.graph)
+                for key_val, value in self.bo_dict.items():
+                    if str(value).lower() == 'ar':
+                        value = 1.5
+                    elif str(value).lower() == 'am':
+                        value = 1.5
+                    elif str(value).lower() == 'un':
+                        value = 4
+                    else:
+                        value = int(value)
+                    # This assigns the bond order in the BO dict 
+                    # to the graph, then the determinant can be taken
+                    # for that graph
+                    tmpgraph[key_val[0],key_val[1]] = value
+                    tmpgraph[key_val[1],key_val[0]] = value
+            else:
+                tmpgraph = np.copy(self.BO_mat)
         else:
             tmpgraph = np.copy(self.graph)
         syms = self.symvect()
