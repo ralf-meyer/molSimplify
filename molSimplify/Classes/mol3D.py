@@ -388,7 +388,6 @@ class mol3D:
     #  @param force_clean bool force no bond info retention
     #  @param ignoreX bool skip "X" atoms in mol3D conversion
     def convert2OBMol(self, force_clean=False, ignoreX=False):
-
         # get BO matrix if exits:
         repop = False
 
@@ -436,13 +435,14 @@ class mol3D:
         if not len(self.graph):
             self.createMolecularGraph()
         if not self.bo_dict: # If bonddict not assigned - Use OBMol to perceive bond orders
-            mol2string = self.writemol2('temporary',writestring=True,bondorders=False,ignoreX=ignoreX)
+            mol2string = self.writemol2('temporary', writestring=True, 
+                                         ignoreX=ignoreX, force=True)
             OBMol = openbabel.OBMol()
             obConversion.ReadString(OBMol,mol2string)
             OBMol.PerceiveBondOrders()
             #####
             obConversion.SetOutFormat('mol2')
-            ss = obConversion.WriteString(self.OBMol)
+            ss = obConversion.WriteString(OBMol)
             # Update atom types from OBMol
             lines = ss.split('ATOM\n')[1].split('@<TRIPOS>BOND')[0].split('\n')[:-1]
             for i,line in enumerate(lines):
@@ -454,7 +454,8 @@ class mol3D:
             BO_mat = self.populateBOMatrix(bonddict=True)
             self.BO_mat = BO_mat
         else:
-            mol2string = self.writemol2('temporary',writestring=True,bondorders=True,ignoreX=ignoreX)
+            mol2string = self.writemol2('temporary',writestring=True,
+                                         ignoreX=ignoreX)
             OBMol = openbabel.OBMol()
             obConversion.ReadString(OBMol,mol2string)
             self.OBMol = []
@@ -2088,72 +2089,98 @@ class mol3D:
     #  @param silence Flag for printing warning
     #  @return Flag for overlap
     #  @return Minimum distance between atoms
-    def sanitycheck(self, silence=False):
+    def sanitycheck(self, silence=False, debug=False):
         overlap = False
         mind = 1000
+        errors_dict = {}
         for ii, atom1 in enumerate(self.atoms):
             for jj, atom0 in enumerate(self.atoms):
-                if atom1.ismetal() or atom0.ismetal():
-                    cutoff = 0.6
-                else:
-                    cutoff = 0.7
-                if ii != jj and (distance(atom1.coords(), atom0.coords()) < cutoff * (atom1.rad + atom0.rad)):
-                    overlap = True
-                    if distance(atom1.coords(), atom0.coords()) < mind:
-                        mind = distance(atom1.coords(), atom0.coords())
-                    if not (silence):
-                        print(
-                            "#############################################################")
-                        print("Molecules might be overlapping. Increase distance!")
-                        print(
-                            "#############################################################")
-                    break
-        return overlap, mind
+                if jj > ii:
+                    if atom1.ismetal() or atom0.ismetal():
+                        cutoff = 0.6
+                    elif (atom0.sym in ['N','O'] and atom1.sym == 'H') or (atom1.sym in ['N','O'] and atom0.sym == 'H'):
+                        cutoff = 0.6
+                    else:
+                        cutoff = 0.65
+                    if ii != jj and (distance(atom1.coords(), atom0.coords()) < cutoff * (atom1.rad + atom0.rad)):
+                        overlap = True
+                        norm = distance(atom1.coords(), atom0.coords())/(atom1.rad+atom0.rad)
+                        errors_dict.update({atom1.sym +str(ii)+'-'+atom0.sym+str(jj)+'_normdist':norm})
+                        if distance(atom1.coords(), atom0.coords()) < mind:
+                            mind = distance(atom1.coords(), atom0.coords())
+                        if not (silence):
+                            print(
+                                "#############################################################")
+                            print("Molecules might be overlapping. Increase distance!")
+                            print(
+                                "#############################################################")
+        if debug:
+            return overlap, mind, errors_dict
+        else:
+            return overlap, mind
 
-    def sanitycheckCSD(self,oct=False,angle1=30,angle2=90):
-        """
-        Check that the molecule passes basic angle tests in line with CSD pulls
-        input: oct (bool: if octahedral test)
-        input: angle1 (metal angle cutoff)
-        input: angle2 (organic angle cutoff)
-        output: sane (bool: if sane octahedral molecule)
-        """
+    
+    # Check that the molecule passes basic angle tests in line with CSD pulls
+    
+    # @param self: the object pointer
+    # @param oct bool: if octahedral test
+    # @param  angle1: metal angle cutoff
+    # @param angle2: organics angle cutoff
+    # @param angle3: metal/organic angle cutoff e.g. M-X-X angle
+    # @return sane (bool: if sane octahedral molecule)
+    # @return  error_dict (optional - if debug) dict: {bondidists and angles breaking constraints:values}
+    def sanitycheckCSD(self, oct=False, angle1=30, angle2=80, angle3=45, debug=False):
         import itertools
         metalinds = self.findMetal()
         mcons = []
         metal_syms = []
-        for metal in metalinds:  
-            metalcons = self.getBondedAtomsSmart(metal,oct=oct)
-            mcons.append(metalcons)
-            metal_syms.append(self.symvect()[metal])
-        overlap, _ = self.sanitycheck(silence=True)
+        if len(metalinds): # only if there are metals
+            for metal in metalinds:
+                metalcons = self.getBondedAtomsSmart(metal,oct=oct)
+                mcons.append(metalcons)
+                metal_syms.append(self.symvect()[metal])
+        overlap, _, errors_dict = self.sanitycheck(silence=True, debug=True)
         heavy_atoms = [i for i,x in enumerate(self.symvect()) if (x!='H') and (x not in metal_syms)]
-        sane = True
-        if not overlap:
-            for i,metal in enumerate(metalinds):
+        sane = not overlap
+        for i,metal in enumerate(metalinds): # Check metal center angles
+            if len(mcons[i]) > 1:
                 combos = itertools.combinations(mcons[i],2)
                 for combo in combos:
                     if self.getAngle(combo[0],metal,combo[1]) < angle1:
                         sane = False
-            if sane:
-                for indx in heavy_atoms:
-                    if len(self.getBondedAtomsSmart(indx)) > 1:
-                        combos = itertools.combinations(self.getBondedAtomsSmart(indx), 2)
-                        for combo in combos:
-                            if self.getAngle(combo[0],indx,combo[1]) < angle2:
-                                sane = False
-                                break
+                        label = self.atoms[combo[0]].sym+str(combo[0])+ '-' + \
+                                self.atoms[metal].sym+str(metal)+'-' + \
+                                self.atoms[combo[1]].sym+str(combo[1]) + '_angle'
+                        angle = self.getAngle(combo[0],metal,combo[1])
+                        errors_dict.update({label:angle})
+        for indx in heavy_atoms: # Check heavy atom angles
+            if len(self.getBondedAtomsSmart(indx,oct=oct)) > 1:
+                combos = itertools.combinations(self.getBondedAtomsSmart(indx), 2)
+                for combo in combos:
+                    # Any metals involved in the bond, but not the metal center
+                    if any([True for x in combo if self.atoms[x].ismetal()]):
+                        cutoff = angle3
+                    else: # Only organic/ligand bonds.
+                        cutoff = angle2
+                    if self.getAngle(combo[0],indx,combo[1]) < cutoff:
+                        sane = False
+                        label = self.atoms[combo[0]].sym+str(combo[0])+ '-' + \
+                            self.atoms[indx].sym+str(indx)+'-' + \
+                            self.atoms[combo[1]].sym+str(combo[1]) + '_angle'
+                        angle = self.getAngle(combo[0],indx,combo[1])
+                        errors_dict.update({label:angle}) 
+        if debug:
+            return sane, errors_dict
         else:
-            sane = False
-        return sane
+            return sane
 
-    def isPristine(self,unbonded_min_dist=2):
+    def isPristine(self, unbonded_min_dist=1.3, oct=False):
         #isPristine() checks if the organic portions of a transition metal complex look good
         #returns a tuple with 2 entries
             #1. a boolean describing whether this complex passes (True) or fails (False)
             #2. a list of failing criteria, described as strings
         if len(self.graph) == 0:
-            self.createMolecularGraph(oct=False)
+            self.createMolecularGraph(oct=oct)
 
         failure_reason = []
         pristine = True
@@ -2305,12 +2332,18 @@ class mol3D:
     #  @param filename Filename
     #  @param writestring Bool to write to a string if True or file if False
     #  @param ignoreX will delete atom X 
-    #  @param bondorders will dictate if bond orders are written (obmol/assigned) or =1
-    def writemol2(self, filename, writestring=False):
+    #  @param force will dictate if bond orders are written (obmol/assigned) or =1
+    def writemol2(self, filename, writestring=False, ignoreX=False, force=False):
         # print('!!!!', filename)
         from scipy.sparse import csgraph
+        if ignoreX:
+            for i,atom in enumerate(self.atoms):
+                if atom.sym == 'X':
+                    self.deleteatom(i)
         if not len(self.graph):
             self.createMolecularGraph()
+        if not self.bo_dict and not force:
+            self.convert2OBMol2()
         csg = csgraph.csgraph_from_dense(self.graph)
         disjoint_components = csgraph.connected_components(csg)
         if disjoint_components[0] > 1:
@@ -2321,6 +2354,7 @@ class mol3D:
             atom_groups = [str(1)]*self.natoms
         atom_types = list(set(self.symvect()))
         atom_type_numbers = np.ones(len(atom_types))
+        atom_types_mol2 = []
         try:
             metal_ind = self.findMetal()[0]
         except:
@@ -2333,31 +2367,48 @@ class mol3D:
             charges[metal_ind] = self.charge
             charge_string = 'UserTotalCharge'
         else: # Calc total charge with OBMol, assign to metal
-            self.convert2OBMol()
-            charges = np.zeros(self.natoms)
-            charges[metal_ind] = self.OBMol.GetTotalCharge()
-            charge_string = 'OBmolTotalCharge'
+            if self.OBMol:
+                charges = np.zeros(self.natoms)
+                charges[metal_ind] = self.OBMol.GetTotalCharge()
+                charge_string = 'OBmolTotalCharge'
+            else:
+                charges = np.zeros(self.natoms)
+                charge_string = 'ZeroCharges'
         ss = '@<TRIPOS>MOLECULE\n{}\n'.format(filename)
         ss += '{}\t{}\t{}\n'.format(self.natoms,int(csg.nnz/2),disjoint_components[0])
         ss += 'SMALL\n'
         ss += charge_string + '\n' + '****\n' + 'Generated from molSimplify\n\n'
         ss += '@<TRIPOS>ATOM\n'
+        atom_default_dict = {'C':'3','N':'3','O':'2','S':'3','P':'3'}
         for i,atom in enumerate(self.atoms):
+            if atom.name != atom.sym:
+                atom_types_mol2 = '.'+atom.name
+            elif atom.sym in atom_default_dict.keys():
+                atom_types_mol2 = '.' + atom_default_dict[atom.sym]
+            else:
+                atom_types_mol2 = ''
             type_ind = atom_types.index(atom.sym)
             atom_coords = atom.coords()
             ss += str(i+1) + ' ' + atom.sym+str(int(atom_type_numbers[type_ind])) + '\t' + \
                     '{}  {}  {} '.format(atom_coords[0],atom_coords[1],atom_coords[2]) + \
-                    atom.sym + '\t' + atom_groups[i] +' '+atom_group_names[i]+' ' + \
-                    str(charges[i]) + '\n'
+                    atom.sym + atom_types_mol2 + '\t' + atom_groups[i] + \
+                    ' '+atom_group_names[i]+' ' + str(charges[i]) + '\n'
             atom_type_numbers[type_ind] += 1
         ss += '@<TRIPOS>BOND\n'
         bonds = csg.nonzero()
         bond_count = 1
+        if self.bo_dict:
+            bondorders = True
+        else:
+            bondorders = False
         for i,b1 in enumerate(bonds[0]):
             b2 = bonds[1][i]
-            if b2 > b1:
-                ss += str(bond_count)+' '+str(b1+1) + ' '+ str(b2+1) + ' 1\n' # BO == 1!!!!
+            if b2 > b1 and not bondorders:
+                ss += str(bond_count)+' '+str(b1+1) + ' '+ str(b2+1) + ' 1\n'
                 bond_count += 1
+            elif b2 > b1 and bondorders:
+                ss += str(bond_count)+' '+str(b1+1) + ' '+ str(b2+1) + \
+                ' {}\n'.format(self.bo_dict[(int(b1),int(b2))])
         ss += '@<TRIPOS>SUBSTRUCTURE\n'
         unique_group_names = np.unique(atom_group_names)
         for i, name in enumerate(unique_group_names):
@@ -3483,6 +3534,14 @@ class mol3D:
         return eqsym, maxdent, ligdents, homoleptic, ligsymmetry
 
     def is_sandwich_compound(self):
+        '''
+        Check if a structure is sandwich compound.
+        Request: 1) complexes with ligands where there are at least 
+        three connected non-metal atoms both connected to the metal.
+        2) These >three connected non-metal atoms are in a ring.
+        3) optional: the ring is aromatic
+        4) optional: all the atoms in the base ring are connected to the same metal.
+        '''
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         mol_fcs = obtain_truncation_metal(self, hops=1)
         metal_ind = mol_fcs.findMetal()[0]
@@ -3497,14 +3556,42 @@ class mol3D:
                                            smart=True)
                 lig_inds_in_obmol = [sorted(full_lig).index(mol_fcs.mapping_sub2mol[x])+1 for x in lig]
                 full_ligmol = self.create_mol_with_inds(full_lig)
-                full_ligmol.convert2OBMol()
+                full_ligmol.convert2OBMol2()
                 ringlist = full_ligmol.OBMol.GetSSSR()
                 for obmol_ring in ringlist:
                     if all([obmol_ring.IsInRing(x) for x in lig_inds_in_obmol]):
-                        sandwich_ligands.append([set(lig), obmol_ring.Size()])
+                        sandwich_ligands.append([set(lig), obmol_ring.Size(), obmol_ring.IsAromatic()])
                         _sl.append(set(lig))
                         break
-        return len(sandwich_ligands), [{"natoms_connected": len(x[0]), "natoms_ring": x[1]} for x in sandwich_ligands]
+        num_sandwich_lig = len(sandwich_ligands)
+        info_sandwich_lig = [{"natoms_connected": len(x[0]), "natoms_ring": x[1], "aromatic": x[2]} for x in sandwich_ligands]
+        aromatic = any([x["aromatic"] for x in info_sandwich_lig])
+        allconnect = any([x["natoms_connected"] == x["natoms_ring"] for x in info_sandwich_lig])
+        return num_sandwich_lig, info_sandwich_lig, aromatic, allconnect
+
+    def is_edge_compound(self):
+        '''
+        Check if a structure is edge compound.
+        Request: 1) complexes with ligands where there are at least 
+        two connected non-metal atoms both connected to the metal.
+        '''
+        from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
+        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+        if not num_sandwich_lig:
+            mol_fcs = obtain_truncation_metal(self, hops=1)
+            metal_ind = mol_fcs.findMetal()[0]
+            catoms = list(range(mol_fcs.natoms))
+            catoms.remove(metal_ind)
+            edge_ligands, _el = list(), list()
+            for atom0 in catoms:
+                lig = mol_fcs.findsubMol(atom0=atom0, atomN=metal_ind, smart=True)
+                if len(lig) >= 2 and not set(lig) in _el:
+                    edge_ligands.append([set(lig)])
+                    _el.append(set(lig))
+                    break
+            num_edge_lig = len(edge_ligands)
+            info_edge_lig = [{"natoms_connected": len(x[0])} for x in edge_ligands]
+        return num_edge_lig, info_edge_lig
 
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
@@ -3518,7 +3605,14 @@ class mol3D:
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
-        num_sandwich_lig, natoms_sandwich_lig = False, False
+        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = False, False, False, False
+        if len(self.graph): # Find num_coord based on metal_cn if graph is assigned
+            if len(self.findMetal()) > 1:
+                raise ValueError('Multimetal complexes are not yet handled.')
+            elif len(self.findMetal()) == 1:
+                num_coord = len(self.getBondedAtomsSmart(self.findMetal()[0]))
+            else:
+                raise ValueError('No metal centers exist in this complex.')
         if num_coord is not False:
             if num_coord not in [3, 4, 5, 6, 7]:
                 raise ValueError("The coordination number of %d is out of the scope of geotype detection now."%num_coord)
@@ -3526,7 +3620,8 @@ class mol3D:
                 if catoms_arr is not None:
                     if not len(catoms_arr) == num_coord:
                         raise ValueError("num_coord and the length of catoms_arr do not match.")
-                    num_sandwich_lig, natoms_sandwich_lig = self.is_sandwich_compound()
+                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+                    num_edge_lig, info_edge_lig = self.is_edge_compound()
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
@@ -3534,11 +3629,14 @@ class mol3D:
                                                              debug=debug)
                         summary.update({geotype: dict_catoms_shape})
                 else:
+                    num_sandwich_lig, info_sandwich_lig = self.is_sandwich_compound()
+                    possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
                                                                            catoms_arr=None,
                                                                            debug=debug)
-                        print("Geocheck assigned catoms: ", catoms_assigned, [self.getAtom(ind).symbol() for ind in catoms_assigned])
+                        if debug:
+                            print("Geocheck assigned catoms: ", catoms_assigned, [self.getAtom(ind).symbol() for ind in catoms_assigned])
                         summary.update({geotype: dict_catoms_shape})
         else:
             # TODO: Implement the case where we don't know the coordination number.
@@ -3551,11 +3649,17 @@ class mol3D:
         if num_sandwich_lig:
             geometry = "sandwich"
             angle_devi = False
+        elif num_edge_lig:
+            geometry = "edge"
+            angle_devi = False
         results = {
             "geometry": geometry,
             "angle_devi": angle_devi,
             "summary": summary,
             "num_sandwich_lig": num_sandwich_lig,
-            "natoms_sandwich_lig": natoms_sandwich_lig,
+            "info_sandwich_lig": info_sandwich_lig,
+            "aromatic": aromatic,
+            "allconnect": allconnect,
+            "info_edge_lig": info_edge_lig,
             }
         return results
