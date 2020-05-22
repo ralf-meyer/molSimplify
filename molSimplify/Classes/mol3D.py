@@ -3323,11 +3323,11 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
-    def get_smiles(self, canoncalize=False, use_mol2 = False):
+    def get_smiles(self, canonicalize=False, use_mol2 = False):
         # Used to get the SMILES string of a given mol3D object
         conv = openbabel.OBConversion()
         conv.SetOutFormat('smi')
-        if canoncalize:
+        if canonicalize:
             conv.SetOutFormat('can')
         if self.OBMol == False:
             if use_mol2:
