@@ -2098,6 +2098,8 @@ class mol3D:
                 if jj > ii:
                     if atom1.ismetal() or atom0.ismetal():
                         cutoff = 0.6
+                    elif (atom0.sym in ['N','O'] and atom1.sym == 'H') or (atom1.sym in ['N','O'] and atom0.sym == 'H'):
+                        cutoff = 0.6
                     else:
                         cutoff = 0.65
                     if ii != jj and (distance(atom1.coords(), atom0.coords()) < cutoff * (atom1.rad + atom0.rad)):
@@ -2132,25 +2134,27 @@ class mol3D:
         metalinds = self.findMetal()
         mcons = []
         metal_syms = []
-        for metal in metalinds:
-            metalcons = self.getBondedAtomsSmart(metal,oct=oct)
-            mcons.append(metalcons)
-            metal_syms.append(self.symvect()[metal])
+        if len(metalinds): # only if there are metals
+            for metal in metalinds:
+                metalcons = self.getBondedAtomsSmart(metal,oct=oct)
+                mcons.append(metalcons)
+                metal_syms.append(self.symvect()[metal])
         overlap, _, errors_dict = self.sanitycheck(silence=True, debug=True)
         heavy_atoms = [i for i,x in enumerate(self.symvect()) if (x!='H') and (x not in metal_syms)]
         sane = not overlap
         for i,metal in enumerate(metalinds): # Check metal center angles
-            combos = itertools.combinations(mcons[i],2)
-            for combo in combos:
-                if self.getAngle(combo[0],metal,combo[1]) < angle1:
-                    sane = False
-                    label = self.atoms[combo[0]].sym+str(combo[0])+ '-' + \
-                            self.atoms[metal].sym+str(metal)+'-' + \
-                            self.atoms[combo[1]].sym+str(combo[1]) + '_angle'
-                    angle = self.getAngle(combo[0],metal,combo[1])
-                    errors_dict.update({label:angle})
+            if len(mcons[i]) > 1:
+                combos = itertools.combinations(mcons[i],2)
+                for combo in combos:
+                    if self.getAngle(combo[0],metal,combo[1]) < angle1:
+                        sane = False
+                        label = self.atoms[combo[0]].sym+str(combo[0])+ '-' + \
+                                self.atoms[metal].sym+str(metal)+'-' + \
+                                self.atoms[combo[1]].sym+str(combo[1]) + '_angle'
+                        angle = self.getAngle(combo[0],metal,combo[1])
+                        errors_dict.update({label:angle})
         for indx in heavy_atoms: # Check heavy atom angles
-            if len(self.getBondedAtomsSmart(indx)) > 1:
+            if len(self.getBondedAtomsSmart(indx,oct=oct)) > 1:
                 combos = itertools.combinations(self.getBondedAtomsSmart(indx), 2)
                 for combo in combos:
                     # Any metals involved in the bond, but not the metal center
