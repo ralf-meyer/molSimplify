@@ -3573,7 +3573,7 @@ class mol3D:
         '''
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-        if not num_sandwich_lig:
+        if not num_sandwich_lig or (num_sandwich_lig and not allconnect):
             mol_fcs = obtain_truncation_metal(self, hops=1)
             metal_ind = mol_fcs.findMetal()[0]
             catoms = list(range(mol_fcs.natoms))
@@ -3587,6 +3587,8 @@ class mol3D:
                     break
             num_edge_lig = len(edge_ligands)
             info_edge_lig = [{"natoms_connected": len(x[0])} for x in edge_ligands]
+        else:
+            num_edge_lig, info_edge_lig = 0, list()
         return num_edge_lig, info_edge_lig
 
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
