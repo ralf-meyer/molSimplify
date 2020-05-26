@@ -24,13 +24,19 @@ def main():
     -------
     None
     """
-    try:
-        pid = sys.argv[1]
-    except:
-        pid = False
-        print("NO PID to control. Should be in a test mode.")
-    kwargs = get_configure()
-    kwargs.update({"pid": pid})
+    # try:
+    #     pid = sys.argv[1]
+    # except:
+    #     pid = False
+    #     print("NO PID to control. Should be in a test mode.")
+    parser = argparse.ArgumentParser(description='molscontrol parser')
+    parser.add_argument('--pid', action="store", default=False)
+    parser.add_argument('--config', action="store", default="configure.json", type=str)
+    args = parser.parse_args()
+    print("pid: ", args.pid)
+    print("molscontrol configure file: ", args.config)
+    kwargs = get_configure(args.config)
+    kwargs.update({"pid": args.pid})
     dftjob = dft_control(**kwargs)
     stop = False
     while not stop:

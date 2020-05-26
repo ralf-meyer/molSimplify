@@ -21,7 +21,7 @@ class dft_control:
     '''
     Attribute of the class:
     step_now: current step for an optimization
-    self.mode: mode of the dynamic classifier: "full": geo metrics + electronic structure as descriptors, stable for
+    self.mode: mode of the dynamic classifier: "terachem": geo metrics + electronic structure as descriptors, stable for
     terachem users, and "geo": only geometry metrics as descriptors, which can be used for all kinds of quantum
     chesmitry software.
     self.mode_allowed: allowed modes.
@@ -29,9 +29,9 @@ class dft_control:
     self.scrpath: path to the scratch directory.
     self.geofile: filename of the optimization trajectory in a xyz file format. This is the minimum requirement to use 
     the dynamic classifier.
-    self.bofile: filename of the trajectory for the bond order matrix (for mode = "full").
-    self.chargefile: filename of the trajectory for the Mulliken charge(for mode = "full").
-    self.gradfile: filename of the trajectory for the gradient matrix (for mode = "full").
+    self.bofile: filename of the trajectory for the bond order matrix (for mode = "terachem").
+    self.chargefile: filename of the trajectory for the Mulliken charge(for mode = "terachem").
+    self.gradfile: filename of the trajectory for the gradient matrix (for mode = "terachem").
     self.mols: a list of mol3D objects.
     self.features: a combinaton of all feaures of {"feature_name1": [var_step0, var_step1, ...]}
     self.features_norm: self.features after normalization.
@@ -103,38 +103,53 @@ class dft_control:
         self.debug = debug
         self.pid = pid
         self.features_dict = {
-            "terachem": {0: 'bo_0', 1: 'bo_sv0', 2: 'bo_offsv0', 3: 'bo_sv1', 4: 'bo_offsv1', 5: 'bo_sv2',
-                         6: 'bo_offsv2', 7: 'bo_sv3', 8: 'bo_offsv3', 9: 'bo_eq_mean', 10: 'bo_ax_mean',
-                         11: 'grad_0', 12: 'grad_sv0', 13: 'grad_intsv0', 14: 'grad_sv1',
-                         15: 'grad_intsv1',
-                         16: 'grad_sv2', 17: 'grad_intsv2', 18: 'grad_maxnorm', 19: 'grad_intmaxnorm',
-                         20: 'grad_rms', 21: 'grad_eq_mean', 22: 'grad_ax_mean', 23: 'charge_0',
-                         24: 'charge_eq_mean', 25: 'charge_ax_mean', 26: 'flag_oct',
-                         27: 'inspect_oct_angle_devi_max', 28: 'inspect_max_del_sig_angle',
-                         29: 'inspect_dist_del_all', 30: 'inspect_dist_del_eq',
-                         31: 'inspect_devi_linear_avrg',
-                         32: 'inspect_devi_linear_max', 33: 'actural_rmsd_max'},
-            "geo": {0: 'flag_oct', 1: 'inspect_oct_angle_devi_max', 2: 'inspect_max_del_sig_angle',
-                    3: 'inspect_dist_del_all', 4: 'inspect_dist_del_eq',
-                    5: 'inspect_devi_linear_avrg',
-                    6: 'inspect_devi_linear_max', 7: 'actural_rmsd_max'},
+            "terachem": {
+                0: 'bo_0', 1: 'bo_sv0', 2: 'bo_offsv0', 3: 'bo_sv1', 4: 'bo_offsv1', 5: 'bo_sv2',
+                6: 'bo_offsv2', 7: 'bo_sv3', 8: 'bo_offsv3', 9: 'bo_eq_mean', 10: 'bo_ax_mean',
+                11: 'grad_0', 12: 'grad_sv0', 13: 'grad_intsv0', 14: 'grad_sv1',
+                15: 'grad_intsv1',
+                16: 'grad_sv2', 17: 'grad_intsv2', 18: 'grad_maxnorm', 19: 'grad_intmaxnorm',
+                20: 'grad_rms', 21: 'grad_eq_mean', 22: 'grad_ax_mean', 23: 'charge_0',
+                24: 'charge_eq_mean', 25: 'charge_ax_mean', 26: 'flag_oct',
+                27: 'inspect_oct_angle_devi_max', 28: 'inspect_max_del_sig_angle',
+                29: 'inspect_dist_del_all', 30: 'inspect_dist_del_eq',
+                31: 'inspect_devi_linear_avrg',
+                32: 'inspect_devi_linear_max', 33: 'actural_rmsd_max'
+            },
+            "geo": {
+                0: 'flag_oct', 1: 'inspect_oct_angle_devi_max', 2: 'inspect_max_del_sig_angle',
+                3: 'inspect_dist_del_all', 4: 'inspect_dist_del_eq',
+                5: 'inspect_devi_linear_avrg',
+                6: 'inspect_devi_linear_max', 7: 'actural_rmsd_max'},
             "custom": {}
         }
-        self.avrg_latent_dist_train = {"terachem": {2: 6.34, 5: 7.59, 10: 4.83, 15: 5.21,
-                                                    20: 5.06, 30: 9.34, 40: 8.70},
-                                       "geo": {2: 4.08, 5: 5.35, 10: 5.85, 15: 6.10,
-                                               20: 6.40, 30: 10.44, 40: 9.42},
-                                       "custom": {}
-                                       }
-        self.files_track = {"terachem": {self.geofile: 0, self.bofile: 0, self.gradfile: 0, self.chargefile: 0},
-                            "geo": {self.geofile: 0},
-                            "custom": {}
-                            }
-        self.file_updated = {"terachem": {self.geofile: False, self.bofile: False,
-                                          self.gradfile: False, self.chargefile: False},
-                             "geo": {self.geofile: False},
-                             "custom": {}
-                             }
+        self.avrg_latent_dist_train = {
+            "terachem": {
+                2: 6.34, 5: 7.59, 10: 4.83, 15: 5.21,
+                20: 5.06, 30: 9.34, 40: 8.70
+            },
+            "geo": {
+                2: 4.08, 5: 5.35, 10: 5.85, 15: 6.10,
+                20: 6.40, 30: 10.44, 40: 9.42
+            },
+            "custom": {}
+        }
+        self.files_track = {"terachem": {
+            self.geofile: 0, self.bofile: 0, self.gradfile: 0, self.chargefile: 0
+        },
+            "geo": {
+            self.geofile: 0},
+            "custom": {}
+        }
+        self.file_updated = {"terachem": {
+            self.geofile: False, self.bofile: False,
+            self.gradfile: False, self.chargefile: False
+        },
+            "geo": {
+            self.geofile: False
+        },
+            "custom": {}
+        }
         self.init_mol = read_geometry_to_mol(self.initxyzfile)
         self.job_info = obtain_jobinfo(self.initxyzfile)
         self.initialize_logger()
@@ -147,7 +162,8 @@ class dft_control:
     def initialize_logger(self):
         logging.basicConfig(filename=self.logfile, filemode='w', level=logging.DEBUG,
                             format='%(name)s - %(levelname)s - %(message)s')
-        logging.info('----Logger for the dynamic classifier for on-the-fly job control---')
+        logging.info(
+            '----Logger for the dynamic classifier for on-the-fly job control---')
         logging.info('Monitoring job with PID %s' % str(self.pid))
         if not self.pid:
             logging.warning('NO PID is inputed. Cannot do cany control.')
@@ -174,7 +190,8 @@ class dft_control:
             for step in self.step_decisions:
                 _model = '/%s_%d.h5' % (self.modelname, step)
                 _modelname = modelpath + _model
-                logging.info("Loading model: %s ..." % _modelname.split('/')[-1])
+                logging.info("Loading model: %s ..." %
+                             _modelname.split('/')[-1])
                 self.models.update({step: load_model(_modelname)})
         except Exception as e:
             logging.error('Failed at model loading.', exc_info=True)
@@ -201,13 +218,15 @@ class dft_control:
                                             "molSimplify/molscontrol/normalization_vec/" + self.mode + "/norm_dict.json")
         else:
             normvecpath = self.normfile
-            logging.warning("Using user-specified models from %s." % normvecpath)
+            logging.warning(
+                "Using user-specified models from %s." % normvecpath)
         try:
             with open(normvecpath, 'rb') as f:
                 self.normalization_dict = json.load(f)
             logging.info('Normalization vectors loaded')
         except:
-            logging.error('Failed at normalization vector loading.', exc_info=True)
+            logging.error(
+                'Failed at normalization vector loading.', exc_info=True)
 
     def update_features(self):
         dict_combined = {}
@@ -231,7 +250,7 @@ class dft_control:
             dict_combined.update(geometrics_dict)
         elif self.mode == 'custom':
             if bool(self.features_dict[self.mode]):
-                ## Placeholder for your functions of obtaining descriptors.
+                # Placeholder for your functions of obtaining descriptors.
                 pass
         else:
             raise KeyError("Mode is not recognized.")
@@ -244,23 +263,27 @@ class dft_control:
     def normalize_features(self):
         for idx, fname in list(self.features_dict[self.mode].items()):
             if fname in list(self.features_dict["geo"].values()):
-                self.features_norm[fname] = np.array(self.features[fname]) / self.normalization_dict[fname]
+                self.features_norm[fname] = np.array(
+                    self.features[fname]) / self.normalization_dict[fname]
             else:
                 self.features_norm[fname] = (np.array(self.features[fname]) - self.normalization_dict[fname][0]) / \
-                                            self.normalization_dict[fname][1]
+                    self.normalization_dict[fname][1]
 
     def prepare_feature_mat(self):
         self.feature_mat = list()
         for fname, vec in list(self.features_norm.items()):
             self.feature_mat.append(vec)
         self.feature_mat = np.transpose(self.feature_mat)
-        self.feature_mat = self.feature_mat.reshape(1, self.step_now + 1, len(list(self.features.keys())))
+        self.feature_mat = self.feature_mat.reshape(
+            1, self.step_now + 1, len(list(self.features.keys())))
 
     def resize_feature_mat(self):
-        step_chosen, mindelta = find_closest_model(self.step_now, self.step_decisions)
+        step_chosen, mindelta = find_closest_model(
+            self.step_now, self.step_decisions)
         self.feature_mat = scipy.misc.imresize(self.feature_mat[0], (step_chosen + 1, self.feature_mat.shape[-1]),
                                                mode='F', interp='nearest')
-        self.feature_mat = self.feature_mat.reshape(1, step_chosen + 1, self.feature_mat.shape[-1])
+        self.feature_mat = self.feature_mat.reshape(
+            1, step_chosen + 1, self.feature_mat.shape[-1])
         return step_chosen
 
     def predict(self, step=False):
@@ -276,15 +299,18 @@ class dft_control:
             fmat_train = []
             for ii in range(len(self.train_data[0])):
                 fmat_train.append(scipy.misc.imresize(self.train_data[0][ii, :self.step_now + 1, :],
-                                                      (step + 1, self.train_data[0].shape[-1]),
+                                                      (step + 1,
+                                                       self.train_data[0].shape[-1]),
                                                       mode='F', interp='nearest'))
             fmat_train = np.array(fmat_train)
         else:
             fmat_train = self.train_data[0][:, :step + 1, :]
-        train_latent = get_layer_outputs(self.models[step], -4, fmat_train, training_flag=False)
-        test_latent = get_layer_outputs(self.models[step], -4, self.feature_mat, training_flag=False)
+        train_latent = get_layer_outputs(
+            self.models[step], -4, fmat_train, training_flag=False)
+        test_latent = get_layer_outputs(
+            self.models[step], -4, self.feature_mat, training_flag=False)
         __, nn_dists, nn_labels = dist_neighbor(test_latent, train_latent, self.train_data[1],
-                                                l=5, dist_ref=self.avrg_latent_dist_train[self.mode][step])
+                                                l=100, dist_ref=self.avrg_latent_dist_train[self.mode][step])
         lse = get_entropy(nn_dists, nn_labels)
         self.lses.update({self.step_now: lse[0]})
         logging.info('LSE summary, %s' % str(self.lses))
@@ -297,27 +323,33 @@ class dft_control:
             self.status = False
             kill_job(self.pid)
         else:
-            logging.info('This calculation seems good for now at step %d' % self.step_now)
+            logging.info(
+                'This calculation seems good for now at step %d' % self.step_now)
 
     def initilize_file_track_dict(self):
         existed = False
-        logging.info("Initialize the files to be tracked during the geometry optimization.")
-        logging.info("This may take a while until the first step of SCF calculation finishes...")
+        logging.info(
+            "Initialize the files to be tracked during the geometry optimization.")
+        logging.info(
+            "This may take a while until the first step of SCF calculation finishes...")
         if not bool(self.files_track[self.mode]):
-            raise KeyError("file_track is an empty dictory. It should at least contain one file to track on.")
+            raise KeyError(
+                "file_track is an empty dictory. It should at least contain one file to track on.")
         while not existed:
             for filename in self.files_track[self.mode]:
                 filepath = self.get_file_path(filename)
                 if os.path.isfile(filepath):
                     self.file_updated[self.mode].update({filename: True})
-            existed = all(value == True for value in list(self.file_updated[self.mode].values()))
+            existed = all(value == True for value in list(
+                self.file_updated[self.mode].values()))
         for filename in self.files_track[self.mode]:
             filepath = self.get_file_path(filename)
-            self.files_track[self.mode].update({filename: os.path.getmtime(filepath)})
+            self.files_track[self.mode].update(
+                {filename: os.path.getmtime(filepath)})
             self.file_updated[self.mode].update({filename: False})
         logging.info("Tracking files initialization completes.")
         time.sleep(3)
-        ### Gather features for the 0th step of the optimization
+        # Gather features for the 0th step of the optimization
         try:
             self.update_features()
             self.normalize_features()
@@ -325,20 +357,23 @@ class dft_control:
             self.prepare_feature_mat()
             logging.info("%d step feature obatined." % self.step_now)
         except Exception as e:
-            logging.warning('Cannot obtain the information of the zeroth step.', exc_info=True)
+            logging.warning(
+                'Cannot obtain the information of the zeroth step.', exc_info=True)
 
     def check_updates(self):
         for filename, val in list(self.files_track[self.mode].items()):
             filepath = self.get_file_path(filename)
             if os.path.getmtime(filepath) - val > 3:
                 self.file_updated[self.mode].update({filename: True})
-        updated = all(value == True for value in list(self.file_updated[self.mode].values()))
+        updated = all(value == True for value in list(
+            self.file_updated[self.mode].values()))
         if self.debug:
             updated = True
         if updated:
             for filename in self.files_track[self.mode]:
                 filepath = self.get_file_path(filename)
-                self.files_track[self.mode].update({filename: os.path.getmtime(filepath)})
+                self.files_track[self.mode].update(
+                    {filename: os.path.getmtime(filepath)})
                 self.file_updated[self.mode].update({filename: False})
             self.step_now += 1
         return updated
@@ -365,7 +400,8 @@ class dft_control:
                     self.calculate_lse(step=step_chosen)
                     self.make_decision()
                 else:
-                    logging.info("At step %d, decision is not activated." % self.step_now)
+                    logging.info(
+                        "At step %d, decision is not activated." % self.step_now)
             if self.step_now > max(self.step_decisions) and not self.resize:
                 logging.warning(
                     "Step number is larger than the maximum step number that we can make dicision (%d steps). The dynamic classifer is now in principle deactivated." % max(
@@ -379,5 +415,6 @@ class dft_control:
             dft_running = True
         if not dft_running:
             stop = True
-            logging.info("At step %d, the DFT simulation finishes. molscontrol thus quits." % self.step_now)
+            logging.info(
+                "At step %d, the DFT simulation finishes. molscontrol thus quits." % self.step_now)
         return stop
