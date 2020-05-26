@@ -3617,7 +3617,27 @@ class mol3D:
                 raise ValueError('No metal centers exist in this complex.')
         if num_coord is not False:
             if num_coord not in [3, 4, 5, 6, 7]:
-                raise ValueError("The coordination number of %d is out of the scope of geotype detection now."%num_coord)
+                if (catoms_arr is not None) and (not len(catoms_arr) == num_coord):
+                    raise ValueError("num_coord and the length of catoms_arr do not match.")
+                num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+                num_edge_lig, info_edge_lig = self.is_edge_compound()
+                if num_sandwich_lig:
+                    geometry = "sandwich"
+                elif num_edge_lig:
+                    geometry = "edge"
+                else:
+                    geometry = "unknown"
+                results = {
+                    "geometry": geometry,
+                    "angle_devi": False,
+                    "summary": {},
+                    "num_sandwich_lig": num_sandwich_lig,
+                    "info_sandwich_lig": info_sandwich_lig,
+                    "aromatic": aromatic,
+                    "allconnect": allconnect,
+                    "info_edge_lig": info_edge_lig,
+                    }
+                return results
             else:
                 if catoms_arr is not None:
                     if not len(catoms_arr) == num_coord:
