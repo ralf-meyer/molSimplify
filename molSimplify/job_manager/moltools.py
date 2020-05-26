@@ -180,41 +180,57 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     spin_contaminated = completeness['Spin_contaminated']
     needs_resub = completeness['Needs_resub']
     unfinished = completeness['Error']
+    # print("finished: ", finished)
+    # print("spin_contaminated: ", spin_contaminated)
+    # print("needs_resub: ", needs_resub)
+    # print("unfinished: ", unfinished)
     bad_geos = []
     new_finished = []
     new_spin_contaminated = []
     new_needs_resub = []
     new_unfinished = []
+    new_molscontrol_kills = []
     for job in finished:
+        print("finished: ")
         goal_geo = manager_io.read_configure(directory, job)['geo_check']
         if apply_geo_check(job, goal_geo):
             new_finished.append(job)
         else:
             bad_geos.append(job)
     for job in spin_contaminated:
-        goal_geo = manager_io.read_configure(directory, job)['geo_check']
-        if apply_geo_check(job, goal_geo):
-            new_spin_contaminated.append(job)
+        if not check_molscontrol_log(job):
+            goal_geo = manager_io.read_configure(directory, job)['geo_check']
+            if apply_geo_check(job, goal_geo):
+                new_spin_contaminated.append(job)
+            else:
+                bad_geos.append(job)
         else:
-            bad_geos.append(job)
+            new_molscontrol_kills.append(job)
     for job in needs_resub:
-        goal_geo = manager_io.read_configure(directory, job)['geo_check']
-        if apply_geo_check(job, goal_geo):
-            new_needs_resub.append(job)
+        if not check_molscontrol_log(job):
+            goal_geo = manager_io.read_configure(directory, job)['geo_check']
+            if apply_geo_check(job, goal_geo):
+                new_needs_resub.append(job)
+            else:
+                bad_geos.append(job)
         else:
-            bad_geos.append(job)
+            new_molscontrol_kills.append(job)
     for job in unfinished:
-        goal_geo = manager_io.read_configure(directory, job)['geo_check']
-        if apply_geo_check(job, goal_geo):
-            new_unfinished.append(job)
+        if not check_molscontrol_log(job):
+            goal_geo = manager_io.read_configure(directory, job)['geo_check']
+            if apply_geo_check(job, goal_geo):
+                new_unfinished.append(job)
+            else:
+                bad_geos.append(job)
         else:
-            bad_geos.append(job)
+            new_molscontrol_kills.append(job)
 
     completeness['Finished'] = new_finished
     completeness['Spin_contaminated'] = new_spin_contaminated
     completeness['Resub'] = new_needs_resub
     completeness['Error'] = new_unfinished
     completeness['Bad_geos'] = bad_geos
+    completeness["molscontrol_kills"] = new_molscontrol_kills
     return completeness
 
 
@@ -373,3 +389,13 @@ def name_ligands(nested_list):
             duplication_index += 1
 
     return ligand_formulas
+
+
+def check_molscontrol_log(job):
+    molscontrol_logfile = "/".join(job.split("/")[:-1]) + '/molscontrol.log'
+    if os.path.isfile(molscontrol_logfile):
+        with open(molscontrol_logfile, "r") as fo:
+            for line in fo:
+                if "job killed at step" in line:
+                    return True
+    return False

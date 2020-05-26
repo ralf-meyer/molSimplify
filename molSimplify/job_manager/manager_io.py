@@ -337,7 +337,7 @@ def read_configure(home_directory, outfile_path):
 
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
-    ss_cutoff, hard_job_limit = False, False
+    ss_cutoff, hard_job_limit, use_molscontrol = False, False, False
     dissociated_ligand_charges,dissociated_ligand_spinmults = {},{}
     for configure in [home_configure, local_configure]:
         for line in configure:
@@ -372,6 +372,8 @@ def read_configure(home_directory, outfile_path):
                 dissociated_ligand_charges[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
             if 'dissociated_ligand_spinmult' in line.split(':'):
                 dissociated_ligand_spinmults[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
+            if "use_molscontrol" in line.split(':'):
+                use_molscontrol = bool(int(line.split(":")[-1]))
 
     # If global settings not specified, choose defaults:
     if not max_jobs:
@@ -399,7 +401,8 @@ def read_configure(home_directory, outfile_path):
             'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
             'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit, 
             'dissociated_ligand_spinmults': dissociated_ligand_spinmults, 
-            'dissociated_ligand_charges':dissociated_ligand_charges}
+            'dissociated_ligand_charges':dissociated_ligand_charges,
+            "use_molscontrol": use_molscontrol,}
 
 
 def read_charges(PATH):
@@ -646,40 +649,65 @@ def write_orca_input(infile_dictionary):
 
 
 def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
-                    machine='gibraltar', cwd=False):
+                    machine='gibraltar', cwd=False, use_molscontrol=False):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
-        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, machine=machine, cwd=cwd)
+        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
+                                 machine=machine, cwd=cwd,
+                                 use_molscontrol=use_molscontrol)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                              parallel_environment=parallel_environment, 
-                             machine=machine)
+                             machine=machine,
+                             use_molscontrol=use_molscontrol)
     else:
         raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
-                             machine='gibraltar', cwd=False):
+                             machine='gibraltar', cwd=False, use_molscontrol=False):
+    if use_molscontrol and machine is not 'gibraltar':
+        raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
     if machine == 'gibraltar':
-        text = ['#$ -S /bin/bash\n',
-                '#$ -N ' + name + '\n',
-                '#$ -cwd\n',
-                '#$ -R y\n',
-                '#$ -l h_rt=' + time_limit + '\n',
-                '#$ -l h_rss=8G\n',
-                '#$ -q gpus|gpusnew|gpusnewer\n',
-                '#$ -l gpus=1\n',
-                '#$ -pe smp 1\n',
-                "# -fin " + "%s.in\n" % name,
-                "# -fin " + "%s.xyz\n" % name,
-                '# -fout scr/\n',
-                'source /etc/profile.d/modules.sh\n',
-                'module load terachem/tip\n',
-                'export OMP_NUM_THREADS=1\n'
-                ]
+        if not use_molscontrol:
+            text = ['#$ -S /bin/bash\n',
+                    '#$ -N ' + name + '\n',
+                    '#$ -cwd\n',
+                    '#$ -R y\n',
+                    '#$ -l h_rt=' + time_limit + '\n',
+                    '#$ -l h_rss=8G\n',
+                    '#$ -q gpus|gpusnew|gpusnewer\n',
+                    '#$ -l gpus=1\n',
+                    '#$ -pe smp 1\n',
+                    "# -fin " + "%s.in\n" % name,
+                    "# -fin " + "%s.xyz\n" % name,
+                    '# -fout scr/\n',
+                    'source /etc/profile.d/modules.sh\n',
+                    'module load terachem/tip\n',
+                    'export OMP_NUM_THREADS=1\n'
+                    ]
+        else:
+            text = ['#$ -S /bin/bash\n',
+                    '#$ -N ' + name + '\n',
+                    '#$ -cwd\n',
+                    '#$ -R y\n',
+                    '#$ -l h_rt=' + time_limit + '\n',
+                    '#$ -l h_rss=8G\n',
+                    '#$ -q gpus|gpusnew|gpusnewer\n',
+                    '#$ -l gpus=1\n',
+                    '#$ -pe smp 1\n',
+                    "# -fin " + "%s.in\n" % name,
+                    "# -fin molscontrol_config.json\n",
+                    "# -fin " + "%s.xyz\n" % name,
+                    '# -fout scr/\n',
+                    'source /etc/profile.d/modules.sh\n',
+                    "source activate /home/crduan/.conda/envs/mols_keras/\n",
+                    'module load terachem/tip\n',
+                    'export OMP_NUM_THREADS=1\n'
+                    ]
     elif machine == 'bridges':
         if int(time_limit.split(':')[0]) > 45:
             time_limit = '45:00:00'
@@ -735,12 +763,29 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
     else:
         raise ValueError('Job manager does not know how to run Terachem on this machine!')
     if terachem_line and machine == 'gibraltar':
-        if not cwd:
-            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+        if not use_molscontrol:
+            if not cwd:
+                text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+            else:
+                text += ["echo $SGE_O_WORKDIR\n"]
+                text += ['cd $SGE_O_WORKDIR\n']
+                text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
         else:
-            text += ["echo $SGE_O_WORKDIR\n"]
-            text += ['cd $SGE_O_WORKDIR\n']
-            text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
+            text += ["cp %s.xyz initgeo.xyz" % name]
+            if not cwd:
+                text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out &\n']
+                text += ["PID_KILL=$!\n"]
+                text += ["molscontrol $PID_KILL &\n"]
+                text += ["wait\n"]
+                text += ["mv *.log $SGE_O_WORKDIR\n"]
+                text += ["mv features.json $SGE_O_WORKDIR/dyanmic_features.json\n"]
+            else:
+                text += ["echo $SGE_O_WORKDIR\n"]
+                text += ['cd $SGE_O_WORKDIR\n']
+                text += ['terachem ' + name + '.in ' + '> ' + name + '.out &\n']
+                text += ["PID_KILL=$!\n"]
+                text += ["molscontrol $PID_KILL &\n"]
+                text += ["wait\n"]
     elif terachem_line and machine in ['bridges','comet']:
         text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
     if custom_line:
@@ -752,6 +797,10 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
     for i in text:
         jobscript.write(i)
     jobscript.close()
+
+
+def write_molscontrol_config():
+    pass
 
 
 def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel_environment=4,

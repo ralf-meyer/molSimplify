@@ -31,7 +31,7 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
             tools.call_bash('scancel '+str(id_))
         else:
             raise ValueError('Sardines.')
-        
+
 
 def prep_derivative_jobs(directory, list_of_outfiles):
     for job in list_of_outfiles:
@@ -50,7 +50,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
             tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
             moltools.prep_ligand_breakown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
-                                               dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
+                                          dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
 
 
 def resub(directory='in place'):
@@ -62,7 +62,7 @@ def resub(directory='in place'):
     hit_queue_limit = False  # Describes if this run has limitted the number of jobs submitted to work well with the queue
     # Get the state of all jobs being managed by this instance of the job manager
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
-    # print(completeness)
+    print("completeness: ", completeness)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness[
         'SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
@@ -76,6 +76,7 @@ def resub(directory='in place'):
         'Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
+    molscontrol_kills = completeness['molscontrol_kills']
     nactive = tools.get_number_active()  # number of active jobs, counting bundled jobs as a single job
     # Kill SCF errors in progress, which are wasting computational resources
     all_scf_errors = completeness[
@@ -85,10 +86,12 @@ def resub(directory='in place'):
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
     # Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
     needs_derivative_jobs = list(filter(tools.check_original, finished))
+    print("needs_derivative_jobs: ", needs_derivative_jobs)
     prep_derivative_jobs(directory, needs_derivative_jobs)
-
     resubmitted = []  # Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
 
+    for job in molscontrol_kills:
+        print("killed by molscontrol: ", job)
     # Resub unidentified errors
     for error in errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
