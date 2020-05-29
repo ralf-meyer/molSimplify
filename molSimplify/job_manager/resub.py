@@ -51,6 +51,8 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['dissociation']:
             moltools.prep_ligand_breakown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
                                           dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
+        if bool(configure_dict['general_sp']):
+            tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 
 
 def resub(directory='in place'):
@@ -62,7 +64,7 @@ def resub(directory='in place'):
     hit_queue_limit = False  # Describes if this run has limitted the number of jobs submitted to work well with the queue
     # Get the state of all jobs being managed by this instance of the job manager
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
-    print("completeness: ", completeness)
+    # print("completeness: ", completeness)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness[
         'SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
@@ -86,7 +88,7 @@ def resub(directory='in place'):
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
     # Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
     needs_derivative_jobs = list(filter(tools.check_original, finished))
-    print("needs_derivative_jobs: ", needs_derivative_jobs)
+    # print("needs_derivative_jobs: ", needs_derivative_jobs)
     prep_derivative_jobs(directory, needs_derivative_jobs)
     resubmitted = []  # Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
 

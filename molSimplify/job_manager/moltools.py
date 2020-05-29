@@ -191,7 +191,6 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     new_unfinished = []
     new_molscontrol_kills = []
     for job in finished:
-        print("finished: ")
         goal_geo = manager_io.read_configure(directory, job)['geo_check']
         if apply_geo_check(job, goal_geo):
             new_finished.append(job)

@@ -814,6 +814,133 @@ def prep_functionals_sp(path, functionalsSP):
     return jobscripts
 
 
+def prep_general_sp(path, general_config):
+    '''
+    path: jobpath
+    general_config: dictionary of {index: {config}}
+    '''
+    # ----sanity check and set up input config---
+    allowed_keys = ["type", "functional", "solvent"]
+    default = {"type": "energy", "functional": "b3lyp", "solvent": False}
+    for ii in general_config:
+        config = {}
+        for k in general_config[ii]:
+            if k not in allowed_keys:
+                raise KeyError("This key %s has not been implemented. Allowed keys are: " % k, allowed_keys)
+            else:
+                config[k] = general_config[ii][k]
+        for k in allowed_keys:
+            if k not in general_config[ii]:
+                config[k] = default[k]
+        general_config[ii] = config
+    # ----sanity check for dependent job-----
+    home = os.getcwd()
+    path = convert_to_absolute_path(path)
+    results = manager_io.read_outfile(path)
+    if not results['finished']:
+        raise Exception('This calculation does not appear to be complete! Aborting...')
+    # -----make base directory for general jobs---
+    infile_dict = manager_io.read_infile(path)
+    base = os.path.split(path)[0]
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    extract_optimized_geo(optimxyz)
+    # Now, start generating the new directory
+    funcname = results['name'] + '_general'
+    functional_base_path = os.path.join(base, funcname)
+    if os.path.isdir(functional_base_path):
+        pass
+    else:
+        os.mkdir(functional_base_path)
+    os.chdir(functional_base_path)
+    jobscripts = []
+    for ii in general_config:
+        config = general_config[ii]
+        if config['type'] in ["vertIP", "vertEA"]:
+            if infile_dict['spinmult'] == 1:
+                new_spin = [2]
+            else:
+                new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
+            for calc in new_spin:
+                suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), calc)
+                PATH = os.path.join(functional_base_path, suffix)
+                if os.path.isdir(PATH):
+                    continue
+                ensure_dir(PATH)
+                name = results['name'] + "_" + suffix
+                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+                guess = False
+                os.chdir(PATH)
+                local_infile_dict = copy.copy(infile_dict)
+                if config['type'] == "vertIP":
+                    local_infile_dict['charge'] = infile_dict['charge'] + 1
+                elif config['type'] == "vertEA":
+                    local_infile_dict['charge'] = infile_dict['charge'] - 1
+                local_infile_dict['guess'] = False
+                local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'energy', calc
+                local_infile_dict['name'] = name
+                local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
+                local_infile_dict['machine'] = machine
+                local_infile_dict['method'] = config['functional']
+                if config['solvent']:
+                    local_infile_dict['solvent'] = float(config['solvent'])
+                else:
+                    local_infile_dict['solvent'] = False
+                manager_io.write_input(local_infile_dict)
+                manager_io.write_jobscript(name, machine=machine)
+                with open('configure', 'w')as fil:
+                    fil.write('method:%s\n' % config['functional'])
+                    solvent = float(config['solvent']) if config['solvent'] else False
+                    fil.write('solvent:%s\n' % str(solvent))
+                jobscripts.append(os.path.join(PATH, name + '_jobscript'))
+        elif config['type'] == "energy":
+            suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
+            PATH = os.path.join(functional_base_path, suffix)
+            if os.path.isdir(PATH):
+                continue
+            ensure_dir(PATH)
+            name = results['name'] + "_" + suffix
+            shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+            guess = False
+            os.chdir(PATH)
+            if infile_dict['spinmult'] == 1:
+                if os.path.isfile(os.path.join(base, 'scr', 'c0')):
+                    shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
+                    manager_io.write_jobscript(name, custom_line='# -fin c0', machine=machine)
+                    guess = True
+            else:
+                if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
+                    shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
+                    shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
+                    manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=machine)
+                    guess = True
+            local_infile_dict = copy.copy(infile_dict)
+            local_infile_dict['guess'] = guess
+            local_infile_dict['run_type'] = 'energy'
+            local_infile_dict['name'] = name
+            local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
+            local_infile_dict['charge'] = infile_dict['charge']
+            local_infile_dict['spinmult'] = infile_dict['spinmult']
+            local_infile_dict['machine'] = machine
+            local_infile_dict['method'] = config['functional']
+            if config['solvent']:
+                local_infile_dict['solvent'] = float(config['solvent'])
+            else:
+                local_infile_dict['solvent'] = False
+            manager_io.write_input(local_infile_dict)
+            with open('configure', 'w')as fil:
+                fil.write('method:%s\n' % config['functional'])
+                solvent = float(config['solvent']) if config['solvent'] else False
+                fil.write('solvent:%s\n' % str(solvent))
+            jobscripts.append(os.path.join(PATH, name + '_jobscript'))
+        else:
+            raise KeyError("Type not implemented. Available types are : [vertIP, vertEA, energy]")
+    os.chdir(home)
+    return jobscripts
+
+
 def prep_thermo(path):
     # Given a path to the outfile of a finished run, this preps the files for a thermo calculation
     # Uses the wavefunction from the previous calculation as an initial guess

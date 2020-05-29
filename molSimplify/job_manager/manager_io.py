@@ -8,6 +8,7 @@ import shutil
 import time
 from molSimplify.job_manager.classes import resub_history, textfile
 from ast import literal_eval
+import json
 
 
 def try_float(obj):
@@ -337,7 +338,7 @@ def read_configure(home_directory, outfile_path):
 
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
-    ss_cutoff, hard_job_limit, use_molscontrol = False, False, False
+    ss_cutoff, hard_job_limit, use_molscontrol, general_sp = False, False, False, False
     dissociated_ligand_charges,dissociated_ligand_spinmults = {},{}
     for configure in [home_configure, local_configure]:
         for line in configure:
@@ -374,7 +375,16 @@ def read_configure(home_directory, outfile_path):
                 dissociated_ligand_spinmults[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
             if "use_molscontrol" in line.split(':'):
                 use_molscontrol = bool(int(line.split(":")[-1]))
-
+            if "general_sp" in line.split(':'):
+                localpath = line.split(":")[-1].replace(" ", "")
+                if os.path.isfile(localpath):
+                    with open(os.getcwd() + "/" + localpath, "r") as f:
+                        try:
+                            general_sp = json.load(f)
+                        except:
+                            raise ValueError("%s is not a valid json file." % localpath)
+                else:
+                    raise ValueError("%s does not exits." % localpath)
     # If global settings not specified, choose defaults:
     if not max_jobs:
         max_jobs = 50
@@ -399,10 +409,10 @@ def read_configure(home_directory, outfile_path):
             'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
             'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
             'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
-            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit, 
-            'dissociated_ligand_spinmults': dissociated_ligand_spinmults, 
-            'dissociated_ligand_charges':dissociated_ligand_charges,
-            "use_molscontrol": use_molscontrol,}
+            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit,
+            'dissociated_ligand_spinmults': dissociated_ligand_spinmults,
+            'dissociated_ligand_charges': dissociated_ligand_charges,
+            "use_molscontrol": use_molscontrol, "general_sp": general_sp}
 
 
 def read_charges(PATH):
