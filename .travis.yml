@@ -26,9 +26,10 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda config --add channels hjkgroup
-  - conda config --add channels conda-forge
   - conda config --add channels anaconda
-  - conda build conda-recipe
+  - conda config --add channels conda-forge
+  - conda config --add channels defaults
+  - conda build conda-recipe -c hjkgroup
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
   - conda install pytest
