@@ -1,6 +1,6 @@
 package:
   name: molsimplify
-  version: "latest"
+  version: "1.5.0"
 
 source:
     path: ../
@@ -16,28 +16,29 @@ requirements:
   build:
     - python
     - setuptools
-    - pytest-runner
+  host:
+    - pip
+    - python
   run:
     - python
     - setuptools
-    - openbabel
-    - numpy
-    - python 
+    - openbabel 2.4.1
+    - numpy 1.16.4 
     - scikit-learn
-    - pandas
+    - pandas 
     - keras
     - scipy
     - pyyaml
+    - tensorflow 1.14.0
+    - hyperopt 0.2.3
     
 
 test:
   # Python imports
   imports:
     - openbabel
+    - keras 
   commands:
-    # You can put test commands to be run here.  Use this to test that the
-    # entry points work.
-
     - molsimplify -h
   # You can also put a file called run_test.py in the recipe that will be run
   # at test time.
@@ -45,6 +46,7 @@ test:
   # requires:
     # Put any additional test requirements here.  For example
     # - nose
+
 
 about:
   home: https://github.com/hjkgrp/molSimplify
