@@ -215,11 +215,14 @@ class mol3D:
     #  Added atom is appended to the end of the list.
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
-    def addAtom(self, atom, index=None):
+    def addAtom(self, atom, index=None, partialcharge=0.0):
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
+        # If partial charge list exists, add partial charge:
+        if len(self.partialcharges) == self.natoms:
+            self.partialcharges.insert(index, partialcharge)
         if atom.frozen:
             self.atoms[index].frozen = True
         self.natoms += 1
