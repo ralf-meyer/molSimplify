@@ -16,9 +16,11 @@ requirements:
   build:
     - python
     - setuptools
+    - pytest-runner
   host:
     - pip
     - python
+    - pytest-runner
   run:
     - python
     - setuptools
@@ -37,7 +39,6 @@ test:
   # Python imports
   imports:
     - openbabel
-    - keras 
   commands:
     - molsimplify -h
   # You can also put a file called run_test.py in the recipe that will be run
