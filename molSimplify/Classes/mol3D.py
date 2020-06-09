@@ -215,7 +215,7 @@ class mol3D:
     #  Added atom is appended to the end of the list.
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
-    def addAtom(self, atom, index=None):
+    def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
@@ -233,6 +233,15 @@ class mol3D:
         self.size = self.molsize()
         self.graph = []
         self.metal = False
+
+        # If bo_dict exists, auto-populate the bo_dict with "1"
+        # for all newly bonded atoms. (Atoms indices in pair must be  sorted,
+        # i.e. a bond order pair (1,5) is valid  but (5,1) is invalid.
+        if auto_populate_BO_dict and self.bo_dict:
+            catom_idxs = self.getBondedAtoms(index)
+            for catom_idx in catom_idxs:
+                sorted_indices = sorted([catom_idx, index])
+                self.bo_dict[tuple(sorted_indices)] = '1'
 
     # Change type of atom in molecule
     #
