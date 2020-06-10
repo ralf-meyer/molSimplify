@@ -24,8 +24,8 @@ def get_num_frame(geofile):
     return int(len(txt) / num_lines)
 
 
-def get_configure():
-    with open("configure.json", "r") as f:
+def get_configure(configure_file):
+    with open(configure_file, "r") as f:
         config = yaml.safe_load(f)
     return config
 

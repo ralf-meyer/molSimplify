@@ -215,11 +215,17 @@ class mol3D:
     #  Added atom is appended to the end of the list.
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
-    def addAtom(self, atom, index=None):
+    def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
+        # If partial charge list exists, add partial charge:
+        if len(self.partialcharges) == self.natoms:
+            partialcharge = atom.partialcharge
+            if partialcharge == None:
+                partialcharge = 0.0
+            self.partialcharges.insert(index, partialcharge)
         if atom.frozen:
             self.atoms[index].frozen = True
         self.natoms += 1
@@ -227,6 +233,15 @@ class mol3D:
         self.size = self.molsize()
         self.graph = []
         self.metal = False
+
+        # If bo_dict exists, auto-populate the bo_dict with "1"
+        # for all newly bonded atoms. (Atoms indices in pair must be  sorted,
+        # i.e. a bond order pair (1,5) is valid  but (5,1) is invalid.
+        if auto_populate_BO_dict and self.bo_dict:
+            catom_idxs = self.getBondedAtoms(index)
+            for catom_idx in catom_idxs:
+                sorted_indices = sorted([catom_idx, index])
+                self.bo_dict[tuple(sorted_indices)] = '1'
 
     # Change type of atom in molecule
     #
@@ -3577,7 +3592,7 @@ class mol3D:
         '''
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-        if not num_sandwich_lig:
+        if not num_sandwich_lig or (num_sandwich_lig and not allconnect):
             mol_fcs = obtain_truncation_metal(self, hops=1)
             metal_ind = mol_fcs.findMetal()[0]
             catoms = list(range(mol_fcs.natoms))
@@ -3591,6 +3606,8 @@ class mol3D:
                     break
             num_edge_lig = len(edge_ligands)
             info_edge_lig = [{"natoms_connected": len(x[0])} for x in edge_ligands]
+        else:
+            num_edge_lig, info_edge_lig = 0, list()
         return num_edge_lig, info_edge_lig
 
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
@@ -3615,7 +3632,27 @@ class mol3D:
                 raise ValueError('No metal centers exist in this complex.')
         if num_coord is not False:
             if num_coord not in [3, 4, 5, 6, 7]:
-                raise ValueError("The coordination number of %d is out of the scope of geotype detection now."%num_coord)
+                if (catoms_arr is not None) and (not len(catoms_arr) == num_coord):
+                    raise ValueError("num_coord and the length of catoms_arr do not match.")
+                num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+                num_edge_lig, info_edge_lig = self.is_edge_compound()
+                if num_sandwich_lig:
+                    geometry = "sandwich"
+                elif num_edge_lig:
+                    geometry = "edge"
+                else:
+                    geometry = "unknown"
+                results = {
+                    "geometry": geometry,
+                    "angle_devi": False,
+                    "summary": {},
+                    "num_sandwich_lig": num_sandwich_lig,
+                    "info_sandwich_lig": info_sandwich_lig,
+                    "aromatic": aromatic,
+                    "allconnect": allconnect,
+                    "info_edge_lig": info_edge_lig,
+                    }
+                return results
             else:
                 if catoms_arr is not None:
                     if not len(catoms_arr) == num_coord:

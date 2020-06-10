@@ -1,5 +1,5 @@
 {
-  "mode": "full",
+  "mode": "terachem",
   "scrpath": "./scr_template/",
   "geofile": "optim.xyz",
   "bofile": "bond_order.list",

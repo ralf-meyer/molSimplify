@@ -25,7 +25,8 @@ export plm_rsh_agent=ssh
 
 terachem terachem_input > $SGE_O_WORKDIR/dft.out &
 PID_KILL=$!
-molscontrol $PID_KILL &
+molscontrol --pid $PID_KILL --config configure.json &
 wait
 
 mv *.log $SGE_O_WORKDIR
+mv features.json $SGE_O_WORKDIR/dynamic_features.json

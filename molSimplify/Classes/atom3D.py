@@ -17,9 +17,10 @@ class atom3D:
     #  @param Sym Element symbol
     #  @param xyz List of coordinates
     #  @param name optional unique identifier
-    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False):
+    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None):
                 # Element symbol
         self.sym = Sym
+        self.partialcharge = None
         globs = globalvars()
         amass = globs.amass()
         if Sym not in amass:  # assign default values if not in dictionary

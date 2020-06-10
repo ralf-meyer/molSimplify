@@ -5,6 +5,7 @@ vertEA
 vertIP
 thermo
 hfx_resample
+general_sp: sp_config.json
 
 dissociation
 dissociated_ligand_charge:O1 -2

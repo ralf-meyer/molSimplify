@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 from keras import backend as K
+from sklearn.neighbors import BallTree
 
 """
 tools for ML models.
@@ -15,7 +16,7 @@ def get_layer_outputs(model, layer_index, input,
     return nn_outputs
 
 
-def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
+def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
     dist_mat = pairwise_distances(fmat1, fmat2, 'manhattan')
     dist_mat = dist_mat * 1.0 / dist_ref
     dist_avrg, dist_list, labels_list = [], [], []
@@ -41,6 +42,15 @@ def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
     dist_list = np.array(dist_list)
     labels_list = np.array(labels_list)
     return dist_avrg, dist_list, labels_list
+
+
+def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):
+    tree = BallTree(fmat2, leaf_size=2, metric='cityblock')
+    dist_mat, inds = tree.query(fmat1, l)
+    dist_mat = dist_mat * 1.0 / dist_ref
+    dist_avrg = np.mean(dist_mat, axis=1)
+    labels_list = labels[inds]
+    return dist_avrg, dist_mat, labels_list
 
 
 def get_entropy(dists, neighbor_targets):

@@ -46,17 +46,33 @@ A set of tutorials covering common use cases is available at the [Kulik group we
 molSimplify is research software. If you use it for work that results in a publication, please cite the following reference:
 
 ```
-@article {molSimplify,
+@Article {molSimplify,
 author = {Ioannidis, Efthymios I. and Gani, Terry Z. H. and Kulik, Heather J.},
 title = {molSimplify: A toolkit for automating discovery in inorganic chemistry},
 journal = {Journal of Computational Chemistry},
 volume = {37},
 number = {22},
+pages = {2106--2117},
 issn = {1096-987X},
 url = {http://dx.doi.org/10.1002/jcc.24437},
 doi = {10.1002/jcc.24437},
-pages = {2106--2117},
 year = {2016},
 }
+
+@Article{Nandy2018IECR,
+author = {Nandy, Aditya and Duan, Chenru and Janet, Jon Paul and Gugler, Stefan and Kulik, Heather J.},
+title = {Strategies and Software for Machine Learning Accelerated Discovery in Transition Metal Chemistry},
+journal = {Industrial {\&} Engineering Chemistry Research},
+volume = {57},
+number = {42},
+pages = {13973-13986},
+issn = {0888-5885},
+url = {https://doi.org/10.1021/acs.iecr.8b04015},
+doi = {10.1021/acs.iecr.8b04015},
+year = {2018},
+}
+```
+
+If you use any machine learning (ML) models in molSimplify that results in a publication, please cite the corresponding reference in [this MLmodel reference page](https://github.com/hjkgrp/molSimplify/blob/master/MLmodel-reference.md).
 ```
 
