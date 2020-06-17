@@ -8,9 +8,6 @@ import molSimplify.job_manager.moltools as moltools
 from molSimplify.job_manager.classes import resub_history
 import molSimplify.job_manager.manager_io as manager_io
 
-# Set machine as global variable
-machine = tools.get_machine()
-
 def load_history(PATH):
     # takes the path to either an outfile or the resub_history pickle
     # returns the resub_history class object
@@ -225,7 +222,7 @@ def simple_resub(outfile_path):
     return True
 
 
-def clean_resub(outfile_path):
+def clean_resub(outfile_path,machine=tools.get_machine()):
     # Resubmits a job with default parameters, useful for undoing level shift or hfx alterations
     save_run(outfile_path)
     history = resub_history()
@@ -327,7 +324,7 @@ def resub_spin(outfile_path):
         return False
 
 
-def resub_scf(outfile_path):
+def resub_scf(outfile_path,machine=tools.get_machine()):
     # Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1)
     history = resub_history()
     history.read(outfile_path)
@@ -374,7 +371,7 @@ def resub_scf(outfile_path):
         return False
 
 
-def resub_oscillating_scf(outfile_path):
+def resub_oscillating_scf(outfile_path,machine=tools.get_machine()):
     # Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1)
     history = resub_history()
     history.read(outfile_path)
@@ -419,7 +416,7 @@ def resub_oscillating_scf(outfile_path):
         return False
 
 
-def resub_bad_geo(outfile_path, home_directory):
+def resub_bad_geo(outfile_path, home_directory,machine=tools.get_machine()):
     # Resubmits a job that's converged to a bad geometry with additional contraints
     history = resub_history()
     history.read(outfile_path)
