@@ -83,7 +83,7 @@ def get_machine():
         raise ValueError('Machine Unknown to Job Manager')
     return machine
 
-def get_get_username():
+def get_username():
     user = call_bash('whoami')[0]
     # Gets the identify of the user who is using the job manager
     return user
