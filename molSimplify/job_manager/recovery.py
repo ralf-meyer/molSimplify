@@ -222,7 +222,7 @@ def simple_resub(outfile_path):
     return True
 
 
-def clean_resub(outfile_path,machine=tools.get_machine()):
+def clean_resub(outfile_path):
     # Resubmits a job with default parameters, useful for undoing level shift or hfx alterations
     save_run(outfile_path)
     history = resub_history()
@@ -233,6 +233,7 @@ def clean_resub(outfile_path,machine=tools.get_machine()):
     history.needs_resub = False
     history.save()
 
+    machine=tools.get_machine()
     root = outfile_path.rsplit('.', 1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
@@ -302,6 +303,7 @@ def resub_spin(outfile_path):
         history.notes.append('Spin contaminated, lowering HFX to aid convergence')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -324,7 +326,7 @@ def resub_spin(outfile_path):
         return False
 
 
-def resub_scf(outfile_path,machine=tools.get_machine()):
+def resub_scf(outfile_path):
     # Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1)
     history = resub_history()
     history.read(outfile_path)
@@ -350,6 +352,7 @@ def resub_scf(outfile_path,machine=tools.get_machine()):
         history.notes.append('SCF convergence error, level shifts adjusted to aid convergence')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -371,7 +374,7 @@ def resub_scf(outfile_path,machine=tools.get_machine()):
         return False
 
 
-def resub_oscillating_scf(outfile_path,machine=tools.get_machine()):
+def resub_oscillating_scf(outfile_path):
     # Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1)
     history = resub_history()
     history.read(outfile_path)
@@ -396,6 +399,7 @@ def resub_oscillating_scf(outfile_path,machine=tools.get_machine()):
         history.notes.append('SCF convergence error, precision and grid adjusted to aid convergence')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -416,7 +420,7 @@ def resub_oscillating_scf(outfile_path,machine=tools.get_machine()):
         return False
 
 
-def resub_bad_geo(outfile_path, home_directory,machine=tools.get_machine()):
+def resub_bad_geo(outfile_path, home_directory):
     # Resubmits a job that's converged to a bad geometry with additional contraints
     history = resub_history()
     history.read(outfile_path)
@@ -442,6 +446,7 @@ def resub_bad_geo(outfile_path, home_directory,machine=tools.get_machine()):
         history.notes.append('Bad geometry detected, adding constraints and trying again')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -484,6 +489,7 @@ def resub_tighter(outfile_path):
     # Takes the path to the outfile of a thermo job with the gradient error problem
     # Finds the parent job and resubmits it with a tighter scf convergence criteria
 
+    machine=tools.get_machine()
     name = os.path.split(outfile_path)[-1].rsplit('.', 1)[0]
     parent_name = name.rsplit('_', 1)[0]
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
@@ -530,6 +536,7 @@ def resub_thermo(outfile_path):
     history.needs_resub = False
     history.save()
 
+    machine=tools.get_machine()
     name = os.path.split(outfile_path)[-1]
     name = name.rsplit('.', 1)[0]
     directory = os.path.split(outfile_path)[0]
