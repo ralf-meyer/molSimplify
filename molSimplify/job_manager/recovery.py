@@ -21,14 +21,8 @@ def load_history(PATH):
 #  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
 def save_scr(outfile_path, rewrite_inscr=True):
     root = os.path.split(outfile_path)[0]
-    # print("root: ", root)
-    basepath = os.getcwd()
-    # print("basepath: ", basepath)
-    os.chdir(root)
-    root = './'
     scr_path = os.path.join(root, 'scr')
 
-    print("scr_path: ", scr_path)
     if os.path.isdir(scr_path):
         # extract the optimized geometry, if it exists
         optim = glob.glob(os.path.join(scr_path, 'optim.xyz'))
@@ -51,7 +45,7 @@ def save_scr(outfile_path, rewrite_inscr=True):
         # archive the scr under a new name so that we can write a new one
         old_scrs = glob.glob(scr_path + '_*')
         old_scrs = [int(i[-1]) for i in old_scrs]
-        print("old_scrs: ", old_scrs)
+
         if len(old_scrs) > 0:
             new_scr = str(max(old_scrs) + 1)
         else:
@@ -59,11 +53,8 @@ def save_scr(outfile_path, rewrite_inscr=True):
         # print("current_scr: ", scr_path)
         # print("backup_scr: ", scr_path + '_' + new_scr)
         shutil.move(scr_path, scr_path + '_' + new_scr)
-        os.chdir(basepath)
 
         return os.path.join(os.path.split(outfile_path)[0], 'scr') + '_' + new_scr
-    else:
-        os.chdir(basepath)
 
 
 ## Save the outfile within the resub_history pickel object
@@ -318,6 +309,7 @@ def resub_spin(outfile_path):
         manager_io.write_input(infile_dict)
 
         manager_io.write_jobscript(name, machine=machine)
+\
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
