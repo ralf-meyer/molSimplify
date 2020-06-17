@@ -574,7 +574,7 @@ def write_terachem_input(infile_dictionary):
                             'pcm cosmo\n',
                             'epsilon %.2f\n' % float(infile['solvent']),
                             'pcm_radii read\n',
-                            'pcm_radii_file /home2/harperd/pcm_radii\n',
+                            'pcm_radii_file /home/harperd/pcm_radii\n',
                             'end']
     
     if infile['machine'] in ['gibraltar','bridges']:
@@ -835,8 +835,8 @@ def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel
                 'source /etc/profile.d/modules.sh\n',
                 'module module load intel\n',
                 'module module load orca\n',
-                'export PATH=/home2/harperd/software/openmpi/bin:$PATH\n',
-                'export LD_LIBRARY_PATH=/home2/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
+                'export PATH=/home/harperd/software/openmpi/bin:$PATH\n',
+                'export LD_LIBRARY_PATH=/home/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
                 '/opt/orca/orca_4_1_2_linux_x86-64_openmpi313/orca ' + name + '.in  > $SGE_O_WORKDIR/' + name + '.out\n\n',
                 'mkdir $SGE_O_WORKDIR/scr\n',
                 'cp ' + name + '.trj $SGE_O_WORKDIR/scr/optim.xyz\n',
