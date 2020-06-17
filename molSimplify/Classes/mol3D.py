@@ -2144,9 +2144,12 @@ class mol3D:
     # @param angle3: metal/organic angle cutoff e.g. M-X-X angle
     # @return sane (bool: if sane octahedral molecule)
     # @return  error_dict (optional - if debug) dict: {bondidists and angles breaking constraints:values}
-    def sanitycheckCSD(self, oct=False, angle1=30, angle2=80, angle3=45, debug=False):
+    def sanitycheckCSD(self, oct=False, angle1=30, angle2=80, angle3=45, debug=False, metals = None):
         import itertools
-        metalinds = self.findMetal()
+        if metals:
+            metalinds = [i for i,x in enumerate(self.symvect()) if x in metals]
+        else:
+            metalinds = self.findMetal()
         mcons = []
         metal_syms = []
         if len(metalinds): # only if there are metals
@@ -3399,7 +3402,7 @@ class mol3D:
             if use_mol2:
                 # Produces a smiles with the enforced BO matrix,
                 # which is needed for correct behavior for fingerprints
-                self.convert2OBMol2()
+                self.convert2OBMol2(ignoreX=True)
             else:
                 self.convert2OBMol()
         smi = conv.WriteString(self.OBMol).split()[0]
@@ -3623,6 +3626,7 @@ class mol3D:
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = False, False, False, False
+        info_edge_lig, num_edge_lig = False, False
         if len(self.graph): # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
@@ -3650,6 +3654,7 @@ class mol3D:
                     "info_sandwich_lig": info_sandwich_lig,
                     "aromatic": aromatic,
                     "allconnect": allconnect,
+                    "num_edge_lig": num_edge_lig,
                     "info_edge_lig": info_edge_lig,
                     }
                 return results
@@ -3666,7 +3671,8 @@ class mol3D:
                                                              debug=debug)
                         summary.update({geotype: dict_catoms_shape})
                 else:
-                    num_sandwich_lig, info_sandwich_lig = self.is_sandwich_compound()
+                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect= self.is_sandwich_compound()
+                    num_edge_lig, info_edge_lig = self.is_edge_compound()
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
@@ -3697,6 +3703,7 @@ class mol3D:
             "info_sandwich_lig": info_sandwich_lig,
             "aromatic": aromatic,
             "allconnect": allconnect,
+            "num_edge_lig": num_edge_lig,
             "info_edge_lig": info_edge_lig,
             }
         return results
