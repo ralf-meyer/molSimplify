@@ -228,20 +228,43 @@ class mol3D:
             self.partialcharges.insert(index, partialcharge)
         if atom.frozen:
             self.atoms[index].frozen = True
-        self.natoms += 1
-        self.mass += atom.mass
-        self.size = self.molsize()
-        self.graph = []
-        self.metal = False
+
 
         # If bo_dict exists, auto-populate the bo_dict with "1"
         # for all newly bonded atoms. (Atoms indices in pair must be  sorted,
         # i.e. a bond order pair (1,5) is valid  but (5,1) is invalid.
         if auto_populate_BO_dict and self.bo_dict:
+            new_bo_dict = {}
+            # Adjust indices in bo_dict to reflect insertion
+            for pair, order in self.bo_dict.items():
+                idx1, idx2 = pair
+                if idx1 >= index:
+                    idx1 += 1
+                if idx2 >= index:
+                    idx2 += 1
+                new_bo_dict[(idx1, idx2)] = order
+            self.bo_dict = new_bo_dict
+
+            # Adjust indices in graph to reflect insertion
+            self.graph = np.array(self.graph) # cast graph as numpy array
+            graph_size = self.graph.shape[0]
+            self.graph = np.insert(self.graph, index, np.zeros(graph_size), axis=0)
+            self.graph = np.insert(self.graph, index, np.zeros(graph_size+1), axis=1)
+
+            # Grab connecting atom indices and populate bo_dict and graph
             catom_idxs = self.getBondedAtoms(index)
             for catom_idx in catom_idxs:
                 sorted_indices = sorted([catom_idx, index])
                 self.bo_dict[tuple(sorted_indices)] = '1'
+                self.graph[catom_idx, index] = 1
+                self.graph[index, catom_idx] = 1
+        else:
+            self.graph = []
+
+        self.natoms += 1
+        self.mass += atom.mass
+        self.size = self.molsize()
+        self.metal = False
 
     # Change type of atom in molecule
     #
