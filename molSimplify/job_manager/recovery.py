@@ -8,9 +8,6 @@ import molSimplify.job_manager.moltools as moltools
 from molSimplify.job_manager.classes import resub_history
 import molSimplify.job_manager.manager_io as manager_io
 
-# Set machine as global variable
-machine = tools.get_machine()
-
 def load_history(PATH):
     # takes the path to either an outfile or the resub_history pickle
     # returns the resub_history class object
@@ -24,14 +21,8 @@ def load_history(PATH):
 #  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
 def save_scr(outfile_path, rewrite_inscr=True):
     root = os.path.split(outfile_path)[0]
-    # print("root: ", root)
-    basepath = os.getcwd()
-    # print("basepath: ", basepath)
-    os.chdir(root)
-    root = './'
     scr_path = os.path.join(root, 'scr')
 
-    print("scr_path: ", scr_path)
     if os.path.isdir(scr_path):
         # extract the optimized geometry, if it exists
         optim = glob.glob(os.path.join(scr_path, 'optim.xyz'))
@@ -54,7 +45,7 @@ def save_scr(outfile_path, rewrite_inscr=True):
         # archive the scr under a new name so that we can write a new one
         old_scrs = glob.glob(scr_path + '_*')
         old_scrs = [int(i[-1]) for i in old_scrs]
-        print("old_scrs: ", old_scrs)
+
         if len(old_scrs) > 0:
             new_scr = str(max(old_scrs) + 1)
         else:
@@ -62,11 +53,8 @@ def save_scr(outfile_path, rewrite_inscr=True):
         # print("current_scr: ", scr_path)
         # print("backup_scr: ", scr_path + '_' + new_scr)
         shutil.move(scr_path, scr_path + '_' + new_scr)
-        os.chdir(basepath)
 
         return os.path.join(os.path.split(outfile_path)[0], 'scr') + '_' + new_scr
-    else:
-        os.chdir(basepath)
 
 
 ## Save the outfile within the resub_history pickel object
@@ -236,6 +224,7 @@ def clean_resub(outfile_path):
     history.needs_resub = False
     history.save()
 
+    machine=tools.get_machine()
     root = outfile_path.rsplit('.', 1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
@@ -305,6 +294,7 @@ def resub_spin(outfile_path):
         history.notes.append('Spin contaminated, lowering HFX to aid convergence')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -319,6 +309,7 @@ def resub_spin(outfile_path):
         manager_io.write_input(infile_dict)
 
         manager_io.write_jobscript(name, machine=machine)
+\
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
@@ -353,6 +344,7 @@ def resub_scf(outfile_path):
         history.notes.append('SCF convergence error, level shifts adjusted to aid convergence')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -399,6 +391,7 @@ def resub_oscillating_scf(outfile_path):
         history.notes.append('SCF convergence error, precision and grid adjusted to aid convergence')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -445,6 +438,7 @@ def resub_bad_geo(outfile_path, home_directory):
         history.notes.append('Bad geometry detected, adding constraints and trying again')
         history.save()
 
+        machine=tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -487,6 +481,7 @@ def resub_tighter(outfile_path):
     # Takes the path to the outfile of a thermo job with the gradient error problem
     # Finds the parent job and resubmits it with a tighter scf convergence criteria
 
+    machine=tools.get_machine()
     name = os.path.split(outfile_path)[-1].rsplit('.', 1)[0]
     parent_name = name.rsplit('_', 1)[0]
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
@@ -533,6 +528,7 @@ def resub_thermo(outfile_path):
     history.needs_resub = False
     history.save()
 
+    machine=tools.get_machine()
     name = os.path.split(outfile_path)[-1]
     name = name.rsplit('.', 1)[0]
     directory = os.path.split(outfile_path)[0]
