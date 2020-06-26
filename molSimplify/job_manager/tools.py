@@ -611,6 +611,7 @@ def prep_vertical_ip(path):
                 local_infile_dict['charge'], local_infile_dict['guess'] = infile_dict['charge'] + 1, False
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'energy', calc
                 local_infile_dict['name'] = name
+                local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
                 manager_io.write_input(local_infile_dict)
@@ -671,6 +672,7 @@ def prep_vertical_ea(path):
                 local_infile_dict['charge'], local_infile_dict['guess'] = infile_dict['charge'] - 1, False
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'energy', calc
                 local_infile_dict['name'] = name
+                local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
 
@@ -738,6 +740,7 @@ def prep_solvent_sp(path, solvents=[78.9]):
         local_infile_dict['solvent'], local_infile_dict['guess'] = sol_val, guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
+        local_infile_dict['coordinates'] = name+'.xyz'
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
         local_infile_dict['machine'] = get_machine()
 
@@ -800,6 +803,7 @@ def prep_functionals_sp(path, functionalsSP):
         local_infile_dict['guess'] = guess
         local_infile_dict['run_type'] = 'energy'
         local_infile_dict['name'] = name
+        local_infile_dict['coordinates'] = name+'.xyz'
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
         local_infile_dict['method'] = func
         local_infile_dict['machine'] = get_machine()
@@ -882,6 +886,7 @@ def prep_general_sp(path, general_config):
                 local_infile_dict['guess'] = False
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'energy', calc
                 local_infile_dict['name'] = name
+                local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
                 local_infile_dict['method'] = config['functional']
@@ -921,6 +926,7 @@ def prep_general_sp(path, general_config):
             local_infile_dict['guess'] = guess
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['name'] = name
+            local_infile_dict['coordinates'] = name+'.xyz'
             local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
             local_infile_dict['charge'] = infile_dict['charge']
             local_infile_dict['spinmult'] = infile_dict['spinmult']
@@ -973,6 +979,7 @@ def prep_thermo(path):
     local_infile_dict = copy.copy(infile_dict)
     local_infile_dict['guess'] = True
     local_infile_dict['run_type'] = 'frequencies'
+    local_infile_dict['coordinates'] = name+'.xyz'
     local_infile_dict['name'] = name
     local_infile_dict['machine'] = get_machine()
 
@@ -1036,6 +1043,7 @@ def prep_ultratight(path):
         local_infile_dict['guess'] = True
         local_infile_dict['convergence_thresholds'] = criteria
         local_infile_dict['name'] = name
+        local_infile_dict['coordinates'] = name+'.xyz'
         local_infile_dict['machine'] = get_machine()
 
         manager_io.write_input(local_infile_dict)
@@ -1057,6 +1065,7 @@ def prep_ultratight(path):
         local_infile_dict['guess'] = True
         local_infile_dict['convergence_thresholds'] = criteria
         local_infile_dict['name'] = name
+        local_infile_dict['coordinates'] = name+'.xyz'
         local_infile_dict['machine'] = get_machine()
         manager_io.write_input(local_infile_dict)
 
@@ -1163,6 +1172,7 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         local_infile_dict['guess'] = True
         local_infile_dict['hfx'] = hfx / 100.
         local_infile_dict['name'] = subname
+        local_infile_dict['coordinates'] = subname+'.xyz'
         local_infile_dict['machine'] = get_machine()
         manager_io.write_input(local_infile_dict)
         jobscripts.append(os.path.join(os.getcwd(), subname + '_jobscript'))
