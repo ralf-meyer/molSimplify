@@ -330,7 +330,7 @@ def read_configure(home_directory, outfile_path):
             vertIP = True
         if 'functionalsSP' in line or 'FunctionalsSP' in line:
             functionalsSP = [str(p) for p in line.split()[1:]]
-        if 'thermo' in line or 'Thermo' in line:
+        if ('thermo' in line and not 'thermo_grad_error' in line) or ('Thermo' in line and not 'Thermo_grad_error' in line):
             thermo = True
         if 'dissociation' in line or 'Dissociation' in line:
             dissociation = True

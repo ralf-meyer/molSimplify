@@ -66,23 +66,19 @@ def resub(directory='in place'):
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     # print("completeness: ", completeness)
     errors = completeness['Error']  # These are calculations which failed to complete
-    scf_errors = completeness[
-        'SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
-    oscillating_scf_errors = completeness[
-        'oscillating_scf_errors']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
+    scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
+    oscillating_scf_errors = completeness['oscillating_scf_errors']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
     need_resub = completeness['Needs_resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
     active = completeness['Active']  # These are jobs which are currently running
     thermo_grad_error = completeness['Thermo_grad_error']  # These are thermo jobs encountering the thermo grad error
-    waiting = completeness[
-        'Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
+    waiting = completeness['Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
     molscontrol_kills = completeness['molscontrol_kills']
     nactive = tools.get_number_active()  # number of active jobs, counting bundled jobs as a single job
     # Kill SCF errors in progress, which are wasting computational resources
-    all_scf_errors = completeness[
-        'SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
+    all_scf_errors = completeness['SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
     scf_errors_to_kill = [scf_err for scf_err in all_scf_errors if scf_err not in scf_errors]
     names_to_kill = [os.path.split(scf_err)[-1].rsplit('.', 1)[0] for scf_err in scf_errors_to_kill]
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
