@@ -813,6 +813,28 @@ class mol3D:
         else:
             print('No PyQt5 found. SVG file written to directory.')
 
+    # Applies an ffopt on the mol3D 
+    #  @param self The object pointer
+    #  @param constraints --> list of atoms to be frozen in place
+    #  @return en --> energy of forcefield optimization. ffopt applies on molecule itself.
+    def apply_ffopt(self, constraints = False):
+        forcefield = openbabel.OBForceField.FindForceField('uff')
+        constr = openbabel.OBFFConstraints()
+        if constraints:
+            for catom in range(constraints):
+                # Openbabel uses a 1 index instead of a 0 index.
+                constr.AddAtomConstraint(catom+1) 
+        self.convert2OBMol()
+        forcefield.Setup(self.OBMol,constr)
+        if self.OBMol.NumHvyAtoms() > 10:
+            forcefield.ConjugateGradients(200)
+        else:
+            forcefield.ConjugateGradients(50)
+        forcefield.GetCoordinates(self.OBMol)
+        en = forcefield.Energy()
+        self.convert2mol3D()
+        return en
+
     # Finds closest metal atom to a given atom
     #  @param self The object pointer
     #  @param atom0 Index of reference atom
