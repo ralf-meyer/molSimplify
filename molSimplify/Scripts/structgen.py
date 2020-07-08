@@ -1688,7 +1688,8 @@ def find_rotate_rotatable_bond(lig3D, catoms):
 
 def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds):
     # first check for user-specified distances and use them
-    if MLb and MLb[i]:
+    # print(MLb, MLb[i])
+    if (MLb and MLb[i]) and ("F" not in MLb[i]):
         print('using user-specified M-L distances')
         if 'c' in MLb[i].lower():
             bondl = metal.rad + lig3D.getAtom(atom0).rad
