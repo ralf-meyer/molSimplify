@@ -193,6 +193,7 @@ def read_infile(outfile_path):
     # Returns a dictionary of the job settings included in that infile
 
     root = outfile_path.rsplit('.', 1)[0]
+    unique_job_name = os.path.split(root)[-1]
     inp = textfile(root + '.in')
     if '#ORCA' in inp.lines[0]:
         qm_code = 'orca'
@@ -277,7 +278,7 @@ def read_infile(outfile_path):
 
     return_dict = {}
 
-    for prop, prop_name in zip([root,charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
+    for prop, prop_name in zip([unique_job_name,charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates, guess,
                                 qm_code],
                                ['name','charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
@@ -329,7 +330,7 @@ def read_configure(home_directory, outfile_path):
             vertIP = True
         if 'functionalsSP' in line or 'FunctionalsSP' in line:
             functionalsSP = [str(p) for p in line.split()[1:]]
-        if 'thermo' in line or 'Thermo' in line:
+        if ('thermo' in line and not 'thermo_grad_error' in line) or ('Thermo' in line and not 'Thermo_grad_error' in line):
             thermo = True
         if 'dissociation' in line or 'Dissociation' in line:
             dissociation = True
@@ -461,9 +462,6 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 machine = 'gibraltar'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
-    # "Custom line" can be used to add additional lines to the infile and is not treated by an input dictionary
-    # Note that the infile dictionary can have an additional key, "name", which is not poulated by read_infile()
-    # If name is specified, the coordinates are generated based on the name, rather than based on the coordinates variable
 
     infile = dict()
     # If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
@@ -505,9 +503,6 @@ def write_terachem_input(infile_dictionary):
 
     if infile['spinmult'] != 1:
         infile['method'] = 'u' + infile['method']
-
-    if infile['name']:
-        infile['coordinates'] = infile['name']+'.xyz'
 
     input_file = open(infile['name'] + '.in', 'w')
     text = ['levelshiftvalb ' + str(infile['levelshiftb']) + '\n',
@@ -574,7 +569,7 @@ def write_terachem_input(infile_dictionary):
                             'pcm cosmo\n',
                             'epsilon %.2f\n' % float(infile['solvent']),
                             'pcm_radii read\n',
-                            'pcm_radii_file /home2/harperd/pcm_radii\n',
+                            'pcm_radii_file /home/harperd/pcm_radii\n',
                             'end']
     
     if infile['machine'] in ['gibraltar','bridges']:
@@ -619,17 +614,6 @@ def write_orca_input(infile_dictionary):
     # Convert the keywords for run_type from terachem to orca
     if infile['run_type'] == 'minimize':
         infile['run_type'] = 'opt'
-
-    if infile['name']:
-        infile['coordinates'] = infile['name'] + '.xyz'
-    if not infile['name']:
-        infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
-
-    # Last bit of infile dictionary prep
-    if infile['name']:
-        infile['coordinates'] = infile['name'] + '.xyz'
-    if not infile['name']:
-        infile['name'] = os.path.split(infile['coordinates'])[-1].rsplit('.', 1)[0]
 
     input_file = open(infile['name'] + '.in', 'w')
     # Note that max core is set to 2000MB, this is 2/3 of the amount allocated in the jobscript (on a per processor basis)
@@ -835,8 +819,8 @@ def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel
                 'source /etc/profile.d/modules.sh\n',
                 'module module load intel\n',
                 'module module load orca\n',
-                'export PATH=/home2/harperd/software/openmpi/bin:$PATH\n',
-                'export LD_LIBRARY_PATH=/home2/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
+                'export PATH=/home/harperd/software/openmpi/bin:$PATH\n',
+                'export LD_LIBRARY_PATH=/home/harperd/software/openmpi/lib:$LD_LIBRARY_PATH\n\n',
                 '/opt/orca/orca_4_1_2_linux_x86-64_openmpi313/orca ' + name + '.in  > $SGE_O_WORKDIR/' + name + '.out\n\n',
                 'mkdir $SGE_O_WORKDIR/scr\n',
                 'cp ' + name + '.trj $SGE_O_WORKDIR/scr/optim.xyz\n',

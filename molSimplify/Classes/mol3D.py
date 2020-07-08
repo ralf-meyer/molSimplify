@@ -215,17 +215,55 @@ class mol3D:
     #  Added atom is appended to the end of the list.
     #  @param self The object pointer
     #  @param atom atom3D of atom to be added
-    def addAtom(self, atom, index=None):
+    def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
+        # If partial charge list exists, add partial charge:
+        if len(self.partialcharges) == self.natoms:
+            partialcharge = atom.partialcharge
+            if partialcharge == None:
+                partialcharge = 0.0
+            self.partialcharges.insert(index, partialcharge)
         if atom.frozen:
             self.atoms[index].frozen = True
+
+
+        # If bo_dict exists, auto-populate the bo_dict with "1"
+        # for all newly bonded atoms. (Atoms indices in pair must be  sorted,
+        # i.e. a bond order pair (1,5) is valid  but (5,1) is invalid.
+        if auto_populate_BO_dict and self.bo_dict:
+            new_bo_dict = {}
+            # Adjust indices in bo_dict to reflect insertion
+            for pair, order in self.bo_dict.items():
+                idx1, idx2 = pair
+                if idx1 >= index:
+                    idx1 += 1
+                if idx2 >= index:
+                    idx2 += 1
+                new_bo_dict[(idx1, idx2)] = order
+            self.bo_dict = new_bo_dict
+
+            # Adjust indices in graph to reflect insertion
+            self.graph = np.array(self.graph) # cast graph as numpy array
+            graph_size = self.graph.shape[0]
+            self.graph = np.insert(self.graph, index, np.zeros(graph_size), axis=0)
+            self.graph = np.insert(self.graph, index, np.zeros(graph_size+1), axis=1)
+
+            # Grab connecting atom indices and populate bo_dict and graph
+            catom_idxs = self.getBondedAtoms(index)
+            for catom_idx in catom_idxs:
+                sorted_indices = sorted([catom_idx, index])
+                self.bo_dict[tuple(sorted_indices)] = '1'
+                self.graph[catom_idx, index] = 1
+                self.graph[index, catom_idx] = 1
+        else:
+            self.graph = []
+
         self.natoms += 1
         self.mass += atom.mass
         self.size = self.molsize()
-        self.graph = []
         self.metal = False
 
     # Change type of atom in molecule
@@ -2130,9 +2168,12 @@ class mol3D:
     # @param angle3: metal/organic angle cutoff e.g. M-X-X angle
     # @return sane (bool: if sane octahedral molecule)
     # @return  error_dict (optional - if debug) dict: {bondidists and angles breaking constraints:values}
-    def sanitycheckCSD(self, oct=False, angle1=30, angle2=80, angle3=45, debug=False):
+    def sanitycheckCSD(self, oct=False, angle1=30, angle2=80, angle3=45, debug=False, metals = None):
         import itertools
-        metalinds = self.findMetal()
+        if metals:
+            metalinds = [i for i,x in enumerate(self.symvect()) if x in metals]
+        else:
+            metalinds = self.findMetal()
         mcons = []
         metal_syms = []
         if len(metalinds): # only if there are metals
@@ -3396,7 +3437,7 @@ class mol3D:
             if use_mol2:
                 # Produces a smiles with the enforced BO matrix,
                 # which is needed for correct behavior for fingerprints
-                self.convert2OBMol2()
+                self.convert2OBMol2(ignoreX=True)
             else:
                 self.convert2OBMol()
         smi = conv.WriteString(self.OBMol).split()[0]
@@ -3620,6 +3661,7 @@ class mol3D:
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = False, False, False, False
+        info_edge_lig, num_edge_lig = False, False
         if len(self.graph): # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
@@ -3647,6 +3689,7 @@ class mol3D:
                     "info_sandwich_lig": info_sandwich_lig,
                     "aromatic": aromatic,
                     "allconnect": allconnect,
+                    "num_edge_lig": num_edge_lig,
                     "info_edge_lig": info_edge_lig,
                     }
                 return results
@@ -3663,7 +3706,8 @@ class mol3D:
                                                              debug=debug)
                         summary.update({geotype: dict_catoms_shape})
                 else:
-                    num_sandwich_lig, info_sandwich_lig = self.is_sandwich_compound()
+                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect= self.is_sandwich_compound()
+                    num_edge_lig, info_edge_lig = self.is_edge_compound()
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
@@ -3694,6 +3738,7 @@ class mol3D:
             "info_sandwich_lig": info_sandwich_lig,
             "aromatic": aromatic,
             "allconnect": allconnect,
+            "num_edge_lig": num_edge_lig,
             "info_edge_lig": info_edge_lig,
             }
         return results

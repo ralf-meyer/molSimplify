@@ -26,13 +26,15 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda config --add channels hjkgroup
-  - conda install -c openbabel openbabel  
+  - conda config --add channels anaconda
+  - conda config --add channels conda-forge
+  - conda config --add channels defaults
   - conda install pyyaml
   - conda install tensorflow=1.14.0
   - conda install keras
   - conda install pandas
   - conda install scikit-learn=0.20.3
-  - conda build conda-recipe
+  - conda build conda-recipe -c hjkgroup
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
   - conda install pytest
