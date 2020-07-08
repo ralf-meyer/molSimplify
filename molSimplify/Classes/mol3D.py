@@ -435,7 +435,7 @@ class mol3D:
         if not len(self.graph):
             self.createMolecularGraph()
         if not self.bo_dict: # If bonddict not assigned - Use OBMol to perceive bond orders
-            mol2string = self.writemol2('temporary', writestring=True, 
+            mol2string = self.writemol2('temporary', writestring=True,
                                          ignoreX=ignoreX, force=True)
             OBMol = openbabel.OBMol()
             obConversion.ReadString(OBMol,mol2string)
@@ -704,8 +704,8 @@ class mol3D:
             self.freezeatom(h)
 
     # Get ligand mol without hydrogens
-    # 
-    # Loops over the atoms and makes a submol that contains 
+    #
+    # Loops over the atoms and makes a submol that contains
     # all of the atoms without the hydrogens:
     def get_submol_noHs(self):
         keep_list = []
@@ -1118,7 +1118,8 @@ class mol3D:
                             ' and rat ' + str(ratom.symbol())))
                         print(('maximum bonded distance is ' + str(distance_max)))
                     if atom.symbol() == 'He' or ratom.symbol() == 'He':
-                        distance_max = 1.5 * (atom.rad + ratom.rad)
+                        distance_max = 1.6 * (atom.rad + ratom.rad)
+                    # print("distance_max: ", distance_max, str(atom.symbol()))
                     if d < distance_max and i != ind:
                         # trim Hydrogens
                         if atom.symbol() == 'H' or ratom.symbol() == 'H':
@@ -2119,9 +2120,9 @@ class mol3D:
         else:
             return overlap, mind
 
-    
+
     # Check that the molecule passes basic angle tests in line with CSD pulls
-    
+
     # @param self: the object pointer
     # @param oct bool: if octahedral test
     # @param  angle1: metal angle cutoff
@@ -2168,7 +2169,7 @@ class mol3D:
                             self.atoms[indx].sym+str(indx)+'-' + \
                             self.atoms[combo[1]].sym+str(combo[1]) + '_angle'
                         angle = self.getAngle(combo[0],indx,combo[1])
-                        errors_dict.update({label:angle}) 
+                        errors_dict.update({label:angle})
         if debug:
             return sane, errors_dict
         else:
@@ -2326,12 +2327,12 @@ class mol3D:
 
     # Write mol2 file from mol3D object
     # If partial charges are given they are appended
-    # Otherwise the total charge of the complex (either given or OBMol) is 
+    # Otherwise the total charge of the complex (either given or OBMol) is
     # Assigned to the metal
     #  @param self The object pointer
     #  @param filename Filename
     #  @param writestring Bool to write to a string if True or file if False
-    #  @param ignoreX will delete atom X 
+    #  @param ignoreX will delete atom X
     #  @param force will dictate if bond orders are written (obmol/assigned) or =1
     def writemol2(self, filename, writestring=False, ignoreX=False, force=False):
         # print('!!!!', filename)
@@ -3037,7 +3038,7 @@ class mol3D:
                     self.num_coord_metal = 6
                     if not 'FCS' in skip:
                         dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
-                                                                      catoms_arr, 
+                                                                      catoms_arr,
                                                                       debug=debug,
 
                                                                       )
@@ -3064,8 +3065,10 @@ class mol3D:
                 choice = 'mono'
             else:
                 choice = 'multi'
-
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
+            used_geo_cutoffs = dict_check[choice]
+            if not eqsym:
+                used_geo_cutoffs['dist_del_eq'] = used_geo_cutoffs['dist_del_all']
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(used_geo_cutoffs,
                                                                             num_coord=6,
                                                                             debug=debug,
                                                                             silent=silent)
@@ -3132,7 +3135,10 @@ class mol3D:
                 choice = 'mono'
             else:
                 choice = 'multi'
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check[choice],
+            used_geo_cutoffs = dict_check[choice]
+            if not eqsym:
+                used_geo_cutoffs['dist_del_eq'] = used_geo_cutoffs['dist_del_all']
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(used_geo_cutoffs,
                                                                             num_coord=num_coord,
                                                                             debug=debug)
         else:
@@ -3203,7 +3209,10 @@ class mol3D:
                 choice = 'mono'
             else:
                 choice = 'multi'
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check[choice],
+            used_geo_cutoffs = dict_check[choice]
+            if not eqsym:
+                used_geo_cutoffs['dist_del_eq'] = used_geo_cutoffs['dist_del_all']
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=used_geo_cutoffs,
                                                                             num_coord=6, debug=debug)
             flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose[choice],
                                                                              num_coord=6, debug=debug)
@@ -3269,7 +3278,10 @@ class mol3D:
                 choice = 'mono'
             else:
                 choice = 'multi'
-            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=dict_check[choice],
+            used_geo_cutoffs = dict_check[choice]
+            if not eqsym:
+                used_geo_cutoffs['dist_del_eq'] = used_geo_cutoffs['dist_del_all']
+            flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=used_geo_cutoffs,
                                                                             num_coord=num_coord, debug=debug)
             flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose[choice],
                                                                              num_coord=num_coord, debug=debug)
@@ -3284,7 +3296,7 @@ class mol3D:
             _, catoms = self.oct_comp(debug=False)
         fcs = [metalind] + catoms
         return fcs
-    
+
     # Recreate bo_dict with correct indicies
     # @param self The object pointer
     # @param inds The indicies of the selected submolecule to SAVE
@@ -3464,7 +3476,7 @@ class mol3D:
                         value = 4
                     else:
                         value = int(value)
-                    # This assigns the bond order in the BO dict 
+                    # This assigns the bond order in the BO dict
                     # to the graph, then the determinant can be taken
                     # for that graph
                     tmpgraph[key_val[0],key_val[1]] = value
@@ -3474,7 +3486,7 @@ class mol3D:
         else:
             tmpgraph = np.copy(self.graph)
         syms = self.symvect()
-        weights = [amassdict[x][0] for x in syms] 
+        weights = [amassdict[x][0] for x in syms]
         ##### Add hydrogen tolerance???
         inds = np.nonzero(tmpgraph)
         for j in range(len(syms)):
@@ -3536,7 +3548,7 @@ class mol3D:
     def is_sandwich_compound(self):
         '''
         Check if a structure is sandwich compound.
-        Request: 1) complexes with ligands where there are at least 
+        Request: 1) complexes with ligands where there are at least
         three connected non-metal atoms both connected to the metal.
         2) These >three connected non-metal atoms are in a ring.
         3) optional: the ring is aromatic
@@ -3551,7 +3563,7 @@ class mol3D:
         for atom0 in catoms:
             lig = mol_fcs.findsubMol(atom0=atom0, atomN=metal_ind, smart=True)
             if len(lig) >= 3 and not set(lig) in _sl:  # require to be at least a three-member ring
-                full_lig = self.findsubMol(atom0=mol_fcs.mapping_sub2mol[lig[0]], 
+                full_lig = self.findsubMol(atom0=mol_fcs.mapping_sub2mol[lig[0]],
                                            atomN=mol_fcs.mapping_sub2mol[metal_ind],
                                            smart=True)
                 lig_inds_in_obmol = [sorted(full_lig).index(mol_fcs.mapping_sub2mol[x])+1 for x in lig]
@@ -3572,7 +3584,7 @@ class mol3D:
     def is_edge_compound(self):
         '''
         Check if a structure is edge compound.
-        Request: 1) complexes with ligands where there are at least 
+        Request: 1) complexes with ligands where there are at least
         two connected non-metal atoms both connected to the metal.
         '''
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
@@ -3600,7 +3612,7 @@ class mol3D:
                           skip=False):
         '''
         Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
-        trigonal bipyramidal(5), square pyramidal(5, one-empty-site), 
+        trigonal bipyramidal(5), square pyramidal(5, one-empty-site),
         octahedral(6), pentagonal bipyramidal(7))
 
         '''
@@ -3647,7 +3659,7 @@ class mol3D:
                     possible_geometries = all_geometries[num_coord]
                     for geotype in possible_geometries:
                         dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                             catoms_arr=catoms_arr, 
+                                                             catoms_arr=catoms_arr,
                                                              debug=debug)
                         summary.update({geotype: dict_catoms_shape})
                 else:
