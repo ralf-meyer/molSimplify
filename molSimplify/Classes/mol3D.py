@@ -5,11 +5,20 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import distance, connectivity_match, vecangle, rotation_params, rotate_around_axis
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import time
+import xml.etree.ElementTree as ET
+from math import sqrt
+import numpy as np
+import openbabel
+
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import numpy as np
-
+from molSimplify.Scripts.geometry import distance, connectivity_match, vecangle, rotation_params, rotate_around_axis
 from molSimplify.Scripts.rmsd import rigorous_rmsd
 
 try:
