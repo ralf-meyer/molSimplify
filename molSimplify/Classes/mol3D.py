@@ -7,6 +7,7 @@
 
 from molSimplify.Scripts.geometry import distance, connectivity_match, vecangle, rotation_params, rotate_around_axis
 from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.globalvars import globalvars
 import numpy as np
 
 from molSimplify.Scripts.rmsd import rigorous_rmsd
