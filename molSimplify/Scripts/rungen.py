@@ -168,7 +168,7 @@ def constrgen(rundir, args, globs):
             emsg = rungen(rundir, args, False, globs)
         else:
             if args.gui:
-                from Classes.mWidgets import mQDialogErr
+                from molSimplify.Classes.mWidgets import mQDialogErr
                 qqb = mQDialogErr(
                     'Error', 'No suitable ligand sets were found for random generation. Exiting...')
                 qqb.setParent(args.gui.wmain)

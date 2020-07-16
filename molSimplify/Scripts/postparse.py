@@ -5,11 +5,9 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import os
-import sys
-import subprocess
 import time
-from molSimplify.Classes.globalvars import *
+import os
+
 
 # Gets subset of string between two substrings
 #  @param s String to be split

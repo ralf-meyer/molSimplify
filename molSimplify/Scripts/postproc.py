@@ -5,17 +5,22 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Classes.globalvars import *
-from molSimplify.Scripts.postparse import *
-from molSimplify.Scripts.postmold import *
-from molSimplify.Scripts.postmwfn import *
-import os
-import sys
 import glob
-import subprocess
-import time
-import math
+import os
 import shutil
+import time
+
+from molSimplify.Scripts.postmold import (moldpost)
+from molSimplify.Scripts.postmwfn import (deloc,
+                                          getcharges,
+                                          getcubes,
+                                          getwfnprops,
+                                          globalvars,
+                                          mybash)
+from molSimplify.Scripts.postparse import (gampost,
+                                           nbopost,
+                                           terapost)
+
 
 # Check if multiwfn exists
 #  @param mdir Multiwfn directory
@@ -37,8 +42,7 @@ def checkmultiwfn(mdir):
 def postproc(rundir, args, globs):
     globs = globalvars()
     if args.gui:
-        from Classes.mWidgets import mQDialogErr
-        from Classes.mWidgets import mQDialogInf
+        from molSimplify.Classes.mWidgets import mQDialogInf
         choice = mQDialogInf(
             'Post processing', 'Parsing the results will take a while..Please be patient. Start?')
         choice.setParent(args.gui.pWindow)
