@@ -5,15 +5,6 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from .structgen import *
-from molSimplify.Scripts.molSimplify_io import *
-import argparse
-import sys
-import os
-import shutil
-import itertools
-import random
-
 # Generates name for complex given core and ligands
 #  @param core mol3D of core
 #  @param ligs List of ligand names

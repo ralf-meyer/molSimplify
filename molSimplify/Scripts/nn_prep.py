@@ -5,8 +5,8 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Informatics.decoration_manager import (decorate_ligand,
-                                                        lig_load)
+from molSimplify.Scripts.molSimplify_io import (lig_load)
+from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.graph_analyze import (get_lig_EN,
                                                    get_truncated_kier,
                                                    kier,

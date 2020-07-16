@@ -4,7 +4,6 @@ import glob
 import os
 import re
 import numpy as np
-# from molSimplify.Classes.mol3D import *
 
 # partial hessian
 

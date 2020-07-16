@@ -15,7 +15,7 @@ from molSimplify.Scripts.geometry import (rotate_around_axis,
                                           rotation_params,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.rungen import (ffopt)
+from molSimplify.Scripts.structgen import (ffopt)
 import numpy
 
 

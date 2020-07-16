@@ -8,22 +8,20 @@
 ##########################################################
 
 
-## import 
-import keras
+import csv
+import glob
+import json
+import os
+
+import numpy as np
+import pandas as pd
+import scipy
 from keras import backend as K
 from keras.models import model_from_json, load_model
 from keras.optimizers import Adam
-import numpy as np
-import csv
 from pkg_resources import resource_filename, Requirement
-from .clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
-from molSimplify.Classes.globalvars import *
-import sys, os
-import json
-import pandas as pd
-import glob
-import time
-import scipy
+
+from molSimplify.python_nn.clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
 
 
 ## Functions

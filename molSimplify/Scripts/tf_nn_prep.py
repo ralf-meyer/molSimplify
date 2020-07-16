@@ -5,19 +5,23 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Informatics.decoration_manager import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Informatics.graph_analyze import *
-from molSimplify.Informatics.RACassemble import *
-from molSimplify.python_krr.sklearn_models import sklearn_supervisor
-from molSimplify.python_nn.tf_ANN import *
+import time
+import os
+
+from molSimplify.Classes.ligand import ligand
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Scripts.molSimplify_io import lig_load
+from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts,
+                                                 create_OHE,
+                                                 get_descriptor_vector)
+from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.__main__ import tensorflow_silence
 from molSimplify.python_nn.clf_analysis_tool import lse_trust
-import time
-from molSimplify.Classes.ligand import ligand
-from collections import OrderedDict
+from molSimplify.python_nn.tf_ANN import (ANN_supervisor,
+                                          find_ANN_10_NN_normalized_latent_dist,
+                                          find_ANN_latent_dist,
+                                          find_true_min_eu_dist)
 
 
 # import numpy
