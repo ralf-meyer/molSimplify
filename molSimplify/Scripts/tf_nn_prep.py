@@ -16,6 +16,7 @@ from molSimplify.python_nn.tf_ANN import *
 from molSimplify.__main__ import tensorflow_silence
 from molSimplify.python_nn.clf_analysis_tool import lse_trust
 import time
+from molSimplify.Classes.ligand import ligand
 from collections import OrderedDict
 
 

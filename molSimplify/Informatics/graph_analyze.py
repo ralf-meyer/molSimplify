@@ -7,11 +7,9 @@
 ########   in mol3D form to a truncated graph #############
 ##########################################################
 # import modules
-import numpy as np
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
 from molSimplify.Classes.globalvars import globalvars
-from molSimplify.Classes.mol3D import *
+from molSimplify.Classes.mol3D import mol3D
+import numpy as np
 
 
 def obtain_truncation(mol, con_atoms, hops):

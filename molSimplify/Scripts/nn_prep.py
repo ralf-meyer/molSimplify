@@ -5,14 +5,17 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Informatics.decoration_manager import*
-from molSimplify.Classes.globalvars import *
-from molSimplify.Informatics.graph_analyze import *
-from molSimplify.python_nn.ANN import *
-import numpy
-import openbabel
+from molSimplify.Informatics.decoration_manager import (decorate_ligand,
+                                                        lig_load)
+from molSimplify.Informatics.graph_analyze import (get_lig_EN,
+                                                   get_truncated_kier,
+                                                   kier,
+                                                   obtain_truncation)
+from molSimplify.python_nn.ANN import (find_eu_dist,
+                                       simple_hs_ann,
+                                       simple_ls_ann,
+                                       simple_slope_ann,
+                                       simple_splitting_ann)
 
 
 def get_bond_order(OBMol, connection_atoms, mol):

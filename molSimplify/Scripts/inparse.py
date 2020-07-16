@@ -5,17 +5,25 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import glob
+import argparse
 import os
 import re
-import argparse
-import sys
-import ast
-import json
+
 import yaml
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
-from pkg_resources import resource_filename, Requirement
+
+from molSimplify.Classes.globalvars import (defaultspins,
+                                            elementsbynum,
+                                            globalvars,
+                                            metals_conv,
+                                            romans,
+                                            mtlsdlist)
+from molSimplify.Scripts.molSimplify_io import (getbinds,
+                                                getcores,
+                                                getgeoms,
+                                                getlicores,
+                                                getslicores,
+                                                printgeoms,
+                                                substr_load)
 
 
 # Checks input for correctness and uses defaults otherwise
@@ -127,7 +135,7 @@ def checkinput(args, calctype="base"):
             # default ligand if none given
             if not args.lig and not args.rgen:
                 if args.gui:
-                    from Classes.mWidgets import mQDialogWarn
+                    from molSimplify.Classes.mWidgets import mQDialogWarn
                     qqb = mQDialogWarn('Warning', 'You specified no ligands.')
                     qqb.setParent(args.gui.wmain)
                 else:
@@ -208,7 +216,7 @@ def checkinput(args, calctype="base"):
             # check ligands
             if not args.lig and not args.rgen:
                 if args.gui:
-                    from Classes.mWidgets import mQDialogWarn
+                    from molSimplify.Classes.mWidgets import mQDialogWarn
                     qqb = mQDialogWarn('Warning', 'You specified no ligands.')
                     qqb.setParent(args.gui.wmain)
                 else:
