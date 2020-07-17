@@ -5,22 +5,18 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import sys
-import os
-import random
-import shutil
-import inspect
-import argparse
-import openbabel
-from molSimplify.Scripts.rungen import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Scripts.inparse import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.mol3D import*
-from molSimplify.Classes.globalvars import globalvars
 from math import sqrt
-from math import floor
+
 import numpy as np
+
+from molSimplify.Classes.mol3D import (distance,
+                                       mol3D)
+from molSimplify.Scripts.geometry import (rotate_around_axis,
+                                          rotation_params,
+                                          vecangle,
+                                          vecdiff)
+from molSimplify.Scripts.structgen import (ffopt)
+import numpy
 
 
 def mdistance(r1, r2):

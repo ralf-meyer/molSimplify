@@ -5,25 +5,20 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import time
+import xml.etree.ElementTree as ET
 from math import sqrt
 import numpy as np
+import openbabel
+
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-import openbabel
-import sys
-import time
-import os
-import subprocess
-import random
-import shutil
-import unicodedata
-import inspect
-import tempfile
-import re
-from pkg_resources import resource_filename, Requirement
-import xml.etree.ElementTree as ET
-from molSimplify.Scripts.geometry import vecangle, distance, kabsch, rotation_params, rotate_around_axis, \
-    connectivity_match
+from molSimplify.Scripts.geometry import distance, connectivity_match, vecangle, rotation_params, rotate_around_axis
 from molSimplify.Scripts.rmsd import rigorous_rmsd
 
 try:
@@ -2724,7 +2719,6 @@ class mol3D:
                        check_whole=False, angle_ref=False):
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         from molSimplify.Classes.ligand import ligand_breakdown  # , ligand_assign
-        from molSimplify.Classes.ligand import ligand_assign_consistent as ligand_assign
         flag_match = True
         self.my_mol_trunc = mol3D()
         self.my_mol_trunc.copymol3D(self)
@@ -2841,7 +2835,6 @@ class mol3D:
                         flag_lbd=True, debug=False, depth=3,
                         BondedOct=False, angle_ref=False):
         from molSimplify.Scripts.oct_check_mols import readfromtxt
-        from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         _, _, flag_match = self.match_lig_list(init_mol,
                                                catoms_arr=catoms_arr,
                                                flag_loose=flag_loose,

@@ -5,13 +5,12 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import os
-import sys
-import subprocess
-import time
 import re
-from molSimplify.Scripts.postparse import *
-from molSimplify.Classes.globalvars import *
+import os
+
+from molSimplify.Classes.globalvars import (mybash)
+from molSimplify.Scripts.postparse import (find_between)
+
 
 # Class for atoms containing molden file properties
 

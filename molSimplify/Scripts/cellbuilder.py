@@ -6,23 +6,45 @@
 #  Dpt of Chemical Engineering, MIT
 
 import os
-import sys
-import copy
-import glob
-import re
-import math
 import random
-import string
+import copy
 import numpy
-from math import pi
-from scipy.spatial import Delaunay, ConvexHull
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.mol3D import*
+from math import sqrt
+
+from scipy.spatial import Delaunay
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.mol3D import (rotate_around_axis,
+                                       rotation_params,
+                                       vecangle,
+                                       distance,
+                                       mol3D)
 from molSimplify.Classes.globalvars import globalvars
-from operator import add
-from molSimplify.Scripts.periodic_QE import *
-from molSimplify.Scripts.cellbuilder_tools import *
+from molSimplify.Scripts.cellbuilder_tools import (cell_ffopt,
+                                                   center_of_sym,
+                                                   check_top_layer_correct,
+                                                   closest_torus_point,
+                                                   distance_2d_torus,
+                                                   evaluate_basis_coefficients,
+                                                   find_all_surface_atoms,
+                                                   find_extents,
+                                                   find_extents_cv,
+                                                   freeze_bottom_n_layers,
+                                                   get_basis_coefficients,
+                                                   import_from_cif,
+                                                   mdistance,
+                                                   normalize_vector,
+                                                   periodic_mindist,
+                                                   periodic_selfdist,
+                                                   shave_surface_layer,
+                                                   shave_under_layer,
+                                                   threshold_basis,
+                                                   xgcd,
+                                                   zero_z)
+from molSimplify.Scripts.geometry import (PointRotateAxis,
+                                          checkcolinear,
+                                          vecdiff)
+from molSimplify.Scripts.periodic_QE import (write_periodic_mol3d_to_qe)
+
 
 ###############################
 
@@ -795,7 +817,7 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
         align_axis = False
     if control_angle and not align_ind:
         print('align_ind not found, even though control_angle is on. Disabling controlled rotation')
-        control_angle = false
+        control_angle = False
     if (method == 'alignpair') and not (surface_atom_type or surface_atom_ind):
         print('Must provide surface binding atom type to use alignpair')
         print(' using centered placemented instead')

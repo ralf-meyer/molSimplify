@@ -7,9 +7,8 @@
 ########     geometries for octahedral    ################
 ################      TM complexs          ###############
 ##########################################################
-from molSimplify.Classes.ligand import *
 from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
-from molSimplify.Classes.mol3D import *
+from molSimplify.Classes.mol3D import distance
 
 def getOctBondDistances(mol):
     ## This function gets

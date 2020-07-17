@@ -8,13 +8,15 @@
 ##########################################################
 
 
-## import 
-from pybrain.structure import FeedForwardNetwork,TanhLayer,LinearLayer,BiasUnit,SigmoidLayer, FullConnection
-import numpy as np
 import csv
+
+import numpy as np
 from pkg_resources import resource_filename, Requirement
-from molSimplify.Classes.globalvars import *
-import sys,os
+
+from molSimplify.Classes.globalvars import (globalvars)
+from pybrain.structure import FeedForwardNetwork, TanhLayer, LinearLayer, BiasUnit, FullConnection
+
+
 def simple_network_builder(layers,partial_path):
     n = FeedForwardNetwork()
     ## create the network

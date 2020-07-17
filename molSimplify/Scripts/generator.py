@@ -25,27 +25,25 @@
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 
-import sys
 import os
-import random
-import shutil
-import inspect
+import sys
+import glob
 import argparse
-import openbabel
-from molSimplify.Scripts.rungen import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Scripts.inparse import *
-from molSimplify.Scripts.dbinteract import *
-from molSimplify.Scripts.postproc import *
-from molSimplify.Scripts.cellbuilder import*
-from molSimplify.Scripts.chains import*
-from molSimplify.Scripts.findcorrelations import*
-from molSimplify.Scripts.addtodb import*
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.atom3D import atom3D
-from math import sqrt
-from math import floor
+import copy
+from molSimplify.Classes.globalvars import (globalvars)
+from molSimplify.Scripts.addtodb import (addtoldb,
+                                         loadcdxml)
+from molSimplify.Scripts.cellbuilder import (slab_module_supervisor)
+from molSimplify.Scripts.chains import (chain_builder_supervisor)
+from molSimplify.Scripts.dbinteract import (dbsearch)
+from molSimplify.Scripts.findcorrelations import (analysis_supervisor)
+from molSimplify.Scripts.inparse import (checkinput,
+                                         cleaninput,
+                                         parseall,
+                                         parseinputfile)
+from molSimplify.Scripts.postproc import (postproc)
+from molSimplify.Scripts.rungen import (constrgen,
+                                        multigenruns)
 
 
 # Coordinates subroutines

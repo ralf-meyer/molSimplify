@@ -5,11 +5,13 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Classes.ligand import *
-from molSimplify.Classes.mol3D import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Informatics.autocorrelation import *
-from molSimplify.Informatics.misc_descriptors import *
+from molSimplify.Informatics.autocorrelation import (generate_all_ligand_autocorrelations,
+                                                     generate_all_ligand_deltametrics,
+                                                     generate_full_complex_autocorrelations,
+                                                     generate_metal_autocorrelations,
+                                                     generate_metal_deltametrics)
+from molSimplify.Informatics.misc_descriptors import (generate_all_ligand_misc)
+from molSimplify.Classes.mol3D import mol3D
 
 # DFT observations used to postprocess DFT results by measuring ligand properties
 

@@ -5,14 +5,13 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Classes.globalvars import *
-import glob
-import sys
-import os
 import shutil
+import os
+
+from molSimplify.Classes.globalvars import (globalvars,
+                                            romans)
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.globalvars import *
+
 
 # Generate multiple terachem runs if multiple methods requested
 #  @param args Namespace of arguments

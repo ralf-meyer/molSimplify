@@ -5,19 +5,21 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+import copy
+import random
+import re
+import shutil
 import glob
 import os
-import shutil
-import re
-import argparse
-import sys
-import random
+import time
+
 import openbabel
-import copy
-from molSimplify.Classes.mol3D import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.mol3D import mol3D
 from pkg_resources import resource_filename, Requirement
+
+from molSimplify.Classes.globalvars import (globalvars,
+                                            romans)
+from molSimplify.Classes.mol3D import mol3D
+
 
 # Print available geometries
 

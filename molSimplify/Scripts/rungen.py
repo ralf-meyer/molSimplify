@@ -5,22 +5,30 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from .structgen import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Scripts.jobgen import *
-from molSimplify.Scripts.qcgen import *
-from molSimplify.Scripts.isomers import generateisomers
-# from molSimplify.Scripts.tsgen import *
-from molSimplify.Classes.rundiag import *
-import argparse
-import sys
-import os
-import shutil
 import itertools
+import os
 import random
+import shutil
+import sys
 from collections import Counter
-from pkg_resources import resource_filename, Requirement
-import openbabel
+import glob
+
+from molSimplify.Scripts.isomers import generateisomers
+from molSimplify.Scripts.jobgen import (sgejobgen,
+                                        slurmjobgen)
+from molSimplify.Scripts.molSimplify_io import (core_load,
+                                                getlicores,
+                                                lig_load,
+                                                name_complex,
+                                                name_ts_complex,
+                                                substr_load)
+from molSimplify.Scripts.qcgen import (mlpgen,
+                                       multigamgen,
+                                       multimolcgen,
+                                       multiogen,
+                                       multiqgen,
+                                       multitcgen)
+from molSimplify.Scripts.structgen import (structgen)
 
 ###################################################################
 ### define input for cross-compatibility between python 2 and 3 ###
@@ -168,7 +176,7 @@ def constrgen(rundir, args, globs):
             emsg = rungen(rundir, args, False, globs)
         else:
             if args.gui:
-                from Classes.mWidgets import mQDialogErr
+                from molSimplify.Classes.mWidgets import mQDialogErr
                 qqb = mQDialogErr(
                     'Error', 'No suitable ligand sets were found for random generation. Exiting...')
                 qqb.setParent(args.gui.wmain)

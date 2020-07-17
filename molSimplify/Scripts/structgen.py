@@ -9,23 +9,58 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.distgeom import *
-from molSimplify.Scripts.molSimplify_io import *
-if not sys.version_info >= (3,0):
-    from molSimplify.Scripts.nn_prep import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.rundiag import *
-from molSimplify.Classes import globalvars
-from molSimplify.Classes import mol3D
-from molSimplify.Informatics.decoration_manager import*
-from molSimplify.Informatics.RACassemble import *
-from molSimplify.Scripts.krr_prep import *
-from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
-import os
+from math import pi
 import sys
-import time
-from pkg_resources import resource_filename, Requirement
+from molSimplify.Scripts.distgeom import (GetConf)
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.mol3D import (distance,
+                                       mol3D)
+from molSimplify.Scripts.geometry import (PointTranslateSph,
+                                          PointTranslateSphgivenr,
+                                          PointTranslatetoPSph,
+                                          aligntoaxis,
+                                          aligntoaxis2,
+                                          checkcolinear,
+                                          checkplanar,
+                                          getPointu,
+                                          kabsch,
+                                          midpt,
+                                          protate,
+                                          norm,
+                                          protateref,
+                                          reflect_through_plane,
+                                          rotateRef,
+                                          rotate_around_axis,
+                                          rotate_mat,
+                                          rotation_params,
+                                          setPdistance,
+                                          setPdistanceu,
+                                          vecangle,
+                                          vecdiff)
+from molSimplify.Scripts.molSimplify_io import (bind_load,
+                                                core_load,
+                                                getgeoms,
+                                                getinputargs,
+                                                getlicores,
+                                                getsubcores,
+                                                lig_load,
+                                                loadcoord,
+                                                loaddata,
+                                                loaddata_ts,
+                                                name_complex,
+                                                name_ts_complex,
+                                                substr_load)
+
+if not sys.version_info >= (3,0):
+    from molSimplify.Scripts.nn_prep import (ANN_preproc)
+from molSimplify.Classes.globalvars import (amassdict,
+                                            elementsbynum,
+                                            romans)
+from molSimplify.Classes.rundiag import ( run_diag )
+from molSimplify.Informatics.decoration_manager import (decorate_ligand)
+from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts)
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign, ligand
+from molSimplify.Classes.globalvars import globalvars
 import openbabel
 import random
 import itertools

@@ -1,13 +1,30 @@
-from keras import backend as K
-from keras.callbacks import EarlyStopping
-from keras.models import model_from_json
-from .tf_ANN import *
-from sklearn.utils import shuffle
-from pkg_resources import resource_filename, Requirement
 import glob
+import math
+
 import numpy as np
 import scipy as sp
-import math
+import os
+from keras.callbacks import EarlyStopping
+from keras.models import model_from_json
+from keras import backend as K
+
+from pkg_resources import resource_filename, Requirement
+from sklearn.utils import shuffle
+from molSimplify.python_nn.clf_analysis_tool import (array_stack,
+                                                     dist_neighbor,
+                                                     get_entropy)
+from molSimplify.python_nn.tf_ANN import (data_normalize,
+                                          data_rescale,
+                                          get_key,
+                                          load_keras_ann,
+                                          load_normalization_data,
+                                          load_test_data,
+                                          load_test_labels,
+                                          load_train_info,
+                                          load_training_data,
+                                          load_training_labels,
+                                          save_model,
+                                          tf_ANN_excitation_prepare)
 
 
 def reset_weights(model):

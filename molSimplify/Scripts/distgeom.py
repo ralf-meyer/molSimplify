@@ -12,15 +12,22 @@
 #
 #  [2] G. Crippen and T. F. Havel, "Distance Geometry and Molecular Conformation", in Chemometrics Research Studies Series, Wiley (1988)
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.atom3D import atom3D
-import os
-import sys
-import openbabel
 import numpy as np
+import numpy
+import openbabel
 from scipy import optimize
+from math import sqrt, cos
+
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.globalvars import (vdwrad)
+from molSimplify.Scripts.geometry import (distance,
+                                          norm,
+                                          vecangle,
+                                          vecdiff)
+from molSimplify.Scripts.molSimplify_io import (lig_load,
+                                                loadcoord)
+
 
 # Applies the cosine rule to get the length of AC given lengths of AB, BC and angle ABC
 #  @param AB Length of AB
