@@ -51,7 +51,7 @@ from molSimplify.Scripts.rungen import (constrgen,
 # @param argv Default argument list used to "fool" startgen into accepting input_dict
 # @param flag Flag for printing information
 # @param gui Flag for GUI
-# @return tuple of:
+# @return tuple containing three elements:
 #  (
 #  where the run folder would have been [str],
 #  Error message [bool or str],
