@@ -206,7 +206,7 @@ def startgen(argv, flag, gui):
             print('building an equilibrium complex')
         for cc in corests:
             args.core = cc
-            emsg = rungen(rundir, args, False, globs)
+            emsg = multigenruns(rundir, args, globs)
             if emsg:
                 print(emsg)
                 del args
