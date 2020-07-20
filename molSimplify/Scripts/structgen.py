@@ -3882,7 +3882,12 @@ def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=
         this_diag.write_report(fname+'.report')
         # write input file from command line arguments
         getinputargs(args, fname)
-    del core3D
+    # (Possibly breaking change) Copy core3D into this_diag
+    core3D_copy = mol3D()
+    core3D_copy.copymol3D(core3D)
+    this_diag.set_mol(core3D_copy)
+
+    del core3D # Legacy code, unsure if needed
     return strfiles, emsg, this_diag
 
 # Main structure generation routine - multiple structures

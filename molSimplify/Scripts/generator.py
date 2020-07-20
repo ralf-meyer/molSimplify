@@ -46,18 +46,26 @@ from molSimplify.Scripts.rungen import (constrgen,
                                         multigenruns)
 
 
-# Coordinates subroutines
-#  @param argv Argument list
-#  @param flag Flag for printing information
-#  @param gui Flag for GUI
-#  @return Error messages
+# This is the main way to generate structures completely within Python
+# @param input_dict Argument list in the form of a dictionary
+# @param argv Default argument list used to "fool" startgen into accepting input_dict
+# @param flag Flag for printing information
+# @param gui Flag for GUI
+# @return tuple of:
+#  (
+#  where the run folder would have been [str],
+#  Error message [bool or str],
+#  diagnostics class object, containing ANN results (this_diag.ANN_attributes) and
+#     mol3D object (this_diag.mol)
+#  )
 def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                       argv=['main.py', '-i', 'asdfasdfasdfasdf'],
                       flag=True,
                       gui=False):
     # from molSimplify.Scripts.generator import startgen_pythonic
     inputfile_str = '\n'.join([k + ' ' + v for k, v in input_dict.items()])
-    return startgen(argv, flag, gui, inputfile_str, write_files=False)
+    strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=False)
+    return (strfiles, emsg, this_diag)
 
 # Coordinates subroutines
 #  @param argv Argument list
