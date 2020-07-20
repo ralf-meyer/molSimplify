@@ -11,7 +11,7 @@ from molSimplify.Classes.mol3D import (mol3D)
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.rundiag import (run_diag)
 from molSimplify.Scripts.geometry import (alignPtoaxis,
-                                          distance
+                                          distance,
                                           rotate_around_axis,
                                           rotation_params,
                                           vecangle,
