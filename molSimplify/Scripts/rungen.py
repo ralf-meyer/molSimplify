@@ -36,6 +36,112 @@ from molSimplify.Scripts.structgen import (structgen)
 get_input = input
 if sys.version_info[:2] <= (2,7):
     get_input = raw_input
+
+#####################################
+### constrained random generation ###
+#####################################
+
+
+def constrgen(rundir, args, globs):
+    emsg = False
+    # load global variables
+    licores = getlicores()
+    print('Random generation started..\n\n')
+    # if ligand constraint apply it now
+    ligs0 = []
+    ligocc0 = []
+    coord = False if not args.coord else int(args.coord)
+    if args.gui:
+        args.gui.iWtxt.setText('\n----------------------------------------------------------------------------------\n' +
+                               'Random generation started\nGenerating ligand combinations.\n\n'+args.gui.iWtxt.toPlainText())
+        args.gui.app.processEvents()
+    if args.lig:
+        for i, l in enumerate(args.lig):
+            ligs0.append(l)
+            ligentry, emsg = lig_load(l)  # check ligand
+            # update ligand
+            if ligentry:
+                args.lig[i] = ligentry.name
+            if emsg:
+                return False, emsg
+            if args.ligocc:
+                if len(args.ligocc) < i and len(args.lig) == 1:
+                    args.ligocc.append(coord)
+                elif len(args.ligocc) < i:
+                    args.ligocc.append(1)
+            else:
+                args.ligocc = []
+                if len(args.lig) == 1:
+                    args.ligocc.append(coord)
+                else:
+                    args.ligocc.append(1)
+            ligocc0.append(args.ligocc[i])
+            if args.lignum:
+                args.lignum = str(int(args.lignum) - 1)
+            # check for smiles
+            if not ligentry.denticity:
+                if args.smicat and len(args.smicat) >= i and args.smicat[i]:
+                    ligentry.denticity = len(args.smicat[i])
+                else:
+                    ligentry.denticity = 1
+            if coord:
+                coord -= int(args.ligocc[i])*ligentry.denticity
+            licores.pop(l, None)  # remove from dictionary
+    # check for ligand groups
+    licoresnew = dict()
+    if args.liggrp and 'all' != args.liggrp.lower():
+        for key in list(licores.keys()):
+            if args.liggrp.lower() in licores[key][3]:
+                if not args.ligctg or args.ligctg.lower() == 'all':
+                    licoresnew[key] = licores[key]
+                elif args.ligctg and args.ligctg.lower() in licores[key][3]:
+                    licoresnew[key] = licores[key]
+        licores = licoresnew
+    # remove aminoacids
+    licoresnew = dict()
+    for key in list(licores.keys()):
+        if 'aminoacid' not in licores[key][3]:
+            licoresnew[key] = licores[key]
+    licores = licoresnew
+    # get a sample of these combinations
+    samps = getconstsample(int(args.rgen[0]), args, licores, coord)
+    if len(samps) == 0:
+        if coord == 0:
+            args.lig = [a for a in ligs0]
+            args.ligocc = [int(a) for a in ligocc0]
+            # run structure generation
+            emsg = rungen(rundir, args, False, globs)
+        else:
+            if args.gui:
+                from molSimplify.Classes.mWidgets import mQDialogErr
+                qqb = mQDialogErr(
+                    'Error', 'No suitable ligand sets were found for random generation. Exiting...')
+                qqb.setParent(args.gui.wmain)
+            else:
+                emsg = 'No suitable ligand sets were found for random generation. Exiting...'
+                print(
+                    'No suitable ligand sets were found for random generation. Exiting...\n\n')
+            return args, emsg
+    # loop over samples
+    for combo in samps:
+        args.lig = [a for a in ligs0]
+        args.ligocc = [int(a) for a in ligocc0]
+        for cj in set(combo):
+            lcount = Counter(combo)
+            rocc = lcount[cj]
+            args.lig.append(list(licores.keys())[cj])
+            args.ligocc.append(rocc)
+        # check for keep Hydrogens
+        for iiH in range(len(ligs0), len(args.lig)):
+            opt = True if args.rkHs else False
+            if args.keepHs and len(args.keepHs) > iiH:
+                args.keepHs[iiH] = opt
+            elif args.keepHs:
+                args.keepHs.append(opt)
+            else:
+                args.keepHs = [opt]
+        emsg = rungen(rundir, args, False, globs)  # run structure generation
+    return args, emsg
     
 
 ###############################################
