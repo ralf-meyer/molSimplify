@@ -2123,7 +2123,7 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
         this_diag.set_ANN(ANN_flag, ANN_reason, ANN_attributes, catalysis_flag)
     # generate file name
     fname = name_complex(rootdir, name_core, args.geometry,
-                         ligands, ligoc, sernum, args, nconf, sanity)
+                         ligands, ligoc, sernum, args, 1, sanity)
     if args.debug:
         print(('fname is ' + fname))
    
@@ -2141,8 +2141,8 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
     pfold = rootdir.split('/', 1)[-1]
     if args.gui:
         args.gui.iWtxt.setText('In folder '+pfold+' generated ' +
-                               str(Nogeom)+' structures!\n'+args.gui.iWtxt.toPlainText())
+                               '1 structure!\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
-    print(('\nIn folder '+rootdir+' generated ', Nogeom, ' structure(s)!'))
+    print(('\nIn folder '+rootdir+' generated 1 structure!'))
 
     return strfiles, emsg, this_diag
