@@ -46,12 +46,33 @@ from molSimplify.Scripts.rungen import (constrgen,
                                         multigenruns)
 
 
+# This is the main way to generate structures completely within Python
+# @param input_dict Argument list in the form of a dictionary
+# @param argv Default argument list used to "fool" startgen into accepting input_dict
+# @param flag Flag for printing information
+# @param gui Flag for GUI
+# @return tuple containing three elements:
+#  (
+#  where the run folder would have been [str],
+#  Error message [bool or str],
+#  diagnostics class object, containing ANN results (this_diag.ANN_attributes) and
+#     mol3D object (this_diag.mol)
+#  )
+def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
+                      argv=['main.py', '-i', 'asdfasdfasdfasdf'],
+                      flag=True,
+                      gui=False):
+    # from molSimplify.Scripts.generator import startgen_pythonic
+    inputfile_str = '\n'.join([k + ' ' + v for k, v in input_dict.items()])
+    strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=False)
+    return (strfiles, emsg, this_diag)
+
 # Coordinates subroutines
 #  @param argv Argument list
 #  @param flag Flag for printing information
 #  @param gui Flag for GUI
 #  @return Error messages
-def startgen(argv, flag, gui):
+def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     emsg = False
     # check for configuration file
     homedir = os.path.expanduser("~")
@@ -89,14 +110,14 @@ def startgen(argv, flag, gui):
     parser = argparse.ArgumentParser()
     args = parseall(parser)
     # check if input file exists
-    if not glob.glob(args.i):
+    if not glob.glob(args.i) and not inputfile_str:
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
         print(emsg)
         return emsg
     args.gui = gui  # add gui flag
     # parse input file
-    if args.i:
-        parseinputfile(args)
+    if args.i or inputfile_str:
+        parseinputfile(args, inputfile_str=inputfile_str)
     if args.cdxml:
         print('converting cdxml file into xyz')
         cdxml = args.cdxml[0]
@@ -130,7 +151,8 @@ def startgen(argv, flag, gui):
     # check for jobs directory
     rundir = args.rundir+'/' if (args.rundir) else rundir
     if not os.path.isdir(rundir):
-        os.mkdir(rundir)
+        if write_files:
+            os.mkdir(rundir)
     ################### START MAIN ####################
     args0 = copy.deepcopy(args)  # save initial arguments
     # add gui flag
@@ -204,7 +226,7 @@ def startgen(argv, flag, gui):
             print('building an equilibrium complex')
         for cc in corests:
             args.core = cc
-            emsg = multigenruns(rundir, args, globs)
+            emsg = multigenruns(rundir, args, globs, write_files=write_files)
             if emsg:
                 print(emsg)
                 del args

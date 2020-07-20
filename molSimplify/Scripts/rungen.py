@@ -213,7 +213,7 @@ def constrgen(rundir, args, globs):
 #  @return Error messages
 
 
-def multigenruns(rundir, args, globs):
+def multigenruns(rundir, args, globs, write_files=True):
     emsg = False
     args.jid = 0  # initilize global name identifier
     multch = False
@@ -240,7 +240,7 @@ def multigenruns(rundir, args, globs):
                 # if args.tsgen:
                 #     emsg = tsgen_supervisor(rundir,args,fname,globs)
                 # else:
-                emsg = rungen(rundir, args, fname, globs)
+                emsg = rungen(rundir, args, fname, globs, write_files=write_files)
                 if emsg:
                     return emsg
     elif (multch):
@@ -255,7 +255,7 @@ def multigenruns(rundir, args, globs):
             # if args.tsgen:
             #     emsg = tsgen_supervisor(rundir,args,fname,globs)
             # else:
-            emsg = rungen(rundir, args, fname, globs)
+            emsg = rungen(rundir, args, fname, globs, write_files=write_files)
             if emsg:
                 return emsg
     elif (multsp):
@@ -267,7 +267,7 @@ def multigenruns(rundir, args, globs):
             # if args.tsgen:
             #     emsg = tsgen_supervisor(rundir,args,fname,globs)
             # else:
-            emsg = rungen(rundir, args, fname, globs)
+            emsg = rungen(rundir, args, fname, globs, write_files=write_files)
             if emsg:
                 return emsg
     elif args.isomers or args.stereos:
@@ -311,7 +311,7 @@ def multigenruns(rundir, args, globs):
             print(('******************* Generating isomer ' +
                   str(counter+1) + '! *******************'))
             print('**************************************************************')
-            emsg = rungen(rundir, args, fname, globs)
+            emsg = rungen(rundir, args, fname, globs, write_files=write_files)
         return emsg
     else:
         if args.charge:
@@ -321,7 +321,7 @@ def multigenruns(rundir, args, globs):
         # if args.tsgen:
         #     emsg = tsgen_supervisor(rundir,args,fname,globs)
         # else:
-        emsg = rungen(rundir, args, fname, globs)
+        emsg = rungen(rundir, args, fname, globs, write_files=write_files)
     return emsg
 
 # Check for multiple ligands specified in one file
@@ -414,7 +414,7 @@ def draw_supervisor(args, rundir):
 #  @return Error messages
 
 
-def rungen(rundir, args, chspfname, globs):
+def rungen(rundir, args, chspfname, globs, write_files=True):
     try:
         from Classes.mWidgets import qBoxFolder
         from Classes.mWidgets import mQDialogInf
@@ -580,8 +580,9 @@ def rungen(rundir, args, chspfname, globs):
                 os.mkdir(rootdir)
         elif not os.path.isdir(rootdir) or not args.checkdirb and not skip:
             if not os.path.isdir(rootdir):
-                args.checkdirb = True
-                os.mkdir(rootdir)
+                if write_files:
+                    args.checkdirb = True
+                    os.mkdir(rootdir)
             ####################################
             ############ GENERATION ############
             ####################################
@@ -594,14 +595,14 @@ def rungen(rundir, args, chspfname, globs):
                 args.ffoption = 'ba'
                 args.MLbonds = False
                 strfiles, emsg, this_diag = structgen(
-                    args, rootdir, ligands, ligocc, globs, mcount)
+                    args, rootdir, ligands, ligocc, globs, mcount, write_files=write_files)
                 for strf in strfiles:
                     tstrfiles.append(strf+'FFML')
                     os.rename(strf+'.xyz', strf+'FFML.xyz')
                 # generate xyz with FF and covalent
                 args.MLbonds = ['c' for i in range(0, len(args.lig))]
                 strfiles, emsg, this_diag = structgen(
-                    args, rootdir, ligands, ligocc, globs, mcount)
+                    args, rootdir, ligands, ligocc, globs, mcount, write_files=write_files)
                 for strf in strfiles:
                     tstrfiles.append(strf+'FFc')
                     os.rename(strf+'.xyz', strf+'FFc.xyz')
@@ -610,14 +611,14 @@ def rungen(rundir, args, chspfname, globs):
                 args.MLbonds = False
                 # generate xyz without FF and trained ML
                 strfiles, emsg, this_diag = structgen(
-                    args, rootdir, ligands, ligocc, globs, mcount)
+                    args, rootdir, ligands, ligocc, globs, mcount, write_files=write_files)
                 for strf in strfiles:
                     tstrfiles.append(strf+'ML')
                     os.rename(strf+'.xyz', strf+'ML.xyz')
                 args.MLbonds = ['c' for i in range(0, len(args.lig))]
                 # generate xyz without FF and covalent ML
                 strfiles, emsg, this_diag = structgen(
-                    args, rootdir, ligands, ligocc, globs, mcount)
+                    args, rootdir, ligands, ligocc, globs, mcount, write_files=write_files)
                 for strf in strfiles:
                     tstrfiles.append(strf+'c')
                     os.rename(strf+'.xyz', strf+'c.xyz')
@@ -625,9 +626,9 @@ def rungen(rundir, args, chspfname, globs):
             else:
                 # generate xyz files
                 strfiles, emsg, this_diag = structgen(
-                    args, rootdir, ligands, ligocc, globs, mcount)
+                    args, rootdir, ligands, ligocc, globs, mcount, write_files=write_files)
             # generate QC input files
-            if args.qccode and not emsg:
+            if args.qccode and (not emsg) and write_files:
                 if args.charge and (isinstance(args.charge, list)):
                     args.charge = args.charge[0]
                 if args.spin and (isinstance(args.spin, list)):
@@ -651,13 +652,13 @@ def rungen(rundir, args, chspfname, globs):
                     print(
                         'Only TeraChem, GAMESS, QChem, ORCA, MOLCAS are supported right now.\n')
             # check molpac
-            if args.mopac and not emsg:
+            if args.mopac and (not emsg) and write_files:
                 print('Generating MOPAC input')
                 if globs.debug:
                     print(strfiles)
                 jobdirs = mlpgen(args, strfiles, rootdir)
             # generate jobscripts
-            if args.jsched and (not emsg) and (not args.reportonly):
+            if args.jsched and (not emsg) and (not args.reportonly) and (write_files):
                 if args.jsched in 'SBATCH SLURM slurm sbatch':
                     slurmjobgen(args, jobdirs)
                     print('SLURM jobscripts generated!')
@@ -679,7 +680,10 @@ def rungen(rundir, args, chspfname, globs):
                 qq.setParent(args.gui.wmain)
             else:
                 print(('Folder '+rootdir+' was skipped..\n'))
-    return emsg
+    if write_files:
+        return emsg # Default behavior
+    else:
+        return strfiles, emsg, this_diag # Assume that user wants these if they're not writing files
 
 # ## Transition state generation
 # #  @param rundir Run directory

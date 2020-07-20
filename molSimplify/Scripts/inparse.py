@@ -527,7 +527,7 @@ def parseCLI(args):
 #  @param args Namespace of arguments
 
 
-def parseinputfile(args):
+def parseinputfile(args, inputfile_str=None):
     # arguments that don't match with  inparse name and
     # are not automatically initialized go here:
     args.skipANN = False
@@ -541,8 +541,12 @@ def parseinputfile(args):
 
     # (we should remove these where posible)
     # THIS NEEDS CLEANING UP TO MINIMIZE DUPLICATION WITH parsecommandline
+    if inputfile_str:
+        inputfile_lines = inputfile_str.split('\n')
+    else:
+        inputfile_lines = open(args.i)
 
-    for line in open(args.i):
+    for line in inputfile_lines:
         # For arguments that cannot accept smiles as args, split possible comments
         if '-lig' not in line and '-core' not in line and '-bind' not in line and '-dbsmarts' not in line:
             line = line.split('#')[0]  # remove comments
