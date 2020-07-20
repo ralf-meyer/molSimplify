@@ -81,6 +81,124 @@ def getconstsample(no_rgen, args, licores, coord):
                 break
     return samp
 
+# Generates multiple runs for different oxidation and spin states
+#  @param rundir Run directory
+#  @param args Namespace of arguments
+#  @param globs Global variables
+#  @return Error messages
+
+
+def multigenruns(rundir, args, globs):
+    emsg = False
+    args.jid = 0  # initilize global name identifier
+    multch = False
+    multsp = False
+    charges = args.charge
+    spins = args.spin
+    # check if multiple charges specified
+    if args.charge and len(args.charge) > 1:
+        multch = True
+    # check if multiple spin states specified
+    if (args.spin and len(args.spin) > 1):
+        multsp = True
+    # iterate over all
+    fname = False
+    if (multch and multsp):
+        for ch in charges:
+            for sp in spins:
+                args.charge = ch
+                args.spin = sp
+                if ch[0] == '-':
+                    fname = 'N'+ch[1:]+'S'+sp
+                else:
+                    fname = 'P'+ch+'S'+sp
+                # if args.tsgen:
+                #     emsg = tsgen_supervisor(rundir,args,fname,globs)
+                # else:
+                emsg = rungen(rundir, args, fname, globs)
+                if emsg:
+                    return emsg
+    elif (multch):
+        for ch in charges:
+            args.charge = ch
+            if (args.spin):
+                args.spin = args.spin[0]
+            if ch[0] == '-':
+                fname = 'N'+ch[1:]
+            else:
+                fname = 'P'+ch[1:]
+            # if args.tsgen:
+            #     emsg = tsgen_supervisor(rundir,args,fname,globs)
+            # else:
+            emsg = rungen(rundir, args, fname, globs)
+            if emsg:
+                return emsg
+    elif (multsp):
+        if args.charge:
+            args.charge = args.charge[0]
+        for sp in spins:
+            args.spin = sp
+            fname = 'S'+sp
+            # if args.tsgen:
+            #     emsg = tsgen_supervisor(rundir,args,fname,globs)
+            # else:
+            emsg = rungen(rundir, args, fname, globs)
+            if emsg:
+                return emsg
+    elif args.isomers or args.stereos:
+        isomers = generateisomers(args)
+        if args.charge:
+            args.charge = args.charge[0]
+        if args.spin:
+            args.spin = args.spin[0]
+        args.ligloc = True
+
+        # store information about the overall ligand complex
+        keepHs_dict = {}
+        ligocc_dict = {}
+        for counter, i in enumerate(args.lig):
+            keepHs_dict[i] = args.keepHs[counter]
+            ligocc_dict[i] = args.ligocc[counter]
+
+        for counter, isomer in enumerate(isomers):
+            # set args for the generation of a specific isomer
+            args.lig = isomer
+            if args.stereos:
+                if (counter+1) % 2 == 0:
+                    unique_name = '_stereo_'+str(int(counter/2+1))
+                else:
+                    unique_name = '_isomer_'+str(int(counter/2+1))
+            else:
+                unique_name = '_isomer_'+str(counter+1)
+            args.ligocc = [1]*len(isomer)
+            args.keepHs = []
+            args.name = str(args.core)+'_ox_' + \
+                str(args.oxstate)+'_spin_'+str(args.spin)
+            for ligand in list(keepHs_dict.keys()):
+                args.name += '_'+ligand+'_'+str(ligocc_dict[ligand])
+            args.name += unique_name
+            for ligand in args.lig:
+                if ligand.endswith('_flipped'):
+                    ligand = ligand[:-8]
+                args.keepHs.append(keepHs_dict[ligand])
+
+            print('**************************************************************')
+            print(('******************* Generating isomer ' +
+                  str(counter+1) + '! *******************'))
+            print('**************************************************************')
+            emsg = rungen(rundir, args, fname, globs)
+        return emsg
+    else:
+        if args.charge:
+            args.charge = args.charge[0]
+        if args.spin:
+            args.spin = args.spin[0]
+        # if args.tsgen:
+        #     emsg = tsgen_supervisor(rundir,args,fname,globs)
+        # else:
+        emsg = rungen(rundir, args, fname, globs)
+    return emsg
+
 # Check for multiple ligands specified in one file
 #  @param ligs List of ligands
 #  @return Ligand list, connecting atoms, multiple ligand flag
