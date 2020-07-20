@@ -57,14 +57,14 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                       gui=False):
     # from molSimplify.Scripts.generator import startgen_pythonic
     inputfile_str = '\n'.join([k + ' ' + v for k, v in input_dict.items()])
-    startgen(argv, flag, gui, inputfile_str)
+    return startgen(argv, flag, gui, inputfile_str, write_files=False)
 
 # Coordinates subroutines
 #  @param argv Argument list
 #  @param flag Flag for printing information
 #  @param gui Flag for GUI
 #  @return Error messages
-def startgen(argv, flag, gui, inputfile_str=None):
+def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     emsg = False
     # check for configuration file
     homedir = os.path.expanduser("~")
@@ -143,7 +143,8 @@ def startgen(argv, flag, gui, inputfile_str=None):
     # check for jobs directory
     rundir = args.rundir+'/' if (args.rundir) else rundir
     if not os.path.isdir(rundir):
-        os.mkdir(rundir)
+        if write_files:
+            os.mkdir(rundir)
     ################### START MAIN ####################
     args0 = copy.deepcopy(args)  # save initial arguments
     # add gui flag
@@ -217,7 +218,7 @@ def startgen(argv, flag, gui, inputfile_str=None):
             print('building an equilibrium complex')
         for cc in corests:
             args.core = cc
-            emsg = multigenruns(rundir, args, globs)
+            emsg = multigenruns(rundir, args, globs, write_files=write_files)
             if emsg:
                 print(emsg)
                 del args

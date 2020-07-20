@@ -3584,7 +3584,7 @@ def msubcomplex(args, core3D, substrate, sub_i, subcatoms, mlig, subcatoms_ext, 
 #  @return List of xyz files generated, error messages
 
 
-def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=False):
+def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=False, write_files=True):
     # load ligand dictionary
     licores = getlicores()
     subcores = getsubcores()
@@ -3807,6 +3807,7 @@ def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=
     if args.debug:
         print(('fname is ' + fname))
     # generate ts
+    # The write_files flag is ineffective for this portion of code
     if (args.tsgen):
         substrate = []
         for i in args.substrate:
@@ -3872,14 +3873,15 @@ def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=
             getinputargs(args, fname)
         return strfiles, emsg, this_diag
     # write xyz file
-    if not args.reportonly:
+    if (not args.reportonly) and (write_files):
         core3D.writexyz(fname)
     strfiles.append(fname)
-    # write report file
-    this_diag.set_mol(core3D)
-    this_diag.write_report(fname+'.report')
-    # write input file from command line arguments
-    getinputargs(args, fname)
+    if write_files:
+        # write report file
+        this_diag.set_mol(core3D)
+        this_diag.write_report(fname+'.report')
+        # write input file from command line arguments
+        getinputargs(args, fname)
     del core3D
     return strfiles, emsg, this_diag
 
@@ -3893,7 +3895,7 @@ def structgen_one(strfiles, args, rootdir, ligands, ligoc, globs, sernum, nconf=
 #  @return List of xyz files generated, error messages
 
 
-def structgen(args, rootdir, ligands, ligoc, globs, sernum):
+def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
     emsg = False
     # import gui options
     if args.gui:
@@ -3913,14 +3915,14 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
             for n in range(1, int(args.nconfs)+1):
                 print(('Generating conformer '+str(n)+' of '+args.nconfs+':'))
                 strfiles, emsg, this_diag = structgen_one(
-                    strfiles, args, rootdir, ligands, ligoc, globs, sernum, n)
+                    strfiles, args, rootdir, ligands, ligoc, globs, sernum, n, write_files=write_files)
                 print(strfiles)
         else:
             strfiles, emsg, this_diag = structgen_one(
-                strfiles, args, rootdir, ligands, ligoc, globs, sernum)
+                strfiles, args, rootdir, ligands, ligoc, globs, sernum, write_files=write_files)
     else:
         strfiles, emsg, this_diag = structgen_one(
-            strfiles, args, rootdir, ligands, ligoc, globs, sernum)
+            strfiles, args, rootdir, ligands, ligoc, globs, sernum, write_files=write_files)
 
     # score conformers
     conf3Ds = dict()
@@ -3944,6 +3946,7 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum):
     else:
         Nogeom = 1
     # generate multiple geometric arrangements
+    # Code below may be invalid because core3D is not defined
     if args.bind:
         # load bind, add hydrogens and convert to mol3D
         bind, bsmi, emsg = bind_load(args.bind)
