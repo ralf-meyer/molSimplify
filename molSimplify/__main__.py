@@ -188,6 +188,7 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # run from commandline
+        print sys.argv
         emsg = startgen(sys.argv, False, gui)
     ### grab from commandline arguments ###
     else:
