@@ -24,8 +24,6 @@ from sklearn.model_selection import train_test_split, GridSearchCV, LeaveOneOut
 from sklearn.multioutput import MultiOutputRegressor
 
 from molSimplify.Classes.globalvars import (globalvars)
-from molSimplify.Classes.mol3D import (distance,
-                                       vecangle)
 from molSimplify.Informatics.autocorrelation import (atom_only_autocorrelation,
                                                      atom_only_deltametric,
                                                      atom_only_ratiometric,
@@ -36,7 +34,9 @@ from molSimplify.Informatics.partialcharges import (ffeatures)
 
 # import matplotlib.pyplot as plt
 # import matplotlib.ticker as ticker
-from molSimplify.Scripts.geometry import vecdiff
+from molSimplify.Scripts.geometry import (vecdiff,
+                                          distance,
+                                          vecangle)
 
 np.seterr(divide='ignore')
 

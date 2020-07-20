@@ -8,7 +8,7 @@
 ################      TM complexs          ###############
 ##########################################################
 from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
-from molSimplify.Classes.mol3D import distance
+from molSimplify.Scripts.geometry import distance
 
 def getOctBondDistances(mol):
     ## This function gets

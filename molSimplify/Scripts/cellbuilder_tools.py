@@ -11,9 +11,9 @@ import numpy
 import openbabel
 import copy
 from math import sqrt, pi
-from molSimplify.Classes.globalvars import (globalvars)
-from molSimplify.Classes.mol3D import (distance,
-                                       mol3D)
+from molSimplify.Classes.globalvars import globalvars
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Scripts.geometry import distance
 # from scipy.spatial import Delaunay, ConvexHull
 # import networkx as nx
 

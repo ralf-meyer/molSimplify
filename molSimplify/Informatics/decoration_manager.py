@@ -6,8 +6,7 @@
 # import standard modules
 
 # molS modules
-from molSimplify.Classes.mol3D import (distance,
-                                       mol3D)
+from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Scripts.geometry import (checkcolinear,
                                           distance,
                                           norm,
