@@ -51,7 +51,20 @@ from molSimplify.Scripts.rungen import (constrgen,
 #  @param flag Flag for printing information
 #  @param gui Flag for GUI
 #  @return Error messages
-def startgen(argv, flag, gui):
+def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
+                      argv=['main.py', '-i', 'asdfasdfasdfasdf'],
+                      flag=True,
+                      gui=False):
+    # from molSimplify.Scripts.generator import startgen_pythonic
+    inputfile_str = '\n'.join([k + ' ' + v for k, v in input_dict.items()])
+    startgen(argv, flag, gui, inputfile_str)
+
+# Coordinates subroutines
+#  @param argv Argument list
+#  @param flag Flag for printing information
+#  @param gui Flag for GUI
+#  @return Error messages
+def startgen(argv, flag, gui, inputfile_str=None):
     emsg = False
     # check for configuration file
     homedir = os.path.expanduser("~")
@@ -89,14 +102,14 @@ def startgen(argv, flag, gui):
     parser = argparse.ArgumentParser()
     args = parseall(parser)
     # check if input file exists
-    if not glob.glob(args.i):
+    if not glob.glob(args.i) and not inputfile_str:
         emsg = 'Input file '+args.i+' does not exist. Please specify a valid input file.\n'
         print(emsg)
         return emsg
     args.gui = gui  # add gui flag
     # parse input file
-    if args.i:
-        parseinputfile(args)
+    if args.i or inputfile_str:
+        parseinputfile(args, inputfile_str=inputfile_str)
     if args.cdxml:
         print('converting cdxml file into xyz')
         cdxml = args.cdxml[0]
