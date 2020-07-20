@@ -32,18 +32,6 @@ except ImportError:
     pass
 
 
-# Euclidean distance between points
-#  @param R1 Point 1
-#  @param R2 Point 2
-#  @return Euclidean distance
-def distance(R1, R2):
-    dx = R1[0] - R2[0]
-    dy = R1[1] - R2[1]
-    dz = R1[2] - R2[2]
-    d = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
-    return d
-
-
 # Wrapper for executing bash commands
 #  @param cmd Command to be executed
 #  @return Stdout
@@ -517,15 +505,6 @@ class mol3D:
     #  @param list of tuples (ind1,ind2,order) bonds to add (optional)
     #  @param dirty bool set to true for straight addition, not bond safe
     #  @return mol3D contaning combined molecule
-    # def combine(self,mol):
-    #    cmol = self
-    #    n_one = cmol.natoms
-    #    n_two = mol.natoms
-    #    for atom in mol.atoms:
-    #        cmol.addAtom(atom)
-    #    cmol.graph = []
-    #    return cmol
-
     def combine(self, mol, bond_to_add=[], dirty=False):
         cmol = self
 
@@ -666,46 +645,10 @@ class mol3D:
                         A[metal_ind, i] = 0
             self.graph = A
 
-    # Deletes specific atom from molecule
-    #
-    #  Also updates mass and number of atoms, and recreates the molecular graph.
-    #  @param self The object pointer
-    #  @param atomIdx Index of atom to be deleted
-    def deleteatom(self, atomIdx):
-        if atomIdx < 0:
-            atomIdx = self.natoms + atomIdx
-        if atomIdx >= self.natoms:
-            raise Exception('mol3D object cannot delete atom '+str(atomIdx) +
-                            ' because it only has '+str(self.natoms)+' atoms!')
-        if self.bo_dict:
-            self.convert2OBMol2()
-            save_inds = [x for x in range(self.natoms) if x != atomIdx]
-            save_bo_dict = self.get_bo_dict_from_inds(save_inds)
-            self.bo_dict = save_bo_dict
-        else:
-            self.convert2OBMol()
-        self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
-        self.mass -= self.getAtom(atomIdx).mass
-        self.natoms -= 1
-        if len(self.graph):
-            self.graph = np.delete(
-                np.delete(self.graph, atomIdx, 0), atomIdx, 1)
-        self.metal = False
-        del (self.atoms[atomIdx])
-
-    # Freezes specific atom in molecule
-    #
-    #  This is for the FF optimization settings.
-    #  @param self The object pointer
-    #  @param atomIdx Index of atom to be frozen
-    def freezeatom(self, atomIdx):
-        # INPUT
-        #   - atomIdx: index of atom to be frozen
-        self.atoms[atomIdx].frozen = True
-
     # Deletes list of atoms from molecule
     #
     #  Loops over deleteatom, starting from the largest index so ordering is preserved.
+    #  Also updates mass and number of atoms, and recreates the molecular graph.
     #  @param self The object pointer
     #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
@@ -731,6 +674,14 @@ class mol3D:
             self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
         self.metal = False
 
+    # Deletes specific atom from molecule
+    #
+    #  Also updates mass and number of atoms, and recreates the molecular graph.
+    #  @param self The object pointer
+    #  @param atomIdx Index of atom to be deleted
+    def deleteatom(self, atomIdx):
+        self.deleteatoms([atomIdx])
+
     # Freezes list of atoms in molecule
     #
     #  Loops over freezeatom(), starting from the largest index so ordering is preserved.
@@ -741,6 +692,14 @@ class mol3D:
         #   - Alist: list of atoms to be frozen
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
+
+    # Freezes specific atom in molecule
+    #
+    #  This is for the FF optimization settings.
+    #  @param self The object pointer
+    #  @param atomIdx Index of atom to be frozen
+    def freezeatom(self, atomIdx):
+        self.freezeatoms([atomIdx])
 
     # Get ligand mol without hydrogens
     #
@@ -975,6 +934,12 @@ class mol3D:
                 nats.append(i)
         return nats
 
+    # Gets the maximum bond length between two atoms based on their types
+    #
+    #  @param self The object pointer
+    #  @param atom An Atom3D() object
+    #  @param ratom An Atom3D() object
+    #  @return float A number corresponding to the maxium acceptable bond length
     def getBondCutoff(self, atom, ratom):
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
@@ -987,13 +952,6 @@ class mol3D:
         if atom.symbol() == "H" and ratom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
-        # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-        #         atom.symbol() == "I" and ratom.symbol() == "I"):
-        #     # Very strict cutoff for bonds involving iodine
-        #     distance_max = 0.95 * (atom.rad + ratom.rad)
-        # if atom.symbol() == "I" and ratom.symbol() == "I":
-        #     distance_max = 3
-        # print(distance_max)
         return distance_max
 
     # Gets atoms bonded to a specific atom
@@ -1007,8 +965,10 @@ class mol3D:
     #  @param ind Index of reference atom
     #  @return List of indices of bonded atoms
     def getBondedAtoms(self, ind, debug=False):
+        #If the molecular graph is defined, used the bond information from there
         if len(self.graph):
             nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
+        #Else interpret bonds based on distances
         else:
             ratom = self.getAtom(ind)
             # calculates adjacent number of atoms
@@ -1016,23 +976,7 @@ class mol3D:
             for i, atom in enumerate(self.atoms):
                 d = distance(ratom.coords(), atom.coords())
                 distance_max = self.getBondCutoff(atom, ratom)
-                # distance_max = 1.15 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "C" and not ratom.symbol() == "H":
-                #    distance_max = min(2.75, distance_max)
-                # if ratom.symbol() == "C" and not atom.symbol() == "H":
-                #    distance_max = min(2.75, distance_max)
-                # if ratom.symbol() == "H" and atom.ismetal:
-                #    # tight cutoff for metal-H bonds
-                #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "H" and ratom.ismetal:
-                #    # tight cutoff for metal-H bonds
-                #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-                #        atom.symbol() == "I" and ratom.symbol() == "I"):
-                #    distance_max = 1.05 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "I" and ratom.symbol() == "I":
-                #    distance_max = 3
-                #    # print(distance_max)
+
                 if (d < distance_max and i != ind):
                     nats.append(i)
         return nats
@@ -1291,18 +1235,13 @@ class mol3D:
     #  @return List of indices of bonded atoms
     def getBondedAtomsH(self, ind):
         ratom = self.getAtom(ind)
-        # calculates adjacent number of atoms
-        nats = []
-        for i, atom in enumerate(self.atoms):
-            d = distance(ratom.coords(), atom.coords())
-            distance_max = 1.15 * (atom.rad + ratom.rad)
-            if atom.ismetal() or ratom.ismetal():
-                distance_max = 1.35 * (atom.rad + ratom.rad)
-            else:
-                distance_max = 1.15 * (atom.rad + ratom.rad)
-            if (d < distance_max and i != ind and atom.sym == 'H'):
-                nats.append(i)
-        return nats
+        all_bonded_atoms = self.getBondedAtoms(ratom)
+        hydrogen_bonded_atoms = []
+        for atom_idx in all_bonded_atoms:
+            symbol = self.getAtom(atom_idx).sym
+            if symbol == 'H':
+                hydrogen_bonded_atoms.append(atom_idx)
+        return hydrogen_bonded_atoms
 
     # Gets C=C atoms in molecule
     #  @param self The object pointer
@@ -1348,7 +1287,7 @@ class mol3D:
 
         return c2clist
 
-    # Gets atom that is furthest from the molecule COM along a given direction and returns the corresponding distance
+    # Gets atom that is furthest from the molecule center of mass along a given direction and returns the corresponding distance
     #  @param self The object pointer
     #  @param uP Search direction
     #  @return Distance
@@ -1361,32 +1300,6 @@ class mol3D:
                 dd = d0
                 atomc = atom.coords()
         return distance(self.centermass(), atomc)
-
-    # Gets atom that is furthest from the given atom
-    #  @param self The object pointer
-    #  @param reference index of reference atom
-    #  @param symbol type of atom to return
-    #  @return farIndex index of furthest atom
-
-    def getFarAtom(self, reference, atomtype=False):
-        referenceCoords = self.getAtom(reference).coords()
-        dd = 0.00
-        farIndex = reference
-        for ind, atom in enumerate(self.atoms):
-            allow = False
-            if atomtype:
-                if atom.sym == atomtype:
-                    allow = True
-                else:
-                    allow = False
-
-            else:
-                allow = True
-            d0 = distance(atom.coords(), referenceCoords)
-            if d0 > dd and allow:
-                dd = d0
-                farIndex = ind
-        return farIndex
 
     # Gets list of atoms of the fragments in the mol3D
     #  @param sel The object pointer
@@ -1426,19 +1339,6 @@ class mol3D:
                 hlist.append(i)
         return hlist
 
-    # Gets H atoms bonded to specific atom3D in molecule
-    #  @param self The object pointer
-    #  @param ratom atom3D of reference atom
-    #  @return List of atom3D objects of H atoms
-    def getHsbyAtom(self, ratom):
-        nHs = []
-        for i, atom in enumerate(self.atoms):
-            if atom.sym == 'H':
-                d = distance(ratom.coords(), atom.coords())
-                if (d < 1.2 * (atom.rad + ratom.rad) and d > 0.01):
-                    nHs.append(i)
-        return nHs
-
     # Gets H atoms bonded to specific atom index in molecule
     #
     #  Trivially equivalent to getHsbyAtom().
@@ -1473,12 +1373,11 @@ class mol3D:
                 cdist = ds
         return idx
 
+    # Gets the index of the closes atom to the given atom
+    #  @param atom_index: reference atom index
+    #  @param cdist: cutoff of neighbor distance
+    #  @return neighbor_list: index of close atom to atom0 from molecule
     def getClosestAtomlist(self, atom_idx, cdist=3):
-        # INPUT
-        #   - atom_index: reference atom index
-        #   - cdist: cutoff of neighbor distance
-        # OUTPUT
-        #   - neighbor_list: index of close atom to atom0 from molecule
         neighbor_list = []
         for iat, atom in enumerate(self.atoms):
             ds = atom.distance(self.atoms[atom_idx])
@@ -1525,14 +1424,15 @@ class mol3D:
 
     # Gets index of closest non-H atom to another atom
     #  @param self The object pointer
-    #  @param atom0 atom3D of reference atom
+    #  @param atidx Index of reference atom
     #  @return Index of closest non-H atom
-    def getClosestAtomnoHs(self, atom0):
+
+    def getClosestAtomnoHs(self, atidx):
         idx = 0
         cdist = 1000
         for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(atom0)
-            if (ds < cdist) and atom.sym != 'H':
+            ds = atom.distance(self.getAtom(atidx))
+            if (ds < cdist) and atom.sym != 'H' and iat != atidx:
                 idx = iat
                 cdist = ds
         return idx
@@ -1560,23 +1460,6 @@ class mol3D:
         v2 = (np.array(coords2) - np.array(coords1)).tolist()
         angle = vecangle(v1, v2)
         return angle
-
-    # Gets index of closest non-H atom to another atom
-    #
-    #  Equivalent to getClosestAtomnoHs() except that the index of the reference atom is specified.
-    #  @param self The object pointer
-    #  @param atidx Index of reference atom
-    #  @return Index of closest non-H atom
-
-    def getClosestAtomnoHs2(self, atidx):
-        idx = 0
-        cdist = 1000
-        for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(self.getAtom(atidx))
-            if (ds < cdist) and atom.sym != 'H' and iat != atidx:
-                idx = iat
-                cdist = ds
-        return idx
 
     # Initializes OBMol object from a file or SMILES string
 
@@ -1995,36 +1878,6 @@ class mol3D:
                 rmsd /= Nat0
             return sqrt(rmsd)
 
-    def geo_rmsd(self, mol2):
-        # print("==========")
-        Nat0 = self.natoms
-        Nat1 = mol2.natoms
-        if Nat0 == Nat1:
-            rmsd = 0
-            availabel_set = list(range(Nat1))
-            for ii, atom0 in enumerate(self.getAtoms()):
-                dist = 1000
-                ind1 = False
-                atom0_sym = atom0.symbol()
-                for _ind1 in availabel_set:
-                    atom1 = mol2.getAtom(_ind1)
-                    if atom1.symbol() == atom0_sym:
-                        _dist = atom0.distance(atom1)
-                        # print(atom1.symbol(), _dist)
-                        if _dist < dist:
-                            dist = _dist
-                            ind1 = _ind1
-                rmsd += dist ** 2
-                # print("paired: ", ii, ind1, dist)
-                availabel_set.remove(ind1)
-            if Nat0 == 0:
-                rmsd = 0
-            else:
-                rmsd /= Nat0
-            return sqrt(rmsd)
-        else:
-            raise ValueError("Number of atom does not match between two mols.")
-
     # Computes mean of absolute atom deviations
     #
     #  Like above, this routine does not perform translations or rotations to align molecules.
@@ -2052,6 +1905,12 @@ class mol3D:
                 dev /= Nat0
             return dev
 
+    # Compares two mol3D() objects with the same atoms in the same order 
+    # returns the maximum distance between any atom in the first and second mol3d()
+    #
+    #  @param self The object pointer
+    #  @param mol2 the second mol3d() object
+    #  @return dist_max a float
     def maxatomdist(self, mol2):
         Nat0 = self.natoms
         Nat1 = mol2.natoms
@@ -2067,62 +1926,10 @@ class mol3D:
                     dist_max = dist
             return dist_max
 
-    def geo_maxatomdist(self, mol2):
-        Nat0 = self.natoms
-        Nat1 = mol2.natoms
-        if (Nat0 != Nat1):
-            print(
-                "ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
-            return float('NaN')
-        else:
-            maxdist = 0
-            availabel_set = list(range(Nat1))
-            for atom0 in self.getAtoms():
-                dist = 1000
-                ind1 = False
-                atom0_sym = atom0.symbol()
-                for _ind1 in availabel_set:
-                    atom1 = mol2.getAtom(_ind1)
-                    if atom1.symbol() == atom0_sym:
-                        _dist = atom0.distance(atom1)
-                        if _dist < dist:
-                            dist = _dist
-                            ind1 = _ind1
-                if dist > maxdist:
-                    maxdist = dist
-                availabel_set.remove(ind1)
-            return maxdist
-
-    def rmsd_nonH(self, mol2):
-        Nat0 = self.natoms
-        Nat1 = mol2.natoms
-        if (Nat0 != Nat1):
-            print(
-                "ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
-            return float('NaN')
-        else:
-            rmsd = 0
-            for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
-                if (not atom0.sym == 'H') and (not atom1.sym == 'H'):
-                    rmsd += (atom0.distance(atom1)) ** 2
-            rmsd /= Nat0
-            return sqrt(rmsd)
-
-    def maxatomdist_nonH(self, mol2):
-        Nat0 = self.natoms
-        Nat1 = mol2.natoms
-        dist_max = 0
-        if (Nat0 != Nat1):
-            print(
-                "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms..")
-            return float('NaN')
-        else:
-            for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
-                if (not atom0.sym == 'H') and (not atom1.sym == 'H'):
-                    dist = atom0.distance(atom1)
-                    if dist > dist_max:
-                        dist_max = dist
-            return dist_max
+    #Calculates the partial charges from Obmol
+    #sets them to self.partialcharges
+    #  @param self The object pointer
+    #  @return None
 
     def calcCharges(self, charge=0, bond=False, method='QEq'):
         self.convert2OBMol()
@@ -2232,11 +2039,9 @@ class mol3D:
         else:
             return sane
 
+    #  checks if the organic portions of a transition metal complex look good
+    #  @return Tuple first entry: a boolean describing whether this complex passes (True) or fails (False), second entry:a list of failing criteria, described as strings
     def isPristine(self, unbonded_min_dist=1.3, oct=False):
-        # isPristine() checks if the organic portions of a transition metal complex look good
-        # returns a tuple with 2 entries
-            # 1. a boolean describing whether this complex passes (True) or fails (False)
-            # 2. a list of failing criteria, described as strings
         if len(self.graph) == 0:
             self.createMolecularGraph(oct=oct)
 
@@ -2487,27 +2292,6 @@ class mol3D:
             with open(filename, 'w') as file1:
                 file1.write(ss)
 
-    def closest_H_2_metal(self, delta=0):
-        min_dist_H = 3.0
-        min_dist_nonH = 3.0
-        for i, atom in enumerate(self.atoms):
-            if atom.ismetal():
-                metal_atom = atom
-                break
-        metal_coord = metal_atom.coords()
-        for atom1 in self.atoms:
-            if atom1.sym == 'H':
-                if distance(atom1.coords(), metal_coord) < min_dist_H:
-                    min_dist_H = distance(atom1.coords(), metal_coord)
-            elif not atom1.ismetal():
-                if distance(atom1.coords(), metal_coord) < min_dist_nonH:
-                    min_dist_nonH = distance(atom1.coords(), metal_coord)
-        if min_dist_H <= (min_dist_nonH - delta):
-            flag = True
-        else:
-            flag = False
-        return (flag, min_dist_H, min_dist_nonH)
-
     # Print methods
     #  @param self The object pointer
     #  @return String with methods
@@ -2666,28 +2450,7 @@ class mol3D:
             dist = np.linalg.norm(np.array(coord) - np.array(metal_coord))
             oct_dist.append(dist)
         oct_dist.sort()
-        # if len(oct_dist) == 6:  # For Oct
-        #     dist_del_arr = np.array(
-        #         [oct_dist[3] - oct_dist[0], oct_dist[4] - oct_dist[1], oct_dist[5] - oct_dist[2]])
-        #     min_posi = np.argmin(dist_del_arr)
-        #     if min_posi == 0:
-        #         dist_eq, dist_ax = oct_dist[:4], oct_dist[4:]
-        #     elif min_posi == 1:
-        #         dist_eq, dist_ax = oct_dist[1:5], [oct_dist[0], oct_dist[5]]
-        #     else:
-        #         dist_eq, dist_ax = oct_dist[2:], oct_dist[:2]
-        #     dist_del_eq = max(dist_eq) - min(dist_eq)
-        # elif len(oct_dist) == 5:  # For one empty site
-        #     if (oct_dist[3] - oct_dist[0]) > (oct_dist[4] - oct_dist[1]):
-        #         # ax dist is smaller
-        #         dist_ax, dist_eq = oct_dist[:1], oct_dist[1:]
-        #     else:
-        #         # eq dist is smaller
-        #         dist_ax, dist_eq = oct_dist[4:], oct_dist[:4]
-        #     dist_del_eq = max(dist_eq) - min(dist_eq)
-        # else:
-        #     dist_eq, dist_ax = -1, -1
-        #     dist_del_eq = -1
+
         dist_del_all = oct_dist[-1] - oct_dist[0]
         oct_dist_relative = [(np.linalg.norm(np.array(self.getAtom(ii).coords()) -
                                              np.array(metal_coord)))/(self.globs.amass()[self.getAtom(ii).sym][2]
@@ -3503,50 +3266,6 @@ class mol3D:
                 self.convert2OBMol()
         smi = conv.WriteString(self.OBMol).split()[0]
         return smi
-
-    def mols_symbols(self):
-        self.symbols_dict = {}
-        for atom in self.getAtoms():
-            if not atom.symbol() in self.symbols_dict:
-                self.symbols_dict.update({atom.symbol(): 1})
-            else:
-                self.symbols_dict[atom.symbol()] += 1
-
-    def read_bonder_order(self, bofile):
-        globs = globalvars()
-        bonds_organic = {'H': 1, 'C': 4, 'N': 3,
-                         'O': 2, 'F': 1, 'P': 3, 'S': 2}
-        self.bv_dict = {}
-        self.ve_dict = {}
-        self.bvd_dict = {}
-        self.bodstd_dict = {}
-        self.bodavrg_dict = {}
-        self.bo_mat = np.zeros(shape=(self.natoms, self.natoms))
-        if os.path.isfile(bofile):
-            with open(bofile, "r") as fo:
-                for line in fo:
-                    ll = line.split()
-                    if len(ll) == 5 and ll[0].isdigit() and ll[1].isdigit():
-                        self.bo_mat[int(ll[0]), int(ll[1])] = float(ll[2])
-                        self.bo_mat[int(ll[1]), int(ll[0])] = float(ll[2])
-                        if int(ll[0]) == int(ll[1]):
-                            self.bv_dict.update({int(ll[0]): float(ll[2])})
-        else:
-            print(("bofile does not exist.", bofile))
-        for ii in range(self.natoms):
-            # self.ve_dict.update({ii: globs.amass()[self.atoms[ii].symbol()][3]})
-            self.ve_dict.update({ii: bonds_organic[self.atoms[ii].symbol()]})
-            self.bvd_dict.update({ii: self.bv_dict[ii] - self.ve_dict[ii]})
-            # neighbors = self.getBondedAtomsSmart(ii, oct=oct)
-            # vec = self.bo_mat[ii, :][neighbors]
-            vec = self.bo_mat[ii, :][self.bo_mat[ii, :] > 0.1]
-            if vec.shape[0] == 0:
-                self.bodstd_dict.update({ii: 0})
-                self.bodavrg_dict.update({ii: 0})
-            else:
-                devi = [abs(v - max(round(v), 1)) for v in vec]
-                self.bodstd_dict.update({ii: np.std(devi)})
-                self.bodavrg_dict.update({ii: np.mean(devi)})
 
     def read_charge(self, chargefile):
         self.charge_dict = {}
