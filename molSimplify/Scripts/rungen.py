@@ -36,69 +36,6 @@ from molSimplify.Scripts.structgen import (structgen)
 get_input = input
 if sys.version_info[:2] <= (2,7):
     get_input = raw_input
-    
-#######################################
-### get subset between list1, list2 ###
-#######################################
-
-
-def counterSubset(list1, list2):
-    c1, c2 = Counter(list1), Counter(list2)
-    for k, n in list(c1.items()):
-        if n > c2[k]:
-            return False
-    return True
-
-###############################################
-### get sample aggreeing to the constraints ###
-###############################################
-
-
-def getconstsample(no_rgen, args, licores, coord):
-    samp = []
-    # 4 types of constraints: ligand, ligocc, coord, lignum
-    # get ligand and ligocc
-    get = False
-    occup = []
-    combos = []
-    generated = 0
-    if not coord:
-        coord = 6  # default octahedral
-    # generate all combinations of ligands
-    combos += (list(itertools.combinations_with_replacement(list(range(0, len(licores))), coord)))
-    random.shuffle(combos)
-    for combo in combos:
-        # get total denticity
-        totdent = 0
-        dents = []
-        for l in combo:
-            totdent += int(len(licores[list(licores.keys())[l]][2]))
-            dents.append(int(len(licores[list(licores.keys())[l]][2])))
-        # check for multiple multidentate ligands
-        dsorted = sorted(dents)
-        if not coord or (coord and totdent == coord):
-            if len(dsorted) > 1 and (dsorted[-1]+dsorted[-2] > totdent):
-                generated = generated
-            else:
-                if (args.lignum and len(set(combo)) == int(args.lignum)):
-                    # reorder with high denticity atoms in the beginning
-                    keysl = sorted(list(range(len(dents))),
-                                   key=lambda k: dents[k])
-                    ncombo = [combo[i] for i in keysl]
-                    # add combo
-                    samp.append(ncombo)
-                    generated += 1
-                elif not args.lignum:
-                    # reorder with high denticity atoms in the beginning
-                    keysl = sorted(list(range(len(dents))),
-                                   key=lambda k: dents[k])
-                    ncombo = [combo[i] for i in keysl]
-                    # add combo
-                    samp.append(ncombo)
-                    generated += 1
-            if (generated >= no_rgen):
-                break
-    return samp
 
 #####################################
 ### constrained random generation ###
@@ -205,6 +142,58 @@ def constrgen(rundir, args, globs):
                 args.keepHs = [opt]
         emsg = rungen(rundir, args, False, globs)  # run structure generation
     return args, emsg
+    
+
+###############################################
+### get sample aggreeing to the constraints ###
+###############################################
+
+
+def getconstsample(no_rgen, args, licores, coord):
+    samp = []
+    # 4 types of constraints: ligand, ligocc, coord, lignum
+    # get ligand and ligocc
+    get = False
+    occup = []
+    combos = []
+    generated = 0
+    if not coord:
+        coord = 6  # default octahedral
+    # generate all combinations of ligands
+    combos += (list(itertools.combinations_with_replacement(list(range(0, len(licores))), coord)))
+    random.shuffle(combos)
+    for combo in combos:
+        # get total denticity
+        totdent = 0
+        dents = []
+        for l in combo:
+            totdent += int(len(licores[list(licores.keys())[l]][2]))
+            dents.append(int(len(licores[list(licores.keys())[l]][2])))
+        # check for multiple multidentate ligands
+        dsorted = sorted(dents)
+        if not coord or (coord and totdent == coord):
+            if len(dsorted) > 1 and (dsorted[-1]+dsorted[-2] > totdent):
+                generated = generated
+            else:
+                if (args.lignum and len(set(combo)) == int(args.lignum)):
+                    # reorder with high denticity atoms in the beginning
+                    keysl = sorted(list(range(len(dents))),
+                                   key=lambda k: dents[k])
+                    ncombo = [combo[i] for i in keysl]
+                    # add combo
+                    samp.append(ncombo)
+                    generated += 1
+                elif not args.lignum:
+                    # reorder with high denticity atoms in the beginning
+                    keysl = sorted(list(range(len(dents))),
+                                   key=lambda k: dents[k])
+                    ncombo = [combo[i] for i in keysl]
+                    # add combo
+                    samp.append(ncombo)
+                    generated += 1
+            if (generated >= no_rgen):
+                break
+    return samp
 
 # Generates multiple runs for different oxidation and spin states
 #  @param rundir Run directory
@@ -684,203 +673,3 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
         return emsg # Default behavior
     else:
         return strfiles, emsg, this_diag # Assume that user wants these if they're not writing files
-
-# ## Transition state generation
-# #  @param rundir Run directory
-# #  @param args Namespace of arguments
-# #  @param chspfname Folder name for charges and spins
-# #  @param globs Global variables
-# #  @return Error messages
-# def tsgen_supervisor(rundir,args,chspfname,globs):
-# 	emsg = False
-# 	# load specified core into a mol3D object
-# 	cc, emsg = core_load(args.core)
-# 	if emsg:
-# 		return emsg
-# 	cc.convert2mol3D()
-# 	subcores = getsubcores()
-# 	# load substrate molecule into a mol3D object
-# 	if len(args.substrate) > 1:
-# 		print('Currently only one substrate molecule is supported. Exiting...')
-# 		return
-# 	else:
-# 		substr, emsg = substr_load(args.substrate[0],subcores)
-# 	if emsg:
-# 		return emsg
-# 	substr.convert2mol3D()
-# 	##### fetch smart name
-# 	fname = name_TS(rundir,args.core,substr,args,bind=args.bind,bsmi=args.nambsmi)
-# 	if globs.debug:
-# 		print('fname is ' + str(fname))
-# 	rootdir = fname
-# 	# check for charges/spin
-# 	rootcheck = False
-# 	if (chspfname):
-# 		rootcheck = rootdir
-# 		rootdir = rootdir + '/'+chspfname
-# 	if (args.suff):
-# 		rootdir += args.suff
-# 	# check for mannual overwrite of
-# 	# directory name
-# 	if args.jobdir:
-# 		rootdir = rundir + args.jobdir
-# 	# check for top directory
-# 	skip = False
-# 	if  rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
-# 		args.checkdirt = True
-# 		if not args.rprompt:
-# 			flagdir=raw_input('\nDirectory '+rootcheck +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
-# 			if 'k' in flagdir.lower():
-# 				flagdir = 'keep'
-# 			elif 's' in flagdir.lower():
-# 					flagdir = 'skip'
-# 			else:
-# 				flagdir = 'replace'
-# 		else:
-# 			flagdir = 'replace'
-# 			# replace existing directory
-# 		if (flagdir=='replace'):
-# 			shutil.rmtree(rootcheck)
-# 			os.mkdir(rootcheck)
-# 		# skip existing directory
-# 		elif flagdir=='skip':
-# 			skip = True
-# 		# keep both (default)
-# 		else:
-# 			ifold = 1
-# 			while glob.glob(rootdir+'_'+str(ifold)):
-# 				ifold += 1
-# 				rootcheck += '_'+str(ifold)
-# 				os.mkdir(rootcheck)
-# 	elif rootcheck and (not os.path.isdir(rootcheck) or not args.checkdirt) and not skip:
-# 		if globs.debug:
-# 			print('rootcheck is  ' + str(rootcheck))
-# 		args.checkdirt = True
-# 		try:
-# 			os.mkdir(rootcheck)
-# 		except:
-# 			print 'Directory '+rootcheck+' can not be created. Exiting..\n'
-# 			return
-# 	# check for actual directory
-# 	if os.path.isdir(rootdir) and not args.checkdirb and not skip and not args.jobdir:
-# 		args.checkdirb = True
-# 		if not args.rprompt:
-# 			flagdir=raw_input('\nDirectory '+rootdir +' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
-# 			if 'k' in flagdir.lower():
-# 				flagdir = 'keep'
-# 			elif 's' in flagdir.lower():
-# 					flagdir = 'skip'
-# 			else:
-# 				flagdir = 'replace'
-# 		else:
-# 			#qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
-# 			#flagdir = qqb.getaction()
-# 			flagdir = 'replace'
-# 		# replace existing directory
-# 		if (flagdir=='replace'):
-# 			shutil.rmtree(rootdir)
-# 			os.mkdir(rootdir)
-# 		# skip existing directory
-# 		elif flagdir=='skip':
-# 			skip = True
-# 		# keep both (default)
-# 		else:
-# 			ifold = 1
-# 			while glob.glob(rootdir+'_'+str(ifold)):
-# 				ifold += 1
-# 			rootdir += '_'+str(ifold)
-# 			os.mkdir(rootdir)
-# 	elif not os.path.isdir(rootdir) or not args.checkdirb and not skip:
-# 		if not os.path.isdir(rootdir):
-# 			args.checkdirb = True
-# 			os.mkdir(rootdir)
-# 	####################################
-# 	############ GENERATION ############
-# 	####################################
-# 	# determine TS generation mode/reaction type
-# 	# 1: oxidative addition of a single group to an unsaturated complex (e.g., Fe(II) + O2 -> Fe(III)-O-O)
-# 	# 2: oxidative addition of two groups to an unsaturated complex (e.g., Pd + CH4 -> Pd(H)(CH3))
-# 	# 3: abstraction (ligand only reaction) (e.g., Fe(IV)=O + CH4 -> Fe(III)-OH + CH3)
-# 	# 1: compreact is the metal center, substreact is one atom
-# 	# 2: compreact is the metal center, substreact is two bonded atoms
-# 	# 3: compreact is not the metal center and bonded to only one atom, substreact is one atom
-# 	if len(args.compreact) == 1:
-# 		compreact = int(args.compreact[0]) - 1 # one-indexed in input
-# 	else:
-# 		print('Error: Currently only one complex reacting atom is supported. Exiting...')
-# 		return
-# 	if cc.getAtom(compreact).ismetal():
-# 		if len(args.substreact) == 1:
-# 			substreact = int(args.substreact[0]) - 1 # one-indexed in input
-# 			if len(substr.getBondedAtoms(substreact)) == 1:
-# 				if len(cc.getBondedAtomsOct(compreact)) < 6:
-# 					mode = 1
-# 					print('Mode 1: oxidative addition of a single group')
-# 				else:
-# 					print('Error: You have specified oxidative addition of a single group, but the metal atom is not unsaturated. Please check your input. Exiting...')
-# 					return
-# 			else:
-# 				print('Error: You have specified oxidative addition of a single group, but the substrate atom is not terminal. Please check your input. Exiting...')
-# 				return
-# 		elif len(args.substreact) == 2:
-# 			if int(args.substreact[1]) in substr.getBondedAtoms(int(args.substreact[0])):
-# 				if len(cc.getBondedAtomsOct(compreact)) < 5:
-# 					substreact = [int(i) - 1 for i in args.substreact] # one-indexed in input
-# 					mode = 2
-# 					print('Mode 2: oxidative addition of two groups')
-# 				else:
-# 					print('Error: You have specified oxidative addition of two groups, but the metal atom does not have two available empty sites. Please check your input. Exiting...')
-# 					return
-# 			else:
-# 				print('Error: You have specified oxidative addition of two groups, but the two substrate groups are not bonded. Please check your input. Exiting...')
-# 				return
-# 	elif len(cc.getBondedAtoms(compreact)) == 1:
-# 		if len(args.substreact) == 1:
-# 			substreact = int(args.substreact[0]) - 1 # one-indexed in input
-# 		else:
-# 			print('Error: You have specified abstraction, but specified more than one substrate atom. Please check your input. Exiting...')
-# 			return
-# 		if len(substr.getBondedAtoms(substreact)) == 1:
-# 			mode = 3
-# 			print('Mode 3: Abstraction')
-# 		else:
-# 			print('Error: You have specified abstraction, but the substrate atom is not terminal. Please check your input. Exiting...')
-# 			return
-# 	else:
-# 		print('Error: You have specified abstraction, but the abstracting atom is not terminal. Please check your input. Exiting...')
-# 		return
-# 	if not skip:
-# 		# generate xyz files
-# 		strfiles,emsg,this_diag = tsgen(mode,args,rootdir,cc,substr,compreact,substreact,globs)
-# 		# generate QC input files
-# 		if args.qccode and not emsg:
-# 			args.runtyp = 'ts'
-# 			if args.charge and (isinstance(args.charge, list)):
-# 				args.charge = args.charge[0]
-# 			if args.spin and (isinstance(args.spin, list)):
-# 				args.spin = args.spin[0]
-# 			if args.qccode.lower() in 'terachem tc Terachem TeraChem TERACHEM TC':
-# 				jobdirs = multitcgen(args,strfiles)
-# 				print 'TeraChem input files generated!'
-# 			elif 'gam' in args.qccode.lower():
-# 				jobdirs = multigamgen(args,strfiles)
-# 				print 'GAMESS input files generated!'
-# 			elif 'qch' in args.qccode.lower():
-# 				jobdirs = multiqgen(args,strfiles)
-# 				print 'QChem input files generated!'
-# 			else:
-# 				print 'Only TeraChem, GAMESS and QChem are supported right now.\n'
-# 		# generate jobscripts
-# 		if args.jsched and not emsg:
-# 			if args.jsched in 'SBATCH SLURM slurm sbatch':
-# 				slurmjobgen(args,jobdirs)
-# 				print 'SLURM jobscripts generated!'
-# 			elif args.jsched in 'SGE Sungrid sge':
-# 				sgejobgen(args,jobdirs)
-# 				print 'SGE jobscripts generated!'
-# 		if this_diag.sanity: # move to separate subdirectory if generated structure was bad
-# 			fname = rootdir.rsplit('/',1)[-1]
-# 			shutil.move(rootdir,rundir+'/badjobs/'+fname)
-# 	elif not emsg:
-# 		print 'Folder '+rootdir+' was skipped..\n'
-# 	return emsg
