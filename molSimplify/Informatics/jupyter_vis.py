@@ -4,9 +4,12 @@ conda install -c rmg py3dmol
 Some Documentation: https://pypi.org/project/py3Dmol/
 3DMol.js backend: http://3dmol.csb.pitt.edu/index.html
 """
-import py3Dmol
 import math as m
-from molSimplify.Classes.mol3D import*
+
+import py3Dmol
+
+from molSimplify.Classes.mol3D import mol3D
+
 
 def view_xyz(xyz_names,w=400,h=400,columns=2,representation='stick',labelsize=18,labels=True):
     """

@@ -12,8 +12,7 @@
 import sys
 from molSimplify.Scripts.distgeom import (GetConf)
 from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.mol3D import (distance,
-                                       mol3D)
+from molSimplify.Classes.mol3D import (mol3D)
 from molSimplify.Scripts.geometry import (PointTranslateSph,
                                           PointTranslateSphgivenr,
                                           PointTranslatetoPSph,
@@ -21,6 +20,7 @@ from molSimplify.Scripts.geometry import (PointTranslateSph,
                                           aligntoaxis2,
                                           checkcolinear,
                                           checkplanar,
+                                          distance,
                                           getPointu,
                                           kabsch,
                                           midpt,

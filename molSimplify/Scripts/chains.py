@@ -9,12 +9,12 @@ from math import sqrt
 
 import numpy as np
 
-from molSimplify.Classes.mol3D import (distance,
-                                       mol3D)
+from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Scripts.geometry import (rotate_around_axis,
                                           rotation_params,
                                           vecangle,
-                                          vecdiff)
+                                          vecdiff,
+                                          distance)
 from molSimplify.Scripts.structgen import (ffopt)
 import numpy
 

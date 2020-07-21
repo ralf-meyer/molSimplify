@@ -1,7 +1,7 @@
 import numpy as np
 
-from molSimplify.Classes.mol3D import (distance,
-                                       mol3D)
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Scripts.geometry import distance
 
 # xyzf = '/Users/tzuhsiungyang/Downloads/cuacetate1k2acetate1o-pyridylphenyl1_0_1_RIJCOSX-B3LYP-D3_BS_TS-ar-carboxylation.numfreq.xyz'
 

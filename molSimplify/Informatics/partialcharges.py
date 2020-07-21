@@ -1,6 +1,6 @@
 import numpy as np
 
-from molSimplify.Classes.mol3D import (distance)
+from molSimplify.Scripts.geometry import distance
 
 def fpriority(mol):
     # setting up variables

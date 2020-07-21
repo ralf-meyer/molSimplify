@@ -9,7 +9,6 @@ from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.generator import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.mol3D import distance
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement

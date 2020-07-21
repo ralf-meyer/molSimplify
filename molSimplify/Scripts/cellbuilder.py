@@ -13,11 +13,7 @@ from math import sqrt
 
 from scipy.spatial import Delaunay
 from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.mol3D import (rotate_around_axis,
-                                       rotation_params,
-                                       vecangle,
-                                       distance,
-                                       mol3D)
+from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.globalvars import globalvars
 from molSimplify.Scripts.cellbuilder_tools import (cell_ffopt,
                                                    center_of_sym,
@@ -42,7 +38,11 @@ from molSimplify.Scripts.cellbuilder_tools import (cell_ffopt,
                                                    zero_z)
 from molSimplify.Scripts.geometry import (PointRotateAxis,
                                           checkcolinear,
-                                          vecdiff)
+                                          vecdiff,
+                                          rotate_around_axis,
+                                          rotation_params,
+                                          vecangle,
+                                          distance)
 from molSimplify.Scripts.periodic_QE import (write_periodic_mol3d_to_qe)
 
 
