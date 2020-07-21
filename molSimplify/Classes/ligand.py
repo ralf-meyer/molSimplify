@@ -22,8 +22,7 @@ class ligand:
         self.dent = dent
         self.ext_int_dict = dict()  # store
 
-    ## Deprecated.
-    # map betweem
+    # Map betweem
     # int and ext indcies
     # Obtain the ligand from the complex mol3D object
     # @param self The object pointer
@@ -78,12 +77,13 @@ class ligand:
 
 ##########
 
-# Extract axial and equitorial components of a octahedral complex
-#  @param mol The mol3D object for the complex
-#  @param liglist List of ligands
-#  @return ligdents List of ligand dents
-#  @return ligcons List of ligand connection indices (in mol)
-def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
+# Split complex into Ligand components (delete metal atom, enumerate remaining fragments)
+#  @param mol (mol3D object of transition metal complex)
+#  @param silent (bool, mute or display messages)
+#  @return liglist (list, ligands (list of indicies in mol))
+#  @return ligdents (list, ligand dents)
+#  @return ligcons (list, ligand connection indices (list of indicies in mol))
+def ligand_breakdown(mol, silent=True):
     # this function takes an octahedral
     # complex and returns ligands
     loud = False
@@ -121,8 +121,23 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
             ligdents[matched] += 1
     return liglist, ligdents, ligcons
 
-
-def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
+# Legacy (still used for older ANNs)
+# Extract axial and equitorial components of a octahedral complex
+#  @param mol The mol3D object for the complex
+#  @param liglist (list, ligands (list of indicies in mol))
+#  @param ligdents (list, ligand dents)
+#  @param ligcons (list, ligand connection indices (list of indicies in mol))
+#  @param loud (bool, print debug statements or not, loud=True -> print a lot!)
+#  @return ax_ligand_list (list, axial built ligand objects)
+#  @return eq_ligand_list (list, equatorial built ligand objects)
+#  @return ax_natoms_list (list, number of atoms in axial ligands)
+#  @return eq_natoms_list (list, number of atoms in equatorial ligands)
+#  @return ax_con_int_list (list, axial ligand connecting atoms (list, indexed in built ligand))
+#  @return eq_con_int_list (list, equatorial ligand connecting atoms (list, indexed in built ligand))
+#  @return ax_con_list (list, axial ligand connecting atoms (list, indexed in mol))
+#  @return eq_con_list (list, equatorial ligand connecting atoms (list, indexed in mol))
+#  @return built_ligand_list (list, all built ligand objects)
+def ligand_assign(mol, liglist, ligdents, ligcons, loud=False):
     valid = True
     # loud = False
     pentadentate = False
@@ -498,17 +513,6 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
-    if name:  ## TODO: this part might be broken. Maybe not of much use though.
-        for i, ax_ligand in enumerate(ax_ligand_list):
-            if not os.path.isdir('ligands'):
-                os.mkdir('ligands')
-            ax_ligand.mol.writexyz('ligands/' + name +
-                                   '_' + str(i) + '_ax.xyz')
-        for i, eq_ligand in enumerate(eq_ligand_list):
-            if not os.path.isdir('ligands'):
-                os.mkdir('ligands')
-            eq_ligand.mol.writexyz('ligands/' + name +
-                                   '_' + str(i) + '_eq.xyz')
     for j, ax_con in enumerate(ax_con_list):
         current_ligand_index_list = built_ligand_list[ax_lig_list[j]].index_list
         ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])
@@ -529,10 +533,25 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
-
-def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False, eq_sym_match=False):
-    ####### This ligand assignment code handles octahedral complexes consistently.
-    ####### It should be able to assign any octahedral complex
+# Production
+# Extract axial and equitorial components of a octahedral complex
+#  @param mol The mol3D object for the complex
+#  @param liglist (list, ligands (list of indicies in mol))
+#  @param ligdents (list, ligand dents)
+#  @param ligcons (list, ligand connection indices (list of indicies in mol))
+#  @param loud (bool, print debug statements or not, loud=True -> print a lot!)
+#  @param use_z (bool, use z-coordinate in axial/eq ligand assignment in monodentates)
+#  @param eq_sym_match (bool, enforce equatorial plan to have least number of distinct connecting atom symbols)
+#  @return ax_ligand_list (list, axial built ligand objects)
+#  @return eq_ligand_list (list, equatorial built ligand objects)
+#  @return ax_natoms_list (list, number of atoms in axial ligands)
+#  @return eq_natoms_list (list, number of atoms in equatorial ligands)
+#  @return ax_con_int_list (list, axial ligand connecting atoms (list, indexed in built ligand))
+#  @return eq_con_int_list (list, equatorial ligand connecting atoms (list, indexed in built ligand))
+#  @return ax_con_list (list, axial ligand connecting atoms (list, indexed in mol))
+#  @return eq_con_list (list, equatorial ligand connecting atoms (list, indexed in mol))
+#  @return built_ligand_list (list, all built ligand objects)
+def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, use_z = False, eq_sym_match=False):
     angle_cutoff = 130 # Angle cutoff for linear
     valid = True
     hexadentate = False
@@ -1637,15 +1656,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
 
+# Handles ligand symmetry assignment
+#  @param mol (mol3D object)
+#  @param htol (int, tolerance for hydrogens in matching ligands)
+#  @param loud (bool, ligand_assign_consistent with loud flag)
+#  @return outstring (str, ligand symmetry description)
 def get_lig_symmetry(mol,loud=False,htol=3):
-    """
-    Handles ligand symmetry assignment
-    input: mol (Mol3D object)
-    input: htol (Default 3, tolerance for hydrogens in matching ligands)
-    input: loud (Default False, run ligand_assign_consistent with loud flag)
-    output: outstring (String, ligand symmetry plane)
-    """
-    liglist, ligdents, ligcons = ligand_breakdown(mol,BondedOct=True,flag_loose=True)
+    liglist, ligdents, ligcons = ligand_breakdown(mol)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
         ax_con_int_list, eq_con_int_list, ax_con_list, \
         eq_con_list, built_ligand_list = ligand_assign_consistent(mol,liglist,ligdents,ligcons,loud=loud)
