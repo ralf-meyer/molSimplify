@@ -621,6 +621,8 @@ def parseinputfile(args, inputfile_str=None):
                 args.coord = l[1]
             if (l[0] == '-geometry' and len(l[1:]) > 0):
                 args.geometry = l[1].lower()
+            if (l[0] == '-geo' and len(l[1:]) > 0):
+                args.geometry = l[1].lower()
             # parse ligands
             if (l[0] == '-lig') and len(l[1:]):
                 args.lig = l[1:]
@@ -747,6 +749,10 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-charge' and len(l[1:]) > 0):
                 args.charge = l[1:]
             if (l[0] == '-spin' and len(l[1:]) > 0):
+                args.spin = l[1:]
+            if (l[0] == '-spinmultiplicity' and len(l[1:]) > 0):
+                args.spin = l[1:]
+            if (l[0] == '-multiplicity' and len(l[1:]) > 0):
                 args.spin = l[1:]
             if (l[0] == '-runtyp' and len(l[1:]) > 0):
                 args.runtyp = l[1]
@@ -1107,11 +1113,13 @@ def parseinputs_basic(*p):
     parser.add_argument(
         "-coord", help="coordination such as 4,5,6", action="store_true")
     parser.add_argument("-geometry", help="geometry", action="store_true")
+    parser.add_argument("-geo", help="geometry", action="store_true")
     parser.add_argument("-lig", help="ligands to be included in complex")
     parser.add_argument(
         "-ligocc", help="number of corresponding ligands", action="store_true")  # e.g. 1,2,1
-    parser.add_argument(
-        "-spin", help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spin",help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spinmultiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-multiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
     # specified in cleaninput
     parser.add_argument(
         "-keepHs", help="force keep hydrogens, default auto for each ligand")
