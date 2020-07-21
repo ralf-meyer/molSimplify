@@ -32,7 +32,6 @@ from pkg_resources import resource_filename, Requirement
 #  @param ffopt Flag for ligand FF optimization
 #  @return Error messages
 
-
 def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
     emsg = False
     globs = globalvars()
@@ -126,7 +125,6 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
 #  @param smicat Core connecting atoms
 #  @return Error messages
 
-
 def addtocdb(smimol, sminame, smicat):
     emsg = False
     globs = globalvars()
@@ -189,7 +187,6 @@ def addtocdb(smimol, sminame, smicat):
 #  @param smimol SMILES string or molecule file to be added
 #  @param sminame Name of binding species for key in dictionary
 #  @return Error messages
-
 
 def addtobdb(smimol, sminame):
     globs = globalvars()
@@ -255,7 +252,6 @@ def addtobdb(smimol, sminame):
 #  @param sminame Name of molecule for key in dictionary
 #  @param ropt Flag for molecule type (0 for core, 1 for ligand, 2 for binding species)
 #  @return Error messages
-
 
 def removefromDB(sminame, ropt):
     emsg = False
