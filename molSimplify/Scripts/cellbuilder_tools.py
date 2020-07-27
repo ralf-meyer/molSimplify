@@ -5,25 +5,18 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import os
-import sys
-import copy
-import glob
 import re
-import math
-import random
-import string
+
 import numpy
 import openbabel
-from math import pi
-#from scipy.spatial import Delaunay, ConvexHull
-#import networkx as nx
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.mol3D import*
+import copy
+from math import sqrt, pi
 from molSimplify.Classes.globalvars import globalvars
-from operator import add
-from molSimplify.Scripts.periodic_QE import *
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Scripts.geometry import distance
+# from scipy.spatial import Delaunay, ConvexHull
+# import networkx as nx
+
 
 ###############################
 # Main cell FF opt routine

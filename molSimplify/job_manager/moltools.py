@@ -314,6 +314,7 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
 
             local_infile_dict = copy.copy(infile_dict)
             local_infile_dict['name'] = local_name
+            local_infile_dict['coordinates'] = local_name+'.xyz'
             local_infile_dict['charge'], local_infile_dict['spinmult'] = metal_charge, metal_spin
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
@@ -340,6 +341,7 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
 
             local_infile_dict = copy.copy(infile_dict)
             local_infile_dict['name'] = local_name
+            local_infile_dict['coordinates'] = local_name+'.xyz'
             local_infile_dict['charge'], local_infile_dict['spinmult'] = ligand_charge, ligand_spin
             local_infile_dict['run_type'] = 'energy'
             local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False

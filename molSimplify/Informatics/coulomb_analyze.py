@@ -1,14 +1,9 @@
-import glob
-import string
-import sys
-import os
-import numpy as np
-import math
-import random
-import string
 import numpy
-from molSimplify.Classes.mol3D import*
-from molSimplify.Classes.atom3D import*
+
+from molSimplify.Classes.atom3D import (atom3D)
+from molSimplify.Classes.globalvars import globalvars
+from molSimplify.Scripts.geometry import (distance)
+
 #name    metal   ox  axlig_charge    eqlig charge    axlig_dent  eqlig_dent  axlig_connect   eqlig_connect   axlig_natoms    eqlig_natoms    axlig_mdelen    eqlig_mdelen
 
 

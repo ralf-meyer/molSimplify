@@ -44,7 +44,15 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 print(outfile_path)
                 counter = 0
             else:
-                raise ValueError('.out file type not recognized for file: ' + outfile_path)
+                print('.out file type not recognized for file: ' + outfile_path)
+                return_dict = {'name':None, 'charge':None, 'finalenergy':None,
+                               'time':None, 's_squared': None, 's_squared_ideal':None,
+                               'finished':False, 'min_energy':None, 'scf_error':False,
+                               'thermo_grad_error':False, 'solvation_energy': None, 'optimization_cycles':None,
+                               'thermo_vib_energy':None, 'thermo_vib_free_energy':None, 'thermo_suspect': None,
+                               'orbital_occupation':None, 'oscillating_scf_error':False}
+                return return_dict
+                
     output_type = ['TeraChem', 'ORCA'][counter]
 
     name = None
@@ -330,7 +338,7 @@ def read_configure(home_directory, outfile_path):
             vertIP = True
         if 'functionalsSP' in line or 'FunctionalsSP' in line:
             functionalsSP = [str(p) for p in line.split()[1:]]
-        if 'thermo' in line or 'Thermo' in line:
+        if ('thermo' in line and not 'thermo_grad_error' in line) or ('Thermo' in line and not 'Thermo_grad_error' in line):
             thermo = True
         if 'dissociation' in line or 'Dissociation' in line:
             dissociation = True

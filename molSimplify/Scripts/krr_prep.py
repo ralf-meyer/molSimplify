@@ -5,26 +5,39 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Classes import *
-from molSimplify.Informatics.autocorrelation import *
-from molSimplify.Informatics.graph_analyze import *
-from molSimplify.Informatics.partialcharges import *
-from molSimplify.Classes.mol3D import *
-from molSimplify.Classes.globalvars import *
-from sklearn.model_selection import train_test_split, GridSearchCV, LeaveOneOut
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.metrics import mean_absolute_error
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.multioutput import MultiOutputRegressor
-from math import exp
-import numpy as np
-import csv
-import glob
-import os
 import copy
+import csv
+import os
 import pickle
+from math import exp
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import pandas as pd
+from pkg_resources import (resource_filename, Requirement)
+
+
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import train_test_split, GridSearchCV, LeaveOneOut
+from sklearn.multioutput import MultiOutputRegressor
+
+from molSimplify.Classes.globalvars import (globalvars)
+from molSimplify.Informatics.autocorrelation import (atom_only_autocorrelation,
+                                                     atom_only_deltametric,
+                                                     atom_only_ratiometric,
+                                                     atom_only_summetric,
+                                                     generate_atomonly_autocorrelations,
+                                                     generate_atomonly_deltametrics)
+from molSimplify.Informatics.partialcharges import (ffeatures)
+
 # import matplotlib.pyplot as plt
 # import matplotlib.ticker as ticker
+from molSimplify.Scripts.geometry import (vecdiff,
+                                          distance,
+                                          vecangle)
+
 np.seterr(divide='ignore')
 
 csvf = '/Users/tzuhsiungyang/Dropbox (MIT)/Work at the Kulik group/ts_build/Data/xyzf_optts/selected_xyzfs/label_1distance_descs_atRACs.csv'

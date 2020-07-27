@@ -6,16 +6,21 @@
 #  Dpt of Chemical Engineering, MIT
 
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
 import os
-import sys
 import re
-import string
 import shutil
-import time
+import string
+try:
+    import pymol
+except:
+    pass
 import openbabel
+
+from molSimplify.Classes.globalvars import (amassdict,
+                                            glob,
+                                            globalvars,
+                                            mybash)
+from molSimplify.Scripts.molSimplify_io import (plugin_defs)
 
 
 def float_from_str(txt):
@@ -436,7 +441,6 @@ def dbsearch(rundir, args, globs):
 
     obab = 'obabel'
     if args.gui:
-        from molSimplify.Classes.mWidgets import mQDialogErr
         from molSimplify.Classes.mWidgets import mQDialogWarn
         from molSimplify.Classes.mWidgets import mQDialogInf
     ### in any case do similarity search over indexed db ###

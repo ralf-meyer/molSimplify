@@ -4,22 +4,30 @@
 
 
 # import standard modules
-import os, sys
-from pkg_resources import resource_filename, Requirement
-import openbabel, random, itertools
-from numpy import log, arccos, cross, dot, pi
 
 # molS modules
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.mol3D import *
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-import molSimplify.Scripts.structgen ## this is needed for circlular 
-                                     ## FF dependence
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Scripts.geometry import (checkcolinear,
+                                          distance,
+                                          norm,
+                                          rotate_around_axis,
+                                          rotation_params,
+                                          vecangle,
+                                          vecdiff)
+from molSimplify.Scripts.molSimplify_io import (getlicores,
+                                                lig_load)
+
+## FF dependence
 ##########################################
 ####### ligand decoration function #######
-##########################################    
+##########################################
+
+
+
 def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
+    # structgen depends on decoration_manager, and decoration_manager depends on structgen.ffopt
+    # Thus, this import needs to be placed here to avoid a circular dependence
+    from molSimplify.Scripts.structgen import ffopt
     # INPUT
     #   - args: placeholder for input arguments
     #   - ligand_to_decorate: mol3D ligand
@@ -183,7 +191,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
             print('************')
     
     merged_ligand.convert2OBMol()
-    merged_ligand,emsg = molSimplify.Scripts.structgen.ffopt('MMFF94',merged_ligand,[],0,[],False,[],100)
+    merged_ligand,emsg = ffopt('MMFF94',merged_ligand,[],0,[],False,[],100)
     BO_mat = merged_ligand.populateBOMatrix()
     if args.debug:
         merged_ligand.writexyz('merged_relaxed.xyz')

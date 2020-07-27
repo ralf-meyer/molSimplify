@@ -7,42 +7,27 @@
 
 import os
 import sys
-import copy
-import glob
-import re
-import math
-import random
-import string
-import numpy
-from math import pi
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.mol3D import*
-from molSimplify.Classes.ligand import*
-from molSimplify.Classes.dft_obs import*
-from molSimplify.Classes.globalvars import globalvars
-from molSimplify.Informatics.graph_analyze import *
-from molSimplify.Informatics.autocorrelation import *
-from molSimplify.Informatics.misc_descriptors import *
+import numpy as np
+from molSimplify.Classes.dft_obs import (dft_observation)
+from sklearn import linear_model, preprocessing, metrics, feature_selection, model_selection
 
-
-def test_skl():
-    valid = ok
-    try:
-        from sklearn import linear_model, preprocessing, metrics, feature_selection, model_selection
-    except:
-        valid = False
-    return valid
+# def test_skl():
+#     valid = 'ok'
+#     try:
+#         from sklearn import linear_model, preprocessing, metrics, feature_selection, model_selection
+#     except:
+#         valid = False
+#     return valid
 
 
 def analysis_supervisor(args, rootdir):
     status = True
     print('looking for scikit-learn')
-    if test_skl():
-        from sklearn import linear_model, preprocessing, metrics, feature_selection, model_selection
-    else:
-        print("Error, scikit-learn not loadable")
-        status = False
+    # if test_skl():
+    #     pass
+    # else:
+    #     print("Error, scikit-learn not loadable")
+    #     status = False
     if not args.correlate:
         print("Error, correlation path not given")
         status = False
@@ -61,7 +46,7 @@ def analysis_supervisor(args, rootdir):
     if args.simple:
         print('using simple autocorrelation descriptors only')
     if args.max_descriptors:
-        print(('using a max of '+str(max_descriptors)+' only'))
+        print(('using a max of '+str(args.max_descriptors)+' only'))
     res = correlation_supervisor(
         args.correlate, rootdir, args.simple, args.lig_only, args.max_descriptors)
 

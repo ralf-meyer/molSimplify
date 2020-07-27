@@ -5,14 +5,16 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import os
-import sys
-import subprocess
-import time
 import math
-import re
+import glob
+import os
+
 from numpy import cross, dot
-from molSimplify.Classes.globalvars import *
+from math import sqrt
+
+from molSimplify.Classes.globalvars import (globalvars,
+                                            mybash)
+
 
 # Gets distance between points
 #  @param R1 Point 1

@@ -9,7 +9,6 @@ from molSimplify.Scripts.geometry import *
 from molSimplify.Scripts.generator import *
 from molSimplify.Classes.globalvars import *
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.mol3D import distance
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import *
 from pkg_resources import resource_filename, Requirement
@@ -176,7 +175,7 @@ def compareGeo(xyz1, xyz2, threshMLBL, threshLG, threshOG):
 
 def comparedict(ref, gen, thresh):
     passComp = True
-    if not set(ref.keys()) == set(gen.keys()):
+    if not set(ref.keys()) <= set(gen.keys()):
         raise KeyError("Keys in the dictionay has been changed")
     for key in ref:
         try:
@@ -450,6 +449,8 @@ def runtestgeo(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
     with open(refjson, "r") as fo:
         dict_ref = json.load(fo)
     # passGeo = (sorted(dict_ref.items()) == sorted(dict_struct_info.items()))
+    print("ref: ", dict_ref)
+    print("now: ", dict_struct_info)
     passGeo = comparedict(dict_ref, dict_struct_info, thresh)
     return passGeo
 

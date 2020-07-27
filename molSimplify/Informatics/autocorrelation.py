@@ -1,16 +1,7 @@
-import glob
-import string
-import sys
-import os
 import numpy as np
-import math
-import random
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.globalvars import globalvars
-from molSimplify.Classes.mol3D import *
-from molSimplify.Classes.ligand import *
 from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
+from molSimplify.Scripts.geometry import distance
+from molSimplify.Classes.globalvars import globalvars
 
 ########### UNIT CONVERSION
 HF_to_Kcal_mol = 627.503

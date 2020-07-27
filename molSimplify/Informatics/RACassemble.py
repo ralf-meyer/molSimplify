@@ -7,14 +7,27 @@
 ########     RACs from lists of ligands    ###############
 ##########################################################
 from __future__ import print_function
-import numpy as np
+
 import sys
 
-from molSimplify.Classes import mol3D
-from molSimplify.Informatics.autocorrelation import*
-from molSimplify.Informatics.misc_descriptors import*
-from molSimplify.Informatics.graph_analyze import*
-from molSimplify.Informatics.rac155_geo import*
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Informatics.autocorrelation import (generate_all_ligand_autocorrelation_derivatives,
+                                                     generate_all_ligand_autocorrelations,
+                                                     generate_all_ligand_deltametric_derivatives,
+                                                     generate_all_ligand_deltametrics,
+                                                     generate_full_complex_autocorrelation_derivatives,
+                                                     generate_full_complex_autocorrelations,
+                                                     generate_metal_autocorrelation_derivatives,
+                                                     generate_metal_autocorrelations,
+                                                     generate_metal_deltametric_derivatives,
+                                                     generate_metal_deltametrics,
+                                                     generate_metal_ox_autocorrelation_derivatives,
+                                                     generate_metal_ox_autocorrelations,
+                                                     generate_metal_ox_deltametric_derivatives,
+                                                     generate_metal_ox_deltametrics)
+from molSimplify.Informatics.misc_descriptors import (generate_all_ligand_misc)
+from molSimplify.Informatics.rac155_geo import (rac155_list)
+import numpy as np
 
 ## Gets the connectivity matrix of an octahedral complex without geo
 #  @param metal_mol mol3D() for the metal

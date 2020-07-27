@@ -5,20 +5,8 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import os
-import sys
-import glob
-import re
-import math
-import random
-import string
-import numpy
-from math import pi
-from molSimplify.Scripts.geometry import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.mol3D import*
 from molSimplify.Classes.globalvars import globalvars
-from operator import add
+
 
 ###############################
 

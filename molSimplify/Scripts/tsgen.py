@@ -5,22 +5,25 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.structgen import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Scripts.nn_prep import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.rundiag import *
-from molSimplify.Classes import globalvars
-from molSimplify.Classes import mol3D
-from molSimplify.Informatics.decoration_manager import*
-import os
-import sys
-import openbabel
-from pkg_resources import resource_filename, Requirement
-import random
-import itertools
-from numpy import log, arccos, cross, dot, pi
+from numpy import log
+
+from molSimplify.Classes.mol3D import (mol3D)
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.rundiag import (run_diag)
+from molSimplify.Scripts.geometry import (alignPtoaxis,
+                                          distance,
+                                          rotate_around_axis,
+                                          rotation_params,
+                                          vecangle,
+                                          vecdiff)
+from molSimplify.Scripts.molSimplify_io import (getinputargs)
+from molSimplify.Scripts.structgen import (PointTranslateSph,
+                                           align_lig_centersym,
+                                           check_rotate_linear_lig,
+                                           check_rotate_symm_lig,
+                                           ffopt,
+                                           getconnection,
+                                           rotate_MLaxis_minimize_steric)
 
 # XY sum cov rad coefficient
 XYcoeff = 1.1

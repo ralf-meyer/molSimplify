@@ -4,7 +4,7 @@ An automonous on-the-fly job control system for DFT geometry optimization aided 
 """
 
 # Add imports here
-from .molscontrol import *
+from molSimplify.molscontrol import *
 
 # Handle versioneer
 from ._version import get_versions

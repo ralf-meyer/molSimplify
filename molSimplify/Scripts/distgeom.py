@@ -12,22 +12,28 @@
 #
 #  [2] G. Crippen and T. F. Havel, "Distance Geometry and Molecular Conformation", in Chemometrics Research Studies Series, Wiley (1988)
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.atom3D import atom3D
-import os
-import sys
-import openbabel
 import numpy as np
+import numpy
+import openbabel
 from scipy import optimize
+from math import sqrt, cos
+
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.globalvars import (vdwrad)
+from molSimplify.Scripts.geometry import (distance,
+                                          norm,
+                                          vecangle,
+                                          vecdiff)
+from molSimplify.Scripts.molSimplify_io import (lig_load,
+                                                loadcoord)
+
 
 # Applies the cosine rule to get the length of AC given lengths of AB, BC and angle ABC
 #  @param AB Length of AB
 #  @param BC Length of BC
 #  @param theta Angle in degrees
 #  @return Length of AC
-
 
 def CosRule(AB, BC, theta):
     theta = np.pi*theta/180
@@ -39,7 +45,6 @@ def CosRule(AB, BC, theta):
 #  @param B the coordinates of B
 #  @param C the coordinates of C
 #  @return theta The angle ABC in degrees
-
 
 def inverseCosRule(A, B, C):
     BA = np.linalg.norm(np.array(A)-np.array(B))
@@ -60,7 +65,6 @@ def inverseCosRule(A, B, C):
 #  @param catoms List of ligand connection atoms (default empty)
 #  @param A Distance 2 connectivity matrix
 #  @return Lower and upper bounds matrices
-
 
 def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
     LB = np.zeros((natoms, natoms))  # lower bound
@@ -135,7 +139,6 @@ def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
 #  @param natoms Number of atoms in molecule
 #  @return Triangularized bounds matrices
 
-
 def Triangle(LB, UB, natoms):
     LL = LB
     UL = UB
@@ -163,7 +166,6 @@ def Triangle(LB, UB, natoms):
 #  @param Full Full metrization (scales O(N^5), default false)
 #  @param seed Random number seed (default none)
 #  @return Distance matrix
-
 
 def Metrize(LB, UB, natoms, Full=False, seed=False):
     if seed:
@@ -197,7 +199,6 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
 #  @param natoms Number of atoms in molecule
 #  @return Vector of CM distances, flag for successful search
 
-
 def GetCMDists(D, natoms):
     D0 = np.zeros(natoms)
     status = True
@@ -218,7 +219,6 @@ def GetCMDists(D, natoms):
 #  @param natoms Number of atoms in molecule
 #  @return Metric matrix
 
-
 def GetMetricMatrix(D, D0, natoms):
     G = np.zeros((natoms, natoms))
     for i in range(natoms):
@@ -230,7 +230,6 @@ def GetMetricMatrix(D, D0, natoms):
 #  @param G Metric matrix
 #  @param natoms Number of atoms in molecule
 #  @return Three largest eigenvalues and corresponding eigenvectors
-
 
 def Get3Eigs(G, natoms):
     L = np.zeros((3, 3))
@@ -249,7 +248,6 @@ def Get3Eigs(G, natoms):
 #  @param x 1D array of coordinates to be optimized
 #  @param *args Other parameters (refer to scipy.optimize docs)
 #  @return Objective function
-
 
 def DistErr(x, *args):
     E = 0
@@ -271,7 +269,6 @@ def DistErr(x, *args):
 #  @param x 1D array of coordinates to be optimized
 #  @param *args Other parameters (refer to scipy.optimize docs)
 #  @return Objective function gradient
-
 
 def DistErrGrad(x, *args):
     LB, UB, natoms = args
@@ -303,7 +300,6 @@ def DistErrGrad(x, *args):
 #  @param ffclean Flag for OB FF cleanup (default True)
 #  @param catoms List of connection atoms (default empty), used to generate FF constraints if specified
 #  @return mol3D of new conformer
-
 
 def SaveConf(X, mol, ffclean=True, catoms=[]):
     conf3D = mol3D()
@@ -352,6 +348,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
 # Determines the relative positioning of different ligating atoms
 # @param args
 # @return A dictionary of angles (in degrees)between catoms
+
 def findshape(args, master_ligand):
     core = loadcoord(args.geometry)
 
@@ -390,7 +387,6 @@ def findshape(args, master_ligand):
 #  @param mol mol3D of molecule
 #  @param catoms List of connection atoms (default empty), used to generate additional constraints if specified (see GetBoundsMatrices())
 #  @return mol3D of new conformer
-
 
 def GetConf(mol, args, catoms=[]):
     # Create a mol3D copy with a dummy metal metal

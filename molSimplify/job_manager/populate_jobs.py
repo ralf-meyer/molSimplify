@@ -1,13 +1,12 @@
-import subprocess
-import copy
-import os
 import glob
 import numpy as np
+import os
 import shutil
-from molSimplify.Classes.mol3D import *
-from .tools import *
-import molSimplify.job_manager.manager_io as manager_io
+import subprocess
+
 from molSimplifyAD.utils.pymongo_tools import connect2db, query_lowestE_converged
+
+from molSimplify.job_manager.tools import (manager_io)
 
 
 def isCSD(job):

@@ -1,7 +1,6 @@
-from molSimplify.Classes.mol3D import *
-from molSimplify.Scripts.geometry import rotation_params
 import numpy as np
-import glob
+
+from molSimplify.Scripts.geometry import distance
 
 def fpriority(mol):
     # setting up variables

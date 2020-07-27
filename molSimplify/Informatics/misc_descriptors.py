@@ -1,20 +1,9 @@
-import glob
-import string
-import sys
-import os
-import numpy as np
-import math
-import random
-import string
-import numpy
-from molSimplify.Scripts.geometry import *
-#from molSimplify.Scripts.nn_prep import *
-from molSimplify.Classes.atom3D import *
-from molSimplify.Classes.globalvars import globalvars
-from molSimplify.Classes.mol3D import*
-from molSimplify.Classes.ligand import *
 from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
-from molSimplify.Informatics.graph_analyze import *
+from molSimplify.Informatics.graph_analyze import (get_lig_EN,
+                                                   get_truncated_kier,
+                                                   kier)
+from molSimplify.Classes.globalvars import globalvars
+import numpy as np
 
 
 def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False, force_legacy=False):

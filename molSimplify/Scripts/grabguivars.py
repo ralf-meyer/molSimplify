@@ -5,13 +5,9 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import glob
-import os
 import re
-import argparse
-import sys
 import time
-from molSimplify.Scripts.molSimplify_io import *
+from molSimplify.Classes.globalvars import globalvars
 
 # Check true or false
 #  @param arg String to be checked

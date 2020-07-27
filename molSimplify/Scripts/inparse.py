@@ -5,17 +5,25 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import glob
+import argparse
 import os
 import re
-import argparse
-import sys
-import ast
-import json
+
 import yaml
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
-from pkg_resources import resource_filename, Requirement
+
+from molSimplify.Classes.globalvars import (defaultspins,
+                                            elementsbynum,
+                                            globalvars,
+                                            metals_conv,
+                                            romans,
+                                            mtlsdlist)
+from molSimplify.Scripts.molSimplify_io import (getbinds,
+                                                getcores,
+                                                getgeoms,
+                                                getlicores,
+                                                getslicores,
+                                                printgeoms,
+                                                substr_load)
 
 
 # Checks input for correctness and uses defaults otherwise
@@ -127,7 +135,7 @@ def checkinput(args, calctype="base"):
             # default ligand if none given
             if not args.lig and not args.rgen:
                 if args.gui:
-                    from Classes.mWidgets import mQDialogWarn
+                    from molSimplify.Classes.mWidgets import mQDialogWarn
                     qqb = mQDialogWarn('Warning', 'You specified no ligands.')
                     qqb.setParent(args.gui.wmain)
                 else:
@@ -208,7 +216,7 @@ def checkinput(args, calctype="base"):
             # check ligands
             if not args.lig and not args.rgen:
                 if args.gui:
-                    from Classes.mWidgets import mQDialogWarn
+                    from molSimplify.Classes.mWidgets import mQDialogWarn
                     qqb = mQDialogWarn('Warning', 'You specified no ligands.')
                     qqb.setParent(args.gui.wmain)
                 else:
@@ -519,7 +527,7 @@ def parseCLI(args):
 #  @param args Namespace of arguments
 
 
-def parseinputfile(args):
+def parseinputfile(args, inputfile_str=None):
     # arguments that don't match with  inparse name and
     # are not automatically initialized go here:
     args.skipANN = False
@@ -533,8 +541,12 @@ def parseinputfile(args):
 
     # (we should remove these where posible)
     # THIS NEEDS CLEANING UP TO MINIMIZE DUPLICATION WITH parsecommandline
+    if inputfile_str:
+        inputfile_lines = inputfile_str.split('\n')
+    else:
+        inputfile_lines = open(args.i)
 
-    for line in open(args.i):
+    for line in inputfile_lines:
         # For arguments that cannot accept smiles as args, split possible comments
         if '-lig' not in line and '-core' not in line and '-bind' not in line and '-dbsmarts' not in line:
             line = line.split('#')[0]  # remove comments
@@ -608,6 +620,8 @@ def parseinputfile(args):
             if (l[0] == '-coord' and len(l[1:]) > 0):
                 args.coord = l[1]
             if (l[0] == '-geometry' and len(l[1:]) > 0):
+                args.geometry = l[1].lower()
+            if (l[0] == '-geo' and len(l[1:]) > 0):
                 args.geometry = l[1].lower()
             # parse ligands
             if (l[0] == '-lig') and len(l[1:]):
@@ -735,6 +749,10 @@ def parseinputfile(args):
             if (l[0] == '-charge' and len(l[1:]) > 0):
                 args.charge = l[1:]
             if (l[0] == '-spin' and len(l[1:]) > 0):
+                args.spin = l[1:]
+            if (l[0] == '-spinmultiplicity' and len(l[1:]) > 0):
+                args.spin = l[1:]
+            if (l[0] == '-multiplicity' and len(l[1:]) > 0):
                 args.spin = l[1:]
             if (l[0] == '-runtyp' and len(l[1:]) > 0):
                 args.runtyp = l[1]
@@ -1095,11 +1113,13 @@ def parseinputs_basic(*p):
     parser.add_argument(
         "-coord", help="coordination such as 4,5,6", action="store_true")
     parser.add_argument("-geometry", help="geometry", action="store_true")
+    parser.add_argument("-geo", help="geometry", action="store_true")
     parser.add_argument("-lig", help="ligands to be included in complex")
     parser.add_argument(
         "-ligocc", help="number of corresponding ligands", action="store_true")  # e.g. 1,2,1
-    parser.add_argument(
-        "-spin", help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spin",help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spinmultiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-multiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
     # specified in cleaninput
     parser.add_argument(
         "-keepHs", help="force keep hydrogens, default auto for each ligand")
