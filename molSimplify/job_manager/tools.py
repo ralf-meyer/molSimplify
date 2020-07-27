@@ -355,13 +355,15 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return results
 
 
-def find(key, directory='in place'):
+def find(key, directory='in place', maxdepth=False):
     ## Looks for all files with a matching key in their name within directory
     #  @return A list of paths
     if directory == 'in place':
         directory = os.getcwd()
-
-    bash = 'find ' + directory + ' -name ' + key
+    if maxdepth != False:
+        bash = 'find ' + directory + ' -name ' + key + ' -maxdepth '+str(maxdepth)
+    else:
+        bash = 'find ' + directory + ' -name ' + key
 
     return call_bash(bash)
 
