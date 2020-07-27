@@ -404,18 +404,19 @@ class dft_control:
     def make_decision(self):
         killed = False
         for ii, t in enumerate(self.task):
-            if self.preditions[self.step_now][t] <= 0.5 and self.lses[self.step_now][t] < self.lse_cutoff and (not killed):
+            if self.preditions[self.step_now][t] <= 0.5 and self.lses[self.step_now][t] < self.lse_cutoff:
                 logging.critical(
                     "!!!!job killed at step %d!!!!!!" % self.step_now)
                 logging.info("Killed for the task of: %s" % t)
                 logging.info("Reasons: a prediction of %.4f with LSE of %.4f" % (self.preditions[self.step_now][t],
                                                                                  self.lses[self.step_now][t]))
                 self.status = False
-                kill_job(self.pid)
                 killed = True
         if not killed:
             logging.info(
                 'This calculation seems good for now at step %d' % self.step_now)
+        else:
+            kill_job(self.pid)
 
     def initilize_file_track_dict(self):
         existed = False
