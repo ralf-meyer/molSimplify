@@ -7,8 +7,10 @@ crduan@mit.edu, hjkulik@mit.edu
 """
 
 import sys
-from .io_tools import get_configure
-from .dynamic_classifier import dft_control
+import tensorflow as tf
+import keras
+from molSimplify.molscontrol.io_tools import get_configure
+from molSimplify.molscontrol.dynamic_classifier import dft_control
 import argparse
 
 

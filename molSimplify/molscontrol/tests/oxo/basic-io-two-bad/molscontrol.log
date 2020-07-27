@@ -1,0 +1,94 @@
+root - INFO - ----Logger for the dynamic classifier for on-the-fly job control---
+root - INFO - Monitoring job with PID False
+root - WARNING - NO PID is inputed. Cannot do cany control.
+root - INFO - Feature initialized.
+root - INFO - Loading model: conv_2.h5 ...
+tensorflow - WARNING - From /home/crduan/miniconda/envs/mols_py36/lib/python3.6/site-packages/tensorflow/python/ops/nn_impl.py:180: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+tensorflow - WARNING - From /home/crduan/miniconda/envs/mols_py36/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py:422: The name tf.global_variables is deprecated. Please use tf.compat.v1.global_variables instead.
+
+root - INFO - Loading model: conv_5.h5 ...
+root - INFO - Loading model: conv_10.h5 ...
+root - INFO - Loading model: conv_15.h5 ...
+root - INFO - Loading model: conv_20.h5 ...
+root - INFO - Loading model: conv_30.h5 ...
+root - INFO - Loading model: conv_40.h5 ...
+root - INFO - Training data loaded.
+root - INFO - Normalization vectors loaded
+root - INFO - Initialize the files to be tracked during the geometry optimization.
+root - INFO - This may take a while until the first step of SCF calculation finishes...
+root - INFO - Tracking files initialization completes.
+root - INFO - 0 step feature obtained.
+root - INFO - At step 1, decision is not activated.
+root - INFO - At step 2.
+root - INFO - Predicts: {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961} 
+root - INFO - LSE: {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397})])
+root - INFO - This calculation seems good for now at step 2
+root - INFO - At step 3, decision is not activated.
+root - INFO - At step 4, decision is not activated.
+root - INFO - At step 5.
+root - INFO - Predicts: {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612} 
+root - INFO - LSE: {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243})])
+root - INFO - This calculation seems good for now at step 5
+root - INFO - At step 6, Resizing to activate closet model (6 -> 5).
+root - INFO - At step 6.
+root - INFO - Predicts: {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016} 
+root - INFO - LSE: {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727})])
+root - INFO - This calculation seems good for now at step 6
+root - INFO - At step 7, Resizing to activate closet model (7 -> 5).
+root - INFO - At step 7.
+root - INFO - Predicts: {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718} 
+root - INFO - LSE: {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814})])
+root - INFO - This calculation seems good for now at step 7
+root - INFO - At step 8, Resizing to activate closet model (8 -> 10).
+root - INFO - At step 8.
+root - INFO - Predicts: {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073} 
+root - INFO - LSE: {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718}), (8, {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814}), (8, {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762})])
+root - INFO - This calculation seems good for now at step 8
+root - INFO - At step 9, Resizing to activate closet model (9 -> 10).
+root - INFO - At step 9.
+root - INFO - Predicts: {'geo_flag': 0.8386775, 'ss_flag': 0.056519598, 'metal_spin_flag': 0.11854634} 
+root - INFO - LSE: {'geo_flag': 0.29148235447731025, 'ss_flag': 0.17844423891719752, 'metal_spin_flag': 0.33223229077336636} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718}), (8, {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073}), (9, {'geo_flag': 0.8386775, 'ss_flag': 0.056519598, 'metal_spin_flag': 0.11854634})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814}), (8, {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762}), (9, {'geo_flag': 0.29148235447731025, 'ss_flag': 0.17844423891719752, 'metal_spin_flag': 0.33223229077336636})])
+root - INFO - This calculation seems good for now at step 9
+root - INFO - At step 10.
+root - INFO - Predicts: {'geo_flag': 0.86630476, 'ss_flag': 0.049193177, 'metal_spin_flag': 0.0985436} 
+root - INFO - LSE: {'geo_flag': 0.2686662162065242, 'ss_flag': 0.1284823474269025, 'metal_spin_flag': 0.31153834440113787} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718}), (8, {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073}), (9, {'geo_flag': 0.8386775, 'ss_flag': 0.056519598, 'metal_spin_flag': 0.11854634}), (10, {'geo_flag': 0.86630476, 'ss_flag': 0.049193177, 'metal_spin_flag': 0.0985436})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814}), (8, {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762}), (9, {'geo_flag': 0.29148235447731025, 'ss_flag': 0.17844423891719752, 'metal_spin_flag': 0.33223229077336636}), (10, {'geo_flag': 0.2686662162065242, 'ss_flag': 0.1284823474269025, 'metal_spin_flag': 0.31153834440113787})])
+root - INFO - This calculation seems good for now at step 10
+root - INFO - At step 11, Resizing to activate closet model (11 -> 10).
+root - INFO - At step 11.
+root - INFO - Predicts: {'geo_flag': 0.8758644, 'ss_flag': 0.04921581, 'metal_spin_flag': 0.09875009} 
+root - INFO - LSE: {'geo_flag': 0.30123777247236705, 'ss_flag': 0.12668202122902517, 'metal_spin_flag': 0.32621754221650295} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718}), (8, {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073}), (9, {'geo_flag': 0.8386775, 'ss_flag': 0.056519598, 'metal_spin_flag': 0.11854634}), (10, {'geo_flag': 0.86630476, 'ss_flag': 0.049193177, 'metal_spin_flag': 0.0985436}), (11, {'geo_flag': 0.8758644, 'ss_flag': 0.04921581, 'metal_spin_flag': 0.09875009})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814}), (8, {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762}), (9, {'geo_flag': 0.29148235447731025, 'ss_flag': 0.17844423891719752, 'metal_spin_flag': 0.33223229077336636}), (10, {'geo_flag': 0.2686662162065242, 'ss_flag': 0.1284823474269025, 'metal_spin_flag': 0.31153834440113787}), (11, {'geo_flag': 0.30123777247236705, 'ss_flag': 0.12668202122902517, 'metal_spin_flag': 0.32621754221650295})])
+root - INFO - This calculation seems good for now at step 11
+root - INFO - At step 12, Resizing to activate closet model (12 -> 10).
+root - INFO - At step 12.
+root - INFO - Predicts: {'geo_flag': 0.88308406, 'ss_flag': 0.04787867, 'metal_spin_flag': 0.103160314} 
+root - INFO - LSE: {'geo_flag': 0.30824403278242846, 'ss_flag': 0.11976523479136811, 'metal_spin_flag': 0.30764911772469455} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718}), (8, {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073}), (9, {'geo_flag': 0.8386775, 'ss_flag': 0.056519598, 'metal_spin_flag': 0.11854634}), (10, {'geo_flag': 0.86630476, 'ss_flag': 0.049193177, 'metal_spin_flag': 0.0985436}), (11, {'geo_flag': 0.8758644, 'ss_flag': 0.04921581, 'metal_spin_flag': 0.09875009}), (12, {'geo_flag': 0.88308406, 'ss_flag': 0.04787867, 'metal_spin_flag': 0.103160314})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814}), (8, {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762}), (9, {'geo_flag': 0.29148235447731025, 'ss_flag': 0.17844423891719752, 'metal_spin_flag': 0.33223229077336636}), (10, {'geo_flag': 0.2686662162065242, 'ss_flag': 0.1284823474269025, 'metal_spin_flag': 0.31153834440113787}), (11, {'geo_flag': 0.30123777247236705, 'ss_flag': 0.12668202122902517, 'metal_spin_flag': 0.32621754221650295}), (12, {'geo_flag': 0.30824403278242846, 'ss_flag': 0.11976523479136811, 'metal_spin_flag': 0.30764911772469455})])
+root - INFO - This calculation seems good for now at step 12
+root - INFO - At step 13, Resizing to activate closet model (13 -> 15).
+root - INFO - At step 13.
+root - INFO - Predicts: {'geo_flag': 0.8192456, 'ss_flag': 0.030449128, 'metal_spin_flag': 0.071451776} 
+root - INFO - LSE: {'geo_flag': 0.31863429112951375, 'ss_flag': 0.0988077790622127, 'metal_spin_flag': 0.27963200990384796} 
+root - INFO - Prediction summary, OrderedDict([(2, {'geo_flag': 0.86429197, 'ss_flag': 0.082604446, 'metal_spin_flag': 0.14926961}), (5, {'geo_flag': 0.80216616, 'ss_flag': 0.061726574, 'metal_spin_flag': 0.10907612}), (6, {'geo_flag': 0.8411989, 'ss_flag': 0.05010308, 'metal_spin_flag': 0.12015016}), (7, {'geo_flag': 0.88392174, 'ss_flag': 0.040364385, 'metal_spin_flag': 0.11778718}), (8, {'geo_flag': 0.8017531, 'ss_flag': 0.06424438, 'metal_spin_flag': 0.1184073}), (9, {'geo_flag': 0.8386775, 'ss_flag': 0.056519598, 'metal_spin_flag': 0.11854634}), (10, {'geo_flag': 0.86630476, 'ss_flag': 0.049193177, 'metal_spin_flag': 0.0985436}), (11, {'geo_flag': 0.8758644, 'ss_flag': 0.04921581, 'metal_spin_flag': 0.09875009}), (12, {'geo_flag': 0.88308406, 'ss_flag': 0.04787867, 'metal_spin_flag': 0.103160314}), (13, {'geo_flag': 0.8192456, 'ss_flag': 0.030449128, 'metal_spin_flag': 0.071451776})])
+root - INFO - LSE summary, OrderedDict([(2, {'geo_flag': 0.37547021085513044, 'ss_flag': 0.2850866453312826, 'metal_spin_flag': 0.43962277938788397}), (5, {'geo_flag': 0.3964130675583677, 'ss_flag': 0.247209298981178, 'metal_spin_flag': 0.43329572782339243}), (6, {'geo_flag': 0.40541083770037767, 'ss_flag': 0.20933025565696062, 'metal_spin_flag': 0.42027260752710727}), (7, {'geo_flag': 0.3889899750789869, 'ss_flag': 0.18961978202186028, 'metal_spin_flag': 0.4085268592354814}), (8, {'geo_flag': 0.27883765234773455, 'ss_flag': 0.20356049214588007, 'metal_spin_flag': 0.3358768797946762}), (9, {'geo_flag': 0.29148235447731025, 'ss_flag': 0.17844423891719752, 'metal_spin_flag': 0.33223229077336636}), (10, {'geo_flag': 0.2686662162065242, 'ss_flag': 0.1284823474269025, 'metal_spin_flag': 0.31153834440113787}), (11, {'geo_flag': 0.30123777247236705, 'ss_flag': 0.12668202122902517, 'metal_spin_flag': 0.32621754221650295}), (12, {'geo_flag': 0.30824403278242846, 'ss_flag': 0.11976523479136811, 'metal_spin_flag': 0.30764911772469455}), (13, {'geo_flag': 0.31863429112951375, 'ss_flag': 0.0988077790622127, 'metal_spin_flag': 0.27963200990384796})])
+root - CRITICAL - !!!!job killed at step 13!!!!!!
+root - INFO - Killed for the task of: ss_flag
+root - INFO - Reasons: a prediction of 0.0304 with LSE of 0.0988
