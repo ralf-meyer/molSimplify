@@ -278,6 +278,8 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
             history.read(path)
             if history.resub_number >= max_resub:
                 return True
+            if history.manually_abandoned:
+                return True
         else:
             return False
 
