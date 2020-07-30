@@ -34,6 +34,7 @@ class resub_history:
         self.jobscripts = []
         self.waiting = None #Path to another job that this job is waiting on
         self.path = path
+        self.manually_abandoned = False
         
     def save(self):
         if self.path == None:
@@ -62,6 +63,10 @@ class resub_history:
             if hasattr(saved,'waiting'):
                 self.waiting = saved.waiting
         self.path = path
+
+    def abandon(self):
+        self.manually_abandoned = True
+        self.status = 'Manually abandoned'
 
 class textfile:
     ##Class for importing textfiles in a searchable way.

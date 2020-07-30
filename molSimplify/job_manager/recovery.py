@@ -16,6 +16,16 @@ def load_history(PATH):
     history.read(PATH)
     return history
 
+def abandon_job(PATH):
+    # takes the path to either an outfile or the resub_history pickle
+    # sets the jobs status to be abandoned
+
+    #This function is never and should never be called by the job manager. 
+    #It is for manually use with particularly troublesome jobs
+    history = load_history(PATH)
+    history.abandon()
+    history.save()
+
 
 ## Archive the scr file so it isn't overwritten in future resubs
 #  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory

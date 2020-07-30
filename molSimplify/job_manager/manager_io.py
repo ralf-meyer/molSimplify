@@ -651,14 +651,14 @@ def write_orca_input(infile_dictionary):
 
 
 def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
-                    machine='gibraltar', cwd=False, use_molscontrol=False):
+                    machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
                                  machine=machine, cwd=cwd,
-                                 use_molscontrol=use_molscontrol)
+                                 use_molscontrol=use_molscontrol, queues = queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                              parallel_environment=parallel_environment, 
@@ -669,7 +669,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
-                             machine='gibraltar', cwd=False, use_molscontrol=False):
+                             machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
     if use_molscontrol and machine is not 'gibraltar':
         raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
@@ -681,7 +681,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                     '#$ -R y\n',
                     '#$ -l h_rt=' + time_limit + '\n',
                     '#$ -l h_rss=8G\n',
-                    '#$ -q gpus|gpusnew|gpusnewer\n',
+                    '#$ -q '+'|'.join(queues)+'\n',
                     '#$ -l gpus=1\n',
                     '#$ -pe smp 1\n',
                     "# -fin " + "%s.in\n" % name,
@@ -698,7 +698,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                     '#$ -R y\n',
                     '#$ -l h_rt=' + time_limit + '\n',
                     '#$ -l h_rss=8G\n',
-                    '#$ -q gpus|gpusnew|gpusnewer\n',
+                    '#$ -q '+'|'.join(queues)+'\n',
                     '#$ -l gpus=1\n',
                     '#$ -pe smp 1\n',
                     "# -fin " + "%s.in\n" % name,
