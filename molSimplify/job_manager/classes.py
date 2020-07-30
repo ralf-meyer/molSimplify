@@ -62,6 +62,8 @@ class resub_history:
                 self.jobscripts = saved.jobscripts
             if hasattr(saved,'waiting'):
                 self.waiting = saved.waiting
+            if hasattr(saved,'manually_abandoned'):
+                self.manually_abandoned = saved.manually_abandoned
         self.path = path
 
     def abandon(self):
