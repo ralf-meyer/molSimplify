@@ -319,7 +319,6 @@ def resub_spin(outfile_path):
         manager_io.write_input(infile_dict)
 
         manager_io.write_jobscript(name, machine=machine)
-\
         os.chdir(home)
         tools.qsub(root + '_jobscript')
         return True
