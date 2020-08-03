@@ -34,7 +34,7 @@ install:
   - conda install keras=2.3.1
   - conda install pandas
   - conda install scikit-learn=0.20.3
-  - conda build conda-recipe -c hjkgroup
+  # - conda build conda-recipe -c hjkgroup
   - conda install molsimplify --use-local
   # Needed for testing without Pybrain
   - conda install pytest
