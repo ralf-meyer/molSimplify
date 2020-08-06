@@ -14,8 +14,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
-
+molSimplify_path = os.path.join(os.path.dirname(__file__), '../../molSimplify')
+sys.path.insert(0, os.path.abspath(molSimplify_path))
 
 # -- Project information -----------------------------------------------------
 
@@ -68,7 +68,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', '**.ipynb']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -179,3 +179,9 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+# Napoleon settings
+napoleon_google_docstring = True
+
+# Latex equations options
+imgmath_image_format = 'svg'
+imgmath_font_size = 18
