@@ -283,15 +283,19 @@ class mol3D:
         self.size = self.molsize()
         self.metal = False
 
-    # Aligns two molecules such that the coordinates of two atoms overlap.
-    #
-    #  Second molecules is translated relative to the first.
-    #  No rotations are performed here. Use other functions for rotations.
-    #  @param self The object pointer
-    #  @param atom1 atom3D of reference atom in first molecule (not translated)
-    #  @param atom2 atom3D of reference atom in second molecule (translated)
     def alignmol(self, atom1, atom2):
-        # get distance vector between atoms 1,2
+        """Aligns two molecules such that the coordinates of two atoms overlap.
+        Second molecule is translated relative to the first. No rotations are 
+        performed. Use other functions for rotations. Moves the mol3D class.
+        
+        Parameters
+        ----------
+            atom1 : atom3D
+                atom3D of reference atom in first molecule.
+            atom2 : atom3D
+                atom3D of reference atom in second molecule.
+           
+        """
         dv = atom2.distancev(atom1)
         self.translate(dv)
 
@@ -305,6 +309,24 @@ class mol3D:
     #  @param idx2 Index of anchor atom
     #  @param d New bond length in Angstroms
     def BCM(self, idx1, idx2, d):
+        """Performs bond centric manipulation (same as Avogadro, stretching
+        and squeezing bonds). A submolecule is translated along the bond axis 
+        connecting it to an anchor atom.
+
+        Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom.
+            d : float
+                Bond distance in angstroms.
+
+        >>> complex_mol.BCM(1, 0, 1.5) # Set distance between atoms 0 and 1 to be 1.5 angstroms. Move atom 1.
+        """  
+
         bondv = self.getAtom(idx1).distancev(self.getAtom(idx2))  # 1 - 2
         # compute current bond length
         u = 0.0
@@ -316,21 +338,24 @@ class mol3D:
         submolidxes = self.findsubMol(idx1, idx2)
         for submolidx in submolidxes:
             self.getAtom(submolidx).translate(dR)
-        # for i in self.getBondedAtoms(idx1):
-        #     if i != idx2:
-        #         self.getAtom(i).translate(dR)
-        # self.getAtom(idx1).translate(dR)
 
-    # Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
-    #
-    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
-    #
-    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param d New bond length in Angstroms
     def BCM_opt(self, idx1, idx2, d):
+        """Performs bond centric manipulation (same as Avogadro, stretching
+        and squeezing bonds). A submolecule is translated along the bond axis 
+        connecting it to an anchor atom. Performs force field optimization
+        after, freezing the moved bond length.
+
+        Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom.
+            d : float
+                Bond distance in angstroms.
+        """    
         self.convert2OBMol()
         OBMol = self.OBMol
         ff = openbabel.OBForceField.FindForceField('mmff94')
@@ -346,33 +371,35 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
-    # Computes coordinates of center of mass of molecule
-    #  @param self The object pointer
-    #  @return List of center of mass coordinates
     def centermass(self):
-        # OUTPUT
-        #   - pcm: vector representing center of mass
-        # initialize center of mass and mol mass
-        pmc = [0, 0, 0]
+        """Computes coordinates of center of mass of molecule.
+
+        Returns
+        -------
+            center_of_mass : list
+                Coordinates of center of mass. List of length 3: (X, Y, Z).
+        """
+
+        center_of_mass = [0, 0, 0]
         mmass = 0
         # loop over atoms in molecule
         if self.natoms > 0:
             for atom in self.atoms:
                 # calculate center of mass (relative weight according to atomic mass)
                 xyz = atom.coords()
-                pmc[0] += xyz[0] * atom.mass
-                pmc[1] += xyz[1] * atom.mass
-                pmc[2] += xyz[2] * atom.mass
+                center_of_mass[0] += xyz[0] * atom.mass
+                center_of_mass[1] += xyz[1] * atom.mass
+                center_of_mass[2] += xyz[2] * atom.mass
                 mmass += atom.mass
             # normalize
-            pmc[0] /= mmass
-            pmc[1] /= mmass
-            pmc[2] /= mmass
+            center_of_mass[0] /= mmass
+            center_of_mass[1] /= mmass
+            center_of_mass[2] /= mmass
         else:
-            pmc = False
+            center_of_mass = False
             print(
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
-        return pmc
+        return center_of_mass
 
     # Computes coordinates of center of symmetry of molecule
     #
@@ -380,24 +407,35 @@ class mol3D:
     #  @param self The object pointer
     #  @return List of center of symmetry coordinates
     def centersym(self):
+        """Computes coordinates of center of symmetry of molecule.
+        Identical to centermass, but not weighted by atomic masses.
+
+        Returns
+        -------
+            center_of_symmetry : list
+                Coordinates of center of symmetry. List of length 3: (X, Y, Z).
+        """
+
         # initialize center of mass and mol mass
-        pmc = [0, 0, 0]
+        center_of_symmetry = [0, 0, 0]
         # loop over atoms in molecule
         for atom in self.atoms:
             # calculate center of symmetry
             xyz = atom.coords()
-            pmc[0] += xyz[0]
-            pmc[1] += xyz[1]
-            pmc[2] += xyz[2]
+            center_of_symmetry[0] += xyz[0]
+            center_of_symmetry[1] += xyz[1]
+            center_of_symmetry[2] += xyz[2]
         # normalize
-        pmc[0] /= self.natoms
-        pmc[1] /= self.natoms
-        pmc[2] /= self.natoms
-        return pmc
+        center_of_symmetry[0] /= self.natoms
+        center_of_symmetry[1] /= self.natoms
+        center_of_symmetry[2] /= self.natoms
+        return center_of_symmetry
 
     # remove all openbabel bond order indo
     #  @param self The object pointer
     def cleanBonds(self):
+        """Removes all stored openbabel bond order information.
+        """
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         bonds_to_del = []
@@ -407,11 +445,11 @@ class mol3D:
         for i in bonds_to_del:
             self.OBMol.DeleteBond(i)
 
-    # Converts OBMol to mol3D
-    #
-    #  Generally used after openbabel operations, such as when initializing a molecule from a file or FF optimizing it.
-    #  @param self The object pointer
     def convert2mol3D(self):
+        """Converts OBMol class instance to mol3D class instance.
+        Generally used after openbabel operations, such as FF optimizing a molecule.
+        Updates the mol3D as necessary.
+        """
         # initialize again
         self.initialize()
         # get elements dictionary
@@ -427,13 +465,19 @@ class mol3D:
         # reset metal ID
         self.metal = False
 
-    # Converts mol3D to OBMol
-    #
-    #  Required for performing openbabel operations on a molecule, such as FF optimizations.
-    #  @param self The object pointer
-    #  @param force_clean bool force no bond info retention
-    #  @param ignoreX bool skip "X" atoms in mol3D conversion
     def convert2OBMol(self, force_clean=False, ignoreX=False):
+        """Converts mol3D class instance to OBMol class instance.
+        Stores as OBMol attribute. Necessary for force field optimizations
+        and other openbabel operations.
+
+        Parameters
+        ----------
+            force_clean : bool, optional
+                Force no bond info retention. Default is False.
+            ignoreX : bool, optional
+                Index of anchor atom. Default is False.
+        """
+
         # get BO matrix if exits:
         repop = False
 
@@ -468,13 +512,19 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
 
-    # Converts mol3D to OBMol through mol2 function.
-    #
-    #  Required for performing openbabel operations on a molecule, such as FF optimizations.
-    #  @param self The object pointer
-    #  @param force_clean bool force no bond info retention
-    #  @param ignoreX bool skip "X" atoms in mol3D conversion
     def convert2OBMol2(self, force_clean=False, ignoreX=False):
+        """Converts mol3D class instance to OBMol class instance, but uses mol2
+        function, so bond orders are not interpreted, but rather read through the mol2.
+        Stores as OBMol attribute. Necessary for force field optimizations
+        and other openbabel operations.
+
+        Parameters
+        ----------
+            force_clean : bool, optional
+                Force no bond info retention. Default is False.
+            ignoreX : bool, optional
+                Index of anchor atom. Default is False.
+        """
         # get BO matrix if exits:
         obConversion = openbabel.OBConversion()
         obConversion.SetInFormat('mol2')
@@ -511,6 +561,9 @@ class mol3D:
             self.BO_mat = BO_mat
 
     def resetBondOBMol(self):
+        """Repopulates the bond order matrix via openbabel. Interprets bond order matrix.
+        """
+
         if self.OBMol:
             BO_mat = self.populateBOMatrix()
             self.cleanBonds()
@@ -521,24 +574,27 @@ class mol3D:
         else:
             print("OBmol does not exist")
 
-    # Combines two molecules
-    #
-    #  Each atom in the second molecule is appended to the first while preserving orders.
-    #  @param self The object pointer
-    #  @param mol mol3D containing molecule to be added
-    #  @param list of tuples (ind1,ind2,order) bonds to add (optional)
-    #  @param dirty bool set to true for straight addition, not bond safe
-    #  @return mol3D contaning combined molecule
-    # def combine(self,mol):
-    #    cmol = self
-    #    n_one = cmol.natoms
-    #    n_two = mol.natoms
-    #    for atom in mol.atoms:
-    #        cmol.addAtom(atom)
-    #    cmol.graph = []
-    #    return cmol
-
     def combine(self, mol, bond_to_add=[], dirty=False):
+        """Combines two molecules. Each atom in the second molecule 
+        is appended to the first while preserving orders. Assumes
+        operation with a given mol3D instance, when handed a second mol3D instance.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance containing molecule to be added.
+            bond_to_add : list, optional
+                List of tuples (ind1,ind2,order) bonds to add. Default is empty.
+            dirty : bool, optional
+                Add atoms without worrying about bond orders. Default is False.
+        
+        Returns
+        -------
+            cmol : mol3D
+                New mol3D class containing the two molecules combined.
+
+        """
+        
         cmol = self
 
         if not dirty:
