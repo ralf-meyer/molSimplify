@@ -37,17 +37,238 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="classes-atom3d-module">
-<h2>Classes.atom3D module<a class="headerlink" href="#classes-atom3d-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes.atom3D">
+<span id="classes-atom3d-module"></span><h2>Classes.atom3D module<a class="headerlink" href="#module-Classes.atom3D" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Classes.atom3D.atom3D">
+<em class="property">class </em><code class="descclassname">Classes.atom3D.</code><code class="descname">atom3D</code><span class="sig-paren">(</span><em>Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="Classes.atom3D.atom3D.coords">
+<code class="descname">coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.coords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.distance">
+<code class="descname">distance</code><span class="sig-paren">(</span><em>atom2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.distancev">
+<code class="descname">distancev</code><span class="sig-paren">(</span><em>atom2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.distancev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.distancev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.ismetal">
+<code class="descname">ismetal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.ismetal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.ismetal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.mutate">
+<code class="descname">mutate</code><span class="sig-paren">(</span><em>newType</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.mutate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.mutate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.setcoords">
+<code class="descname">setcoords</code><span class="sig-paren">(</span><em>xyz</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.setcoords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.setcoords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.symbol">
+<code class="descname">symbol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.symbol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.symbol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.atom3D.atom3D.translate">
+<code class="descname">translate</code><span class="sig-paren">(</span><em>dxyz</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/atom3D.html#atom3D.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.atom3D.atom3D.translate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="classes-dft-obs-module">
-<h2>Classes.dft_obs module<a class="headerlink" href="#classes-dft-obs-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes.dft_obs">
+<span id="classes-dft-obs-module"></span><h2>Classes.dft_obs module<a class="headerlink" href="#module-Classes.dft_obs" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Classes.dft_obs.dft_observation">
+<em class="property">class </em><code class="descclassname">Classes.dft_obs.</code><code class="descname">dft_observation</code><span class="sig-paren">(</span><em>name</em>, <em>geopath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#dft_observation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.dft_observation" title="Permalink to this definition">¶</a></dt>
+<dd><p>DFT observations used to postprocess DFT results by measuring ligand properties</p>
+<dl class="method">
+<dt id="Classes.dft_obs.dft_observation.append_descriptors">
+<code class="descname">append_descriptors</code><span class="sig-paren">(</span><em>list_of_names</em>, <em>list_of_props</em>, <em>prefix</em>, <em>suffix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#dft_observation.append_descriptors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.dft_observation.append_descriptors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.dft_obs.dft_observation.get_coord">
+<code class="descname">get_coord</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#dft_observation.get_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.dft_observation.get_coord" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.dft_obs.dft_observation.get_descriptor_vector">
+<code class="descname">get_descriptor_vector</code><span class="sig-paren">(</span><em>lig_only</em>, <em>simple</em>, <em>name=False</em>, <em>loud=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#dft_observation.get_descriptor_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.dft_observation.get_descriptor_vector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.dft_obs.dft_observation.obtain_mol3d">
+<code class="descname">obtain_mol3d</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#dft_observation.obtain_mol3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.dft_observation.obtain_mol3d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.dft_obs.dft_observation.sety">
+<code class="descname">sety</code><span class="sig-paren">(</span><em>y_value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#dft_observation.sety"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.dft_observation.sety" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Classes.dft_obs.write_descriptor_csv">
+<code class="descclassname">Classes.dft_obs.</code><code class="descname">write_descriptor_csv</code><span class="sig-paren">(</span><em>list_of_runs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/dft_obs.html#write_descriptor_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.dft_obs.write_descriptor_csv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="classes-globalvars-module">
-<h2>Classes.globalvars module<a class="headerlink" href="#classes-globalvars-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes.globalvars">
+<span id="classes-globalvars-module"></span><h2>Classes.globalvars module<a class="headerlink" href="#module-Classes.globalvars" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Classes.globalvars.globalvars">
+<em class="property">class </em><code class="descclassname">Classes.globalvars.</code><code class="descname">globalvars</code><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="Classes.globalvars.globalvars.add_custom_path">
+<code class="descname">add_custom_path</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.add_custom_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.add_custom_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.amass">
+<code class="descname">amass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.amass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.amass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.bbcombs_mononuc">
+<code class="descname">bbcombs_mononuc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.bbcombs_mononuc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.bbcombs_mononuc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.bondsdict">
+<code class="descname">bondsdict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.bondsdict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.bondsdict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.elementsbynum">
+<code class="descname">elementsbynum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.elementsbynum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.elementsbynum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.endict">
+<code class="descname">endict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.endict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.endict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.geo_check_dictionary">
+<code class="descname">geo_check_dictionary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.geo_check_dictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.geo_check_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.get_all_angle_refs">
+<code class="descname">get_all_angle_refs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.get_all_angle_refs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.get_all_angle_refs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.get_all_geometries">
+<code class="descname">get_all_geometries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.get_all_geometries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.get_all_geometries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.groups">
+<code class="descname">groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.metals">
+<code class="descname">metals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.metals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.metals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.metalslist">
+<code class="descname">metalslist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.metalslist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.metalslist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.periods">
+<code class="descname">periods</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.periods"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.periods" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.polarizability">
+<code class="descname">polarizability</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.polarizability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.polarizability" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.testTF">
+<code class="descname">testTF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.testTF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.testTF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.testmatplotlib">
+<code class="descname">testmatplotlib</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.testmatplotlib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.testmatplotlib" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.tribonddict">
+<code class="descname">tribonddict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.tribonddict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.tribonddict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.globalvars.globalvars.vdwrad">
+<code class="descname">vdwrad</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#globalvars.vdwrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.globalvars.vdwrad" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Classes.globalvars.mybash">
+<code class="descclassname">Classes.globalvars.</code><code class="descname">mybash</code><span class="sig-paren">(</span><em>cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/globalvars.html#mybash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.globalvars.mybash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="classes-ligand-module">
-<h2>Classes.ligand module<a class="headerlink" href="#classes-ligand-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes.ligand">
+<span id="classes-ligand-module"></span><h2>Classes.ligand module<a class="headerlink" href="#module-Classes.ligand" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="Classes.ligand.get_lig_symmetry">
+<code class="descclassname">Classes.ligand.</code><code class="descname">get_lig_symmetry</code><span class="sig-paren">(</span><em>mol</em>, <em>loud=False</em>, <em>htol=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#get_lig_symmetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.get_lig_symmetry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles ligand symmetry assignment
+input: mol (Mol3D object)
+input: htol (Default 3, tolerance for hydrogens in matching ligands)
+input: loud (Default False, run ligand_assign_consistent with loud flag)
+output: outstring (String, ligand symmetry plane)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.ligand.ligand">
+<em class="property">class </em><code class="descclassname">Classes.ligand.</code><code class="descname">ligand</code><span class="sig-paren">(</span><em>master_mol</em>, <em>index_list</em>, <em>dent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#ligand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.ligand" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="Classes.ligand.ligand.get_lig_mol2">
+<code class="descname">get_lig_mol2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#ligand.get_lig_mol2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.ligand.get_lig_mol2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.ligand.ligand.obtain_mol3d">
+<code class="descname">obtain_mol3d</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#ligand.obtain_mol3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.ligand.obtain_mol3d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Classes.ligand.ligand_assign">
+<code class="descclassname">Classes.ligand.</code><code class="descname">ligand_assign</code><span class="sig-paren">(</span><em>mol</em>, <em>liglist</em>, <em>ligdents</em>, <em>ligcons</em>, <em>loud=False</em>, <em>name=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#ligand_assign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.ligand_assign" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.ligand.ligand_assign_consistent">
+<code class="descclassname">Classes.ligand.</code><code class="descname">ligand_assign_consistent</code><span class="sig-paren">(</span><em>mol</em>, <em>liglist</em>, <em>ligdents</em>, <em>ligcons</em>, <em>loud=False</em>, <em>name=False</em>, <em>use_z=False</em>, <em>eq_sym_match=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#ligand_assign_consistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.ligand_assign_consistent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.ligand.ligand_breakdown">
+<code class="descclassname">Classes.ligand.</code><code class="descname">ligand_breakdown</code><span class="sig-paren">(</span><em>mol</em>, <em>flag_loose=False</em>, <em>BondedOct=False</em>, <em>silent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/ligand.html#ligand_breakdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.ligand.ligand_breakdown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="classes-mgui-module">
 <h2>Classes.mGUI module<a class="headerlink" href="#classes-mgui-module" title="Permalink to this headline">¶</a></h2>
@@ -61,14 +282,84 @@
 <div class="section" id="classes-mol3d-module">
 <h2>Classes.mol3D module<a class="headerlink" href="#classes-mol3d-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="classes-partialcharges-module">
-<h2>Classes.partialcharges module<a class="headerlink" href="#classes-partialcharges-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes.partialcharges">
+<span id="classes-partialcharges-module"></span><h2>Classes.partialcharges module<a class="headerlink" href="#module-Classes.partialcharges" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="Classes.partialcharges.all_prop">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">all_prop</code><span class="sig-paren">(</span><em>xyzf</em>, <em>charge</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#all_prop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.all_prop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.fcharge">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">fcharge</code><span class="sig-paren">(</span><em>xyzf</em>, <em>charge</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#fcharge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.fcharge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.fdistance">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">fdistance</code><span class="sig-paren">(</span><em>xyzf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#fdistance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.fdistance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.features">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">features</code><span class="sig-paren">(</span><em>xyzf</em>, <em>charge</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.fpriority">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">fpriority</code><span class="sig-paren">(</span><em>xyzf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#fpriority"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.fpriority" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.fsym">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">fsym</code><span class="sig-paren">(</span><em>xyzf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#fsym"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.fsym" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.fvalency">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">fvalency</code><span class="sig-paren">(</span><em>xyzf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#fvalency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.fvalency" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Classes.partialcharges.scharge_ave">
+<code class="descclassname">Classes.partialcharges.</code><code class="descname">scharge_ave</code><span class="sig-paren">(</span><em>xyzf</em>, <em>charge</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/partialcharges.html#scharge_ave"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.partialcharges.scharge_ave" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="classes-rundiag-module">
-<h2>Classes.rundiag module<a class="headerlink" href="#classes-rundiag-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes.rundiag">
+<span id="classes-rundiag-module"></span><h2>Classes.rundiag module<a class="headerlink" href="#module-Classes.rundiag" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Classes.rundiag.run_diag">
+<em class="property">class </em><code class="descclassname">Classes.rundiag.</code><code class="descname">run_diag</code><a class="reference internal" href="_modules/Classes/rundiag.html#run_diag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.rundiag.run_diag" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="Classes.rundiag.run_diag.set_ANN">
+<code class="descname">set_ANN</code><span class="sig-paren">(</span><em>ANN_flag</em>, <em>ANN_reason=False</em>, <em>ANN_dict=False</em>, <em>catalysis_flag=False</em>, <em>catalysis_reason=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/rundiag.html#run_diag.set_ANN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.rundiag.run_diag.set_ANN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.rundiag.run_diag.set_dict_bl">
+<code class="descname">set_dict_bl</code><span class="sig-paren">(</span><em>dict_bl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/rundiag.html#run_diag.set_dict_bl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.rundiag.run_diag.set_dict_bl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.rundiag.run_diag.set_mol">
+<code class="descname">set_mol</code><span class="sig-paren">(</span><em>mol</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/rundiag.html#run_diag.set_mol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.rundiag.run_diag.set_mol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.rundiag.run_diag.set_sanity">
+<code class="descname">set_sanity</code><span class="sig-paren">(</span><em>sanity</em>, <em>min_distance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/rundiag.html#run_diag.set_sanity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.rundiag.run_diag.set_sanity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Classes.rundiag.run_diag.write_report">
+<code class="descname">write_report</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Classes/rundiag.html#run_diag.write_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Classes.rundiag.run_diag.write_report" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Classes">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Classes" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
