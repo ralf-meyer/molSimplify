@@ -31,39 +31,49 @@ except ImportError:
     qtflag = False
     pass
 
-
-# Euclidean distance between points
-#  @param R1 Point 1
-#  @param R2 Point 2
-#  @return Euclidean distance
-def distance(R1, R2):
-    dx = R1[0] - R2[0]
-    dy = R1[1] - R2[1]
-    dz = R1[2] - R2[2]
-    d = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
-    return d
-
-
-# Wrapper for executing bash commands
-#  @param cmd Command to be executed
-#  @return Stdout
-def mybash(cmd):
-    p = subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = []
-    while True:
-        line = p.stdout.readline()
-        stdout.append(line)
-        if line == '' and p.poll() != None:
-            break
-    return ''.join(stdout)
-
-
-# Class for molecules that will be used to manipulate coordinates and other properties
 class mol3D:
-    # Constructor
-    #  @param self The object pointer
+   """mol3D class instantiation.
+
+    Attributes
+    ----------
+        atoms (atom3D): List of atom3D class instances.
+        natoms (int): Number of atoms in the molecule.
+        mass (float): Atomic mass of molecule in amu.
+        size (float): Max dist from atom to center of mass.
+        charge (int): Charge assigned to molecule.
+        ffopt (str): When forcefield should be used. 'B' for before. A' for after. 'BA' for both.
+        OBMol (OBMol): OBMol class object for openbabel methods.
+        BO_mat (np.array): Bond order matrix.
+        BO_dict (dict): Bond order dictionary.
+        cat (list): List of connection atoms.
+        denticity (list of int): List of ligand denticities.
+        globs (dict): Dictionary of periodic table.
+
+    Example:
+    --------
+    How to read an XYZ file into a mol3D object.
+
+    >>> temp_mol = mol3D()
+    >>> temp_mol.readfromxyz('FilenameHere.xyz')
+    """
     def __init__(self, use_atom_specific_cutoffs=False):
+        """Summary line.
+
+        Extended description of function.
+
+        Parameters
+        ----------
+        arg1 : int
+            Description of arg1
+        arg2 : str
+            Description of arg2
+
+        Returns
+        -------
+        bool
+            Description of return value
+
+        """
         # List of atom3D objects
         self.atoms = []
         # Number of atoms
@@ -142,6 +152,15 @@ class mol3D:
     #  @param idx3 Index of anchor atom
     #  @param angle New bond angle in degree
     def ACM(self, idx1, idx2, idx3, angle):
+         """Performs angle centric manipulation. A submolecule is rotated about idx2.
+
+        Args:
+            idx1 (int): Index of bonded atom containing submolecule to be moved.
+            idx2 (int): Index of anchor atom 1.
+            idx3 (int): Index of anchor atom 2.
+            angle (float): New bond angle in degrees.
+            
+        """
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
         submol_to_move = mol3D()
@@ -230,7 +249,7 @@ class mol3D:
         if auto_populate_BO_dict and self.bo_dict:
             new_bo_dict = {}
             # Adjust indices in bo_dict to reflect insertion
-            for pair, order in self.bo_dict.items():
+            for pair, order in list(self.bo_dict.items()):
                 idx1, idx2 = pair
                 if idx1 >= index:
                     idx1 += 1
@@ -2467,7 +2486,7 @@ class mol3D:
         for i, atom in enumerate(self.atoms):
             if atom.name != atom.sym:
                 atom_types_mol2 = '.'+atom.name
-            elif atom.sym in atom_default_dict.keys():
+            elif atom.sym in list(atom_default_dict.keys()):
                 atom_types_mol2 = '.' + atom_default_dict[atom.sym]
             else:
                 atom_types_mol2 = ''
@@ -3429,11 +3448,11 @@ class mol3D:
         c_bo_dict = self.bo_dict.copy()
         delete_inds = np.array(
             [x for x in range(self.natoms) if x not in inds])
-        for key in self.bo_dict.keys():
+        for key in list(self.bo_dict.keys()):
             if any([True for x in key if x in delete_inds]):
                 del c_bo_dict[key]
         new_bo_dict = dict()
-        for key, val in c_bo_dict.items():
+        for key, val in list(c_bo_dict.items()):
             ind1 = key[0]
             ind2 = key[1]
             ind1 = ind1 - len(np.where(delete_inds < ind1)[0])
@@ -3592,7 +3611,7 @@ class mol3D:
             elif isinstance(self.bo_dict, dict):
                 # BO_dict will be prioritized over BO_mat
                 tmpgraph = np.copy(self.graph)
-                for key_val, value in self.bo_dict.items():
+                for key_val, value in list(self.bo_dict.items()):
                     if str(value).lower() == 'ar':
                         value = 1.5
                     elif str(value).lower() == 'am':
