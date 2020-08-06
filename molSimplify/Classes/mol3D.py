@@ -1,7 +1,7 @@
 # @file mol3D.py
 #  Defines mol3D class and contains useful manipulation/retrieval routines.
 #
-#  Written by Tim Ioannidis and JP Janet for HJK Group
+#  Written by HJK Group
 #
 #  Dpt of Chemical Engineering, MIT
 
@@ -32,48 +32,18 @@ except ImportError:
     pass
 
 class mol3D:
-   """mol3D class instantiation.
+    """Holds information about a molecule, used to do manipulations.
+    Reads information from structure file (XYZ, mol2) or is directly 
+    built from molsimplify. Please be cautious with periodic systems.
+    
+    Example instantiation of an octahedral iron-ammonia complex from an XYZ file:
 
-    Attributes
-    ----------
-        atoms (atom3D): List of atom3D class instances.
-        natoms (int): Number of atoms in the molecule.
-        mass (float): Atomic mass of molecule in amu.
-        size (float): Max dist from atom to center of mass.
-        charge (int): Charge assigned to molecule.
-        ffopt (str): When forcefield should be used. 'B' for before. A' for after. 'BA' for both.
-        OBMol (OBMol): OBMol class object for openbabel methods.
-        BO_mat (np.array): Bond order matrix.
-        BO_dict (dict): Bond order dictionary.
-        cat (list): List of connection atoms.
-        denticity (list of int): List of ligand denticities.
-        globs (dict): Dictionary of periodic table.
-
-    Example:
-    --------
-    How to read an XYZ file into a mol3D object.
-
-    >>> temp_mol = mol3D()
-    >>> temp_mol.readfromxyz('FilenameHere.xyz')
+    >>> complex_mol = mol3D()
+    >>> complex_mol.readfromxyz('fe_nh3_6.xyz')
+    
     """
+
     def __init__(self, use_atom_specific_cutoffs=False):
-        """Summary line.
-
-        Extended description of function.
-
-        Parameters
-        ----------
-        arg1 : int
-            Description of arg1
-        arg2 : str
-            Description of arg2
-
-        Returns
-        -------
-        bool
-            Description of return value
-
-        """
         # List of atom3D objects
         self.atoms = []
         # Number of atoms
@@ -142,6 +112,21 @@ class mol3D:
         self.dict_angle_linear = dict()
         self.use_atom_specific_cutoffs = use_atom_specific_cutoffs
 
+    def __repr__(self):
+        """Returns all bound methods of the mol3D class..
+        
+        Returns
+        -------
+            method_string : string
+                String of methods available in mol3D class.
+        """
+
+        method_string = "\nClass mol3D has the following methods:\n"
+        for method in dir(self):
+            if callable(getattr(self, method)):
+                method_string += method + '\n'
+        return method_string
+
     # Performs angle centric manipulation
     #
     #  A submolecule is rotated about idx2.
@@ -152,15 +137,23 @@ class mol3D:
     #  @param idx3 Index of anchor atom
     #  @param angle New bond angle in degree
     def ACM(self, idx1, idx2, idx3, angle):
-         """Performs angle centric manipulation. A submolecule is rotated about idx2.
+        """Performs angular movement on mol3D class. A submolecule is 
+        rotated about idx2. Operates directly on class.
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            idx3 : int
+                Index of anchor atom 2.
+            angle : float
+                New bond angle in degrees.
 
-        Args:
-            idx1 (int): Index of bonded atom containing submolecule to be moved.
-            idx2 (int): Index of anchor atom 1.
-            idx3 (int): Index of anchor atom 2.
-            angle (float): New bond angle in degrees.
-            
+        >>> complex_mol.ACM(2, 1, 0, 180) # Make atom 2 form a 180 degree angle with atoms 1 and 0.
         """
+
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
         submol_to_move = mol3D()
@@ -181,25 +174,27 @@ class mol3D:
             angle = 180 - angle
         submol_to_move = rotate_around_axis(
             submol_to_move, r1, u, theta - angle)
-        # print('atidxs_to_move are ' + str(atidxs_to_move))
         for i, atidx in enumerate(atidxs_to_move):
             asym = self.atoms[atidx].sym
             xyz = submol_to_move.getAtomCoords(i)
             self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
-        # mol.copymol3D(submol_to_move)
-        # self.deleteatoms(range(self.natoms))
-        # self.copymol3D(mol)
 
-    # Performs angle centric manipulation alnog a given axis
-    #
-    #  A submolecule is rotated about idx2.
-    #
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param u axis of rotation
-    #  @param angle New bond angle in degree
-    def ACM_axis(self, idx1, idx2, u, angle):
+    def ACM_axis(self, idx1, idx2, axis, angle):
+        """Performs angular movement about an axis on mol3D class. A submolecule 
+        is rotated about idx2.Operates directly on class.
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom.
+            axis : list
+                Direction vector of axis. Length 3 (X, Y, Z).
+            angle : float
+                New bond angle in degrees.
+        """
+
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
         submol_to_move = mol3D()
@@ -214,22 +209,29 @@ class mol3D:
         mol.copymol3D(submol_anchor)
         r0 = self.getAtom(idx1).coords()
         r1 = self.getAtom(idx2).coords()
-        submol_to_move = rotate_around_axis(submol_to_move, r1, u, angle)
-        # print('atidxs_to_move are ' + str(atidxs_to_move))
+        submol_to_move = rotate_around_axis(submol_to_move, r1, axis, angle)
         for i, atidx in enumerate(atidxs_to_move):
             asym = self.atoms[atidx].sym
             xyz = submol_to_move.getAtomCoords(i)
             self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
-        # mol.copymol3D(submol_to_move)
-        # self.deleteatoms(range(self.natoms))
-        # self.copymol3D(mol)
 
-    # Add atom to molecule
-    #
-    #  Added atom is appended to the end of the list.
-    #  @param self The object pointer
-    #  @param atom atom3D of atom to be added
     def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
+        """Adds an atom to the atoms attribute, which contains a list of 
+        atom3D class instances. 
+        
+        Parameters
+        ----------
+            atom : atom3D
+                atom3D class instance of added atom.
+            index : int, optional
+                Index of added atom. Default is None.
+            auto_populate_BO_dict : bool, optional
+                Populate bond order dictionary with newly added atom. Default is True.
+        
+        >>> C_atom = atom3D('C',[1, 1, 1])
+        >>> complex_mol.addAtom(C_atom) # Add carbon atom at cartesian position 1, 1, 1 to mol3D object. 
+        """
+
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
@@ -279,15 +281,6 @@ class mol3D:
         self.natoms += 1
         self.mass += atom.mass
         self.size = self.molsize()
-        self.metal = False
-
-    # Change type of atom in molecule
-    #
-    #  @param self The object pointer
-    #  @param atom_ind int index of atom
-    #  @param atom_type str type of the new atom
-    def changeAtomtype(self, atom_ind, atom_type):
-        self.atoms[atom_ind].sym = atom_type
         self.metal = False
 
     # Aligns two molecules such that the coordinates of two atoms overlap.
@@ -2548,20 +2541,6 @@ class mol3D:
         else:
             flag = False
         return (flag, min_dist_H, min_dist_nonH)
-
-    # Print methods
-    #  @param self The object pointer
-    #  @return String with methods
-    def __repr__(self):
-        # OUTPUT
-        #   - ss: string with all methods
-        # overloaded function
-        """ when calls mol3D object without attribute e.g. t """
-        ss = "\nClass mol3D has the following methods:\n"
-        for method in dir(self):
-            if callable(getattr(self, method)):
-                ss += method + '\n'
-        return ss
 
     # Initialize the geometry check dictionary according to the dict_oct_check_st.
     def geo_dict_initialization(self):
