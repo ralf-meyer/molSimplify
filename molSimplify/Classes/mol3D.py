@@ -1747,36 +1747,68 @@ class mol3D:
                 neighbor_list.append(neighbor_list)
         return neighbor_list
 
-    # Gets index of closest non-H atom to another atom
-    #  @param self The object pointer
-    #  @param atom0 atom3D of reference atom
-    #  @return Index of closest non-H atom
-    def getClosestAtomnoHs(self, atom0):
+    def getClosestAtomnoHs(self, ratom):
+        """Get atoms bonded to a specific atom3D class that are not hydrogen.
+
+        Parameters
+        ----------
+            ratom : atom3D
+                Reference atom3D class.
+
+        Returns
+        -------
+            idx : int 
+                Index of atom closest to reference atom.
+
+        """
         idx = 0
         cdist = 1000
         for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(atom0)
+            ds = atom.distance(ratom)
             if (ds < cdist) and atom.sym != 'H':
                 idx = iat
                 cdist = ds
         return idx
 
-    # Gets distance between two atoms in molecule
-    #  @param self The object pointer
-    #  @param idx Index of first atom
-    #  @param metalx Index of second atom
-    #  @return Distance between atoms
     def getDistToMetal(self, idx, metalx):
+        """Get distance between two atoms in a molecule, with the second one being a metal.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            metalx : int
+                Index of reference metal atom.
+
+        Returns
+        -------
+            d : float 
+                Distance between atoms in angstroms.
+
+        """
         d = self.getAtom(idx).distance(self.getAtom(metalx))
         return d
 
-    # Gets angle between atoms in molecule
-    #  @param self The object pointer
-    #  @param idx0 Index of first atom
-    #  @param idx1 Index of second (middle)
-    #  @param idx2 Index of third atom
-    #  @return angle between vectors formed by atom0->atom1 and atom2->atom1
     def getAngle(self, idx0, idx1, idx2):
+        """Get angle between three atoms identified by their indices.
+        Specifically, get angle between vectors formed by atom0->atom1 and atom2->atom1.
+
+        Parameters
+        ----------
+            idx0 : int
+                Index of first atom.
+            idx1 : int
+                Index of second (middle) atom.
+            idx2 : int
+                Index of third atom.
+
+        Returns
+        -------
+            angle : float 
+                Angle in degrees.
+
+        """
+
         coords0 = self.getAtomCoords(idx0)
         coords1 = self.getAtomCoords(idx1)
         coords2 = self.getAtomCoords(idx2)
@@ -1785,33 +1817,25 @@ class mol3D:
         angle = vecangle(v1, v2)
         return angle
 
-    # Gets index of closest non-H atom to another atom
-    #
-    #  Equivalent to getClosestAtomnoHs() except that the index of the reference atom is specified.
-    #  @param self The object pointer
-    #  @param atidx Index of reference atom
-    #  @return Index of closest non-H atom
-
-    def getClosestAtomnoHs2(self, atidx):
-        idx = 0
-        cdist = 1000
-        for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(self.getAtom(atidx))
-            if (ds < cdist) and atom.sym != 'H' and iat != atidx:
-                idx = iat
-                cdist = ds
-        return idx
-
-    # Initializes OBMol object from a file or SMILES string
-
-    #
-    #  Uses the obConversion tool and for files containing 3D coordinates (xyz,mol) and the OBBuilder tool otherwise (smiles).
-    #  @param self The object pointer
-    #  @param fst Name of input file
-    #  @param convtype Input filetype (xyz,mol,smi)
-    #  @param ffclean Flag for FF cleanup of generated structure (default False)
-    #  @return OBMol object
     def getOBMol(self, fst, convtype, ffclean=False):
+        """Get OBMol object from a file or SMILES string. If you have a mol3D,
+        then use convert2OBMol instead.
+
+        Parameters
+        ----------
+            fst : str
+                Name of input file.
+            convtype : str
+                Input filetype (xyz,mol,smi).
+            ffclean : bool, optional
+                Flag for forcefield cleanup of structure. Default is False.
+
+        Returns
+        -------
+            OBMol : OBMol 
+                OBMol class instance to be used with openbabel. Bound as .OBMol attribute.
+
+        """
         obConversion = openbabel.OBConversion()
         OBMol = openbabel.OBMol()
         if convtype == 'smistring':
@@ -1832,24 +1856,30 @@ class mol3D:
         self.OBMol = OBMol
         return OBMol
 
-    # Removes attributes from mol3D object
-    #  @param self The object pointer
     def initialize(self):
+        """Initialize the mol3D to an empty object.
+        """
+
         self.atoms = []
         self.natoms = 0
         self.mass = 0
         self.size = 0
         self.graph = []
 
-    # Calculates the largest distance between atoms of two molecules
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Largest distance between atoms in both molecules
     def maxdist(self, mol):
-        # INPUT
-        #   - mol: second molecule
-        # OUTPUT
-        #   - maxd: maximum distance between atoms of the 2 molecules
+        """Measure the largest distance between atoms in two molecules.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule.
+
+        Returns
+        -------
+            maxd : float 
+                Max distance between atoms of two molecules.
+
+        """
         maxd = 0
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1857,15 +1887,20 @@ class mol3D:
                     maxd = distance(atom1.coords(), atom0.coords())
         return maxd
 
-    # Calculates the smallest distance between atoms of two molecules
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Smallest distance between atoms in both molecules
     def mindist(self, mol):
-        # INPUT
-        #   - mol: second molecule
-        # OUTPUT
-        #   - mind: minimum distance between atoms of the 2 molecules
+        """Measure the smallest distance between atoms in two molecules.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules.
+
+        """
         mind = 1000
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1873,10 +1908,15 @@ class mol3D:
                     mind = distance(atom1.coords(), atom0.coords())
         return mind
 
-    # Calculates the smallest distance between atoms in the molecule
-    #  @param self The object pointer
-    #  @return Smallest distance between atoms in molecule
     def mindistmol(self):
+        """Measure the smallest distance between atoms in a single molecule.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules.
+
+        """
         mind = 1000
         for ii, atom1 in enumerate(self.atoms):
             for jj, atom0 in enumerate(self.atoms):
@@ -1885,11 +1925,20 @@ class mol3D:
                     mind = distance(atom1.coords(), atom0.coords())
         return mind
 
-    # Calculates the smallest distance from atoms in the molecule to a given point
-    #  @param self The object pointer
-    #  @param point List of coordinates of reference point
-    #  @return Smallest distance to point
     def mindisttopoint(self, point):
+        """Measure the smallest distance between an atom and a point.
+
+        Parameters
+        ----------
+            point : list
+                List of coordinates of reference point.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules.
+
+        """
         mind = 1000
         for atom1 in self.atoms:
             d = distance(atom1.coords(), point)
@@ -1897,13 +1946,20 @@ class mol3D:
                 mind = d
         return mind
 
-    # Calculates the smallest distance between non-H atoms of two molecules
-    #
-    #  Otherwise equivalent to mindist().
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Smallest distance between non-H atoms in both molecules
     def mindistnonH(self, mol):
+        """Measure the smallest distance between an atom and a non H atom in another molecule.
+        
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class of second molecule.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules that are not Hs.
+
+        """
         mind = 1000
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1912,10 +1968,16 @@ class mol3D:
                         mind = distance(atom1.coords(), atom0.coords())
         return mind
 
-    # Calculates the size of the molecule, as quantified by the max. distance between atoms and the COM.
-    #  @param self The object pointer
-    #  @return Molecule size (max. distance between atoms and COM)
     def molsize(self):
+        """Measure the size of the molecule, by quantifying the max distance
+        between atoms and center of mass.
+
+        Returns
+        -------
+            maxd : float 
+                Max distance between an atom and the center of mass.
+
+        """
         maxd = 0
         cm = self.centermass()
         for atom in self.atoms:
@@ -1923,14 +1985,22 @@ class mol3D:
                 maxd = distance(cm, atom.coords())
         return maxd
 
-    # Checks for overlap with another molecule
-    #
-    #  Compares pairwise atom distances to 0.85*sum of covalent radii
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @param silence Flag for printing warnings
-    #  @return Flag for overlap
-    def overlapcheck(self, mol, silence):
+    def overlapcheck(self, mol, silence=False):
+        """Measure the smallest distance between an atom and a point.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule.
+            silence : bool, optional
+                Flag for extra output. Default is False.
+
+        Returns
+        -------
+            overlap : bool 
+                Flag for whether two molecules are overlapping.
+
+        """
         overlap = False
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1946,26 +2016,21 @@ class mol3D:
                     break
         return overlap
 
-    # Checks for overlap with another molecule with increased tolerance
-    #
-    #  Compares pairwise atom distances to 1*sum of covalent radii
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Flag for overlap
-    def overlapcheckh(self, mol):
-        overlap = False
-        for atom1 in mol.atoms:
-            for atom0 in self.atoms:
-                if (distance(atom1.coords(), atom0.coords()) < 1.0):
-                    overlap = True
-                    break
-        return overlap
-
-    # Gets a matrix with bond orders from openbabel
-    #  @param self The object pointer
-    #  @param bonddict Flag for if the obmol bond dictionary should be saved
-    #  @return matrix of bond orders
     def populateBOMatrix(self, bonddict=False):
+        """Populate the bond order matrix using openbabel.
+
+        Parameters
+        ----------
+            bonddict : bool
+                Flag for if the obmol bond dictionary should be saved. Default is False.
+            
+        Returns
+        -------
+            molBOMat : np.array  
+                Numpy array for bond order matrix.
+
+        """
+
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         molBOMat = np.zeros((n, n))
@@ -1983,10 +2048,20 @@ class mol3D:
             self.bo_dict = bond_dict
             return (molBOMat)
 
-    # Gets a matrix with bond orders from openbabel augmented with molecular graph
-    #  @param self The object pointer
-    #  @return matrix of bond orders
     def populateBOMatrixAug(self):
+        """Populate the augmented bond order matrix using openbabel.
+
+        Parameters
+        ----------
+            bonddict : bool
+                Flag for if the obmol bond dictionary should be saved. Default is False.
+            
+        Returns
+        -------
+            molBOMat : np.array  
+                Numpy array for augmented bond order matrix.
+
+        """
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         molBOMat = np.zeros((n, n))
@@ -2005,34 +2080,40 @@ class mol3D:
                 molBOMat[error_idx[i].tolist()[0], error_idx[i].tolist()[1]] = 1
         return (molBOMat)
 
-    # Prints xyz coordinates to stdout
-    #
-    #  To write to file (more common), use writexyz() instead.
-    #  @param self The object pointer
     def printxyz(self):
+        """Print XYZ info of mol3D class instance to stdout. To write to file 
+        (more common), use writexyz() instead.
+        """
+
         for atom in self.atoms:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-
             print(ss)
 
-    # returns string of xyz coordinates
-    #
-    #  To write to file (more common), use writexyz() instead.
-    #  @param self The object pointer
     def returnxyz(self):
+        """Print XYZ info of mol3D class instance to stdout. To write to file 
+        (more common), use writexyz() instead.
+
+        Returns
+        -------
+            XYZ : string
+                String of XYZ information from mol3D class.
+        """
+
         ss = ''
         for atom in self.atoms:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return (ss)
 
-    # Load molecule from xyz file
-    #
-    #  Consider using getOBMol, which is more general, instead.
-    #  @param self The object pointer
-    #  @param filename Filename
     def readfromxyz(self, filename):
+        """Read XYZ into a mol3D class instance.
+
+        Parameters
+        -------
+            filename : string
+                String of path to XYZ file. Path may be local or global.
+        """
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
@@ -2063,12 +2144,17 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
-    # Load molecule from mol2 file
-    # Now accounts for bond orders as well as atom types (SYBYL)
-    # @param self The object pointer
-    # @param filename The name of the mol2file or string being read in
-    # @param readstring Whether a string of mol2 file is being passed as the filename
     def readfrommol2(self, filename, readstring=False):
+        """Read mol2 into a mol3D class instance. Stores the bond orders and atom types (SYBYL).
+
+        Parameters
+        -------
+            filename : string
+                String of path to XYZ file. Path may be local or global. May be read in as a string.
+            readstring : bool
+                Flag for deciding whether a string of mol2 file is being passed as the filename
+        """
+
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
@@ -2130,13 +2216,16 @@ class mol3D:
         else:
             self.graph = []
             self.bo_dict = []
-    # Load molecule from xyz file
-    #
-    #  Consider using getOBMol, which is more general, instead.
-    #  @param self The object pointer
-    #  @param filename Filename
 
     def readfromstring(self, xyzstring):
+        """Read XYZ from string.
+
+        Parameters
+        -------
+            xyzstring : string
+                String of XYZ file. 
+        """
+
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
@@ -2169,6 +2258,13 @@ class mol3D:
                 self.addAtom(atom)
 
     def readfromtxt(self, txt):
+        """Read XYZ from textfile.
+
+        Parameters
+        -------
+            txt : list 
+                List of lists that comes as a result of readlines.
+        """
         # print('!!!!', filename)
         globs = globalvars()
         en_dict = globs.endict()
@@ -2194,15 +2290,20 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
-    # Computes RMSD between two molecules
-    #
-    #  Note that this routine does not perform translations or rotations to align molecules.
-    #
-    #  To do so, use geometry.kabsch().
-    #  @param self The object pointer
-    #  @param mol2 mol3D of second molecule
-    #  @return RMSD between molecules, NaN if molecules have different numbers of atoms
     def rmsd(self, mol2):
+        """Compute the RMSD between two molecules. Does not align molecules.
+        For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2220,6 +2321,19 @@ class mol3D:
             return sqrt(rmsd)
 
     def geo_rmsd(self, mol2):
+        """Compute the RMSD between two molecules. Does not align molecules.
+        For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures.
+        """
         # print("==========")
         Nat0 = self.natoms
         Nat1 = mol2.natoms
@@ -2248,18 +2362,21 @@ class mol3D:
             return sqrt(rmsd)
         else:
             raise ValueError("Number of atom does not match between two mols.")
-
-    # Computes mean of absolute atom deviations
-    #
-    #  Like above, this routine does not perform translations or rotations to align molecules.
-    #
-    #  Use mol3D objects that do not use hydrogens
-    #
-    #  To do so, use geometry.kabsch().
-    #  @param self The object pointer
-    #  @param mol2 mol3D of second molecule
-    #  @return sum of absolute deviations of atoms between molecules, NaN if molecules have different numbers of atoms
+  
     def meanabsdev(self, mol2):
+        """Compute the mean absolute deviation (MAD) between two molecules. 
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            MAD : float
+                Mean absolute deviation between the two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2277,6 +2394,19 @@ class mol3D:
             return dev
 
     def maxatomdist(self, mol2):
+        """Compute the max atom distance between two molecules. 
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            dist_max : float
+                Maximum atom distance between two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
@@ -2292,6 +2422,19 @@ class mol3D:
             return dist_max
 
     def geo_maxatomdist(self, mol2):
+        """Compute the max atom distance between two molecules. 
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            dist_max : float
+                Maximum atom distance between two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2318,6 +2461,20 @@ class mol3D:
             return maxdist
 
     def rmsd_nonH(self, mol2):
+        """Compute the RMSD between two molecules, considering heavy atoms only.
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures ignoring hydrogens.
+        """
+
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2333,6 +2490,20 @@ class mol3D:
             return sqrt(rmsd)
 
     def maxatomdist_nonH(self, mol2):
+        """Compute the max atom distance between two molecules, considering heavy atoms only.
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures ignoring hydrogens.
+        """
+
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
@@ -2348,7 +2519,17 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calcCharges(self, charge=0, bond=False, method='QEq'):
+    def calcCharges(self, charge=0, method='QEq'):
+        """Compute the partial charges of a molecule using openbabel. 
+
+        Parameters
+        ----------
+            charge : int 
+                Net charge assigned to a molecule
+            method : str
+                Method to calculate partial charge. Default is 'QEq'.
+        """
+        
         self.convert2OBMol()
         self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)
