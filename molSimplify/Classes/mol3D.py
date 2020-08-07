@@ -3220,15 +3220,6 @@ class mol3D:
         self.dict_catoms_shape = dict_catoms_shape
         return dict_catoms_shape, catoms_arr
 
-    # Match the ligands of mol and init_mol by calling ligand_breakdown
-    # Input: init_mol: a mol3D object of the initial geometry
-    # flag_loose and BondedOct: default as False. Only used in Oct_inspection, not in geo_check.
-    # flag_lbd: Whether to apply ligand_breakdown for the optimized geometry. If False, we assume the
-    # indexing of the initial and optimized xyz file is the same.
-    # depth: The bond depth in obtaining the truncated mol.
-    # Output: liglist_shifted, liglist_init: list of list for each ligands, with one-to-one correspandance between
-    # initial and optimized mol.
-    # flag_match: A flag about whether the ligands of initial and optimized mol are exactly the same.
     def match_lig_list(self, init_mol, catoms_arr=None,
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3,
@@ -3372,18 +3363,41 @@ class mol3D:
             flag_match = True
         return liglist_shifted, liglist_init, flag_match
 
-    # Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
-    # Input: init_mol: a mol3D object of the initial geometry
-    # flag_loose and BondedOct: default as False. Only used in Oct_inspection, not in geo_check.
-    # flag_deleteH: whether to delete the hydrogen atoms in ligands comparison.
-    # flag_lbd: Whether to apply ligand_breakdown for the optimized geometry. If False, we assume the
-    # indexing of the initial and optimized xyz file is the same.
-    # depth: The bond depth in obtaining the truncated mol.
-    # Output: dict_lig_distort: rmsd_max and atom_dist_max
     def ligand_comp_org(self, init_mol, catoms_arr=None,
                         flag_deleteH=True, flag_loose=False,
                         flag_lbd=True, debug=False, depth=3,
                         BondedOct=False, angle_ref=False):
+        """Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            flag_deleteH : bool, optional,
+                Flag to delete Hs in ligand comparison. Default is True.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            depth : int, optional
+                Depth for truncated molecule. Default is 3.
+            check_whole : bool, optional
+                Flag for checking whole ligand.
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+
+        Returns
+        -------
+            dict_lig_distort : dict
+                Dictionary containing rmsd_max and atom_dist_max. 
+        
+        """
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         _, _, flag_match = self.match_lig_list(init_mol,
                                                catoms_arr=catoms_arr,
@@ -3469,13 +3483,26 @@ class mol3D:
         self.dict_lig_distort = dict_lig_distort
         return dict_lig_distort
 
-    def find_the_other_ind(self, arr, ind):
-        arr.pop(arr.index(ind))
-        return arr[0]
-
-    # To check whether a ligand is linear:
-    # The input ind should be one of the connecting atoms for the metal.
     def is_linear_ligand(self, ind):
+        """Check whether a ligand is linear.
+
+        Parameters
+        ----------
+            ind : int
+                index for one of the metal-coordinating atoms.
+
+        Returns
+        -------
+            flag : bool
+                True if the ligand is linear.
+            catoms : list
+                Atoms bonded to the index of interest.
+        
+        """
+
+        def find_the_other_ind(self, arr, ind):
+            arr.pop(arr.index(ind))
+            return arr[0]
         catoms = self.getBondedAtomsSmart(ind)
         metal_ind = self.findMetal()[0]
         flag = False
@@ -3508,6 +3535,21 @@ class mol3D:
         return flag, catoms
 
     def get_linear_angle(self, ind):
+        """Get linear ligand angle.
+
+        Parameters
+        ----------
+            ind : int
+                index for one of the metal-coordinating atoms.
+
+        Returns
+        -------
+            flag : bool
+                True if the ligand is linear.
+            ang : float
+                Get angle of linear ligand. 0 if not linear.
+        
+        """
         flag, catoms = self.is_linear_ligand(ind)
         if flag:
             vec1 = np.array(self.getAtomCoords(
@@ -3519,11 +3561,20 @@ class mol3D:
             ang = 0
         return flag, ang
 
-    # Get the ligand orientation for those are linear.
-    # Output: dict_angle_linear. For each ligand, whether they are linear or not and if it is, what the deviation from
-    # 180 degree is.
-    # dict_orientation: devi_linear_avrg and devi_linear_max
     def check_angle_linear(self, catoms_arr=None):
+        """Get the ligand orientation for linear ligands.
+
+        Parameters
+        ----------
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+
+        Returns
+        -------
+            dict_orientation : dict
+                Dictionary containing average deviation from linearity (devi_linear_avrg) and max deviation (devi_linear_max). 
+        
+        """
         dict_angle_linear = {}
         if not catoms_arr == None:
             pass
@@ -3552,13 +3603,28 @@ class mol3D:
         self.dict_orientation = dict_orientation
         return dict_angle_linear, dict_orientation
 
-    # Process the self.geo_dict to get the flag_oct and flag_list, setting dict_check as the cutoffs.
-    # Input: dict_check. The cutoffs of each geo_check metrics we have. A dictionary.
-    # num_coord: Expected coordination number.
-    # Output: flag_oct: good (1) or bad (0) structure.
-    # flag_list: metrics that are failed from being a good geometry.
-    def dict_check_processing(self, dict_check,
-                              num_coord=6, debug=False, silent=False):
+    def dict_check_processing(self, dict_check, num_coord=6, debug=False, silent=False):
+        """Process the self.geo_dict to get the flag_oct and flag_list, setting dict_check as the cutoffs.
+
+        Parameters
+        ----------
+            dict_check : dict
+                The cutoffs of each geo_check metrics we have.
+            num_coord : int, optional
+                Metal coordination number. Default is 6.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            silence : bool, optional
+                Flag for warning suppression. Default is False.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure.
+            flag_list : list
+                Metrics that are preventing a good geometry.
+
+        """
         self.geo_dict['num_coord_metal'] = int(self.num_coord_metal)
         self.geo_dict.update(self.dict_lig_distort)
         self.geo_dict.update(self.dict_catoms_shape)
@@ -3595,42 +3661,74 @@ class mol3D:
         self.flag_list = flag_list
         return flag_oct, flag_list, self.geo_dict
 
-    # Print the geo_dict after the check.
     def print_geo_dict(self):
+        """Print geometry check info after the check.
+        """
+        def print_dict(self, _dict):
+            for key, value in list(_dict.items()):
+                print(('%s: ' % key, value))
         print('========Geo_check_results========')
         print('--------coordination_check-----')
         print(('num_coord_metal:', self.num_coord_metal))
         print(('catoms_arr:', self.catoms))
         print('-------catoms_shape_check-----')
         _dict = self.dict_catoms_shape
-        self.print_dict(_dict)
+        print_dict(_dict)
         print('-------individual_ligand_distortion_check----')
         _dict = self.dict_lig_distort
-        self.print_dict(_dict)
+        print_dict(_dict)
         print('-------linear_ligand_orientation_check-----')
         _dict = self.dict_orientation
-        self.print_dict(_dict)
+        print_dict(_dict)
         print('=======End of printing geo_check_results========')
 
-    def print_dict(self, _dict):
-        for key, value in list(_dict.items()):
-            print(('%s: ' % key, value))
-
-    # Final geometry check call for octahedral structures.
-    # Input: init_mol. mol3D object for the inital geometry.
-    # dict_check, The cutoffs of each geo_check metrics we have. A dictionary.
-    # angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
-    # flag_catoms: whether or not to return the catoms arr. Default as False. True for the Oct_inspection
-    # catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
-    # Output: flag_oct: good (1) or bad (0) structure.
-    # flag_list: metrics that are failed from being a good geometry.
-    # dict_oct_info: self.geo_dict
     def IsOct(self, init_mol=None, dict_check=False,
               angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
               silent=False, use_atom_specific_cutoffs=True):
+        """Main geometry check method for octahedral structures
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            skip : list, optional
+                Geometry checks to skip. Default is False.
+            flag_deleteH : bool, optional,
+                Flag to delete Hs in ligand comparison. Default is True.
+            silent : bool, optional
+                Flag for warning suppression. Default is False.
+            use_atom_specific_cutoffs : bool, optional
+                Determine bonding with atom specific cutoffs.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+        
+        """
         self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
@@ -3716,13 +3814,43 @@ class mol3D:
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
-    # Final geometry check call for customerized structures. Once we have the custumed dict_check and angle_ref.
-    # Currently support one-site-empty octahedral.
-    # Inputs and outputs are the same as IsOct.
     def IsStructure(self, init_mol=None, dict_check=False,
                     angle_ref=False, num_coord=5,
                     flag_catoms=False, catoms_arr=None, debug=False,
                     skip=False, flag_deleteH=True):
+        """Main geometry check method for square pyramidal structures
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            skip : list, optional
+                Geometry checks to skip. Default is False.
+            flag_deleteH : bool, optional,
+                Flag to delete Hs in ligand comparison. Default is True.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+        
+        """
         self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
@@ -3798,11 +3926,51 @@ class mol3D:
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
-    # Used to track down the changing geo_check metrics in a DFT geometry optimization.
-    # With the catoms_arr always specified.
+
     def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=False,
                        std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                        dict_check_loose=False, BondedOct=True, debug=False):
+        """Used to track down the changing geo_check metrics in a DFT geometry optimization. 
+        Catoms_arr always specified.
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            std_not_use : list, optional
+                Geometry checks to skip. Default is False.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+            flag_oct_loose : int
+                Good (1) or bad (0) structures with loose cutoffs.
+            flag_list_loose : list 
+                Metrics that are preventing a good geometry with loose cutoffs.
+        
+        """
+
         self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
@@ -3867,11 +4035,49 @@ class mol3D:
                                                                              num_coord=6, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
-    # Used to track down the changing geo_check metrics in a DFT geometry optimization.
-    # With the catoms_arr always specified.
     def Structure_inspection(self, init_mol=None, catoms_arr=None, num_coord=5, dict_check=False,
                              std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                              dict_check_loose=False, BondedOct=True, debug=False):
+        """Used to track down the changing geo_check metrics in a DFT geometry optimization. Specifically
+        for a square pyramidal structure. Catoms_arr always specified.
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            std_not_use : list, optional
+                Geometry checks to skip. Default is False.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+            flag_oct_loose : int
+                Good (1) or bad (0) structures with loose cutoffs.
+            flag_list_loose : list 
+                Metrics that are preventing a good geometry with loose cutoffs.
+        
+        """
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
         if not angle_ref:
@@ -3938,6 +4144,13 @@ class mol3D:
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
     def get_fcs(self):
+        """ Get first coordination shell of a transition metal complex.
+
+        Returns
+        -------
+            fcs : list
+                List of first coordination shell indices.
+        """
         metalind = self.findMetal()[0]
         self.get_num_coord_metal(debug=False)
         catoms = self.catoms
@@ -3947,11 +4160,20 @@ class mol3D:
         fcs = [metalind] + catoms
         return fcs
 
-    # Recreate bo_dict with correct indicies
-    # @param self The object pointer
-    # @param inds The indicies of the selected submolecule to SAVE
-    # @return new_bo_dict The ported over dictionary with new indicies/bonds deleted
     def get_bo_dict_from_inds(self, inds):
+        """ Recreate bo_dict with correct indices
+
+        Parameters
+        ----------
+            inds : list
+                The indicies of the selected submolecule to SAVE
+
+        Returns
+        -------
+            new_bo_dict : dict
+                The ported over dictionary with new indicies/bonds deleted
+        """
+
         if not self.bo_dict:
             self.convert2OBMol2()
         c_bo_dict = self.bo_dict.copy()
@@ -3970,6 +4192,18 @@ class mol3D:
         return new_bo_dict
 
     def create_mol_with_inds(self, inds):
+        """ Create molecule with indices.
+
+        Parameters
+        ----------
+            inds : list
+                The indicies of the selected submolecule to SAVE
+
+        Returns
+        -------
+            molnew : mol3D
+                The new molecule built from the indices.
+        """
         molnew = mol3D()
         inds = sorted(inds)
         for ind in inds:
@@ -3985,10 +4219,19 @@ class mol3D:
                 np.delete(self.graph, delete_inds, 0), delete_inds, 1)
         return molnew
 
-    # Writes a psueduo-chemical formula
-    #
-    #  @param self The object pointer
     def make_formula(self, latex=True):
+        """ Get a chemical formula from the mol3D class instance.
+        
+        Parameters
+        ----------
+            latex : bool, optional 
+                Flag for if formula is going to go in a latex document. Default is True.
+
+        Returns
+        -------
+            formula : str
+                Chemical formula
+        """
         retstr = ""
         atomorder = self.globs.elementsbynum()
         unique_symbols = dict()
@@ -4011,6 +4254,19 @@ class mol3D:
         return retstr
 
     def read_smiles(self, smiles, ff="mmff94", steps=2500):
+        """ Read a smiles string and convert it to a mol3D class instance.
+        
+        Parameters
+        ----------
+            smiles : str
+                SMILES string to be interpreted by openbabel.
+            ff : str, optional
+                Forcefield to be used by openbabel. Default is mmff94.
+            steps : int, optional
+                Steps to be taken by forcefield. Default is 2500.
+
+        """
+
         # used to convert from one formst (ex, SMILES) to another (ex, mol3D )
         obConversion = openbabel.OBConversion()
 
@@ -4039,6 +4295,21 @@ class mol3D:
         self.convert2mol3D()
 
     def get_smiles(self, canonicalize=False, use_mol2 = False):
+        """ Read a smiles string and convert it to a mol3D class instance.
+        
+        Parameters
+        ----------
+            canonicalize : bool, optional
+                Openbabel canonicalization of smiles. Default is False.
+            use_mol2 : bool, optional
+                Use graph in mol2 instead of interpreting it. Default is False.
+
+        Returns
+        -------
+            smiles : str
+                SMILES from a mol3D object. Watch out for charges.
+
+        """
         # Used to get the SMILES string of a given mol3D object
         conv = openbabel.OBConversion()
         conv.SetOutFormat('smi')
@@ -4055,6 +4326,8 @@ class mol3D:
         return smi
 
     def mols_symbols(self):
+        """ Store symbols and their frequencies in symbols_dict attributes.
+        """
         self.symbols_dict = {}
         for atom in self.getAtoms():
             if not atom.symbol() in self.symbols_dict:
@@ -4063,6 +4336,14 @@ class mol3D:
                 self.symbols_dict[atom.symbol()] += 1
 
     def read_bonder_order(self, bofile):
+        """ Get bond order information from file.
+
+        Parameters
+        ----------
+            bofile : str
+                Path to a bond order file.
+
+        """
         globs = globalvars()
         bonds_organic = {'H': 1, 'C': 4, 'N': 3,
                          'O': 2, 'F': 1, 'P': 3, 'S': 2}
@@ -4099,6 +4380,15 @@ class mol3D:
                 self.bodavrg_dict.update({ii: np.mean(devi)})
 
     def read_charge(self, chargefile):
+        """ Get charge information from file.
+
+        Parameters
+        ----------
+            chargefile : str
+                Path to a charge file.
+                
+        """
+
         self.charge_dict = {}
         if os.path.isfile(chargefile):
             with open(chargefile, "r") as fo:
@@ -4110,6 +4400,21 @@ class mol3D:
             print(("chargefile does not exist.", chargefile))
 
     def get_mol_graph_det(self, oct=True, useBOMat=False):
+        """ Get molecular graph determinant.
+
+        Parameters
+        ----------
+            oct : bool, optional
+                Flag for whether the geometry is octahedral. Default is True.
+            useBOMat : bool, optional
+                Use bond order matrix in determinant computation.
+
+        Returns
+        -------
+            safedet : str
+                String containing the molecular graph determinant.
+
+        """
         globs = globalvars()
         amassdict = globs.amass()
         if not len(self.graph):
@@ -4162,6 +4467,30 @@ class mol3D:
         return safedet
 
     def get_symmetry_denticity(self, return_eq_catoms=False):
+        """ Get symmetry class of molecule.
+
+        Parameters
+        ----------
+            return_eq_catoms : bool, optional
+                Flag for if equatorial atoms should be returned. Default is False.
+
+        Returns
+        -------
+            eqsym : bool
+                Flag for equatorial symmetry.
+            maxdent : int
+                Maximum denticity in molecule.
+            ligdents : list
+                List of denticities in molecule.
+            homoleptic : bool
+                Flag for whether a geometry is homoleptic.
+            ligsymmetry : str
+                Symmetry class for ligand of interest.
+            eq_catoms : list
+                List of equatorial connection atoms.
+
+        """
+
         # self.writexyz("test.xyz")
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent, get_lig_symmetry
         liglist, ligdents, ligcons = ligand_breakdown(self)
@@ -4212,14 +4541,28 @@ class mol3D:
             return eqsym, maxdent, ligdents, homoleptic, ligsymmetry, eq_catoms
 
     def is_sandwich_compound(self):
-        '''
-        Check if a structure is sandwich compound.
-        Request: 1) complexes with ligands where there are at least
-        three connected non-metal atoms both connected to the metal.
-        2) These >three connected non-metal atoms are in a ring.
-        3) optional: the ring is aromatic
-        4) optional: all the atoms in the base ring are connected to the same metal.
-        '''
+        """ Evaluates whether a compound is a sandwich compound
+
+        Returns
+        -------
+            num_sandwich_lig : int
+                Number of sandwich ligands.
+            info_sandwich_lig : list
+                List of dictionaries about the sandwich ligands. 
+            aromatic : bool
+                Flag about whether the ligand is aromatic.
+            allconnect : bool
+                Flag for connected atoms in ring.
+
+        """
+        
+        # Check if a structure is sandwich compound.
+        # Request: 1) complexes with ligands where there are at least
+        # three connected non-metal atoms both connected to the metal.
+        # 2) These >three connected non-metal atoms are in a ring.
+        # 3) optional: the ring is aromatic
+        # 4) optional: all the atoms in the base ring are connected to the same metal.
+        
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         mol_fcs = obtain_truncation_metal(self, hops=1)
         metal_ind = mol_fcs.findMetal()[0]
@@ -4253,11 +4596,20 @@ class mol3D:
         return num_sandwich_lig, info_sandwich_lig, aromatic, allconnect
 
     def is_edge_compound(self):
-        '''
-        Check if a structure is edge compound.
-        Request: 1) complexes with ligands where there are at least
-        two connected non-metal atoms both connected to the metal.
-        '''
+        """Check if a structure is edge compound.
+
+        Returns
+        -------
+            num_edge_lig : int
+                Number of edge ligands.
+            info_edge_lig : list
+                List of dictionaries with info about edge ligands.
+
+        """
+        
+        # Request: 1) complexes with ligands where there are at least
+        # two connected non-metal atoms both connected to the metal.
+
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
         if not num_sandwich_lig or (num_sandwich_lig and not allconnect):
@@ -4283,12 +4635,36 @@ class mol3D:
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
                           skip=False):
-        '''
-        Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
+        """Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
         trigonal bipyramidal(5), square pyramidal(5, one-empty-site),
         octahedral(6), pentagonal bipyramidal(7))
 
-        '''
+        Parameters
+        ----------
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            num_coord : int, optional
+                Expected coordination number.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            skip : list, optional
+                Geometry checks to skip. Default is False.
+
+        Returns
+        -------
+            results : dictionary
+                Measurement of deviations from arrays.
+
+        """
+        
+
+        
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
