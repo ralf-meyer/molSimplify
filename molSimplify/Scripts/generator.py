@@ -43,7 +43,8 @@ from molSimplify.Scripts.inparse import (checkinput,
                                          parseinputfile)
 from molSimplify.Scripts.postproc import (postproc)
 from molSimplify.Scripts.rungen import (constrgen,
-                                        multigenruns)
+                                        multigenruns,
+                                        draw_supervisor)
 
 
 # This is the main way to generate structures completely within Python
@@ -191,8 +192,8 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
                 print(emsg)
                 del args
                 return emsg
-    # elif args.drawmode:
-    #    emsg = draw_supervisor(args,rundir)
+    elif args.drawmode:
+        emsg = draw_supervisor(args,rundir)
     # slab/place on slab?
     elif (args.slab_gen or args.place_on_slab):
         emsg = slab_module_supervisor(args, rundir)
