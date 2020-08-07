@@ -3106,7 +3106,7 @@ class mol3D:
         Parameters
         ----------
             angle_ref : bool, optional
-                Reference list of list for the expected angles (A-metal-B) of each connectioon atom.
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
             catoms_arr : Nonetype, optional
                 Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
 
@@ -3233,6 +3233,40 @@ class mol3D:
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3,
                        check_whole=False, angle_ref=False):
+        """Match the ligands of mol and init_mol by calling ligand_breakdown
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            depth : int, optional
+                Depth for truncated molecule. Default is 3.
+            check_whole : bool, optional
+                Flag for checking whole ligand.
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+
+        Returns
+        -------
+            liglist_shifted : list
+                List of lists containing all ligands from optimized molecule. 
+            liglist_init : list
+                List of lists containing all ligands from initial molecule. 
+            flag_match : bool
+                A flag about whether the ligands of initial and optimized mol are exactly the same. There is a one to one mapping.
+
+        """
+
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         from molSimplify.Classes.ligand import ligand_breakdown  # , ligand_assign
         flag_match = True
