@@ -127,15 +127,6 @@ class mol3D:
                 method_string += method + '\n'
         return method_string
 
-    # Performs angle centric manipulation
-    #
-    #  A submolecule is rotated about idx2.
-    #
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param idx3 Index of anchor atom
-    #  @param angle New bond angle in degree
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
         rotated about idx2. Operates directly on class.
@@ -299,15 +290,6 @@ class mol3D:
         dv = atom2.distancev(atom1)
         self.translate(dv)
 
-    # Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
-    #
-    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
-    #
-    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param d New bond length in Angstroms
     def BCM(self, idx1, idx2, d):
         """Performs bond centric manipulation (same as Avogadro, stretching
         and squeezing bonds). A submolecule is translated along the bond axis 
@@ -401,11 +383,6 @@ class mol3D:
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
         return center_of_mass
 
-    # Computes coordinates of center of symmetry of molecule
-    #
-    #  Identical to centermass, but not weighted by atomic masses.
-    #  @param self The object pointer
-    #  @return List of center of symmetry coordinates
     def centersym(self):
         """Computes coordinates of center of symmetry of molecule.
         Identical to centermass, but not weighted by atomic masses.
@@ -431,8 +408,6 @@ class mol3D:
         center_of_symmetry[2] /= self.natoms
         return center_of_symmetry
 
-    # remove all openbabel bond order indo
-    #  @param self The object pointer
     def cleanBonds(self):
         """Removes all stored openbabel bond order information.
         """
@@ -592,9 +567,8 @@ class mol3D:
         -------
             cmol : mol3D
                 New mol3D class containing the two molecules combined.
-
         """
-        
+
         cmol = self
 
         if not dirty:
@@ -642,49 +616,76 @@ class mol3D:
         self.metal = False
         return cmol
 
-    # Prints coordinates of all atoms in molecule
-    #  @param self The object pointer
-    #  @return String containing coordinates
     def coords(self):
-        # OUTPUT
-        #   - atom: string with xyz-style coordinates
-        ss = ''  # initialize returning string
-        ss += "%d \n\n" % self.natoms
-        for atom in self.atoms:
-            xyz = atom.coords()
-            ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-        return ss
+        """Method to obtain string of coordinates in molecule.
 
-    # Returns coordinates of all atoms in molecule as a list of lists
-    #  @param self The object pointer
-    #  @return List of all atoms in molecule
-    def coordsvect(self):
-        ss = []
+        Returns
+        -------
+            coord_string : string
+                String of molecular coordinates with atom identities in XYZ format.
+        """
+        coord_string = ''  # initialize returning string
+        coord_string += "%d \n\n" % self.natoms
         for atom in self.atoms:
             xyz = atom.coords()
-            ss.append(xyz)
-        return np.array(ss)
+            coord_string += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+        return coord_string
+
+    def coordsvect(self):
+        """Method to obtain array of coordinates in molecule.
+
+        Returns
+        -------
+            list_of_coordinates : np.array
+                Two dimensional numpy array of molecular coordinates. 
+                (N by 3) dimension, N is number of atoms.
+        """
+        list_of_coordinates = []
+        for atom in self.atoms:
+            xyz = atom.coords()
+            list_of_coordinates.append(xyz)
+        return np.array(list_of_coordinates)
 
     def symvect(self):
-        ss = []
+        """Method to obtain array of symbol vector of molecule.
+
+        Returns
+        -------
+            symbol_vector : np.array
+                1 dimensional numpy array of atom symbols. 
+                (N,) dimension, N is number of atoms.
+        """
+        symbol_vector = []
         for atom in self.atoms:
-            ss.append(atom.sym)
-        return np.array(ss)
+            symbol_vector.append(atom.sym)
+        return np.array(symbol_vector)
 
     def typevect(self):
-        ss = []
-        for atom in self.atoms:
-            ss.append(atom.name)
-        return np.array(ss)
+        """Method to obtain array of type vector of molecule.
 
-    # Copies properties and atoms of another existing mol3D object into current mol3D object.
-    #
-    #  WARNING: NEVER EVER USE mol3D = mol0 to do this. It doesn't work.
-    #
-    #  WARNING: ONLY USE ON A FRESH INSTANCE OF MOL3D.
-    #  @param self The object pointer
-    #  @param mol0 mol3D of molecule to be copied
+        Returns
+        -------
+            type_vector : np.array
+                1 dimensional numpy array of atom types (by name). 
+                (N,) dimension, N is number of atoms.
+        """
+        type_vector = []
+        for atom in self.atoms:
+            type_vector.append(atom.name)
+        return np.array(type_vector)
+
     def copymol3D(self, mol0):
+        """Copies properties and atoms of another existing mol3D object 
+        into current mol3D object. Should be performed on a new mol3D class
+        instance. WARNING: NEVER EVER USE mol3D = mol0 to do this. It DOES NOT
+        WORK. ONLY USE ON A FRESH INSTANCE OF MOL3D. Operates on fresh instance.
+        
+        Parameters
+        ----------
+            mol0 : mol3D
+                mol3D of molecule to be copied.
+        """
+
         # copy atoms
         for i, atom0 in enumerate(mol0.atoms):
             self.addAtom(atom3D(atom0.sym, atom0.coords(), atom0.name))
