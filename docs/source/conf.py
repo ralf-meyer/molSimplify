@@ -14,7 +14,7 @@
 #
 import os
 import sys
-molSimplify_path = os.path.join(os.path.dirname(__file__), '../../../molSimplify')
+molSimplify_path = os.path.join(os.path.dirname(__file__), '../../../../molSimplify')
 sys.path.insert(0, os.path.abspath(molSimplify_path))
 
 
