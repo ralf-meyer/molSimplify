@@ -703,10 +703,17 @@ class mol3D:
         self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
-    # Create molecular graph (connectivity matrix) from mol3D info
-    #  @param self The object pointer
-    #  @oct flag to control  special oct-metal bonds
     def createMolecularGraph(self, oct=True):
+        """Create molecular graph of a molecule given X, Y, Z positions.
+        Bond order is not interpreted by this. Updates graph attribute
+        of the mol3D class.
+
+        Parameters
+        ----------
+            oct : bool
+                Defines whether a structure is octahedral. Default is True.
+           
+        """
         if not len(self.graph):
             index_set = list(range(0, self.natoms))
             A = np.zeros((self.natoms, self.natoms))
@@ -735,12 +742,16 @@ class mol3D:
                         A[metal_ind, i] = 0
             self.graph = A
 
-    # Deletes specific atom from molecule
-    #
-    #  Also updates mass and number of atoms, and recreates the molecular graph.
-    #  @param self The object pointer
-    #  @param atomIdx Index of atom to be deleted
     def deleteatom(self, atomIdx):
+        """Delete a specific atom from the mol3D class given an index.
+
+        Parameters
+        ----------
+            atomIdx : int
+                Index for the atom3D to remove.
+
+        """
+
         if atomIdx < 0:
             atomIdx = self.natoms + atomIdx
         if atomIdx >= self.natoms:
@@ -762,22 +773,17 @@ class mol3D:
         self.metal = False
         del (self.atoms[atomIdx])
 
-    # Freezes specific atom in molecule
-    #
-    #  This is for the FF optimization settings.
-    #  @param self The object pointer
-    #  @param atomIdx Index of atom to be frozen
-    def freezeatom(self, atomIdx):
-        # INPUT
-        #   - atomIdx: index of atom to be frozen
-        self.atoms[atomIdx].frozen = True
-
-    # Deletes list of atoms from molecule
-    #
-    #  Loops over deleteatom, starting from the largest index so ordering is preserved.
-    #  @param self The object pointer
-    #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
+        """Delete a multiple atoms from the mol3D class given a set of indices.
+        Preserves ordering, starts from largest index.
+
+        Parameters
+        ----------
+            Alist : list
+                List of indices for atom3D instances to remove.
+
+        """
+
         for i in Alist:
             if i > self.natoms:
                 raise Exception('mol3D object cannot delete atom '+str(i) +
@@ -800,22 +806,41 @@ class mol3D:
             self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
         self.metal = False
 
-    # Freezes list of atoms in molecule
-    #
-    #  Loops over freezeatom(), starting from the largest index so ordering is preserved.
-    #  @param self The object pointer
-    #  @param Alist List of atom indices to be frozen
+    def freezeatom(self, atomIdx):
+        """Set the freeze attribute to be true for a given atom3D class.
+
+        Parameters
+        ----------
+            atomIdx : int
+                Index for atom to be frozen.
+           
+        """
+
+        self.atoms[atomIdx].frozen = True
+
     def freezeatoms(self, Alist):
-        # INPUT
-        #   - Alist: list of atoms to be frozen
+        """Set the freeze attribute to be true for a given set of atom3D classes, 
+        given their indices. Preserves ordering, starts from largest index.
+
+        Parameters
+        ----------
+            Alist : list
+                List of indices for atom3D instances to remove.
+
+        """
+
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
 
-    # Get ligand mol without hydrogens
-    #
-    # Loops over the atoms and makes a submol that contains
-    # all of the atoms without the hydrogens:
     def get_submol_noHs(self):
+        """Get the heavy atom only submolecule, with no hydrogens.
+
+        Returns
+        -------
+            mol_noHs : mol3D
+                mol3D class instance with no hydrogens.
+           
+        """
         keep_list = []
         for i in range(self.natoms):
             if self.getAtom(i).symbol() == 'H':
@@ -825,40 +850,44 @@ class mol3D:
         mol_noHs = self.create_mol_with_inds(keep_list)
         return mol_noHs
 
-    # Deletes all hydrogens from molecule.
-    #
-    #  Calls deleteatoms, so ordering of heavy atoms is preserved.
-    #  @param self The object pointer
     def deleteHs(self):
-        # metalind = self.findMetal()[0]
-        # metalcons = self.getBondedAtoms(metalind)
+        """Delete all hydrogens from a molecule. Preserves heavy atom ordering.
+        """
         hlist = []
         for i in range(self.natoms):
             if self.getAtom(i).sym == 'H':  # and i not in metalcons:
                 hlist.append(i)
         self.deleteatoms(hlist)
 
-    # Gets distance between centers of mass of two molecules
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Center of mass distance
     def distance(self, mol):
-        # INPUT
-        #   - mol: second molecule
-        # OUTPUT
-        #   - pcm: distance between centers of mass
+        """Measure the distance between center of mass of two molecules.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule to measure distance to.
+
+        Returns
+        -------
+            d_cm : float
+                Distance between centers of mass of two molecules.
+
+        """
+
         cm0 = self.centermass()
         cm1 = mol.centermass()
-        pmc = distance(cm0, cm1)
-        return pmc
+        d_cm = distance(cm0, cm1)
+        return d_cm
 
-    # Creates and saves an svg file of the molecule
-    #
-    #  Also renders it in a fake gui window if PyQt5 is installed.
-    #  Copied from mGUI function.
-    #  @param self The object pointer
-    #  @param filename Name of svg file
     def draw_svg(self, filename):
+        """Draw image of molecule and save to SVG.
+
+        Parameters
+        ----------
+            filename : str
+                Name of file to save SVG to.
+
+        """
         obConversion = openbabel.OBConversion()
         obConversion.SetOutFormat("svg")
         obConversion.AddOption("i", obConversion.OUTOPTIONS, "")
@@ -883,12 +912,23 @@ class mol3D:
         else:
             print('No PyQt5 found. SVG file written to directory.')
 
-    # Applies an ffopt on the mol3D 
-    #  @param self The object pointer
-    #  @param constraints --> list of atoms to be frozen in place
-    #  @return en --> energy of forcefield optimization. ffopt applies on molecule itself.
-    def apply_ffopt(self, constraints = False):
-        forcefield = openbabel.OBForceField.FindForceField('uff')
+    def apply_ffopt(self, constraints = False, ff='uff'):
+        """Apply forcefield optimization to a given mol3D class.
+
+        Parameters
+        ----------
+            constraints : list, optional
+                List of atom indices to employ cartesian constraints before ffopt.
+            ff : str, optional
+                Force field to be used in openbabel. Default is UFF.
+
+        Returns
+        -------
+            energy : float
+                Energy of the ffopt in kJ/mol.
+
+        """
+        forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         if constraints:
             for catom in range(constraints):
@@ -905,168 +945,270 @@ class mol3D:
         self.convert2mol3D()
         return en
 
-    # Finds closest metal atom to a given atom
-    #  @param self The object pointer
-    #  @param atom0 Index of reference atom
-    #  @return Index of closest metal atom
     def findcloseMetal(self, atom0):
+        """Find the nearest metal to a given atom3D class.
+        Returns heaviest element if no metal found.
+
+        Parameters
+        ----------
+            atom_idx : atom3D
+                atom3D class for atom of interest. 
+
+        Returns
+        -------
+            close_metal : int
+                index of the nearest metal, or heaviest atom if no metal found.
+           
+        """
         if not self.metals:
             self.findMetal()
 
-        mm = False
+        close_metal = False
         mindist = 1000
         for i in enumerate(self.metals):
             atom = self.getAtom(i)
             if distance(atom.coords(), atom0.coords()) < mindist:
                 mindist = distance(atom.coords(), atom0.coords())
-                mm = i
+                close_metal = i
         # if no metal, find heaviest atom
-        if not mm:
+        if not close_metal:
             maxaw = 0
             for i, atom in enumerate(self.atoms):
                 if atom.atno > maxaw:
-                    mm = i
-        return mm
+                    close_metal = i
+        return close_metal
 
-    # Finds metal atoms in molecule
-    #  @param self The object pointer
-    #  @return List of indices of metal atoms
     def findMetal(self):
+        """Find metal(s) in a mol3D class.
+
+        Returns
+        -------
+            metal_list : list
+                List of indices of metal atoms in mol3D.
+
+        """
         if not self.metals:
-            mm = []
+            metal_list = []
             for i, atom in enumerate(self.atoms):
                 if atom.ismetal():
-                    mm.append(i)
-            self.metals = mm
+                    metal_list.append(i)
+            self.metals = metal_list
         return (self.metals)
 
-    # Finds atoms in molecule with given symbol
-    #  @param self The object pointer
-    #  @param sym Desired element symbol
-    #  @return List of indices of atoms with given symbol
     def findAtomsbySymbol(self, sym):
-        mm = []
+        """Find all elements with a given symbol in a mol3D class.
+
+        Parameters
+        ----------
+            sym : str
+                Symbol of the atom of interest.
+
+        Returns
+        -------
+            atom_list : list
+                List of indices of atoms in mol3D with a given symbol.
+
+        """
+        atomlist = []
         for i, atom in enumerate(self.atoms):
             if atom.sym == sym:
-                mm.append(i)
-        return mm
+                atomlist.append(i)
+        return atomlist
 
-    # Finds a submolecule within the molecule given the starting atom and the separating atom
-    #
-    #  Illustration: H2A-B-C-DH2 will return C-DH2 if C is the starting atom and B is the separating atom.
-    #
-    #  Alternatively, if C is the starting atom and D is the separating atom, returns H2A-B-C.
-    #  @param self The object pointer
-    #  @param atom0 Index of starting atom
-    #  @param atomN Index of separating atom
-    #  @return List of indices of atoms in submolecule
-    def findsubMol(self, atom0, atomN, smart=False):
-        '''
-        mol: mol3D object
-        atom0: starting atom index. Note that atom0 cannot be the same as atomN
-        atomN: the atom index at which we break the graph.
-        '''
-        if atom0 == atomN:
+    def findsubMol(self, idx0, idxN, smart=False):
+
+        """Finds a submolecule within the molecule given the starting atom and the separating atom.
+        Illustration: H2A-B-C-DH2 will return C-DH2 if C is the starting atom and B is the separating atom.
+        Alternatively, if C is the starting atom and D is the separating atom, returns H2A-B-C.
+
+        Parameters
+        ----------
+            idx0 : int
+                Index of starting atom.
+            idxN : int
+                Index of the separating atom.
+            smart : bool, optional
+                Decision of whether or not to use getBondedAtomsSmart. Default is False.
+
+        Returns
+        -------
+            subm : list
+                List of indices of atoms in submolecule.
+
+        """
+
+        if idx0 == idxN:
             raise ValueError("atom0 cannot be the same as atomN!")
         subm = []
-        conatoms = [atom0]
+        conatoms = [idx0]
         if not smart:
-            conatoms += self.getBondedAtoms(atom0)  # connected atoms to atom0
+            conatoms += self.getBondedAtoms(idx0)  # connected atoms to idx0
         else:
-            conatoms += self.getBondedAtomsSmart(atom0)
-        if atomN in conatoms:
-            conatoms.remove(atomN)  # check for atomN and remove
+            conatoms += self.getBondedAtomsSmart(idx0)
+        if idxN in conatoms:
+            conatoms.remove(idxN)  # check for idxN and remove
         subm += conatoms  # add to submolecule
-        # print('conatoms', conatoms)
         while len(conatoms) > 0:  # while list of atoms to check loop
             for atidx in subm:  # loop over initial connected atoms
-                if atidx != atomN:  # check for separation atom
+                if atidx != idxN:  # check for separation atom
                     if not smart:
                         newcon = self.getBondedAtoms(atidx)
                     else:
                         newcon = self.getBondedAtomsSmart(atidx)
                     if atomN in newcon:
-                        newcon.remove(atomN)
+                        newcon.remove(idxN)
                     for newat in newcon:
                         if newat not in conatoms and newat not in subm:
                             conatoms.append(newat)
                             subm.append(newat)
                 if atidx in conatoms:
                     conatoms.remove(atidx)  # remove from list to check
-        # subm.sort()
         return subm
 
-    # Gets an atom with specified index
-    #  @param self The object pointer
-    #  @param idx Index of desired atom
-    #  @return atom3D of desired atom
     def getAtom(self, idx):
+        """Get atom with a given index.
+
+        Parameters
+        ----------
+            idx : int
+                Index of desired atom.
+
+        Returns
+        -------
+            atom : atom3D
+                atom3D class for element at given index.
+
+        """
+
         return self.atoms[idx]
 
     def getAtomwithinds(self, inds):
+        """Get atoms with a given list of indices.
+
+        Parameters
+        ----------
+            idx : list
+                List of indices of desired atoms.
+
+        Returns
+        -------
+            atom_list : list
+                List of atom3D classes for elements at given indices.
+
+        """
+
         return [self.atoms[idx] for idx in inds]
 
-    # Gets atoms in molecule
-    #  @param self The object pointer
-    #  @return List of atoms in molecule
     def getAtoms(self):
+        """Get all atoms within a molecule.
+
+        Returns
+        -------
+            atom_list : list
+                List of atom3D classes for all elements in a mol3D.
+
+        """
+
         return self.atoms
 
-    # Gets number of unique elements in molecule
-    #  @param self The object pointer
-    #  @return List of symbols of unique elements in molecule
     def getAtomTypes(self):
+        """Get unique elements in a molecule
+
+        Returns
+        -------
+            unique_atoms_list : list
+                List of unique elements in molecule by symbol.
+
+        """
+
         unique_atoms_list = list()
         for atoms in self.getAtoms():
             if atoms.symbol() not in unique_atoms_list:
                 unique_atoms_list.append(atoms.symbol())
         return unique_atoms_list
 
-    # Gets coordinates of atom with specified index
-    #  @param self The object pointer
-    #  @param idx Index of desired atom
-    #  @return List of coordinates of desired atom
     def getAtomCoords(self, idx):
-        # print(self.printxyz())
+        """Get atom coordinates with a given index.
+
+        Parameters
+        ----------
+            idx : int
+                Index of desired atom.
+
+        Returns
+        -------
+            coords : list
+                List of coordinates (length 3: [X, Y, Z]) for element at given index.
+
+        """
+
         return self.atoms[idx].coords()
 
-    # Gets atoms bonded to a specific atom
-    #
-    #  This is determined based on BOMatrix..
-    #
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsBOMatrix(self, ind, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsBOMatrix(self, idx):
+        """Get atoms bonded by an atom referenced by index, using the BO matrix.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+        ratom = self.getAtom(idx)
         self.convert2OBMol()
         OBMatrix = self.populateBOMatrix()
         # calculates adjacent number of atoms
         nats = []
-        for i in range(len(OBMatrix[ind])):
-            if OBMatrix[ind][i] > 0:
+        for i in range(len(OBMatrix[idx])):
+            if OBMatrix[idx][i] > 0:
                 nats.append(i)
         return nats
 
-    # Gets atoms bonded to a specific atom
-    #
-    #  This is determined based on augmented BOMatrix.
-    #
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsBOMatrixAug(self, ind, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsBOMatrixAug(self, idx):
+        """Get atoms bonded by an atom referenced by index, using the augmented BO matrix.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+        ratom = self.getAtom(idx)
         self.convert2OBMol()
         OBMatrix = self.populateBOMatrixAug()
         # calculates adjacent number of atoms
         nats = []
-        for i in range(len(OBMatrix[ind])):
-            if OBMatrix[ind][i] > 0:
+        for i in range(len(OBMatrix[idx])):
+            if OBMatrix[idx][i] > 0:
                 nats.append(i)
         return nats
 
     def getBondCutoff(self, atom, ratom):
+        """Get cutoff based on two atoms.
+
+        Parameters
+        ----------
+            atom : atom3D
+                atom3D class of first atom.
+            ratom : atom3D
+                atom3D class of second atom.
+
+        Returns
+        -------
+            distance_max : float
+                Cutoff based on atomic radii scaled by a factor.
+
+        """
+
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
             distance_max = min(2.75, distance_max)
@@ -1078,69 +1220,58 @@ class mol3D:
         if atom.symbol() == "H" and ratom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
-        # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-        #         atom.symbol() == "I" and ratom.symbol() == "I"):
-        #     # Very strict cutoff for bonds involving iodine
-        #     distance_max = 0.95 * (atom.rad + ratom.rad)
-        # if atom.symbol() == "I" and ratom.symbol() == "I":
-        #     distance_max = 3
-        # print(distance_max)
         return distance_max
 
-    # Gets atoms bonded to a specific atom
-    #
-    #  This is determined based on element-specific distance cutoffs, rather than predefined valences.
-    #
-    #  This method is ideal for metals because bond orders are ill-defined.
-    #
-    #  For pure organics, the OBMol class provides better functionality.
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtoms(self, ind, debug=False):
+    def getBondedAtoms(self, idx):
+        """Gets atoms bonded to a specific atom. This is determined based on 
+        element-specific distance cutoffs, rather than predefined valences.
+        This method is ideal for metals because bond orders are ill-defined.
+        For pure organics, the OBMol class provides better functionality.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
         if len(self.graph):
-            nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
+            nats = list(np.nonzero(np.ravel(self.graph[idx]))[0])
         else:
-            ratom = self.getAtom(ind)
+            ratom = self.getAtom(idx)
             # calculates adjacent number of atoms
             nats = []
             for i, atom in enumerate(self.atoms):
                 d = distance(ratom.coords(), atom.coords())
                 distance_max = self.getBondCutoff(atom, ratom)
-                # distance_max = 1.15 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "C" and not ratom.symbol() == "H":
-                #    distance_max = min(2.75, distance_max)
-                # if ratom.symbol() == "C" and not atom.symbol() == "H":
-                #    distance_max = min(2.75, distance_max)
-                # if ratom.symbol() == "H" and atom.ismetal:
-                #    # tight cutoff for metal-H bonds
-                #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "H" and ratom.ismetal:
-                #    # tight cutoff for metal-H bonds
-                #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-                #        atom.symbol() == "I" and ratom.symbol() == "I"):
-                #    distance_max = 1.05 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "I" and ratom.symbol() == "I":
-                #    distance_max = 3
-                #    # print(distance_max)
-                if (d < distance_max and i != ind):
+                if (d < distance_max and i != idx):
                     nats.append(i)
         return nats
 
-    # Gets atoms bonded to a specific atom with a given threshold
-    #
-    #  This is determined based on user-specific distance cutoffs.
-    #
-    #  This method is ideal for metals because bond orders are ill-defined.
-    #
-    #  For pure organics, the OBMol class provides better functionality.
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param threshold multiplier for the sum of covalent radii cut-off
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsByThreshold(self, ind, threshold, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsByThreshold(self, idx, threshold=1.15):
+        """Gets atoms bonded to a specific atom. This method uses a threshold 
+        for determination of a bond.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            threshold : float, optional
+                Scale factor for sum of covalent radii based cutoff. Default is 1.15. 
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
@@ -1161,28 +1292,33 @@ class mol3D:
                 # print(distance_max)
             if atom.symbol() == "I" or ratom.symbol() == "I":
                 distance_max = 0
-            if (d < distance_max and i != ind):
+            if (d < distance_max and i != idx):
                 nats.append(i)
         return nats
 
-    # Gets a user-specified number of atoms bonded to a specific atom
-    #
-    #  This is determined based on adjusting the threshold until the number of atoms specified is reached.
-    #
-    #  This method is ideal for metals because bond orders are ill-defined.
-    #
-    #  For pure organics, the OBMol class provides better functionality.
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param CoordNo the number of atoms specified
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsByCoordNo(self, ind, CoordNo, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsByCoordNo(self, idx, CoordNo=6):
+        """Gets atoms bonded to a specific atom by coordination number. 
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            CoordNo : int, optional
+                Coordination number of reference atom of interest. Default is 6. 
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         thresholds = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
         for i, threshold in enumerate(thresholds):
-            nats = self.getBondedAtomsByThreshold(ind, threshold)
+            nats = self.getBondedAtomsByThreshold(idx, threshold)
             if len(nats) == CoordNo:
                 break
         if len(nats) != CoordNo:
@@ -1194,30 +1330,35 @@ class mol3D:
 
         return nats
 
-    # Gets atoms bonded to a specific atom specialized for octahedral complexes
-    #
-    #  More sophisticated version of getBondedAtoms(), written by JP.
-    #
-    #  This method specifically forbids "intruder" C and H atoms that would otherwise be within the distance cutoff in tightly bound complexes.
-    #
-    #  It also limits bonding atoms to the CN closest atoms (CN = coordination number).
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param CN Coordination number of reference atom (default 6)
-    #  @param debug Debug flag (default False)
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
-        # INPUT
-        #   - ind: index of reference atom
-        #   - CN: known coordination number of complex (default 6)
-        # OUTPUT
-        #   - nats: list of indices of connected atoms
-        ratom = self.getAtom(ind)
-        # print('called slow function...')
-        # calculates adjacent number of atoms
+    def getBondedAtomsOct(self, idx, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
+        """Gets atoms bonded to an octahedrally coordinated metal. Specifically limitis intruder
+        C and H atoms that would otherwise be considered bonded in the distance cutoffs. Limits
+        bonding to the CN closest atoms (CN = coordination number).
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            CN : int, optional
+                Coordination number of reference atom of interest. Default is 6.
+            debug : bool, optional
+                Produce additional outputs for debugging. Default is False.
+            flag_loose : bool, optional
+                Use looser cutoffs to determine bonding. Default is False.
+            atom_specific_cutoffs: bool, optional
+                Use atom specific cutoffs to determing bonding. Default is False.
+
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+        ratom = self.getAtom(idx)
         nats = []
         if len(self.graph):
-            nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
+            nats = list(np.nonzero(np.ravel(self.graph[idx]))[0])
         else:
             for i, atom in enumerate(self.atoms):
                 valid = True  # flag
@@ -1229,16 +1370,6 @@ class mol3D:
                 else:
                     distance_max = 1.15 * (atom.rad + ratom.rad)
                 if atom.ismetal() or ratom.ismetal():
-                    # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
-                    # if atom.symbol() in dist_allowed.keys():
-                    #    max_pos_distance = dist_allowed[atom.symbol()]
-                    # elif ratom.symbol() in dist_allowed.keys():
-                    #    max_pos_distance = dist_allowed[ratom.symbol()]
-                    # else:
-                    #    max_pos_distance = 2.9
-
-                    # one the atoms is a metal!
-                    # use a longer max for metals
                     if flag_loose:
                         distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
                     else:
@@ -1250,7 +1381,7 @@ class mol3D:
                     if atom.symbol() == 'He' or ratom.symbol() == 'He':
                         distance_max = 1.6 * (atom.rad + ratom.rad)
                     # print("distance_max: ", distance_max, str(atom.symbol()))
-                    if d < distance_max and i != ind:
+                    if d < distance_max and i != idx:
                         # trim Hydrogens
                         if atom.symbol() == 'H' or ratom.symbol() == 'H':
                             if debug:
@@ -1258,74 +1389,65 @@ class mol3D:
                                 print((atom.symbol()))
                                 print((ratom.symbol()))
                             valid = False  # Hydrogen catom control
-                        if d < distance_max and i != ind and valid:
+                        if d < distance_max and i != idx and valid:
                             if atom.symbol() in ["C", "S", "N"]:
                                 if debug:
                                     print('\n')
                                     print(('this atom in is ' + str(i)))
-                                    print(
-                                        ('this atom sym is ' + str(atom.symbol())))
+                                    print(('this atom sym is ' + str(atom.symbol())))
                                     print(('this ratom in is ' +
                                            str(self.getAtom(i).symbol())))
-                                    print(
-                                        ('this ratom sym is ' + str(ratom.symbol())))
+                                    print(('this ratom sym is ' + str(ratom.symbol())))
                                 # in this case, atom might be intruder C!
-                                possible_inds = self.getBondedAtomsnotH(
-                                    ind)  # bonded to metal
+                                possible_idxs = self.getBondedAtomsnotH(idx)  # bonded to metal
                                 if debug:
-                                    print(('poss inds are' + str(possible_inds)))
-                                if len(possible_inds) > CN:
-                                    metal_prox = sorted(
-                                        possible_inds, key=lambda x: self.getDistToMetal(x, ind))
-
-                                    allowed_inds = metal_prox[0:CN]
-                                    # if
+                                    print(('poss inds are' + str(possible_idxs)))
+                                if len(possible_idxs) > CN:
+                                    metal_prox = sorted(possible_idxs, 
+                                        key=lambda x: self.getDistToMetal(x, idx))
+                                    allowed_idxs = metal_prox[0:CN]
                                     if debug:
-                                        print(('ind: ' + str(ind)))
+                                        print(('ind: ' + str(idx)))
                                         print(('metal prox: ' + str(metal_prox)))
-                                        print(
-                                            ('trimmed to: ' + str(allowed_inds)))
-                                        print(allowed_inds)
+                                        print(('trimmed to: ' + str(allowed_idxs)))
+                                        print(allowed_idxs)
                                         print(('CN is ' + str(CN)))
 
-                                    if not i in allowed_inds:
+                                    if not i in allowed_idxs:
                                         valid = False
                                         if debug:
-                                            print(
-                                                ('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds)))
+                                            print(('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_idxs)))
                                     else:
                                         if debug:
                                             print('Ok based on atom')
                             if ratom.symbol() in ["C", "S", "N"]:
                                 # in this case, ratom might be intruder C or S
-                                possible_inds = self.getBondedAtomsnotH(
-                                    i)  # bonded to metal
+                                possible_idxs = self.getBondedAtomsnotH(i)  # bonded to metal
                                 metal_prox = sorted(
-                                    possible_inds, key=lambda x: self.getDistToMetal(x, i))
-                                if len(possible_inds) > CN:
-                                    allowed_inds = metal_prox[0:CN]
+                                    possible_idxs, key=lambda x: self.getDistToMetal(x, i))
+                                if len(possible_idxs) > CN:
+                                    allowed_idxs = metal_prox[0:CN]
                                     if debug:
-                                        print(('ind: ' + str(ind)))
+                                        print(('ind: ' + str(idx)))
                                         print(('metal prox:' + str(metal_prox)))
-                                        print(
-                                            ('trimmed to ' + str(allowed_inds)))
-                                        print(allowed_inds)
-                                    if not ind in allowed_inds:
+                                        print(('trimmed to ' + str(allowed_idxs)))
+                                        print(allowed_idxs)
+                                    if not idx in allowed_idxs:
                                         valid = False
                                         if debug:
                                             print(('bond rejected based on ratom ' + str(
-                                                ind) + ' with symbol ' + ratom.symbol()))
+                                                idx) + ' with symbol ' + ratom.symbol()))
                                     else:
                                         if debug:
                                             print('ok based on ratom...')
                     else:
                         if debug:
                             print('distance too great')
-                if (d < distance_max and i != ind):
+                if (d < distance_max and i != idx):
                     if valid:
                         if debug:
                             print(('Valid atom  ind ' + str(i) + ' (' + atom.symbol() + ') and ' + str(
-                                ind) + ' (' + ratom.symbol() + ')'))
+                                idx) + ' (' + ratom.symbol() + ')'))
                             print((' at distance ' + str(d) +
                                    ' (which is less than ' + str(distance_max) + ')'))
                         nats.append(i)
@@ -1334,7 +1456,7 @@ class mol3D:
                             print(('atom  ind ' + str(i) +
                                    ' (' + atom.symbol() + ')'))
                             print(('has been disallowed from bond with ' +
-                                   str(ind) + ' (' + ratom.symbol() + ')'))
+                                   str(idx) + ' (' + ratom.symbol() + ')'))
                             print((' at distance ' + str(d) + ' (which would normally be less than ' + str(
                                 distance_max) + ')'))
                         if d < 2 and not atom.symbol() == 'H' and not ratom.symbol() == 'H':
@@ -1342,25 +1464,47 @@ class mol3D:
                                 'Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    # Gets atoms bonded to a specific atom using the molecular graph, or creates it
-    #
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param oct Flag to turn on special octahedral complex routines
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsSmart(self, ind, oct=True, geo_check=False):
+    def getBondedAtomsSmart(self, idx, oct=True):
+        """Get bonded atom with a given index, using the molecular graph. 
+        Creates graph if it does not exist.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            oct : bool, optional
+                Flag for turning on octahedral bonding routines. 
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        return list(np.nonzero(np.ravel(self.graph[ind]))[0])
+        return list(np.nonzero(np.ravel(self.graph[idx]))[0])
 
-    # Gets non-H atoms bonded to a specific atom
-    #
-    #  Otherwise identical to getBondedAtoms().
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsnotH(self, ind, metal_multiplier=1.35, nonmetal_multiplier=1.15):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsnotH(self, idx, metal_multiplier=1.35, nonmetal_multiplier=1.15):
+        """Get bonded atom with a given index, but do not count hydrogens.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            metal_multiplier : float, optional
+                Multiplier for sum of covalent radii of two elements containing metal.
+            nonmetal_multiplier : float, optional
+                Multiplier for sum of covalent radii of two elements not containing metal.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
@@ -1370,18 +1514,25 @@ class mol3D:
                 distance_max = metal_multiplier * (atom.rad + ratom.rad)
             else:
                 distance_max = nonmetal_multiplier * (atom.rad + ratom.rad)
-            if (d < distance_max and i != ind and atom.sym != 'H'):
+            if (d < distance_max and i != idx and atom.sym != 'H'):
                 nats.append(i)
         return nats
 
-    # Gets H atoms bonded to a specific atom
-    #
-    #  Otherwise identical to getBondedAtoms().
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsH(self, ind):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsH(self, idx):
+        """Get bonded atom with a given index, but ONLY count hydrogens.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded hydrogens.
+
+        """
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
@@ -1391,59 +1542,24 @@ class mol3D:
                 distance_max = 1.35 * (atom.rad + ratom.rad)
             else:
                 distance_max = 1.15 * (atom.rad + ratom.rad)
-            if (d < distance_max and i != ind and atom.sym == 'H'):
+            if (d < distance_max and i != idx and atom.sym == 'H'):
                 nats.append(i)
         return nats
 
-    # Gets C=C atoms in molecule
-    #  @param self The object pointer
-    #  @return List of atom3D objects of H atoms
-    def getC2Cs(self):
-        # values to store
-        c2clist = []
-        c2list = []
-        # self.createMolecularGraph(oct=False)
-        # order c2 carbons by priority
-        # c2list_and_prio = []
-        # for i in range(self.natoms):
-        #     if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
-        #         fatnos = sorted([self.getAtom(fidx).atno for fidx in self.getBondedAtoms(i)])[::-1]
-        #         fpriority = float('.'.join([str(fatnos[0]), ''.join([str(i) for i in fatnos[1:]])]))
-        #         c2list_and_prio.append((fpriority, i))
-        # c2 carbons
-        for i in range(self.natoms):
-            if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
-                c2list.append(i)
-        # c2list = [c2[0] for c2 in sorted(c2list_and_prio)[::-1]]
-        # for each c2 carbon, find if any of its neighbors are c2
-        for c2 in c2list:
-            fidxes = self.getBondedAtoms(c2)
-            c2partners = []
-            for fidx in fidxes:
-                if fidx in c2list:
-                    # c2partners.append(fidx)
-                    c2clist.append([c2, fidx])
-                    c2clist.append([fidx, c2])
-            # num_c2partners = len(c2partners)
-            # # if num_c2partners > 1:
-            # #     for c2partner in c2partners:
-            # #         score = 0
-            # #         sidxes = self.getBondedAtoms(fidx)
-            # #         for sidx in sidxes:
-            # # elif num_c2partners == 1:
-            # if num_c2partners > 1:
-            #     c2clist.append([c2, fidx],[fidx, c2])
-            #     continue
-            # else:
-            #     continue
-
-        return c2clist
-
-    # Gets atom that is furthest from the molecule COM along a given direction and returns the corresponding distance
-    #  @param self The object pointer
-    #  @param uP Search direction
-    #  @return Distance
     def getfarAtomdir(self, uP):
+        """Get atom furthest from center of mass in a given direction.
+
+        Parameters
+        ----------
+            uP : list
+                List of length 3 [dx, dy, dz] for direction vector.
+
+        Returns
+        -------
+            dist : float
+                Distance of atom from center of mass in angstroms.
+
+        """
         dd = 1000.0
         atomc = [0.0, 0.0, 0.0]
         for atom in self.atoms:
@@ -1453,13 +1569,23 @@ class mol3D:
                 atomc = atom.coords()
         return distance(self.centermass(), atomc)
 
-    # Gets atom that is furthest from the given atom
-    #  @param self The object pointer
-    #  @param reference index of reference atom
-    #  @param symbol type of atom to return
-    #  @return farIndex index of furthest atom
-
     def getFarAtom(self, reference, atomtype=False):
+        """Get atom furthest from a reference atom.
+        
+        Parameters
+        ----------
+            reference : int
+                Index of a reference atom.
+            atomtype : bool, optional
+                An element name for finding the furthest atom of a given element. Default is False.
+
+        Returns
+        -------
+            dist : float
+                Distance of atom from center of mass in angstroms.
+
+        """
+
         referenceCoords = self.getAtom(reference).coords()
         dd = 0.00
         farIndex = reference
@@ -1479,9 +1605,15 @@ class mol3D:
                 farIndex = ind
         return farIndex
 
-    # Gets list of atoms of the fragments in the mol3D
-    #  @param sel The object pointer
     def getfragmentlists(self):
+        """Get all independent molecules in mol3D.
+
+        Returns
+        -------
+            atidxes_total : list 
+                list of lists for atom indices comprising of each distinct molecule.
+
+        """
         atidxes_total = []
         atidxes_unique = set([0])
         atidxes_done = []
@@ -1507,21 +1639,37 @@ class mol3D:
 
         return atidxes_total
 
-    # Gets H atoms in molecule
-    #  @param self The object pointer
-    #  @return List of atom3D objects of H atoms
     def getHs(self):
+        """Get all hydrogens in a mol3D class instance.
+
+        Returns
+        -------
+            hlist : list 
+                List of indices of hydrogen atoms.
+
+        """
+
         hlist = []
         for i in range(self.natoms):
             if self.getAtom(i).sym == 'H':
                 hlist.append(i)
         return hlist
 
-    # Gets H atoms bonded to specific atom3D in molecule
-    #  @param self The object pointer
-    #  @param ratom atom3D of reference atom
-    #  @return List of atom3D objects of H atoms
     def getHsbyAtom(self, ratom):
+        """Get hydrogens bonded to a specific atom3D class.
+
+        Parameters
+        ----------
+            ratom : atom3D
+                Reference atom3D class.
+
+        Returns
+        -------
+            hlist : list 
+                List of indices of hydrogen atoms bound to reference atom3D.
+
+        """
+
         nHs = []
         for i, atom in enumerate(self.atoms):
             if atom.sym == 'H':
@@ -1530,14 +1678,19 @@ class mol3D:
                     nHs.append(i)
         return nHs
 
-    # Gets H atoms bonded to specific atom index in molecule
-    #
-    #  Trivially equivalent to getHsbyAtom().
-    #  @param self The object pointer
-    #  @param idx Index of reference atom
-    #  @return List of atom3D objects of H atoms
     def getHsbyIndex(self, idx):
-        # calculates adjacent number of hydrogens
+        """Get all hydrogens bonded to a given atom with an index.
+
+        Parameters
+        ----------
+            idx : index of reference atom.
+
+        Returns
+        -------
+            hlist : list 
+                List of indices of hydrogen atoms bound to reference atom.
+
+        """
         nHs = []
         for i, atom in enumerate(self.atoms):
             if atom.sym == 'H':
@@ -1546,73 +1699,53 @@ class mol3D:
                     nHs.append(i)
         return nHs
 
-    # Gets index of closest atom to reference atom.
-    #  @param self The object pointer
-    #  @param atom0 Index of reference atom
-    #  @return Index of closest atom
-    def getClosestAtom(self, atom0):
-        # INPUT
-        #   - atom0: reference atom3D
-        # OUTPUT
-        #   - idx: index of closest atom to atom0 from molecule
+    def getClosestAtom(self, ratom):
+        """Get hydrogens bonded to a specific atom3D class.
+
+        Parameters
+        ----------
+            ratom : atom3D
+                Reference atom3D class.
+
+        Returns
+        -------
+            idx : int 
+                Index of atom closest to reference atom.
+
+        """
+
         idx = 0
         cdist = 1000
         for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(atom0)
+            ds = atom.distance(ratom)
             if (ds < cdist):
                 idx = iat
                 cdist = ds
         return idx
 
-    def getClosestAtomlist(self, atom_idx, cdist=3):
-        # INPUT
-        #   - atom_index: reference atom index
-        #   - cdist: cutoff of neighbor distance
-        # OUTPUT
-        #   - neighbor_list: index of close atom to atom0 from molecule
+    def getClosestAtomlist(self, atom_idx, cdist=3.0):
+        """Get hydrogens bonded to a specific atom3D class.
+
+        Parameters
+        ----------
+            atom_idx : int
+                Reference atom index.
+            cdist : float, optional
+                Cutoff of neighbor distance in angstroms.
+
+        Returns
+        -------
+            neighbor_list : list 
+                List of neighboring atoms
+
+        """
+        
         neighbor_list = []
         for iat, atom in enumerate(self.atoms):
             ds = atom.distance(self.atoms[atom_idx])
             if (ds < cdist):
                 neighbor_list.append(neighbor_list)
         return neighbor_list
-
-    # Gets point that corresponds to mask
-    #  @param self The object pointer
-    #  @param mask Identifier for atoms
-    #  @return Center of mass of mask
-    def getMask(self, mask):
-        globs = globalvars()
-        elements = globs.elementsbynum()
-        # check center of mass
-        ats = []
-        # loop over entries in mask
-        for entry in mask:
-            # check for center of mass
-            if ('com' in entry.lower()) or ('cm' in entry.lower()):
-                return self.centermass()
-            # check for range
-            elif '-' in entry:
-                at0 = entry.split('-')[0]
-                at1 = entry.split('-')[-1]
-                for i in range(int(at0), int(at1) + 1):
-                    ats.append(i - 1)  # python indexing
-            elif entry in elements:
-                ats += self.findAtomsbySymbol(entry)
-            else:
-                # try to convert to integer
-                try:
-                    t = int(entry)
-                    ats.append(t - 1)
-                except:
-                    return self.centermass()
-        maux = mol3D()
-        for at in ats:
-            maux.addAtom(self.getAtom(at))
-        if maux.natoms == 0:
-            return self.centermass()
-        else:
-            return maux.centermass()
 
     # Gets index of closest non-H atom to another atom
     #  @param self The object pointer
@@ -2189,7 +2322,7 @@ class mol3D:
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print(
-                "ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
+                "ERROR: RMSD can be calculated only for molecules with the same number of atoms.")
             return float('NaN')
         else:
             rmsd = 0
@@ -2205,7 +2338,7 @@ class mol3D:
         dist_max = 0
         if (Nat0 != Nat1):
             print(
-                "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms..")
+                "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.")
             return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
