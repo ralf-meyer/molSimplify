@@ -11,6 +11,7 @@ Welcome to molSimplify's documentation!
    :caption: API
 
    Classes
+   Scripts
 
 .. toctree::
    :caption: Useful Links
