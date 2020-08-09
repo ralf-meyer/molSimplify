@@ -11,11 +11,31 @@ from ast import literal_eval
 
 
 def ensure_dir(dirpath):
+    """Make sure a directory exists. Makes directory if not.
+
+    Parameters
+    ----------
+        dirpath : str
+            The name of the directory.
+        
+    """
     if not os.path.isdir(dirpath):
         os.makedirs(dirpath)
 
-
 def check_valid_outfile(path):
+    """Check if the outfile is a nohup.out file or slurm.out file instead of a real outfile.
+
+    Parameters
+    ----------
+        path : str
+            The path to the output file.
+
+    Returns
+    -------
+        validity : bool
+            Whether or not an output file is truly an output file. True if it is.
+        
+    """
     # The nohup.out file gets caught in the find statement
     # use this function so that we only get TeraChem.outs
     endpath = os.path.split(path)[-1]
@@ -26,8 +46,21 @@ def check_valid_outfile(path):
     else:
         return True
 
-
 def priority_sort(lst_of_lsts):
+    """This function ensures that each entry occurs in only one list. If an entry occurs in multiple lists, 
+    it is retained in the list which appears first in the list of lists.
+
+    Parameters
+    ----------
+        lst_of_lsts : list
+            The path to the output file.
+
+    Returns
+    -------
+        new_lst_of_lsts : list
+            New list of lists that is sorted.
+        
+    """
     # Takes a list of lists
     # This function ensures that each entry occurs in only one list
     # If an entry occurs in multiple lists, it is retained in the list which appears first in the list of lists
@@ -49,6 +82,26 @@ def priority_sort(lst_of_lsts):
     return new_lst_of_lsts
 
 def call_bash(string, error=False, version=1):
+    """This function makes a bash call based on a string.
+
+    Parameters
+    ----------
+        string : string
+            The bash call to be made in python.
+        error : bool, optional
+            Return error with the bash call. Default is False.
+        version : int
+            Call version. Version 1 splits the string and does not use the shell variable in subprocess. 
+            Version 2 does not split the string and uses shell = True.
+
+    Returns
+    -------
+        out : list
+            Output of bash call as a list of strings.
+        err : str
+            If error flag set, then error returned as a string.
+
+    """
     if version == 1:
         p = subprocess.Popen(string.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     elif version == 2:
@@ -69,6 +122,14 @@ def call_bash(string, error=False, version=1):
         return out
 
 def get_machine():
+    """Gets the identity of the machine job_manager is being run on.
+
+    Returns
+    -------
+        machine : str
+            Name of the machine being run on. 
+            
+    """
     # Gets the identity of the machine job_manager is being run on!
     hostname = call_bash('hostname')[0]
     if 'bridges.psc' in hostname:
@@ -84,17 +145,51 @@ def get_machine():
     return machine
 
 def get_username():
+    """Gets the identity of the user running jobs.
+
+    Returns
+    -------
+        user : str
+            Name of the user running jobs. 
+            
+    """
     user = call_bash('whoami')[0]
     # Gets the identify of the user who is using the job manager
     return user
 
 def convert_to_absolute_path(path):
-    if path[0] != '/':
-        path = os.path.join(os.getcwd(), path)
+    """This function takes a relative path and converts it to an absolute path.
 
-    return path
+    Parameters
+    ----------
+        path : str
+            The relative path.
+
+    Returns
+    -------
+        abspath : str
+            The absolute path.
+
+    """
+    if path[0] != '/':
+        abspath = os.path.join(os.getcwd(), path)
+
+    return abspath
 
 def create_summary(directory='in place'):
+    """This function creates a summary of the jobs in a given path.
+
+    Parameters
+    ----------
+        directory : str, optional
+            The path to the directory containing jobs. Default is in place.
+
+    Returns
+    -------
+        summary : pd.DataFrame
+            The dataframe of the summary as a pandas dataframe.
+
+    """
     # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
 
     outfiles = find('*.out', directory)
@@ -104,8 +199,26 @@ def create_summary(directory='in place'):
 
     return summary
 
-
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
+    """List jobs that are currently running.
+
+    Parameters
+    ----------
+        ids : bool, optional
+            Return job IDs.
+        home_directory : bool, optional
+            Give path to home directory. Default is in place.
+        parse_bundles : bool, optional
+            Look through bundled jobs. Default is False.
+
+    Returns
+    -------
+        names : list
+            Names of all of the jobs that are running.
+        job_ids : list
+            The job IDs for the jobs that are running. Only returned if ids set to True.
+
+    """
     #  @return A list of active jobs for the current user. By job name
 
     if (ids and parse_bundles) or (parse_bundles and not home_directory):
@@ -170,8 +283,15 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     return names
 
-
 def get_number_active():
+    """Gets number of active jobs in the queue. Only count jobs from current directory.
+
+    Returns
+    -------
+        active_jobs_len : int
+            Number of calculations that are running.
+
+    """
     # gets the number of jobs in the queue for this user, only counts jobs from this job directory
     active_jobs = list_active_jobs()
 
@@ -204,8 +324,15 @@ def get_number_active():
     else:
         return len(active_non_bundles)
 
-
 def get_total_queue_usage():
+    """Gets number of active jobs in the queue, independent of the current directory.
+
+    Returns
+    -------
+        active_jobs_len : int
+            Number of calculations that are running.
+
+    """
     # gets the number of jobs in the queue for this user, regardless of where they originate
     if get_machine() == 'gibraltar':
         jobs = call_bash("qstat -u '" + get_username() + "'", version=2)
@@ -218,8 +345,24 @@ def get_total_queue_usage():
 
     return len(jobs)
 
-
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
+    """Checks whether or not a directory is completed by the job manager.
+
+    Parameters
+    ----------
+        directory : str, optional
+            Directory to check for completeness. Default is in place.
+        max_resub : int, optional
+            Maximum number of resubmissions permitted. Default is 5.
+        configure_dict : dict, optional
+            Configure file read in as a dictionary. Default is False.
+
+    Returns
+    -------
+        results : dict
+            Results of checking the directory for completeness.
+
+    """
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find('*.out', directory)
     outfiles = list(filter(check_valid_outfile, outfiles))
@@ -356,8 +499,24 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
 
     return results
 
-
 def find(key, directory='in place', maxdepth=False):
+    """Uses the bash find command.
+
+    Parameters
+    ----------
+        key : str
+            Keyword to look for in find.
+        directory : str, optional
+            Directory to look for. Default is in place.
+        maxdepth : int, optional
+            Maximum depth to search tree. Default is False.
+
+    Returns
+    -------
+        output : list
+            Returns list containing all items returned by find.
+
+    """
     ## Looks for all files with a matching key in their name within directory
     #  @return A list of paths
     if directory == 'in place':
@@ -369,8 +528,21 @@ def find(key, directory='in place', maxdepth=False):
 
     return call_bash(bash)
 
-
 def qsub(jobscript_list):
+    """Takes a list of paths to jobscripts (like output by find) and submits them with qsub.
+    Handles cases where a single jobscript is submitted instead of a list.
+
+    Parameters
+    ----------
+        jobscript_list : list, str
+            List of jobscripts to submit, or singular jobscript as a string.
+
+    Returns
+    -------
+        stdouts : list
+            Stdouts returned by job submission for each job.
+
+    """
     ## Takes a list of paths to jobscripts (like output by find) and submits them with qsub
     # Handles cases where a single jobscript is submitted instead of a list
     if type(jobscript_list) != list:
@@ -395,8 +567,20 @@ def qsub(jobscript_list):
 
     return stdouts
 
-
 def check_original(job):
+    """Checks whether or not a job is an original job that will require derivative jobs.
+
+    Parameters
+    ----------
+        job : str
+            Name of current job.
+
+    Returns
+    -------
+        original : bool
+            Whether or not job is original. True if it is.
+
+    """
     # Returns true if this job is an original job
     # Returns false if this job is already a derivative job
 
@@ -411,8 +595,20 @@ def check_original(job):
     else:
         return True
 
-
 def check_short_single_point(job):
+    """Checks whether or not a job is a short single point job.
+
+    Parameters
+    ----------
+        job : str
+            Name of current job.
+
+    Returns
+    -------
+        sp : bool
+            Whether or not job is a short single point job. True if it is.
+
+    """
     name = os.path.split(job)[-1]
     name = name.rsplit('.', 1)[0]
     name = name.split('_')
@@ -423,8 +619,23 @@ def check_short_single_point(job):
     else:
         return False
 
-
 def extract_optimized_geo(PATH, custom_name=False):
+    """Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame.
+    Written in same directory as optim.xyz.
+
+    Parameters
+    ----------
+        PATH : str
+            Path to optim.xyz file to extract geometry.
+        custom_name : str, optional
+            Custom name for extracted geo. Default is False, will go to optimized.xyz.
+
+    Returns
+    -------
+        lines : list
+            Lines containing optimized geometry, in addition to writing file as optimized.xyz.
+
+    """
     # Given the path to an optim.xyz file, this will extract optimized.xyz, which contains only the last frame
     # The file is written to the same directory as contained optim.xyz
 
@@ -458,8 +669,15 @@ def extract_optimized_geo(PATH, custom_name=False):
 
     return lines
 
-
 def pull_optimized_geos(PATHs=[]):
+    """Given a PATH or list of PATHs to optim.xyz files, these will grab the optimized geometries and move them into a local folder called optimized_geos.
+
+    Parameters
+    ----------
+        PATH : list
+            List of paths to optim.xyz file to extract geometry.
+
+    """
     # Given a PATH or list of PATHs to optim.xyz files, these will grab the optimized geometries and move them into a local folder called optimized_geos
     if type(PATHs) != list:
         PATHs = [PATHs]
@@ -488,8 +706,24 @@ def pull_optimized_geos(PATHs=[]):
 
         shutil.move(os.path.join(os.path.split(Path)[0], 'optimized.xyz'), os.path.join(home, 'optimized_geos', name))
 
-
 def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=10):
+    """This function will bundle together jobscripts of short jobs.
+
+    Parameters
+    ----------
+        home_directory : str
+            Directory path of base jobs, where bundles will be placed.
+        jobscript_paths : list
+            List of paths to various jobscripts to be bundled.
+        max_bundle_size : int, optional
+            Number of jobscripts to be bundled together. Default is 10.
+
+    Returns
+    -------
+        output_jobscripts : list
+            List of paths to bundled jobscripts.
+
+    """
     number_of_bundles = int(float(len(jobscript_paths)) / float(max_bundle_size))
 
     bundles, i, many_bundles = [], 0, False
@@ -512,8 +746,23 @@ def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=10):
 
     return output_jobscripts
 
-
 def sub_bundle_jobscripts(home_directory, jobscript_paths):
+    """This function will bundle together a list of jobscripts. It writes the bundle folders. 
+    Records info in run directory.
+
+    Parameters
+    ----------
+        home_directory : str
+            Directory path of base jobs, where bundles will be placed.
+        jobscript_paths : list
+            List of paths to various jobscripts to be bundled.
+
+    Returns
+    -------
+        output_jobscripts : list
+            List of paths to bundled jobscripts.
+
+    """
     # Takes a list of jobscript paths, and bundles them into a single jobscript
     # Records information about which jobs were bundled together in the run's home directory
     if not os.path.isdir(os.path.join(home_directory, 'bundle')):
@@ -565,8 +814,20 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
     return os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1),
                         'bundle_' + str(max(existing_bundle_numbers) + 1))
 
-
 def prep_vertical_ip(path):
+    """This function prepares a vertical IP job for a base job.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+       
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of vertical IP jobs.
+
+    """
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical IP run
     # Returns a list of the PATH(s) to the jobscript(s) to start the vertical IP calculations(s)
     home = os.getcwd()
@@ -627,8 +888,20 @@ def prep_vertical_ip(path):
 
     return jobscripts
 
-
 def prep_vertical_ea(path):
+    """This function prepares a vertical EA job for a base job.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+       
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of vertical EA jobs.
+            
+    """
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical EA run
     # Returns a list of the PATH(s) to the jobscript(s) to start the vertical IP calculations(s)
     home = os.getcwd()
@@ -686,8 +959,22 @@ def prep_vertical_ea(path):
     os.chdir(home)
     return jobscripts
 
-
 def prep_solvent_sp(path, solvents=[78.9]):
+    """This function prepares a solvent job for a base job.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+        solvents : list, optional
+            List of solvent dielectrics to be considered. Default is 78.9.
+       
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of solvent jobs.
+            
+    """
     # Given a path to the outfile of a finished run, this preps the files for a single point solvent run
     # Uses the wavefunction from the gas phase calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
@@ -755,8 +1042,22 @@ def prep_solvent_sp(path, solvents=[78.9]):
     os.chdir(home)
     return jobscripts
 
-
 def prep_functionals_sp(path, functionalsSP):
+    """This function prepares functional variants for a base job. Performs single point at optimized geometry.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+        functionalsSP : list
+            Functionals for the derivative jobs.
+       
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of jobs with other functionals.
+            
+    """
     home = os.getcwd()
     path = convert_to_absolute_path(path)
     results = manager_io.read_outfile(path)
@@ -822,12 +1123,23 @@ def prep_functionals_sp(path, functionalsSP):
     os.chdir(home)
     return jobscripts
 
-
 def prep_general_sp(path, general_config):
-    '''
-    path: jobpath
-    general_config: dictionary of {index: {config}}
-    '''
+    """This function is to prepare a general single point job from a dictionary..
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+        general_config : dict
+            Dictionary of {index: {config}}. Should have single point configurations.
+       
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts for general single point jobs.
+            
+    """
+
     # ----sanity check and set up input config---
     allowed_keys = ["type", "functional", "solvent"]
     default = {"type": "energy", "functional": "b3lyp", "solvent": False}
@@ -951,8 +1263,20 @@ def prep_general_sp(path, general_config):
     os.chdir(home)
     return jobscripts
 
-
 def prep_thermo(path):
+    """This function is to prepare a thermo job given an output file.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+        
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of thermo jobs.
+            
+    """
     # Given a path to the outfile of a finished run, this preps the files for a thermo calculation
     # Uses the wavefunction from the previous calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
@@ -999,8 +1323,21 @@ def prep_thermo(path):
     os.chdir(home)
     return [os.path.join(PATH, name + '_jobscript')]
 
-
 def prep_ultratight(path):
+    """Given a path to the outfile of a finished run, this preps a run with tighter convergence criteria.
+    Uses the wavefunction and geometry from the previous calculation as an initial guess.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+        
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of ultratight jobs for solvent SP calcs.
+            
+    """
     # Given a path to the outfile of a finished run, this preps a run with tighter convergence criteria
     # Uses the wavefunction and geometry from the previous calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
@@ -1080,8 +1417,23 @@ def prep_ultratight(path):
 
         return [os.path.join(PATH, name + '_jobscript')]
 
-
 def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
+    """Given a path to the outfile of a finished run, this preps the files for hfx resampling.
+    Uses the wavefunction from the gas phase calculation as an initial guess.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+        hfx_values : list, optional
+            List of hartree fock exchange values to resample. Default is [0, 5, 10, 15, 20, 25, 30].
+        
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts HFX resampled calculations.
+            
+    """
     # Given a path to the outfile of a finished run, this preps the files for hfx resampling
     # Uses the wavefunction from the gas phase calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the resampling calculations(s)
