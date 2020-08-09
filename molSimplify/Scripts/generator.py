@@ -1,29 +1,9 @@
 # @file generator.py
 #  Main script that coordinates all parts of the program.
 #
-#  Written by Tim Ioannidis and JP Janet for HJK Group
+#  Written by Kulik Group
 #
-#  Dpt of Chemical Engineering, MIT
-
-#!/usr/bin/env python
-
-'''
-    Copyright 2017 Kulik Lab @ MIT
-
-    This file is part of molSimplify.
-    molSimplify is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published
-    by the Free Software Foundation, either version 3 of the License,
-    or (at your option) any later version.
-
-    molSimplify is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-    See the GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with molSimplify. If not, see http://www.gnu.org/licenses/.
-'''
+#  Department of Chemical Engineering, MIT
 
 import os
 import sys
@@ -45,25 +25,35 @@ from molSimplify.Scripts.postproc import (postproc)
 from molSimplify.Scripts.rungen import (constrgen,
                                         multigenruns)
 
-
-# This is the main way to generate structures completely within Python
-# @param input_dict Argument list in the form of a dictionary
-# @param argv Default argument list used to "fool" startgen into accepting input_dict
-# @param flag Flag for printing information
-# @param gui Flag for GUI
-# @return tuple containing three elements:
-#  (
-#  where the run folder would have been [str],
-#  Error message [bool or str],
-#  diagnostics class object, containing ANN results (this_diag.ANN_attributes) and
-#     mol3D object (this_diag.mol)
-#  )
 def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                       argv=['main.py', '-i', 'asdfasdfasdfasdf'],
                       flag=True,
                       gui=False):
+    """This is the main way to generate structures completely within Python.
+
+        Parameters
+        ----------
+            input_dict : dict
+                Argument list in the form of a dictionary.
+            argv : list
+                Default argument list used to "fool" startgen into accepting input_dict.
+            flag : bool, optional
+                Flag for printing information. Default is True.
+            gui : bool, optional
+                Flag for GUI. Default is False.
+
+        Returns
+        -------
+            strfiles : str
+                Folder containing the runs.
+            emsg : bool
+                Flag for error. If error, returns a string with error.
+            this_diag : rundiag 
+                Rundiag class instance that contains ANN attributes (this_diag.ANN_attributes) and a mol3D class instance (this_diag.mol).
+            
+    """
     # from molSimplify.Scripts.generator import startgen_pythonic
-    inputfile_str = '\n'.join([k + ' ' + v for k, v in input_dict.items()])
+    inputfile_str = '\n'.join([k + ' ' + v for k, v in list(input_dict.items())])
     strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=False)
     return (strfiles, emsg, this_diag)
 
@@ -73,6 +63,27 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
 #  @param gui Flag for GUI
 #  @return Error messages
 def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
+    """Coordinates subroutines.
+
+        Parameters
+        ----------
+            argv : list
+                Argument list.
+            flag : bool
+                Flag for printing information.
+            gui : bool
+                Flag for GUI.
+            inputfile_str : str, optional
+                Optional input passed in as a string. Default is None.
+            write_files : bool, optional
+                Flag for whether or not files should be written. Should set to false for pythonic generation.
+
+        Returns
+        -------
+            emsg : bool
+                Flag for error. If error, returns a string with error.
+
+    """
     emsg = False
     # check for configuration file
     homedir = os.path.expanduser("~")
