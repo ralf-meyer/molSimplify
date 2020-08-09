@@ -1,13 +1,9 @@
 # file structgen.py
 #  Main structure generation routine
 #
-#  Written by Tim Ioannidis for HJK Group
+#  Written by Kulik Group
 #
-#  Extended by JP Janet
-#
-#  Revised by Terry Gani
-#
-#  Dpt of Chemical Engineering, MIT
+#  Department of Chemical Engineering, MIT
 
 import sys
 from molSimplify.Scripts.distgeom import (GetConf)
@@ -67,12 +63,20 @@ import numpy
 from numpy import log, arccos, cross, dot, pi
 numpy.seterr(all='raise')
 
-
-# Gets all possible combinations for connection atoms in geometry in the case of forced order or unknown geometry
-# getbackbcombsall = "Get backbone combinations all"
-#  @param nums List of connection atoms
-#  @return List of possible backbone atom combinations
 def getbackbcombsall(nums):
+    """Gets all possible combinations for connection atoms in geometry in the case of forced order or unknown geometry.
+        
+        Parameters
+        ----------
+            nums : list
+                List of connection atoms.
+
+        Returns
+        -------
+            bbcombs : list
+                List of possible backbone atom combinations
+
+    """
     bbcombs = []
     for i in range(1, len(nums)+1):
         bbcombs += list(itertools.combinations(nums, i))
@@ -80,11 +84,24 @@ def getbackbcombsall(nums):
         bbcombs[i] = list(tup)
     return bbcombs
 
-# Gets a combination of backbone points that satisfies denticity and updates possible combinations
-#  @param backbatoms List of possible backbone atom combinations
-#  @param denticity Required denticity
-#  @return Selected combination, updated list of possible backbone atom combinations
 def getnupdateb(backbatoms, denticity):
+    """Gets a combination of backbone points that satisfies denticity and updates possible combinations.
+
+        Parameters
+        ----------
+            backbatoms : list
+                List of possible backbone atom combinations.
+            denticity : int
+                Denticity of ligand.
+
+        Returns
+        -------
+            batoms : list
+                Selected combination of backbone atoms.
+            backbatoms : list
+                Updated list of possible backbone atom combinations.
+
+    """
     dlist = []
     batoms = []
     # find matching combination
@@ -105,16 +122,40 @@ def getnupdateb(backbatoms, denticity):
         print('No more connecting points available..')
     return batoms, backbatoms
 
-# Initializes ANN
-#  @param args Namespace of arguments
-#  @param ligands List of ligands
-#  @param occs List of ligand occupations
-#  @param dents List of ligand denticities
-#  @param batslist Backbone points list
-#  @param tcats List of SMILES ligand connecting atoms
-#  @param licores Ligand dictionary
-#  @return ANN flag, predicted BL and other attributes
 def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
+    """Initializes ANN.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            ligands : list
+                List of ligands, given as names.
+            occs : list
+                List of ligand occupations (frequencies of each ligand).
+            dents : list
+                List of ligand denticities.
+            batslist : list
+                List of backbond points.
+            tcats : list 
+                List of SMILES ligand connecting atoms.
+            licores : dict
+                Ligand dictionary within molSimplify.
+
+        Returns
+        -------
+            ANN_flag : bool
+                Whether an ANN call was successful.
+            ANN_bondl : float
+                ANN predicted bond length.
+            ANN_reason : str
+                Reason for ANN failure, if failed. 
+            ANN_attributes : dict
+                Dictionary of predicted attributes of complex.
+            catalysis_flag : bool
+                Whether or not complex is compatible for catalytic ANNs.
+
+    """
     # initialize ANN
     ANN_attributes = dict()
     globs = globalvars()
@@ -165,12 +206,34 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 [item for items in batslist for item in items])*[False]
     return ANN_flag, ANN_bondl, ANN_reason, ANN_attributes, catalysis_flag
 
-
-# Initializes core and template mol3Ds and properties
-#  @param args Namespace of arguments
-#  @param cpoints_required Number of connecting points required
-#  @return mol3D of core, template, geometry, backbone atoms, coordination number, core reference atom index
 def init_template(args, cpoints_required, globs):
+    """Initializes core and template mol3Ds and properties.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            cpoints_required : int
+                Number of connecting points required.
+            globs : dict
+                Globalvars dictionary. Globalvars class in molSimplify.
+
+        Returns
+        -------
+            m3D : mol3D
+                Template complex mol3D instance.
+            core3D : mol3D 
+                Core mol3D instance. 
+            geom : str
+                Geometry used.
+            backbatoms : list
+                List of backbone atoms.
+            coord : int
+                Coordination number.
+            corerefatoms : mol3D
+                Core reference atom index, mol3D instance.
+
+    """
     # initialize core and template
     core3D = mol3D()
     m3D = mol3D()
@@ -328,14 +391,32 @@ def init_template(args, cpoints_required, globs):
                 core3D.charge = int(args.oxstate)
     return m3D, core3D, geom, backbatoms, coord, corerefatoms
 
-# Initializes ligand 3D geometry and properties
-#  @param args Namespace of arguments
-#  @param lig mol3D of ligand
-#  @param tcats List of SMILES ligand connecting atoms
-#  @param keepHs flag for keeping H atoms on connecting atoms
-#  @param i Ligand index
-#  @return mol3D of ligand, flag for pi-coordination, pi-coordinating atoms
 def init_ligand(args, lig, tcats, keepHs, i):
+    """Initializes ligand 3D geometry and properties.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            lig : mol3D
+                mol3D instance of the ligand.
+            tcats : list
+                List of SMILES ligand connecting atoms.
+            keepHs : bool
+                Flag for keeping H atoms on connecting atoms.
+            i : int
+                Ligand index.
+
+        Returns
+        -------
+            lig3D : mol3D
+                Ligand mol3D instance.
+            rempi : bool
+                Flag for pi coordination.
+            ligpiatoms : list
+                List of pi coordinating atoms.
+
+    """
     globs = globalvars()
     rempi = False
     # if SMILES string, copy connecting atoms list to mol3D properties
@@ -404,11 +485,22 @@ def init_ligand(args, lig, tcats, keepHs, i):
         lig3D = GetConf(lig3D, args, lig.cat)
     return lig3D, rempi, ligpiatoms
 
-# Distorts backbone according to user specified angles
-#  @param backb List with points comprising the backbone
-#  @param pangles Pairs of theta/phi angles in DEGREES
-#  @return List of distorted backbone points
 def modifybackbonep(backb, pangles):
+    """Distorts backbone according to user specified angles.
+
+        Parameters
+        ----------
+            backb : List
+                List with points comprising the backbone.
+            pangles : List
+                Pairs of theta/phi angles in DEGREES. Should be list of tuples.
+
+        Returns
+        -------
+            backb : list
+                List of distorted backbone points
+            
+    """
     for i, ll in enumerate(pangles):
         if ll:
             theta = pi*float(ll.split('/')[0])/180.0
@@ -417,11 +509,22 @@ def modifybackbonep(backb, pangles):
                                            [distance(backb[0], backb[i+1]), theta, phi])
     return backb
 
-# Randomly distorts backbone
-#  @param backb List with points comprising the backbone
-#  @param distort % distortion of the backbone
-#  @return List of distorted backbone points
 def distortbackbone(backb, distort):
+    """Randomly distorts backbone.
+
+        Parameters
+        ----------
+            backb : List
+                List with points comprising the backbone.
+            distort : float
+                Percentage of backbone to be distorted.
+
+        Returns
+        -------
+            backb : list
+                List of distorted backbone points
+            
+    """
     for i in range(1, len(backb)):
         theta = random.uniform(0.0, 0.01*int(distort))  # *0.5
         phi = random.uniform(0.0, 0.01*int(distort)*0.5)  # *0.5
@@ -429,13 +532,27 @@ def distortbackbone(backb, distort):
             backb[0], backb[i], [distance(backb[0], backb[i]), theta, phi])
     return backb
 
-# Smart reorder ligands by denticity (-ligalign True)
-#   @param args Namespace of arguments
-#   @param ligs List of ligands
-#   @param dentl List of ligand denticities
-#   @param licores Ligand dictionary
-#   return Reordered ligand indices
 def smartreorderligs(args, ligs, dentl, licores):
+    """Smart reorder ligands by denticity (-ligalign True)
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            ligs : list
+                List of ligands as ligand names.
+            dentl : list
+                List of ligand denticities.
+            licores : dict
+                Ligand dictionary as in molSimplify.
+
+        Returns
+        -------
+            indcs : list
+                Reordered ligand indices.
+            
+    """
+
     # reorder ligands
     globs = globalvars()
     if not args.ligalign:
@@ -462,23 +579,41 @@ def smartreorderligs(args, ligs, dentl, licores):
             indcs.append(ligdentsidcs[ii][l])
     return indcs
 
-# Main constrained FF opt routine
-#
-#  To optimize metal-containing complexes with MMFF94, an intricate procedure of masking the metal atoms and manually editing their valences is applied.
-#
-#  OpenBabel's implementation of MMFF94 may run extremely slowly on some systems. If so, consider switching to UFF.
-#
-#  @param ff Force field to use, available MMFF94, UFF, Ghemical, GAFF
-#  @param mol mol3D of molecule to be optimized
-#  @param connected List of indices of connection atoms to metal
-#  @param constopt Flag for constrained optimization - 0: unconstrained, 1: fixed connecting atom positions, 2: fixed connecting atom distances
-#  @param frozenats List of frozen atom indices
-#  @param frozenangles Flag for frozen angles, equivalent to constopt==1
-#  @param mlbonds List of M-L bonds for distance constraints
-#  @param nsteps Number of steps to take - Adaptive: run only enough steps to remove clashes, default 200
-#  @param debug Flag for debug info printing
-#  @return FF-calculated energy, mol3D of optimized molecule
 def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps, debug=False):
+    """Main constrained FF opt routine. To optimize metal-containing complexes with MMFF94, an 
+    intricate procedure of masking the metal atoms and manually editing their valences is applied.
+    OpenBabel's implementation of MMFF94 may run extremely slowly on some systems. 
+    If so, consider switching to UFF.
+
+        Parameters
+        ----------
+            ff : str
+                Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF.
+            mol : mol3D
+                mol3D instance of molecule to be optimized.
+            connected : list
+                List of indices of connection atoms to metal.
+            constopt : int
+                Flag for constrained optimization - 0: unconstrained, 1: fixed connecting atom positions, 2: fixed connecting atom distances.
+            frozenats : list
+                List of frozen atom indices.
+            frozenangles : bool
+                Flag for frozen angles, equivalent to constopt==1.
+            mlbonds : list
+                List of M-L bonds for distance constraints.
+            nsteps : int
+                Number of steps to take.
+            debug : bool
+                Flag to print extra info to debug.
+
+        Returns
+        -------
+            mol : mol3D
+                Optimized molecule mol3D instance.
+            en : float
+                Forcefield energy of optimized molecule.
+            
+    """
     globs = globalvars()
     metals = list(range(21, 31))+list(range(39, 49))+list(range(72, 81))
     # check requested force field
@@ -622,15 +757,26 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
         mol.convert2mol3D()
         del forcefield, constr, OBMol
     return mol, en
-
-# Finds the optimum attachment point for an atom/group to a central atom given the desired bond length
-#
-#  Objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom
-#  @param core mol3D of core
-#  @param cidx Core connecting atom index
-#  @param BL Optimal core-ligand bond length
-#  @return Coordinates of optimum attachment point
+    
 def getconnection(core, cidx, BL):
+    """Finds the optimum attachment point for an atom/group to a central atom given the desired bond length.
+    Objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom.
+
+        Parameters
+        ----------
+            core : mol3D
+                mol3D class instance of the core.
+            cidx : int
+                Core connecting atom index.
+            BL : float
+                Optimal core-ligand bond length.
+
+        Returns
+        -------
+            cpoint : list
+                Coordinates of attachment point.
+            
+    """
     ncore = core.natoms
     groups = core.getBondedAtoms(cidx)
     ccoords = core.getAtom(cidx).coords()
@@ -649,13 +795,24 @@ def getconnection(core, cidx, BL):
                 cpoint = P
     return cpoint
 
-
-# Checks if connecting atom of lig3D is part of SMARTS pattern
-#  @param lig3D OBMol of mol3D
-#  @param smarts List of SMARTS patterns (strings)
-#  @param catom Connecting atom of lig3D (zero based numbering)
-#  @return SMARTS match flag
 def findsmarts(lig3D, smarts, catom):
+    """Checks if connecting atom of lig3D is part of SMARTS pattern.
+
+        Parameters
+        ----------
+            lig3D : OBMol
+                OBMol class instance of ligand. Use convert2OBMol mol3D bound method to obtain it.
+            smarts : list
+                List of SMARTS patterns (strings).
+            catom : int
+                onnecting atom of lig3D (zero based numbering).
+
+        Returns
+        -------
+            SMARTS_flag : bool
+                SMARTS match flag. True if found, False if not.
+            
+    """
     mall = []
     for smart in smarts:
         # initialize SMARTS matcher
@@ -673,14 +830,28 @@ def findsmarts(lig3D, smarts, catom):
     else:
         return False
 
-# Aligns a ligand's center of symmetry along the metal-connecting atom axis
-#  @param corerefcoords Core reference coordinates
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @param core3D mol3D of partially built complex
-#  @param EnableAutoLinearBend Flag for enabling automatic bending of linear ligands (e.g. superoxo)
-#  @return mol3D of aligned ligand
 def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBend):
+    """Aligns a ligand's center of symmetry along the metal-connecting atom axis
+
+        Parameters
+        ----------
+            corerefcoords : list
+                Core reference coordinates. 
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            atom0 : int
+                Ligand connecting atom index.
+            core3D : mol3D
+                mol3D instance of partially built complex.
+            EnableAutoLinearBend : bool
+                Flag for enabling automatic bending of linear ligands (e.g. superoxo)
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            
+    """
     # rotate to align center of symmetry
     globs = globalvars()
     r0 = corerefcoords
@@ -716,13 +887,26 @@ def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBen
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-# Aligns a linear pi ligand's connecting point to the metal-ligand axis
-#  @param corerefcoords Core reference coordinates
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @param ligpiatoms List of ligand pi-connecting atom indices
-#  @return mol3D of aligned ligand
 def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
+    """Aligns a linear pi ligand's connecting point to the metal-ligand axis
+
+        Parameters
+        ----------
+            corerefcoords : list
+                Core reference coordinates. 
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            atom0 : int
+                Ligand connecting atom index.
+            ligpiatoms : list
+                List of ligand pi-connecting atom indices.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            
+    """
     # first rotate in the metal plane to ensure perpendicularity
     r0 = corerefcoords
     r1 = lig3D.getAtom(ligpiatoms[0]).coords()
@@ -765,13 +949,24 @@ def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-
-# Checks if ligand has a linear coordination environment (e.g., OCO) and ensures perpendicularity to M-L axis
-#  @param corerefcoords Core reference coordinates
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @return mol3D of rotated ligand
 def check_rotate_linear_lig(corerefcoords, lig3D, atom0):
+    """Checks if ligand has a linear coordination environment (e.g., OCO) and ensures perpendicularity to M-L axis
+
+        Parameters
+        ----------
+            corerefcoords : list
+                Core reference coordinates. 
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            atom0 : int
+                Ligand connecting atom index.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of rotated ligand.
+            
+    """
     auxm = mol3D()
     lig3D_aligned = mol3D()
     for at in lig3D.getBondedAtoms(atom0):
@@ -788,13 +983,26 @@ def check_rotate_linear_lig(corerefcoords, lig3D, atom0):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-# Checks if ligand has is symmetric about connecting atom (center of symmetry coincides with connecting atom) and minimizes clashes with rest of complex
-#  @param corerefcoords Core reference coordinates
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @param core3D mol3D of partially built complex
-#  @return mol3D of rotated ligand
 def check_rotate_symm_lig(corerefcoords, lig3D, atom0, core3D):
+    """Aligns a ligand's center of symmetry along the metal-connecting atom axis
+
+        Parameters
+        ----------
+            corerefcoords : list
+                Core reference coordinates. 
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            atom0 : int
+                Ligand connecting atom index.
+            core3D : mol3D
+                mol3D instance of partially built complex.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of rotated ligand.
+            
+    """
     if distance(lig3D.getAtom(atom0).coords(), lig3D.centersym()) < 8.0e-2:
         at = lig3D.getBondedAtoms(atom0)
         r0 = lig3D.getAtom(atom0).coords()
@@ -816,13 +1024,26 @@ def check_rotate_symm_lig(corerefcoords, lig3D, atom0, core3D):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-# Rotates aligned ligand about M-L axis to minimize steric clashes with rest of complex
-#  @param corerefcoords Core reference coordinates
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @param core3D mol3D of partially built complex
-#  @return mol3D of rotated ligand
 def rotate_MLaxis_minimize_steric(corerefcoords, lig3D, atom0, core3D):
+    """Rotates aligned ligand about M-L axis to minimize steric clashes with rest of complex
+
+        Parameters
+        ----------
+            corerefcoords : list
+                Core reference coordinates. 
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            atom0 : int
+                Ligand connecting atom index.
+            core3D : mol3D
+                mol3D instance of partially built complex.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of rotated ligand.
+            
+    """
     r1 = lig3D.getAtom(atom0).coords()
     u = vecdiff(r1, corerefcoords)
     dtheta = 2
@@ -846,16 +1067,29 @@ def rotate_MLaxis_minimize_steric(corerefcoords, lig3D, atom0, core3D):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-# Rotates a connecting atom of a multidentate ligand to improve H atom placement
-#
-#  There are separate routines for terminal connecting atoms and intermediate connecting atoms.
-#  @param lig3D mol3D of ligand
-#  @param catoms List of ligand connecting atom indices
-#  @param n Index of connecting atom
-#  @param mcoords Core reference (usually a metal) coordintes
-#  @param core3D mol3D of partially built complex
-#  @return mol3D of rotated ligand
 def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
+    """Rotates a connecting atom of a multidentate ligand to improve H atom placement.
+    There are separate routines for terminal connecting atoms and intermediate connecting atoms.
+
+        Parameters
+        ----------
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            catoms : list
+                List of ligand connecting atom indices.
+            n : int
+                Index of connecting atom.
+            mcoords : list
+                Coordinates of a core reference (usually a metal).
+            core3D : mol3D
+                mol3D of partially built complex.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of rotated ligand.
+            
+    """
     # isolate fragment to be rotated
     confrag3D = mol3D()
     confragatomlist = []
@@ -961,15 +1195,27 @@ def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-# Rotates connecting atoms of multidentate ligands to improve H atom placement
-#
-#  Loops over rotate_catom_fix_Hs().
-#  @param lig3D mol3D of ligand
-#  @param catoms List of ligand connecting atom indices
-#  @param mcoords Core reference (usually a metal) coordintes
-#  @param core3D mol3D of partially built complex
-#  @return mol3D of rotated ligand
 def rotate_catoms_fix_Hs(lig3D, catoms, mcoords, core3D):
+    """Rotates connecting atoms of multidentate ligands to improve H atom placement.
+    Loops over rotate_catom_fix_Hs().
+
+        Parameters
+        ----------
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            catoms : list
+                List of ligand connecting atom indices.
+            mcoords : list
+                Coordinates of a core reference (usually a metal).
+            core3D : mol3D
+                mol3D of partially built complex.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of rotated ligand.
+            
+    """
     for i, n in enumerate(catoms):
         # if len(lig3D.getHsbyIndex(n)) > 0:
         lig3D = rotate_catom_fix_Hs(lig3D, catoms, i, mcoords, core3D)
@@ -977,22 +1223,41 @@ def rotate_catoms_fix_Hs(lig3D, catoms, mcoords, core3D):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
-
-# Gets target M-L distance from desired source (custom, sum cov rad or ANN)
-# Aligns a monodentate ligand to core connecting atom coordinates
-#  @param args Namespace of arguments
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @param ligand Name of ligand for dictionary lookup
-#  @param metal atom3D of atom 1 (usually a metal)
-#  @param MLb Custom M-L bond length (if any)
-#  @param i Ligand serial number
-#  @param ANN_flag Flag for ANN activation
-#  @param ANN_bondl ANN-predicted M-L bond length
-#  @param this_diag ANN diagnostic object
-#  @param MLbonds M-L bond dictionary
-#  @return M-L bond length in Angstroms
 def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds):
+    """Gets target M-L distance from desired source (custom, sum cov rad or ANN). 
+    Aligns a monodentate ligand to core connecting atom coordinates.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            lig3D : mol3D
+                mol3D class instance of the ligand
+            atom0 : int
+                Ligand connecting atom index.
+            ligand : str
+                Name of ligand for dictionary lookup.
+            metal : atom3D
+                atom3D class instance of the first atom (usually a metal).
+            MLb : float
+                Custom M-L bond length (if any)
+            i : int
+                Ligand index number.
+            ANN_flag : bool
+                Flag for ANN activation.
+            ANN_bondl : float
+                ANN predicted M-L bond length.
+            this_diag : rundiag
+                Rundiag instance for ANN diagnostic object.
+            MLbonds : dict
+                M-L bond dictionary.
+
+        Returns
+        -------
+            bondl : float
+                M-L bond length in angstroms.
+            
+    """
     # first check for user-specified distances and use them
     # print(MLb, MLb[i])
     if (MLb and MLb[i]) and ("F" not in MLb[i]):
@@ -1022,15 +1287,32 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
             print(('using DB distance of '+str(bondl)))
     return bondl
 
-# Loads M-L bond length from database and reports if compound is in DB
-#  @param args Namespace of arguments
-#  @param metal atom3D of atom 1 (usually a metal)
-#  @param lig3D mol3D of ligand
-#  @param atom0 Ligand connecting atom index
-#  @param ligand Name of ligand
-#  @param MLbonds M-L dictionary
-#  @return Bond length in Angstroms, flag for exact DB match
 def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
+    """Gets target M-L distance from desired source (custom, sum cov rad or ANN). 
+    Aligns a monodentate ligand to core connecting atom coordinates.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            metal : atom3D
+                atom3D class instance of the first atom (usually a metal).
+            lig3D : mol3D
+                mol3D class instance of the ligand
+            atom0 : int
+                Ligand connecting atom index.
+            ligand : str
+                Name of ligand for dictionary lookup.
+            MLbonds : dict
+                M-L bond dictionary.
+
+        Returns
+        -------
+            bondl : float
+                M-L bond length in angstroms.
+            exact_match : bool
+                Flag for database match.
+    """
     # check for roman letters in oxstate
     if args.oxstate:  # if defined put oxstate in keys
         if args.oxstate in list(romans.keys()):
@@ -1065,12 +1347,24 @@ def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
         print(('ms default distance is  ' + str(bondl)))
     return bondl, exact_match
 
-# Get backbone atoms from template
-#  @param args Namespace of arguments
-#  @param batslist List of backbone connecting atoms for each ligand
-#  @param ligsused Number of ligands placed
-#  @return Backbone connecting atoms for ligand
 def get_batoms(args, batslist, ligsused):
+    """Get backbone atoms from template.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            batslist : list
+                List of backbone connecting atoms for each ligand.
+            ligsused : int
+                Number of ligands placed
+
+        Returns
+        -------
+            batoms : list
+                Backbone connecting atoms for ligand.
+            
+    """
     batoms = batslist[ligsused]
     if len(batoms) < 1:
         emsg = 'Connecting all ligands is not possible. Check your input!'
@@ -1079,18 +1373,38 @@ def get_batoms(args, batslist, ligsused):
             qqb.setParent(args.gui.wmain)
     return batoms
 
-# Crude rotations to improve alignment of the 2nd connecting atom of a bidentate substrate
-#  @param args Namespace of arguments
-#  @param lig3D mol3D of ligand
-#  @param core3D mol3D of partially built complex
-#  @param catoms List of ligand connecting atom indices
-#  @param r1 Coordinates of ligand first connecting atom
-#  @param r0 Coordinates of core reference point
-#  @param m3D mol3D of backbone template
-#  @param batoms List of backbone atom indices
-#  @param corerefcoords Coordinates of core reference atom
-#  @return mol3D of aligned ligand, coordinates of second backbone point
 def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, corerefcoords):
+    """Crude rotations to improve alignment of the 2nd connecting atom of a bidentate substrate. 
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            lig3D : mol3D
+                mol3D class instance of the ligand
+            core3D : mol3D
+                mol3D class instance of partially build complex
+            catoms : list
+                List of ligand connecting atom indices
+            r1 : list
+                Coordinates of ligand first connecting atom.
+            r0 : list
+                Coordinates of core reference point.
+            m3D : mol3D
+                mol3D class instance of backbone template.
+            batoms : list
+                List of backbone atom indices.
+            corerefcoords : list
+                Coordinates of core reference atom
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            r1b : list 
+                Coordinates of second backbone point.
+            
+    """
     r21 = [a-b for a, b in zip(lig3D.getAtom(catoms[1]).coords(), r1)]
     r21n = [a-b for a, b in zip(m3D.getAtom(batoms[1]).coords(), r1)]
     if (norm(r21)*norm(r21n)) > 1e-8:
@@ -1170,19 +1484,38 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, r1b
 
-# Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.
-#  @param args Namespace of arguments
-#  @param lig3D mol3D of ligand
-#  @param catoms List of ligand connecting atom indices
-#  @param bondl Target M-L bond length
-#  @param r1 Coordinates of ligand first connecting atom
-#  @param r0 Coordinates of core reference point
-#  @param core3D mol3D of partially built complex
-#  @param rtarget Coordinates of target point for second connecting atom
-#  @param coreref atom3D of core reference atom
-#  @param MLoptbds List of final M-L bond lengths
-#  @return mol3D of aligned ligand
 def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarget, coreref, MLoptbds):
+    """Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.. 
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            catoms : list
+                List of ligand connecting atom indices.
+            bondl : float
+                Target M-L bond length.
+            r1 : list
+                Coordinates of ligand first connecting atom.
+            r0 : list
+                Coordinates of core reference point.
+            core3D : mol3D
+                mol3D class instance of partially build complex.
+            rtarget : list
+                Coordinates of target point for second connecting atom.
+            coreref : atom3D
+                atom3D of core reference atom.
+            MLoptbds : list
+                List of final M-L bond lengths.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            
+    """
     # compute starting ligand FF energy for later comparison
     corerefcoords = coreref.coords()
     dr = vecdiff(rtarget, lig3D.getAtom(catoms[1]).coords())
@@ -1249,26 +1582,52 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     lig3D_aligned.copymol3D(lig3Dtmp)
     return lig3D_aligned
 
-# Aligns a monodentate ligand to core connecting atom coordinates
-#  @param args Namespace of arguments
-#  @param cpoint atom3D containing backbone connecting point
-#  @param core3D mol3D of partially built complex
-#  @param coreref atom3D of core reference atom
-#  @param ligand Name of ligand for dictionary lookup
-#  @param lig3D mol3D of ligand
-#  @param catoms List of ligand connecting atom indices
-#  @param rempi Flag for pi-coordinating ligand
-#  @param ligpiatoms List of pi-coordinating atom indices in ligand
-#  @param MLb Custom M-L bond length (if any)
-#  @param ANN_flag Flag for ANN activation
-#  @param ANN_bondl ANN-predicted M-L bond length
-#  @param this_diag ANN diagnostic object
-#  @param MLbonds M-L bond dictionary
-#  @param MLoptbds List of final M-L bond lengths
-#  @param i Ligand serial number
-#  @param EnableAutoLinearBend Flag for enabling automatic bending of linear ligands (e.g. superoxo)
-#  @return mol3D of aligned ligand, updated list of M-L bond lengths
 def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=False, ligpiatoms=[], MLb=[], ANN_flag=False, ANN_bondl=[], this_diag=0, MLbonds=dict(), MLoptbds=[], i=0, EnableAutoLinearBend=True):
+    """Aligns a monodentate ligand to core connecting atom coordinates.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            cpoint : atom3D
+                atom3D class instance containing backbone connecting point.
+            core3D : mol3D
+                mol3D class instance of partially built complex.
+            coreref : atom3D
+                atom3D of core reference atom.
+            ligand : str
+                Name of ligand for dictionary lookup.
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            catoms : list
+                List of ligand connecting atom indices.
+            rempi : bool, optional
+                Flag for pi-coordinating ligand. Default is False.
+            ligpiatoms : list, optional
+                List of pi-coordinating atom indices in ligand. Default is empty.
+            MLb : list, optional
+                Custom M-L bond length (if any). Default is empty.
+            ANN_flag : bool, optional
+                Flag for ANN activation. Default is False.
+            this_diag : rundiag, optional
+                ANN rundiag class instance. Default is 0.
+            MLbonds : dict, optional
+                M-L bond dictionary. Default is empty.
+            MLoptbds : list, optional
+                List of final M-L bond lengths. Default is empty.
+            i : int, optional
+                Ligand serial number. Default is 0.
+            EnableAutoLinearBend : bool, optional
+                Flag for enabling automatic bending of linear ligands (e.g. superoxo)
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            MLoptbds : list
+                Updated list of metal ligand bonds.
+            
+    """
     corerefcoords = coreref.coords()
     # connection atom in lig3D
     atom0 = catoms[0]
@@ -1300,26 +1659,56 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, MLoptbds
 
-# Aligns a bidentate ligand to core connecting atom coordinates
-#  @param args Namespace of arguments
-#  @param cpoint atom3D containing backbone connecting point
-#  @param batoms List of backbone atom indices
-#  @param m3D mol3D of backbone template
-#  @param core3D mol3D of partially built complex
-#  @param coreref atom3D of core reference atom
-#  @param ligand Name of ligand for dictionary lookup
-#  @param lig3D mol3D of ligand
-#  @param catoms List of ligand connecting atom indices
-#  @param MLb Custom M-L bond length (if any)
-#  @param ANN_flag Flag for ANN activation
-#  @param ANN_bondl ANN-predicted M-L bond length
-#  @param this_diag ANN diagnostic object
-#  @param MLbonds M-L bond dictionary
-#  @param MLoptbds List of final M-L bond lengths
-#  @param frozenats Atoms frozen in FF optimization
-#  @param i Ligand serial number
-#  @return mol3D of aligned ligand, updated lists of frozen atoms and M-L bond lengths
 def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, catoms, MLb, ANN_flag, ANN_bondl, this_diag, MLbonds, MLoptbds, frozenats, i):
+    """Aligns a bidentate ligand to core connecting atom coordinates.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            cpoint : atom3D
+                atom3D class instance containing backbone connecting point.
+            batoms : list
+                List of backbone atom indices
+            m3D : mol3D
+                mol3D of backbone template
+            core3D : mol3D
+                mol3D class instance of partially built complex.
+            coreref : atom3D
+                atom3D of core reference atom.
+            ligand : str
+                Name of ligand for dictionary lookup.
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            catoms : list
+                List of ligand connecting atom indices.
+            MLb : list
+                Custom M-L bond length (if any)
+            ANN_flag : bool
+                Flag for ANN activation.
+            ANN_bondl : list
+                List of ANN predicted bond lengths.
+            this_diag : rundiag
+                ANN rundiag class instance.
+            MLbonds : dict
+                M-L bond dictionary.
+            MLoptbds : list
+                List of final M-L bond lengths.
+            frozenats : list
+                List of atoms frozen in FF optimization.
+            i : int, optional
+                Ligand serial number. Default is 0.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            frozenats : list
+                List of frozen atoms.
+            MLoptbds : list
+                Updated list of metal ligand bonds.
+            
+    """
     corerefcoords = coreref.coords()
     r0 = corerefcoords
     # get cis conformer by rotating rotatable bonds
@@ -1357,26 +1746,56 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, frozenats, MLoptbds
 
-# Aligns a tridentate ligand to core connecting atom coordinates
-#  @param args Namespace of arguments
-#  @param cpoint atom3D containing backbone connecting point
-#  @param batoms List of backbone atom indices
-#  @param m3D mol3D of backbone template
-#  @param core3D mol3D of partially built complex
-#  @param coreref atom3D of core reference atom
-#  @param ligand Name of ligand for dictionary lookup
-#  @param lig3D mol3D of ligand
-#  @param catoms List of ligand connecting atom indices
-#  @param MLb Custom M-L bond length (if any)
-#  @param ANN_flag Flag for ANN activation
-#  @param ANN_bondl ANN-predicted M-L bond length
-#  @param this_diag ANN diagnostic object
-#  @param MLbonds M-L bond dictionary
-#  @param MLoptbds List of final M-L bond lengths
-#  @param frozenats Atoms frozen in FF optimization
-#  @param i Ligand serial number
-#  @return mol3D of aligned ligand, updated lists of frozen atoms and M-L bond lengths
 def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, catoms, MLb, ANN_flag, ANN_bondl, this_diag, MLbonds, MLoptbds, frozenats, i):
+    """Aligns a tridentate ligand to core connecting atom coordinates
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            cpoint : atom3D
+                atom3D class instance containing backbone connecting point.
+            batoms : list
+                List of backbone atom indices
+            m3D : mol3D
+                mol3D of backbone template
+            core3D : mol3D
+                mol3D class instance of partially built complex.
+            coreref : atom3D
+                atom3D of core reference atom.
+            ligand : str
+                Name of ligand for dictionary lookup.
+            lig3D : mol3D
+                mol3D class instance of the ligand.
+            catoms : list
+                List of ligand connecting atom indices.
+            MLb : list
+                Custom M-L bond length (if any)
+            ANN_flag : bool
+                Flag for ANN activation.
+            ANN_bondl : list
+                List of ANN predicted bond lengths.
+            this_diag : rundiag
+                ANN rundiag class instance.
+            MLbonds : dict
+                M-L bond dictionary.
+            MLoptbds : list
+                List of final M-L bond lengths.
+            frozenats : list
+                List of atoms frozen in FF optimization.
+            i : int, optional
+                Ligand serial number. Default is 0.
+
+        Returns
+        -------
+            lig3D_aligned : mol3D
+                mol3D class instance of aligned ligand.
+            frozenats : list
+                List of frozen atoms.
+            MLoptbds : list
+                Updated list of metal ligand bonds.
+            
+    """
     atom0 = catoms[1]
     corerefcoords = coreref.coords()
     # align molecule according to connection atom and shadow atom
@@ -1468,15 +1887,38 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, frozenats, MLoptbds
 
-
-# Main ligand placement routine
-#  @param args Namespace of arguments
-#  @param ligs List of ligands
-#  @param ligoc List of ligand occupations
-#  @param licores Ligand dictionary
-#  @param globs Global variables
-#  @return mol3D of built complex, list of all mol3D ligands and core, error messages
 def mcomplex(args, ligs, ligoc, licores, globs):
+    """Main ligand placement routine
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            ligs : list
+                List of ligand names.
+            ligoc : list
+                List of ligand occupations.
+            licores : dict
+                Ligand dictionary as in molSimplify.
+            globs : dict
+                Globalvars dictionary. molSimplify Class.
+           
+        Returns
+        -------
+            core3D : mol3D
+                mol3D class instance for core.
+            complex3D : mol3D
+                mol3D class instance for built complex.
+            emsg : bool
+                Flag for error. String if error, with error message.
+            this_diag: rundiag
+                Rundiag class instance of the complex.
+            subcatoms_ext : list
+                Substrate connection atoms from TSGen. Deprecated.
+            mligcatoms_ext : list
+                Ligand connection atoms from TSGen. Deprecated.
+            
+    """
     this_diag = run_diag()
     if globs.debug:
         print(('\nGenerating complex with ligands and occupations:', ligs, ligoc))
@@ -1940,16 +2382,37 @@ def mcomplex(args, ligs, ligoc, licores, globs):
         # core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     return core3D, complex3D, emsg, this_diag, subcatoms_ext, mligcatoms_ext
 
-# Main structure generation routine - multiple structures
-#  @param args Namespace of arguments (type: Namespace class generated by argparse)
-#  @param rootdir Directory of current run
-#  @param ligands List of ligands (type: list of ligand strings)
-#  @param ligoc List of ligand occupations (type: list of integers for # of instances of each ligand)
-#  @param globs Global variables
-#  @param sernum Serial number of complex for naming
-#  @param write_files Bool for whether or not files should be written, depending on pythonic generation
-#  @return List of xyz files generated, error messages
 def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
+    """Main structure generation routine - multiple structures
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of arguments.
+            rootdir : str
+                Directory of current run to generate complex.
+            ligands : list
+                List of ligand names.
+            ligoc : list
+                List of ligand occupations.
+            globs : dict
+                Globalvars dictionary. molSimplify Class.
+            sernum : str
+                Serial number of complex for naming.
+            write_files : bool, optional
+                Flag to write files. Default is True. False for pythonic generation.
+
+           
+        Returns
+        -------
+            strfiles : str
+                List of XYZ files.
+            emsg : bool
+                Error message for structure generation. If True, has string.
+            this_diag : rundiag
+                Rundiag class instance containing properties of structure.
+            
+    """
     emsg = False
     # import gui options
     if args.gui:
