@@ -1,17 +1,16 @@
 # @file rundiag.py
 #  Contains run_diag class for ANN
 #
-#  Written by JP Janet for HJK Group
+#  Written by Kulik group
 #
-#  Dpt of Chemical Engineering, MIT
+#  Department of Chemical Engineering, MIT
 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
 
-# Class of run diagnostic information to automated decision making and property prediction
-
-
 class run_diag:
+    """Class of run diagnostic information to automated decision making and property prediction
+    """
 
     # Constructor
     #  @param self The object pointer
@@ -39,12 +38,36 @@ class run_diag:
     ########################################
 
     def set_sanity(self, sanity, min_distance):
+        """Set the sanity of predictions.
+
+        Parameters
+        ----------
+            sanity : bool
+                Flag for whether the ANN variables exist.
+            min_distance : float
+                Minimum distance to train
+        """
         if not self.sanity_is_set:
             self.sanity_is_set = True
         self.sanity = sanity
         self.min_dist = min_distance
 
     def set_ANN(self, ANN_flag, ANN_reason=False, ANN_dict=False, catalysis_flag=False, catalysis_reason=False):
+        """Set the ANN properties.
+
+        Parameters
+        ----------
+            ANN_flag : bool
+                Flag for whether the ANN variables exist.
+            ANN_reason : str, optional
+                Reasoning for why ANN failed if failed. Default is False.
+            ANN_dict : dict, optional
+                Dictionary with ANN values and uncertainty.
+            catalysis_flag : bool, optional
+                Whether or not catalytic properties are set.
+            catalysis_reason : str, optional
+                Reasoning for why catalytic ANN failed if failed. Default is False.
+        """
         if not self.ANN_is_set:
             self.ANN_is_set = True
         self.ANN_flag = ANN_flag
@@ -61,11 +84,27 @@ class run_diag:
             self.ANN_attributes = ANN_dict
 
     def set_dict_bl(self, dict_bl):
+        """Set the ANN properties.
+
+        Parameters
+        ----------
+            dict_bl : dict, optional
+                Dictionary with ANN bond lengths.
+        
+        """
         if not self.bl_is_set:
             self.bl_is_set = True
         self.dict_bondl = dict_bl
 
     def set_mol(self, mol):
+        """Set the ANN molecule.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance for optimized molecule.
+        
+        """
         if not self.mol_is_set:
             self.mol_is_set = True
         self.mol = mol
@@ -74,6 +113,14 @@ class run_diag:
     ### class methods needed to report  ####
     ########################################
     def write_report(self, path):
+        """Write report of molecule with ANN properties.
+
+        Parameters
+        ----------
+            path : str
+                Path for location to write the report.
+        
+        """
         report = []
         if (not self.sanity_is_set) and (not self.ANN_is_set) and (not self.bl_is_set):
             report.append('No diagnostic set')
