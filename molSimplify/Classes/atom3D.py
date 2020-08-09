@@ -3,7 +3,7 @@
 #
 #  Written by Kulik Group
 #
-#  Dept of Chemical Engineering, MIT
+#  Department of Chemical Engineering, MIT
 
 from math import sqrt
 from molSimplify.Classes.globalvars import globalvars
@@ -13,7 +13,7 @@ class atom3D:
         
         Parameters
         ----------
-            sym : str, optional
+            Sym : str, optional
                 Symbol for atom3D instantiation. Element symbol. Default is 'C'.
             xyz : list, optional
                 List of coordinates for new atom. Default is [0.0, 0.0, 0.0].
@@ -22,14 +22,14 @@ class atom3D:
             partialcharge : int, optional
                 Charge assigned to atom when added to mol. Default is None.
     """
-    def __init__(self, sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None):
+    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None):
        
         # Element symbol
-        self.sym = sym
+        self.sym = Sym
         self.partialcharge = None
         globs = globalvars()
         amass = globs.amass()
-        if sym not in amass:  # assign default values if not in dictionary
+        if Sym not in amass:  # assign default values if not in dictionary
             print(("We didn't find the atomic mass of %s in the dictionary. Assigning default value of 12!\n" % (Sym)))
             # Atomic mass
             self.mass = 12  # default atomic mass
@@ -38,9 +38,9 @@ class atom3D:
             # Covalent radius
             self.rad = 0.75  # default atomic radius
         else:
-            self.mass = amass[sym][0]
-            self.atno = amass[sym][1]
-            self.rad = amass[sym][2]
+            self.mass = amass[Sym][0]
+            self.atno = amass[Sym][1]
+            self.rad = amass[Sym][2]
         # Flag for freezing in optimization
         self.frozen = False
         # Flag for atom name
@@ -131,7 +131,7 @@ class atom3D:
                 Bool for whether or not an atom is a metal.
         """
         if self.metal is None:
-            if self.sym in globalvars().metals():
+            if self.sym in globalvars().metalslist():
                 self.metal = True
             else:
                 self.metal = False
