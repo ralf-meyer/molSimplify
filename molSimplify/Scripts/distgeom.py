@@ -31,19 +31,19 @@ from molSimplify.Scripts.molSimplify_io import (lig_load,
 def CosRule(AB, BC, theta):
     """Applies the cosine rule to get the length of AC given lengths of AB, BC and angle ABC
         
-        Parameters
-        ----------
-            AB : float
-                Length of AB.
-            BC : float
-                Length of BC.
-            theta : float
-                theta Angle in degrees.
-            
-        Returns
-        -------
-            AC : float
-                Length of AC.
+    Parameters
+    ----------
+        AB : float
+            Length of AB.
+        BC : float
+            Length of BC.
+        theta : float
+            theta Angle in degrees.
+        
+    Returns
+    -------
+        AC : float
+            Length of AC.
 
     """
     theta = np.pi*theta/180
@@ -53,19 +53,19 @@ def CosRule(AB, BC, theta):
 def inverseCosRule(A, B, C):
     """Apply the cosine rule to find the angle ABC given points A,B, and C.
         
-        Parameters
-        ----------
-            A : list
-                Coordinates of A.
-            B : list
-                Coordinates of B.
-            C : list
-                Coordinates of C.
-            
-        Returns
-        -------
-            theta : float
-                ABC angle theta in grees.
+    Parameters
+    ----------
+        A : list
+            Coordinates of A.
+        B : list
+            Coordinates of B.
+        C : list
+            Coordinates of C.
+        
+    Returns
+    -------
+        theta : float
+            ABC angle theta in grees.
 
     """
     BA = np.linalg.norm(np.array(A)-np.array(B))
@@ -80,26 +80,25 @@ def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
     Next, to bias the search towards coordinating conformers, approximate connection atom distance constraints based 
     on topological distances are also included.
 
-        Parameters
-        ----------
-            mol : mol3D
-                mol3D class instance of molecule.
-            natoms : int
-                Number of atoms in the molecule.
-            catoms : list, optional
-                List of ligand connection atoms. Default is Empty.
-            shape : dict
-                Dict containing angles.
-            A : list
-                List of lists making a distance 2 connectivity matrix.
-            
-        Returns
-        -------
-            LB : np.array
-                Lower bound matrix.
-            UB : np.array
-                Upper bound matrix.
-                
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule.
+        natoms : int
+            Number of atoms in the molecule.
+        catoms : list, optional
+            List of ligand connection atoms. Default is Empty.
+        shape : dict
+            Dict containing angles.
+        A : list
+            List of lists making a distance 2 connectivity matrix.
+        
+    Returns
+    -------
+        LB : np.array
+            Lower bound matrix.
+        UB : np.array
+            Upper bound matrix.
 
     """
     LB = np.zeros((natoms, natoms))  # lower bound
@@ -168,21 +167,21 @@ def Triangle(LB, UB, natoms):
     """Triangle inequality bounds smoothing. Copied from ref [2], pp. 252-253.
     Scales O(N^3). 
 
-        Parameters
-        ----------
-            LB : np.array
-                Lower bounds matrix.
-            UB : np.array
-                Upper bounds matrix.
-            natoms : int
-                Number of atoms in the molecule.
-            
-        Returns
-        -------
-            LL : np.array
-                Lower triangularized bound matrix
-            UL : np.array
-                Upper triangularized bound matrix      
+    Parameters
+    ----------
+        LB : np.array
+            Lower bounds matrix.
+        UB : np.array
+            Upper bounds matrix.
+        natoms : int
+            Number of atoms in the molecule.
+        
+    Returns
+    -------
+        LL : np.array
+            Lower triangularized bound matrix
+        UL : np.array
+            Upper triangularized bound matrix      
 
     """
     LL = LB
@@ -206,23 +205,23 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
     """Metrization to select random in-range distances. Copied from ref [2], pp. 253-254.
     Scales O(N^3). 
 
-        Parameters
-        ----------
-            LB : np.array
-                Lower bounds matrix.
-            UB : np.array
-                Upper bounds matrix.
-            natoms : int
-                Number of atoms in the molecule.
-            Full : bool, optional
-                Flag for full metrization (scales O(N^5)). Default is False.
-            seed : bool, optional
-                Flag for random number seed. Default is False.
-            
-        Returns
-        -------
-            D : np.array
-                Distance matrix.  
+    Parameters
+    ----------
+        LB : np.array
+            Lower bounds matrix.
+        UB : np.array
+            Upper bounds matrix.
+        natoms : int
+            Number of atoms in the molecule.
+        Full : bool, optional
+            Flag for full metrization (scales O(N^5)). Default is False.
+        seed : bool, optional
+            Flag for random number seed. Default is False.
+        
+    Returns
+    -------
+        D : np.array
+            Distance matrix.  
 
     """
     if seed:
@@ -252,19 +251,19 @@ def GetCMDists(D, natoms):
     """Get distances of each atom to center of mass given the distance matrix. 
     Copied from ref [2], pp. 309.
 
-        Parameters
-        ----------
-            D : np.array
-                Distance matrix.
-            natoms : int
-                Number of atoms in the molecule.
-            
-        Returns
-        -------
-            D0 : np.array
-                Vector of distances from center of mass.
-            status : bool
-                Flag for successful search.
+    Parameters
+    ----------
+        D : np.array
+            Distance matrix.
+        natoms : int
+            Number of atoms in the molecule.
+        
+    Returns
+    -------
+        D0 : np.array
+            Vector of distances from center of mass.
+        status : bool
+            Flag for successful search.
 
     """
     D0 = np.zeros(natoms)
@@ -282,19 +281,19 @@ def GetMetricMatrix(D, D0, natoms):
     """Get metric matrix from distance matrix and CM distances 
     Copied from ref [2], pp. 306.
 
-        Parameters
-        ----------
-            D : np.array
-                Distance matrix.
-            D0 : np.array
-                Vector of distances from center of mass.
-            natoms : int
-                Number of atoms in the molecule.
-            
-        Returns
-        -------
-            G : np.array
-                Metric matrix.
+    Parameters
+    ----------
+        D : np.array
+            Distance matrix.
+        D0 : np.array
+            Vector of distances from center of mass.
+        natoms : int
+            Number of atoms in the molecule.
+        
+    Returns
+    -------
+        G : np.array
+            Metric matrix.
 
     """
     G = np.zeros((natoms, natoms))
@@ -306,19 +305,19 @@ def GetMetricMatrix(D, D0, natoms):
 def Get3Eigs(G, natoms):
     """Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix
         
-        Parameters
-        ----------
-            G : np.array
-                Metric matrix.
-            natoms : int
-                Number of atoms in the molecule.
-            
-        Returns
-        -------
-            L : np.array
-                Three largest eigenvalues
-            V : np.array
-                Eigenvectors corresponding to largest eigenvalues.
+    Parameters
+    ----------
+        G : np.array
+            Metric matrix.
+        natoms : int
+            Number of atoms in the molecule.
+        
+    Returns
+    -------
+        L : np.array
+            Three largest eigenvalues
+        V : np.array
+            Eigenvectors corresponding to largest eigenvalues.
 
     """
     L = np.zeros((3, 3))
@@ -335,17 +334,17 @@ def DistErr(x, *args):
     """Computes distance error function for scipy optimization. 
     Copied from E3 in pp. 311 of ref. [1]
         
-        Parameters
-        ----------
-            x : np.array
-                1D array of coordinates to be optimized.
-            *args : dict
-                Other parameters (refer to scipy.optimize docs)
-            
-        Returns
-        -------
-            E : np.array
-                Objective function
+    Parameters
+    ----------
+        x : np.array
+            1D array of coordinates to be optimized.
+        *args : dict
+            Other parameters (refer to scipy.optimize docs)
+        
+    Returns
+    -------
+        E : np.array
+            Objective function
 
     """
     E = 0
@@ -365,17 +364,17 @@ def DistErrGrad(x, *args):
     """Computes gradient of distance error function for scipy optimization.
     Copied from E3 in pp. 311 of ref. [1]
         
-        Parameters
-        ----------
-            x : np.array
-                1D array of coordinates to be optimized.
-            *args : dict
-                Other parameters (refer to scipy.optimize docs)
-            
-        Returns
-        -------
-            g : np.array
-                Objective function gradient
+    Parameters
+    ----------
+        x : np.array
+            1D array of coordinates to be optimized.
+        *args : dict
+            Other parameters (refer to scipy.optimize docs)
+        
+    Returns
+    -------
+        g : np.array
+            Objective function gradient
 
     """
     LB, UB, natoms = args
@@ -403,21 +402,21 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     lack of explicit impropers, see Riniker et al. JCIM (2015) 55, 2562-74 for details.
     Hence, a FF optimization (with connection atoms constrained) is recommended to clean up the structure.
         
-        Parameters
-        ----------
-            x : np.array
-                Array of coordinates.
-            mol : mol3D
-                mol3D class instance of original molecule.
-            ffclean : bool, optional
-                Flag for openbabel forcefield cleanup. Default is True.
-            catoms : list, optional
-                List of connection atoms used to generate FF constraints if specified. Default is empty.
-            
-        Returns
-        -------
-            conf3D : mol3D
-                mol3D class instance of conformer.
+    Parameters
+    ----------
+        x : np.array
+            Array of coordinates.
+        mol : mol3D
+            mol3D class instance of original molecule.
+        ffclean : bool, optional
+            Flag for openbabel forcefield cleanup. Default is True.
+        catoms : list, optional
+            List of connection atoms used to generate FF constraints if specified. Default is empty.
+        
+    Returns
+    -------
+        conf3D : mol3D
+            mol3D class instance of conformer.
 
     """
     conf3D = mol3D()
@@ -466,17 +465,17 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
 def findshape(args, master_ligand):
     """Determines the relative positioning of different ligating atoms
         
-        Parameters
-        ----------
-            args : Namespace
-                Namespace argument from inparse.
-            master_ligand : mol3D
-                mol3D class instance of metal with the ligand.
-            
-        Returns
-        -------
-            angles_dict : dict
-                A dictionary of angles (in degrees)between catoms.
+    Parameters
+    ----------
+        args : Namespace
+            Namespace argument from inparse.
+        master_ligand : mol3D
+            mol3D class instance of metal with the ligand.
+        
+    Returns
+    -------
+        angles_dict : dict
+            A dictionary of angles (in degrees)between catoms.
 
     """
     core = loadcoord(args.geometry)
@@ -515,19 +514,19 @@ def findshape(args, master_ligand):
 def GetConf(mol, args, catoms=[]):
     """Uses distance geometry to get a random conformer.
         
-        Parameters
-        ----------
-            mol : mol3D
-                mol3D class instance for molecule of interest.
-            args : Namespace
-                Namespace argument from inparse.
-            catoms : list, optional
-                List of connection atoms used to generate additional constraints if specified (see GetBoundsMatrices()). Default is empty.
-            
-        Returns
-        -------
-            Conf3D : mol3D
-                mol3D class instance of new conformer.
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance for molecule of interest.
+        args : Namespace
+            Namespace argument from inparse.
+        catoms : list, optional
+            List of connection atoms used to generate additional constraints if specified (see GetBoundsMatrices()). Default is empty.
+        
+    Returns
+    -------
+        Conf3D : mol3D
+            mol3D class instance of new conformer.
 
     """
     # Create a mol3D copy with a dummy metal metal
