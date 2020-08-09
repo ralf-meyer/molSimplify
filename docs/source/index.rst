@@ -21,7 +21,6 @@ Welcome to molSimplify's documentation!
    Scripts
    Informatics
    JobManager
-   molscontrol
 
 .. toctree::
    :caption: Useful Links
