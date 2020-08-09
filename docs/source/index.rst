@@ -4,10 +4,7 @@ Welcome to molSimplify's documentation!
    :maxdepth: 2 
    :caption: General Information
 
-   install
-   publications
-   referencing
-   help
+
 
 .. toctree::
    :maxdepth: 2
