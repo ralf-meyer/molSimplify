@@ -13,3 +13,8 @@ Molecular Revised Autocorrelations
    :members:
    :undoc-members:
    :show-inheritance:
+
+Revised Autocorrelations for MOFs
+---------------------------------
+
+Documentation for MOFs is coming soon!

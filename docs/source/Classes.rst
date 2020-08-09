@@ -17,3 +17,19 @@ mol3D Class
    :members:
    :undoc-members:
    :show-inheritance:
+
+globalvars
+--------------------------------
+
+.. automodule:: molSimplify.Classes.globalvars
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+rundiag
+--------------------------------
+
+.. automodule:: molSimplify.Classes.rundiag
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -20,7 +20,6 @@ Welcome to molSimplify's documentation!
    Classes
    Scripts
    Informatics
-   JobManager
 
 .. toctree::
    :caption: Useful Links
@@ -30,12 +29,3 @@ Welcome to molSimplify's documentation!
    Visit Our Research Group Website <https://hjkgrp.mit.edu>
    Visit Our Interactive Site <https://molsimplify.mit.edu>
 
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

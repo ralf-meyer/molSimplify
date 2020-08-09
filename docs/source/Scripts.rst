@@ -27,6 +27,11 @@ Geometry Manipulation Tools
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: molSimplify.Scripts.rmsd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Cellbuilder Tools
 -----------------

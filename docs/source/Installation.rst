@@ -42,6 +42,6 @@ To test your installation, you can run the command below at the root directory o
 Using a Docker Image
 --------------------
 
-We also maintain an active docker image on [dockerhub](https://hub.docker.com/r/hjkgroup/molsimplify) for plug-and-play use.
+We also maintain an active docker image on dockerhub for plug-and-play use: https://hub.docker.com/r/hjkgroup/molsimplify.
 
-For line by line instructions on an installation via docker, please visit [molSimplify installation webpage](http://hjkgrp.mit.edu/content/installing-molsimplify) of the Kulik group.
+For line by line instructions on an installation via docker, please visit molSimplify installation webpage of the Kulik group: http://hjkgrp.mit.edu/content/installing-molsimplify.
