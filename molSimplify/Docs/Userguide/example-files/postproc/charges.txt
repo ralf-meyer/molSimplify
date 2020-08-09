@@ -1,8 +1,0 @@
-
-Folder                                                    Hirshfeld    VDD     Mulliken
------------------------------------------------------------------------------------------
-CO-R/scr/co                                                 0.092     0.089     -0.174    
-CO-U/scr/co                                                 0.092     0.089     0.174     
-Cotpp1x1ammo1carbII4/cobtpxamca3/scr/cobtpxamca3            0.257     0.287     0.513     
-Cotpp1x1ammo1carbII4/cobtpxamcaR/scr/cobtpxamcaR            0.286     0.305     0.680     
-Cotpp1x1ammo1carbIII1/cobtpxamca3/scr/cobtpxamca3           0.278     0.255     0.445     

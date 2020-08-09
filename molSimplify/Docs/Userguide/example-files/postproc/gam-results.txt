@@ -1,6 +1,0 @@
-Date: Fri Mar 18 18:26:07 2016
-Here are the current results for runs in folder '/Users/timis/Dropbox (MIT)/PhD/CODE/molSimplifyGUI/Runs/POSTPROC'
-
-Folder                                            Method   %MGGA   %LDA  Optim  Converged  NoSteps   S-SQ   Spin   Charge    Energy(au)      Time(MIN)
---------------------------------------------------------------------------------------------------------------------------------------------------------
-/Users/timis/Dropbox (MIT)/PhD/CODE/molSimplifyGUI/Runs/POSTPROC/cobam/cobam.goutTPSST    0.9     1.0     N        NA       NA      3.754    4       2     -1721.321409         7.2

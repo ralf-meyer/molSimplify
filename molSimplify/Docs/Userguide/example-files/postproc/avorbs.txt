@@ -1,7 +1,0 @@
-Filename                                                              e0(base)   d-band      e-homo      e-lumo      e-fermi     e-gap     [Hartree]  Av-Occup
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-CO-R/scr-co                                                           0.000     -0.002       -0.371      -0.022       -0.197    -0.349                 2.000     
-CO-U/scr-co                                                           -10.304   -0.001       -0.371      -0.022       -0.197    -0.349                 1.000     
-Cotpp1x1ammo1carbII4/cobtpxamca3/scr-cobtpxamca3                      -3.908    -0.316       -0.418      -0.251       -0.335    -0.167                 1.000     
-Cotpp1x1ammo1carbII4/cobtpxamcaR/scr-cobtpxamcaR                      -3.913    -0.325       -0.392      -0.253       -0.323    -0.139                 1.000     
-Cotpp1x1ammo1carbIII1/cobtpxamca3/scr-cobtpxamca3                     -4.138    -0.387       -0.548      -0.403       -0.476    -0.145                 1.000     
