@@ -16,11 +16,11 @@ def try_float(obj):
 
     """
     # Converts an object to a floating point if possible
-        try:
-            floating_point = float(obj)
-        except:
-            floating_point = obj
-        return floating_point
+    try:
+        floating_point = float(obj)
+    except:
+        floating_point = obj
+    return floating_point
         
 def strip_new_line(string):
     """Tries to strip string of new line.
