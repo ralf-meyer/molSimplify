@@ -1,9 +1,16 @@
+.. image:: logo.png
+  :width: 600
+
 Welcome to molSimplify's documentation!
 =======================================
+
+
 .. toctree::
    :maxdepth: 2 
    :caption: General Information
 
+   Installation
+   Citation
 
 
 .. toctree::
@@ -12,6 +19,9 @@ Welcome to molSimplify's documentation!
 
    Classes
    Scripts
+   Informatics
+   JobManager
+   molscontrol
 
 .. toctree::
    :caption: Useful Links

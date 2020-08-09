@@ -1,5 +1,5 @@
-Classes in molSimplify
-======================
+Classes
+=======
 
 atom3D Class
 --------------------------------
