@@ -3,9 +3,9 @@
 #
 #  Unless otherwise stated, all "points" refer to 3-element lists.
 #
-#  Written by Tim Ioannidis for HJK Group
+#  Written by Kulik Group
 #
-#  Dpt of Chemical Engineering, MIT
+#  Department of Chemical Engineering, MIT
 
 import sys
 import copy
@@ -15,87 +15,155 @@ from numpy.linalg import det, svd
 import numpy as np
 from math import pi, sin, cos, sqrt
 
-
-# from molSimplify.Classes.mol3D import mol3D
-# from molSimplify.Classes.atom3D import atom3D
-
-# Euclidean norm
-#  @param u Vector
-#  @return Norm of u
 def norm(u):
+    """Get euclidean norm of vector.
+        
+        Parameters
+        ----------
+            u : list
+                Vector of interest.
+            
+        Returns
+        -------
+            norm : float
+                Norm of u.
+
+    """
     d = 0.0
     for u0 in u:
         d += (u0 * u0)
     d = sqrt(d)
     return d
 
-
-# Normalize a vector
-#  @param u Vector
-#  @return Normalized vector
 def normalize(u):
+    """Normalize a vector.
+        
+        Parameters
+        ----------
+            u : list
+                Vector of interest.
+            
+        Returns
+        -------
+            norm_vect : list
+                Normalized vector.
+
+    """
     d = norm(u)
     un = []
     if d > 1.0e-13:
         [un.append(ui / d) for ui in u]
     return un
 
+def distance(r1, r2):
+    """Euclidean distance between points.
+        
+        Parameters
+        ----------
+            r1 : list
+                Coordinates of point 1.
+            r2 : list
+                Coordinates of point 2.
+            
+        Returns
+        -------
+            dist : float
+                Euclidean distance between points 1 and 2.
 
-# Euclidean distance between points
-#  @param R1 Point 1
-#  @param R2 Point 2
-#  @return Euclidean distance
-def distance(R1, R2):
-    dx = R1[0] - R2[0]
-    dy = R1[1] - R2[1]
-    dz = R1[2] - R2[2]
+    """
+    dx = r1[0] - r2[0]
+    dy = r1[1] - r2[1]
+    dz = r1[2] - r2[2]
     d = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
     return d
 
-
-# Element-wise vector difference
-#  @param r1 Point 1
-#  @param r2 Point 2
-#  @return Vector difference
 def vecdiff(r1, r2):
+    """Element-wise vector difference
+        
+        Parameters
+        ----------
+            r1 : list
+                Vector 1.
+            r2 : list
+                Vector 2.
+            
+        Returns
+        -------
+            diff : list
+                Vector difference between points 1 and 2.
+
+    """
     dr = [a - b for a, b in zip(r1, r2)]
     return dr
 
-
-# Vector midpoint
-#  @param r1 Point 1
-#  @param r2 Point 2
-#  @return Vector midpoint
 def midpt(r1, r2):
+    """Vector midpoint.
+        
+        Parameters
+        ----------
+            r1 : list
+                Vector 1.
+            r2 : list
+                Vector 2.
+            
+        Returns
+        -------
+            mid : list
+                Midpoint between vector 1 and 2.
+
+    """
     m = [0.5 * (a + b) for a, b in zip(r1, r2)]
     return m
 
+def checkcolinear(r1, r2, r3):
+    """Checks if three points are collinear.
+        
+        Parameters
+        ----------
+            r1 : list
+                Coordinates of point 1.
+            r2 : list
+                Coordinates of point 2.
+            r3 : list
+                Coordinates of point 3.
+            
+        Returns
+        -------
+            collinear_flag : bool
+                Flag for collinearity. True if collinear.
 
-# Checks if three points are collinear
-#  @param R1 Point 1
-#  @param R2 Point 2
-#  @param R3 Point 3
-#  @return Collinear flag
-def checkcolinear(R1, R2, R3):
-    dr1 = vecdiff(R2, R1)
-    dr2 = vecdiff(R1, R3)
+    """
+    dr1 = vecdiff(r2, r1)
+    dr2 = vecdiff(r1, r3)
     dd = cross(array(dr1), array(dr2))
     if norm(dd) < 1.e-01:
         return True
     else:
         return False
 
+def checkplanar(r1, r2, r3, r4):
+    """Checks if four points are coplanar.
+        
+        Parameters
+        ----------
+            r1 : list
+                Coordinates of point 1.
+            r2 : list
+                Coordinates of point 2.
+            r3 : list
+                Coordinates of point 3.
+            r4 : list
+                Coordinates of point 4.
+            
+        Returns
+        -------
+            coplanar_flag : bool
+                Flag for coplanarity. True if coplanarity.
 
-# Checks if four points are coplanar
-#  @param R1 Point 1
-#  @param R2 Point 2
-#  @param R3 Point 3
-#  @param R4 Point 4
-#  @return Coplanar flag
-def checkplanar(R1, R2, R3, R4):
-    r31 = vecdiff(R3, R1)
-    r21 = vecdiff(R2, R1)
-    r43 = vecdiff(R4, R3)
+    """
+    r31 = vecdiff(r3, r1)
+    r21 = vecdiff(r2, r1)
+    r43 = vecdiff(r4, r3)
     cr0 = cross(array(r21), array(r43))
     dd = dot(r31, cr0)
     if abs(dd) < 1.e-1:
@@ -103,12 +171,22 @@ def checkplanar(R1, R2, R3, R4):
     else:
         return False
 
-
-# Computes angle between two vectors
-#  @param r1 Vector 1
-#  @param r2 Vector 2
-#  @return Angle between vectors in degrees
 def vecangle(r1, r2):
+    """Computes angle between two vectors.
+        
+        Parameters
+        ----------
+            r1 : list
+                Vector 1.
+            r2 : list
+                Vector 2.
+            
+        Returns
+        -------
+            theta : float
+                Angle between two vectors in degrees.
+
+    """
     if (norm(r2) * norm(r1) > 1e-16):
         inner_prod = np.round(dot(r2, r1) / (norm(r2) * norm(r1)), 10)
         theta = 180 * arccos(inner_prod) / pi
@@ -116,13 +194,24 @@ def vecangle(r1, r2):
         theta = 0.0
     return theta
 
-
-# Gets point given reference point, direction vector and distance
-#  @param Rr Reference point
-#  @param dist Distance
-#  @param u Direction vector
-#  @return Final point
 def getPointu(Rr, dist, u):
+    """Gets point given reference point, direction vector and distance.
+        
+        Parameters
+        ----------
+            Rr : list
+                Reference point.
+            dist : float
+                Distance in angstroms.
+            u : list
+                Direction vector.
+            
+        Returns
+        -------
+            P : list
+                Final point.
+
+    """
     # get float bond length
     bl = float(dist)
     # get unit vector through line r = r0 + t*u
@@ -134,14 +223,26 @@ def getPointu(Rr, dist, u):
     P[2] = t * u[2] + Rr[2]
     return P
 
-
-# Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points
-#  @param r0 Point 0
-#  @param r1 Point 1
-#  @param r2 Point 2
-#  @return Angle in degrees
-#  @return Normal vector
 def rotation_params(r0, r1, r2):
+    """Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points.
+        
+        Parameters
+        ----------
+            r0 : list
+                Coordinates for point 1.
+            r1 : list
+                Coordinates for point 2.
+            r2 : list
+                Coordinates for point 3.
+            
+        Returns
+        -------
+            theta : float
+                Angle in units of degrees.
+            u : list
+                Normal vector.
+
+    """
     r10 = [a - b for a, b in zip(r1, r0)]
     r21 = [a - b for a, b in zip(r2, r1)]
     # print('r10 is ' +str(r10) )
@@ -169,12 +270,28 @@ def rotation_params(r0, r1, r2):
             u = [1, 1, (-r21[0] - r21[1]) / r21[2]]
     return theta, u
 
-
-# Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
-#  @param mol0 mol3D of molecule to be aligned
-#  @param mol1 mol3D of reference molecule
-#  @return Aligned mol3D, rotation matrix, translation vectors
 def kabsch(mol0, mol1):
+    """Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
+
+        Parameters
+        ----------
+            mol0 : mol3D
+                mol3D class instance of molecule to be aligned.
+            mol1 : mol3D
+                mol3D class instance of reference molecule.
+            
+        Returns
+        -------
+            mol0 : mol3D
+                mol3D class instance of aligned molecule.
+            U : list
+                Rotation matrix as list of lists.
+            d0 : list
+                Translation vector for mol0.
+            d1 : list
+                Translation vector for mol1. 
+
+    """
     # translate to align centroids with origin
     mol0, d0 = setPdistance(mol0, mol0.centersym(), [0, 0, 0], 0)
     mol1, d1 = setPdistance(mol1, mol1.centersym(), [0, 0, 0], 0)
@@ -206,13 +323,24 @@ def kabsch(mol0, mol1):
         atom.setcoords(P[i])
     return mol0, U.tolist(), d0, d1
 
-
-# Reflects point about plane defined by its normal vector and a point on the plane
-#  @param u Normal vector to plane
-#  @param r Point to be reflected
-#  @param Rp Reference point on plane
-#  @return Reflected point
 def ReflectPlane(u, r, Rp):
+    """Reflects point about plane defined by its normal vector and a point on the plane
+
+        Parameters
+        ----------
+            u : list
+                Normal vector to plane.
+            r : list
+                Point to be reflected.
+            Rp : list
+                Reference point on plane.
+            
+        Returns
+        -------
+            rn : list
+                Reflected point.
+
+    """
     un = norm(u)
     if (un > 1e-16):
         u[0] = u[0] / un
@@ -242,14 +370,26 @@ def ReflectPlane(u, r, Rp):
     rn[2] = R[2][0] * r[0] + R[2][1] * r[1] + R[2][2] * r[2] + R[2][3]
     return rn
 
-
-# Rotates point about axis defined by direction vector and point on axis
-#  @param u Direction vector of axis
-#  @param rp Reference point along axis
-#  @param r Point to be rotated
-#  @param theta Angle of rotation in RADIANS
-#  @return Rotated point
 def PointRotateAxis(u, rp, r, theta):
+    """Rotates point about axis defined by direction vector and point on axis. Theta units in radians.
+
+    Parameters
+    ----------
+        u : list
+            Direction vector of axis.
+        rp : list
+            Reference point along axis
+        r : list
+            Point to be rotated
+        theta : float
+            Angle of rotation in RADIANS.
+
+    Returns
+    -------
+        rotated : list
+            Rotated point.
+    
+    """
     # construct augmented vector rr = [r;1]
     rr = r
     rr.append(1)
@@ -281,25 +421,46 @@ def PointRotateAxis(u, rp, r, theta):
     rn[2] = R[2][0] * r[0] + R[2][1] * r[1] + R[2][2] * r[2] + R[2][3]
     return rn
 
-
-# Rotates point using arbitrary 3x3 rotation matrix
-#  @param r Point to be rotated
-#  @param R 3x3 rotation matrix
-#  @return Rotated point
 def PointRotateMat(r, R):
+    """Rotates point using arbitrary 3x3 rotation matrix
+
+    Parameters
+    ----------
+        r : list
+            Point to be rotated
+        R : list
+            List of lists for 3 by 3 rotation matrix.
+
+    Returns
+    -------
+        rotated : list
+            Rotated point.
+    
+    """
     rn = [0, 0, 0]
     rn[0] = R[0][0] * r[0] + R[1][0] * r[1] + R[2][0] * r[2]
     rn[1] = R[0][1] * r[0] + R[1][1] * r[1] + R[2][1] * r[2]
     rn[2] = R[0][2] * r[0] + R[1][2] * r[1] + R[2][2] * r[2]
     return rn
 
-
-# Translates point in spherical coordinates
-#  @param Rp Origin of sphere
-#  @param p0 Point to be translated
-#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-#  @return Translated point
 def PointTranslateSph(Rp, p0, D):
+    """Translates point in spherical coordinates.
+
+    Parameters
+    ----------
+        Rp : list
+            Origin of sphere
+        p0 : list
+            Point to be translated
+        D : list
+            [final radial distance, change in polar phi, change in azimuthal theta]. Angles in RADIANS.
+
+    Returns
+    -------
+        p : list
+            Translated point.
+    
+    """
     # translate to origin
     ps = [0, 0, 0]
     ps[0] = p0[0] - Rp[0]
@@ -320,13 +481,24 @@ def PointTranslateSph(Rp, p0, D):
     p[2] = (D[0]) * cos(phi0 + D[2]) + Rp[2]
     return p
 
-
-# Translates point in spherical coordinates
-#  @param Rp Origin of sphere
-#  @param p0 Point to be translated
-#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-#  @return Translated point
 def PointTranslateSphgivenphi(Rp, p0, D):
+    """Translates point in spherical coordinates. Redundant with PointTranslateSph. Will be deprecated.
+
+    Parameters
+    ----------
+        Rp : list
+            Origin of sphere
+        p0 : list
+            Point to be translated
+        D : list
+            [final radial distance, change in polar phi, change in azimuthal theta]. Angles in RADIANS.
+
+    Returns
+    -------
+        p : list
+            Translated point.
+    
+    """
     # translate to origin
     ps = [0, 0, 0]
     ps[0] = p0[0] - Rp[0]
@@ -347,13 +519,28 @@ def PointTranslateSphgivenphi(Rp, p0, D):
     p[2] = (D[0]) * cos(phi0 + D[1]) + Rp[2]
     return p
 
-
-# Translates point in spherical coordinates
-#  @param Rp Origin of sphere
-#  @param p0 Point to be translated
-#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-#  @return Translated point
 def PointTranslateSphgivenr(Rp, p0, D, pref, r):
+    """Translates point in spherical coordinates given R.
+
+    Parameters
+    ----------
+        Rp : list
+            Origin of sphere
+        p0 : list
+            Point to be translated
+        D : list
+            [final radial distance, change in polar phi, change in azimuthal theta]. Angles in RADIANS.
+        pref : list
+            Coordinates of reference point.
+        r : float
+            Given radius.
+
+    Returns
+    -------
+        p : list
+            Translated point.
+    
+    """
     # translate to origin
     ps = [0, 0, 0]
     ps[0] = p0[0] - Rp[0]
@@ -379,13 +566,24 @@ def PointTranslateSphgivenr(Rp, p0, D, pref, r):
         theta0 += 0.01
     return p
 
-
-# Converts spherical translation vector into Cartesian translation vector
-#  @param Rp Origin of sphere
-#  @param p0 Point to be translated
-#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-#  @return Translation vector
 def PointTranslatetoPSph(Rp, p0, D):
+    """Converts spherical translation vector into Cartesian translation vector
+
+    Parameters
+    ----------
+        Rp : list
+            Origin of sphere
+        p0 : list
+            Point to be translated
+        D : list
+            [final radial distance, change in polar phi, change in azimuthal theta]. Angles in RADIANS.
+
+    Returns
+    -------
+        p : list
+            Translation vector
+
+    """
     # translate to origin
     ps = [0, 0, 0]
     ps[0] = p0[0] - Rp[0]
@@ -406,13 +604,24 @@ def PointTranslatetoPSph(Rp, p0, D):
     p[2] = D[0] * cos(phi0 + D[2])
     return p
 
-
-# Rotates point about Cartesian axes defined relative to given origin
-#  @param Rp Cartesian origin
-#  @param p0 Point to be rotated
-#  @param D [theta-x, theta-y, theta-z] in RADIANS
-#  @return Rotated point
 def PointRotateSph(Rp, p0, D):
+    """Rotates point about Cartesian axes defined relative to given origin.
+
+    Parameters
+    ----------
+        Rp : list
+            Cartesian origin
+        p0 : list
+            Point to be rotated
+        D : list
+            [theta-x, theta-y, theta-z] in RADIANS
+
+    Returns
+    -------
+        p : list
+            Rotated point
+
+    """
     # translate to origin (reference)
     ps = [0, 0, 0]
     ps[0] = p0[0] - Rp[0]
@@ -431,15 +640,25 @@ def PointRotateSph(Rp, p0, D):
     p[2] = M[2][0] * ps[0] + M[2][1] * ps[1] + M[2][2] * ps[2] + Rp[2]
     return p
 
-
-# Reflects molecule about plane defined by its normal vector and a point on the plane
-#
-#  Loops over ReflectPlane().
-#  @param mol mol3D of molecule to be reflected
-#  @param u Normal vector to plane
-#  @param Rp Reference point on plane
-#  @return mol3D of reflected molecule
 def reflect_through_plane(mol, u, Rp):
+    """Reflects molecule about plane defined by its normal vector and a point on the plane.
+    Loops over ReflectPlane().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be reflected.
+        u : list
+            Normal vector to plane.
+        Rp : list
+            Reference point on plane.
+
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of reflected molecule.
+
+    """
     un = norm(u)
     if (un > 1e-16):
         u[0] = u[0] / un
@@ -451,16 +670,27 @@ def reflect_through_plane(mol, u, Rp):
         atom.setcoords(Rt)
     return mol
 
-
-# Rotates molecule about axis defined by direction vector and point on axis
-#
-#  Loops over PointRotateAxis().
-#  @param mol mol3D of molecule to be rotated
-#  @param Rp Reference point along axis
-#  @param u Direction vector of axis
-#  @param theta Angle of rotation in DEGREES
-#  @return mol3D of rotated molecule
 def rotate_around_axis(mol, Rp, u, theta):
+    """Rotates molecule about axis defined by direction vector and point on axis.
+    Loops over PointRotateAxis().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be rotated.
+        Rp : list
+            Reference point along axis.
+        u : list
+            Direction vector of axis.
+        theta : float
+            Angle of rotation in DEGREES.
+
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of rotated molecule.
+
+    """
     un = norm(u)
     theta = (theta / 180.0) * pi
     if (un > 1e-16):
@@ -473,31 +703,50 @@ def rotate_around_axis(mol, Rp, u, theta):
         atom.setcoords(Rt)
     return mol
 
-
-# Rotates molecule using arbitrary rotation matrix
-#
-#  Loops over PointRotateMat().
-#  @param mol mol3D of molecule to be rotated
-#  @param R Rotation matrix
-#  @param theta Angle of rotation in DEGREES
-#  @return mol3D of rotated molecule
 def rotate_mat(mol, R):
+    """Rotates molecule using arbitrary rotation matrix.
+    Loops over PointRotateMat().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be rotated.
+        R : list
+            List of lists containing rotation matrix.
+
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of rotated molecule.
+
+    """
     for atom in mol.atoms:
         # Get new point after rotation
         Rt = PointRotateMat(atom.coords(), R)
         atom.setcoords(Rt)
     return mol
 
-
-# Translates molecule such that a given point in the molecule is at a given distance from a reference point
-#
-#  The molecule is moved along the axis given by the two points.
-#  @param mol mol3D of molecule to be translated
-#  @param Rr Point in molecule to be aligned
-#  @param Rp Reference alignment point
-#  @param bond Final distance of aligned point to alignment point
-#  @return mol3D of translated molecule
 def setPdistance(mol, Rr, Rp, bond):
+    """Translates molecule such that a given point in the molecule is at a given distance from a reference point.
+    The molecule is moved along the axis given by the two points.
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rr : list
+            Point in molecule to be aligned.
+        Rp : list
+            Reference alignment point.
+        bond : float
+            Final distance of aligned point to alignment point
+
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of translated molecule.
+
+    """
     # get float bond length
     bl = float(bond)
     # get center of mass
@@ -516,17 +765,29 @@ def setPdistance(mol, Rr, Rp, bond):
     mol.translate(dxyz)
     return mol, dxyz
 
-
-# Translates molecule such that a given point in the molecule is at a given distance from a reference point
-#
-#  The molecule is moved along an arbitrary axis.
-#  @param mol mol3D of molecule to be translated
-#  @param Rr Point in molecule to be aligned
-#  @param Rp Reference alignment point
-#  @param bond Final distance of aligned point to alignment point
-#  @param u Direction vector of axis
-#  @return mol3D of translated molecule
 def setPdistanceu(mol, Rr, Rp, bond, u):
+    """Translates molecule such that a given point in the molecule is at a given distance from a reference point.
+    The molecule is moved along an arbitrary axis.
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rr : list
+            Point in molecule to be aligned.
+        Rp : list
+            Reference alignment point.
+        bond : float
+            Final distance of aligned point to alignment point
+        u : list
+            Direction vector of axis
+
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of translated molecule.
+
+    """
     # get float bond length
     bl = float(bond)
     # get unit vector through line r = r0 + t*u
@@ -540,15 +801,25 @@ def setPdistanceu(mol, Rr, Rp, bond, u):
     mol.translate(dxyz)
     return mol
 
-
-# Translates molecule such that its center of mass is at a given distance from a reference point
-#
-#  The molecule is moved along the axis given by the two points.
-#  @param mol mol3D of molecule to be translated
-#  @param Rp Reference alignment point
-#  @param bond Final distance of aligned point to alignment point
-#  @return mol3D of translated molecule
 def setcmdistance(mol, Rp, bond):
+    """Translates molecule such that its center of mass is at a given distance from a reference point.
+    The molecule is moved along the axis given by the two points.
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rp : list
+            Reference alignment point.
+        bond : float
+            Final distance of aligned point to alignment point
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of translated molecule.
+
+    """
     # get float bond length
     bl = float(bond)
     # get center of mass
@@ -565,15 +836,25 @@ def setcmdistance(mol, Rp, bond):
     mol.translate(dxyz)
     return mol
 
-
-# Translates molecule in spherical coordinates based on center of mass reference
-#
-#  Loops over PointTranslateSph().
-#  @param mol mol3D of molecule to be translated
-#  @param Rr Origin of sphere
-#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-#  @return mol3D of translated molecule
 def protate(mol, Rr, D):
+    """Translates molecule in spherical coordinates based on center of mass reference.
+    Loops over PointTranslateSph().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rr : list
+            Origin of sphere.
+        D : list
+            [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of translated molecule.
+
+    """
     # convert to rad
     D[0] = float(D[0])
     D[1] = (float(D[1]) / 180.0) * pi
@@ -587,16 +868,27 @@ def protate(mol, Rr, D):
     mol.translate(Rt)
     return mol
 
-
-# Translates molecule in spherical coordinates based on arbitrary reference
-#
-#  Loops over PointTranslateSph().
-#  @param mol mol3D of molecule to be translated
-#  @param Rr Origin of sphere
-#  @param Rref Reference point in molecule
-#  @param D [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-#  @return mol3D of translated molecule
 def protateref(mol, Rr, Rref, D):
+    """Translates molecule in spherical coordinates based on arbitrary reference.
+    Loops over PointTranslateSph().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rr : list
+            Origin of sphere.
+        Rref : list
+            Reference point in molecule
+        D : list 
+            [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of translated molecule.
+
+    """
     # rotate/translate about reference point
     # convert to rad
     D[0] = float(D[0])
@@ -609,14 +901,23 @@ def protateref(mol, Rr, Rref, D):
     mol.translate(Rt)
     return mol
 
-
-# Rotates molecule about its center of mass
-#
-#  Loops over PointRotateSph().
-#  @param mol mol3D of molecule to be rotated
-#  @param D [theta-x, theta-y, theta-z] in RADIANS
-#  @return mol3D of rotated molecule
 def cmrotate(mol, D):
+    """Rotates molecule about its center of mass
+    Loops over PointRotateSph().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be rotated.
+        D : list 
+            [theta-x, theta-y, theta-z] in RADIANS
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of rotated molecule.
+
+    """
     # convert to rad
     D[0] = (float(D[0]) / 180.0) * pi
     D[1] = (float(D[1]) / 180.0) * pi
@@ -629,15 +930,25 @@ def cmrotate(mol, D):
         atom.setcoords(Rt)
     return mol
 
-
-# Rotates molecule about an arbitrary point
-#
-#  Loops over PointRotateSph().
-#  @param mol mol3D of molecule to be rotated
-#  @param Ref Reference point
-#  @param D [theta-x, theta-y, theta-z] in RADIANS
-#  @return mol3D of rotated molecule
 def rotateRef(mol, Ref, D):
+    """Rotates molecule about an arbitrary point
+    Loops over PointRotateSph().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be rotated.
+        Ref : list
+            Reference point
+        D : list 
+            [theta-x, theta-y, theta-z] in RADIANS
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of rotated molecule.
+
+    """
     # convert to rad
     D[0] = (float(D[0]) / 180.0) * pi
     D[1] = (float(D[1]) / 180.0) * pi
@@ -650,21 +961,26 @@ def rotateRef(mol, Ref, D):
         atom.setcoords(Rt)
     return mol
 
-
-# Translates molecule to align point to axis at constant distance
-#  @param mol mol3D of molecule to be translated
-#  @param Rr Point to be aligned
-#  @param Rp Reference point on axis
-#  @param u Direction vector of axis
-#  @return mol3D of translated molecule
 def aligntoaxis(mol, Rr, Rp, u):
-    # INPUT
-    #   - Rr: point to be aligned
-    #   - mol: molecule to be manipulated
-    #   - Rp: reference point through axis
-    #   - u: target axis for alignment
-    # OUTPUT
-    #   - mol: aligned molecule
+    """Translates molecule to align point to axis at constant distance.
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rr : list
+            Point to be aligned
+        Rp : list
+            Reference point on axis
+        u : list
+            Target axis for alignment
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of aligned molecule.
+
+    """
     # get current distance
     d0 = distance(Rp, Rr)
     # normalize u
@@ -678,15 +994,28 @@ def aligntoaxis(mol, Rr, Rp, u):
     mol.translate(dxyz)
     return mol
 
-
-# Translates molecule to align point to axis at arbitrary distance
-#  @param mol mol3D of molecule to be translated
-#  @param Rr Point to be aligned
-#  @param Rp Reference point on axis
-#  @param u Direction vector of axis
-#  @param d Final distance from aligned point to axis
-#  @return mol3D of translated molecule
 def aligntoaxis2(mol, Rr, Rp, u, d):
+    """Translates molecule to align point to axis at arbitrary distance
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be translated.
+        Rr : list
+            Point to be aligned
+        Rp : list
+            Reference point on axis
+        u : list
+            Target axis for alignment
+        d : float
+            Final distance from aligned point to axis
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of translated molecule.
+
+    """
     # normalize u
     t = d / norm(u)  # get t as t=bl/norm(r1-r0)
     # get shift for point
@@ -698,21 +1027,26 @@ def aligntoaxis2(mol, Rr, Rp, u, d):
     mol.translate(dxyz)
     return mol
 
-
-# Translates point and aligns to axis
-#  @param Rr Point to be aligned
-#  @param Rp Reference point on axis
-#  @param u Direction vector of axis
-#  @param d Final distance from aligned point to axis
-#  @return Translation vector
 def alignPtoaxis(Rr, Rp, u, d):
-    # INPUT
-    #   - Rr: point to be aligned
-    #   - Rp: reference point through axis
-    #   - u: target axis for alignment
-    #   - d: final distance target
-    # OUTPUT
-    #   - dxyz: final coordinates
+    """Translates point and aligns to axis
+
+    Parameters
+    ----------
+        Rr : list
+            Point to be aligned
+        Rp : list
+            Reference point on axis
+        u : list
+            Target axis for alignment. Direction vector.
+        d : float
+            Final distance from aligned point to axis
+        
+    Returns
+    -------
+        dxyz : list
+            Translation vector
+
+    """
     # normalize u
     t = d / norm(u)  # get t as t=bl/norm(r1-r0)
     # get shift for point
@@ -722,15 +1056,25 @@ def alignPtoaxis(Rr, Rp, u, d):
     dxyz[2] = Rp[2] + t * u[2]
     return dxyz
 
-
-# Rotates molecule about Cartesian axes defined relative to given origin
-#
-#  Loops over PointRotateSph().
-#  @param mol mol3D of molecule to be rotated
-#  @param Rp Cartesian origin
-#  @param D [theta-x, theta-y, theta-z] in DEGREES
-#  @return mol3D of rotated molecule
 def pmrotate(mol, Rp, D):
+    """Rotates molecule about Cartesian axes defined relative to given origin.
+    Loops over PointRotateSph().
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance of molecule to be rotated.
+        Rp : list
+            Cartesian origin.
+        D : list
+            [theta-x, theta-y, theta-z] in DEGREES
+        
+    Returns
+    -------
+        mol : mol3D
+            mol3D class instance of rotated molecule.
+
+    """
     # convert to rad
     D[0] = (float(D[0]) / 180.0) * pi
     D[1] = (float(D[1]) / 180.0) * pi
@@ -742,18 +1086,28 @@ def pmrotate(mol, Rp, D):
         atom.setcoords(Rt)
     return mol
 
-
 def connectivity_match(inds1, inds2, mol1, mol2):
-    """
-    Check whether the connectivity of two fragments of mols match.
+    """Check whether the connectivity of two fragments of mols match.
     Note: This will mark atom transfers between different ligands as False, which may not be correct mathmetically
     as the graph after atoms transfer can still be the same. We disallow these cases from chemical concerns and avoid
     the NP-hard porblem of comparing two adjecent matrix.
-    :param inds1: list of atom inds
-    :param inds2: list of atom inds
-    :param mol1: mol3D instance
-    :param mol2: mol3D instance
-    :return: boolean flag
+
+    Parameters
+    ----------
+        inds1 : list
+            List of atom inds in molecule 1.
+        inds2 : list
+            List of atom inds in molecule 2.
+        mol1 : mol3D
+            mol3D class instance for molecule 1.
+        mol2 : mol3D
+            mol3D class instance for molecule 2.
+        
+    Returns
+    -------
+        match_flag : bool
+            Flag for if connectivity matches. True if so.
+
     """
     match = False
     if len(inds1) == len(inds2):

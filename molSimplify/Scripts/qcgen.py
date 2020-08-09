@@ -1,9 +1,9 @@
 # @file qcgen.py
 #  Generates quantum chemistry input files
 #
-#  Written by Tim Ioannidis and JP Janet for HJK Group
+#  Written by Kulik Group
 #
-#  Dpt of Chemical Engineering, MIT
+#  Department of Chemical Engineering, MIT
 
 import shutil
 import os
@@ -13,13 +13,23 @@ from molSimplify.Classes.globalvars import (globalvars,
 from molSimplify.Classes.mol3D import mol3D
 
 
-# Generate multiple terachem runs if multiple methods requested
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @return List of job directories
-
-
 def multitcgen(args, strfiles):
+    """Generate multiple terachem input files at once.
+        
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directories with terachem input files.
+
+    """
+
     jobdirs = []
     method = False
     if args.method and len(args.method) > 1:
@@ -43,14 +53,25 @@ def multitcgen(args, strfiles):
                     pass
     return jobdirs
 
-# Generate terachem input files
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @param method Method (e.g. b3lyp)
-#  @return List of job directories
-
-
 def tcgen(args, strfiles, method):
+    """Generate a single terachem input file.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            method : str
+                Name of method to use, (e.g. B3LYP).
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with terachem input file.
+
+    """
+
     # global variables
     # print('----- args provided to tc gen --------')
     # print(args)
@@ -228,25 +249,43 @@ def tcgen(args, strfiles, method):
             output.close()
     return jobdirs
 
-# Converts normal xyz file to gxyz (GAMESS format) file
-#  @param filename Filename of xyz file
-#  @return Filename of gxyz file
-
-
 def xyz2gxyz(filename):
+    """Turn an XYZ file into a GAMESS XYZ file.
+
+        Parameters
+        ----------
+            filename : str
+                Filename of xyz file.
+        
+        Returns
+        -------
+            gfilename : str
+                Filename of GAMESS xyz file.
+
+    """
+
     mol = mol3D()  # create mol3D object
     mol.readfromxyz(filename)  # read molecule
     gfilename = filename.replace('.xyz', '.gxyz')  # new file name
     mol.writegxyz(gfilename)  # write gamess formatted xyz file
     return gfilename.split('.gxyz')[0]
 
-# Generate multiple GAMESS runs if multiple methods requested
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @return List of job directories
-
-
 def multigamgen(args, strfiles):
+    """Generate multiple GAMESS files, loops over methods.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directories with GAMESS input files.
+
+    """
     method = False
     jobdirs = []
     if args.method and len(args.method) > 1:
@@ -262,15 +301,25 @@ def multigamgen(args, strfiles):
         os.remove(xyzf+'.molinp')
     return jobdirs
 
-# Generate GAMESS input files
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @param method Method (e.g. b3lyp)
-#  @return List of job directories
-
-
 def gamgen(args, strfiles, method):
-    # get global variables
+    """Generate a single GAMESS input file.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            method : str
+                Name of method to use, (e.g. B3LYP).
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with GAMESS input file.
+
+    """
+
     globs = globalvars()
     jobdirs = []
     coordfs = []
@@ -430,13 +479,22 @@ def gamgen(args, strfiles, method):
         output.close()
     return jobdirs
 
-# Generate multiple QChem runs if multiple methods requested
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @return List of job directories
-
-
 def multiqgen(args, strfiles):
+    """Generate multiple QChem input files at once.
+        
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directories with QChem input files.
+
+    """
     method = False
     jobdirs = []
     if args.method and len(args.method) > 1:
@@ -452,14 +510,24 @@ def multiqgen(args, strfiles):
         os.remove(xyzf + '.report')
     return jobdirs
 
-# Generate QChem input files
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @param method Method (e.g. b3lyp)
-#  @return List of job directories
-
-
 def qgen(args, strfiles, method):
+    """Generate a single QChem input file.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            method : str
+                Name of method to use, (e.g. B3LYP).
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with QChem input file.
+
+    """
     # get global variables
     globs = globalvars()
     jobdirs = []
@@ -567,14 +635,24 @@ def qgen(args, strfiles, method):
         output.close()
     return jobdirs
 
-# Generate MOPAC input files
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @param rootdir Root directory
-#  @return List of job directories
-
-
 def mlpgen(args, strfiles, rootdir):
+    """Generate MOPAC input files.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            rootdir : str
+                Path of the root directory.
+        
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with MOPAC input file.
+
+    """
     # get global variables
     globs = globalvars()
     jobdirs = []
@@ -604,8 +682,7 @@ def mlpgen(args, strfiles, rootdir):
         else:
             mdir = rdir+'/'+nametrunc
         jobdirs.append(mdir)
-#        shutil.copy2(xyzf,mdir)
-#        shutil.copy2(xyzf.replace('.xyz','.molinp'),mdir.replace('.xyz','.molinp'))
+
     # Just carry over spin and charge keywords if they're set. Could do checks, none for now.
     if args.spin:
         jobparams.append(spin_keywords[int(args.spin)])
@@ -646,13 +723,23 @@ def mlpgen(args, strfiles, rootdir):
         output.close()
     return jobdirs
 
-# Generate multiple ORCA runs if multiple methods requested
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @return List of job directories
-
-
 def multiogen(args, strfiles):
+    """Generate ORCA input files.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with ORCA input files.
+
+    """
+
     method = False
     jobdirs = []
     if args.method and len(args.method) > 0:
@@ -671,14 +758,26 @@ def multiogen(args, strfiles):
             except:
                 pass
     return jobdirs
-# Generate ORCA input files
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @param rootdir Root directory
-#  @return List of job directories
-
 
 def ogen(args, strfiles, method):
+    """Generate a single ORCA input file.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            method : str
+                Method to be used (e.g. B3LYP)
+            
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with ORCA input file.
+
+    """
+
     # global variables
     globs = globalvars()
     jobdirs = []
@@ -851,14 +950,24 @@ def ogen(args, strfiles, method):
             output.close()
     return jobdirs
 
-# Writeout a single calculation block for ORCA input files
-#  @param output File for writing ORCA input
-#  @param jobparams ORCA input parameters
-#  @param xyzf Name for xyz file
-#  @return List of job directories
-
-
 def ogenwrt(output, jobparams, xyzf):
+    """Generate a single ORCA input file with custom parameters.
+
+        Parameters
+        ----------
+            output : str
+                Filename for writing the ORCA input.
+            jobparams : dict
+                Dictionary of ORCA input parameters.
+            xyzf : str
+                Name for XYZ file.
+            
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with ORCA input file.
+
+    """
     # write the first line of simple keywords
     output.write('!'+jobparams['method']+' ')
     output.write(jobparams['basis']+' ')
@@ -898,14 +1007,24 @@ def ogenwrt(output, jobparams, xyzf):
         '*xyzfile '+str(jobparams['charge'])+' '+str(jobparams['spinmult'])+' '+xyzf+'\n')
     # output.write(''.join(s0)+'*\n')
 
-# Generate MOLCAS input files
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @param rootdir Root directory
-#  @return List of job directories
-
-
 def molcgen(args, strfiles, method):
+    """Generate a single MOLCAS input file.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            method : str
+                Method to be used (e.g. B3LYP)
+            
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with MOLCAS input file.
+
+    """
     # global variables
     globs = globalvars()
     jobdirs = []
@@ -1050,15 +1169,26 @@ def molcgen(args, strfiles, method):
             output.close()
     return jobdirs
 
-# Writeout a single calculation block for ORCA input files
-#  @param output File for writing ORCA input
-#  @param jobparams ORCA input parameters
-#  @param xyzf Name for xyz file
-#  @param xyzind Index for xyz file in all generated xyz files
-#  @return List of job directories
-
-
 def molcwrt(output, jobparams, xyzf, xyzind):
+    """Generate a single MOLCAS input file with custom parameters.
+
+        Parameters
+        ----------
+            output : str
+                Filename for writing the ORCA input.
+            jobparams : dict
+                Dictionary of ORCA input parameters.
+            xyzf : str
+                Name for XYZ file.
+            xyzind : int
+                Index for xyz file in all generated xyz files
+            
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with ORCA input file.
+
+    """
     # write the gateway block
     output.write('&gateway\n')
     output.write('Coord='+xyzf+'\n')
@@ -1089,13 +1219,22 @@ def molcwrt(output, jobparams, xyzf, xyzind):
         output.write(jobparams['gridtype']+'\n')
         output.write('NPOINTS\n'+jobparams['NPOINTS']+'\n')
 
-# Generate multiple MOLCAS runs if multiple methods requested
-#  @param args Namespace of arguments
-#  @param strfiles List of xyz files produced
-#  @return List of job directories
-
-
 def multimolcgen(args, strfiles):
+    """Generate MOLCAS input files.
+
+        Parameters
+        ----------
+            args : Namespace
+                Namespace of input arguments.
+            strfiles : list
+                List of xyz files produced.
+            
+        Returns
+        -------
+            jobdirs : list
+                List of job directory with ORCA input files.
+
+    """
     method = False
     jobdirs = []
     if args.method and len(args.method) > 0:
@@ -1114,13 +1253,23 @@ def multimolcgen(args, strfiles):
             except:
                 pass
     return jobdirs
-# Generate MOLCAS basis keyword for a given mol3D
-#  @param strfiles List of xyz files produced
-#  @param basistyp The type of basis set
-#  @return String of the basis specification
-
 
 def molcbasis(strfiles, basistyp):
+    """Generate MOLCAS basis keyword for a given mol3D.
+
+        Parameters
+        ----------
+            strfiles : list
+                List of XYZ files produced
+            basistyp : str
+                The basis set.
+            
+        Returns
+        -------
+            basis : str
+                String of basis specification.
+
+    """
     # List of Sets for elem
     # elems[i] contains elements for i-th row
     elems = []
@@ -1184,12 +1333,20 @@ def molcbasis(strfiles, basistyp):
         other than ANO-rcc is not supported yet''')
     return basis
 
-# Determine MOLCAS CASSCF active space for a given mol3D
-#  @param strfiles List of xyz files produced
-#  @return List of the active spaces
-
-
 def molcras2s(strfiles):
+    """Determine MOLCAS CASSCF active space for a given mol3D.
+
+        Parameters
+        ----------
+            strfiles : list
+                List of XYZ files produced
+            
+        Returns
+        -------
+            ras2s : list
+                List of the active spaces
+
+    """
     print('Warning! "ras2" active space is automatically generated and may need adjustment! ')
     ras2s = []
     for i in range(0, len(strfiles)):
@@ -1207,12 +1364,22 @@ def molcras2s(strfiles):
         ras2s.append(ras2)
     return ras2s
 
-# Determine MOLCAS CASSCF active electrons for a given mol3D
-#  @param strfiles List of xyz files produced
-#  @return List of the active spaces
-
-
 def molcnactels(strfiles, oxnum):
+    """Determine MOLCAS CASSCF active electrons for a given mol3D.
+
+        Parameters
+        ----------
+            strfiles : list
+                List of XYZ files produced
+            oxnum : int
+                Oxidation state.
+            
+        Returns
+        -------
+            nactels : list
+                List of the active electrons
+
+    """
     print('Warning! "nactel" is automatically generated and may need adjustment! ')
     nactels = []
     for i in range(0, len(strfiles)):
@@ -1231,12 +1398,20 @@ def molcnactels(strfiles, oxnum):
         nactels.append(nactel)
     return nactels
 
-# Determine MOLCAS CASSCF frozen orbitals for a given mol3D
-#  @param strfiles List of xyz files produced
-#  @return List of the active spaces
-
-
 def molcfrozens(strfiles):
+    """Determine MOLCAS CASSCF frozen orbitals for a given mol3D
+
+        Parameters
+        ----------
+            strfiles : list
+                List of XYZ files produced
+            
+        Returns
+        -------
+            frozens : list
+                List of the frozen orbitals
+
+    """
     frozens = []
     for i in range(0, len(strfiles)):
         frozen = 0

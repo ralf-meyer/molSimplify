@@ -1,0 +1,16 @@
+version: 2
+
+conda:
+  environment: docs/environment.yaml
+
+python:
+  version: 3.7
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+          - rtd
+
+sphinx:
+  builder: html
+  fail_on_warning: true

@@ -2,26 +2,61 @@ import pickle
 import os
 
 def try_float(obj):
+    """Tries to convert an item into a floating point value.
+        
+        Parameters
+        ----------
+            obj : str, int
+                Object of any type to be converted to float.
+            
+        Returns
+        -------
+            floating_point : float
+                Floating point version of object. If fails, returns object itself.
+
+    """
     # Converts an object to a floating point if possible
-        try:
-            floating_point = float(obj)
-        except:
-            floating_point = obj
-        return floating_point
+    try:
+        floating_point = float(obj)
+    except:
+        floating_point = obj
+    return floating_point
         
 def strip_new_line(string):
-        if string[-1] == '\n':
-            return string[:-1]
-        else:
-            return string
+    """Tries to strip string of new line.
+        
+        Parameters
+        ----------
+            string : str
+                Input string.
+            
+        Returns
+        -------
+            output : str
+                Output string with newline characters removed..
+
+    """
+    if string[-1] == '\n':
+        return string[:-1]
+    else:
+        return string
 
 class resub_history:
-    # Class for saving information about previous resubmissions
-    # should be initialized like:
-    # resub = resub_history()
-    # resub.read(outfile_path) do this step even if no pickel file exists already
-    # update stored values
-    # resub.save()
+    """Resub history class that stores the information about a given job.
+    Class for saving information about previous resubmissions.
+        
+        Parameters
+        ----------
+            path : str, optional
+                Path to place resub history object. Default is None.
+         
+        Example use of history object
+
+        >>> resub = resub_history()
+        >>> resub.read(outfile_path) # do this step even if no pickle file exists already
+        >>> resub.save() # update stored values
+
+    """
     
     def __init__(self,path = None):
         self.resub_number = 0
@@ -37,12 +72,24 @@ class resub_history:
         self.manually_abandoned = False
         
     def save(self):
+        """Saves the current status of the history object.
+        """
+
         if self.path == None:
             raise Exception('The path for the resub_history pickel file is not specified!')
         with open(self.path,'wb') as handle:
             pickle.dump(self, handle, protocol = pickle.HIGHEST_PROTOCOL)
             
     def read(self,path):
+        """Read an output file with a given path. 
+        
+            Parameters
+            ----------
+                path : str, optional
+                    Path of output file to read into history object.
+
+        """
+         
         if path.endswith('.out'):
             path = path.rsplit('.',1)[0]+'.pickle'
         
@@ -67,11 +114,21 @@ class resub_history:
         self.path = path
 
     def abandon(self):
+        """Bound method to abandon a job manually.
+        """
         self.manually_abandoned = True
         self.status = 'Manually abandoned'
 
 class textfile:
-    ##Class for importing textfiles in a searchable way.
+     """Class for importing textfiles in a searchable way.
+            
+        Parameters
+        ----------
+            file_name : str, optional
+                Path to file to read. Default is None.
+
+    """
+
     def __init__(self,file_name=None):
         
         if file_name:
@@ -84,6 +141,29 @@ class textfile:
             self.lines = None
             
     def wordgrab(self,keywords,indices, last_line=False, first_line = False, min_value = False, matching_index=False):
+        """Method to grab words from text. Takes two lists as input.
+            
+            Parameters
+            ----------
+                keywords : list
+                    Keywords to look for.
+                indices : list
+                    Indices to pull from the matching lines
+                last_line : bool, optional
+                    Gets the last instance of the match in the text file. Default is False.
+                first_line : bool, optional
+                    Gets the first instance of the match in the text file. Default is False.
+                min_value : bool, optional
+                    Gets the smallest instance of the match in the text file. Default is False. Numeric values converted to floats.
+                matching_index : bool, optional
+                    Gives you the indices of the lines that match. Default is False.
+
+            Returns
+            -------
+                results_to_return : list
+                    List of results of scraping. Be careful with the nesting (returns a list of lists).
+    
+        """
         ## takes two lists as an input
         # The first list is the keywords to look for
         # The second list is the indices to pull from the matching lines
