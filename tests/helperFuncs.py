@@ -158,19 +158,23 @@ def compareOG(xyz1, xyz2, thresh):
     return passOG
 
 
-def compareGeo(xyz1, xyz2, threshMLBL, threshLG, threshOG):
+def compareGeo(xyz1, xyz2, threshMLBL, threshLG, threshOG, slab=False):
     # Compare number of atoms
     passNumAtoms = compareNumAtoms(xyz1, xyz2)
     # Compare Metal ligand bond length
-    passMLBL = compareMLBL(xyz1, xyz2, threshMLBL)
-    # Compare Single ligand geometry
-    passLG = compareLG(xyz1, xyz2, threshLG)
+    if not slab:
+        passMLBL = compareMLBL(xyz1, xyz2, threshMLBL)
+        # Compare Single ligand geometry
+        passLG = compareLG(xyz1, xyz2, threshLG)
     # Compare gross match of overall complex
     passOG = compareOG(xyz1, xyz2, threshOG)
     # FF free test
     # ANN set bond length test
     # covalent radii test
-    return [passNumAtoms, passMLBL, passLG, passOG]
+    if not slab:
+        return [passNumAtoms, passMLBL, passLG, passOG]
+    else:
+        return [passNumAtoms, passOG]
 
 
 def comparedict(ref, gen, thresh):
@@ -422,6 +426,34 @@ def runtest(tmpdir, name, threshMLBL, threshLG, threshOG):
     print("Test qc input file:", output_qcin)
     print("Qc input status:", pass_qcin)
     return [passNumAtoms, passMLBL, passLG, passOG, pass_report, pass_qcin]
+
+
+def runtest_slab(tmpdir, name, threshOG):
+    """
+    Performs test for slab builder.
+
+    Parameters
+    ----------
+        tmpdir : str
+                tmp folder to run the test
+        name : str
+                name of the test
+        axis : threshOG
+                tolerance for RMSD comparison of overall geometries.
+    """
+    infile = resource_filename(Requirement.parse(
+        "molSimplify"), "tests/inputs/" + name + ".in")
+    newinfile = parse4test(infile, tmpdir)
+    args = ['main.py', '-i', newinfile]
+    startgen(args, False, False)
+    myjobdir = jobdir(infile) + "/slab/"
+    output_xyz = myjobdir + '/super332.xyz'
+    ref_xyz = resource_filename(Requirement.parse(
+        "molSimplify"), "tests/refs/" + name + ".xyz")
+    print("Output xyz file: ", output_xyz)
+    pass_xyz = compareGeo(output_xyz, ref_xyz, threshMLBL=0, threshLG=0, threshOG=threshOG, slab=True)
+    [passNumAtoms, passOG] = pass_xyz
+    return [passNumAtoms, passOG]
 
 
 def runtestgeo(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
