@@ -274,6 +274,26 @@ class mol3D:
         self.size = self.molsize()
         self.metal = False
 
+    def find_atom(self, sym="X"):
+        """
+        Find atoms with a specific symbol.
+
+        Parameters
+        ----------
+            sym: str
+                element symbol, default as X.
+
+        Returns
+        ----------
+            inds: list
+                a list of atom index with the specified symbol.
+        """
+        inds = []
+        for ii, atom in enumerate(self.getAtoms()):
+            if atom.symbol() == sym:
+                inds.append(ii)
+        return inds
+
     def alignmol(self, atom1, atom2):
         """Aligns two molecules such that the coordinates of two atoms overlap.
         Second molecule is translated relative to the first. No rotations are 
@@ -2159,6 +2179,7 @@ class mol3D:
         globs = globalvars()
         amassdict = globs.amass()
         graph = False
+        bo_graph = False
         bo_dict = False
         if readstring:
             s = filename.splitlines()
@@ -2203,18 +2224,33 @@ class mol3D:
                 s_line = line.split()
                 graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
                 graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
+                if s_line[3] == "ar":
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1.5
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1.5
+                elif s_line[3] in ["un", 'am']:
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = np.nan
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = np.nan
+                else:
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = s_line[3]
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = s_line[3]
                 bo_dict[tuple(
                     sorted([int(s_line[1]) - 1, int(s_line[2]) - 1]))] = s_line[3]
             if '<TRIPOS>BOND' in line:
                 read_bonds = True
                 # initialize molecular graph
                 graph = np.zeros((self.natoms, self.natoms))
+                bo_graph = np.zeros((self.natoms, self.natoms))
                 bo_dict = dict()
+        X_inds = self.find_atom(trunc_sym)
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
+            self.bo_graph = bo_graph
+            self.bo_graph_trunc = np.delete(np.delete(bo_graph, X_inds[0], 0), X_inds[0], 1)
             self.bo_dict = bo_dict
         else:
             self.graph = []
+            self.bo_graph = []
+            self.bo_graph_trunc = []
             self.bo_dict = []
 
     def readfromstring(self, xyzstring):
