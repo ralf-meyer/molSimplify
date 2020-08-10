@@ -1,6 +1,6 @@
 import helperFuncs as hp
-def test_a_part_two(tmpdir):
-    testName = "a_part_two"
+def test_tutorial_09_part_two(tmpdir):
+    testName = "tutorial_09_part_two"
     threshMLBL = 0.1
     threshLG = 2.0
     threshOG = 2.0
