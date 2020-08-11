@@ -2164,7 +2164,7 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
-    def readfrommol2(self, filename, readstring=False):
+    def readfrommol2(self, filename, readstring=False, trunc_sym="X"):
         """Read mol2 into a mol3D class instance. Stores the bond orders and atom types (SYBYL).
 
         Parameters
@@ -2173,6 +2173,8 @@ class mol3D:
                 String of path to XYZ file. Path may be local or global. May be read in as a string.
             readstring : bool
                 Flag for deciding whether a string of mol2 file is being passed as the filename
+            trunc_sym: string
+                Element symbol at which one would like to truncate the bo graph.
         """
 
         # print('!!!!', filename)
@@ -2224,10 +2226,10 @@ class mol3D:
                 s_line = line.split()
                 graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
                 graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
-                if s_line[3] == "ar":
+                if s_line[3] in ["ar", 'am']:
                     bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1.5
                     bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1.5
-                elif s_line[3] in ["un", 'am']:
+                elif s_line[3] in ["un"]:
                     bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = np.nan
                     bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = np.nan
                 else:
@@ -2245,7 +2247,10 @@ class mol3D:
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
             self.bo_graph = bo_graph
-            self.bo_graph_trunc = np.delete(np.delete(bo_graph, X_inds[0], 0), X_inds[0], 1)
+            if len(X_inds):
+                self.bo_graph_trunc = np.delete(np.delete(bo_graph, X_inds[0], 0), X_inds[0], 1)
+            else:
+                self.bo_graph_trunc = bo_graph
             self.bo_dict = bo_dict
         else:
             self.graph = []
