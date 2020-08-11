@@ -2790,7 +2790,7 @@ class mol3D:
         f.write(ss)
         f.close()
 
-    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False):
+    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False, writestring=False):
         """Write standard XYZ file.
 
         Parameters
@@ -2803,6 +2803,8 @@ class mol3D:
                 Ignore X element when writing. Default is False.
             ordering : bool, optional
                 If handed a list, will order atoms in a specific order. Default is False.
+            writestring : bool, optional
+                Flag to write to a string if True or file if False. Default is False.
 
         """
 
@@ -2825,10 +2827,13 @@ class mol3D:
                 else:
                     ss += "%s \t%f\t%f\t%f\n" % (atom.name,
                                                  xyz[0], xyz[1], xyz[2])
-        fname = filename.split('.xyz')[0]
-        f = open(fname + '.xyz', 'w')
-        f.write(ss)
-        f.close()
+        if writestring:
+            return ss
+        else:
+            fname = filename.split('.xyz')[0]
+            f = open(fname + '.xyz', 'w')
+            f.write(ss)
+            f.close()
 
     def writemxyz(self, mol, filename):
         """Write standard XYZ file with two molecules
