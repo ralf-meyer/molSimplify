@@ -334,11 +334,11 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     if not args.geometry == "oct":
         emsg.append(
-            "[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
+            "[ANN] Geometry is not supported at this time, MUST give -geometry = oct if you want an ANN prediction.")
         valid = False
         ANN_reason = 'geometry not oct'
     if not args.oxstate:
-        emsg.append("\n oxidation state must be given")
+        emsg.append("\n oxidation state must be given for an ANN prediction.")
         valid = False
         ANN_reason = 'oxstate not given'
     if valid:
