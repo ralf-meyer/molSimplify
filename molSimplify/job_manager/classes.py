@@ -120,25 +120,23 @@ class resub_history:
         self.status = 'Manually abandoned'
 
 class textfile:
-     """Class for importing textfiles in a searchable way.
+    """Class for importing textfiles in a searchable way.
             
         Parameters
         ----------
             file_name : str, optional
                 Path to file to read. Default is None.
-
     """
 
     def __init__(self,file_name=None):
-        
         if file_name:
             raw_file = open(file_name,'r')
             self.lines = raw_file.readlines()
             raw_file.close()
             self.lines = [strip_new_line(i) for i in self.lines]
-        
+
         else:
-            self.lines = None
+            self.lines = None   
             
     def wordgrab(self,keywords,indices, last_line=False, first_line = False, min_value = False, matching_index=False):
         """Method to grab words from text. Takes two lists as input.
