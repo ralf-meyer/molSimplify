@@ -34,7 +34,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
             ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
                 built_ligand_list = ligand_assign(
-                this_complex, liglist, ligdents, ligcons, loud, name=False)
+                this_complex, liglist, ligdents, ligcons, loud)
         custom_ligand_dict = {'ax_ligand_list':ax_ligand_list, 'eq_ligand_list':eq_ligand_list,
                                'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
     ## misc descriptors
@@ -114,7 +114,7 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
             ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
                 built_ligand_list = ligand_assign(
-                this_complex, liglist, ligdents, ligcons, loud, name=False)
+                this_complex, liglist, ligdents, ligcons, loud)
         custom_ligand_dict = {'ax_ligand_list':ax_ligand_list, 'eq_ligand_list':eq_ligand_list,
                                'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
     ##  cannot do misc descriptors !
@@ -700,7 +700,7 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False):
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name=False)
+            mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -790,7 +790,7 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_na
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name=False)
+            mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -885,7 +885,7 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, name=Fal
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name=False)
+            mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -995,7 +995,7 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, name=False, flag_name=F
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name=False)
+            mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -1058,7 +1058,7 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, name=False, 
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud, name=False)
+            mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
