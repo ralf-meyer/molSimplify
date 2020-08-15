@@ -84,9 +84,9 @@ def accquire_file(path):
                     name = ll[0]
                     y_value = ll[1]
                     # check if path exists:
-                    this_path = ll[2].strip('/') + '/'+name+'.xyz'
+                    this_path = '/'+ll[2].strip('/') + '/'+name+'.xyz'
                     #print('name = '+str(name))
-                    this_obs = dft_observation(name, this_path + name + '.xyz')
+                    this_obs = dft_observation(name, this_path)
                     this_obs.sety(y_value)
                     if os.path.isfile(this_path):
                         #print('path exists')
