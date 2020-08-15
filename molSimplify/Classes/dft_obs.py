@@ -5,12 +5,12 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Informatics.autocorrelation import (generate_all_ligand_autocorrelations,
+from molSimplify.Informatics.lacRACAssemble import (generate_all_ligand_autocorrelations,
                                                      generate_all_ligand_deltametrics,
                                                      generate_full_complex_autocorrelations,
                                                      generate_metal_autocorrelations,
-                                                     generate_metal_deltametrics)
-from molSimplify.Informatics.misc_descriptors import (generate_all_ligand_misc)
+                                                     generate_metal_deltametrics,
+                                                     generate_all_ligand_misc)
 from molSimplify.Classes.mol3D import mol3D
 
 # DFT observations used to postprocess DFT results by measuring ligand properties
@@ -43,7 +43,7 @@ class dft_observation:
             self.health = False
 
     def get_coord(self):
-        self.coord = len(self.mol.getBondedAtoms(self.mol.findMetal()))
+        self.coord = len(self.mol.getBondedAtomsSmart(self.mol.findMetal()[0]))
 
     def get_descriptor_vector(self, lig_only, simple, name=False, loud=False):
 
@@ -56,7 +56,7 @@ class dft_observation:
                 results_dictionary['colnames'], results_dictionary['result_eq'], 'misc', 'eq')
         print(('after adding misc descriptors... ' +
                str(len(self.descriptor_names))))
-        if self.coor == 6:  # oct only
+        if self.coord == 6:  # oct only
             results_dictionary = generate_all_ligand_autocorrelations(
                 self.mol, depth=3, loud=loud, name=name)
             self.append_descriptors(
@@ -72,10 +72,6 @@ class dft_observation:
                     results_dictionary['colnames'], results_dictionary['result_eq_con'], 'lc', 'eq')
                 results_dictionary = generate_all_ligand_deltametrics(
                     self.mol, depth=3, loud=True, name=name)
-                self.append_descriptors(
-                    results_dictionary['colnames'], results_dictionary['result_ax_full'], 'D_f', 'ax')
-                self.append_descriptors(
-                    results_dictionary['colnames'], results_dictionary['result_eq_full'], 'D_f', 'eq')
                 self.append_descriptors(
                     results_dictionary['colnames'], results_dictionary['result_ax_con'], 'D_lc', 'ax')
                 self.append_descriptors(
@@ -97,11 +93,6 @@ class dft_observation:
                 self.mol, depth=3, loud=loud)
             self.append_descriptors(
                 results_dictionary['colnames'], results_dictionary['results'], 'f', 'all')
-            if not simple:
-                results_dictionary = generate_full_complex_deltametrics(
-                    self.mol, depth=3, loud=loud)
-                self.append_descriptors(
-                    results_dictionary['colnames'], results_dictionary['results'], 'D_f', 'all')
         print(('after adding full complex descriptors... ' +
                str(len(self.descriptor_names))))
 
