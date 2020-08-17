@@ -4800,3 +4800,23 @@ class mol3D:
             "info_edge_lig": info_edge_lig,
         }
         return results
+
+    def get_features(self):
+        """Get geo-based RAC features for this complex (if octahedral)
+
+        Returns
+        -------
+        results, dict
+            Dictionary of {'RACname':RAC} for all geo-based RACs
+        """
+        from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
+        if not len(self.graph):
+            self.createMolecularGraph()
+        geo_type = self.get_geometry_type()
+        if geo_type['geometry'] == 'octahedral':
+            names,racs = get_descriptor_vector(self)
+            results = dict(zip(names,racs))
+        else:
+            results = None
+            print('Error - not implemented for non-octahedral geometries!')
+        return results
