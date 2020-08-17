@@ -54,7 +54,7 @@ from molSimplify.Classes.globalvars import (amassdict,
 from molSimplify.Classes.rundiag import ( run_diag )
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts)
-from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign, ligand
+from molSimplify.Classes.ligand import ligand
 from molSimplify.Classes.globalvars import globalvars
 import openbabel
 import random
