@@ -4817,6 +4817,6 @@ class mol3D:
             names,racs = get_descriptor_vector(self)
             results = dict(zip(names,racs))
         else:
-            results = None
-            print('Error - not implemented for non-octahedral geometries!')
+            raise ValueError(
+                "Featurization not yet implemented for non-octahedral complexes.")
         return results
