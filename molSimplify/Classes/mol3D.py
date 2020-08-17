@@ -4801,20 +4801,25 @@ class mol3D:
         }
         return results
 
-    def get_features(self):
+    def get_features(self,lac=True):
         """Get geo-based RAC features for this complex (if octahedral)
+
+        Parameters
+        ----------
+            lac : bool, optional
+                Use lac for ligand_assign. Default is True
 
         Returns
         -------
-        results, dict
-            Dictionary of {'RACname':RAC} for all geo-based RACs
+            results, dict
+                Dictionary of {'RACname':RAC} for all geo-based RACs
         """
         from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
         if not len(self.graph):
             self.createMolecularGraph()
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral':
-            names,racs = get_descriptor_vector(self)
+            names,racs = get_descriptor_vector(self,lacRACs=lac)
             results = dict(zip(names,racs))
         else:
             raise ValueError(
