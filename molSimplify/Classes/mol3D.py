@@ -4807,7 +4807,7 @@ class mol3D:
         Parameters
         ----------
             lac : bool, optional
-                Use lac for ligand_assign. Default is True
+                Use lac for ligand_assign_consistent behavior. Default is True
 
         Returns
         -------
