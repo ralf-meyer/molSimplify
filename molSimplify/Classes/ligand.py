@@ -148,6 +148,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
             ligdents[matched] += 1
     return liglist, ligdents, ligcons
 
+
 def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     """Assign axial and equatorial portions. Deprecated. Use ligand_assign_consistent. For octahedral geometries.
     
@@ -564,17 +565,6 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
-    if name:  ## TODO: this part might be broken. Maybe not of much use though.
-        for i, ax_ligand in enumerate(ax_ligand_list):
-            if not os.path.isdir('ligands'):
-                os.mkdir('ligands')
-            ax_ligand.mol.writexyz('ligands/' + name +
-                                   '_' + str(i) + '_ax.xyz')
-        for i, eq_ligand in enumerate(eq_ligand_list):
-            if not os.path.isdir('ligands'):
-                os.mkdir('ligands')
-            eq_ligand.mol.writexyz('ligands/' + name +
-                                   '_' + str(i) + '_eq.xyz')
     for j, ax_con in enumerate(ax_con_list):
         current_ligand_index_list = built_ligand_list[ax_lig_list[j]].index_list
         ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])
@@ -594,6 +584,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
     for eq_lig in eq_lig_list:
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
+
 
 def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False, eq_sym_match=False):
     """This ligand assignment code handles octahedral complexes consistently. Assigns any octahedral complex.
@@ -1744,6 +1735,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     for eq_lig in eq_lig_list:
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
+
 
 def get_lig_symmetry(mol,loud=False,htol=3):
     """Handles ligand symmetry assignment.

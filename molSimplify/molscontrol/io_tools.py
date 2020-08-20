@@ -6,7 +6,7 @@ import subprocess
 from collections import OrderedDict
 from sklearn.utils.extmath import randomized_svd
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign, ligand_assign_consistent
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
 from molSimplify.Informatics.RACassemble import assemble_connectivity_from_parts
 from molSimplify.Classes.globalvars import dict_oct_check_st
 
@@ -100,13 +100,6 @@ def obtain_jobinfo(xyzfile, frame=-1, txt=False):
     # print(liglist)
     # print(ligdents)
     # print(ligcons)
-    ### Old version
-    # _, _, _, _, _, _, ax_con, eq_con, _ = ligand_assign(init_mol, liglist,
-    #                                                     ligdents, ligcons)
-    # print("ax_con: ", ax_con)
-    # print("eq_con: ", eq_con)
-    # ax_con = np.squeeze(np.array(ax_con).reshape(2, -1))
-    # eq_con = np.squeeze(np.array(eq_con).reshape(4, -1))
     _, _, _, _, _, _, _ax_con, _eq_con, _ = ligand_assign_consistent(init_mol, liglist,
                                                                      ligdents, ligcons)
     print("ax_con: ", _ax_con)
