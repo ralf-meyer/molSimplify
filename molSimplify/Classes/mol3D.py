@@ -294,6 +294,21 @@ class mol3D:
                 inds.append(ii)
         return inds
 
+    def count_nonH_atoms(self):
+        """
+        Count the number of heavy atoms.
+
+        Returns
+        ----------
+            count: integer
+                the number of heavy atoms
+        """
+        count = 0
+        for ii in range(self.natoms):
+            if not self.getAtom(ii).symbol() in ["H", "h"]:
+                count += 1
+        return count
+
     def alignmol(self, atom1, atom2):
         """Aligns two molecules such that the coordinates of two atoms overlap.
         Second molecule is translated relative to the first. No rotations are 
@@ -931,6 +946,77 @@ class mol3D:
             fakegui.show()
         else:
             print('No PyQt5 found. SVG file written to directory.')
+
+    def aromatic_charge(self, bo_graph):
+        '''
+        Get the charge of aromatic rings based on 4*n+2 rule.
+
+        Parameters
+        ----------
+            bo_graph: numpy.array
+                bond order matrix
+        '''
+        aromatic_atoms = np.count_nonzero(bo_graph == 1.5)/2
+        #     print("aromatic_atoms: ", aromatic_atoms)
+        if aromatic_atoms > bo_graph.shape[0] - 1:
+            aromatic_n = np.rint((aromatic_atoms-2)*1./4)
+            aromatic_e = 4 * aromatic_n + 2
+            return (aromatic_atoms - aromatic_e)
+        else:
+            return 0
+
+    def get_octetrule_charge(self, debug=False):
+        '''
+        Get the octet-rule charge provided a mol3D object with bo_graph (read from CSD mol2 file)
+        Note that currently this function should only be applied to ligands (organic molecules).
+
+        Parameters
+        ----------
+            debug: boolean
+                whether to have more printouts
+        '''
+        octet_bo = {"H": 1, "C": 4, "N": 3, "O": 2, "F": 1,
+                    "Si": 4, "P": 3, "S": 2, "Cl": 1,
+                    "Ge": 4, "As": 3, "Se": 2, "Br": 1,
+                    "Sn": 4, "Sb": 3, "Te": 2, "I": 1}
+        self.deleteatoms(self.find_atom("X"))
+        self.convert2OBMol2()
+        ringlist = self.OBMol.GetSSSR()
+        ringinds = []
+        charge = 0
+        for obmol_ring in ringlist:
+            _inds = []
+            for ii in range(1, self.natoms+1):
+                if obmol_ring.IsInRing(ii):
+                    _inds.append(ii-1)
+            ringinds.append(_inds)
+            charge += self.aromatic_charge(self.bo_graph_trunc[_inds, :][:, _inds])
+        arom_charge = charge
+        for ii in range(self.natoms):
+            sym = self.getAtom(ii).symbol()
+            try:
+                if sym in ["N", "P", "As", "Sb"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
+                elif sym in ["N", "P", "As", "Sb"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1 and "O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]] and np.sum(self.bo_graph_trunc[ii]) == 4:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
+                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"] and np.sum(self.bo_graph_trunc[ii]) == 6:
+                    _c = -int(np.sum(self.bo_graph_trunc[ii]) - 4)
+                elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
+                    _c = -int(np.sum(self.bo_graph_trunc[ii]) - 6)
+                elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) == 4:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 4)
+                elif sym in ["F", "Cl", "Br", "I"] and np.sum(self.bo_graph_trunc[ii]) >= 6:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 7)
+                elif sym in ["H"] and np.sum(self.bo_graph_trunc[ii]) == 2:
+                    _c = 0
+                else:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - octet_bo[sym])
+                if debug:
+                    print(ii, sym, _c)
+                charge += _c
+            except:
+                return np.nan, np.nan
+        return charge, arom_charge
 
     def apply_ffopt(self, constraints = False, ff='uff'):
         """Apply forcefield optimization to a given mol3D class.
@@ -2226,10 +2312,10 @@ class mol3D:
                 s_line = line.split()
                 graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
                 graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
-                if s_line[3] in ["ar", 'am']:
+                if s_line[3] in ["ar"]:
                     bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1.5
                     bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1.5
-                elif s_line[3] in ["un"]:
+                elif s_line[3] in ["un", 'am']:
                     bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = np.nan
                     bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = np.nan
                 else:
@@ -2257,6 +2343,14 @@ class mol3D:
             self.bo_graph = []
             self.bo_graph_trunc = []
             self.bo_dict = []
+
+    def read_bo_from_mol(self, molfile):
+        with open(molfile, 'r') as fo:
+            for line in fo:
+                ll = line.split()
+                if len(ll) == 7 and all([x.isdigit() for x in ll]):
+                    self.bo_graph_trunc[int(ll[0])-1, int(ll[1])-1] = int(ll[2])
+                    self.bo_graph_trunc[int(ll[1])-1, int(ll[0])-1] = int(ll[2])
 
     def readfromstring(self, xyzstring):
         """Read XYZ from string.
