@@ -51,6 +51,9 @@ def read_run(outfile_PATH):
         results['metal_spin'] = np.nan
 
     optim_path = os.path.join(os.path.split(outfile_PATH)[0], 'scr', 'optim.xyz')
+    initial_xyz_path = outfile_PATH.rsplit('.',1)[0]+'.xyz'
+    if not os.path.isfile(initial_xyz_path):
+        raise Exception('No initial xyz found at: '+initial_xyz_path)
 
     check_geo = False
     if os.path.isfile(optim_path):
@@ -66,8 +69,11 @@ def read_run(outfile_PATH):
 
         mol = mol3D()
         mol.readfromxyz(optimized_path)
+        mol_init = mol3D()
+        mol_init.readfromxyz(optimized_path)
 
-        IsOct, flag_list, oct_check = mol.IsOct(dict_check=mol.dict_oct_check_st,
+        IsOct, flag_list, oct_check = mol.IsOct(init_mol=mol_init,
+                                                dict_check=mol.dict_oct_check_st,
                                                 silent=True)
 
         if IsOct:
