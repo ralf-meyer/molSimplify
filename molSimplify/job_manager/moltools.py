@@ -16,6 +16,19 @@ from molSimplify.Classes.ligand import ligand_breakdown
 
 
 def read_run(outfile_PATH):
+    """Read a DFT output.
+
+    Parameters
+    ----------
+        outfile_PATH : str
+            Path to quantum chemistry output file.
+
+    Returns
+    -------
+        results : dict
+            Analyzed results for job.
+    
+    """
     # Evaluates all aspects of a run using the outfile and derivative files
     results = manager_io.read_outfile(outfile_PATH, long_output=True)
     infile_dict = manager_io.read_infile(outfile_PATH)
@@ -38,6 +51,9 @@ def read_run(outfile_PATH):
         results['metal_spin'] = np.nan
 
     optim_path = os.path.join(os.path.split(outfile_PATH)[0], 'scr', 'optim.xyz')
+    initial_xyz_path = outfile_PATH.rsplit('.',1)[0]+'.xyz'
+    if not os.path.isfile(initial_xyz_path):
+        raise Exception('No initial xyz found at: '+initial_xyz_path)
 
     check_geo = False
     if os.path.isfile(optim_path):
@@ -53,8 +69,11 @@ def read_run(outfile_PATH):
 
         mol = mol3D()
         mol.readfromxyz(optimized_path)
+        mol_init = mol3D()
+        mol_init.readfromxyz(optimized_path)
 
-        IsOct, flag_list, oct_check = mol.IsOct(dict_check=mol.dict_oct_check_st,
+        IsOct, flag_list, oct_check = mol.IsOct(init_mol=mol_init,
+                                                dict_check=mol.dict_oct_check_st,
                                                 silent=True)
 
         if IsOct:
@@ -75,6 +94,19 @@ def read_run(outfile_PATH):
 
 
 def create_summary(directory='in place'):
+    """Create a summary file.
+
+    Parameters
+    ----------
+        directory : str, optional
+            Directory that contains all of the jobs to be analyzed. Default is in place.
+
+    Returns
+    -------
+        summary : pd.DataFrame
+            Summary of full directory.
+    
+    """
     # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
 
     outfiles = tools.find('*.out', directory)
@@ -86,6 +118,21 @@ def create_summary(directory='in place'):
 
 
 def apply_geo_check(job_outfile_path, geometry):
+    """Create a summary file.
+
+    Parameters
+    ----------
+        job_outfile_path : str
+            Path for output file.
+        geometry : str
+            Type of geometry to do the geometry check.
+
+    Returns
+    -------
+        geo_flag : bool
+            Flag describing geometry. True if good geometry.
+    
+    """
     if geometry:  # The geometry variable is set to False if no geo check is requested for this job
 
         optim_path = os.path.join(os.path.split(job_outfile_path)[0], 'scr', 'optim.xyz')
@@ -115,7 +162,7 @@ def apply_geo_check(job_outfile_path, geometry):
                               'oct_angle_devi_max': 15, 'max_del_sig_angle': 30,
                               'dist_del_eq': 0.35, 'dist_del_all': 1,
                               'devi_linear_avrg': 20, 'devi_linear_max': 28}
-            outer_dict_flags = mol.dict_oct_check_st.keys()
+            outer_dict_flags = list(mol.dict_oct_check_st.keys())
             final_dict = dict()
             for key in outer_dict_flags:
                 final_dict[key] = geo_check_dict
@@ -133,7 +180,7 @@ def apply_geo_check(job_outfile_path, geometry):
                               'oct_angle_devi_max': 25, 'max_del_sig_angle': 50,
                               'dist_del_eq': 0.35, 'dist_del_all': 1,
                               'devi_linear_avrg': 20, 'devi_linear_max': 28}
-            outer_dict_flags = mol.dict_oct_check_st.keys()
+            outer_dict_flags = list(mol.dict_oct_check_st.keys())
             final_dict = dict()
             for key in outer_dict_flags:
                 final_dict[key] = geo_check_dict
@@ -153,6 +200,21 @@ def apply_geo_check(job_outfile_path, geometry):
 
 
 def get_metal_and_bonded_atoms(job_outfile, geometry=None):
+    """Get metal and bonded atoms of complex.
+
+    Parameters
+    ----------
+        job_outfile : str
+            Path for output file.
+        geometry : str, optional
+            Type of geometry to define metal bonding. Default is None.
+
+    Returns
+    -------
+        geo_flag : bool
+            Flag describing geometry. True if good geometry.
+    
+    """
     # given the path to the outfile of a job, returns a the metal atom index and a list of indices for the metal bonded atoms
     # indices are zero-indexed...Terachem uses 1 indexed lists
 
@@ -171,6 +233,23 @@ def get_metal_and_bonded_atoms(job_outfile, geometry=None):
 
 
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
+    """Get metal and bonded atoms of complex.
+
+    Parameters
+    ----------
+        directory : str, optional
+            Directory where the jobs are running. Default is in place.
+        max_resub : int, optional
+            Number of resubmissions allowed. Default is 5.
+        configure_dict : dict, optional
+            Configure file. Default is False.
+
+    Returns
+    -------
+        completeness : dict
+            Completeness dictionary for a given directory.
+    
+    """
     completeness = tools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     # print("=======")
     # print("completeness: ", completeness)
@@ -233,8 +312,24 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return completeness
 
 
-def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
-                                       dissociated_ligand_spinmults = {}):
+def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},dissociated_ligand_spinmults = {}):
+    """Prep ligand breakdown.
+
+    Parameters
+    ----------
+        outfile_path : str
+            Path to output file.
+        dissociated_ligand_charges : dict, optional
+            Charges for dissociated ligands. Default is empty.
+        dissociated_ligand_spinmults : dict, optional
+            Spin multiplicity for dissociated ligands. Default is empty.
+
+    Returns
+    -------
+        jobscripts : list
+            List of jobscripts for ligand breakdown jobs.
+    
+    """
     # Given a path to the outfile of a finished run, this preps the files for rigid ligand dissociation energies of all ligands
     # Returns a list of the PATH(s) to the jobscript(s) to start the rigid ligand calculations
 
@@ -357,6 +452,19 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},
 
 
 def name_ligands(nested_list):
+    """Takes a nested list of atom symbols and converts it to a list of unique chemical names based on the molecular formulas
+
+    Parameters
+    ----------
+        nested_list : list
+            List of lists of atom symbols
+
+    Returns
+    -------
+        ligand_formulas : list
+            List of ligand formulas.
+    
+    """
     # takes a nested list of atom symbols and converts it to a list of unique chemical names based on the molecular formulas
 
     def convert_to_formula(list_of_atom_symbols):
@@ -393,6 +501,19 @@ def name_ligands(nested_list):
 
 
 def check_molscontrol_log(job):
+    """Check molscontrol log.
+
+    Parameters
+    ----------
+        job : str
+            Path to the output file.
+
+    Returns
+    -------
+        killed : bool
+            True if job killed.
+    
+    """
     molscontrol_logfile = "/".join(job.split("/")[:-1]) + '/molscontrol.log'
     if os.path.isfile(molscontrol_logfile):
         with open(molscontrol_logfile, "r") as fo:

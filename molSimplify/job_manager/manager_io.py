@@ -193,6 +193,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     return_dict['thermo_suspect'] = thermo_suspect
     return_dict['orbital_occupation'] = orbital_occupation
     return_dict['oscillating_scf_error'] = oscillating_scf_error
+    return_dict['outfile_path'] = outfile_path
     return return_dict
 
 

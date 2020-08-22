@@ -1,4 +1,0 @@
-1) Download sdf file (such as ChEMBL_20.sdf)
-2) build fast search index by writing: babel DBfile.sdf -ofs (will take ~15minutes for ChEMBL)
-
-fs only works for databases smaller than 4GB

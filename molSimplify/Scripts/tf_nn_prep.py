@@ -13,8 +13,8 @@ from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Scripts.molSimplify_io import lig_load
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts,
-                                                 create_OHE,
-                                                 get_descriptor_vector)
+                                                 create_OHE)
+from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.__main__ import tensorflow_silence
 from molSimplify.python_nn.clf_analysis_tool import lse_trust
@@ -334,11 +334,11 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     if not args.geometry == "oct":
         emsg.append(
-            "[ANN] Geometry is not supported at this time, MUST give -geometry = oct")
+            "[ANN] Geometry is not supported at this time, MUST give -geometry = oct if you want an ANN prediction.")
         valid = False
         ANN_reason = 'geometry not oct'
     if not args.oxstate:
-        emsg.append("\n oxidation state must be given")
+        emsg.append("\n oxidation state must be given for an ANN prediction.")
         valid = False
         ANN_reason = 'oxstate not given'
     if valid:

@@ -879,6 +879,10 @@ def parseinputfile(args, inputfile_str=None):
                 args.dbmw = l[1]
             if (l[0] == '-dbnsearch'):
                 args.dbnsearch = l[1]
+            if (l[0] == '-drawmode'):
+                args.drawmode = True
+            else:
+                args.drawmode = False
             if (l[0] == '-dballowedels'):
                 args.dballowedels = l[1:]
             if (l[0] == '-dbfname'):

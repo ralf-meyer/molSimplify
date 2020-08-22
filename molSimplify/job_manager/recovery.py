@@ -9,6 +9,19 @@ from molSimplify.job_manager.classes import resub_history
 import molSimplify.job_manager.manager_io as manager_io
 
 def load_history(PATH):
+    """Load a resub history object.
+
+    Parameters
+    ----------
+        PATH : str
+            The name of an output file or history object pickle file.
+
+    Returns
+    -------
+        history : resub_history
+            resub_history class instance for history object of job.
+        
+    """
     # takes the path to either an outfile or the resub_history pickle
     # returns the resub_history class object
 
@@ -17,6 +30,15 @@ def load_history(PATH):
     return history
 
 def abandon_job(PATH):
+    """Abandons a job with a given path. This function is never and should never be called by the job manager.
+    Only called manually for troublesome jobs. 
+
+    Parameters
+    ----------
+        PATH : str
+            The name of an output file or history object pickle file.
+        
+    """
     # takes the path to either an outfile or the resub_history pickle
     # sets the jobs status to be abandoned
 
@@ -26,10 +48,23 @@ def abandon_job(PATH):
     history.abandon()
     history.save()
 
-
-## Archive the scr file so it isn't overwritten in future resubs
-#  @param rewrite_inscr Determines whether to copy this runs wfn and optimized geometry to the inscr directory
 def save_scr(outfile_path, rewrite_inscr=True):
+    """Archive the scr file so it isn't overwritten in future resubs. 
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+        rewrite_inscr : bool, optional
+            Determines whether to copy this runs wfn and optimized geometry to the inscr directory. Default is True.
+
+    Returns
+    -------
+        scrpaths : str
+            Path to new scr directory.
+
+        
+    """
     root = os.path.split(outfile_path)[0]
     scr_path = os.path.join(root, 'scr')
 
@@ -66,9 +101,19 @@ def save_scr(outfile_path, rewrite_inscr=True):
 
         return os.path.join(os.path.split(outfile_path)[0], 'scr') + '_' + new_scr
 
-
-## Save the outfile within the resub_history pickel object
 def save_run(outfile_path, rewrite_inscr=True, save_scr_flag=True):
+    """Save the outfile within the resub_history pickle object. 
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+        rewrite_inscr : bool, optional
+            Determines whether to copy this runs wfn and optimized geometry to the inscr directory. Default is True.
+        save_scr_flag : bool, optional
+            Determine wheether to store scr. Default is True.
+        
+    """
     def write(list_of_lines, path):
         fil = open(path, 'w')
         for i in list_of_lines:
@@ -118,8 +163,15 @@ def save_run(outfile_path, rewrite_inscr=True, save_scr_flag=True):
         write(xyz_lines, 'old_xyz')
         os.chdir(home)
 
-
 def reset(outfile_path):
+    """Returns the run to the state it was after the first run, before job recovery acted on it. 
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+   
+    """
     # Returns the run to the state it was after the first run, before job recovery acted on it
 
     pickle_path = outfile_path.rsplit('.', 1)[0] + '.pickle'
@@ -207,8 +259,20 @@ def reset(outfile_path):
         shutil.move(scr_path + '_0', scr_path)
         shutil.move(pickle_path, os.path.join(old_path, str(np.random.randint(999999999)) + '_resub_history'))
 
-
 def simple_resub(outfile_path):
+    """Resubmits a job without changing parameters. Particularly useful for CUDA errors.
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # Resubmits a job without changing parameters. Particularly useful for CUDA errors.
     save_run(outfile_path, rewrite_inscr=False)
     history = resub_history()
@@ -222,8 +286,20 @@ def simple_resub(outfile_path):
     tools.qsub(root + '_jobscript')
     return True
 
-
 def clean_resub(outfile_path):
+    """Resubmits a job with default parameters, useful for undoing level shift or hfx alterations.
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # Resubmits a job with default parameters, useful for undoing level shift or hfx alterations
     save_run(outfile_path)
     history = resub_history()
@@ -272,8 +348,20 @@ def clean_resub(outfile_path):
     tools.qsub(root + '_jobscript')
     return True
 
-
 def resub_spin(outfile_path):
+    """Resubmits a spin contaminated job with blyp to help convergence to a non-spin contaminated solution.
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # resubmits a spin contaminated job with blyp to help convergence to a non-spin contaminated solution
     history = resub_history()
     history.read(outfile_path)
@@ -326,8 +414,20 @@ def resub_spin(outfile_path):
     else:
         return False
 
-
 def resub_scf(outfile_path):
+    """Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1).
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1)
     history = resub_history()
     history.read(outfile_path)
@@ -374,8 +474,21 @@ def resub_scf(outfile_path):
     else:
         return False
 
-
 def resub_oscillating_scf(outfile_path):
+    """Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1).
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
+
     # Resubmits a job that's having trouble converging the scf with different level shifts (1.0 and 0.1)
     history = resub_history()
     history.read(outfile_path)
@@ -420,8 +533,22 @@ def resub_oscillating_scf(outfile_path):
     else:
         return False
 
-
 def resub_bad_geo(outfile_path, home_directory):
+    """Resubmits a job that's converged to a bad geometry with additional contraints.
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+        home_directory : str
+            Path to the base directory of the run.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # Resubmits a job that's converged to a bad geometry with additional contraints
     history = resub_history()
     history.read(outfile_path)
@@ -485,8 +612,21 @@ def resub_bad_geo(outfile_path, home_directory):
     else:
         return False
 
-
 def resub_tighter(outfile_path):
+    """Resubmits a thermo job with the gradient error problem. Finds the parent job and resubmits it with a tighter scf 
+    convergence criteria.
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # Takes the path to the outfile of a thermo job with the gradient error problem
     # Finds the parent job and resubmits it with a tighter scf convergence criteria
 
@@ -523,8 +663,22 @@ def resub_tighter(outfile_path):
 
     return True
 
-
 def resub_thermo(outfile_path):
+    """Similar to simple resub, but specific for addressing thermo gradient errors.
+    hecks for the existance of an ultratight version of this run. If it exists, 
+    uses the most up to date version for the new thermo run
+
+    Parameters
+    ----------
+        outfile_path : str
+            The name of an output file.
+    
+    Returns
+    -------
+        Resub_flag : bool
+            True if resubmitted.
+   
+    """
     # Similar to simple resub, but specific for addressing thermo gradient errors
     # Checks for the existance of an ultratight version of this run. If it exists, uses the most up to date version for the new thermo run
 
