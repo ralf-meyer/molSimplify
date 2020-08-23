@@ -173,6 +173,8 @@ def convert_to_absolute_path(path):
     """
     if path[0] != '/':
         abspath = os.path.join(os.getcwd(), path)
+    else:
+        abspath = path
 
     return abspath
 
