@@ -69,11 +69,8 @@ def read_run(outfile_PATH):
 
         mol = mol3D()
         mol.readfromxyz(optimized_path)
-        mol_init = mol3D()
-        mol_init.readfromxyz(optimized_path)
 
-        IsOct, flag_list, oct_check = mol.IsOct(init_mol=mol_init,
-                                                dict_check=mol.dict_oct_check_st,
+        IsOct, flag_list, oct_check = mol.IsOct(dict_check=mol.dict_oct_check_st,
                                                 silent=True)
 
         if IsOct:
