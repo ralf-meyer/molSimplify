@@ -87,9 +87,10 @@ def resub(directory='in place'):
     # print("needs_derivative_jobs: ", needs_derivative_jobs)
     prep_derivative_jobs(directory, needs_derivative_jobs)
     resubmitted = []  # Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
-
+    counter = 0
     for job in molscontrol_kills:
-        print("killed by molscontrol: ", job)
+        counter += 1
+        print("killed by molscontrol: ", job, counter)
     # Resub unidentified errors
     for error in errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
