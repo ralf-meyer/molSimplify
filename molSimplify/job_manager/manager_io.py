@@ -401,7 +401,7 @@ def read_configure(home_directory, outfile_path):
                 else:
                     raise ValueError("%s does not exits." % localpath)
     # If global settings not specified, choose defaults:
-    if not max_jobs:
+    if (not max_jobs) and (max_jobs != 0):
         max_jobs = 50
     if not max_resub:
         max_resub = 5
@@ -417,7 +417,7 @@ def read_configure(home_directory, outfile_path):
         sleep = 7200
     if not ss_cutoff:
         ss_cutoff = 1.0
-    if not hard_job_limit:
+    if (not hard_job_limit) and (hard_job_limit != 0):
         hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
