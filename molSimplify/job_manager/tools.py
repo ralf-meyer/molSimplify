@@ -43,6 +43,8 @@ def check_valid_outfile(path):
         return False
     elif 'slurm-' in endpath:
         return False
+    elif 'smd.out' in endpath:
+        return False
     else:
         return True
 
