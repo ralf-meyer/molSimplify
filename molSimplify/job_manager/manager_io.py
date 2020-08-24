@@ -43,6 +43,10 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 print('Warning! Nohup file caught in outfile processing')
                 print(outfile_path)
                 counter = 0
+            elif 'smd.out' in outfile_path:
+                print('Warning! SMD file caught in outfile processing')
+                print(outfile_path)
+                counter = 0
             else:
                 print('.out file type not recognized for file: ' + outfile_path)
                 return_dict = {'name':None, 'charge':None, 'finalenergy':None,
