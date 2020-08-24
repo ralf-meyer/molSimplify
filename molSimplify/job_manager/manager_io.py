@@ -173,8 +173,9 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                     + float(timekey[9])
                     + float(timekey[11]) * 0.001)
 
-        charge = output.wordgrab(['Sum of atomic charges         :'], [-1], last_line=True)[0]
-        charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
+        if finished:
+            charge = output.wordgrab(['Sum of atomic charges         :'], [-1], last_line=True)[0]
+            charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
 
         opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY', -1)[0]
         geo_opt_cycles, min_energy = len(opt_energies), min(opt_energies)
