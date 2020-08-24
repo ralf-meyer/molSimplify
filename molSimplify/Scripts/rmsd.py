@@ -4,18 +4,19 @@ from scipy.spatial.distance import cdist
 
 
 def rmsd(V, W):
-    """
-    Calculate Root-mean-square deviation from two sets of vectors V and W.
+    """Calculate Root-mean-square deviation from two sets of vectors V and W.
+
     Parameters
     ----------
-    V : array
-        (N,D) matrix, where N is points and D is dimension.
-    W : array
-        (N,D) matrix, where N is points and D is dimension.
+        V : np.array
+            (N,D) matrix, where N is points and D is dimension.
+        W : np.array
+            (N,D) matrix, where N is points and D is dimension.
+
     Returns
     -------
-    rmsd : float
-        Root-mean-square deviation between the two vectors
+        rmsd : float
+            Root-mean-square deviation between the two vectors.
     """
     D = len(V[0])
     N = len(V)
@@ -26,20 +27,21 @@ def rmsd(V, W):
 
 
 def kabsch_rmsd(P, Q, translate=False):
-    """
-    Rotate matrix P unto Q using Kabsch algorithm and calculate the RMSD.
+    """Rotate matrix P unto Q using Kabsch algorithm and calculate the RMSD.
+
     Parameters
     ----------
-    P : array
-        (N,D) matrix, where N is points and D is dimension.
-    Q : array
-        (N,D) matrix, where N is points and D is dimension.
-    translate : bool
-        Use centroids to translate vector P and Q unto each other.
+        P : np.array
+            (N,D) matrix, where N is points and D is dimension.
+        Q : np.array
+            (N,D) matrix, where N is points and D is dimension.
+        translate : bool, optional
+            Use centroids to translate vector P and Q unto each other. Default is False.
+
     Returns
     -------
-    rmsd : float
-        root-mean squared deviation
+        rmsd : float
+            root-mean squared deviation
     """
     if translate:
         Q = Q - centroid(Q)
@@ -50,19 +52,19 @@ def kabsch_rmsd(P, Q, translate=False):
 
 
 def kabsch_rotate(P, Q):
-    """
-    Rotate matrix P unto matrix Q using Kabsch algorithm.
+    """Rotate matrix P unto matrix Q using Kabsch algorithm.
+
     Parameters
     ----------
-    P : array
-        (N,D) matrix, where N is points and D is dimension.
-    Q : array
-        (N,D) matrix, where N is points and D is dimension.
+        P : np.array
+            (N,D) matrix, where N is points and D is dimension.
+        Q : np.array
+            (N,D) matrix, where N is points and D is dimension.
+
     Returns
     -------
-    P : array
-        (N,D) matrix, where N is points and D is dimension,
-        rotated
+        P : np.array
+            (N,D) matrix, where N is points and D is dimension, rotated.
     """
     U = kabsch(P, Q)
 
@@ -72,28 +74,26 @@ def kabsch_rotate(P, Q):
 
 
 def kabsch(P, Q):
-    """
-    Using the Kabsch algorithm with two sets of paired point P and Q, centered
-    around the centroid. Each vector set is represented as an NxD
-    matrix, where D is the the dimension of the space.
-    The algorithm works in three steps:
-    - a centroid translation of P and Q (assumed done before this function
-      call)
-    - the computation of a covariance matrix C
-    - computation of the optimal rotation matrix U
+    """Using the Kabsch algorithm with two sets of paired point P and Q, centered 
+    around the centroid. Each vector set is represented as an NxD matrix, where D is the 
+    dimension of the space. The algorithm works in three steps: 
+    1. a centroid translation of P and Q (assumed done before this functioncall)
+    2. the computation of a covariance matrix C
+    3. computation of the optimal rotation matrix U
     For more info see http://en.wikipedia.org/wiki/Kabsch_algorithm
+
     Parameters
     ----------
-    P : array
-        (N,D) matrix, where N is points and D is dimension.
-    Q : array
-        (N,D) matrix, where N is points and D is dimension.
+        P : np.array
+            (N,D) matrix, where N is points and D is dimension.
+        Q : np.array
+            (N,D) matrix, where N is points and D is dimension.
+
     Returns
     -------
-    U : matrix
-        Rotation matrix (D,D)
+        U : np.array
+            Rotation matrix (D,D)
     """
-
     # Computation of the covariance matrix
     C = np.dot(np.transpose(P), Q)
 
@@ -118,18 +118,20 @@ def kabsch(P, Q):
 
 
 def quaternion_rmsd(P, Q):
-    """
-    Rotate matrix P unto Q and calculate the RMSD
+    """ Rotate matrix P unto Q and calculate the RMSD
     based on doi:10.1016/1049-9660(91)90036-O
+        
     Parameters
     ----------
-    P : array
-        (N,D) matrix, where N is points and D is dimension.
-    Q : array
-        (N,D) matrix, where N is points and D is dimension.
+        P : np.array
+            (N,D) matrix, where N is points and D is dimension.
+        Q : np.array
+            (N,D) matrix, where N is points and D is dimension.
+
     Returns
     -------
-    rmsd : float
+        rmsd : float
+            RMSD between P and Q.
     """
     rot = quaternion_rotate(P, Q)
     P = np.dot(P, rot)
@@ -137,10 +139,14 @@ def quaternion_rmsd(P, Q):
 
 
 def quaternion_transform(r):
-    """
-    Get optimal rotation
-    note: translation will be zero when the centroids of each molecule are the
-    same
+    """Get optimal rotation. 
+    Note: translation will be zero when the centroids of each molecule are the same.
+    
+    Parameters
+    ----------
+        r : np.array
+            Array of vectors to transform.
+
     """
     Wt_r = makeW(*r).T
     Q_r = makeQ(*r)
@@ -149,8 +155,24 @@ def quaternion_transform(r):
 
 
 def makeW(r1, r2, r3, r4=0):
-    """
-    matrix involved in quaternion rotation
+    """Make W matrix involved in quaternion rotation
+
+    Parameters
+    ----------
+        r1 : np.array
+            Vector 1.
+        r2 : np.array
+            Vector 2.
+        r3 : np.array
+            Vector 3.
+        r4 : np.array, optional
+            Vector 4. Default is 0.
+
+    Return
+    ------
+        W : np.array
+            W matrix involved in quaternion rotation.
+
     """
     W = np.asarray([
         [r4, r3, -r2, r1],
@@ -161,8 +183,24 @@ def makeW(r1, r2, r3, r4=0):
 
 
 def makeQ(r1, r2, r3, r4=0):
-    """
-    matrix involved in quaternion rotation
+    """Make Q matrix involved in quaternion rotation
+
+    Parameters
+    ----------
+        r1 : np.array
+            Vector 1.
+        r2 : np.array
+            Vector 2.
+        r3 : np.array
+            Vector 3.
+        r4 : np.array, optional
+            Vector 4. Default is 0.
+
+    Return
+    ------
+        Q : np.array
+            Q matrix involved in quaternion rotation.
+
     """
     Q = np.asarray([
         [r4, -r3, r2, r1],
@@ -173,18 +211,19 @@ def makeQ(r1, r2, r3, r4=0):
 
 
 def quaternion_rotate(X, Y):
-    """
-    Calculate the rotation
+    """Calculate the rotation
+
     Parameters
     ----------
-    X : array
-        (N,D) matrix, where N is points and D is dimension.
-    Y: array
-        (N,D) matrix, where N is points and D is dimension.
+        X : array
+            (N,D) matrix, where N is points and D is dimension.
+        Y: array
+            (N,D) matrix, where N is points and D is dimension.
+
     Returns
     -------
-    rot : matrix
-        Rotation matrix (D,D)
+        rot : matrix
+            Rotation matrix (D,D)
     """
     N = X.shape[0]
     W = np.asarray([makeW(*Y[k]) for k in range(N)])
@@ -199,28 +238,40 @@ def quaternion_rotate(X, Y):
 
 
 def centroid(X):
-    """
-    Centroid is the mean position of all the points in all of the coordinate
-    directions, from a vectorset X.
-    https://en.wikipedia.org/wiki/Centroid
+    """ Centroid is the mean position of all the points in all of the coordinate
+    directions, from a vectorset X. https://en.wikipedia.org/wiki/Centroid
     C = sum(X)/len(X)
+    
     Parameters
     ----------
-    X : array
-        (N,D) matrix, where N is points and D is dimension.
+        X : np.array
+            (N,D) matrix, where N is points and D is dimension.
+    
     Returns
     -------
-    C : float
-        centroid
+        C : float
+            centroid
     """
     C = X.mean(axis=0)
     return C
 
 
 def hungarian(A, B):
-    """
-    Hungarian reordering.
-    Assume A and B are coordinates for atoms of SAME type only
+    """Hungarian reordering.
+    Assume A and B are coordinates for atoms of SAME type only.
+
+    Parameters
+    ----------
+        A : np.array
+            (N,D) matrix, where N is points and D is dimension. coordinates.
+        B : np.array
+            (N,D) matrix, where N is points and D is dimension. coordinates.
+
+    Returns
+    -------
+        indices_b : np.array
+            Indices as a result of Hungarian analysis on distance matrix between atoms of 1st structure and trial structure
+
     """
 
     # should be kabasch here i think
@@ -234,24 +285,25 @@ def hungarian(A, B):
 
 
 def reorder_hungarian(p_atoms, q_atoms, p_coord, q_coord):
-    """
-    Re-orders the input atom list and xyz coordinates using the Hungarian
+    """Re-orders the input atom list and xyz coordinates using the Hungarian
     method (using optimized column results)
+        
     Parameters
     ----------
-    p_atoms : array
-        (N,1) matrix, where N is points holding the atoms' names
-    p_atoms : array
-        (N,1) matrix, where N is points holding the atoms' names
-    p_coord : array
-        (N,D) matrix, where N is points and D is dimension
-    q_coord : array
-        (N,D) matrix, where N is points and D is dimension
+        p_atoms : np.array
+            (N,1) matrix, where N is points holding the atoms' names
+        p_atoms : np.array
+            (N,1) matrix, where N is points holding the atoms' names
+        p_coord : np.array
+            (N,D) matrix, where N is points and D is dimension
+        q_coord : np.array
+            (N,D) matrix, where N is points and D is dimension
+
     Returns
     -------
-    view_reorder : array
-             (N,1) matrix, reordered indexes of atom alignment based on the
-             coordinates of the atoms
+        view_reorder : np.array
+                 (N,1) matrix, reordered indexes of atom alignment based on the
+                 coordinates of the atoms
     """
 
     # Find unique atoms
@@ -274,21 +326,22 @@ def reorder_hungarian(p_atoms, q_atoms, p_coord, q_coord):
 
 
 def reorder_distance(p_atoms, q_atoms, p_coord, q_coord):
-    """
-    Re-orders the input atom list and xyz coordinates by atom type and then by
+    """ Re-orders the input atom list and xyz coordinates by atom type and then by
     distance of each atom from the centroid.
+        
     Parameters
     ----------
-    atoms : array
-        (N,1) matrix, where N is points holding the atoms' names
-    coord : array
-        (N,D) matrix, where N is points and D is dimension
+        atoms : np.array
+            (N,1) matrix, where N is points holding the atoms' names
+        coord : np.array
+            (N,D) matrix, where N is points and D is dimension
+
     Returns
     -------
-    atoms_reordered : array
-        (N,1) matrix, where N is points holding the ordered atoms' names
-    coords_reordered : array
-        (N,D) matrix, where N is points and D is dimension (rows re-ordered)
+        atoms_reordered : np.array
+            (N,1) matrix, where N is points holding the ordered atoms' names
+        coords_reordered : np.array
+            (N,D) matrix, where N is points and D is dimension (rows re-ordered)
     """
 
     # Find unique atoms
@@ -320,6 +373,29 @@ def reorder_distance(p_atoms, q_atoms, p_coord, q_coord):
 
 def rmsd_reorder_rotate(p_atoms, q_atoms, p_coord, q_coord,
                         rotation="kabsch", reorder="hungarian", ):
+    """Reorder and rotate for RMSD.
+
+    Parameters
+    ----------
+        p_atoms : np.array
+            Atom symbol list.
+        q_atoms : np.array
+            Atom symbol list.
+        p_coord : np.array
+            List of coordinates for p_atoms.
+        q_atoms : np.array
+            List of coordinates for q_atoms.
+        rotation : str, optional
+            Rotation method. Default is kabsch.
+        reorder : str, optional
+            Reorder method. Default is hungarian.
+
+    Returns
+    -------
+        result_rmsd : float
+            Resulting RMSD from aligning and rotating.
+
+    """
     if not p_atoms.shape[0] == q_atoms.shape[0]:
         print(("Warning: Number of atoms do not match!",
                p_atoms.shape[0], q_atoms[0]))
@@ -369,6 +445,25 @@ def rmsd_reorder_rotate(p_atoms, q_atoms, p_coord, q_coord,
 
 def rigorous_rmsd(mol1, mol2,
                   rotation="kabsch", reorder="hungarian", ):
+    """Rigorous RMSD measurement
+
+    Parameters
+    ----------
+        mol1 : mol3D
+            mol3D instance of initial molecule.
+        mol2 : np.mol3D
+            mol3D instance of final molecule.
+        rotation : str, optional
+            Rotation method. Default is kabsch.
+        reorder : str, optional
+            Reorder method. Default is hungarian.
+
+    Returns
+    -------
+        result_rmsd : float
+            Resulting RMSD from aligning and rotating.
+
+    """
     mol1_atoms = mol1.symvect()
     mol1_coords = mol1.coordsvect()
     mol2_atoms = mol2.symvect()

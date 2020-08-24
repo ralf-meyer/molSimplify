@@ -97,6 +97,7 @@ glutamic:glutamic_acid.mol,Glu,3,build functionalize aminoacid,BA,-1
 glutamicB:glutamic_acid.mol,Glu,3 18,build functionalize aminoacid,BA,-1
 glutamine:glutamine.mol,Gln,3,build functionalize aminoacid,BA,0
 glutamineB:glutamine.mol,Gln,3 19,build functionalize aminoacid,BA,0
+glycinate:glycinate.mol,glycinate,2 3,build custom custom,BA,-1
 glycine:glycine.mol,Gly,8,build functionalize aminoacid,BA,0
 glycineB:glycine.mol,Gly,8 3,build functionalize aminoacid,BA,0
 helium:helium.mol,he,0,build functionalize small,N,0

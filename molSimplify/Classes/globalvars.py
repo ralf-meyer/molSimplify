@@ -2,9 +2,9 @@
 # @file globalvars.py
 #  Contains useful constants used throughout the code.
 #
-#  Written by Tim Ioannidis for HJK Group
+#  Written by Kulik Group
 #
-#  Dpt of Chemical Engineering, MIT
+#  Department of Chemical Engineering, MIT
 
 import os
 import inspect
@@ -397,6 +397,19 @@ all_angle_refs = {
 #  @param cmd String containing command to be run
 #  @return bash output string
 def mybash(cmd):
+    """Function to run a bash command.
+
+    Parameters
+    ----------
+        cmd : str
+            String containing command to be run
+
+    Returns
+    -------
+        output : str
+            bash output string
+
+    """
     p = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = []
@@ -410,8 +423,8 @@ def mybash(cmd):
 
 # Defines global variables used throughout the code
 class globalvars:
-    # Constructor
-    #  @param self The object pointer
+    """Globalvars class. Defines global variables used throughout the code, including periodic table.
+    """
     def __init__(self):
         # Program name
         self.PROGRAM = 'molSimplify'
@@ -509,84 +522,156 @@ class globalvars:
     #  @param self The object pointer
     #  @return Atomic mass dictionary
     def amass(self):
+        """Get the atomic mass dictionary.
+           
+        Returns
+        -------
+            amassdict : dict
+                Dictionary containing atomic masses.
+        """
         return amassdict
 
     def polarizability(self):
+        """Get the polarizability dictionary.
+           
+        Returns
+        -------
+            poldict : dict
+                Dictionary containing polarizabilities.
+        """
         return poldict
 
     def tribonddict(self):
+        """Get the triple bond dictionary.
+           
+        Returns
+        -------
+            tribonddict : dict
+                Dictionary containing triple bond lengths.
+        """
         return tribonddict
 
     def bondsdict(self):
+        """Get the bond dictionary.
+           
+        Returns
+        -------
+            bondsdict : dict
+                Dictionary containing bond lengths.
+        """
         return bondsdict
 
-    # Returns metals list
-    #  @param self The object pointer
-    #  @return Metals list
-    def metals(self):
-        return metalslist
-
-    # Returns list of elements by number
-    #  @param self The object pointer
-    #  @return List of elements by number
     def elementsbynum(self):
+        """Returns list of elements by number
+           
+        Returns
+        -------
+            elementsbynum : list
+                List of elements by number
+        """
         return elementsbynum
 
-    # Returns electronegativity dictionary
-    #  @param self The object pointer
-    #  @return Electronegativity dictionary
     def endict(self):
+        """Returns electronegativity dictionary.
+           
+        Returns
+        -------
+            endict : list
+                Electronegativity dictionary
+        """
         return endict
 
-    # Returns electronegativity dictionary
-    #  @param self The object pointer
-    #  @return Electronegativity dictionary
     def vdwrad(self):
+        """Returns VDW dictionary.
+           
+        Returns
+        -------
+            vdwrad : list
+                Dictionary of VDW radii.
+        """
         return vdwrad
 
-    # Returns list of metals dictionary
-    #  @param self The object pointer
-    #  @return metals dictionary
     def metalslist(self):
+        """Get the metals list.
+           
+        Returns
+        -------
+            metalslist : list
+                List of available metals.
+        """
         return metalslist
 
-    # Returns dict of elements by groups
-    #  @param self The object pointer
-    #  @return groups dictionary
     def groups(self):
+        """Returns dict of elements by groups.
+           
+        Returns
+        -------
+            groups_dict : dict
+                Groups dictionary.
+        """
         return groups_dict
 
-    # Returns dict of elements by periods
-    #  @param self The object pointer
-    #  @return periods dictionary
     def periods(self):
+        """Returns dict of elements by periods.
+           
+        Returns
+        -------
+            periods_dict : dict
+                Periods dictionary.
+        """
         return periods_dict
 
-    # Returns list of geo check objects dictionary
-    #  @param self The object pointer
-    #  @return geo check objection  dictionary
     def geo_check_dictionary(self):
+        """Returns list of geo check objects dictionary.
+           
+        Returns
+        -------
+            geo_check_dictionary : dict
+                Geo check measurement dictionary.
+        """
         return geo_check_dictionary
 
     def get_all_geometries(self):
+        """Get available geometries.
+           
+        Returns
+        -------
+            all_geometries : list
+                All available geometries.
+        """
         return all_geometries
 
     def get_all_angle_refs(self):
+        """Get references angle dict.
+           
+        Returns
+        -------
+            all_angle_refs : dict
+                Reference angles for various geometries.
+        """
         return all_angle_refs
 
-    # Record custom path in ~/.molSimplify file
-    #  @param self The object pointer
-    #  @param path Custom path
     def add_custom_path(self, path):
+        """Record custom path in ~/.molSimplify file
+           
+        Parameters
+        ----------
+            path : str
+                Path to custom data ~/.molSimplify file.
+        """
         homedir = os.path.expanduser("~")
         f = open(homedir + '/.' + self.PROGRAM, 'a')
         f.write('CUSTOM_DATA_PATH=' + str(path) + "\n")
         f.close()
 
-    # Get backbone combinations dictionary
-    #  @param self The object pointer
-    #  @return Backbone combinations dictionary
     def bbcombs_mononuc(self):
+        """Get backbone combinations dictionary
+           
+        Returns
+        -------
+            bbcombs_mononuc : dict
+                Backbone combination dictionary for different geometries.
+        """
         bbcombs_mononuc = dict()
         bbcombs_mononuc['one'] = [[1]]
         bbcombs_mononuc['li'] = [[1], [2]]
@@ -631,9 +716,14 @@ class globalvars:
                                   [2, 3], [2, 5], [5, 6], [6, 4], [4, 1], [1], [2], [3], [4], [5], [6]]
         return bbcombs_mononuc
 
-    # Tests for keras/TF avail
-    #  @return if keras/TF is avail
     def testTF(self):
+        """Tests to see whether keras and tensorflow are available.
+           
+        Returns
+        -------
+            tf_flag : bool
+                True if tensorflow and keras are available.
+        """
         try:
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
             from keras.models import Model
@@ -642,9 +732,14 @@ class globalvars:
         except:
             return False
 
-    # Tests for matplotlib avail
-    #  @return if matplotlib is avail
     def testmatplotlib(self):
+        """Tests to see if matplotlib is available
+           
+        Returns
+        -------
+            mpl_flag : bool
+                True if matplotlib is available
+        """
         try:
             # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
             import matplotlib.pyplot as plt

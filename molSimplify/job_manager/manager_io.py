@@ -43,6 +43,10 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 print('Warning! Nohup file caught in outfile processing')
                 print(outfile_path)
                 counter = 0
+            elif 'smd.out' in outfile_path:
+                print('Warning! SMD file caught in outfile processing')
+                print(outfile_path)
+                counter = 0
             else:
                 print('.out file type not recognized for file: ' + outfile_path)
                 return_dict = {'name':None, 'charge':None, 'finalenergy':None,
@@ -169,8 +173,9 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                     + float(timekey[9])
                     + float(timekey[11]) * 0.001)
 
-        charge = output.wordgrab(['Sum of atomic charges         :'], [-1], last_line=True)[0]
-        charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
+        if finished:
+            charge = output.wordgrab(['Sum of atomic charges'], [-1], last_line=True)[0]
+            charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
 
         opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY', -1)[0]
         geo_opt_cycles, min_energy = len(opt_energies), min(opt_energies)
@@ -193,6 +198,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     return_dict['thermo_suspect'] = thermo_suspect
     return_dict['orbital_occupation'] = orbital_occupation
     return_dict['oscillating_scf_error'] = oscillating_scf_error
+    return_dict['outfile_path'] = outfile_path
     return return_dict
 
 
@@ -395,7 +401,7 @@ def read_configure(home_directory, outfile_path):
                 else:
                     raise ValueError("%s does not exits." % localpath)
     # If global settings not specified, choose defaults:
-    if not max_jobs:
+    if (not max_jobs) and (max_jobs != 0):
         max_jobs = 50
     if not max_resub:
         max_resub = 5
@@ -411,7 +417,7 @@ def read_configure(home_directory, outfile_path):
         sleep = 7200
     if not ss_cutoff:
         ss_cutoff = 1.0
-    if not hard_job_limit:
+    if (not hard_job_limit) and (hard_job_limit != 0):
         hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
@@ -651,14 +657,14 @@ def write_orca_input(infile_dictionary):
 
 
 def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
-                    machine='gibraltar', cwd=False, use_molscontrol=False):
+                    machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
                                  machine=machine, cwd=cwd,
-                                 use_molscontrol=use_molscontrol)
+                                 use_molscontrol=use_molscontrol, queues = queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                              parallel_environment=parallel_environment, 
@@ -669,7 +675,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
-                             machine='gibraltar', cwd=False, use_molscontrol=False):
+                             machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
     if use_molscontrol and machine is not 'gibraltar':
         raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
@@ -681,7 +687,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                     '#$ -R y\n',
                     '#$ -l h_rt=' + time_limit + '\n',
                     '#$ -l h_rss=8G\n',
-                    '#$ -q gpus|gpusnew|gpusnewer\n',
+                    '#$ -q '+'|'.join(queues)+'\n',
                     '#$ -l gpus=1\n',
                     '#$ -pe smp 1\n',
                     "# -fin " + "%s.in\n" % name,
@@ -698,7 +704,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                     '#$ -R y\n',
                     '#$ -l h_rt=' + time_limit + '\n',
                     '#$ -l h_rss=8G\n',
-                    '#$ -q gpus|gpusnew|gpusnewer\n',
+                    '#$ -q '+'|'.join(queues)+'\n',
                     '#$ -l gpus=1\n',
                     '#$ -pe smp 1\n',
                     "# -fin " + "%s.in\n" % name,

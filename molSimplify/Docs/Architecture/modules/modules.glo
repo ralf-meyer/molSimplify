@@ -1,7 +1,0 @@
-\glossaryentry{v0.01> =General:>First realease to answer a question on fctt.|hdpindex{}}{1}
-\glossaryentry{v0.11> =General:>fix bug|hdpindex{}}{1}
-\glossaryentry{v0.12> =General:>{DTbaselineskip}. local {parskip}, {baselineskip}, and {strut} in order to fix a displaying bug.|hdpindex{}}{1}
-\glossaryentry{v0.2> =General:>dtx for CTAN, code for both Plain T\kern -.1667em\lower .5ex\hbox {E}\kern -.125emX\spacefactor \@m {}{} and \LaTeX  .|hdpindex{}}{1}
-\glossaryentry{v0.3> =General:>xkeyval syntax, breakable tree|hdpindex{}}{1}
-\glossaryentry{v0.31> =General:>bug about some lengths|hdpindex{}}{1}
-\glossaryentry{v0.32> =General:>bug about length (thanks to Philipp K\"uhl). Some macro names changed in order to prevent clash with other packages.|hdpindex{}}{1}

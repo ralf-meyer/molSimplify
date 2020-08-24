@@ -7,7 +7,7 @@
 ########     geometries for octahedral    ################
 ################      TM complexs          ###############
 ##########################################################
-from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
 from molSimplify.Scripts.geometry import distance
 
 def getOctBondDistances(mol):
@@ -15,7 +15,7 @@ def getOctBondDistances(mol):
     ## ax and equitorial 
     ## min and max bond lengths
     liglist, ligdents, ligcons = ligand_breakdown(mol)
-    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign_consistent(
         mol, liglist, ligdents, ligcons, False, False)
     ax_dist = list()
     eq_dist = list()
@@ -39,7 +39,7 @@ def getLigFormulae(mol):
     axnames = []
     eqnames = []
     liglist, ligdents, ligcons = ligand_breakdown(mol)
-    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign_consistent(
         mol, liglist, ligdents, ligcons, False, False)
     for axl in ax_ligand_list:
         axnames.append(axl.mol.make_formula())

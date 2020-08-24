@@ -11,23 +11,26 @@ from molSimplify.Classes.mol3D import mol3D
 
 # Ligand class for postprocessing DFT results by measuring ligand properties
 class ligand:
-    # Constructor
-    #  @param self The object pointer
-    #  @param master_mol A mol3D complex to extract ligand from
-    #  @param index_list A list of indices of the ligand atoms
-    #  @paran dent The denticity of the ligand
+    """Ligand class for postprocessing DFT results to measure ligand properties.
+        
+    Parameters
+    ----------
+        master_mol : mol3D
+            mol3D class instance for ligand mol.
+        index_list : list
+            List for ligand connection atom indices.
+        dent : int
+            Denticity of the ligand
+    """
     def __init__(self, master_mol, index_list, dent):
         self.master_mol = master_mol
         self.index_list = sorted(index_list)
         self.dent = dent
         self.ext_int_dict = dict()  # store
 
-    ## Deprecated.
-    # map betweem
-    # int and ext indcies
-    # Obtain the ligand from the complex mol3D object
-    # @param self The object pointer
     def obtain_mol3d(self):
+        """Getting the mol3D of the ligand. Deprecated. Map between int and ext indcies. Obtain the ligand from the complex mol3D object.
+        """
         this_mol = mol3D()
         this_ext_int_dict = dict()
         j = 0
@@ -48,10 +51,18 @@ class ligand:
             self.mol.bo_dict = save_bo_dict
         self.ext_int_dict = this_ext_int_dict
     
-    # Write out ligand mol2 string and molecular graph determinant
-    # include Metal flagged with Symbol "X" for placeholder status
-    # returns molecular_graph_determinant and ligand_mol2_string
     def get_lig_mol2(self):
+        """Write out ligand mol2 string and molecular graph determinant. 
+        Include Metal flagged with Symbol "X" for placeholder status.
+
+        Returns
+        -------
+            lig_mol_graph_det : str
+                Molecular graph determinant.
+            ligand_mol2_string : str
+                Mol2 string for the ligand.
+        
+        """
         this_mol2 = mol3D()
         this_ext_int_dict = dict()
         metal_ind = self.master_mol.findMetal()[0]
@@ -76,14 +87,30 @@ class ligand:
         lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
         return lig_mol_graph_det, lig_mol2_string
 
-##########
-
-# Extract axial and equitorial components of a octahedral complex
-#  @param mol The mol3D object for the complex
-#  @param liglist List of ligands
-#  @return ligdents List of ligand dents
-#  @return ligcons List of ligand connection indices (in mol)
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
+    """Extract axial and equitorial components of a octahedral complex. 
+    
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance for the complex.
+        flag_loose : bool, optional
+            Use loose flags to determine bonding. Default is False.
+        BondedOct : bool, optional
+            Enforce octahedral bonding. Default is False.
+        silent : bool, optional
+            Silence extra printout. Default is True.
+
+    Returns
+    -------
+        liglist : list
+            List of ligands
+        ligdents : list
+            List of ligand denticities
+        ligcons : list
+            List of ligand connection indices (in mol)
+    
+    """
     # this function takes an octahedral
     # complex and returns ligands
     loud = False
@@ -123,6 +150,46 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
 
 
 def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
+    """Assign axial and equatorial portions. Deprecated. Use ligand_assign_consistent. For octahedral geometries.
+    
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance for the complex.
+        liglist : list
+            List of ligands
+        ligdents : list
+            List of ligand denticities
+        ligcons : list
+            List of ligand connection indices (in mol)
+        loud : bool, optional
+            Enable extra printout. Default is False.
+        name : bool, optional
+            Name ligands to write to XYZ. Default is False. Broken, do not use.
+
+
+    Returns
+    -------
+        ax_ligand_list : list
+            Ligands designated as axial ligands.
+        eq_ligand_list : list
+            Ligands designated as equatorial ligands.
+        ax_natoms_list : list
+            Number of atoms in axial ligands.
+        eq_natoms_list : list
+            Number of atoms in equatorial ligands.
+        ax_con_int_list : list
+            Connecting atoms indices of axial ligands.
+        eq_con_int_list : list
+            Connecting atoms indices of equatorial ligands.
+        ax_con_list : list
+            Connecting atoms of axial ligands.
+        eq_con_list : list 
+            Connecting atoms of equatorial ligands.
+        built_ligand_list : list
+            List of ligand classes for all ligands.
+    
+    """
     valid = True
     # loud = False
     pentadentate = False
@@ -498,17 +565,6 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
                str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
-    if name:  ## TODO: this part might be broken. Maybe not of much use though.
-        for i, ax_ligand in enumerate(ax_ligand_list):
-            if not os.path.isdir('ligands'):
-                os.mkdir('ligands')
-            ax_ligand.mol.writexyz('ligands/' + name +
-                                   '_' + str(i) + '_ax.xyz')
-        for i, eq_ligand in enumerate(eq_ligand_list):
-            if not os.path.isdir('ligands'):
-                os.mkdir('ligands')
-            eq_ligand.mol.writexyz('ligands/' + name +
-                                   '_' + str(i) + '_eq.xyz')
     for j, ax_con in enumerate(ax_con_list):
         current_ligand_index_list = built_ligand_list[ax_lig_list[j]].index_list
         ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])
@@ -531,6 +587,50 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
 
 
 def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False, eq_sym_match=False):
+    """This ligand assignment code handles octahedral complexes consistently. Assigns any octahedral complex.
+    
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance for the complex.
+        liglist : list
+            List of ligands
+        ligdents : list
+            List of ligand denticities
+        ligcons : list
+            List of ligand connection indices (in mol)
+        loud : bool, optional
+            Enable extra printout. Default is False.
+        name : bool, optional
+            Name ligands to write to XYZ. Default is False.
+        use_z : bool, optional
+            Use z-dimension to determine axial ligands, as oppossed to connectivity.
+        eq_sym_match : bool, optional
+            Enforce eq plane to have connecting atoms with same symbol. Default is False.
+
+
+    Returns
+    -------
+        ax_ligand_list : list
+            Ligands designated as axial ligands.
+        eq_ligand_list : list
+            Ligands designated as equatorial ligands.
+        ax_natoms_list : list
+            Number of atoms in axial ligands.
+        eq_natoms_list : list
+            Number of atoms in equatorial ligands.
+        ax_con_int_list : list
+            Connecting atoms indices of axial ligands.
+        eq_con_int_list : list
+            Connecting atoms indices of equatorial ligands.
+        ax_con_list : list
+            Connecting atoms of axial ligands.
+        eq_con_list : list 
+            Connecting atoms of equatorial ligands.
+        built_ligand_list : list
+            List of ligand classes for all ligands.
+    
+    """
     ####### This ligand assignment code handles octahedral complexes consistently.
     ####### It should be able to assign any octahedral complex
     angle_cutoff = 130 # Angle cutoff for linear
@@ -1638,12 +1738,22 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
 
 
 def get_lig_symmetry(mol,loud=False,htol=3):
-    """
-    Handles ligand symmetry assignment
-    input: mol (Mol3D object)
-    input: htol (Default 3, tolerance for hydrogens in matching ligands)
-    input: loud (Default False, run ligand_assign_consistent with loud flag)
-    output: outstring (String, ligand symmetry plane)
+    """Handles ligand symmetry assignment.
+        
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D class instance.
+        loud : bool
+            Flag for extra printout. Default is False.
+        htol : int, optional
+            Tolerance for hydrogens in matching ligands. Default is 3.
+    
+    Returns
+    -------
+        outstring : str
+            ligand symmetry plane
+
     """
     liglist, ligdents, ligcons = ligand_breakdown(mol,BondedOct=True,flag_loose=True)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \

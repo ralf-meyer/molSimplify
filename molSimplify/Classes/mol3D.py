@@ -1,7 +1,7 @@
 # @file mol3D.py
 #  Defines mol3D class and contains useful manipulation/retrieval routines.
 #
-#  Written by Tim Ioannidis and JP Janet for HJK Group
+#  Written by HJK Group
 #
 #  Dpt of Chemical Engineering, MIT
 
@@ -31,38 +31,18 @@ except ImportError:
     qtflag = False
     pass
 
-
-# Euclidean distance between points
-#  @param R1 Point 1
-#  @param R2 Point 2
-#  @return Euclidean distance
-def distance(R1, R2):
-    dx = R1[0] - R2[0]
-    dy = R1[1] - R2[1]
-    dz = R1[2] - R2[2]
-    d = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
-    return d
-
-
-# Wrapper for executing bash commands
-#  @param cmd Command to be executed
-#  @return Stdout
-def mybash(cmd):
-    p = subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = []
-    while True:
-        line = p.stdout.readline()
-        stdout.append(line)
-        if line == '' and p.poll() != None:
-            break
-    return ''.join(stdout)
-
-
-# Class for molecules that will be used to manipulate coordinates and other properties
 class mol3D:
-    # Constructor
-    #  @param self The object pointer
+    """Holds information about a molecule, used to do manipulations.
+    Reads information from structure file (XYZ, mol2) or is directly 
+    built from molsimplify. Please be cautious with periodic systems.
+    
+    Example instantiation of an octahedral iron-ammonia complex from an XYZ file:
+
+    >>> complex_mol = mol3D()
+    >>> complex_mol.readfromxyz('fe_nh3_6.xyz')
+    
+    """
+
     def __init__(self, use_atom_specific_cutoffs=False):
         # List of atom3D objects
         self.atoms = []
@@ -132,16 +112,39 @@ class mol3D:
         self.dict_angle_linear = dict()
         self.use_atom_specific_cutoffs = use_atom_specific_cutoffs
 
-    # Performs angle centric manipulation
-    #
-    #  A submolecule is rotated about idx2.
-    #
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param idx3 Index of anchor atom
-    #  @param angle New bond angle in degree
+    def __repr__(self):
+        """Returns all bound methods of the mol3D class..
+        
+        Returns
+        -------
+            method_string : string
+                String of methods available in mol3D class.
+        """
+
+        method_string = "\nClass mol3D has the following methods:\n"
+        for method in dir(self):
+            if callable(getattr(self, method)):
+                method_string += method + '\n'
+        return method_string
+
     def ACM(self, idx1, idx2, idx3, angle):
+        """Performs angular movement on mol3D class. A submolecule is 
+        rotated about idx2. Operates directly on class.
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            idx3 : int
+                Index of anchor atom 2.
+            angle : float
+                New bond angle in degrees.
+
+        >>> complex_mol.ACM(2, 1, 0, 180) # Make atom 2 form a 180 degree angle with atoms 1 and 0.
+        """
+
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
         submol_to_move = mol3D()
@@ -162,25 +165,27 @@ class mol3D:
             angle = 180 - angle
         submol_to_move = rotate_around_axis(
             submol_to_move, r1, u, theta - angle)
-        # print('atidxs_to_move are ' + str(atidxs_to_move))
         for i, atidx in enumerate(atidxs_to_move):
             asym = self.atoms[atidx].sym
             xyz = submol_to_move.getAtomCoords(i)
             self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
-        # mol.copymol3D(submol_to_move)
-        # self.deleteatoms(range(self.natoms))
-        # self.copymol3D(mol)
 
-    # Performs angle centric manipulation alnog a given axis
-    #
-    #  A submolecule is rotated about idx2.
-    #
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param u axis of rotation
-    #  @param angle New bond angle in degree
-    def ACM_axis(self, idx1, idx2, u, angle):
+    def ACM_axis(self, idx1, idx2, axis, angle):
+        """Performs angular movement about an axis on mol3D class. A submolecule 
+        is rotated about idx2.Operates directly on class.
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom.
+            axis : list
+                Direction vector of axis. Length 3 (X, Y, Z).
+            angle : float
+                New bond angle in degrees.
+        """
+
         atidxs_to_move = self.findsubMol(idx1, idx2)
         atidxs_anchor = self.findsubMol(idx2, idx1)
         submol_to_move = mol3D()
@@ -195,22 +200,29 @@ class mol3D:
         mol.copymol3D(submol_anchor)
         r0 = self.getAtom(idx1).coords()
         r1 = self.getAtom(idx2).coords()
-        submol_to_move = rotate_around_axis(submol_to_move, r1, u, angle)
-        # print('atidxs_to_move are ' + str(atidxs_to_move))
+        submol_to_move = rotate_around_axis(submol_to_move, r1, axis, angle)
         for i, atidx in enumerate(atidxs_to_move):
             asym = self.atoms[atidx].sym
             xyz = submol_to_move.getAtomCoords(i)
             self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
-        # mol.copymol3D(submol_to_move)
-        # self.deleteatoms(range(self.natoms))
-        # self.copymol3D(mol)
 
-    # Add atom to molecule
-    #
-    #  Added atom is appended to the end of the list.
-    #  @param self The object pointer
-    #  @param atom atom3D of atom to be added
     def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
+        """Adds an atom to the atoms attribute, which contains a list of 
+        atom3D class instances. 
+        
+        Parameters
+        ----------
+            atom : atom3D
+                atom3D class instance of added atom.
+            index : int, optional
+                Index of added atom. Default is None.
+            auto_populate_BO_dict : bool, optional
+                Populate bond order dictionary with newly added atom. Default is True.
+        
+        >>> C_atom = atom3D('C',[1, 1, 1])
+        >>> complex_mol.addAtom(C_atom) # Add carbon atom at cartesian position 1, 1, 1 to mol3D object. 
+        """
+
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
@@ -230,7 +242,7 @@ class mol3D:
         if auto_populate_BO_dict and self.bo_dict:
             new_bo_dict = {}
             # Adjust indices in bo_dict to reflect insertion
-            for pair, order in self.bo_dict.items():
+            for pair, order in list(self.bo_dict.items()):
                 idx1, idx2 = pair
                 if idx1 >= index:
                     idx1 += 1
@@ -262,37 +274,76 @@ class mol3D:
         self.size = self.molsize()
         self.metal = False
 
-    # Change type of atom in molecule
-    #
-    #  @param self The object pointer
-    #  @param atom_ind int index of atom
-    #  @param atom_type str type of the new atom
-    def changeAtomtype(self, atom_ind, atom_type):
-        self.atoms[atom_ind].sym = atom_type
-        self.metal = False
+    def find_atom(self, sym="X"):
+        """
+        Find atoms with a specific symbol.
 
-    # Aligns two molecules such that the coordinates of two atoms overlap.
-    #
-    #  Second molecules is translated relative to the first.
-    #  No rotations are performed here. Use other functions for rotations.
-    #  @param self The object pointer
-    #  @param atom1 atom3D of reference atom in first molecule (not translated)
-    #  @param atom2 atom3D of reference atom in second molecule (translated)
+        Parameters
+        ----------
+            sym: str
+                element symbol, default as X.
+
+        Returns
+        ----------
+            inds: list
+                a list of atom index with the specified symbol.
+        """
+        inds = []
+        for ii, atom in enumerate(self.getAtoms()):
+            if atom.symbol() == sym:
+                inds.append(ii)
+        return inds
+
+    def count_nonH_atoms(self):
+        """
+        Count the number of heavy atoms.
+
+        Returns
+        ----------
+            count: integer
+                the number of heavy atoms
+        """
+        count = 0
+        for ii in range(self.natoms):
+            if not self.getAtom(ii).symbol() in ["H", "h"]:
+                count += 1
+        return count
+
     def alignmol(self, atom1, atom2):
-        # get distance vector between atoms 1,2
+        """Aligns two molecules such that the coordinates of two atoms overlap.
+        Second molecule is translated relative to the first. No rotations are 
+        performed. Use other functions for rotations. Moves the mol3D class.
+        
+        Parameters
+        ----------
+            atom1 : atom3D
+                atom3D of reference atom in first molecule.
+            atom2 : atom3D
+                atom3D of reference atom in second molecule.
+           
+        """
         dv = atom2.distancev(atom1)
         self.translate(dv)
 
-    # Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
-    #
-    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
-    #
-    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param d New bond length in Angstroms
     def BCM(self, idx1, idx2, d):
+        """Performs bond centric manipulation (same as Avogadro, stretching
+        and squeezing bonds). A submolecule is translated along the bond axis 
+        connecting it to an anchor atom.
+
+        Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom.
+            d : float
+                Bond distance in angstroms.
+
+        >>> complex_mol.BCM(1, 0, 1.5) # Set distance between atoms 0 and 1 to be 1.5 angstroms. Move atom 1.
+        """  
+
         bondv = self.getAtom(idx1).distancev(self.getAtom(idx2))  # 1 - 2
         # compute current bond length
         u = 0.0
@@ -304,21 +355,24 @@ class mol3D:
         submolidxes = self.findsubMol(idx1, idx2)
         for submolidx in submolidxes:
             self.getAtom(submolidx).translate(dR)
-        # for i in self.getBondedAtoms(idx1):
-        #     if i != idx2:
-        #         self.getAtom(i).translate(dR)
-        # self.getAtom(idx1).translate(dR)
 
-    # Performs bond centric manipulation (same as Avogadro, stretching/squeezing bonds)
-    #
-    #  A submolecule is translated along the bond axis connecting it to an anchor atom.
-    #
-    #  Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
-    #  @param self The object pointer
-    #  @param idx1 Index of bonded atom containing submolecule to be moved
-    #  @param idx2 Index of anchor atom
-    #  @param d New bond length in Angstroms
     def BCM_opt(self, idx1, idx2, d):
+        """Performs bond centric manipulation (same as Avogadro, stretching
+        and squeezing bonds). A submolecule is translated along the bond axis 
+        connecting it to an anchor atom. Performs force field optimization
+        after, freezing the moved bond length.
+
+        Illustration: H3A-BH3 -> H3A----BH3 where B = idx1 and A = idx2
+        
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom.
+            d : float
+                Bond distance in angstroms.
+        """    
         self.convert2OBMol()
         OBMol = self.OBMol
         ff = openbabel.OBForceField.FindForceField('mmff94')
@@ -334,58 +388,64 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
-    # Computes coordinates of center of mass of molecule
-    #  @param self The object pointer
-    #  @return List of center of mass coordinates
     def centermass(self):
-        # OUTPUT
-        #   - pcm: vector representing center of mass
-        # initialize center of mass and mol mass
-        pmc = [0, 0, 0]
+        """Computes coordinates of center of mass of molecule.
+
+        Returns
+        -------
+            center_of_mass : list
+                Coordinates of center of mass. List of length 3: (X, Y, Z).
+        """
+
+        center_of_mass = [0, 0, 0]
         mmass = 0
         # loop over atoms in molecule
         if self.natoms > 0:
             for atom in self.atoms:
                 # calculate center of mass (relative weight according to atomic mass)
                 xyz = atom.coords()
-                pmc[0] += xyz[0] * atom.mass
-                pmc[1] += xyz[1] * atom.mass
-                pmc[2] += xyz[2] * atom.mass
+                center_of_mass[0] += xyz[0] * atom.mass
+                center_of_mass[1] += xyz[1] * atom.mass
+                center_of_mass[2] += xyz[2] * atom.mass
                 mmass += atom.mass
             # normalize
-            pmc[0] /= mmass
-            pmc[1] /= mmass
-            pmc[2] /= mmass
+            center_of_mass[0] /= mmass
+            center_of_mass[1] /= mmass
+            center_of_mass[2] /= mmass
         else:
-            pmc = False
+            center_of_mass = False
             print(
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
-        return pmc
+        return center_of_mass
 
-    # Computes coordinates of center of symmetry of molecule
-    #
-    #  Identical to centermass, but not weighted by atomic masses.
-    #  @param self The object pointer
-    #  @return List of center of symmetry coordinates
     def centersym(self):
+        """Computes coordinates of center of symmetry of molecule.
+        Identical to centermass, but not weighted by atomic masses.
+
+        Returns
+        -------
+            center_of_symmetry : list
+                Coordinates of center of symmetry. List of length 3: (X, Y, Z).
+        """
+
         # initialize center of mass and mol mass
-        pmc = [0, 0, 0]
+        center_of_symmetry = [0, 0, 0]
         # loop over atoms in molecule
         for atom in self.atoms:
             # calculate center of symmetry
             xyz = atom.coords()
-            pmc[0] += xyz[0]
-            pmc[1] += xyz[1]
-            pmc[2] += xyz[2]
+            center_of_symmetry[0] += xyz[0]
+            center_of_symmetry[1] += xyz[1]
+            center_of_symmetry[2] += xyz[2]
         # normalize
-        pmc[0] /= self.natoms
-        pmc[1] /= self.natoms
-        pmc[2] /= self.natoms
-        return pmc
+        center_of_symmetry[0] /= self.natoms
+        center_of_symmetry[1] /= self.natoms
+        center_of_symmetry[2] /= self.natoms
+        return center_of_symmetry
 
-    # remove all openbabel bond order indo
-    #  @param self The object pointer
     def cleanBonds(self):
+        """Removes all stored openbabel bond order information.
+        """
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         bonds_to_del = []
@@ -395,11 +455,11 @@ class mol3D:
         for i in bonds_to_del:
             self.OBMol.DeleteBond(i)
 
-    # Converts OBMol to mol3D
-    #
-    #  Generally used after openbabel operations, such as when initializing a molecule from a file or FF optimizing it.
-    #  @param self The object pointer
     def convert2mol3D(self):
+        """Converts OBMol class instance to mol3D class instance.
+        Generally used after openbabel operations, such as FF optimizing a molecule.
+        Updates the mol3D as necessary.
+        """
         # initialize again
         self.initialize()
         # get elements dictionary
@@ -415,13 +475,19 @@ class mol3D:
         # reset metal ID
         self.metal = False
 
-    # Converts mol3D to OBMol
-    #
-    #  Required for performing openbabel operations on a molecule, such as FF optimizations.
-    #  @param self The object pointer
-    #  @param force_clean bool force no bond info retention
-    #  @param ignoreX bool skip "X" atoms in mol3D conversion
     def convert2OBMol(self, force_clean=False, ignoreX=False):
+        """Converts mol3D class instance to OBMol class instance.
+        Stores as OBMol attribute. Necessary for force field optimizations
+        and other openbabel operations.
+
+        Parameters
+        ----------
+            force_clean : bool, optional
+                Force no bond info retention. Default is False.
+            ignoreX : bool, optional
+                Index of anchor atom. Default is False.
+        """
+
         # get BO matrix if exits:
         repop = False
 
@@ -456,13 +522,19 @@ class mol3D:
                     if BO_mat[i][j] > 0:
                         self.OBMol.AddBond(i + 1, j + 1, int(BO_mat[i][j]))
 
-    # Converts mol3D to OBMol through mol2 function.
-    #
-    #  Required for performing openbabel operations on a molecule, such as FF optimizations.
-    #  @param self The object pointer
-    #  @param force_clean bool force no bond info retention
-    #  @param ignoreX bool skip "X" atoms in mol3D conversion
     def convert2OBMol2(self, force_clean=False, ignoreX=False):
+        """Converts mol3D class instance to OBMol class instance, but uses mol2
+        function, so bond orders are not interpreted, but rather read through the mol2.
+        Stores as OBMol attribute. Necessary for force field optimizations
+        and other openbabel operations.
+
+        Parameters
+        ----------
+            force_clean : bool, optional
+                Force no bond info retention. Default is False.
+            ignoreX : bool, optional
+                Index of anchor atom. Default is False.
+        """
         # get BO matrix if exits:
         obConversion = openbabel.OBConversion()
         obConversion.SetInFormat('mol2')
@@ -499,6 +571,9 @@ class mol3D:
             self.BO_mat = BO_mat
 
     def resetBondOBMol(self):
+        """Repopulates the bond order matrix via openbabel. Interprets bond order matrix.
+        """
+
         if self.OBMol:
             BO_mat = self.populateBOMatrix()
             self.cleanBonds()
@@ -509,24 +584,26 @@ class mol3D:
         else:
             print("OBmol does not exist")
 
-    # Combines two molecules
-    #
-    #  Each atom in the second molecule is appended to the first while preserving orders.
-    #  @param self The object pointer
-    #  @param mol mol3D containing molecule to be added
-    #  @param list of tuples (ind1,ind2,order) bonds to add (optional)
-    #  @param dirty bool set to true for straight addition, not bond safe
-    #  @return mol3D contaning combined molecule
-    # def combine(self,mol):
-    #    cmol = self
-    #    n_one = cmol.natoms
-    #    n_two = mol.natoms
-    #    for atom in mol.atoms:
-    #        cmol.addAtom(atom)
-    #    cmol.graph = []
-    #    return cmol
-
     def combine(self, mol, bond_to_add=[], dirty=False):
+        """Combines two molecules. Each atom in the second molecule 
+        is appended to the first while preserving orders. Assumes
+        operation with a given mol3D instance, when handed a second mol3D instance.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance containing molecule to be added.
+            bond_to_add : list, optional
+                List of tuples (ind1,ind2,order) bonds to add. Default is empty.
+            dirty : bool, optional
+                Add atoms without worrying about bond orders. Default is False.
+        
+        Returns
+        -------
+            cmol : mol3D
+                New mol3D class containing the two molecules combined.
+        """
+
         cmol = self
 
         if not dirty:
@@ -574,49 +651,76 @@ class mol3D:
         self.metal = False
         return cmol
 
-    # Prints coordinates of all atoms in molecule
-    #  @param self The object pointer
-    #  @return String containing coordinates
     def coords(self):
-        # OUTPUT
-        #   - atom: string with xyz-style coordinates
-        ss = ''  # initialize returning string
-        ss += "%d \n\n" % self.natoms
-        for atom in self.atoms:
-            xyz = atom.coords()
-            ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-        return ss
+        """Method to obtain string of coordinates in molecule.
 
-    # Returns coordinates of all atoms in molecule as a list of lists
-    #  @param self The object pointer
-    #  @return List of all atoms in molecule
-    def coordsvect(self):
-        ss = []
+        Returns
+        -------
+            coord_string : string
+                String of molecular coordinates with atom identities in XYZ format.
+        """
+        coord_string = ''  # initialize returning string
+        coord_string += "%d \n\n" % self.natoms
         for atom in self.atoms:
             xyz = atom.coords()
-            ss.append(xyz)
-        return np.array(ss)
+            coord_string += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+        return coord_string
+
+    def coordsvect(self):
+        """Method to obtain array of coordinates in molecule.
+
+        Returns
+        -------
+            list_of_coordinates : np.array
+                Two dimensional numpy array of molecular coordinates. 
+                (N by 3) dimension, N is number of atoms.
+        """
+        list_of_coordinates = []
+        for atom in self.atoms:
+            xyz = atom.coords()
+            list_of_coordinates.append(xyz)
+        return np.array(list_of_coordinates)
 
     def symvect(self):
-        ss = []
+        """Method to obtain array of symbol vector of molecule.
+
+        Returns
+        -------
+            symbol_vector : np.array
+                1 dimensional numpy array of atom symbols. 
+                (N,) dimension, N is number of atoms.
+        """
+        symbol_vector = []
         for atom in self.atoms:
-            ss.append(atom.sym)
-        return np.array(ss)
+            symbol_vector.append(atom.sym)
+        return np.array(symbol_vector)
 
     def typevect(self):
-        ss = []
-        for atom in self.atoms:
-            ss.append(atom.name)
-        return np.array(ss)
+        """Method to obtain array of type vector of molecule.
 
-    # Copies properties and atoms of another existing mol3D object into current mol3D object.
-    #
-    #  WARNING: NEVER EVER USE mol3D = mol0 to do this. It doesn't work.
-    #
-    #  WARNING: ONLY USE ON A FRESH INSTANCE OF MOL3D.
-    #  @param self The object pointer
-    #  @param mol0 mol3D of molecule to be copied
+        Returns
+        -------
+            type_vector : np.array
+                1 dimensional numpy array of atom types (by name). 
+                (N,) dimension, N is number of atoms.
+        """
+        type_vector = []
+        for atom in self.atoms:
+            type_vector.append(atom.name)
+        return np.array(type_vector)
+
     def copymol3D(self, mol0):
+        """Copies properties and atoms of another existing mol3D object 
+        into current mol3D object. Should be performed on a new mol3D class
+        instance. WARNING: NEVER EVER USE mol3D = mol0 to do this. It DOES NOT
+        WORK. ONLY USE ON A FRESH INSTANCE OF MOL3D. Operates on fresh instance.
+        
+        Parameters
+        ----------
+            mol0 : mol3D
+                mol3D of molecule to be copied.
+        """
+
         # copy atoms
         for i, atom0 in enumerate(mol0.atoms):
             self.addAtom(atom3D(atom0.sym, atom0.coords(), atom0.name))
@@ -634,10 +738,17 @@ class mol3D:
         self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
-    # Create molecular graph (connectivity matrix) from mol3D info
-    #  @param self The object pointer
-    #  @oct flag to control  special oct-metal bonds
     def createMolecularGraph(self, oct=True):
+        """Create molecular graph of a molecule given X, Y, Z positions.
+        Bond order is not interpreted by this. Updates graph attribute
+        of the mol3D class.
+
+        Parameters
+        ----------
+            oct : bool
+                Defines whether a structure is octahedral. Default is True.
+           
+        """
         if not len(self.graph):
             index_set = list(range(0, self.natoms))
             A = np.zeros((self.natoms, self.natoms))
@@ -666,12 +777,16 @@ class mol3D:
                         A[metal_ind, i] = 0
             self.graph = A
 
-    # Deletes specific atom from molecule
-    #
-    #  Also updates mass and number of atoms, and recreates the molecular graph.
-    #  @param self The object pointer
-    #  @param atomIdx Index of atom to be deleted
     def deleteatom(self, atomIdx):
+        """Delete a specific atom from the mol3D class given an index.
+
+        Parameters
+        ----------
+            atomIdx : int
+                Index for the atom3D to remove.
+
+        """
+
         if atomIdx < 0:
             atomIdx = self.natoms + atomIdx
         if atomIdx >= self.natoms:
@@ -693,22 +808,17 @@ class mol3D:
         self.metal = False
         del (self.atoms[atomIdx])
 
-    # Freezes specific atom in molecule
-    #
-    #  This is for the FF optimization settings.
-    #  @param self The object pointer
-    #  @param atomIdx Index of atom to be frozen
-    def freezeatom(self, atomIdx):
-        # INPUT
-        #   - atomIdx: index of atom to be frozen
-        self.atoms[atomIdx].frozen = True
-
-    # Deletes list of atoms from molecule
-    #
-    #  Loops over deleteatom, starting from the largest index so ordering is preserved.
-    #  @param self The object pointer
-    #  @param Alist List of atom indices to be deleted
     def deleteatoms(self, Alist):
+        """Delete a multiple atoms from the mol3D class given a set of indices.
+        Preserves ordering, starts from largest index.
+
+        Parameters
+        ----------
+            Alist : list
+                List of indices for atom3D instances to remove.
+
+        """
+
         for i in Alist:
             if i > self.natoms:
                 raise Exception('mol3D object cannot delete atom '+str(i) +
@@ -731,22 +841,41 @@ class mol3D:
             self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
         self.metal = False
 
-    # Freezes list of atoms in molecule
-    #
-    #  Loops over freezeatom(), starting from the largest index so ordering is preserved.
-    #  @param self The object pointer
-    #  @param Alist List of atom indices to be frozen
+    def freezeatom(self, atomIdx):
+        """Set the freeze attribute to be true for a given atom3D class.
+
+        Parameters
+        ----------
+            atomIdx : int
+                Index for atom to be frozen.
+           
+        """
+
+        self.atoms[atomIdx].frozen = True
+
     def freezeatoms(self, Alist):
-        # INPUT
-        #   - Alist: list of atoms to be frozen
+        """Set the freeze attribute to be true for a given set of atom3D classes, 
+        given their indices. Preserves ordering, starts from largest index.
+
+        Parameters
+        ----------
+            Alist : list
+                List of indices for atom3D instances to remove.
+
+        """
+
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
 
-    # Get ligand mol without hydrogens
-    #
-    # Loops over the atoms and makes a submol that contains
-    # all of the atoms without the hydrogens:
     def get_submol_noHs(self):
+        """Get the heavy atom only submolecule, with no hydrogens.
+
+        Returns
+        -------
+            mol_noHs : mol3D
+                mol3D class instance with no hydrogens.
+           
+        """
         keep_list = []
         for i in range(self.natoms):
             if self.getAtom(i).symbol() == 'H':
@@ -756,40 +885,44 @@ class mol3D:
         mol_noHs = self.create_mol_with_inds(keep_list)
         return mol_noHs
 
-    # Deletes all hydrogens from molecule.
-    #
-    #  Calls deleteatoms, so ordering of heavy atoms is preserved.
-    #  @param self The object pointer
     def deleteHs(self):
-        # metalind = self.findMetal()[0]
-        # metalcons = self.getBondedAtoms(metalind)
+        """Delete all hydrogens from a molecule. Preserves heavy atom ordering.
+        """
         hlist = []
         for i in range(self.natoms):
             if self.getAtom(i).sym == 'H':  # and i not in metalcons:
                 hlist.append(i)
         self.deleteatoms(hlist)
 
-    # Gets distance between centers of mass of two molecules
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Center of mass distance
     def distance(self, mol):
-        # INPUT
-        #   - mol: second molecule
-        # OUTPUT
-        #   - pcm: distance between centers of mass
+        """Measure the distance between center of mass of two molecules.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule to measure distance to.
+
+        Returns
+        -------
+            d_cm : float
+                Distance between centers of mass of two molecules.
+
+        """
+
         cm0 = self.centermass()
         cm1 = mol.centermass()
-        pmc = distance(cm0, cm1)
-        return pmc
+        d_cm = distance(cm0, cm1)
+        return d_cm
 
-    # Creates and saves an svg file of the molecule
-    #
-    #  Also renders it in a fake gui window if PyQt5 is installed.
-    #  Copied from mGUI function.
-    #  @param self The object pointer
-    #  @param filename Name of svg file
     def draw_svg(self, filename):
+        """Draw image of molecule and save to SVG.
+
+        Parameters
+        ----------
+            filename : str
+                Name of file to save SVG to.
+
+        """
         obConversion = openbabel.OBConversion()
         obConversion.SetOutFormat("svg")
         obConversion.AddOption("i", obConversion.OUTOPTIONS, "")
@@ -814,12 +947,94 @@ class mol3D:
         else:
             print('No PyQt5 found. SVG file written to directory.')
 
-    # Applies an ffopt on the mol3D 
-    #  @param self The object pointer
-    #  @param constraints --> list of atoms to be frozen in place
-    #  @return en --> energy of forcefield optimization. ffopt applies on molecule itself.
-    def apply_ffopt(self, constraints = False):
-        forcefield = openbabel.OBForceField.FindForceField('uff')
+    def aromatic_charge(self, bo_graph):
+        '''
+        Get the charge of aromatic rings based on 4*n+2 rule.
+
+        Parameters
+        ----------
+            bo_graph: numpy.array
+                bond order matrix
+        '''
+        aromatic_atoms = np.count_nonzero(bo_graph == 1.5)/2
+        #     print("aromatic_atoms: ", aromatic_atoms)
+        if aromatic_atoms > bo_graph.shape[0] - 1:
+            aromatic_n = np.rint((aromatic_atoms-2)*1./4)
+            aromatic_e = 4 * aromatic_n + 2
+            return (aromatic_atoms - aromatic_e)
+        else:
+            return 0
+
+    def get_octetrule_charge(self, debug=False):
+        '''
+        Get the octet-rule charge provided a mol3D object with bo_graph (read from CSD mol2 file)
+        Note that currently this function should only be applied to ligands (organic molecules).
+
+        Parameters
+        ----------
+            debug: boolean
+                whether to have more printouts
+        '''
+        octet_bo = {"H": 1, "C": 4, "N": 3, "O": 2, "F": 1,
+                    "Si": 4, "P": 3, "S": 2, "Cl": 1,
+                    "Ge": 4, "As": 3, "Se": 2, "Br": 1,
+                    "Sn": 4, "Sb": 3, "Te": 2, "I": 1}
+        self.deleteatoms(self.find_atom("X"))
+        self.convert2OBMol2()
+        ringlist = self.OBMol.GetSSSR()
+        ringinds = []
+        charge = 0
+        for obmol_ring in ringlist:
+            _inds = []
+            for ii in range(1, self.natoms+1):
+                if obmol_ring.IsInRing(ii):
+                    _inds.append(ii-1)
+            ringinds.append(_inds)
+            charge += self.aromatic_charge(self.bo_graph_trunc[_inds, :][:, _inds])
+        arom_charge = charge
+        for ii in range(self.natoms):
+            sym = self.getAtom(ii).symbol()
+            try:
+                if sym in ["N", "P", "As", "Sb"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
+                elif sym in ["N", "P", "As", "Sb"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1 and "O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]] and np.sum(self.bo_graph_trunc[ii]) == 4:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
+                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"] and np.sum(self.bo_graph_trunc[ii]) == 6:
+                    _c = -int(np.sum(self.bo_graph_trunc[ii]) - 4)
+                elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
+                    _c = -int(np.sum(self.bo_graph_trunc[ii]) - 6)
+                elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) == 4:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 4)
+                elif sym in ["F", "Cl", "Br", "I"] and np.sum(self.bo_graph_trunc[ii]) >= 6:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - 7)
+                elif sym in ["H"] and np.sum(self.bo_graph_trunc[ii]) == 2:
+                    _c = 0
+                else:
+                    _c = int(np.sum(self.bo_graph_trunc[ii]) - octet_bo[sym])
+                if debug:
+                    print(ii, sym, _c)
+                charge += _c
+            except:
+                return np.nan, np.nan
+        return charge, arom_charge
+
+    def apply_ffopt(self, constraints = False, ff='uff'):
+        """Apply forcefield optimization to a given mol3D class.
+
+        Parameters
+        ----------
+            constraints : list, optional
+                List of atom indices to employ cartesian constraints before ffopt.
+            ff : str, optional
+                Force field to be used in openbabel. Default is UFF.
+
+        Returns
+        -------
+            energy : float
+                Energy of the ffopt in kJ/mol.
+
+        """
+        forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         if constraints:
             for catom in range(constraints):
@@ -836,67 +1051,98 @@ class mol3D:
         self.convert2mol3D()
         return en
 
-    # Finds closest metal atom to a given atom
-    #  @param self The object pointer
-    #  @param atom0 Index of reference atom
-    #  @return Index of closest metal atom
     def findcloseMetal(self, atom0):
+        """Find the nearest metal to a given atom3D class.
+        Returns heaviest element if no metal found.
+
+        Parameters
+        ----------
+            atom_idx : atom3D
+                atom3D class for atom of interest. 
+
+        Returns
+        -------
+            close_metal : int
+                index of the nearest metal, or heaviest atom if no metal found.
+           
+        """
         if not self.metals:
             self.findMetal()
 
-        mm = False
+        close_metal = False
         mindist = 1000
         for i in enumerate(self.metals):
             atom = self.getAtom(i)
             if distance(atom.coords(), atom0.coords()) < mindist:
                 mindist = distance(atom.coords(), atom0.coords())
-                mm = i
+                close_metal = i
         # if no metal, find heaviest atom
-        if not mm:
+        if not close_metal:
             maxaw = 0
             for i, atom in enumerate(self.atoms):
                 if atom.atno > maxaw:
-                    mm = i
-        return mm
+                    close_metal = i
+        return close_metal
 
-    # Finds metal atoms in molecule
-    #  @param self The object pointer
-    #  @return List of indices of metal atoms
     def findMetal(self):
+        """Find metal(s) in a mol3D class.
+
+        Returns
+        -------
+            metal_list : list
+                List of indices of metal atoms in mol3D.
+
+        """
         if not self.metals:
-            mm = []
+            metal_list = []
             for i, atom in enumerate(self.atoms):
                 if atom.ismetal():
-                    mm.append(i)
-            self.metals = mm
+                    metal_list.append(i)
+            self.metals = metal_list
         return (self.metals)
 
-    # Finds atoms in molecule with given symbol
-    #  @param self The object pointer
-    #  @param sym Desired element symbol
-    #  @return List of indices of atoms with given symbol
     def findAtomsbySymbol(self, sym):
-        mm = []
+        """Find all elements with a given symbol in a mol3D class.
+
+        Parameters
+        ----------
+            sym : str
+                Symbol of the atom of interest.
+
+        Returns
+        -------
+            atom_list : list
+                List of indices of atoms in mol3D with a given symbol.
+
+        """
+        atomlist = []
         for i, atom in enumerate(self.atoms):
             if atom.sym == sym:
-                mm.append(i)
-        return mm
+                atomlist.append(i)
+        return atomlist
 
-    # Finds a submolecule within the molecule given the starting atom and the separating atom
-    #
-    #  Illustration: H2A-B-C-DH2 will return C-DH2 if C is the starting atom and B is the separating atom.
-    #
-    #  Alternatively, if C is the starting atom and D is the separating atom, returns H2A-B-C.
-    #  @param self The object pointer
-    #  @param atom0 Index of starting atom
-    #  @param atomN Index of separating atom
-    #  @return List of indices of atoms in submolecule
     def findsubMol(self, atom0, atomN, smart=False):
-        '''
-        mol: mol3D object
-        atom0: starting atom index. Note that atom0 cannot be the same as atomN
-        atomN: the atom index at which we break the graph.
-        '''
+
+        """Finds a submolecule within the molecule given the starting atom and the separating atom.
+        Illustration: H2A-B-C-DH2 will return C-DH2 if C is the starting atom and B is the separating atom.
+        Alternatively, if C is the starting atom and D is the separating atom, returns H2A-B-C.
+
+        Parameters
+        ----------
+            atom0 : int
+                Index of starting atom.
+            atomN : int
+                Index of the separating atom.
+            smart : bool, optional
+                Decision of whether or not to use getBondedAtomsSmart. Default is False.
+
+        Returns
+        -------
+            subm : list
+                List of indices of atoms in submolecule.
+
+        """
+
         if atom0 == atomN:
             raise ValueError("atom0 cannot be the same as atomN!")
         subm = []
@@ -906,9 +1152,8 @@ class mol3D:
         else:
             conatoms += self.getBondedAtomsSmart(atom0)
         if atomN in conatoms:
-            conatoms.remove(atomN)  # check for atomN and remove
+            conatoms.remove(atomN)  # check for idxN and remove
         subm += conatoms  # add to submolecule
-        # print('conatoms', conatoms)
         while len(conatoms) > 0:  # while list of atoms to check loop
             for atidx in subm:  # loop over initial connected atoms
                 if atidx != atomN:  # check for separation atom
@@ -924,80 +1169,152 @@ class mol3D:
                             subm.append(newat)
                 if atidx in conatoms:
                     conatoms.remove(atidx)  # remove from list to check
-        # subm.sort()
         return subm
 
-    # Gets an atom with specified index
-    #  @param self The object pointer
-    #  @param idx Index of desired atom
-    #  @return atom3D of desired atom
     def getAtom(self, idx):
+        """Get atom with a given index.
+
+        Parameters
+        ----------
+            idx : int
+                Index of desired atom.
+
+        Returns
+        -------
+            atom : atom3D
+                atom3D class for element at given index.
+
+        """
+
         return self.atoms[idx]
 
     def getAtomwithinds(self, inds):
+        """Get atoms with a given list of indices.
+
+        Parameters
+        ----------
+            idx : list
+                List of indices of desired atoms.
+
+        Returns
+        -------
+            atom_list : list
+                List of atom3D classes for elements at given indices.
+
+        """
+
         return [self.atoms[idx] for idx in inds]
 
-    # Gets atoms in molecule
-    #  @param self The object pointer
-    #  @return List of atoms in molecule
     def getAtoms(self):
+        """Get all atoms within a molecule.
+
+        Returns
+        -------
+            atom_list : list
+                List of atom3D classes for all elements in a mol3D.
+
+        """
+
         return self.atoms
 
-    # Gets number of unique elements in molecule
-    #  @param self The object pointer
-    #  @return List of symbols of unique elements in molecule
     def getAtomTypes(self):
+        """Get unique elements in a molecule
+
+        Returns
+        -------
+            unique_atoms_list : list
+                List of unique elements in molecule by symbol.
+
+        """
+
         unique_atoms_list = list()
         for atoms in self.getAtoms():
             if atoms.symbol() not in unique_atoms_list:
                 unique_atoms_list.append(atoms.symbol())
         return unique_atoms_list
 
-    # Gets coordinates of atom with specified index
-    #  @param self The object pointer
-    #  @param idx Index of desired atom
-    #  @return List of coordinates of desired atom
     def getAtomCoords(self, idx):
-        # print(self.printxyz())
+        """Get atom coordinates with a given index.
+
+        Parameters
+        ----------
+            idx : int
+                Index of desired atom.
+
+        Returns
+        -------
+            coords : list
+                List of coordinates (length 3: [X, Y, Z]) for element at given index.
+
+        """
+
         return self.atoms[idx].coords()
 
-    # Gets atoms bonded to a specific atom
-    #
-    #  This is determined based on BOMatrix..
-    #
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsBOMatrix(self, ind, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsBOMatrix(self, idx):
+        """Get atoms bonded by an atom referenced by index, using the BO matrix.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+        ratom = self.getAtom(idx)
         self.convert2OBMol()
         OBMatrix = self.populateBOMatrix()
         # calculates adjacent number of atoms
         nats = []
-        for i in range(len(OBMatrix[ind])):
-            if OBMatrix[ind][i] > 0:
+        for i in range(len(OBMatrix[idx])):
+            if OBMatrix[idx][i] > 0:
                 nats.append(i)
         return nats
 
-    # Gets atoms bonded to a specific atom
-    #
-    #  This is determined based on augmented BOMatrix.
-    #
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsBOMatrixAug(self, ind, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsBOMatrixAug(self, idx):
+        """Get atoms bonded by an atom referenced by index, using the augmented BO matrix.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+        ratom = self.getAtom(idx)
         self.convert2OBMol()
         OBMatrix = self.populateBOMatrixAug()
         # calculates adjacent number of atoms
         nats = []
-        for i in range(len(OBMatrix[ind])):
-            if OBMatrix[ind][i] > 0:
+        for i in range(len(OBMatrix[idx])):
+            if OBMatrix[idx][i] > 0:
                 nats.append(i)
         return nats
 
     def getBondCutoff(self, atom, ratom):
+        """Get cutoff based on two atoms.
+
+        Parameters
+        ----------
+            atom : atom3D
+                atom3D class of first atom.
+            ratom : atom3D
+                atom3D class of second atom.
+
+        Returns
+        -------
+            distance_max : float
+                Cutoff based on atomic radii scaled by a factor.
+
+        """
+
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
             distance_max = min(2.75, distance_max)
@@ -1009,69 +1326,58 @@ class mol3D:
         if atom.symbol() == "H" and ratom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
-        # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-        #         atom.symbol() == "I" and ratom.symbol() == "I"):
-        #     # Very strict cutoff for bonds involving iodine
-        #     distance_max = 0.95 * (atom.rad + ratom.rad)
-        # if atom.symbol() == "I" and ratom.symbol() == "I":
-        #     distance_max = 3
-        # print(distance_max)
         return distance_max
 
-    # Gets atoms bonded to a specific atom
-    #
-    #  This is determined based on element-specific distance cutoffs, rather than predefined valences.
-    #
-    #  This method is ideal for metals because bond orders are ill-defined.
-    #
-    #  For pure organics, the OBMol class provides better functionality.
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtoms(self, ind, debug=False):
+    def getBondedAtoms(self, idx):
+        """Gets atoms bonded to a specific atom. This is determined based on 
+        element-specific distance cutoffs, rather than predefined valences.
+        This method is ideal for metals because bond orders are ill-defined.
+        For pure organics, the OBMol class provides better functionality.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
         if len(self.graph):
-            nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
+            nats = list(np.nonzero(np.ravel(self.graph[idx]))[0])
         else:
-            ratom = self.getAtom(ind)
+            ratom = self.getAtom(idx)
             # calculates adjacent number of atoms
             nats = []
             for i, atom in enumerate(self.atoms):
                 d = distance(ratom.coords(), atom.coords())
                 distance_max = self.getBondCutoff(atom, ratom)
-                # distance_max = 1.15 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "C" and not ratom.symbol() == "H":
-                #    distance_max = min(2.75, distance_max)
-                # if ratom.symbol() == "C" and not atom.symbol() == "H":
-                #    distance_max = min(2.75, distance_max)
-                # if ratom.symbol() == "H" and atom.ismetal:
-                #    # tight cutoff for metal-H bonds
-                #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "H" and ratom.ismetal:
-                #    # tight cutoff for metal-H bonds
-                #    distance_max = 1.1 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "I" or ratom.symbol() == "I" and not (
-                #        atom.symbol() == "I" and ratom.symbol() == "I"):
-                #    distance_max = 1.05 * (atom.rad + ratom.rad)
-                # if atom.symbol() == "I" and ratom.symbol() == "I":
-                #    distance_max = 3
-                #    # print(distance_max)
-                if (d < distance_max and i != ind):
+                if (d < distance_max and i != idx):
                     nats.append(i)
         return nats
 
-    # Gets atoms bonded to a specific atom with a given threshold
-    #
-    #  This is determined based on user-specific distance cutoffs.
-    #
-    #  This method is ideal for metals because bond orders are ill-defined.
-    #
-    #  For pure organics, the OBMol class provides better functionality.
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param threshold multiplier for the sum of covalent radii cut-off
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsByThreshold(self, ind, threshold, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsByThreshold(self, idx, threshold=1.15):
+        """Gets atoms bonded to a specific atom. This method uses a threshold 
+        for determination of a bond.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            threshold : float, optional
+                Scale factor for sum of covalent radii based cutoff. Default is 1.15. 
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
@@ -1092,28 +1398,33 @@ class mol3D:
                 # print(distance_max)
             if atom.symbol() == "I" or ratom.symbol() == "I":
                 distance_max = 0
-            if (d < distance_max and i != ind):
+            if (d < distance_max and i != idx):
                 nats.append(i)
         return nats
 
-    # Gets a user-specified number of atoms bonded to a specific atom
-    #
-    #  This is determined based on adjusting the threshold until the number of atoms specified is reached.
-    #
-    #  This method is ideal for metals because bond orders are ill-defined.
-    #
-    #  For pure organics, the OBMol class provides better functionality.
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param CoordNo the number of atoms specified
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsByCoordNo(self, ind, CoordNo, debug=False):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsByCoordNo(self, idx, CoordNo=6):
+        """Gets atoms bonded to a specific atom by coordination number. 
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            CoordNo : int, optional
+                Coordination number of reference atom of interest. Default is 6. 
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         thresholds = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
         for i, threshold in enumerate(thresholds):
-            nats = self.getBondedAtomsByThreshold(ind, threshold)
+            nats = self.getBondedAtomsByThreshold(idx, threshold)
             if len(nats) == CoordNo:
                 break
         if len(nats) != CoordNo:
@@ -1125,27 +1436,32 @@ class mol3D:
 
         return nats
 
-    # Gets atoms bonded to a specific atom specialized for octahedral complexes
-    #
-    #  More sophisticated version of getBondedAtoms(), written by JP.
-    #
-    #  This method specifically forbids "intruder" C and H atoms that would otherwise be within the distance cutoff in tightly bound complexes.
-    #
-    #  It also limits bonding atoms to the CN closest atoms (CN = coordination number).
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param CN Coordination number of reference atom (default 6)
-    #  @param debug Debug flag (default False)
-    #  @return List of indices of bonded atoms
     def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
-        # INPUT
-        #   - ind: index of reference atom
-        #   - CN: known coordination number of complex (default 6)
-        # OUTPUT
-        #   - nats: list of indices of connected atoms
+        """Gets atoms bonded to an octahedrally coordinated metal. Specifically limitis intruder
+        C and H atoms that would otherwise be considered bonded in the distance cutoffs. Limits
+        bonding to the CN closest atoms (CN = coordination number).
+
+        Parameters
+        ----------
+            ind : int
+                Index of reference atom.
+            CN : int, optional
+                Coordination number of reference atom of interest. Default is 6.
+            debug : bool, optional
+                Produce additional outputs for debugging. Default is False.
+            flag_loose : bool, optional
+                Use looser cutoffs to determine bonding. Default is False.
+            atom_specific_cutoffs: bool, optional
+                Use atom specific cutoffs to determing bonding. Default is False.
+
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
         ratom = self.getAtom(ind)
-        # print('called slow function...')
-        # calculates adjacent number of atoms
         nats = []
         if len(self.graph):
             nats = list(np.nonzero(np.ravel(self.graph[ind]))[0])
@@ -1160,16 +1476,6 @@ class mol3D:
                 else:
                     distance_max = 1.15 * (atom.rad + ratom.rad)
                 if atom.ismetal() or ratom.ismetal():
-                    # dist_allowed = {"C": 2.8, "H": 2.0, "N": 2.8, "P": 3.0, "I": 3.5, "O": 2.8}
-                    # if atom.symbol() in dist_allowed.keys():
-                    #    max_pos_distance = dist_allowed[atom.symbol()]
-                    # elif ratom.symbol() in dist_allowed.keys():
-                    #    max_pos_distance = dist_allowed[ratom.symbol()]
-                    # else:
-                    #    max_pos_distance = 2.9
-
-                    # one the atoms is a metal!
-                    # use a longer max for metals
                     if flag_loose:
                         distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
                     else:
@@ -1194,54 +1500,45 @@ class mol3D:
                                 if debug:
                                     print('\n')
                                     print(('this atom in is ' + str(i)))
-                                    print(
-                                        ('this atom sym is ' + str(atom.symbol())))
+                                    print(('this atom sym is ' + str(atom.symbol())))
                                     print(('this ratom in is ' +
                                            str(self.getAtom(i).symbol())))
-                                    print(
-                                        ('this ratom sym is ' + str(ratom.symbol())))
+                                    print(('this ratom sym is ' + str(ratom.symbol())))
                                 # in this case, atom might be intruder C!
-                                possible_inds = self.getBondedAtomsnotH(
-                                    ind)  # bonded to metal
+                                possible_idxs = self.getBondedAtomsnotH(ind)  # bonded to metal
                                 if debug:
-                                    print(('poss inds are' + str(possible_inds)))
-                                if len(possible_inds) > CN:
-                                    metal_prox = sorted(
-                                        possible_inds, key=lambda x: self.getDistToMetal(x, ind))
-
-                                    allowed_inds = metal_prox[0:CN]
-                                    # if
+                                    print(('poss inds are' + str(possible_idxs)))
+                                if len(possible_idxs) > CN:
+                                    metal_prox = sorted(possible_idxs, 
+                                        key=lambda x: self.getDistToMetal(x, ind))
+                                    allowed_idxs = metal_prox[0:CN]
                                     if debug:
                                         print(('ind: ' + str(ind)))
                                         print(('metal prox: ' + str(metal_prox)))
-                                        print(
-                                            ('trimmed to: ' + str(allowed_inds)))
-                                        print(allowed_inds)
+                                        print(('trimmed to: ' + str(allowed_idxs)))
+                                        print(allowed_idxs)
                                         print(('CN is ' + str(CN)))
 
-                                    if not i in allowed_inds:
+                                    if not i in allowed_idxs:
                                         valid = False
                                         if debug:
-                                            print(
-                                                ('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_inds)))
+                                            print(('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_idxs)))
                                     else:
                                         if debug:
                                             print('Ok based on atom')
                             if ratom.symbol() in ["C", "S", "N"]:
                                 # in this case, ratom might be intruder C or S
-                                possible_inds = self.getBondedAtomsnotH(
-                                    i)  # bonded to metal
+                                possible_idxs = self.getBondedAtomsnotH(i)  # bonded to metal
                                 metal_prox = sorted(
-                                    possible_inds, key=lambda x: self.getDistToMetal(x, i))
-                                if len(possible_inds) > CN:
-                                    allowed_inds = metal_prox[0:CN]
+                                    possible_idxs, key=lambda x: self.getDistToMetal(x, i))
+                                if len(possible_idxs) > CN:
+                                    allowed_idxs = metal_prox[0:CN]
                                     if debug:
                                         print(('ind: ' + str(ind)))
                                         print(('metal prox:' + str(metal_prox)))
-                                        print(
-                                            ('trimmed to ' + str(allowed_inds)))
-                                        print(allowed_inds)
-                                    if not ind in allowed_inds:
+                                        print(('trimmed to ' + str(allowed_idxs)))
+                                        print(allowed_idxs)
+                                    if not ind in allowed_idxs:
                                         valid = False
                                         if debug:
                                             print(('bond rejected based on ratom ' + str(
@@ -1273,25 +1570,47 @@ class mol3D:
                                 'Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    # Gets atoms bonded to a specific atom using the molecular graph, or creates it
-    #
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @param oct Flag to turn on special octahedral complex routines
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsSmart(self, ind, oct=True, geo_check=False):
+    def getBondedAtomsSmart(self, idx, oct=True):
+        """Get bonded atom with a given index, using the molecular graph. 
+        Creates graph if it does not exist.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            oct : bool, optional
+                Flag for turning on octahedral bonding routines. 
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
         if not len(self.graph):
             self.createMolecularGraph(oct=oct)
-        return list(np.nonzero(np.ravel(self.graph[ind]))[0])
+        return list(np.nonzero(np.ravel(self.graph[idx]))[0])
 
-    # Gets non-H atoms bonded to a specific atom
-    #
-    #  Otherwise identical to getBondedAtoms().
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsnotH(self, ind, metal_multiplier=1.35, nonmetal_multiplier=1.15):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsnotH(self, idx, metal_multiplier=1.35, nonmetal_multiplier=1.15):
+        """Get bonded atom with a given index, but do not count hydrogens.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            metal_multiplier : float, optional
+                Multiplier for sum of covalent radii of two elements containing metal.
+            nonmetal_multiplier : float, optional
+                Multiplier for sum of covalent radii of two elements not containing metal.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded atoms.
+
+        """
+
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
@@ -1301,18 +1620,25 @@ class mol3D:
                 distance_max = metal_multiplier * (atom.rad + ratom.rad)
             else:
                 distance_max = nonmetal_multiplier * (atom.rad + ratom.rad)
-            if (d < distance_max and i != ind and atom.sym != 'H'):
+            if (d < distance_max and i != idx and atom.sym != 'H'):
                 nats.append(i)
         return nats
 
-    # Gets H atoms bonded to a specific atom
-    #
-    #  Otherwise identical to getBondedAtoms().
-    #  @param self The object pointer
-    #  @param ind Index of reference atom
-    #  @return List of indices of bonded atoms
-    def getBondedAtomsH(self, ind):
-        ratom = self.getAtom(ind)
+    def getBondedAtomsH(self, idx):
+        """Get bonded atom with a given index, but ONLY count hydrogens.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+
+        Returns
+        -------
+            nats : list
+                List of indices of bonded hydrogens.
+
+        """
+        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         for i, atom in enumerate(self.atoms):
@@ -1322,59 +1648,24 @@ class mol3D:
                 distance_max = 1.35 * (atom.rad + ratom.rad)
             else:
                 distance_max = 1.15 * (atom.rad + ratom.rad)
-            if (d < distance_max and i != ind and atom.sym == 'H'):
+            if (d < distance_max and i != idx and atom.sym == 'H'):
                 nats.append(i)
         return nats
 
-    # Gets C=C atoms in molecule
-    #  @param self The object pointer
-    #  @return List of atom3D objects of H atoms
-    def getC2Cs(self):
-        # values to store
-        c2clist = []
-        c2list = []
-        # self.createMolecularGraph(oct=False)
-        # order c2 carbons by priority
-        # c2list_and_prio = []
-        # for i in range(self.natoms):
-        #     if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
-        #         fatnos = sorted([self.getAtom(fidx).atno for fidx in self.getBondedAtoms(i)])[::-1]
-        #         fpriority = float('.'.join([str(fatnos[0]), ''.join([str(i) for i in fatnos[1:]])]))
-        #         c2list_and_prio.append((fpriority, i))
-        # c2 carbons
-        for i in range(self.natoms):
-            if self.getAtom(i).sym == 'C' and len(self.getBondedAtoms(i)) == 3:
-                c2list.append(i)
-        # c2list = [c2[0] for c2 in sorted(c2list_and_prio)[::-1]]
-        # for each c2 carbon, find if any of its neighbors are c2
-        for c2 in c2list:
-            fidxes = self.getBondedAtoms(c2)
-            c2partners = []
-            for fidx in fidxes:
-                if fidx in c2list:
-                    # c2partners.append(fidx)
-                    c2clist.append([c2, fidx])
-                    c2clist.append([fidx, c2])
-            # num_c2partners = len(c2partners)
-            # # if num_c2partners > 1:
-            # #     for c2partner in c2partners:
-            # #         score = 0
-            # #         sidxes = self.getBondedAtoms(fidx)
-            # #         for sidx in sidxes:
-            # # elif num_c2partners == 1:
-            # if num_c2partners > 1:
-            #     c2clist.append([c2, fidx],[fidx, c2])
-            #     continue
-            # else:
-            #     continue
-
-        return c2clist
-
-    # Gets atom that is furthest from the molecule COM along a given direction and returns the corresponding distance
-    #  @param self The object pointer
-    #  @param uP Search direction
-    #  @return Distance
     def getfarAtomdir(self, uP):
+        """Get atom furthest from center of mass in a given direction.
+
+        Parameters
+        ----------
+            uP : list
+                List of length 3 [dx, dy, dz] for direction vector.
+
+        Returns
+        -------
+            dist : float
+                Distance of atom from center of mass in angstroms.
+
+        """
         dd = 1000.0
         atomc = [0.0, 0.0, 0.0]
         for atom in self.atoms:
@@ -1384,13 +1675,23 @@ class mol3D:
                 atomc = atom.coords()
         return distance(self.centermass(), atomc)
 
-    # Gets atom that is furthest from the given atom
-    #  @param self The object pointer
-    #  @param reference index of reference atom
-    #  @param symbol type of atom to return
-    #  @return farIndex index of furthest atom
-
     def getFarAtom(self, reference, atomtype=False):
+        """Get atom furthest from a reference atom.
+        
+        Parameters
+        ----------
+            reference : int
+                Index of a reference atom.
+            atomtype : bool, optional
+                An element name for finding the furthest atom of a given element. Default is False.
+
+        Returns
+        -------
+            dist : float
+                Distance of atom from center of mass in angstroms.
+
+        """
+
         referenceCoords = self.getAtom(reference).coords()
         dd = 0.00
         farIndex = reference
@@ -1410,9 +1711,15 @@ class mol3D:
                 farIndex = ind
         return farIndex
 
-    # Gets list of atoms of the fragments in the mol3D
-    #  @param sel The object pointer
     def getfragmentlists(self):
+        """Get all independent molecules in mol3D.
+
+        Returns
+        -------
+            atidxes_total : list 
+                list of lists for atom indices comprising of each distinct molecule.
+
+        """
         atidxes_total = []
         atidxes_unique = set([0])
         atidxes_done = []
@@ -1438,21 +1745,37 @@ class mol3D:
 
         return atidxes_total
 
-    # Gets H atoms in molecule
-    #  @param self The object pointer
-    #  @return List of atom3D objects of H atoms
     def getHs(self):
+        """Get all hydrogens in a mol3D class instance.
+
+        Returns
+        -------
+            hlist : list 
+                List of indices of hydrogen atoms.
+
+        """
+
         hlist = []
         for i in range(self.natoms):
             if self.getAtom(i).sym == 'H':
                 hlist.append(i)
         return hlist
 
-    # Gets H atoms bonded to specific atom3D in molecule
-    #  @param self The object pointer
-    #  @param ratom atom3D of reference atom
-    #  @return List of atom3D objects of H atoms
     def getHsbyAtom(self, ratom):
+        """Get hydrogens bonded to a specific atom3D class.
+
+        Parameters
+        ----------
+            ratom : atom3D
+                Reference atom3D class.
+
+        Returns
+        -------
+            hlist : list 
+                List of indices of hydrogen atoms bound to reference atom3D.
+
+        """
+
         nHs = []
         for i, atom in enumerate(self.atoms):
             if atom.sym == 'H':
@@ -1461,14 +1784,19 @@ class mol3D:
                     nHs.append(i)
         return nHs
 
-    # Gets H atoms bonded to specific atom index in molecule
-    #
-    #  Trivially equivalent to getHsbyAtom().
-    #  @param self The object pointer
-    #  @param idx Index of reference atom
-    #  @return List of atom3D objects of H atoms
     def getHsbyIndex(self, idx):
-        # calculates adjacent number of hydrogens
+        """Get all hydrogens bonded to a given atom with an index.
+
+        Parameters
+        ----------
+            idx : index of reference atom.
+
+        Returns
+        -------
+            hlist : list 
+                List of indices of hydrogen atoms bound to reference atom.
+
+        """
         nHs = []
         for i, atom in enumerate(self.atoms):
             if atom.sym == 'H':
@@ -1477,30 +1805,47 @@ class mol3D:
                     nHs.append(i)
         return nHs
 
-    # Gets index of closest atom to reference atom.
-    #  @param self The object pointer
-    #  @param atom0 Index of reference atom
-    #  @return Index of closest atom
-    def getClosestAtom(self, atom0):
-        # INPUT
-        #   - atom0: reference atom3D
-        # OUTPUT
-        #   - idx: index of closest atom to atom0 from molecule
+    def getClosestAtom(self, ratom):
+        """Get hydrogens bonded to a specific atom3D class.
+
+        Parameters
+        ----------
+            ratom : atom3D
+                Reference atom3D class.
+
+        Returns
+        -------
+            idx : int 
+                Index of atom closest to reference atom.
+
+        """
+
         idx = 0
         cdist = 1000
         for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(atom0)
+            ds = atom.distance(ratom)
             if (ds < cdist):
                 idx = iat
                 cdist = ds
         return idx
 
-    def getClosestAtomlist(self, atom_idx, cdist=3):
-        # INPUT
-        #   - atom_index: reference atom index
-        #   - cdist: cutoff of neighbor distance
-        # OUTPUT
-        #   - neighbor_list: index of close atom to atom0 from molecule
+    def getClosestAtomlist(self, atom_idx, cdist=3.0):
+        """Get hydrogens bonded to a specific atom3D class.
+
+        Parameters
+        ----------
+            atom_idx : int
+                Reference atom index.
+            cdist : float, optional
+                Cutoff of neighbor distance in angstroms.
+
+        Returns
+        -------
+            neighbor_list : list 
+                List of neighboring atoms
+
+        """
+        
         neighbor_list = []
         for iat, atom in enumerate(self.atoms):
             ds = atom.distance(self.atoms[atom_idx])
@@ -1508,73 +1853,68 @@ class mol3D:
                 neighbor_list.append(neighbor_list)
         return neighbor_list
 
-    # Gets point that corresponds to mask
-    #  @param self The object pointer
-    #  @param mask Identifier for atoms
-    #  @return Center of mass of mask
-    def getMask(self, mask):
-        globs = globalvars()
-        elements = globs.elementsbynum()
-        # check center of mass
-        ats = []
-        # loop over entries in mask
-        for entry in mask:
-            # check for center of mass
-            if ('com' in entry.lower()) or ('cm' in entry.lower()):
-                return self.centermass()
-            # check for range
-            elif '-' in entry:
-                at0 = entry.split('-')[0]
-                at1 = entry.split('-')[-1]
-                for i in range(int(at0), int(at1) + 1):
-                    ats.append(i - 1)  # python indexing
-            elif entry in elements:
-                ats += self.findAtomsbySymbol(entry)
-            else:
-                # try to convert to integer
-                try:
-                    t = int(entry)
-                    ats.append(t - 1)
-                except:
-                    return self.centermass()
-        maux = mol3D()
-        for at in ats:
-            maux.addAtom(self.getAtom(at))
-        if maux.natoms == 0:
-            return self.centermass()
-        else:
-            return maux.centermass()
+    def getClosestAtomnoHs(self, ratom):
+        """Get atoms bonded to a specific atom3D class that are not hydrogen.
 
-    # Gets index of closest non-H atom to another atom
-    #  @param self The object pointer
-    #  @param atom0 atom3D of reference atom
-    #  @return Index of closest non-H atom
-    def getClosestAtomnoHs(self, atom0):
+        Parameters
+        ----------
+            ratom : atom3D
+                Reference atom3D class.
+
+        Returns
+        -------
+            idx : int 
+                Index of atom closest to reference atom.
+
+        """
         idx = 0
         cdist = 1000
         for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(atom0)
+            ds = atom.distance(ratom)
             if (ds < cdist) and atom.sym != 'H':
                 idx = iat
                 cdist = ds
         return idx
 
-    # Gets distance between two atoms in molecule
-    #  @param self The object pointer
-    #  @param idx Index of first atom
-    #  @param metalx Index of second atom
-    #  @return Distance between atoms
     def getDistToMetal(self, idx, metalx):
+        """Get distance between two atoms in a molecule, with the second one being a metal.
+
+        Parameters
+        ----------
+            idx : int
+                Index of reference atom.
+            metalx : int
+                Index of reference metal atom.
+
+        Returns
+        -------
+            d : float 
+                Distance between atoms in angstroms.
+
+        """
         d = self.getAtom(idx).distance(self.getAtom(metalx))
         return d
 
-    # Gets angle between atoms in molecule
-    #  @param self The object pointer
-    #  @param idx0 Index of first atom
-    #  @param idx1 Index of second (middle)
-    #  @param idx2 Index of third atom
-    #  @return angle between vectors formed by atom0->atom1 and atom2->atom1
     def getAngle(self, idx0, idx1, idx2):
+        """Get angle between three atoms identified by their indices.
+        Specifically, get angle between vectors formed by atom0->atom1 and atom2->atom1.
+
+        Parameters
+        ----------
+            idx0 : int
+                Index of first atom.
+            idx1 : int
+                Index of second (middle) atom.
+            idx2 : int
+                Index of third atom.
+
+        Returns
+        -------
+            angle : float 
+                Angle in degrees.
+
+        """
+
         coords0 = self.getAtomCoords(idx0)
         coords1 = self.getAtomCoords(idx1)
         coords2 = self.getAtomCoords(idx2)
@@ -1583,33 +1923,25 @@ class mol3D:
         angle = vecangle(v1, v2)
         return angle
 
-    # Gets index of closest non-H atom to another atom
-    #
-    #  Equivalent to getClosestAtomnoHs() except that the index of the reference atom is specified.
-    #  @param self The object pointer
-    #  @param atidx Index of reference atom
-    #  @return Index of closest non-H atom
-
-    def getClosestAtomnoHs2(self, atidx):
-        idx = 0
-        cdist = 1000
-        for iat, atom in enumerate(self.atoms):
-            ds = atom.distance(self.getAtom(atidx))
-            if (ds < cdist) and atom.sym != 'H' and iat != atidx:
-                idx = iat
-                cdist = ds
-        return idx
-
-    # Initializes OBMol object from a file or SMILES string
-
-    #
-    #  Uses the obConversion tool and for files containing 3D coordinates (xyz,mol) and the OBBuilder tool otherwise (smiles).
-    #  @param self The object pointer
-    #  @param fst Name of input file
-    #  @param convtype Input filetype (xyz,mol,smi)
-    #  @param ffclean Flag for FF cleanup of generated structure (default False)
-    #  @return OBMol object
     def getOBMol(self, fst, convtype, ffclean=False):
+        """Get OBMol object from a file or SMILES string. If you have a mol3D,
+        then use convert2OBMol instead.
+
+        Parameters
+        ----------
+            fst : str
+                Name of input file.
+            convtype : str
+                Input filetype (xyz,mol,smi).
+            ffclean : bool, optional
+                Flag for forcefield cleanup of structure. Default is False.
+
+        Returns
+        -------
+            OBMol : OBMol 
+                OBMol class instance to be used with openbabel. Bound as .OBMol attribute.
+
+        """
         obConversion = openbabel.OBConversion()
         OBMol = openbabel.OBMol()
         if convtype == 'smistring':
@@ -1630,24 +1962,30 @@ class mol3D:
         self.OBMol = OBMol
         return OBMol
 
-    # Removes attributes from mol3D object
-    #  @param self The object pointer
     def initialize(self):
+        """Initialize the mol3D to an empty object.
+        """
+
         self.atoms = []
         self.natoms = 0
         self.mass = 0
         self.size = 0
         self.graph = []
 
-    # Calculates the largest distance between atoms of two molecules
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Largest distance between atoms in both molecules
     def maxdist(self, mol):
-        # INPUT
-        #   - mol: second molecule
-        # OUTPUT
-        #   - maxd: maximum distance between atoms of the 2 molecules
+        """Measure the largest distance between atoms in two molecules.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule.
+
+        Returns
+        -------
+            maxd : float 
+                Max distance between atoms of two molecules.
+
+        """
         maxd = 0
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1655,15 +1993,20 @@ class mol3D:
                     maxd = distance(atom1.coords(), atom0.coords())
         return maxd
 
-    # Calculates the smallest distance between atoms of two molecules
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Smallest distance between atoms in both molecules
     def mindist(self, mol):
-        # INPUT
-        #   - mol: second molecule
-        # OUTPUT
-        #   - mind: minimum distance between atoms of the 2 molecules
+        """Measure the smallest distance between atoms in two molecules.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules.
+
+        """
         mind = 1000
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1671,10 +2014,15 @@ class mol3D:
                     mind = distance(atom1.coords(), atom0.coords())
         return mind
 
-    # Calculates the smallest distance between atoms in the molecule
-    #  @param self The object pointer
-    #  @return Smallest distance between atoms in molecule
     def mindistmol(self):
+        """Measure the smallest distance between atoms in a single molecule.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules.
+
+        """
         mind = 1000
         for ii, atom1 in enumerate(self.atoms):
             for jj, atom0 in enumerate(self.atoms):
@@ -1683,11 +2031,20 @@ class mol3D:
                     mind = distance(atom1.coords(), atom0.coords())
         return mind
 
-    # Calculates the smallest distance from atoms in the molecule to a given point
-    #  @param self The object pointer
-    #  @param point List of coordinates of reference point
-    #  @return Smallest distance to point
     def mindisttopoint(self, point):
+        """Measure the smallest distance between an atom and a point.
+
+        Parameters
+        ----------
+            point : list
+                List of coordinates of reference point.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules.
+
+        """
         mind = 1000
         for atom1 in self.atoms:
             d = distance(atom1.coords(), point)
@@ -1695,13 +2052,20 @@ class mol3D:
                 mind = d
         return mind
 
-    # Calculates the smallest distance between non-H atoms of two molecules
-    #
-    #  Otherwise equivalent to mindist().
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Smallest distance between non-H atoms in both molecules
     def mindistnonH(self, mol):
+        """Measure the smallest distance between an atom and a non H atom in another molecule.
+        
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class of second molecule.
+
+        Returns
+        -------
+            mind : float 
+                Min distance between atoms of two molecules that are not Hs.
+
+        """
         mind = 1000
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1710,10 +2074,16 @@ class mol3D:
                         mind = distance(atom1.coords(), atom0.coords())
         return mind
 
-    # Calculates the size of the molecule, as quantified by the max. distance between atoms and the COM.
-    #  @param self The object pointer
-    #  @return Molecule size (max. distance between atoms and COM)
     def molsize(self):
+        """Measure the size of the molecule, by quantifying the max distance
+        between atoms and center of mass.
+
+        Returns
+        -------
+            maxd : float 
+                Max distance between an atom and the center of mass.
+
+        """
         maxd = 0
         cm = self.centermass()
         for atom in self.atoms:
@@ -1721,14 +2091,22 @@ class mol3D:
                 maxd = distance(cm, atom.coords())
         return maxd
 
-    # Checks for overlap with another molecule
-    #
-    #  Compares pairwise atom distances to 0.85*sum of covalent radii
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @param silence Flag for printing warnings
-    #  @return Flag for overlap
-    def overlapcheck(self, mol, silence):
+    def overlapcheck(self, mol, silence=False):
+        """Measure the smallest distance between an atom and a point.
+
+        Parameters
+        ----------
+            mol : mol3D
+                mol3D class instance of second molecule.
+            silence : bool, optional
+                Flag for extra output. Default is False.
+
+        Returns
+        -------
+            overlap : bool 
+                Flag for whether two molecules are overlapping.
+
+        """
         overlap = False
         for atom1 in mol.atoms:
             for atom0 in self.atoms:
@@ -1744,26 +2122,21 @@ class mol3D:
                     break
         return overlap
 
-    # Checks for overlap with another molecule with increased tolerance
-    #
-    #  Compares pairwise atom distances to 1*sum of covalent radii
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @return Flag for overlap
-    def overlapcheckh(self, mol):
-        overlap = False
-        for atom1 in mol.atoms:
-            for atom0 in self.atoms:
-                if (distance(atom1.coords(), atom0.coords()) < 1.0):
-                    overlap = True
-                    break
-        return overlap
-
-    # Gets a matrix with bond orders from openbabel
-    #  @param self The object pointer
-    #  @param bonddict Flag for if the obmol bond dictionary should be saved
-    #  @return matrix of bond orders
     def populateBOMatrix(self, bonddict=False):
+        """Populate the bond order matrix using openbabel.
+
+        Parameters
+        ----------
+            bonddict : bool
+                Flag for if the obmol bond dictionary should be saved. Default is False.
+            
+        Returns
+        -------
+            molBOMat : np.array  
+                Numpy array for bond order matrix.
+
+        """
+
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         molBOMat = np.zeros((n, n))
@@ -1781,10 +2154,20 @@ class mol3D:
             self.bo_dict = bond_dict
             return (molBOMat)
 
-    # Gets a matrix with bond orders from openbabel augmented with molecular graph
-    #  @param self The object pointer
-    #  @return matrix of bond orders
     def populateBOMatrixAug(self):
+        """Populate the augmented bond order matrix using openbabel.
+
+        Parameters
+        ----------
+            bonddict : bool
+                Flag for if the obmol bond dictionary should be saved. Default is False.
+            
+        Returns
+        -------
+            molBOMat : np.array  
+                Numpy array for augmented bond order matrix.
+
+        """
         obiter = openbabel.OBMolBondIter(self.OBMol)
         n = self.natoms
         molBOMat = np.zeros((n, n))
@@ -1803,34 +2186,40 @@ class mol3D:
                 molBOMat[error_idx[i].tolist()[0], error_idx[i].tolist()[1]] = 1
         return (molBOMat)
 
-    # Prints xyz coordinates to stdout
-    #
-    #  To write to file (more common), use writexyz() instead.
-    #  @param self The object pointer
     def printxyz(self):
+        """Print XYZ info of mol3D class instance to stdout. To write to file 
+        (more common), use writexyz() instead.
+        """
+
         for atom in self.atoms:
             xyz = atom.coords()
             ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
-
             print(ss)
 
-    # returns string of xyz coordinates
-    #
-    #  To write to file (more common), use writexyz() instead.
-    #  @param self The object pointer
     def returnxyz(self):
+        """Print XYZ info of mol3D class instance to stdout. To write to file 
+        (more common), use writexyz() instead.
+
+        Returns
+        -------
+            XYZ : string
+                String of XYZ information from mol3D class.
+        """
+
         ss = ''
         for atom in self.atoms:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return (ss)
 
-    # Load molecule from xyz file
-    #
-    #  Consider using getOBMol, which is more general, instead.
-    #  @param self The object pointer
-    #  @param filename Filename
     def readfromxyz(self, filename):
+        """Read XYZ into a mol3D class instance.
+
+        Parameters
+        -------
+            filename : string
+                String of path to XYZ file. Path may be local or global.
+        """
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
@@ -1861,16 +2250,24 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
-    # Load molecule from mol2 file
-    # Now accounts for bond orders as well as atom types (SYBYL)
-    # @param self The object pointer
-    # @param filename The name of the mol2file or string being read in
-    # @param readstring Whether a string of mol2 file is being passed as the filename
-    def readfrommol2(self, filename, readstring=False):
+    def readfrommol2(self, filename, readstring=False, trunc_sym="X"):
+        """Read mol2 into a mol3D class instance. Stores the bond orders and atom types (SYBYL).
+
+        Parameters
+        -------
+            filename : string
+                String of path to XYZ file. Path may be local or global. May be read in as a string.
+            readstring : bool
+                Flag for deciding whether a string of mol2 file is being passed as the filename
+            trunc_sym: string
+                Element symbol at which one would like to truncate the bo graph.
+        """
+
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
         graph = False
+        bo_graph = False
         bo_dict = False
         if readstring:
             s = filename.splitlines()
@@ -1915,26 +2312,55 @@ class mol3D:
                 s_line = line.split()
                 graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
                 graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
+                if s_line[3] in ["ar"]:
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1.5
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1.5
+                elif s_line[3] in ["un", 'am']:
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = np.nan
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = np.nan
+                else:
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = s_line[3]
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = s_line[3]
                 bo_dict[tuple(
                     sorted([int(s_line[1]) - 1, int(s_line[2]) - 1]))] = s_line[3]
             if '<TRIPOS>BOND' in line:
                 read_bonds = True
                 # initialize molecular graph
                 graph = np.zeros((self.natoms, self.natoms))
+                bo_graph = np.zeros((self.natoms, self.natoms))
                 bo_dict = dict()
+        X_inds = self.find_atom(trunc_sym)
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
+            self.bo_graph = bo_graph
+            if len(X_inds):
+                self.bo_graph_trunc = np.delete(np.delete(bo_graph, X_inds[0], 0), X_inds[0], 1)
+            else:
+                self.bo_graph_trunc = bo_graph
             self.bo_dict = bo_dict
         else:
             self.graph = []
+            self.bo_graph = []
+            self.bo_graph_trunc = []
             self.bo_dict = []
-    # Load molecule from xyz file
-    #
-    #  Consider using getOBMol, which is more general, instead.
-    #  @param self The object pointer
-    #  @param filename Filename
+
+    def read_bo_from_mol(self, molfile):
+        with open(molfile, 'r') as fo:
+            for line in fo:
+                ll = line.split()
+                if len(ll) == 7 and all([x.isdigit() for x in ll]):
+                    self.bo_graph_trunc[int(ll[0])-1, int(ll[1])-1] = int(ll[2])
+                    self.bo_graph_trunc[int(ll[1])-1, int(ll[0])-1] = int(ll[2])
 
     def readfromstring(self, xyzstring):
+        """Read XYZ from string.
+
+        Parameters
+        -------
+            xyzstring : string
+                String of XYZ file. 
+        """
+
         # print('!!!!', filename)
         globs = globalvars()
         amassdict = globs.amass()
@@ -1967,6 +2393,13 @@ class mol3D:
                 self.addAtom(atom)
 
     def readfromtxt(self, txt):
+        """Read XYZ from textfile.
+
+        Parameters
+        -------
+            txt : list 
+                List of lists that comes as a result of readlines.
+        """
         # print('!!!!', filename)
         globs = globalvars()
         en_dict = globs.endict()
@@ -1992,15 +2425,20 @@ class mol3D:
                     sys.exit()
                 self.addAtom(atom)
 
-    # Computes RMSD between two molecules
-    #
-    #  Note that this routine does not perform translations or rotations to align molecules.
-    #
-    #  To do so, use geometry.kabsch().
-    #  @param self The object pointer
-    #  @param mol2 mol3D of second molecule
-    #  @return RMSD between molecules, NaN if molecules have different numbers of atoms
     def rmsd(self, mol2):
+        """Compute the RMSD between two molecules. Does not align molecules.
+        For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2018,6 +2456,19 @@ class mol3D:
             return sqrt(rmsd)
 
     def geo_rmsd(self, mol2):
+        """Compute the RMSD between two molecules. Does not align molecules.
+        For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures.
+        """
         # print("==========")
         Nat0 = self.natoms
         Nat1 = mol2.natoms
@@ -2046,18 +2497,21 @@ class mol3D:
             return sqrt(rmsd)
         else:
             raise ValueError("Number of atom does not match between two mols.")
-
-    # Computes mean of absolute atom deviations
-    #
-    #  Like above, this routine does not perform translations or rotations to align molecules.
-    #
-    #  Use mol3D objects that do not use hydrogens
-    #
-    #  To do so, use geometry.kabsch().
-    #  @param self The object pointer
-    #  @param mol2 mol3D of second molecule
-    #  @return sum of absolute deviations of atoms between molecules, NaN if molecules have different numbers of atoms
+  
     def meanabsdev(self, mol2):
+        """Compute the mean absolute deviation (MAD) between two molecules. 
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            MAD : float
+                Mean absolute deviation between the two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2075,6 +2529,19 @@ class mol3D:
             return dev
 
     def maxatomdist(self, mol2):
+        """Compute the max atom distance between two molecules. 
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            dist_max : float
+                Maximum atom distance between two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
@@ -2090,6 +2557,19 @@ class mol3D:
             return dist_max
 
     def geo_maxatomdist(self, mol2):
+        """Compute the max atom distance between two molecules. 
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            dist_max : float
+                Maximum atom distance between two structures.
+        """
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
@@ -2116,11 +2596,25 @@ class mol3D:
             return maxdist
 
     def rmsd_nonH(self, mol2):
+        """Compute the RMSD between two molecules, considering heavy atoms only.
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures ignoring hydrogens.
+        """
+
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         if (Nat0 != Nat1):
             print(
-                "ERROR: RMSD can be calculated only for molecules with the same number of atoms..")
+                "ERROR: RMSD can be calculated only for molecules with the same number of atoms.")
             return float('NaN')
         else:
             rmsd = 0
@@ -2131,12 +2625,26 @@ class mol3D:
             return sqrt(rmsd)
 
     def maxatomdist_nonH(self, mol2):
+        """Compute the max atom distance between two molecules, considering heavy atoms only.
+        Does not align molecules. For that, use geometry.kabsch().
+
+        Parameters
+        ----------
+            mol2 : mol3D 
+                mol3D instance of second molecule.
+
+        Returns 
+        -------
+            rmsd : float
+                RMSD between the two structures ignoring hydrogens.
+        """
+
         Nat0 = self.natoms
         Nat1 = mol2.natoms
         dist_max = 0
         if (Nat0 != Nat1):
             print(
-                "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms..")
+                "ERROR: max_atom_dist can be calculated only for molecules with the same number of atoms.")
             return float('NaN')
         else:
             for atom0, atom1 in zip(self.getAtoms(), mol2.getAtoms()):
@@ -2146,21 +2654,40 @@ class mol3D:
                         dist_max = dist
             return dist_max
 
-    def calcCharges(self, charge=0, bond=False, method='QEq'):
+    def calcCharges(self, charge=0, method='QEq'):
+        """Compute the partial charges of a molecule using openbabel. 
+
+        Parameters
+        ----------
+            charge : int 
+                Net charge assigned to a molecule
+            method : str
+                Method to calculate partial charge. Default is 'QEq'.
+        """
+
         self.convert2OBMol()
         self.OBMol.SetTotalCharge(charge)
         charge = openbabel.OBChargeModel.FindType(method)
         charge.ComputeCharges(self.OBMol)
         self.partialcharges = charge.GetPartialCharges()
 
-    # Checks for overlap within the molecule
-    #
-    #  Single-molecule version of overlapcheck().
-    #  @param self The object pointer
-    #  @param silence Flag for printing warning
-    #  @return Flag for overlap
-    #  @return Minimum distance between atoms
     def sanitycheck(self, silence=False, debug=False):
+        """Sanity check a molecule for overlap within the molecule.
+
+        Parameters
+        ----------
+            silence : bool 
+                Flag for printing warnings. Default is False.
+            debug : bool
+                Flag for extra printout. Default is False.
+
+        Returns 
+        -------
+            overlap : bool
+                Flag for whether two structures overlap. True for overlap.
+            mind : float
+                Minimum distance between atoms in molecule.
+        """
         overlap = False
         mind = 1000
         errors_dict = {}
@@ -2204,6 +2731,30 @@ class mol3D:
     # @return  error_dict (optional - if debug) dict: {bondidists and angles breaking constraints:values}
 
     def sanitycheckCSD(self, oct=False, angle1=30, angle2=80, angle3=45, debug=False, metals=None):
+        """Sanity check a CSD molecule.
+
+        Parameters
+        ----------
+            oct : bool, optional 
+                Flag for octahedral test. Default is False.
+            angle1 : float, optional
+                Metal angle cutoff. Default is 30.
+            angle2 : float, optional
+                Organic angle cutoff. Default is 80.
+            angle3 : float, optional
+                Metal/organic angle cutoff e.g. M-X-X angle. Default is 45.
+            debug : bool, optional
+                Extra print out desired. Default is False.
+            metals : Nonetype, optional
+                Check for metals. Default is None.
+
+        Returns 
+        -------
+            sane : bool
+                Whether or not molecule is a sane molecule
+            error_dict : dict
+                Returned if debug, {bondidists and angles breaking constraints:values}
+        """
         import itertools
         if metals:
             metalinds = [i for i, x in enumerate(
@@ -2255,10 +2806,23 @@ class mol3D:
             return sane
 
     def isPristine(self, unbonded_min_dist=1.3, oct=False):
-        # isPristine() checks if the organic portions of a transition metal complex look good
-        # returns a tuple with 2 entries
-            # 1. a boolean describing whether this complex passes (True) or fails (False)
-            # 2. a list of failing criteria, described as strings
+        """Checks the organic portions of a transition metal complex and 
+        determines if they look good.
+
+        Parameters
+        ----------
+            unbonded_min_dist : float, optional 
+                Minimum distance for two things that are not bonded (in angstrom). Default is 1.3.
+            oct : bool, optional
+                Flag for octahedral complex. Default is False.
+
+        Returns 
+        -------
+            pass : bool
+                Whether or not molecule passes the organic checks.
+            fail_list : list
+                List of failing criteria, as a set of strings.
+        """
         if len(self.graph) == 0:
             self.createMolecularGraph(oct=oct)
 
@@ -2286,17 +2850,28 @@ class mol3D:
 
         return pristine, failure_reason
 
-    # Translate all atoms by given vector.
-    #  @param self The object pointer
-    #  @param dxyz Translation vector
     def translate(self, dxyz):
+        """Translate all atoms by a given vector.
+
+        Parameters
+        ----------
+            dxyz : list 
+                Vector to translate all molecules, as a list [dx, dy, dz].
+
+        """
+
         for atom in self.atoms:
             atom.translate(dxyz)
 
-    # Writes xyz file in GAMESS format
-    #  @param self The object pointer
-    #  @param filename Filename
     def writegxyz(self, filename):
+        """Write GAMESS XYZ file.
+
+        Parameters
+        ----------
+            filename : str 
+                Path to XYZ file.
+
+        """
         ss = ''  # initialize returning string
         ss += "Date:" + time.strftime(
             '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\nC1\n"
@@ -2309,12 +2884,24 @@ class mol3D:
         f.write(ss)
         f.close()
 
-    # Writes xyz file
-    #
-    #  To print to stdout instead, use printxyz().
-    #  @param self The object pointer
-    #  @param filename Filename
-    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False):
+    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False, writestring=False):
+        """Write standard XYZ file.
+
+        Parameters
+        ----------
+            filename : str 
+                Path to XYZ file.
+            symbsonly : bool, optional 
+                Only write symbols to file. Default is False.
+            ignoreX : bool, optional
+                Ignore X element when writing. Default is False.
+            ordering : bool, optional
+                If handed a list, will order atoms in a specific order. Default is False.
+            writestring : bool, optional
+                Flag to write to a string if True or file if False. Default is False.
+
+        """
+
         ss = ''  # initialize returning string
         natoms = self.natoms
         if not ordering:
@@ -2334,18 +2921,25 @@ class mol3D:
                 else:
                     ss += "%s \t%f\t%f\t%f\n" % (atom.name,
                                                  xyz[0], xyz[1], xyz[2])
-        fname = filename.split('.xyz')[0]
-        f = open(fname + '.xyz', 'w')
-        f.write(ss)
-        f.close()
+        if writestring:
+            return ss
+        else:
+            fname = filename.split('.xyz')[0]
+            f = open(fname + '.xyz', 'w')
+            f.write(ss)
+            f.close()
 
-    # Writes xyz file for 2 molecules combined
-    #
-    #  Used when placing binding molecules.
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @param filename Filename
     def writemxyz(self, mol, filename):
+        """Write standard XYZ file with two molecules
+
+        Parameters
+        ----------
+            mol : mol3D 
+                mol3D instance of second molecule.
+            filename : str 
+                Path to XYZ file.
+            
+        """
         ss = ''  # initialize returning string
         ss += str(self.natoms + mol.natoms) + "\n" + time.strftime(
             '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
@@ -2360,12 +2954,16 @@ class mol3D:
         f.write(ss)
         f.close()
 
-    # Writes xyz file with atom numbers
-    #
-    #  some codes require this, e.g. packmol/moltemplate.
-    #  @param self The object pointer
-    #  @param filename Filename
     def writenumberedxyz(self, filename):
+        """Write standard XYZ file with numbers instead of symbols.
+
+        Parameters
+        ----------
+            filename : str 
+                Path to XYZ file.
+            
+        """
+
         ss = ''  # initialize returning string
         ss += str(self.natoms) + "\n" + time.strftime(
             '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
@@ -2385,13 +2983,17 @@ class mol3D:
         f.write(ss)
         f.close()
 
-    # Writes xyz file for 2 molecules separated
-    #
-    #  Used when placing binding molecules for computation of binding energy.
-    #  @param self The object pointer
-    #  @param mol mol3D of second molecule
-    #  @param filename Filename
     def writesepxyz(self, mol, filename):
+        """Write standard XYZ file with two molecules separated.
+
+        Parameters
+        ----------
+            mol : mol3D 
+                mol3D instance of second molecule.
+            filename : str 
+                Path to XYZ file.
+            
+        """
         ss = ''  # initialize returning string
         ss += str(self.natoms) + "\n" + time.strftime(
             '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
@@ -2407,16 +3009,24 @@ class mol3D:
         f.write(ss)
         f.close()
 
-    # Write mol2 file from mol3D object
-    # If partial charges are given they are appended
-    # Otherwise the total charge of the complex (either given or OBMol) is
-    # Assigned to the metal
-    #  @param self The object pointer
-    #  @param filename Filename
-    #  @param writestring Bool to write to a string if True or file if False
-    #  @param ignoreX will delete atom X
-    #  @param force will dictate if bond orders are written (obmol/assigned) or =1
     def writemol2(self, filename, writestring=False, ignoreX=False, force=False):
+        """Write mol2 file from mol3D object. Partial charges are appended if given.
+        Else, total charge of the complex (given or interpreted by OBMol) is assigned
+        to the metal.
+
+        Parameters
+        ----------
+            filename : str 
+                Path to XYZ file.
+            writestring : bool, optional
+                Flag to write to a string if True or file if False. Default is False.
+            ignoreX : bool, optional
+                Flag to delete atom X. Default is False.
+            force : bool, optional
+                Flag to dictate if bond orders are written (obmol/assigned) or =1.
+            
+        """
+
         # print('!!!!', filename)
         from scipy.sparse import csgraph
         if ignoreX:
@@ -2467,7 +3077,7 @@ class mol3D:
         for i, atom in enumerate(self.atoms):
             if atom.name != atom.sym:
                 atom_types_mol2 = '.'+atom.name
-            elif atom.sym in atom_default_dict.keys():
+            elif atom.sym in list(atom_default_dict.keys()):
                 atom_types_mol2 = '.' + atom_default_dict[atom.sym]
             else:
                 atom_types_mol2 = ''
@@ -2510,6 +3120,22 @@ class mol3D:
                 file1.write(ss)
 
     def closest_H_2_metal(self, delta=0):
+        """Get closest hydrogen atom to metal.
+
+        Parameters
+        ----------
+            delta : float 
+                Distance tolerance in angstrom.
+
+        Returns
+        -------
+            flag : bool
+                Flag for if a hydrogen exists in the distance tolerance.
+            min_dist_H : float
+                Minimum distance for a hydrogen.
+            min_dist_nonH : float
+                Minimum distance for a heavy atom.
+        """
         min_dist_H = 3.0
         min_dist_nonH = 3.0
         for i, atom in enumerate(self.atoms):
@@ -2530,22 +3156,9 @@ class mol3D:
             flag = False
         return (flag, min_dist_H, min_dist_nonH)
 
-    # Print methods
-    #  @param self The object pointer
-    #  @return String with methods
-    def __repr__(self):
-        # OUTPUT
-        #   - ss: string with all methods
-        # overloaded function
-        """ when calls mol3D object without attribute e.g. t """
-        ss = "\nClass mol3D has the following methods:\n"
-        for method in dir(self):
-            if callable(getattr(self, method)):
-                ss += method + '\n'
-        return ss
-
-    # Initialize the geometry check dictionary according to the dict_oct_check_st.
     def geo_dict_initialization(self):
+        """Initialization of geometry check dictionaries according to dict_oct_check_st.
+        """
         for key in self.dict_oct_check_st[list(self.dict_oct_check_st.keys())[0]]:
             self.geo_dict[key] = -1
         self.dict_lig_distort = {'rmsd_max': -1, 'atom_dist_max': -1}
@@ -2559,9 +3172,16 @@ class mol3D:
         }
         self.dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
 
-    # Get the coordination number of the metal from getBondedOct, a distance check.
-    # num_coord_metal and the list of indexs of the connecting atoms are stored in mol3D
-    def get_num_coord_metal(self, debug):
+    def get_num_coord_metal(self, debug=False):
+        """Get metal coordination based on get bonded atoms. Store this info.
+
+        Parameters
+        ----------
+            debug : bool, optional
+                Flag for whether extra output should be printed. Default is False.
+
+        """
+
         metal_list = self.findMetal()
         metal_ind = self.findMetal()[0]
         metal_coord = self.getAtomCoords(metal_ind)
@@ -2619,12 +3239,26 @@ class mol3D:
             print(("self.catoms: ", self.catoms))
             print(("self.num_coord_metal: ", self.num_coord_metal))
 
-    # Get the deviation of shape of the catoms from the desired shape, which is defined in angle_ref.
-    # Input: angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
-    # catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
-    # Output: shape_check dictionary
-    def oct_comp(self, angle_ref=False, catoms_arr=None,
-                 debug=False):
+    def oct_comp(self, angle_ref=False, catoms_arr=None, debug=False):
+        """Get the deviation of shape of the catoms from the desired shape, 
+        which is defined in angle_ref.
+
+        Parameters
+        ----------
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+
+        Returns
+        -------
+            dict_catoms_shape : dict
+                Dictionary of first coordination sphere shape measures. 
+            catoms_arr : list
+                Connection atom array.
+
+        """
+
         if not angle_ref:
             angle_ref = self.oct_angle_ref
         from molSimplify.Scripts.oct_check_mols import loop_target_angle_arr
@@ -2726,19 +3360,44 @@ class mol3D:
         self.dict_catoms_shape = dict_catoms_shape
         return dict_catoms_shape, catoms_arr
 
-    # Match the ligands of mol and init_mol by calling ligand_breakdown
-    # Input: init_mol: a mol3D object of the initial geometry
-    # flag_loose and BondedOct: default as False. Only used in Oct_inspection, not in geo_check.
-    # flag_lbd: Whether to apply ligand_breakdown for the optimized geometry. If False, we assume the
-    # indexing of the initial and optimized xyz file is the same.
-    # depth: The bond depth in obtaining the truncated mol.
-    # Output: liglist_shifted, liglist_init: list of list for each ligands, with one-to-one correspandance between
-    # initial and optimized mol.
-    # flag_match: A flag about whether the ligands of initial and optimized mol are exactly the same.
     def match_lig_list(self, init_mol, catoms_arr=None,
                        flag_loose=False, BondedOct=False,
                        flag_lbd=True, debug=False, depth=3,
                        check_whole=False, angle_ref=False):
+        """Match the ligands of mol and init_mol by calling ligand_breakdown
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            depth : int, optional
+                Depth for truncated molecule. Default is 3.
+            check_whole : bool, optional
+                Flag for checking whole ligand.
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+
+        Returns
+        -------
+            liglist_shifted : list
+                List of lists containing all ligands from optimized molecule. 
+            liglist_init : list
+                List of lists containing all ligands from initial molecule. 
+            flag_match : bool
+                A flag about whether the ligands of initial and optimized mol are exactly the same. There is a one to one mapping.
+
+        """
+
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         from molSimplify.Classes.ligand import ligand_breakdown  # , ligand_assign
         flag_match = True
@@ -2844,18 +3503,41 @@ class mol3D:
             flag_match = True
         return liglist_shifted, liglist_init, flag_match
 
-    # Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
-    # Input: init_mol: a mol3D object of the initial geometry
-    # flag_loose and BondedOct: default as False. Only used in Oct_inspection, not in geo_check.
-    # flag_deleteH: whether to delete the hydrogen atoms in ligands comparison.
-    # flag_lbd: Whether to apply ligand_breakdown for the optimized geometry. If False, we assume the
-    # indexing of the initial and optimized xyz file is the same.
-    # depth: The bond depth in obtaining the truncated mol.
-    # Output: dict_lig_distort: rmsd_max and atom_dist_max
     def ligand_comp_org(self, init_mol, catoms_arr=None,
                         flag_deleteH=True, flag_loose=False,
                         flag_lbd=True, debug=False, depth=3,
                         BondedOct=False, angle_ref=False):
+        """Get the ligand distortion by comparing each individule ligands in init_mol and opt_mol.
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            flag_deleteH : bool, optional,
+                Flag to delete Hs in ligand comparison. Default is True.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            depth : int, optional
+                Depth for truncated molecule. Default is 3.
+            check_whole : bool, optional
+                Flag for checking whole ligand.
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+
+        Returns
+        -------
+            dict_lig_distort : dict
+                Dictionary containing rmsd_max and atom_dist_max. 
+        
+        """
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         _, _, flag_match = self.match_lig_list(init_mol,
                                                catoms_arr=catoms_arr,
@@ -2941,20 +3623,33 @@ class mol3D:
         self.dict_lig_distort = dict_lig_distort
         return dict_lig_distort
 
-    def find_the_other_ind(self, arr, ind):
-        arr.pop(arr.index(ind))
-        return arr[0]
-
-    # To check whether a ligand is linear:
-    # The input ind should be one of the connecting atoms for the metal.
     def is_linear_ligand(self, ind):
+        """Check whether a ligand is linear.
+
+        Parameters
+        ----------
+            ind : int
+                index for one of the metal-coordinating atoms.
+
+        Returns
+        -------
+            flag : bool
+                True if the ligand is linear.
+            catoms : list
+                Atoms bonded to the index of interest.
+        
+        """
+
+        def find_the_other_ind(arr, ind):
+            arr.pop(arr.index(ind))
+            return arr[0]
         catoms = self.getBondedAtomsSmart(ind)
         metal_ind = self.findMetal()[0]
         flag = False
         endcheck = False
         if not self.atoms[ind].sym == 'O':
             if metal_ind in catoms and len(catoms) == 2:
-                ind_next = self.find_the_other_ind(catoms[:], metal_ind)
+                ind_next = find_the_other_ind(catoms[:], metal_ind)
                 _catoms = self.getBondedAtomsSmart(ind_next)
                 # print("~~~~", (self.atoms[ind].sym, self.atoms[ind_next].sym))
                 if (self.atoms[ind].sym, self.atoms[ind_next].sym) in list(self.globs.tribonddict().keys()):
@@ -2968,7 +3663,7 @@ class mol3D:
                     if len(_catoms) == 1:
                         flag = True
                     elif len(_catoms) == 2:
-                        ind_next2 = self.find_the_other_ind(_catoms[:], ind)
+                        ind_next2 = find_the_other_ind(_catoms[:], ind)
                         vec1 = np.array(self.getAtomCoords(ind)) - \
                             np.array(self.getAtomCoords(ind_next))
                         vec2 = np.array(self.getAtomCoords(
@@ -2980,6 +3675,21 @@ class mol3D:
         return flag, catoms
 
     def get_linear_angle(self, ind):
+        """Get linear ligand angle.
+
+        Parameters
+        ----------
+            ind : int
+                index for one of the metal-coordinating atoms.
+
+        Returns
+        -------
+            flag : bool
+                True if the ligand is linear.
+            ang : float
+                Get angle of linear ligand. 0 if not linear.
+        
+        """
         flag, catoms = self.is_linear_ligand(ind)
         if flag:
             vec1 = np.array(self.getAtomCoords(
@@ -2991,11 +3701,20 @@ class mol3D:
             ang = 0
         return flag, ang
 
-    # Get the ligand orientation for those are linear.
-    # Output: dict_angle_linear. For each ligand, whether they are linear or not and if it is, what the deviation from
-    # 180 degree is.
-    # dict_orientation: devi_linear_avrg and devi_linear_max
     def check_angle_linear(self, catoms_arr=None):
+        """Get the ligand orientation for linear ligands.
+
+        Parameters
+        ----------
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+
+        Returns
+        -------
+            dict_orientation : dict
+                Dictionary containing average deviation from linearity (devi_linear_avrg) and max deviation (devi_linear_max). 
+        
+        """
         dict_angle_linear = {}
         if not catoms_arr == None:
             pass
@@ -3024,13 +3743,28 @@ class mol3D:
         self.dict_orientation = dict_orientation
         return dict_angle_linear, dict_orientation
 
-    # Process the self.geo_dict to get the flag_oct and flag_list, setting dict_check as the cutoffs.
-    # Input: dict_check. The cutoffs of each geo_check metrics we have. A dictionary.
-    # num_coord: Expected coordination number.
-    # Output: flag_oct: good (1) or bad (0) structure.
-    # flag_list: metrics that are failed from being a good geometry.
-    def dict_check_processing(self, dict_check,
-                              num_coord=6, debug=False, silent=False):
+    def dict_check_processing(self, dict_check, num_coord=6, debug=False, silent=False):
+        """Process the self.geo_dict to get the flag_oct and flag_list, setting dict_check as the cutoffs.
+
+        Parameters
+        ----------
+            dict_check : dict
+                The cutoffs of each geo_check metrics we have.
+            num_coord : int, optional
+                Metal coordination number. Default is 6.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            silence : bool, optional
+                Flag for warning suppression. Default is False.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure.
+            flag_list : list
+                Metrics that are preventing a good geometry.
+
+        """
         self.geo_dict['num_coord_metal'] = int(self.num_coord_metal)
         self.geo_dict.update(self.dict_lig_distort)
         self.geo_dict.update(self.dict_catoms_shape)
@@ -3067,42 +3801,74 @@ class mol3D:
         self.flag_list = flag_list
         return flag_oct, flag_list, self.geo_dict
 
-    # Print the geo_dict after the check.
     def print_geo_dict(self):
+        """Print geometry check info after the check.
+        """
+        def print_dict(self, _dict):
+            for key, value in list(_dict.items()):
+                print(('%s: ' % key, value))
         print('========Geo_check_results========')
         print('--------coordination_check-----')
         print(('num_coord_metal:', self.num_coord_metal))
         print(('catoms_arr:', self.catoms))
         print('-------catoms_shape_check-----')
         _dict = self.dict_catoms_shape
-        self.print_dict(_dict)
+        print_dict(_dict)
         print('-------individual_ligand_distortion_check----')
         _dict = self.dict_lig_distort
-        self.print_dict(_dict)
+        print_dict(_dict)
         print('-------linear_ligand_orientation_check-----')
         _dict = self.dict_orientation
-        self.print_dict(_dict)
+        print_dict(_dict)
         print('=======End of printing geo_check_results========')
 
-    def print_dict(self, _dict):
-        for key, value in list(_dict.items()):
-            print(('%s: ' % key, value))
-
-    # Final geometry check call for octahedral structures.
-    # Input: init_mol. mol3D object for the inital geometry.
-    # dict_check, The cutoffs of each geo_check metrics we have. A dictionary.
-    # angle_ref, a reference list of list for the expected angles (A-metal-B) of each catom.
-    # flag_catoms: whether or not to return the catoms arr. Default as False. True for the Oct_inspection
-    # catoms_arr: default as None, which uses the catoms of the mol3D. User and overwrite this catoms_arr by input.
-    # Output: flag_oct: good (1) or bad (0) structure.
-    # flag_list: metrics that are failed from being a good geometry.
-    # dict_oct_info: self.geo_dict
     def IsOct(self, init_mol=None, dict_check=False,
               angle_ref=False, flag_catoms=False,
               catoms_arr=None, debug=False,
               flag_loose=True, flag_lbd=True, BondedOct=True,
               skip=False, flag_deleteH=True,
               silent=False, use_atom_specific_cutoffs=True):
+        """Main geometry check method for octahedral structures
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            skip : list, optional
+                Geometry checks to skip. Default is False.
+            flag_deleteH : bool, optional,
+                Flag to delete Hs in ligand comparison. Default is True.
+            silent : bool, optional
+                Flag for warning suppression. Default is False.
+            use_atom_specific_cutoffs : bool, optional
+                Determine bonding with atom specific cutoffs.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+        
+        """
         self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
@@ -3188,13 +3954,43 @@ class mol3D:
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
-    # Final geometry check call for customerized structures. Once we have the custumed dict_check and angle_ref.
-    # Currently support one-site-empty octahedral.
-    # Inputs and outputs are the same as IsOct.
     def IsStructure(self, init_mol=None, dict_check=False,
                     angle_ref=False, num_coord=5,
                     flag_catoms=False, catoms_arr=None, debug=False,
                     skip=False, flag_deleteH=True):
+        """Main geometry check method for square pyramidal structures
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            skip : list, optional
+                Geometry checks to skip. Default is False.
+            flag_deleteH : bool, optional,
+                Flag to delete Hs in ligand comparison. Default is True.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+        
+        """
         self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
@@ -3270,11 +4066,51 @@ class mol3D:
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
-    # Used to track down the changing geo_check metrics in a DFT geometry optimization.
-    # With the catoms_arr always specified.
+
     def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=False,
                        std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                        dict_check_loose=False, BondedOct=True, debug=False):
+        """Used to track down the changing geo_check metrics in a DFT geometry optimization. 
+        Catoms_arr always specified.
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            std_not_use : list, optional
+                Geometry checks to skip. Default is False.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+            flag_oct_loose : int
+                Good (1) or bad (0) structures with loose cutoffs.
+            flag_list_loose : list 
+                Metrics that are preventing a good geometry with loose cutoffs.
+        
+        """
+
         self.use_atom_specific_cutoffs = True
         if not dict_check:
             dict_check = self.dict_oct_check_st
@@ -3339,11 +4175,49 @@ class mol3D:
                                                                              num_coord=6, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
-    # Used to track down the changing geo_check metrics in a DFT geometry optimization.
-    # With the catoms_arr always specified.
     def Structure_inspection(self, init_mol=None, catoms_arr=None, num_coord=5, dict_check=False,
                              std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                              dict_check_loose=False, BondedOct=True, debug=False):
+        """Used to track down the changing geo_check metrics in a DFT geometry optimization. Specifically
+        for a square pyramidal structure. Catoms_arr always specified.
+
+        Parameters
+        ----------
+            init_mol : mol3D
+                mol3D class instance of the initial geometry.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            flag_loose : bool, optional
+                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
+            flag_lbd : bool, optional
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            BondedOct : bool, optional
+                Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
+            std_not_use : list, optional
+                Geometry checks to skip. Default is False.
+
+        Returns
+        -------
+            flag_oct : int
+                Good (1) or bad (0) structure. 
+            flag_list : list
+                Metrics that are preventing a good geometry.
+            dict_oct_info : dict
+                Dictionary of measurements of geometry.
+            flag_oct_loose : int
+                Good (1) or bad (0) structures with loose cutoffs.
+            flag_list_loose : list 
+                Metrics that are preventing a good geometry with loose cutoffs.
+        
+        """
         if not dict_check:
             dict_check = self.dict_oneempty_check_st
         if not angle_ref:
@@ -3410,6 +4284,13 @@ class mol3D:
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
     def get_fcs(self):
+        """ Get first coordination shell of a transition metal complex.
+
+        Returns
+        -------
+            fcs : list
+                List of first coordination shell indices.
+        """
         metalind = self.findMetal()[0]
         self.get_num_coord_metal(debug=False)
         catoms = self.catoms
@@ -3419,21 +4300,30 @@ class mol3D:
         fcs = [metalind] + catoms
         return fcs
 
-    # Recreate bo_dict with correct indicies
-    # @param self The object pointer
-    # @param inds The indicies of the selected submolecule to SAVE
-    # @return new_bo_dict The ported over dictionary with new indicies/bonds deleted
     def get_bo_dict_from_inds(self, inds):
+        """ Recreate bo_dict with correct indices
+
+        Parameters
+        ----------
+            inds : list
+                The indicies of the selected submolecule to SAVE
+
+        Returns
+        -------
+            new_bo_dict : dict
+                The ported over dictionary with new indicies/bonds deleted
+        """
+
         if not self.bo_dict:
             self.convert2OBMol2()
         c_bo_dict = self.bo_dict.copy()
         delete_inds = np.array(
             [x for x in range(self.natoms) if x not in inds])
-        for key in self.bo_dict.keys():
+        for key in list(self.bo_dict.keys()):
             if any([True for x in key if x in delete_inds]):
                 del c_bo_dict[key]
         new_bo_dict = dict()
-        for key, val in c_bo_dict.items():
+        for key, val in list(c_bo_dict.items()):
             ind1 = key[0]
             ind2 = key[1]
             ind1 = ind1 - len(np.where(delete_inds < ind1)[0])
@@ -3442,6 +4332,18 @@ class mol3D:
         return new_bo_dict
 
     def create_mol_with_inds(self, inds):
+        """ Create molecule with indices.
+
+        Parameters
+        ----------
+            inds : list
+                The indicies of the selected submolecule to SAVE
+
+        Returns
+        -------
+            molnew : mol3D
+                The new molecule built from the indices.
+        """
         molnew = mol3D()
         inds = sorted(inds)
         for ind in inds:
@@ -3457,10 +4359,19 @@ class mol3D:
                 np.delete(self.graph, delete_inds, 0), delete_inds, 1)
         return molnew
 
-    # Writes a psueduo-chemical formula
-    #
-    #  @param self The object pointer
     def make_formula(self, latex=True):
+        """ Get a chemical formula from the mol3D class instance.
+        
+        Parameters
+        ----------
+            latex : bool, optional 
+                Flag for if formula is going to go in a latex document. Default is True.
+
+        Returns
+        -------
+            formula : str
+                Chemical formula
+        """
         retstr = ""
         atomorder = self.globs.elementsbynum()
         unique_symbols = dict()
@@ -3483,6 +4394,19 @@ class mol3D:
         return retstr
 
     def read_smiles(self, smiles, ff="mmff94", steps=2500):
+        """ Read a smiles string and convert it to a mol3D class instance.
+        
+        Parameters
+        ----------
+            smiles : str
+                SMILES string to be interpreted by openbabel.
+            ff : str, optional
+                Forcefield to be used by openbabel. Default is mmff94.
+            steps : int, optional
+                Steps to be taken by forcefield. Default is 2500.
+
+        """
+
         # used to convert from one formst (ex, SMILES) to another (ex, mol3D )
         obConversion = openbabel.OBConversion()
 
@@ -3511,6 +4435,21 @@ class mol3D:
         self.convert2mol3D()
 
     def get_smiles(self, canonicalize=False, use_mol2 = False):
+        """ Read a smiles string and convert it to a mol3D class instance.
+        
+        Parameters
+        ----------
+            canonicalize : bool, optional
+                Openbabel canonicalization of smiles. Default is False.
+            use_mol2 : bool, optional
+                Use graph in mol2 instead of interpreting it. Default is False.
+
+        Returns
+        -------
+            smiles : str
+                SMILES from a mol3D object. Watch out for charges.
+
+        """
         # Used to get the SMILES string of a given mol3D object
         conv = openbabel.OBConversion()
         conv.SetOutFormat('smi')
@@ -3527,6 +4466,8 @@ class mol3D:
         return smi
 
     def mols_symbols(self):
+        """ Store symbols and their frequencies in symbols_dict attributes.
+        """
         self.symbols_dict = {}
         for atom in self.getAtoms():
             if not atom.symbol() in self.symbols_dict:
@@ -3535,6 +4476,14 @@ class mol3D:
                 self.symbols_dict[atom.symbol()] += 1
 
     def read_bonder_order(self, bofile):
+        """ Get bond order information from file.
+
+        Parameters
+        ----------
+            bofile : str
+                Path to a bond order file.
+
+        """
         globs = globalvars()
         bonds_organic = {'H': 1, 'C': 4, 'N': 3,
                          'O': 2, 'F': 1, 'P': 3, 'S': 2}
@@ -3571,6 +4520,15 @@ class mol3D:
                 self.bodavrg_dict.update({ii: np.mean(devi)})
 
     def read_charge(self, chargefile):
+        """ Get charge information from file.
+
+        Parameters
+        ----------
+            chargefile : str
+                Path to a charge file.
+                
+        """
+
         self.charge_dict = {}
         if os.path.isfile(chargefile):
             with open(chargefile, "r") as fo:
@@ -3582,6 +4540,21 @@ class mol3D:
             print(("chargefile does not exist.", chargefile))
 
     def get_mol_graph_det(self, oct=True, useBOMat=False):
+        """ Get molecular graph determinant.
+
+        Parameters
+        ----------
+            oct : bool, optional
+                Flag for whether the geometry is octahedral. Default is True.
+            useBOMat : bool, optional
+                Use bond order matrix in determinant computation.
+
+        Returns
+        -------
+            safedet : str
+                String containing the molecular graph determinant.
+
+        """
         globs = globalvars()
         amassdict = globs.amass()
         if not len(self.graph):
@@ -3592,7 +4565,7 @@ class mol3D:
             elif isinstance(self.bo_dict, dict):
                 # BO_dict will be prioritized over BO_mat
                 tmpgraph = np.copy(self.graph)
-                for key_val, value in self.bo_dict.items():
+                for key_val, value in list(self.bo_dict.items()):
                     if str(value).lower() == 'ar':
                         value = 1.5
                     elif str(value).lower() == 'am':
@@ -3634,6 +4607,30 @@ class mol3D:
         return safedet
 
     def get_symmetry_denticity(self, return_eq_catoms=False):
+        """ Get symmetry class of molecule.
+
+        Parameters
+        ----------
+            return_eq_catoms : bool, optional
+                Flag for if equatorial atoms should be returned. Default is False.
+
+        Returns
+        -------
+            eqsym : bool
+                Flag for equatorial symmetry.
+            maxdent : int
+                Maximum denticity in molecule.
+            ligdents : list
+                List of denticities in molecule.
+            homoleptic : bool
+                Flag for whether a geometry is homoleptic.
+            ligsymmetry : str
+                Symmetry class for ligand of interest.
+            eq_catoms : list
+                List of equatorial connection atoms.
+
+        """
+
         # self.writexyz("test.xyz")
         from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent, get_lig_symmetry
         liglist, ligdents, ligcons = ligand_breakdown(self)
@@ -3684,14 +4681,28 @@ class mol3D:
             return eqsym, maxdent, ligdents, homoleptic, ligsymmetry, eq_catoms
 
     def is_sandwich_compound(self):
-        '''
-        Check if a structure is sandwich compound.
-        Request: 1) complexes with ligands where there are at least
-        three connected non-metal atoms both connected to the metal.
-        2) These >three connected non-metal atoms are in a ring.
-        3) optional: the ring is aromatic
-        4) optional: all the atoms in the base ring are connected to the same metal.
-        '''
+        """ Evaluates whether a compound is a sandwich compound
+
+        Returns
+        -------
+            num_sandwich_lig : int
+                Number of sandwich ligands.
+            info_sandwich_lig : list
+                List of dictionaries about the sandwich ligands. 
+            aromatic : bool
+                Flag about whether the ligand is aromatic.
+            allconnect : bool
+                Flag for connected atoms in ring.
+
+        """
+        
+        # Check if a structure is sandwich compound.
+        # Request: 1) complexes with ligands where there are at least
+        # three connected non-metal atoms both connected to the metal.
+        # 2) These >three connected non-metal atoms are in a ring.
+        # 3) optional: the ring is aromatic
+        # 4) optional: all the atoms in the base ring are connected to the same metal.
+        
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         mol_fcs = obtain_truncation_metal(self, hops=1)
         metal_ind = mol_fcs.findMetal()[0]
@@ -3725,11 +4736,20 @@ class mol3D:
         return num_sandwich_lig, info_sandwich_lig, aromatic, allconnect
 
     def is_edge_compound(self):
-        '''
-        Check if a structure is edge compound.
-        Request: 1) complexes with ligands where there are at least
-        two connected non-metal atoms both connected to the metal.
-        '''
+        """Check if a structure is edge compound.
+
+        Returns
+        -------
+            num_edge_lig : int
+                Number of edge ligands.
+            info_edge_lig : list
+                List of dictionaries with info about edge ligands.
+
+        """
+        
+        # Request: 1) complexes with ligands where there are at least
+        # two connected non-metal atoms both connected to the metal.
+
         from molSimplify.Informatics.graph_analyze import obtain_truncation_metal
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
         if not num_sandwich_lig or (num_sandwich_lig and not allconnect):
@@ -3755,12 +4775,36 @@ class mol3D:
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
                           skip=False):
-        '''
-        Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
+        """Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
         trigonal bipyramidal(5), square pyramidal(5, one-empty-site),
         octahedral(6), pentagonal bipyramidal(7))
 
-        '''
+        Parameters
+        ----------
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            num_coord : int, optional
+                Expected coordination number.
+            flag_catoms : bool, optional
+                Whether or not to return the catoms arr. Default as False.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
+            skip : list, optional
+                Geometry checks to skip. Default is False.
+
+        Returns
+        -------
+            results : dictionary
+                Measurement of deviations from arrays.
+
+        """
+        
+
+        
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
@@ -3849,4 +4893,29 @@ class mol3D:
             "num_edge_lig": num_edge_lig,
             "info_edge_lig": info_edge_lig,
         }
+        return results
+
+    def get_features(self,lac=True):
+        """Get geo-based RAC features for this complex (if octahedral)
+
+        Parameters
+        ----------
+            lac : bool, optional
+                Use lac for ligand_assign_consistent behavior. Default is True
+
+        Returns
+        -------
+            results, dict
+                Dictionary of {'RACname':RAC} for all geo-based RACs
+        """
+        from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
+        if not len(self.graph):
+            self.createMolecularGraph()
+        geo_type = self.get_geometry_type()
+        if geo_type['geometry'] == 'octahedral':
+            names,racs = get_descriptor_vector(self,lacRACs=lac)
+            results = dict(zip(names,racs))
+        else:
+            raise ValueError(
+                "Featurization not yet implemented for non-octahedral complexes.")
         return results
