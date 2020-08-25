@@ -185,9 +185,6 @@ def unit_to_super(unit_cell, cell_vector, duplication_vector):
     a = cell_vector[0]
     b = cell_vector[1]
     c = cell_vector[2]
-#        print('.......................................')
-#        print(atoms.symbol())
-#        print(atoms.coords())
     for i in range(0, acell):
         for j in range(0, bcell):
             for k in range(0, ccell):
