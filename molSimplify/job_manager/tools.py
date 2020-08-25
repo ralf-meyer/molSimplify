@@ -43,6 +43,8 @@ def check_valid_outfile(path):
         return False
     elif 'slurm-' in endpath:
         return False
+    elif 'smd.out' in endpath:
+        return False
     else:
         return True
 
@@ -173,6 +175,8 @@ def convert_to_absolute_path(path):
     """
     if path[0] != '/':
         abspath = os.path.join(os.getcwd(), path)
+    else:
+        abspath = path
 
     return abspath
 
