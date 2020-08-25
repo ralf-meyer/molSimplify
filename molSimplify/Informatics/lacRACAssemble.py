@@ -1217,7 +1217,7 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
         results_dictionary: dict
             Dictionary of all geo-based ligand product descriptors (both full and connecting atom scopes) -
             {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
-                                'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+            'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
 
     """
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
