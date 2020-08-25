@@ -1712,28 +1712,28 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get D_mc-RACs for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    oct : bool, optional
-        Use octahedral criteria for structure evaluation, by default True
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    modifier : bool, optional
-        Use ox_modifier for metal, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get D_mc-RACs for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        oct : bool, optional
+            Use octahedral criteria for structure evaluation, by default True
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        modifier : bool, optional
+            Use ox_modifier for metal, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based MC-RAC deltametric descriptors  -
-        {'colnames': colnames, 'results': result}
+        results_dictionary: dict
+            Dictionary of all geo-based MC-RAC deltametric descriptors  -
+            {'colnames': colnames, 'results': result}
 
     """
     result = list()
@@ -1767,29 +1767,29 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get D_mc-RAC derivatives for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    oct : bool, optional
-        Use octahedral criteria for structure evaluation, by default True
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    modifier : bool, optional
-        Use ox_modifier for metal, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get D_mc-RAC derivatives for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        oct : bool, optional
+            Use octahedral criteria for structure evaluation, by default True
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        modifier : bool, optional
+            Use ox_modifier for metal, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based MC-RAC deltametric descriptor derivatives  -
-        {'colnames': colnames, 'results': result}
-        
+        results_dictionary: dict
+            Dictionary of all geo-based MC-RAC deltametric descriptor derivatives  -
+            {'colnames': colnames, 'results': result}
+
     """
     result = None
     colnames = []
