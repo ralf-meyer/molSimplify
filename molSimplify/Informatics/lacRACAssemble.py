@@ -28,9 +28,9 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             Skip the ligand breakdown steps -
             in cases where 3D geo is not correct/formed
             custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
-                                            ax_con_int_list ,eq_con_int_list
+            ax_con_int_list ,eq_con_int_list
             with types: eq/ax_ligand_list list of mol3D
-                        eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+            eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
         ox_modifier : bool, optional
             dict, used to modify prop vector (e.g. for adding
             ONLY used with  ox_nuclear_charge ox or charge)
@@ -143,9 +143,9 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
             Skip the ligand breakdown steps -
             in cases where 3D geo is not correct/formed
             custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
-                                            ax_con_int_list ,eq_con_int_list
+            ax_con_int_list ,eq_con_int_list
             with types: eq/ax_ligand_list list of mol3D
-                        eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+            eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
         ox_modifier : bool, optional
             dict, used to modify prop vector (e.g. for adding
             ONLY used with  ox_nuclear_charge ox or charge)
@@ -1320,9 +1320,10 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
     Returns
     -------
         results_dictionary: dict
-            Dictionary of all geo-based ligand product descriptor derivatives (both full and connecting atom scopes) -
+            Dictionary of all geo-based ligand product descriptor derivatives 
+            (both full and connecting atom scopes)
             {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
-                                'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+            'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
 
     """
     result_ax_full = None
