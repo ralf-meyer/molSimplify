@@ -31,7 +31,6 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
-    print('NOW ON ',outfile_path)
     output = textfile(outfile_path)
     output_type = output.wordgrab(['TeraChem', 'ORCA'], ['whole_line', 'whole_line'])
     # print("output_type: ", output_type)
