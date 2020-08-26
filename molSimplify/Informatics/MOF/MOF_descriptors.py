@@ -289,7 +289,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     """""""""
 
     n_components, labels_components = sparse.csgraph.connected_components(csgraph=adj_matrix, directed=False, return_labels=True)
-    metal_list = set([at for at in molcif.findMetal()])
+    metal_list = set([at for at in molcif.findMetal(transition_metals_only=False)])
     if not len(metal_list) > 0:
         full_names = [0]
         full_descriptors = [0]
@@ -319,11 +319,11 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     Logs the atom types of the connecting atoms to the metal in logpath.
     """""""""
     SBUlist = set() 
-    metal_list = set([at for at in molcif.findMetal()])
-    [SBUlist.update(set([metal])) for metal in molcif.findMetal()] #Remove all metals as part of the SBU
-    [SBUlist.update(set(molcif.getBondedAtomsSmart(metal))) for metal in molcif.findMetal()]
+    metal_list = set([at for at in molcif.findMetal(transition_metals_only=False)])
+    [SBUlist.update(set([metal])) for metal in molcif.findMetal(transition_metals_only=False)] #Remove all metals as part of the SBU
+    [SBUlist.update(set(molcif.getBondedAtomsSmart(metal))) for metal in molcif.findMetal(transition_metals_only=False)]
     removelist = set()
-    [removelist.update(set([metal])) for metal in molcif.findMetal()] #Remove all metals as part of the SBU
+    [removelist.update(set([metal])) for metal in molcif.findMetal(transition_metals_only=False)] #Remove all metals as part of the SBU
     for metal in removelist:
         bonded_atoms = set(molcif.getBondedAtomsSmart(metal))
         bonded_atoms_types = set([str(allatomtypes[at]) for at in set(molcif.getBondedAtomsSmart(metal))])
@@ -516,8 +516,6 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     return full_names, full_descriptors
 
 
-# full_names, full_descriptors = get_MOF_descriptors('/Users/adityanandy/Downloads/UBACUX_clean_min_charges_primitive.cif',3,path='/Users/adityanandy/Desktop/test/',
-#         xyzpath='/Users/adityanandy/Desktop/test/xyz/UBACUX_clean_min_charges.xyz')
 ##### Example of usage over a set of cif files.
 # featurization_list = []
 # for cif_file in os.listdir('<your base directory here>/cif/'):
