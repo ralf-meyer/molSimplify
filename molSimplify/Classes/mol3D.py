@@ -309,6 +309,26 @@ class mol3D:
                 count += 1
         return count
 
+    def count_electrons(self, charge=0):
+        """
+        Count the number of electrons in a molecule. 
+
+        Parameters
+        ----------
+            charge: int, optional
+                Net charge of a molecule. Default is neutral.
+
+        Returns
+        ----------
+            count: integer
+                The number of electrons in the system.
+        """
+        count = 0
+        for ii in range(self.natoms):
+            count += self.getAtom(ii).atno
+        count = count-charge
+        return count
+
     def alignmol(self, atom1, atom2):
         """Aligns two molecules such that the coordinates of two atoms overlap.
         Second molecule is translated relative to the first. No rotations are 
