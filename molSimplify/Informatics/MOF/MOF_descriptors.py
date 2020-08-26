@@ -516,6 +516,8 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     return full_names, full_descriptors
 
 
+# full_names, full_descriptors = get_MOF_descriptors('/Users/adityanandy/Downloads/UBACUX_clean_min_charges_primitive.cif',3,path='/Users/adityanandy/Desktop/test/',
+#         xyzpath='/Users/adityanandy/Desktop/test/xyz/UBACUX_clean_min_charges.xyz')
 ##### Example of usage over a set of cif files.
 # featurization_list = []
 # for cif_file in os.listdir('<your base directory here>/cif/'):
