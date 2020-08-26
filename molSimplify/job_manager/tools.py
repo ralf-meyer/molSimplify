@@ -45,6 +45,8 @@ def check_valid_outfile(path):
         return False
     elif 'smd.out' in endpath:
         return False
+    elif 'atom' in endpath:
+        return False
     else:
         return True
 
