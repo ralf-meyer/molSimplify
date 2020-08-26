@@ -401,7 +401,7 @@ def read_configure(home_directory, outfile_path):
                 else:
                     raise ValueError("%s does not exits." % localpath)
     # If global settings not specified, choose defaults:
-    if (not max_jobs) and (not isinstance(max_jobs,int)):
+    if (not max_jobs) and isinstance(max_jobs,bool):
         max_jobs = 50
     if not max_resub:
         max_resub = 5
