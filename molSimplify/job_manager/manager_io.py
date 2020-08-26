@@ -31,7 +31,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
-
+    print('NOW ON ',outfile_path)
     output = textfile(outfile_path)
     output_type = output.wordgrab(['TeraChem', 'ORCA'], ['whole_line', 'whole_line'])
     # print("output_type: ", output_type)
@@ -45,6 +45,10 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 counter = 0
             elif 'smd.out' in outfile_path:
                 print('Warning! SMD file caught in outfile processing')
+                print(outfile_path)
+                counter = 0
+            elif ('atom' in outfile_path) and ('ORCA' in output_type):
+                print('Density fitting output caught in outfile processing')
                 print(outfile_path)
                 counter = 0
             else:
