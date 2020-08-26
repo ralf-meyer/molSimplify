@@ -1104,8 +1104,13 @@ class mol3D:
                     close_metal = i
         return close_metal
 
-    def findMetal(self):
+    def findMetal(self, transition_metals_only=True):
         """Find metal(s) in a mol3D class.
+
+        Parameters
+        ----------
+            transition_metals_only : bool, optional
+                Only find transition metals. Default is true. 
 
         Returns
         -------
@@ -1116,7 +1121,7 @@ class mol3D:
         if not self.metals:
             metal_list = []
             for i, atom in enumerate(self.atoms):
-                if atom.ismetal():
+                if atom.ismetal(transition_metals_only=transition_metals_only):
                     metal_list.append(i)
             self.metals = metal_list
         return (self.metals)
