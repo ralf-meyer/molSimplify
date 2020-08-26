@@ -21,36 +21,37 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     Parameters
     ----------
-    this_complex : mol3D
-        Transition metal complex to be featurized.
-    custom_ligand_dict : bool, optional
-        Custom ligand dictionary to evaluate for complex if passed, by default False
-        Skip the ligand breakdown steps -
-        in cases where 3D geo is not correct/formed
-        custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
-                                        ax_con_int_list ,eq_con_int_list
-        with types: eq/ax_ligand_list list of mol3D
-                    eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
-    ox_modifier : bool, optional
-        dict, used to modify prop vector (e.g. for adding
-        ONLY used with  ox_nuclear_charge ox or charge)
-        {"Fe":2, "Co": 3} etc, by default False
-    NumB : bool, optional
-        Use Number of Bonds as additional RAC, by default False
-    Zeff : bool, optional
-        Use effecitve nuclear charge as RAC, by default False
-    lacRACs : bool, optional
-        Use ligand_assign_consistent (lac) to represent mol3D given
-        if False, use ligand_assign (older), default True
-    loud : bool, optional
-        Print degubbging information, by default False
+        this_complex : mol3D
+            Transition metal complex to be featurized.
+        custom_ligand_dict : bool, optional
+            Custom ligand dictionary to evaluate for complex if passed, by default False
+            Skip the ligand breakdown steps -
+            in cases where 3D geo is not correct/formed
+            custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
+            ax_con_int_list ,eq_con_int_list
+            with types: eq/ax_ligand_list list of mol3D
+            eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+        ox_modifier : bool, optional
+            dict, used to modify prop vector (e.g. for adding
+            ONLY used with  ox_nuclear_charge ox or charge)
+            {"Fe":2, "Co": 3} etc, by default False
+        NumB : bool, optional
+            Use Number of Bonds as additional RAC, by default False
+        Zeff : bool, optional
+            Use effecitve nuclear charge as RAC, by default False
+        lacRACs : bool, optional
+            Use ligand_assign_consistent (lac) to represent mol3D given
+            if False, use ligand_assign (older), default True
+        loud : bool, optional
+            Print degubbging information, by default False
 
     Returns
     -------
-    descriptor_names : list
-        Compiled list of descriptor names
-    descriptors : list
-        Compiled list of descriptor values
+        descriptor_names : list
+            Compiled list of descriptor names
+        descriptors : list
+            Compiled list of descriptor values
+
     """
     ## modifier - 
     descriptor_names = []
@@ -135,32 +136,33 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
 
     Parameters
     ----------
-    this_complex : mol3D
-        Transition metal complex to be featurized.
-    custom_ligand_dict : bool, optional
-        Custom ligand dictionary to evaluate for complex if passed, by default False
-        Skip the ligand breakdown steps -
-        in cases where 3D geo is not correct/formed
-        custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
-                                        ax_con_int_list ,eq_con_int_list
-        with types: eq/ax_ligand_list list of mol3D
-                    eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
-    ox_modifier : bool, optional
-        dict, used to modify prop vector (e.g. for adding
-        ONLY used with  ox_nuclear_charge ox or charge)
-        {"Fe":2, "Co": 3} etc, by default False
-    lacRACs : bool, optional
-        Use ligand_assign_consistent (lac) to represent mol3D given
-        if False, use ligand_assign (older), default True
-    loud : bool, optional
-        Print degubbging information, by default False
+        this_complex : mol3D
+            Transition metal complex to be featurized.
+        custom_ligand_dict : bool, optional
+            Custom ligand dictionary to evaluate for complex if passed, by default False
+            Skip the ligand breakdown steps -
+            in cases where 3D geo is not correct/formed
+            custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
+            ax_con_int_list ,eq_con_int_list
+            with types: eq/ax_ligand_list list of mol3D
+            eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
+        ox_modifier : bool, optional
+            dict, used to modify prop vector (e.g. for adding
+            ONLY used with  ox_nuclear_charge ox or charge)
+            {"Fe":2, "Co": 3} etc, by default False
+        lacRACs : bool, optional
+            Use ligand_assign_consistent (lac) to represent mol3D given
+            if False, use ligand_assign (older), default True
+        loud : bool, optional
+            Print degubbging information, by default False
 
     Returns
     -------
-    descriptor_derivative_names : list
-        Compiled list (matrix) of descriptor derivative names 
-    descriptor_derivatives : list
-        Derivatives of RACs w.r.t atomic props (matrix)
+        descriptor_derivative_names : list
+            Compiled list (matrix) of descriptor derivative names 
+        descriptor_derivatives : list
+            Derivatives of RACs w.r.t atomic props (matrix)
+
     """
     if not custom_ligand_dict:
         if lacRACs:
@@ -225,25 +227,26 @@ def append_descriptors(descriptor_names,descriptors,list_of_names,list_of_props,
 
     Parameters
     ----------
-    descriptor_names : list
-        Descriptors names list to be appended to
-    descriptors : list
-        Descriptors list to be appended to
-    list_of_names : list
-        nmaes to be added
-    list_of_props : list
-        Types of RACs
-    prefix : str
-        Prefix to be added to names
-    suffix : str
-        Suffix to be added to names
+        descriptor_names : list
+            Descriptors names list to be appended to
+        descriptors : list
+            Descriptors list to be appended to
+        list_of_names : list
+            nmaes to be added
+        list_of_props : list
+            Types of RACs
+        prefix : str
+            Prefix to be added to names
+        suffix : str
+            Suffix to be added to names
 
     Returns
     -------
-    descriptor_names : list
-        Compiled list of descriptor names
-    descriptors : list
-        Compiled list of descriptor values
+        descriptor_names : list
+            Compiled list of descriptor names
+        descriptors : list
+            Compiled list of descriptor values
+
     """
     try:
         basestring
@@ -270,25 +273,26 @@ def append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivat
 
     Parameters
     ----------
-    descriptor_derivative_names : list
-        RAC names, will be a matrix, will be appended to
-    descriptor_derivatives : list
-        RAC, will be appended to
-    mat_of_names : list
-        names, will be added
-    dmat : list
-        mat of RAC derivatives
-    prefix : str
-        RAC prefix
-    suffix : str
-        RAC suffix
+        descriptor_derivative_names : list
+            RAC names, will be a matrix, will be appended to
+        descriptor_derivatives : list
+            RAC, will be appended to
+        mat_of_names : list
+            names, will be added
+        dmat : list
+            mat of RAC derivatives
+        prefix : str
+            RAC prefix
+        suffix : str
+            RAC suffix
 
     Returns
     -------
-    descriptor_derivative_names : list
-        Compiled list (matrix) of descriptor derivative names 
-    descriptor_derivatives : list
-        Derivatives of RACs w.r.t atomic props (matrix)
+        descriptor_derivative_names : list
+            Compiled list (matrix) of descriptor derivative names 
+        descriptor_derivatives : list
+            Derivatives of RACs w.r.t atomic props (matrix)
+
     """
     try:
         basestring
@@ -310,23 +314,24 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, use_dist=False):
 
     Parameters
     ----------
-    mol : mol3D
-        mol3D object to calculate autocorrelation over
-    prop_vec : list
-        property of atoms in mol in order of index
-    orig : int
-        zero-indexed starting atom
-    d : int
-        number of hops to travel
-    oct : bool, optional
-        Flag is octahedral complex, by default True
-    use_dist : bool, optional
-        Weigh autocorrelation by physical distance of atom from original, by default False
+        mol : mol3D
+            mol3D object to calculate autocorrelation over
+        prop_vec : list
+            property of atoms in mol in order of index
+        orig : int
+            zero-indexed starting atom
+        d : int
+            number of hops to travel
+        oct : bool, optional
+            Flag is octahedral complex, by default True
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
 
     Returns
     -------
-    result_vector : list
-        assembled products autocorrelations
+        result_vector : list
+            assembled products autocorrelations
+
     """
     result_vector = np.zeros(d + 1)
     hopped = 0
@@ -360,21 +365,22 @@ def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True):
 
     Parameters
     ----------
-    mol : mol3D
-        mol3D object to calculate derivatives over
-    prop_vec : list
-        property of atoms in mol in order of index
-    orig : int
-        zero-indexed starting atom
-    d : int
-        number of hops to travel
-    oct : bool, optional
-        Flag is octahedral complex, by default True
+        mol : mol3D
+            mol3D object to calculate derivatives over
+        prop_vec : list
+            property of atoms in mol in order of index
+        orig : int
+            zero-indexed starting atom
+        d : int
+            number of hops to travel
+        oct : bool, optional
+            Flag is octahedral complex, by default True
 
     Returns
     -------
-    derivative_mat : list
-        RAC derivatives matrix
+        derivative_mat : list
+            RAC derivatives matrix
+
     """
     derivative_mat = np.zeros((d + 1, len(prop_vec)))
     # loop for each atom
@@ -414,21 +420,22 @@ def deltametric(mol, prop_vec, orig, d, oct=True):
 
     Parameters
     ----------
-    mol : mol3D
-        mol3D object to calculate deltametric autocorrelation over
-    prop_vec : list
-        property of atoms in mol in order of index
-    orig : int
-        zero-indexed starting atom
-    d : int
-        number of hops to travel
-    oct : bool, optional
-        Flag is octahedral complex, by default True
+        mol : mol3D
+            mol3D object to calculate deltametric autocorrelation over
+        prop_vec : list
+            property of atoms in mol in order of index
+        orig : int
+            zero-indexed starting atom
+        d : int
+            number of hops to travel
+        oct : bool, optional
+            Flag is octahedral complex, by default True
 
     Returns
     -------
-    results_vector : list
-        deltametric autocorrelations
+        results_vector : list
+            deltametric autocorrelations
+
     """
     result_vector = np.zeros(d + 1)
     hopped = 0
@@ -458,21 +465,22 @@ def deltametric_derivative(mol, prop_vec, orig, d, oct=True):
 
     Parameters
     ----------
-    mol : mol3D
-        mol3D object to calculate deltametric autocorrelation derivative over
-    prop_vec : list
-        property of atoms in mol in order of index
-    orig : int
-        zero-indexed starting atom
-    d : int
-        number of hops to travel
-    oct : bool, optional
-        Flag is octahedral complex, by default True
+        mol : mol3D
+            mol3D object to calculate deltametric autocorrelation derivative over
+        prop_vec : list
+            property of atoms in mol in order of index
+        orig : int
+            zero-indexed starting atom
+        d : int
+            number of hops to travel
+        oct : bool, optional
+            Flag is octahedral complex, by default True
 
     Returns
     -------
-    derivative_mat : list
-        Deltametric autocorrelation derivatives matrix
+        derivative_mat : list
+            Deltametric autocorrelation derivatives matrix
+
     """
     derivative_mat = np.zeros((d + 1, len(prop_vec)))
     hopped = 0
@@ -508,24 +516,25 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to generate property vector for
-    prop : str
-        Property to generate vector for - Acceptable prop values: ['electronegativity', 
-        'nuclear_charge', 'ident', 'topology', 'ox_nuclear_charge', 'size', 'vdwrad', 
-        'effective_nuclear_charge', 'polarizability', 'bondvalence', 'num_bonds', 
-        'bondvalence_devi', 'bodavrg', 'bodstd', 'charge']
-    oct : bool, optional
-        Flag is octahedral complex, by default True
-    modifier : bool, optional
-        if passed - dict, used to modify prop vector (e.g. for adding
-        ONLY used with  ox_nuclear_charge    ox or charge)
-        {"Fe":2, "Co": 3} etc, by default False
+        mol : mol3D
+            molecule to generate property vector for
+        prop : str
+            Property to generate vector for - Acceptable prop values: ['electronegativity', 
+            'nuclear_charge', 'ident', 'topology', 'ox_nuclear_charge', 'size', 'vdwrad', 
+            'effective_nuclear_charge', 'polarizability', 'bondvalence', 'num_bonds', 
+            'bondvalence_devi', 'bodavrg', 'bodstd', 'charge']
+        oct : bool, optional
+            Flag is octahedral complex, by default True
+        modifier : bool, optional
+            if passed - dict, used to modify prop vector (e.g. for adding
+            ONLY used with  ox_nuclear_charge    ox or charge)
+            {"Fe":2, "Co": 3} etc, by default False
 
     Returns
     -------
-    w : list
-        property vector for mol by atom
+        w : list
+            property vector for mol by atom
+
     """
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology',
                        'ox_nuclear_charge', 'size', 'vdwrad', 'effective_nuclear_charge', 'polarizability',
@@ -630,23 +639,24 @@ def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False)
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to calculate full scope RAC over
-    prop : str
-        Property to evaluete
-    d : int
-        depth of full scope autocorrelation
-    oct : bool, optional
-        Is octahedral flag, by default True
-    modifier : bool, optional
-        Use ox modifier, by default False
-    use_dist : bool, optional
-        Weigh autocorrelation by distance of atoms from each other, by default False
+        mol : mol3D
+            molecule to calculate full scope RAC over
+        prop : str
+            Property to evaluete
+        d : int
+            depth of full scope autocorrelation
+        oct : bool, optional
+            Is octahedral flag, by default True
+        modifier : bool, optional
+            Use ox modifier, by default False
+        use_dist : bool, optional
+            Weigh autocorrelation by distance of atoms from each other, by default False
 
     Returns
     -------
-    autocorrelation_vector : list
-        full scope product autocorrelation values
+        autocorrelation_vector : list
+            full scope product autocorrelation values
+
     """
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
     index_set = list(range(0, mol.natoms))
@@ -662,21 +672,22 @@ def full_autocorrelation_derivative(mol, prop, d, oct=True, modifier=False):
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to calculate full scope RAC over
-    prop : str
-        Property to evaluate
-    d : int
-        depth of scope to evalue
-    oct : bool, optional
-        Is octahedral flag, by default True
-    modifier : bool, optional
-        Use ox modifier, by default False
+        mol : mol3D
+            molecule to calculate full scope RAC over
+        prop : str
+            Property to evaluate
+        d : int
+            depth of scope to evalue
+        oct : bool, optional
+            Is octahedral flag, by default True
+        modifier : bool, optional
+            Use ox modifier, by default False
 
     Returns
     -------
-    autocorrelation_derivative_mat : list
-        full scope autocorrelation derivative matrix
+        autocorrelation_derivative_mat : list
+            full scope autocorrelation derivative matrix
+
     """
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
     index_set = list(range(0, mol.natoms))
@@ -694,31 +705,32 @@ def generate_full_complex_autocorrelations(mol, loud,
 
     Parameters
     ----------
-    mol : mol3D
-        molecule used for full scope
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of autocorrelations to evaluate, by default 4
-    oct : bool, optional
-        is an octahedral complex, by default True
-    flag_name : bool, optional
-        Prepend "f_all" to results to track full complex, by default False
-    modifier : bool, optional
-        Use ox_modifier on metal charge, by default False
-    use_dist : bool, optional
-        Weigh autocorrelations by interatomic distances, by default False
-    NumB : bool, optional
-        use number of bonds as RAC, by default False
-    Zeff : bool, optional
-        use Z effective as RAC, by default False
-    polarizability : bool, optional
-        Use polarizability (alpha) as RAC, by default False
+        mol : mol3D
+            molecule used for full scope
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of autocorrelations to evaluate, by default 4
+        oct : bool, optional
+            is an octahedral complex, by default True
+        flag_name : bool, optional
+            Prepend "f_all" to results to track full complex, by default False
+        modifier : bool, optional
+            Use ox_modifier on metal charge, by default False
+        use_dist : bool, optional
+            Weigh autocorrelations by interatomic distances, by default False
+        NumB : bool, optional
+            use number of bonds as RAC, by default False
+        Zeff : bool, optional
+            use Z effective as RAC, by default False
+        polarizability : bool, optional
+            Use polarizability (alpha) as RAC, by default False
 
     Returns
     -------
-    results_dictionary : dict
-        formatted dictionary with {'colnames': colnames, 'results': result}
+        results_dictionary : dict
+            formatted dictionary with {'colnames': colnames, 'results': result}
+
     """
     result = list()
     colnames = []
@@ -754,27 +766,28 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
 
     Parameters
     ----------
-    mol : mol3D
-        molecule used for full scope
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of autocorrelations to evaluate, by default 4
-    oct : bool, optional
-        is an octahedral complex, by default True
-    flag_name : bool, optional
-        Prepend "f_all" to results to track full complex, by default False
-    modifier : bool, optional
-        Use ox_modifier on metal charge, by default False
-    NumB : bool, optional
-        use number of bonds as RAC, by default False
-    Zeff : bool, optional
-        use Z effective as RAC, by default False
+        mol : mol3D
+            molecule used for full scope
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of autocorrelations to evaluate, by default 4
+        oct : bool, optional
+            is an octahedral complex, by default True
+        flag_name : bool, optional
+            Prepend "f_all" to results to track full complex, by default False
+        modifier : bool, optional
+            Use ox_modifier on metal charge, by default False
+        NumB : bool, optional
+            use number of bonds as RAC, by default False
+        Zeff : bool, optional
+            use Z effective as RAC, by default False
 
     Returns
     -------
-    results_dictionary : dict
-        formatted dictionary with {'colnames': colnames, 'results': result}
+        results_dictionary : dict
+            formatted dictionary with {'colnames': colnames, 'results': result}
+
     """
     result = None
     colnames = []
@@ -809,21 +822,22 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to calculate atom-only autocorrelations from
-    prop : str
-        property to calculate 
-    d : int
-        depth to calculate derivatives over
-    atomIdx : int or list
-        atoms from which the autocorrelation vector should be centered
-    oct : bool, optional
-        use octahedral flag, by default True
+        mol : mol3D
+            molecule to calculate atom-only autocorrelations from
+        prop : str
+            property to calculate 
+        d : int
+            depth to calculate derivatives over
+        atomIdx : int or list
+            atoms from which the autocorrelation vector should be centered
+        oct : bool, optional
+            use octahedral flag, by default True
 
     Returns
     -------
-    autocorrelation_vector : list
-        list of atom-only autocorrelations
+        autocorrelation_vector : list
+            list of atom-only autocorrelations
+
     """
     w = construct_property_vector(mol, prop, oct)
     autocorrelation_vector = np.zeros(d + 1)
@@ -842,21 +856,22 @@ def atom_only_autocorrelation_derivative(mol, prop, d, atomIdx, oct=True):
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to calculate atom-only autocorrelation derivatives from
-    prop : str
-        property to calculate 
-    d : int
-        depth to calculate derivatives over
-    atomIdx : int or list
-        atoms from which the autocorrelation vector should be centered
-    oct : bool, optional
-        use octahedral flag, by default True
+        mol : mol3D
+            molecule to calculate atom-only autocorrelation derivatives from
+        prop : str
+            property to calculate 
+        d : int
+            depth to calculate derivatives over
+        atomIdx : int or list
+            atoms from which the autocorrelation vector should be centered
+        oct : bool, optional
+            use octahedral flag, by default True
 
     Returns
     -------
-    autocorrelation_vector : list
-        list of atom-only autocorrelation derivatives
+        autocorrelation_vector : list
+            list of atom-only autocorrelation derivatives
+
     """
     w = construct_property_vector(mol, prop, oct)
     autocorrelation_derivative_mat = np.zeros((d + 1, mol.natoms))
@@ -876,23 +891,24 @@ def metal_only_autocorrelation(mol, prop, d, oct=True,
 
     Parameters
     ----------
-    mol : mol3D
-        molecule with metal to calculate MC product RACs for
-    prop : str
-        Property to evaluate
-    d : int
-        depth of autocorrelation
-    oct : bool, optional
-        use octahedral geometry evaluations, by default True
-    func : function, optional
-        which function to evaluate mc-racs by, by default autocorrelation
-    modifier : bool, optional
-        use ox_modifier, by default False
+        mol : mol3D
+            molecule with metal to calculate MC product RACs for
+        prop : str
+            Property to evaluate
+        d : int
+            depth of autocorrelation
+        oct : bool, optional
+            use octahedral geometry evaluations, by default True
+        func : function, optional
+            which function to evaluate mc-racs by, by default autocorrelation
+        modifier : bool, optional
+            use ox_modifier, by default False
 
     Returns
     -------
-    autocorrelation_vector: list
-        MC atom-only RACs vector
+        autocorrelation_vector: list
+            MC atom-only RACs vector
+
     """
     autocorrelation_vector = np.zeros(d)
     try:
@@ -912,23 +928,24 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True,
 
     Parameters
     ----------
-    mol : mol3D
-        molecule with metal to calculate MC product RAC derivatives for
-    prop : str
-        Property to evaluate
-    d : int
-        depth of autocorrelation
-    oct : bool, optional
-        use octahedral geometry evaluations, by default True
-    func : function, optional
-        which function to evaluate mc-racs by, by default autocorrelation_derivative
-    modifier : bool, optional
-        use ox_modifier, by default False
+        mol : mol3D
+            molecule with metal to calculate MC product RAC derivatives for
+        prop : str
+            Property to evaluate
+        d : int
+            depth of autocorrelation
+        oct : bool, optional
+            use octahedral geometry evaluations, by default True
+        func : function, optional
+            which function to evaluate mc-racs by, by default autocorrelation_derivative
+        modifier : bool, optional
+            use ox_modifier, by default False
 
     Returns
     -------
-    autocorrelation_vector: list
-        MC atom-only RAC derivatives vector (matrix)
+        autocorrelation_vector: list
+            MC atom-only RAC derivatives vector (matrix)
+
     """
     autocorrelation_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
@@ -947,21 +964,22 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False):
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to calculate atom-only autocorrelations from
-    prop : str
-        property to calculate 
-    d : int
-        depth to calculate derivatives over
-    atomIdx : int or list
-        atoms from which the autocorrelation vector should be centered
-    oct : bool, optional
-        use octahedral flag, by default True
+        mol : mol3D
+            molecule to calculate atom-only autocorrelations from
+        prop : str
+            property to calculate 
+        d : int
+            depth to calculate derivatives over
+        atomIdx : int or list
+            atoms from which the autocorrelation vector should be centered
+        oct : bool, optional
+            use octahedral flag, by default True
 
     Returns
     -------
-    autocorrelation_vector : list
-        list of atom-only deltametric autocorrelations
+        autocorrelation_vector : list
+            list of atom-only deltametric autocorrelations
+
     """
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
     deltametric_vector = np.zeros(d + 1)
@@ -981,23 +999,24 @@ def atom_only_deltametric_derivative(mol, prop, d, atomIdx, oct=True, modifier=F
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to calculate atom-only deltametric autocorrelation derivatives from
-    prop : str
-        property to calculate 
-    d : int
-        depth to calculate derivatives over
-    atomIdx : int or list
-        atoms from which the autocorrelation vector should be centered
-    oct : bool, optional
-        use octahedral flag, by default True
-    modifier : bool, optional
-        use ox_modifier, by default False
+        mol : mol3D
+            molecule to calculate atom-only deltametric autocorrelation derivatives from
+        prop : str
+            property to calculate 
+        d : int
+            depth to calculate derivatives over
+        atomIdx : int or list
+            atoms from which the autocorrelation vector should be centered
+        oct : bool, optional
+            use octahedral flag, by default True
+        modifier : bool, optional
+            use ox_modifier, by default False
 
     Returns
     -------
-    deltametric_derivative_mat : list
-        matrix of atom-only deltametric autocorrelation derivatives 
+        deltametric_derivative_mat : list
+            matrix of atom-only deltametric autocorrelation derivatives 
+
     """
     w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
     deltametric_derivative_mat = np.zeros((d + 1, mol.natoms))
@@ -1017,23 +1036,24 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True,
 
     Parameters
     ----------
-    mol : mol3D
-        molecule with metal to calculate MC deltametric RAC derivatives for
-    prop : str
-        Property to evaluate
-    d : int
-        depth of autocorrelation
-    oct : bool, optional
-        use octahedral geometry evaluations, by default True
-    func : function, optional
-        which function to evaluate mc-racs by, by default deltametric_derivative
-    modifier : bool, optional
-        use ox_modifier, by default False
+        mol : mol3D
+            molecule with metal to calculate MC deltametric RAC derivatives for
+        prop : str
+            Property to evaluate
+        d : int
+            depth of autocorrelation
+        oct : bool, optional
+            use octahedral geometry evaluations, by default True
+        func : function, optional
+            which function to evaluate mc-racs by, by default deltametric_derivative
+        modifier : bool, optional
+            use ox_modifier, by default False
 
     Returns
     -------
-    deltametric_vector_derivative : list
-        metal-centerted deltametric derivatives vector (matrix)
+        deltametric_vector_derivative : list
+            metal-centerted deltametric derivatives vector (matrix)
+
     """
     deltametric_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
@@ -1052,23 +1072,24 @@ def metal_only_deltametric(mol, prop, d, oct=True,
 
     Parameters
     ----------
-    mol : mol3D
-        molecule with metal to calculate MC deltametric RACs 
-    prop : str
-        Property to evaluate
-    d : int
-        depth of autocorrelation
-    oct : bool, optional
-        use octahedral geometry evaluations, by default True
-    func : function, optional
-        which function to evaluate mc-racs by, by default deltametric
-    modifier : bool, optional
-        use ox_modifier, by default False
+        mol : mol3D
+            molecule with metal to calculate MC deltametric RACs 
+        prop : str
+            Property to evaluate
+        d : int
+            depth of autocorrelation
+        oct : bool, optional
+            use octahedral geometry evaluations, by default True
+        func : function, optional
+            which function to evaluate mc-racs by, by default deltametric
+        modifier : bool, optional
+            use ox_modifier, by default False
 
     Returns
     -------
-    deltametric_vector : list
-        metal-centerted deltametric RAC vector
+        deltametric_vector : list
+            metal-centerted deltametric RAC vector
+
     """
     deltametric_vector = np.zeros(d + 1)
     try:
@@ -1093,18 +1114,19 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False):
 
     Parameters
     ----------
-    mol : mol3D
-        molecule to get the ligand_misc descriptors from
-    loud : bool
-        print debugging information
-    custom_ligand_dict : bool, optional
-        custom_ligand_dictionary if passed, by default False
+        mol : mol3D
+            molecule to get the ligand_misc descriptors from
+        loud : bool
+            print debugging information
+        custom_ligand_dict : bool, optional
+            custom_ligand_dictionary if passed, by default False
 
     Returns
     -------
-    results_dictionary : dict
-        Labels and results of ligand_misc RACs - {'colnames': colnames,
-                          'result_ax': result_ax, 'result_eq': result_eq}
+        results_dictionary : dict
+            Labels and results of ligand_misc RACs - {'colnames': colnames,
+                            'result_ax': result_ax, 'result_eq': result_eq}
+
     """
     result_ax = list()
     result_eq = list()
@@ -1175,27 +1197,28 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get lc-RACs for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    custom_ligand_dict : bool, optional
-        Dict of ligands if passed - see generate_descriptor_vector, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get lc-RACs for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        custom_ligand_dict : bool, optional
+            Dict of ligands if passed - see generate_descriptor_vector, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based ligand product descriptors (both full and connecting atom scopes) -
-        {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
-                              'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+        results_dictionary: dict
+            Dictionary of all geo-based ligand product descriptors (both full and connecting atom scopes) -
+            {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
+            'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+
     """
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
@@ -1279,27 +1302,29 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get lc-RAC derivatives for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    custom_ligand_dict : bool, optional
-        Dict of ligands if passed - see generate_descriptor_vector, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get lc-RAC derivatives for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        custom_ligand_dict : bool, optional
+            Dict of ligands if passed - see generate_descriptor_vector, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based ligand product descriptor derivatives (both full and connecting atom scopes) -
-        {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
-                              'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+        results_dictionary: dict
+            Dictionary of all geo-based ligand product descriptor derivatives 
+            (both full and connecting atom scopes)
+            {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
+            'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+
     """
     result_ax_full = None
     result_eq_full = None
@@ -1402,26 +1427,27 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get D_lc-RACs for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    custom_ligand_dict : bool, optional
-        Dict of ligands if passed - see generate_descriptor_vector, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get D_lc-RACs for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        custom_ligand_dict : bool, optional
+            Dict of ligands if passed - see generate_descriptor_vector, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based ligand deltametric descriptors (both full and connecting atom scopes) -
-        {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+        results_dictionary: dict
+            Dictionary of all geo-based ligand deltametric descriptors (both full and connecting atom scopes) -
+            {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+
     """
     result_ax_con = list()
     result_eq_con = list()
@@ -1485,27 +1511,28 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get lc-RAC deltametric derivatives for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    custom_ligand_dict : bool, optional
-        Dict of ligands if passed - see generate_descriptor_vector, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get lc-RAC deltametric derivatives for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        custom_ligand_dict : bool, optional
+            Dict of ligands if passed - see generate_descriptor_vector, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based ligand deltametric descriptor derivatives 
-        (both full and connecting atom scopes) -
-        {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+        results_dictionary: dict
+            Dictionary of all geo-based ligand deltametric descriptor derivatives 
+            (both full and connecting atom scopes) -
+            {'colnames': colnames, 'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+
     """
     result_ax_con = None
     result_eq_con = None
@@ -1575,28 +1602,29 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get mc-RACs for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    oct : bool, optional
-        Use octahedral criteria for structure evaluation, by default True
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    modifier : bool, optional
-        Use ox_modifier for metal, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get mc-RACs for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        oct : bool, optional
+            Use octahedral criteria for structure evaluation, by default True
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        modifier : bool, optional
+            Use ox_modifier for metal, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based MC-RAC product descriptors  -
-        {'colnames': colnames, 'results': result}
+        results_dictionary: dict
+            Dictionary of all geo-based MC-RAC product descriptors  -
+            {'colnames': colnames, 'results': result}
+
     """
     result = list()
     colnames = []
@@ -1628,28 +1656,29 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get mc-RAC derivatives for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    oct : bool, optional
-        Use octahedral criteria for structure evaluation, by default True
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    modifier : bool, optional
-        Use ox_modifier for metal, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get mc-RAC derivatives for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        oct : bool, optional
+            Use octahedral criteria for structure evaluation, by default True
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        modifier : bool, optional
+            Use ox_modifier for metal, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based MC-RAC product descriptor derivatives
-        {'colnames': colnames, 'results': result}
+        results_dictionary : dict
+            Dictionary of all geo-based MC-RAC product descriptor derivatives
+            {'colnames': colnames, 'results': result}
+
     """
     result = None
     colnames = []
@@ -1684,28 +1713,29 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get D_mc-RACs for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    oct : bool, optional
-        Use octahedral criteria for structure evaluation, by default True
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    modifier : bool, optional
-        Use ox_modifier for metal, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get D_mc-RACs for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        oct : bool, optional
+            Use octahedral criteria for structure evaluation, by default True
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        modifier : bool, optional
+            Use ox_modifier for metal, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based MC-RAC deltametric descriptors  -
-        {'colnames': colnames, 'results': result}
+        results_dictionary: dict
+            Dictionary of all geo-based MC-RAC deltametric descriptors  -
+            {'colnames': colnames, 'results': result}
+
     """
     result = list()
     colnames = []
@@ -1738,28 +1768,29 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
 
     Parameters
     ----------
-    mol : mol3D 
-        molecule to get D_mc-RAC derivatives for
-    loud : bool
-        print debugging information
-    depth : int, optional
-        depth of RACs to calculate, by default 4
-    oct : bool, optional
-        Use octahedral criteria for structure evaluation, by default True
-    flag_name : bool, optional
-        Shift RAC names slightly, by default False
-    modifier : bool, optional
-        Use ox_modifier for metal, by default False
-    NumB : bool, optional
-        Use number of bonds as descriptor property, by default False
-    Zeff : bool, optional
-        Use Z effective as descriptor property, by default False
+        mol : mol3D 
+            molecule to get D_mc-RAC derivatives for
+        loud : bool
+            print debugging information
+        depth : int, optional
+            depth of RACs to calculate, by default 4
+        oct : bool, optional
+            Use octahedral criteria for structure evaluation, by default True
+        flag_name : bool, optional
+            Shift RAC names slightly, by default False
+        modifier : bool, optional
+            Use ox_modifier for metal, by default False
+        NumB : bool, optional
+            Use number of bonds as descriptor property, by default False
+        Zeff : bool, optional
+            Use Z effective as descriptor property, by default False
 
     Returns
     -------
-    results_dictionary: dict
-        Dictionary of all geo-based MC-RAC deltametric descriptor derivatives  -
-        {'colnames': colnames, 'results': result}
+        results_dictionary: dict
+            Dictionary of all geo-based MC-RAC deltametric descriptor derivatives  -
+            {'colnames': colnames, 'results': result}
+
     """
     result = None
     colnames = []
