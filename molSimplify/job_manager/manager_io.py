@@ -31,7 +31,6 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     ## Reads TeraChem and ORCA outfiles
     #  @param outfile_path complete path to the outfile to be read, as a string
     #  @return A dictionary with keys finalenergy,s_squared,s_squared_ideal,time
-
     output = textfile(outfile_path)
     output_type = output.wordgrab(['TeraChem', 'ORCA'], ['whole_line', 'whole_line'])
     # print("output_type: ", output_type)
@@ -41,6 +40,14 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
         if counter == 1:
             if 'nohup' in outfile_path:
                 print('Warning! Nohup file caught in outfile processing')
+                print(outfile_path)
+                counter = 0
+            elif 'smd.out' in outfile_path:
+                print('Warning! SMD file caught in outfile processing')
+                print(outfile_path)
+                counter = 0
+            elif ('atom' in outfile_path) and ('ORCA' in output_type):
+                print('Density fitting output caught in outfile processing')
                 print(outfile_path)
                 counter = 0
             else:
@@ -169,8 +176,9 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                     + float(timekey[9])
                     + float(timekey[11]) * 0.001)
 
-        charge = output.wordgrab(['Sum of atomic charges         :'], [-1], last_line=True)[0]
-        charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
+        if finished:
+            charge = output.wordgrab(['Total Charge'], [-1], last_line=True)[0]
+            charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
 
         opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY', -1)[0]
         geo_opt_cycles, min_energy = len(opt_energies), min(opt_energies)
@@ -396,7 +404,7 @@ def read_configure(home_directory, outfile_path):
                 else:
                     raise ValueError("%s does not exits." % localpath)
     # If global settings not specified, choose defaults:
-    if not max_jobs:
+    if (not max_jobs) and isinstance(max_jobs,bool):
         max_jobs = 50
     if not max_resub:
         max_resub = 5
@@ -412,7 +420,7 @@ def read_configure(home_directory, outfile_path):
         sleep = 7200
     if not ss_cutoff:
         ss_cutoff = 1.0
-    if not hard_job_limit:
+    if (not hard_job_limit):
         hard_job_limit = 190
 
     return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,

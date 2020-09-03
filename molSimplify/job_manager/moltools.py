@@ -67,10 +67,13 @@ def read_run(outfile_PATH):
         tools.extract_optimized_geo(optim_path)
         optimized_path = os.path.join(os.path.split(optim_path)[0], 'optimized.xyz')
 
-        mol = mol3D()
-        mol.readfromxyz(optimized_path)
+        initial_mol = mol3D()
+        final_mol = mol3D()
+        initial_mol.readfromxyz(initial_xyz_path)
+        final_mol.readfromxyz(optimized_path)
 
-        IsOct, flag_list, oct_check = mol.IsOct(dict_check=mol.dict_oct_check_st,
+        IsOct, flag_list, oct_check = mol.IsOct(init_mol=initial_mol,
+                                                dict_check=mol.dict_oct_check_st,
                                                 silent=True)
 
         if IsOct:

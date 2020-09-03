@@ -309,6 +309,26 @@ class mol3D:
                 count += 1
         return count
 
+    def count_electrons(self, charge=0):
+        """
+        Count the number of electrons in a molecule. 
+
+        Parameters
+        ----------
+            charge: int, optional
+                Net charge of a molecule. Default is neutral.
+
+        Returns
+        ----------
+            count: integer
+                The number of electrons in the system.
+        """
+        count = 0
+        for ii in range(self.natoms):
+            count += self.getAtom(ii).atno
+        count = count-charge
+        return count
+
     def alignmol(self, atom1, atom2):
         """Aligns two molecules such that the coordinates of two atoms overlap.
         Second molecule is translated relative to the first. No rotations are 
@@ -1084,8 +1104,13 @@ class mol3D:
                     close_metal = i
         return close_metal
 
-    def findMetal(self):
+    def findMetal(self, transition_metals_only=True):
         """Find metal(s) in a mol3D class.
+
+        Parameters
+        ----------
+            transition_metals_only : bool, optional
+                Only find transition metals. Default is true. 
 
         Returns
         -------
@@ -1096,7 +1121,7 @@ class mol3D:
         if not self.metals:
             metal_list = []
             for i, atom in enumerate(self.atoms):
-                if atom.ismetal():
+                if atom.ismetal(transition_metals_only=transition_metals_only):
                     metal_list.append(i)
             self.metals = metal_list
         return (self.metals)

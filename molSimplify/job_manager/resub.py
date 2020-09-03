@@ -117,9 +117,10 @@ def resub(directory='in place'):
     # print("needs_derivative_jobs: ", needs_derivative_jobs)
     prep_derivative_jobs(directory, needs_derivative_jobs)
     resubmitted = []  # Resubmitted list gets True if the job is submitted or False if not. Contains booleans, not job identifiers.
-
+    counter = 0
     for job in molscontrol_kills:
-        print("killed by molscontrol: ", job)
+        counter += 1
+        print("killed by molscontrol: ", job, counter)
     # Resub unidentified errors
     for error in errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
@@ -243,8 +244,8 @@ def resub(directory='in place'):
             resubmitted.append(False)
 
     # Submit jobs which haven't yet been submitted
-    if not ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-            (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+    if (((nactive + np.sum(resubmitted)) < max_jobs) and (
+            (tools.get_total_queue_usage() + np.sum(resubmitted)) < hard_job_limit)):
         to_submit = []
         jobscripts = tools.find('*_jobscript')
         active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
@@ -271,6 +272,7 @@ def resub(directory='in place'):
             tools.qsub(job)
             submitted.append(True)
     else:
+        print('==== Hit the queue limit for the user, not submitting any more jobs. ====')
         hit_queue_limit = True
         submitted = []
 
