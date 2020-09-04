@@ -71,9 +71,11 @@ def read_run(outfile_PATH):
         final_mol = mol3D()
         initial_mol.readfromxyz(initial_xyz_path)
         final_mol.readfromxyz(optimized_path)
+        final_mol.get_num_coord_metal()
 
-        IsOct, flag_list, oct_check = mol.IsOct(init_mol=initial_mol,
-                                                dict_check=mol.dict_oct_check_st,
+        IsOct, flag_list, oct_check = final_mol.IsOct(init_mol=initial_mol,
+                                                dict_check=final_mol.dict_oct_check_st,
+                                                catoms_arr=final_mol.catoms,
                                                 silent=True)
 
         if IsOct:

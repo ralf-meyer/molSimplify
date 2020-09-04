@@ -3910,7 +3910,8 @@ class mol3D:
         if not catoms_arr == None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
-        if not init_mol == None:
+            catoms_init = catoms_arr
+        elif not init_mol == None and catoms_arr == None:
             init_mol.get_num_coord_metal(debug=debug)
             catoms_init = init_mol.catoms
         else:
