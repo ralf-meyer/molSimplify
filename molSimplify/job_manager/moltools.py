@@ -73,19 +73,25 @@ def read_run(outfile_PATH):
         final_mol.readfromxyz(optimized_path)
         final_mol.get_num_coord_metal()
 
-        IsOct, flag_list, oct_check = final_mol.IsOct(init_mol=initial_mol,
-                                                dict_check=final_mol.dict_oct_check_st,
-                                                catoms_arr=final_mol.catoms,
-                                                silent=True)
+        if len(final_mol.catoms) != 6: #If there's not six connecting atoms, it's not octahedral
+            results['Is_Oct'] = False
+            results['Flag_list'] = 'Less than 6 atoms coodinate the metal'
+            results['Oct_check_details'] = {'num_coord_metal': len(final_mol.catoms)}
 
-        if IsOct:
-            IsOct = True
         else:
-            IsOct = False
+            IsOct, flag_list, oct_check = final_mol.IsOct(init_mol=initial_mol,
+                                                    dict_check=final_mol.dict_oct_check_st,
+                                                    catoms_arr=final_mol.catoms,
+                                                    silent=True)
 
-        results['Is_Oct'] = IsOct
-        results['Flag_list'] = flag_list
-        results['Oct_check_details'] = oct_check
+            if IsOct:
+                IsOct = True
+            else:
+                IsOct = False
+
+            results['Is_Oct'] = IsOct
+            results['Flag_list'] = flag_list
+            results['Oct_check_details'] = oct_check
 
     else:
         results['Is_Oct'] = None
