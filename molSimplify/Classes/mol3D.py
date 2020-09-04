@@ -3635,11 +3635,8 @@ class mol3D:
                 if debug:
                     print(('rmsd:', rmsd))
                     # print(('atom_dist_max', atom_dist_max))
-            try:
-                rmsd_max = max(rmsd_arr)
-                atom_dist_max = max(max_atom_dist_arr)
-            except:
-                rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
+            rmsd_max = max(rmsd_arr)
+            atom_dist_max = max(max_atom_dist_arr)
         else:
             rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
         try:
@@ -3913,8 +3910,7 @@ class mol3D:
         if not catoms_arr == None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
-            catoms_init = catoms_arr
-        elif not init_mol == None and catoms_arr == None:
+        if not init_mol == None:
             init_mol.get_num_coord_metal(debug=debug)
             catoms_init = init_mol.catoms
         else:
@@ -3944,8 +3940,7 @@ class mol3D:
                                                                 debug=debug,
                                                                 BondedOct=BondedOct,
                                                                 flag_deleteH=flag_deleteH,
-                                                                angle_ref=angle_ref,
-                                                                catoms_arr=catoms_arr)
+                                                                angle_ref=angle_ref,)
                 if not 'lig_linear' in skip:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:

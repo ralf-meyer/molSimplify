@@ -497,11 +497,10 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
             infile[prop_name] = prop
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
-            not infile['name']) or (not infile['coordinates']):
-        print('Name: ' + infile['name'])
-        print('Charge: ' + str(infile['charge']))
-        print('Spinmult: ' + str(infile['spinmult']))
-        print('Coordinates: ' + str(infile['coordinates']))
+            not infile['name']):
+        print(('Name: ' + infile['name']))
+        print(('Charge: ' + str(infile['charge'])))
+        print(('Spinmult: ' + str(infile['spinmult'])))
         raise Exception('Minimum parameters not specified for writing infile')
     if type(infile['charge']) != int or type(infile['spinmult']) != int:
         print(('Charge Type: ' + str(type(infile['charge']))))

@@ -67,31 +67,20 @@ def read_run(outfile_PATH):
         tools.extract_optimized_geo(optim_path)
         optimized_path = os.path.join(os.path.split(optim_path)[0], 'optimized.xyz')
 
-        initial_mol = mol3D()
-        final_mol = mol3D()
-        initial_mol.readfromxyz(initial_xyz_path)
-        final_mol.readfromxyz(optimized_path)
-        final_mol.get_num_coord_metal()
+        mol = mol3D()
+        mol.readfromxyz(optimized_path)
 
-        if len(final_mol.catoms) != 6: #If there's not six connecting atoms, it's not octahedral
-            results['Is_Oct'] = False
-            results['Flag_list'] = 'Less than 6 atoms coodinate the metal'
-            results['Oct_check_details'] = {'num_coord_metal': len(final_mol.catoms)}
+        IsOct, flag_list, oct_check = mol.IsOct(dict_check=mol.dict_oct_check_st,
+                                                silent=True)
 
+        if IsOct:
+            IsOct = True
         else:
-            IsOct, flag_list, oct_check = final_mol.IsOct(init_mol=initial_mol,
-                                                    dict_check=final_mol.dict_oct_check_st,
-                                                    catoms_arr=final_mol.catoms,
-                                                    silent=True)
+            IsOct = False
 
-            if IsOct:
-                IsOct = True
-            else:
-                IsOct = False
-
-            results['Is_Oct'] = IsOct
-            results['Flag_list'] = flag_list
-            results['Oct_check_details'] = oct_check
+        results['Is_Oct'] = IsOct
+        results['Flag_list'] = flag_list
+        results['Oct_check_details'] = oct_check
 
     else:
         results['Is_Oct'] = None
