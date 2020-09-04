@@ -812,6 +812,9 @@ class mol3D:
         if atomIdx >= self.natoms:
             raise Exception('mol3D object cannot delete atom '+str(atomIdx) +
                             ' because it only has '+str(self.natoms)+' atoms!')
+        if self.getAtom(atomIdx).sym == 'X':
+            self.atoms[atomIdx].sym = 'Fe' # Switch to Iron temporarily
+            self.atoms[atomIdx].name = 'Fe'
         if self.bo_dict:
             self.convert2OBMol2()
             save_inds = [x for x in range(self.natoms) if x != atomIdx]
@@ -845,6 +848,10 @@ class mol3D:
                                 ' because it only has '+str(self.natoms)+' atoms!')
         # convert negative indexes to positive indexes
         Alist = [self.natoms+i if i < 0 else i for i in Alist]
+        for atomIdx in Alist:
+            if self.getAtom(atomIdx).sym == 'X':
+                self.atoms[atomIdx].sym = 'Fe' # Switch to Iron temporarily
+                self.atoms[atomIdx].name = 'Fe' 
         if self.bo_dict:
             self.convert2OBMol2()
             save_inds = [x for x in range(self.natoms) if x not in Alist]
@@ -3042,7 +3049,7 @@ class mol3D:
         Parameters
         ----------
             filename : str 
-                Path to XYZ file.
+                Path to mol2 file.
             writestring : bool, optional
                 Flag to write to a string if True or file if False. Default is False.
             ignoreX : bool, optional
