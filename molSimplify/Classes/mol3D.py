@@ -3941,7 +3941,8 @@ class mol3D:
                                                                 debug=debug,
                                                                 BondedOct=BondedOct,
                                                                 flag_deleteH=flag_deleteH,
-                                                                angle_ref=angle_ref,)
+                                                                angle_ref=angle_ref,
+                                                                catoms_arr=catoms_arr)
                 if not 'lig_linear' in skip:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
