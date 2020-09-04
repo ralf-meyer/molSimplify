@@ -3635,8 +3635,11 @@ class mol3D:
                 if debug:
                     print(('rmsd:', rmsd))
                     # print(('atom_dist_max', atom_dist_max))
-            rmsd_max = max(rmsd_arr)
-            atom_dist_max = max(max_atom_dist_arr)
+            try:
+                rmsd_max = max(rmsd_arr)
+                atom_dist_max = max(max_atom_dist_arr)
+            except:
+                rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
         else:
             rmsd_max, atom_dist_max = 'lig_mismatch', 'lig_mismatch'
         try:
