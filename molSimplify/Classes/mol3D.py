@@ -786,7 +786,7 @@ class mol3D:
                         this_bonded_atoms = self.getBondedAtomsOct(i, debug=False,
                                                                    atom_specific_cutoffs=self.use_atom_specific_cutoffs)
                 else:
-                    this_bonded_atoms = self.getBondedAtoms(i, debug=False)
+                    this_bonded_atoms = self.getBondedAtoms(i)
                 for j in index_set:
                     if j in this_bonded_atoms:
                         A[i, j] = 1
@@ -2218,7 +2218,7 @@ class mol3D:
 
         for atom in self.atoms:
             xyz = atom.coords()
-            ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+            ss = "%s \t%f\t%f\t%f" % (atom.sym, xyz[0], xyz[1], xyz[2])
             print(ss)
 
     def returnxyz(self):
