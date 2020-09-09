@@ -177,7 +177,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                     + float(timekey[11]) * 0.001)
 
         if finished:
-            charge = output.wordgrab(['Sum of atomic charges'], [-1], last_line=True)[0]
+            charge = output.wordgrab(['Total Charge'], [-1], last_line=True)[0]
             charge = int(round(charge, 0))  # Round to nearest integer value (it should always be very close)
 
         opt_energies = output.wordgrab('FINAL SINGLE POINT ENERGY', -1)[0]
@@ -497,7 +497,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
             infile[prop_name] = prop
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
-            not infile['name']):
+            not infile['name']) or (not infile['coordinates']):
         print(('Name: ' + infile['name']))
         print(('Charge: ' + str(infile['charge'])))
         print(('Spinmult: ' + str(infile['spinmult'])))
