@@ -2225,7 +2225,7 @@ class mol3D:
 
         for atom in self.atoms:
             xyz = atom.coords()
-            ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+            ss = "%s \t%f\t%f\t%f" % (atom.sym, xyz[0], xyz[1], xyz[2])
             print(ss)
 
     def returnxyz(self):
