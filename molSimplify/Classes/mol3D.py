@@ -786,7 +786,7 @@ class mol3D:
                         this_bonded_atoms = self.getBondedAtomsOct(i, debug=False,
                                                                    atom_specific_cutoffs=self.use_atom_specific_cutoffs)
                 else:
-                    this_bonded_atoms = self.getBondedAtoms(i, debug=False)
+                    this_bonded_atoms = self.getBondedAtoms(i)
                 for j in index_set:
                     if j in this_bonded_atoms:
                         A[i, j] = 1
@@ -4806,7 +4806,7 @@ class mol3D:
 
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
-                          skip=False):
+                          skip=False, transition_metals_only=False):
         """Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
         trigonal bipyramidal(5), square pyramidal(5, one-empty-site),
         octahedral(6), pentagonal bipyramidal(7))
@@ -4827,6 +4827,8 @@ class mol3D:
                 Flag for extra printout. Default is False.
             skip : list, optional
                 Geometry checks to skip. Default is False.
+            transition_metals_only : bool, optional
+                Flag for considering more than just transition metals as metals. Default is False.
 
         Returns
         -------
@@ -4845,8 +4847,8 @@ class mol3D:
         if len(self.graph):  # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
-            elif len(self.findMetal()) == 1:
-                num_coord = len(self.getBondedAtomsSmart(self.findMetal()[0]))
+            elif len(self.findMetal(transition_metals_only=transition_metals_only)) == 1:
+                num_coord = len(self.getBondedAtomsSmart(self.findMetal(transition_metals_only=transition_metals_only)[0]))
             else:
                 raise ValueError('No metal centers exist in this complex.')
         if num_coord is not False:
