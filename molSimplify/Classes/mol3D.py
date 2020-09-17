@@ -376,7 +376,7 @@ class mol3D:
         for submolidx in submolidxes:
             self.getAtom(submolidx).translate(dR)
 
-    def BCM_opt(self, idx1, idx2, d):
+    def BCM_opt(self, idx1, idx2, d, ff='uff'):
         """Performs bond centric manipulation (same as Avogadro, stretching
         and squeezing bonds). A submolecule is translated along the bond axis 
         connecting it to an anchor atom. Performs force field optimization
@@ -395,16 +395,16 @@ class mol3D:
         """    
         self.convert2OBMol()
         OBMol = self.OBMol
-        ff = openbabel.OBForceField.FindForceField('mmff94')
+        forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         constr.AddDistanceConstraint(idx1 + 1, idx2 + 1, d)
-        s = ff.Setup(OBMol, constr)
+        s = forcefield.Setup(OBMol, constr)
         if s is not True:
             print('forcefield setup failed.')
             exit()
         else:
-            ff.SteepestDescent(500)
-            ff.GetCoordinates(OBMol)
+            forcefield.SteepestDescent(500)
+            forcefield.GetCoordinates(OBMol)
         self.OBMol = OBMol
         self.convert2mol3D()
 
