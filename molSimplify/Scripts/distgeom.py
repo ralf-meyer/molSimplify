@@ -445,7 +445,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     #Second stage of cleaning removes the metal, but uses constraints on the bonding atoms to ensure a binding conformer is maintained
     #This stage is critical for getting planar aromatic ligands like porphyrin and correct. Not really sure why though...
     if ffclean:
-        ff = openbabel.OBForceField.FindForceField('UFF')
+        ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
         for atom in catoms:
             constr.AddAtomConstraint(atom+1) 
