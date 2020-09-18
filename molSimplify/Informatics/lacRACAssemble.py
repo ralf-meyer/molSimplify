@@ -16,7 +16,7 @@ from molSimplify.Classes.globalvars import globalvars
 globs = globalvars()
 
 def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False, \
-    lacRACs = True, loud = False):
+    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters
@@ -44,6 +44,10 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             if False, use ligand_assign (older), default True
         loud : bool, optional
             Print degubbging information, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate property, by default False
+        smiles_charge : bool, optional
+            use obmol conversion through smiles to assign ligand_misc_charges, by default False
 
     Returns
     -------
@@ -71,7 +75,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
     ## misc descriptors
     results_dictionary = generate_all_ligand_misc(this_complex,loud=False,
-                                                    custom_ligand_dict=custom_ligand_dict)
+                                                    custom_ligand_dict=custom_ligand_dict, smiles_charge=smiles_charge)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_ax'],'misc','ax')
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
@@ -110,28 +114,29 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     #print('getting metal ACs')
     results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
                                                             modifier=ox_modifier,
-                                                            NumB=NumB,Zeff=Zeff)
+                                                            NumB=NumB,Zeff=Zeff, metal_ind=metal_ind)
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
 
     results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
                                                         modifier=ox_modifier,
-                                                        NumB=NumB,Zeff=Zeff)
+                                                        NumB=NumB,Zeff=Zeff, metal_ind=metal_ind)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 
     # ## ox-metal ACs, if ox available
     if ox_modifier:
-        results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False)
+        results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False, metal_ind=metal_ind)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-        results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False)
+        results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False, metal_ind=metal_ind)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
     return descriptor_names, descriptors
 
 
-def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifier=False, lacRACs=True, loud=False):
+def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifier=False, lacRACs=True, loud=False,
+                                metal_ind=None):
     """ Calculate and return all derivatives of RACs for a given octahedral complex.
 
     Parameters
@@ -155,6 +160,8 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
             if False, use ligand_assign (older), default True
         loud : bool, optional
             Print degubbging information, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate RACs from, by default False
 
     Returns
     -------
@@ -203,19 +210,19 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
                                                                                         results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
     ## metal ACs
     #print('getting metal AC derivatives')
-    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier)
+    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-    results_dictionary = generate_metal_deltametric_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier)
+    results_dictionary = generate_metal_deltametric_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
     # ## ox-metal ACs
     if ox_modifier:
-        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex,depth=3,loud=False)
+        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex,depth=3,loud=False, metal_ind=metal_ind)
         descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                             results_dictionary['colnames'],results_dictionary['results'],'mc','all')
 
-        results_dictionary =  generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex,depth=3,loud=False)
+        results_dictionary =  generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex,depth=3,loud=False, metal_ind=metal_ind)
         descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                             results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 
@@ -760,6 +767,7 @@ def generate_full_complex_autocorrelations(mol, loud,
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
+
 def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=True, flag_name=False,
                                                       modifier=False, NumB=False, Zeff=False):
     """Utility to manage full complex autocorrelation derivative generation and labeling.
@@ -884,7 +892,7 @@ def atom_only_autocorrelation_derivative(mol, prop, d, atomIdx, oct=True):
     return (autocorrelation_derivative_mat)
 
 
-def metal_only_autocorrelation(mol, prop, d, oct=True,
+def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
                                func=autocorrelation, modifier=False):
     """Calculate the metal_only product autocorrelations 
     (e.g. metal-centered atom-only RACs)
@@ -903,6 +911,8 @@ def metal_only_autocorrelation(mol, prop, d, oct=True,
             which function to evaluate mc-racs by, by default autocorrelation
         modifier : bool, optional
             use ox_modifier, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate property, by default False
 
     Returns
     -------
@@ -912,7 +922,8 @@ def metal_only_autocorrelation(mol, prop, d, oct=True,
     """
     autocorrelation_vector = np.zeros(d)
     try:
-        metal_ind = mol.findMetal()[0]
+        if not isinstance(metal_ind,int):
+            metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         autocorrelation_vector = func(mol, w, metal_ind, d, oct=oct)
     except:
@@ -921,7 +932,7 @@ def metal_only_autocorrelation(mol, prop, d, oct=True,
     return (autocorrelation_vector)
 
 
-def metal_only_autocorrelation_derivative(mol, prop, d, oct=True,
+def metal_only_autocorrelation_derivative(mol, prop, d, oct=True, metal_ind=None,
                                           func=autocorrelation_derivative, modifier=False):
     """Calculate the metal_only product autocorrelation derivatives 
     (e.g. metal-centered atom-only RAC derivatives)
@@ -940,6 +951,8 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True,
             which function to evaluate mc-racs by, by default autocorrelation_derivative
         modifier : bool, optional
             use ox_modifier, by default False
+        metal_ind : bool, optional
+            index (int) of metal atom to consider, default False
 
     Returns
     -------
@@ -949,7 +962,8 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True,
     """
     autocorrelation_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
-        metal_ind = mol.findMetal()[0]
+        if not isinstance(metal_ind,int):
+            metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         autocorrelation_vector_derivative = func(mol, w, metal_ind, d, oct=oct)
     except:
@@ -1030,7 +1044,7 @@ def atom_only_deltametric_derivative(mol, prop, d, atomIdx, oct=True, modifier=F
     return (deltametric_derivative_mat)
 
 
-def metal_only_deltametric_derivative(mol, prop, d, oct=True,
+def metal_only_deltametric_derivative(mol, prop, d, oct=True, metal_ind=None,
                                       func=deltametric_derivative, modifier=False):
     """Gets the metal atom-only deltametric derivatives
 
@@ -1048,6 +1062,8 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True,
             which function to evaluate mc-racs by, by default deltametric_derivative
         modifier : bool, optional
             use ox_modifier, by default False
+        metal_ind : bool, optional
+            index of metal atom to consider, by default False
 
     Returns
     -------
@@ -1057,7 +1073,8 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True,
     """
     deltametric_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
-        metal_ind = mol.findMetal()[0]
+        if not isinstance(metal_ind,int):
+            metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         deltametric_vector_derivative = func(mol, w, metal_ind, d, oct=oct)
     except:
@@ -1066,7 +1083,7 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True,
     return (deltametric_vector_derivative)
 
 
-def metal_only_deltametric(mol, prop, d, oct=True,
+def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
                            func=deltametric, modifier=False):
     """Gets the metal atom-only deltametric RAC
 
@@ -1084,6 +1101,8 @@ def metal_only_deltametric(mol, prop, d, oct=True,
             which function to evaluate mc-racs by, by default deltametric
         modifier : bool, optional
             use ox_modifier, by default False
+        metal_ind : bool, optional
+            index of metal atom to consider, by default False
 
     Returns
     -------
@@ -1093,7 +1112,8 @@ def metal_only_deltametric(mol, prop, d, oct=True,
     """
     deltametric_vector = np.zeros(d + 1)
     try:
-        metal_ind = mol.findMetal()[0]
+        if not isinstance(metal_ind,int):
+            metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         deltametric_vector = func(mol, w, metal_ind, d, oct=oct)
     except:
@@ -1108,7 +1128,7 @@ def metal_only_deltametric(mol, prop, d, oct=True,
 # @param mol, mol3D class
 # @param loud, bool, print out statements for debugging
 # @return results_dictionary, vector, ax vs eq. charge (from OBMol) and denticity
-def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False):
+def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False, smiles_charge=False):
     """Get the ligand_misc_descriptors (axial vs. equatorial
      charge (from OBMol) and denticity)
 
@@ -1120,6 +1140,8 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False):
             print debugging information
         custom_ligand_dict : bool, optional
             custom_ligand_dictionary if passed, by default False
+        smiles_charge : bool, optional
+            Whether or not to use the smiles charge assignent, default is False
 
     Returns
     -------
@@ -1158,10 +1180,16 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False):
                 ax_ligand_list[i].mol.convert2OBMol()
             if not (i == 0):
                 result_ax_dent += ax_ligand_list[i].dent
-                result_ax_charge += ax_ligand_list[i].mol.OBMol.GetTotalCharge()
+                if smiles_charge:
+                    result_ax_charge += ax_ligand_list[i].mol.get_smilesOBmol_charge()
+                else:
+                    result_ax_charge += ax_ligand_list[i].mol.OBMol.GetTotalCharge()
             else:
                 result_ax_dent = ax_ligand_list[i].dent
-                result_ax_charge = ax_ligand_list[i].mol.OBMol.GetTotalCharge()
+                if smiles_charge:
+                    result_ax_charge = ax_ligand_list[i].mol.get_smilesOBmol_charge()
+                else:
+                    result_ax_charge = ax_ligand_list[i].mol.OBMol.GetTotalCharge()
         # average axial results
         result_ax_dent = np.divide(result_ax_dent, n_ax)
         result_ax_charge = np.divide(result_ax_charge, n_ax)
@@ -1174,10 +1202,16 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False):
                 eq_ligand_list[i].mol.convert2OBMol()
             if not (i == 0):
                 result_eq_dent += eq_ligand_list[i].dent
-                result_eq_charge += eq_ligand_list[i].mol.OBMol.GetTotalCharge()
+                if smiles_charge:
+                    result_eq_charge += eq_ligand_list[i].mol.get_smilesOBmol_charge()
+                else:
+                    result_eq_charge += eq_ligand_list[i].mol.OBMol.GetTotalCharge()
             else:
                 result_eq_dent = eq_ligand_list[i].dent
-                result_eq_charge = eq_ligand_list[i].mol.OBMol.GetTotalCharge()
+                if smiles_charge:
+                    result_eq_charge = eq_ligand_list[i].mol.get_smilesOBmol_charge()
+                else:
+                    result_eq_charge = eq_ligand_list[i].mol.OBMol.GetTotalCharge()
         # average eq results
         result_eq_dent = np.divide(result_eq_dent, n_eq)
         result_eq_charge = np.divide(result_eq_charge, n_eq)
@@ -1597,7 +1631,7 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
 
 
 def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False,
-                                    modifier=False, NumB=False, Zeff=False):
+                                    modifier=False, NumB=False, Zeff=False, metal_ind=None):
     """Utility for generating all metal-centered product autocorrelations for a complex
 
     Parameters
@@ -1618,6 +1652,8 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
             Use number of bonds as descriptor property, by default False
         Zeff : bool, optional
             Use Z effective as descriptor property, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate property, by default False
 
     Returns
     -------
@@ -1637,7 +1673,8 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
-        metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct, modifier=modifier)
+        metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct, 
+                                              modifier=modifier, metal_ind=metal_ind)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1651,7 +1688,7 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
 
 
 def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, flag_name=False,
-                                               modifier=False, NumB=False, Zeff=False):
+                                               modifier=False, NumB=False, Zeff=False, metal_ind=None):
     """Utility for generating all metal-centered product autocorrelation derivatives for a complex
 
     Parameters
@@ -1672,6 +1709,8 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
             Use number of bonds as descriptor property, by default False
         Zeff : bool, optional
             Use Z effective as descriptor property, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate property, by default False
 
     Returns
     -------
@@ -1691,7 +1730,8 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
-        metal_ac_der = metal_only_autocorrelation_derivative(mol, properties, depth, oct=oct, modifier=modifier)
+        metal_ac_der = metal_only_autocorrelation_derivative(mol, properties, depth, 
+                                                             oct=oct, modifier=modifier, metal_ind=metal_ind)
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])
@@ -1708,7 +1748,7 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
 
 
 def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
-                                modifier=False, NumB=False, Zeff=False):
+                                modifier=False, NumB=False, Zeff=False, metal_ind=None):
     """Utility for generating all metal-centered deltametric autocorrelations for a complex
 
     Parameters
@@ -1729,6 +1769,8 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
             Use number of bonds as descriptor property, by default False
         Zeff : bool, optional
             Use Z effective as descriptor property, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate property, by default False
 
     Returns
     -------
@@ -1748,7 +1790,8 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
-        metal_ac = metal_only_deltametric(mol, properties, depth, oct=oct, modifier=modifier)
+        metal_ac = metal_only_deltametric(mol, properties, depth, oct=oct, 
+                                          modifier=modifier, metal_ind=metal_ind)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1762,7 +1805,7 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
 
 
 def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_name=False,
-                                           modifier=False, NumB=False, Zeff=False):
+                                           modifier=False, NumB=False, Zeff=False, metal_ind=None):
     """Utility for generating all metal-centered deltametric autocorrelation derivatives
     for a complex
 
@@ -1784,6 +1827,8 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
             Use number of bonds as descriptor property, by default False
         Zeff : bool, optional
             Use Z effective as descriptor property, by default False
+        metal_ind : bool, optional
+            index of the metal atom to generate property, by default False
 
     Returns
     -------
@@ -1803,7 +1848,8 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
-        metal_ac_der = metal_only_deltametric_derivative(mol, properties, depth, oct=oct, modifier=modifier)
+        metal_ac_der = metal_only_deltametric_derivative(mol, properties, depth, oct=oct, 
+                                                         metal_ind=metal_ind, modifier=modifier)
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])
@@ -1819,14 +1865,16 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
 
 ################## Possibly Needed - ox_ utilities
 
-def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
+def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, 
+                                       oct=True, flag_name=False, metal_ind=None):
     ## oxmodifier - dict, used to modify prop vector (e.g. for adding
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
     ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
-    metal_ox_ac = metal_only_autocorrelation(mol, 'ox_nuclear_charge', depth, oct=oct, modifier=oxmodifier)
+    metal_ox_ac = metal_only_autocorrelation(mol, 'ox_nuclear_charge', depth, oct=oct, 
+                                             modifier=oxmodifier, metal_ind=metal_ind)
     this_colnames = []
     for i in range(0, depth + 1):
         this_colnames.append('O' + '-' + str(i))
@@ -1836,14 +1884,16 @@ def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, oct=True,
     return results_dictionary
 
 
-def generate_metal_ox_autocorrelation_derivatives(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
+def generate_metal_ox_autocorrelation_derivatives(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False,
+                                                  metal_ind=None):
     ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
     ##              {"Fe":2, "Co": 3} etc, normally only 1 metal... 
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = None
     colnames = []
-    metal_ox_ac = metal_only_autocorrelation_derivative(mol, 'ox_nuclear_charge', depth, oct=oct, modifier=oxmodifier)
+    metal_ox_ac = metal_only_autocorrelation_derivative(mol, 'ox_nuclear_charge', depth, oct=oct, 
+                                                        modifier=oxmodifier, metal_ind=metal_ind)
     for i in range(0, depth + 1):
         colnames.append(['d' + 'O' + '-' + str(i) + '/d' + 'O' + str(j) for j in range(0, mol.natoms)])
     result = metal_ox_ac
@@ -1851,14 +1901,16 @@ def generate_metal_ox_autocorrelation_derivatives(oxmodifier, mol, loud, depth=4
     return results_dictionary
 
 
-def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
+def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True,
+                                   flag_name=False, metal_ind=None):
     ## oxmodifier - dict, used to modify prop vector (e.g. for adding
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
     ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
-    metal_ox_ac = metal_only_deltametric(mol, 'ox_nuclear_charge', depth, oct=oct, modifier=oxmodifier)
+    metal_ox_ac = metal_only_deltametric(mol, 'ox_nuclear_charge', depth, oct=oct, 
+                                         metal_ind=metal_ind, modifier=oxmodifier)
     this_colnames = []
     for i in range(0, depth + 1):
         this_colnames.append('O' + '-' + str(i))
@@ -1868,14 +1920,16 @@ def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True, fla
     return results_dictionary
 
 
-def generate_metal_ox_deltametric_derivatives(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
+def generate_metal_ox_deltametric_derivatives(oxmodifier, mol, loud, depth=4, oct=True, 
+                                              flag_name=False, metal_ind = False):
     ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
     ##              {"Fe":2, "Co": 3} etc, normally only 1 metal... 
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
-    metal_ox_ac = metal_only_deltametric_derivative(mol, 'ox_nuclear_charge', depth, oct=oct, modifier=oxmodifier)
+    metal_ox_ac = metal_only_deltametric_derivative(mol, 'ox_nuclear_charge', 
+                                                    depth, oct=oct, modifier=oxmodifier, metal_ind=metal_ind)
     for i in range(0, depth + 1):
         colnames.append(['d' + 'O' + '-' + str(i) + '/d' + 'O' + str(j) for j in range(0, mol.natoms)])
 

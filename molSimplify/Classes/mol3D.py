@@ -992,6 +992,40 @@ class mol3D:
         else:
             return 0
 
+
+    def get_smilesOBmol_charge(self):
+        """
+        Get the charge of a mol3D object through adjusted OBmol hydrogen/smiles conversion
+        Note that currently this function should only be applied to ligands (organic molecules).
+        """
+        # Use this as dummy mol3D class. Shouldn't interfere with other functionality.
+        self.my_mol_trunc = mol3D()
+        nh = len([x for x in self.symvect() if x == 'H']) # Get initial hydrogens count.
+        smi = self.get_smiles(use_mol2=True, canonicalize=True)
+        self.my_mol_trunc.read_smiles(smi, steps=0, ff=False)
+        charge = self.my_mol_trunc.OBMol.GetTotalCharge()
+        formula = self.my_mol_trunc.OBMol.GetFormula()
+        if 'H' in formula:
+            hs_tmp = formula.split('H')[1]
+            nh_obmol=''
+            if len(hs_tmp)>0:
+                if hs_tmp[0].isnumeric():
+                    for x in hs_tmp:
+                        if x.isnumeric():
+                            nh_obmol+=x
+                        else:
+                            break
+                else:
+                    nh_obmol+='1'
+            else:
+                nh_obmol+='1'
+        else:
+            nh_obmol = '0'
+        nh_obmol = int(nh_obmol)
+        charge = charge - nh_obmol + nh
+        return charge
+
+
     def get_octetrule_charge(self, debug=False):
         '''
         Get the octet-rule charge provided a mol3D object with bo_graph (read from CSD mol2 file)
@@ -1024,9 +1058,14 @@ class mol3D:
             try:
                 if sym in ["N", "P", "As", "Sb"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
-                elif sym in ["N", "P", "As", "Sb"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1 and "O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]] and np.sum(self.bo_graph_trunc[ii]) == 4:
+                elif (sym in ["N", "P", "As", "Sb"]) and (np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1) and \
+                     ("O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]]) and \
+                     (np.sum(self.bo_graph_trunc[ii]) == 4):
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
-                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"] and np.sum(self.bo_graph_trunc[ii]) == 6:
+                # Double Bonds == 3, Double bonded atom is O or N, Total BO == 6
+                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and \
+                     (self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"]) and \
+                     np.sum(self.bo_graph_trunc[ii]) == 6:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 4)
                 elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 6)
@@ -4455,12 +4494,13 @@ class mol3D:
         builder.Build(OBMol)
 
         # Force field optimization is done in the specified number of "steps" using the specified "ff" force field
-        forcefield = openbabel.OBForceField.FindForceField(ff)
-        s = forcefield.Setup(OBMol)
-        if s == False:
-            print('FF setup failed')
-        forcefield.ConjugateGradients(steps)
-        forcefield.GetCoordinates(OBMol)
+        if ff:
+            forcefield = openbabel.OBForceField.FindForceField(ff)
+            s = forcefield.Setup(OBMol)
+            if s == False:
+                print('FF setup failed')
+            forcefield.ConjugateGradients(steps)
+            forcefield.GetCoordinates(OBMol)
 
         # mol3D structure
         self.OBMol = OBMol
