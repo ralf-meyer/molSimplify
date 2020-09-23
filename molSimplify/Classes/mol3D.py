@@ -392,6 +392,8 @@ class mol3D:
                 Index of anchor atom.
             d : float
                 Bond distance in angstroms.
+            ff : str
+            	Name of force field to be used from openbabel.
         """    
         self.convert2OBMol()
         OBMol = self.OBMol
