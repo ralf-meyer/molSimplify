@@ -10,7 +10,7 @@ Structure Generation
 
 	@Article {molSimplify,
 	author = {Ioannidis, Efthymios I. and Gani, Terry Z. H. and Kulik, Heather J.},
-	title = {molSimplify: A toolkit for automating discovery in inorganic chemistry},
+	title = {molSimplify: A Toolkit for Automating Discovery in Inorganic Chemistry},
 	journal = {Journal of Computational Chemistry},
 	volume = {37},
 	number = {22},
@@ -47,7 +47,7 @@ If you use the machine learning (ML) models in molSimplify to predict metal-liga
 
 	@Article{Janet2017CS,
 	author = {Janet, Jon Paul and Kulik, Heather J.},
-	title = {Predicting electronic structure properties of transition metal complexes with neural networks",
+	title = {Predicting Electronic Structure Properties of Transition Metal Complexes with Neural Networks",
 	journal = {Chem. Sci.},
 	year = {2017},
 	volume = {8},
@@ -58,7 +58,7 @@ If you use the machine learning (ML) models in molSimplify to predict metal-liga
 	year = {2017},
 	}
 
-If you use the machine learning (ML) models in molSimplify to predict spin spliting energies and/or redox potentials, or RAC descriptors, please cite:
+If you use the machine learning (ML) models in molSimplify to predict spin splitting energies and/or redox potentials, or RAC descriptors, please cite:
 
 ::
 
@@ -73,6 +73,20 @@ If you use the machine learning (ML) models in molSimplify to predict spin split
 	url = {https://doi.org/10.1021/acs.jpca.7b08750},
 	doi = {10.1021/acs.jpca.7b08750},
 	year = {2017},
+	}
+
+::
+	@Article{Janet2019IC,
+	author = {Janet, Jon Paul and Liu, Fang and Nandy, Aditya and Duan, Chenru and Yang, Tzuhsiung and Lin, Sean and Kulik, Heather J.},
+	title = {Designing in the Face of Uncertainty: Exploiting Electronic Structure and Machine Learning Models for Discovery in Inorganic Chemistry},
+	journal = {Inorganic Chemistry},
+	volume = {58},
+	number = {16},
+	pages = {10592-10606},
+	issn = {0020-1669},
+	url = {https://doi.org/10.1021/acs.inorgchem.9b00109},
+	doi = {10.1021/acs.inorgchem.9b00109},
+	year = {2019},
 	}
 
 If you use the machine learning (ML) models in molSimplify to predict the outcomes of your calculations, please cite:
@@ -96,7 +110,7 @@ If you use the machine learning (ML) models in molSimplify to predict the spin-s
 
 ::
 	
-	@Article{Nandy2019ACSCata,
+	@Article{Nandy2019ACSCatal,
 	author = {Nandy, Aditya and Zhu, Jiazhou and Janet, Jon Paul and Duan, Chenru and Getman, Rachel B. and Kulik, Heather J.},
 	title = {Machine Learning Accelerates the Discovery of Design Rules and Exceptions in Stable Metal--Oxo Intermediate Formation},
 	journal = {ACS Catalysis},
