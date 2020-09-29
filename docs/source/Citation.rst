@@ -76,6 +76,7 @@ If you use the machine learning (ML) models in molSimplify to predict spin split
 	}
 
 ::
+
 	@Article{Janet2019IC,
 	author = {Janet, Jon Paul and Liu, Fang and Nandy, Aditya and Duan, Chenru and Yang, Tzuhsiung and Lin, Sean and Kulik, Heather J.},
 	title = {Designing in the Face of Uncertainty: Exploiting Electronic Structure and Machine Learning Models for Discovery in Inorganic Chemistry},
