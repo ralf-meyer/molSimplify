@@ -482,8 +482,7 @@ class mol3D:
         Generally used after openbabel operations, such as FF optimizing a molecule.
         Updates the mol3D as necessary.
         """
-        # initialize again
-        self.initialize()
+        atom3D_list = []
         # get elements dictionary
         elem = globalvars().elementsbynum()
         # loop over atoms
@@ -493,7 +492,9 @@ class mol3D:
             # get atomic symbol
             sym = elem[atom.GetAtomicNum() - 1]
             # add atom to molecule
-            self.addAtom(atom3D(sym, [pos[0], pos[1], pos[2]]))
+            atom3D_list.append(atom3D(sym, pos))
+            # self.addAtom(atom3D(sym, pos))
+        self.atoms = atom3D_list
         # reset metal ID
         self.metal = False
 
