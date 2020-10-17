@@ -4883,8 +4883,6 @@ class mol3D:
 
         """
         
-
-        
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
@@ -4975,13 +4973,15 @@ class mol3D:
         }
         return results
 
-    def get_features(self,lac=True):
+    def get_features(self,lac=True,eq_sym=False):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
         ----------
             lac : bool, optional
                 Use lac for ligand_assign_consistent behavior. Default is True
+            eq_sym: bool, optional
+                Force equatorial plane to have same chemical symbols if possible.
 
         Returns
         -------
@@ -4993,7 +4993,7 @@ class mol3D:
             self.createMolecularGraph()
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral':
-            names,racs = get_descriptor_vector(self,lacRACs=lac)
+            names,racs = get_descriptor_vector(self,lacRACs=lac,eq_sym=eq_sym)
             results = dict(zip(names,racs))
         else:
             raise ValueError(

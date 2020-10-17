@@ -16,7 +16,7 @@ from molSimplify.Classes.globalvars import globalvars
 globs = globalvars()
 
 def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False, \
-    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False):
+    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters
@@ -70,7 +70,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
             ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
                 built_ligand_list = ligand_assign(
-                this_complex, liglist, ligdents, ligcons, loud)
+                this_complex, liglist, ligdents, ligcons, loud, eq_sym_match=eq_sym)
         custom_ligand_dict = {'ax_ligand_list':ax_ligand_list, 'eq_ligand_list':eq_ligand_list,
                                'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
     ## misc descriptors
