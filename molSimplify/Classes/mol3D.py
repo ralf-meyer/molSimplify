@@ -376,7 +376,7 @@ class mol3D:
         for submolidx in submolidxes:
             self.getAtom(submolidx).translate(dR)
 
-    def BCM_opt(self, idx1, idx2, d):
+    def BCM_opt(self, idx1, idx2, d, ff='uff'):
         """Performs bond centric manipulation (same as Avogadro, stretching
         and squeezing bonds). A submolecule is translated along the bond axis 
         connecting it to an anchor atom. Performs force field optimization
@@ -392,19 +392,21 @@ class mol3D:
                 Index of anchor atom.
             d : float
                 Bond distance in angstroms.
+            ff : str
+            	Name of force field to be used from openbabel.
         """    
         self.convert2OBMol()
         OBMol = self.OBMol
-        ff = openbabel.OBForceField.FindForceField('mmff94')
+        forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         constr.AddDistanceConstraint(idx1 + 1, idx2 + 1, d)
-        s = ff.Setup(OBMol, constr)
+        s = forcefield.Setup(OBMol, constr)
         if s is not True:
             print('forcefield setup failed.')
             exit()
         else:
-            ff.SteepestDescent(500)
-            ff.GetCoordinates(OBMol)
+            forcefield.SteepestDescent(500)
+            forcefield.GetCoordinates(OBMol)
         self.OBMol = OBMol
         self.convert2mol3D()
 
@@ -480,8 +482,10 @@ class mol3D:
         Generally used after openbabel operations, such as FF optimizing a molecule.
         Updates the mol3D as necessary.
         """
-        # initialize again
+        original_graph = self.graph
         self.initialize()
+        self.graph = original_graph
+        # atom3D_list = []
         # get elements dictionary
         elem = globalvars().elementsbynum()
         # loop over atoms
@@ -491,7 +495,9 @@ class mol3D:
             # get atomic symbol
             sym = elem[atom.GetAtomicNum() - 1]
             # add atom to molecule
-            self.addAtom(atom3D(sym, [pos[0], pos[1], pos[2]]))
+            # atom3D_list.append(atom3D(sym, pos))
+            self.addAtom(atom3D(sym, pos))
+        # self.atoms = atom3D_list
         # reset metal ID
         self.metal = False
 
@@ -4877,8 +4883,6 @@ class mol3D:
 
         """
         
-
-        
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
@@ -4969,13 +4973,15 @@ class mol3D:
         }
         return results
 
-    def get_features(self,lac=True):
+    def get_features(self,lac=True,eq_sym=False):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
         ----------
             lac : bool, optional
                 Use lac for ligand_assign_consistent behavior. Default is True
+            eq_sym: bool, optional
+                Force equatorial plane to have same chemical symbols if possible.
 
         Returns
         -------
@@ -4987,7 +4993,7 @@ class mol3D:
             self.createMolecularGraph()
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral':
-            names,racs = get_descriptor_vector(self,lacRACs=lac)
+            names,racs = get_descriptor_vector(self,lacRACs=lac,eq_sym=eq_sym)
             results = dict(zip(names,racs))
         else:
             raise ValueError(

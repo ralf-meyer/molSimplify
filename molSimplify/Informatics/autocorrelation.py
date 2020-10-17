@@ -631,7 +631,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         # if not modifier:
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
-            values = globs.amass()[keys][0]
+            values = globs.amass()[keys][-1]
             prop_dict.update({keys: values}) 
         ####### 11/06/2019 -- Adjusted Zeff RACs to not adjust on oxidation state. Confounded with O RACs. #####
         # # else:
