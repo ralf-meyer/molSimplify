@@ -167,7 +167,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     return liglist, ligdents, ligcons
 
 
-def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
+def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sym_match=False):
     """Assign axial and equatorial portions. Deprecated. Use ligand_assign_consistent. For octahedral geometries.
     
     Parameters
@@ -184,6 +184,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             Enable extra printout. Default is False.
         name : bool, optional
             Name ligands to write to XYZ. Default is False. Broken, do not use.
+        eq_sym_match : bool, optional
+            Default is False. Broken, do not use.
 
 
     Returns
