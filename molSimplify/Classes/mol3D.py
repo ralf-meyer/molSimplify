@@ -3428,7 +3428,8 @@ class mol3D:
         flag_match = True
         self.my_mol_trunc = mol3D()
         self.my_mol_trunc.copymol3D(self)
-        self.init_mol_trunc = init_mol
+        self.init_mol_trunc = mol3D()
+        self.init_mol_trunc.copymol3D(init_mol)
         if flag_lbd:  # Also do ligand breakdown for opt geo
             if not check_whole:
                 # Truncate ligands at 4 bonds away from metal to aviod rotational group.
@@ -3439,6 +3440,7 @@ class mol3D:
                 self.init_mol_trunc.createMolecularGraph()
                 self.my_mol_trunc.writexyz("final_trunc.xyz")
                 self.init_mol_trunc.writexyz("init_trunc.xyz")
+            # print("graph: ", self.init_mol_trunc.graph)
             liglist_init, ligdents_init, ligcons_init = ligand_breakdown(
                 self.init_mol_trunc)
             liglist, ligdents, ligcons = ligand_breakdown(self.my_mol_trunc)
@@ -3487,7 +3489,7 @@ class mol3D:
             for ii, ele in enumerate(liglist_init_atom):
                 liginds_init = liglist_init[ii]
                 try:
-                    # if True:
+                # if True:
                     _flag = False
                     for idx, _ele in enumerate(liglist_atom):
                         if set(ele) == set(_ele) and len(ele) == len(_ele):
@@ -3515,11 +3517,12 @@ class mol3D:
                             print('Ligands cannot match!')
                         flag_match = False
                 except:
-                    # else:
-                    print("here2")
+                # else:
+                    print("here2, try, excepted.")
                     print('Ligands cannot match!')
                     flag_match = False
         else:
+            print("catoms for opt and init geo:", set(catoms), set(catoms_init))
             print('Ligands cannot match! (Connecting atoms are different)')
             flag_match = False
         if debug:
@@ -3561,7 +3564,6 @@ class mol3D:
         -------
             dict_lig_distort : dict
                 Dictionary containing rmsd_max and atom_dist_max. 
-        
         """
         from molSimplify.Scripts.oct_check_mols import readfromtxt
         _, _, flag_match = self.match_lig_list(init_mol,
@@ -3573,6 +3575,7 @@ class mol3D:
                                                depth=depth,
                                                check_whole=True,
                                                angle_ref=angle_ref)
+        print("====whole molecule check finishes====")
         liglist, liglist_init, _ = self.match_lig_list(init_mol,
                                                        catoms_arr=catoms_arr,
                                                        flag_loose=flag_loose,
@@ -3829,7 +3832,7 @@ class mol3D:
     def print_geo_dict(self):
         """Print geometry check info after the check.
         """
-        def print_dict(self, _dict):
+        def print_dict(_dict):
             for key, value in list(_dict.items()):
                 print(('%s: ' % key, value))
         print('========Geo_check_results========')
@@ -4920,27 +4923,29 @@ class mol3D:
         }
         return results
 
-    def get_features(self,lac=True):
+    def get_features(self, lac=True, force_generate=False):
         """Get geo-based RAC features for this complex (if octahedral)
-
+​
         Parameters
         ----------
             lac : bool, optional
                 Use lac for ligand_assign_consistent behavior. Default is True
-
+            eq_sym: bool, optional
+                Force equatorial plane to have same chemical symbols if possible.
+​
         Returns
         -------
             results, dict
                 Dictionary of {'RACname':RAC} for all geo-based RACs
         """
+        results = dict()
         from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
         if not len(self.graph):
             self.createMolecularGraph()
         geo_type = self.get_geometry_type()
-        if geo_type['geometry'] == 'octahedral':
-            names,racs = get_descriptor_vector(self,lacRACs=lac)
-            results = dict(zip(names,racs))
+        if geo_type['geometry'] == 'octahedral' or force_generate:
+            names, racs = get_descriptor_vector(self, lacRACs=lac)
+            results = dict(zip(names, racs))
         else:
-            raise ValueError(
-                "Featurization not yet implemented for non-octahedral complexes.")
+            print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
         return results
