@@ -376,7 +376,7 @@ class mol3D:
         for submolidx in submolidxes:
             self.getAtom(submolidx).translate(dR)
 
-    def BCM_opt(self, idx1, idx2, d):
+    def BCM_opt(self, idx1, idx2, d, ff='uff'):
         """Performs bond centric manipulation (same as Avogadro, stretching
         and squeezing bonds). A submolecule is translated along the bond axis 
         connecting it to an anchor atom. Performs force field optimization
@@ -392,19 +392,21 @@ class mol3D:
                 Index of anchor atom.
             d : float
                 Bond distance in angstroms.
+            ff : str
+            	Name of force field to be used from openbabel.
         """    
         self.convert2OBMol()
         OBMol = self.OBMol
-        ff = openbabel.OBForceField.FindForceField('mmff94')
+        forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         constr.AddDistanceConstraint(idx1 + 1, idx2 + 1, d)
-        s = ff.Setup(OBMol, constr)
+        s = forcefield.Setup(OBMol, constr)
         if s is not True:
             print('forcefield setup failed.')
             exit()
         else:
-            ff.SteepestDescent(500)
-            ff.GetCoordinates(OBMol)
+            forcefield.SteepestDescent(500)
+            forcefield.GetCoordinates(OBMol)
         self.OBMol = OBMol
         self.convert2mol3D()
 
@@ -480,8 +482,10 @@ class mol3D:
         Generally used after openbabel operations, such as FF optimizing a molecule.
         Updates the mol3D as necessary.
         """
-        # initialize again
+        original_graph = self.graph
         self.initialize()
+        self.graph = original_graph
+        # atom3D_list = []
         # get elements dictionary
         elem = globalvars().elementsbynum()
         # loop over atoms
@@ -491,7 +495,9 @@ class mol3D:
             # get atomic symbol
             sym = elem[atom.GetAtomicNum() - 1]
             # add atom to molecule
-            self.addAtom(atom3D(sym, [pos[0], pos[1], pos[2]]))
+            # atom3D_list.append(atom3D(sym, pos))
+            self.addAtom(atom3D(sym, pos))
+        # self.atoms = atom3D_list
         # reset metal ID
         self.metal = False
 
@@ -786,7 +792,7 @@ class mol3D:
                         this_bonded_atoms = self.getBondedAtomsOct(i, debug=False,
                                                                    atom_specific_cutoffs=self.use_atom_specific_cutoffs)
                 else:
-                    this_bonded_atoms = self.getBondedAtoms(i, debug=False)
+                    this_bonded_atoms = self.getBondedAtoms(i)
                 for j in index_set:
                     if j in this_bonded_atoms:
                         A[i, j] = 1
@@ -812,6 +818,9 @@ class mol3D:
         if atomIdx >= self.natoms:
             raise Exception('mol3D object cannot delete atom '+str(atomIdx) +
                             ' because it only has '+str(self.natoms)+' atoms!')
+        if self.getAtom(atomIdx).sym == 'X':
+            self.atoms[atomIdx].sym = 'Fe' # Switch to Iron temporarily
+            self.atoms[atomIdx].name = 'Fe'
         if self.bo_dict:
             self.convert2OBMol2()
             save_inds = [x for x in range(self.natoms) if x != atomIdx]
@@ -845,6 +854,10 @@ class mol3D:
                                 ' because it only has '+str(self.natoms)+' atoms!')
         # convert negative indexes to positive indexes
         Alist = [self.natoms+i if i < 0 else i for i in Alist]
+        for atomIdx in Alist:
+            if self.getAtom(atomIdx).sym == 'X':
+                self.atoms[atomIdx].sym = 'Fe' # Switch to Iron temporarily
+                self.atoms[atomIdx].name = 'Fe' 
         if self.bo_dict:
             self.convert2OBMol2()
             save_inds = [x for x in range(self.natoms) if x not in Alist]
@@ -985,6 +998,40 @@ class mol3D:
         else:
             return 0
 
+
+    def get_smilesOBmol_charge(self):
+        """
+        Get the charge of a mol3D object through adjusted OBmol hydrogen/smiles conversion
+        Note that currently this function should only be applied to ligands (organic molecules).
+        """
+        # Use this as dummy mol3D class. Shouldn't interfere with other functionality.
+        self.my_mol_trunc = mol3D()
+        nh = len([x for x in self.symvect() if x == 'H']) # Get initial hydrogens count.
+        smi = self.get_smiles(use_mol2=True, canonicalize=True)
+        self.my_mol_trunc.read_smiles(smi, steps=0, ff=False)
+        charge = self.my_mol_trunc.OBMol.GetTotalCharge()
+        formula = self.my_mol_trunc.OBMol.GetFormula()
+        if 'H' in formula:
+            hs_tmp = formula.split('H')[1]
+            nh_obmol=''
+            if len(hs_tmp)>0:
+                if hs_tmp[0].isnumeric():
+                    for x in hs_tmp:
+                        if x.isnumeric():
+                            nh_obmol+=x
+                        else:
+                            break
+                else:
+                    nh_obmol+='1'
+            else:
+                nh_obmol+='1'
+        else:
+            nh_obmol = '0'
+        nh_obmol = int(nh_obmol)
+        charge = charge - nh_obmol + nh
+        return charge
+
+
     def get_octetrule_charge(self, debug=False):
         '''
         Get the octet-rule charge provided a mol3D object with bo_graph (read from CSD mol2 file)
@@ -1017,9 +1064,14 @@ class mol3D:
             try:
                 if sym in ["N", "P", "As", "Sb"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
-                elif sym in ["N", "P", "As", "Sb"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1 and "O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]] and np.sum(self.bo_graph_trunc[ii]) == 4:
+                elif (sym in ["N", "P", "As", "Sb"]) and (np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1) and \
+                     ("O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]]) and \
+                     (np.sum(self.bo_graph_trunc[ii]) == 4):
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
-                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"] and np.sum(self.bo_graph_trunc[ii]) == 6:
+                # Double Bonds == 3, Double bonded atom is O or N, Total BO == 6
+                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and \
+                     (self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"]) and \
+                     np.sum(self.bo_graph_trunc[ii]) == 6:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 4)
                 elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 6)
@@ -2218,7 +2270,7 @@ class mol3D:
 
         for atom in self.atoms:
             xyz = atom.coords()
-            ss = "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+            ss = "%s \t%f\t%f\t%f" % (atom.sym, xyz[0], xyz[1], xyz[2])
             print(ss)
 
     def returnxyz(self):
@@ -3042,7 +3094,7 @@ class mol3D:
         Parameters
         ----------
             filename : str 
-                Path to XYZ file.
+                Path to mol2 file.
             writestring : bool, optional
                 Flag to write to a string if True or file if False. Default is False.
             ignoreX : bool, optional
@@ -4451,12 +4503,13 @@ class mol3D:
         builder.Build(OBMol)
 
         # Force field optimization is done in the specified number of "steps" using the specified "ff" force field
-        forcefield = openbabel.OBForceField.FindForceField(ff)
-        s = forcefield.Setup(OBMol)
-        if s == False:
-            print('FF setup failed')
-        forcefield.ConjugateGradients(steps)
-        forcefield.GetCoordinates(OBMol)
+        if ff:
+            forcefield = openbabel.OBForceField.FindForceField(ff)
+            s = forcefield.Setup(OBMol)
+            if s == False:
+                print('FF setup failed')
+            forcefield.ConjugateGradients(steps)
+            forcefield.GetCoordinates(OBMol)
 
         # mol3D structure
         self.OBMol = OBMol
@@ -4802,7 +4855,7 @@ class mol3D:
 
     def get_geometry_type(self, dict_check=False, angle_ref=False, num_coord=False,
                           flag_catoms=False, catoms_arr=None, debug=False,
-                          skip=False):
+                          skip=False, transition_metals_only=False):
         """Get the type of the geometry (trigonal planar(3), tetrahedral(4), square planar(4),
         trigonal bipyramidal(5), square pyramidal(5, one-empty-site),
         octahedral(6), pentagonal bipyramidal(7))
@@ -4823,6 +4876,8 @@ class mol3D:
                 Flag for extra printout. Default is False.
             skip : list, optional
                 Geometry checks to skip. Default is False.
+            transition_metals_only : bool, optional
+                Flag for considering more than just transition metals as metals. Default is False.
 
         Returns
         -------
@@ -4830,8 +4885,6 @@ class mol3D:
                 Measurement of deviations from arrays.
 
         """
-        
-
         
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
@@ -4841,8 +4894,8 @@ class mol3D:
         if len(self.graph):  # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
-            elif len(self.findMetal()) == 1:
-                num_coord = len(self.getBondedAtomsSmart(self.findMetal()[0]))
+            elif len(self.findMetal(transition_metals_only=transition_metals_only)) == 1:
+                num_coord = len(self.getBondedAtomsSmart(self.findMetal(transition_metals_only=transition_metals_only)[0]))
             else:
                 raise ValueError('No metal centers exist in this complex.')
         if num_coord is not False:
@@ -4923,7 +4976,7 @@ class mol3D:
         }
         return results
 
-    def get_features(self, lac=True, force_generate=False):
+    def get_features(self, lac=True, force_generate=False, eq_sym=False):
         """Get geo-based RAC features for this complex (if octahedral)
 ​
         Parameters
@@ -4932,7 +4985,9 @@ class mol3D:
                 Use lac for ligand_assign_consistent behavior. Default is True
             eq_sym: bool, optional
                 Force equatorial plane to have same chemical symbols if possible.
-​
+            force_generate: bool, optional
+                Force the generation of features.
+
         Returns
         -------
             results, dict
@@ -4944,7 +4999,7 @@ class mol3D:
             self.createMolecularGraph()
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral' or force_generate:
-            names, racs = get_descriptor_vector(self, lacRACs=lac)
+            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")

@@ -727,6 +727,7 @@ def lig_load(userligand, licores=None):
         else:
             lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
+        lig.convert2mol3D()
         lig.charge = lig.OBMol.GetTotalCharge()
         if 'pi' in dbentry[2]:
             lig.cat = [int(l) for l in dbentry[2][:-1]]

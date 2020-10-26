@@ -51,9 +51,15 @@ class ligand:
             self.mol.bo_dict = save_bo_dict
         self.ext_int_dict = this_ext_int_dict
     
-    def get_lig_mol2(self):
+    def get_lig_mol2(self, transition_metals_only=True, inds=None):
         """Write out ligand mol2 string and molecular graph determinant. 
         Include Metal flagged with Symbol "X" for placeholder status.
+        Parameters
+        ----------
+            transition_metals_only : bool
+                flag only transition metals with findMetal() function.
+            inds : list
+                indicies of metals if passing in multimetal system
 
         Returns
         -------
@@ -65,21 +71,33 @@ class ligand:
         """
         this_mol2 = mol3D()
         this_ext_int_dict = dict()
-        metal_ind = self.master_mol.findMetal()[0]
+        if inds:
+            metal_ind = inds
+        else:
+            metal_ind = self.master_mol.findMetal(transition_metals_only=transition_metals_only)
         this_mol2_inds = self.index_list.copy()
-        this_mol2_inds.append(metal_ind)
+        this_mol2_inds += metal_ind
         this_mol2_inds = sorted(this_mol2_inds)
         # Add the metal with symbol = 'M'
-        for i in this_mol2_inds:
-            if i == metal_ind:
-                atom = self.master_mol.getAtom(metal_ind)
+        new_metal_inds = []
+        for j,i in enumerate(this_mol2_inds):
+            if i in metal_ind:
+                atom = self.master_mol.getAtom(i)
                 atom.mutate('X')
                 this_mol2.addAtom(atom)
+                new_metal_inds.append(j)
             else:
                 this_mol2.addAtom(self.master_mol.getAtom(i))
         if len(self.master_mol.graph): # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
+        ##### Check for multiple metal centers. Save more coordinated one.
+        if len(new_metal_inds) == 2:
+            minds = new_metal_inds
+            metal_cns = [len(this_mol2.getBondedAtomsSmart(x)) for x in minds]
+            delind = minds[np.argmin(metal_cns)]
+            this_mol2.deleteatom(minds[np.argmin(metal_cns)])
+            del this_mol2_inds[delind]
         if self.master_mol.bo_dict:
             save_bo_dict = self.master_mol.get_bo_dict_from_inds(this_mol2_inds)
             this_mol2.bo_dict = save_bo_dict
@@ -149,7 +167,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     return liglist, ligdents, ligcons
 
 
-def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
+def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sym_match=False):
     """Assign axial and equatorial portions. Deprecated. Use ligand_assign_consistent. For octahedral geometries.
     
     Parameters
@@ -166,6 +184,8 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False):
             Enable extra printout. Default is False.
         name : bool, optional
             Name ligands to write to XYZ. Default is False. Broken, do not use.
+        eq_sym_match : bool, optional
+            Default is False. Broken, do not use.
 
 
     Returns

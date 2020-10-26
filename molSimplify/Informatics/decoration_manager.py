@@ -64,6 +64,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         print(('** decoration number ' +str(i)+ ' attaching ' + dec + ' at site '+str(decoration_index[i]) 
     + '**\n'))
         dec,emsg = lig_load(dec,licores)
+        # dec.OBMol.AddHydrogens()
         dec.convert2mol3D() # convert to mol3D
         if args.debug:
             print(i)
@@ -74,14 +75,17 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
             merged_ligand.writexyz('basic.xyz')
         #dec.writexyz('dec' + str(i) + '.xyz')
         Hs = dec.getHsbyIndex(0)
-        if len(Hs) > 0:
+        if len(Hs) > 0 and (not len(dec.cat)):
             dec.deleteatom(Hs[0])
             dec.charge = dec.charge - 1
 
         #dec.writexyz('dec_noH' + str(i) + '.xyz')
-        
-        dec.alignmol(dec.getAtom(0),merged_ligand.getAtom(decoration_index[i]))
-        r1 = dec.getAtom(0).coords()
+        if len(dec.cat) > 0:
+            decind = dec.cat[0]
+        else:
+            decind = 0
+        dec.alignmol(dec.getAtom(decind),merged_ligand.getAtom(decoration_index[i]))
+        r1 = dec.getAtom(decind).coords()
         r2 = dec.centermass() # center of mass
         rrot = r1
         decb = mol3D()
@@ -89,7 +93,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         ####################################
         # center of mass of local environment (to avoid bad placement of bulky ligands)
         auxmol = mol3D()
-        for at in dec.getBondedAtoms(0):
+        for at in dec.getBondedAtoms(decind):
             auxmol.addAtom(dec.getAtom(at))
         if auxmol.natoms > 0:
             r2 = auxmol.centermass() # overwrite global with local centermass
@@ -109,10 +113,10 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         #####################################
         # check for linear molecule
         auxm = mol3D()
-        for at in dec.getBondedAtoms(0):
+        for at in dec.getBondedAtoms(decind):
             auxm.addAtom(dec.getAtom(at))
         if auxm.natoms > 1:
-            r0 = dec.getAtom(0).coords()
+            r0 = dec.getAtom(decind).coords()
             r1 = auxm.getAtom(0).coords()
             r2 = auxm.getAtom(1).coords()
             if checkcolinear(r1,r0,r2):
@@ -122,14 +126,14 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
                 
         ## get the default distance between atoms in question 
         connection_neighbours = merged_ligand.getAtom(merged_ligand.getBondedAtomsnotH(decoration_index[i])[0])
-        new_atom = dec.getAtom(0)
+        new_atom = dec.getAtom(decind)
         target_distance = connection_neighbours.rad + new_atom.rad 
         position_to_place = vecdiff(new_atom.coords(),connection_neighbours.coords())
         old_dist= norm(position_to_place)
         missing = (target_distance - old_dist)/2
         dec.translate([missing*position_to_place[j] for j in [0,1,2]])
         
-        r1 = dec.getAtom(0).coords()
+        r1 = dec.getAtom(decind).coords()
         u = vecdiff(r1,merged_ligand.getAtom(decoration_index[i]).coords())
         dtheta = 2
         optmax = -9999
@@ -163,7 +167,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         row_deleted = BO_mat[decoration_index[i]]
         bonds_to_add  = []
         
-        # find where to put the new bonds
+        # find where to put the new bonds ->>> Issue here.
         for j,els in enumerate(row_deleted):
             if els > 0:
                 # if there is a bond with an atom number
@@ -173,7 +177,10 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
                     bond_partner = j
                 else:
                     bond_partner = j -1
-                bonds_to_add.append((bond_partner,merged_ligand.natoms-1,els))
+                if len(dec.cat) > 0:
+                    bonds_to_add.append((bond_partner,(merged_ligand.natoms-1)+dec.cat[0],els))
+                else:
+                    bonds_to_add.append((bond_partner,merged_ligand.natoms-1,els))
         
         ## perfrom delete
         merged_ligand.deleteatom(decoration_index[i])
