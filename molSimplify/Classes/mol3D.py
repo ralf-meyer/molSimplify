@@ -4978,7 +4978,7 @@ class mol3D:
 
     def get_features(self, lac=True, force_generate=False, eq_sym=False):
         """Get geo-based RAC features for this complex (if octahedral)
-​
+
         Parameters
         ----------
             lac : bool, optional
