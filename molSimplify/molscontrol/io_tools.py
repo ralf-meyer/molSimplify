@@ -6,7 +6,7 @@ import subprocess
 from collections import OrderedDict
 from sklearn.utils.extmath import randomized_svd
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent
+from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign_consistent, ligand_assign
 from molSimplify.Informatics.RACassemble import assemble_connectivity_from_parts
 from molSimplify.Classes.globalvars import dict_oct_check_st
 
@@ -100,8 +100,12 @@ def obtain_jobinfo(xyzfile, frame=-1, txt=False):
     # print(liglist)
     # print(ligdents)
     # print(ligcons)
-    _, _, _, _, _, _, _ax_con, _eq_con, _ = ligand_assign_consistent(init_mol, liglist,
-                                                                     ligdents, ligcons)
+    try:
+        _, _, _, _, _, _, _ax_con, _eq_con, _ = ligand_assign_consistent(init_mol, liglist,
+                                                                         ligdents, ligcons)
+    except:
+        print("bad initial geometry")
+        return False
     print("ax_con: ", _ax_con)
     print("eq_con: ", _eq_con)
     job_info = {}
@@ -142,12 +146,16 @@ def get_geo_metrics(init_mol, job_info, geofile, frame=-1):
     actural_dict_geo = {}
     inspect_dict_geo = {}
     for key in dict_oct_info:
+        if "relative" in key:
+            continue
         val = dict_oct_info[key] if (dict_oct_info[key] != -1) and (dict_oct_info[key] != "lig_mismatch") else 1.20 * \
                                                                                                                dict_oct_check_st[
                                                                                                                    choice][
                                                                                                                    key]
         actural_dict_geo['actural_%s' % key] = val
     for key in dict_oct:
+        if "relative" in key:
+            continue
         inspect_dict_geo['inspect_%s' % key] = dict_oct[key]
     for info in info_list:
         dict_geo_metrics.update({info: locals()[info]})
