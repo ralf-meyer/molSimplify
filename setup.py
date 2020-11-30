@@ -5,7 +5,8 @@ setup(name='molSimplify',
       packages=find_packages(),
       entry_points={
           'console_scripts': ['molsimplify = molSimplify.__main__:main',
-                              'molscontrol = molSimplify.molscontrol.molscontrol:main']
+                              'molscontrol = molSimplify.molscontrol.molscontrol:main',
+                              'jobmanager = molSimplify.job_manager.resub:main']
       },
       package_dir={'molSimplify': 'molSimplify'},
       package_data={
