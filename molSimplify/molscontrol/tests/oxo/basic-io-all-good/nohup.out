@@ -1,146 +1,15 @@
-nohup: ignoring input
-OMP: Info #212: KMP_AFFINITY: decoding x2APIC ids.
-OMP: Info #210: KMP_AFFINITY: Affinity capable, using global cpuid leaf 11 info
-OMP: Info #154: KMP_AFFINITY: Initial OS proc set respected: 0-15
-OMP: Info #156: KMP_AFFINITY: 16 available OS procs
-OMP: Info #157: KMP_AFFINITY: Uniform topology
-OMP: Info #179: KMP_AFFINITY: 2 packages x 4 cores/pkg x 2 threads/core (8 total cores)
-OMP: Info #214: KMP_AFFINITY: OS proc to physical thread map:
-OMP: Info #171: KMP_AFFINITY: OS proc 0 maps to package 0 core 1 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 8 maps to package 0 core 1 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 1 maps to package 0 core 2 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 9 maps to package 0 core 2 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 2 maps to package 0 core 4 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 10 maps to package 0 core 4 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 3 maps to package 0 core 5 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 11 maps to package 0 core 5 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 4 maps to package 1 core 1 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 12 maps to package 1 core 1 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 5 maps to package 1 core 2 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 13 maps to package 1 core 2 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 6 maps to package 1 core 4 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 14 maps to package 1 core 4 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 7 maps to package 1 core 5 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 15 maps to package 1 core 5 thread 1 
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 130603 thread 0 bound to OS proc set 0
-2020-07-26 15:20:24.834379: I tensorflow/core/platform/cpu_feature_guard.cc:145] This TensorFlow binary is optimized with Intel(R) MKL-DNN to use the following CPU instructions in performance critical operations:  SSE4.1 SSE4.2 AVX AVX2 AVX512F FMA
-To enable them in non-MKL-DNN operations, rebuild TensorFlow with the appropriate compiler flags.
-2020-07-26 15:20:24.864847: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2600000000 Hz
-2020-07-26 15:20:24.865021: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x555eae0ae9b0 executing computations on platform Host. Devices:
-2020-07-26 15:20:24.865037: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): <undefined>, <undefined>
-2020-07-26 15:20:24.865182: I tensorflow/core/common_runtime/process_util.cc:115] Creating new thread pool with default inter op setting: 2. Tune using inter_op_parallelism_threads for best performance.
-2020-07-26 15:20:24.944182: W tensorflow/compiler/jit/mark_for_compilation_pass.cc:1412] (One-time warning): Not using XLA:CPU for cluster because envvar TF_XLA_FLAGS=--tf_xla_cpu_global_jit was not set.  If you want XLA:CPU, either set that envvar, or use experimental_jit_scope to enable XLA:CPU.  To confirm that XLA is active, pass --vmodule=xla_compilation_cache=1 (as a proper command-line flag, not via TF_XLA_FLAGS) or set the envvar XLA_FLAGS=--xla_hlo_profile.
-Using TensorFlow backend.
-WARNING:tensorflow:From /home/crduan/miniconda/envs/mols_py36/lib/python3.6/site-packages/tensorflow/python/ops/nn_impl.py:180: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use tf.where in 2.0, which has the same broadcast rule as np.where
-WARNING:tensorflow:From /home/crduan/miniconda/envs/mols_py36/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py:422: The name tf.global_variables is deprecated. Please use tf.compat.v1.global_variables instead.
-
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 130783 thread 1 bound to OS proc set 1
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131034 thread 3 bound to OS proc set 3
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131036 thread 5 bound to OS proc set 5
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131033 thread 2 bound to OS proc set 2
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131035 thread 4 bound to OS proc set 4
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131037 thread 6 bound to OS proc set 6
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131038 thread 7 bound to OS proc set 7
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131039 thread 8 bound to OS proc set 8
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131041 thread 10 bound to OS proc set 10
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131040 thread 9 bound to OS proc set 9
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131042 thread 11 bound to OS proc set 11
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131043 thread 12 bound to OS proc set 12
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131044 thread 13 bound to OS proc set 13
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131045 thread 14 bound to OS proc set 14
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131046 thread 15 bound to OS proc set 15
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131047 thread 16 bound to OS proc set 0
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 130782 thread 17 bound to OS proc set 1
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131297 thread 18 bound to OS proc set 2
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131299 thread 20 bound to OS proc set 4
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131298 thread 19 bound to OS proc set 3
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131300 thread 21 bound to OS proc set 5
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131301 thread 22 bound to OS proc set 6
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131302 thread 23 bound to OS proc set 7
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131303 thread 24 bound to OS proc set 8
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131304 thread 25 bound to OS proc set 9
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131305 thread 26 bound to OS proc set 10
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131306 thread 27 bound to OS proc set 11
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131307 thread 28 bound to OS proc set 12
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131308 thread 29 bound to OS proc set 13
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131309 thread 30 bound to OS proc set 14
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131310 thread 31 bound to OS proc set 15
-OMP: Info #250: KMP_AFFINITY: pid 130603 tid 131311 thread 32 bound to OS proc set 0
-pid:  False
-molscontrol configure file:  configure.json
-ax_con:  [[46], [59]]
-eq_con:  [[2, 13, 6, 10]]
-OMP: Info #212: KMP_AFFINITY: decoding x2APIC ids.
-OMP: Info #210: KMP_AFFINITY: Affinity capable, using global cpuid leaf 11 info
-OMP: Info #154: KMP_AFFINITY: Initial OS proc set respected: 0-15
-OMP: Info #156: KMP_AFFINITY: 16 available OS procs
-OMP: Info #157: KMP_AFFINITY: Uniform topology
-OMP: Info #179: KMP_AFFINITY: 2 packages x 4 cores/pkg x 2 threads/core (8 total cores)
-OMP: Info #214: KMP_AFFINITY: OS proc to physical thread map:
-OMP: Info #171: KMP_AFFINITY: OS proc 0 maps to package 0 core 1 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 8 maps to package 0 core 1 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 1 maps to package 0 core 2 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 9 maps to package 0 core 2 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 2 maps to package 0 core 4 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 10 maps to package 0 core 4 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 3 maps to package 0 core 5 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 11 maps to package 0 core 5 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 4 maps to package 1 core 1 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 12 maps to package 1 core 1 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 5 maps to package 1 core 2 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 13 maps to package 1 core 2 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 6 maps to package 1 core 4 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 14 maps to package 1 core 4 thread 1 
-OMP: Info #171: KMP_AFFINITY: OS proc 7 maps to package 1 core 5 thread 0 
-OMP: Info #171: KMP_AFFINITY: OS proc 15 maps to package 1 core 5 thread 1 
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136235 thread 0 bound to OS proc set 0
-2020-07-26 17:08:22.540632: I tensorflow/core/platform/cpu_feature_guard.cc:145] This TensorFlow binary is optimized with Intel(R) MKL-DNN to use the following CPU instructions in performance critical operations:  SSE4.1 SSE4.2 AVX AVX2 AVX512F FMA
-To enable them in non-MKL-DNN operations, rebuild TensorFlow with the appropriate compiler flags.
-2020-07-26 17:08:22.548544: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2600000000 Hz
-2020-07-26 17:08:22.548683: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x5638309b5a70 executing computations on platform Host. Devices:
-2020-07-26 17:08:22.548697: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): <undefined>, <undefined>
-2020-07-26 17:08:22.548804: I tensorflow/core/common_runtime/process_util.cc:115] Creating new thread pool with default inter op setting: 2. Tune using inter_op_parallelism_threads for best performance.
-2020-07-26 17:08:22.578766: W tensorflow/compiler/jit/mark_for_compilation_pass.cc:1412] (One-time warning): Not using XLA:CPU for cluster because envvar TF_XLA_FLAGS=--tf_xla_cpu_global_jit was not set.  If you want XLA:CPU, either set that envvar, or use experimental_jit_scope to enable XLA:CPU.  To confirm that XLA is active, pass --vmodule=xla_compilation_cache=1 (as a proper command-line flag, not via TF_XLA_FLAGS) or set the envvar XLA_FLAGS=--xla_hlo_profile.
-Using TensorFlow backend.
-WARNING:tensorflow:From /home/crduan/miniconda/envs/mols_py36/lib/python3.6/site-packages/tensorflow/python/ops/nn_impl.py:180: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use tf.where in 2.0, which has the same broadcast rule as np.where
-WARNING:tensorflow:From /home/crduan/miniconda/envs/mols_py36/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py:422: The name tf.global_variables is deprecated. Please use tf.compat.v1.global_variables instead.
-
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136332 thread 1 bound to OS proc set 1
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136335 thread 2 bound to OS proc set 2
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136338 thread 5 bound to OS proc set 5
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136337 thread 4 bound to OS proc set 4
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136336 thread 3 bound to OS proc set 3
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136339 thread 6 bound to OS proc set 6
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136340 thread 7 bound to OS proc set 7
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136341 thread 8 bound to OS proc set 8
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136342 thread 9 bound to OS proc set 9
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136344 thread 11 bound to OS proc set 11
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136343 thread 10 bound to OS proc set 10
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136345 thread 12 bound to OS proc set 12
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136346 thread 13 bound to OS proc set 13
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136347 thread 14 bound to OS proc set 14
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136348 thread 15 bound to OS proc set 15
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136349 thread 16 bound to OS proc set 0
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136333 thread 17 bound to OS proc set 1
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136350 thread 18 bound to OS proc set 2
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136351 thread 19 bound to OS proc set 3
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136352 thread 20 bound to OS proc set 4
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136353 thread 21 bound to OS proc set 5
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136354 thread 22 bound to OS proc set 6
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136355 thread 23 bound to OS proc set 7
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136356 thread 24 bound to OS proc set 8
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136357 thread 25 bound to OS proc set 9
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136358 thread 26 bound to OS proc set 10
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136359 thread 27 bound to OS proc set 11
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136360 thread 28 bound to OS proc set 12
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136361 thread 29 bound to OS proc set 13
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136362 thread 30 bound to OS proc set 14
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136363 thread 31 bound to OS proc set 15
-OMP: Info #250: KMP_AFFINITY: pid 136235 tid 136364 thread 32 bound to OS proc set 0
+2020-11-12 10:39:23.004925: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcudart.so.10.1
+2020-11-12 10:39:27.240826: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcuda.so.1
+2020-11-12 10:39:27.240867: E tensorflow/stream_executor/cuda/cuda_driver.cc:314] failed call to cuInit: UNKNOWN ERROR (-1)
+2020-11-12 10:39:27.240906: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (gibraltar-53): /proc/driver/nvidia/version does not exist
+2020-11-12 10:39:27.241118: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN)to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2020-11-12 10:39:27.250725: I tensorflow/core/platform/profile_utils/cpu_utils.cc:104] CPU Frequency: 2300000000 Hz
+2020-11-12 10:39:27.252797: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x55ce63956b70 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2020-11-12 10:39:27.252819: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+WARNING:tensorflow:5 out of the last 5 calls to <function Model.make_predict_function.<locals>.predict_function at 0x7f4cac4676a8> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has experimental_relax_shapes=True option that relaxes argument shapes that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/tutorials/customization/performance#python_or_tensor_args and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
+WARNING:tensorflow:6 out of the last 6 calls to <function Model.make_predict_function.<locals>.predict_function at 0x7f4cac42f730> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has experimental_relax_shapes=True option that relaxes argument shapes that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/tutorials/customization/performance#python_or_tensor_args and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
+WARNING:tensorflow:7 out of the last 7 calls to <function Model.make_predict_function.<locals>.predict_function at 0x7f4cac461ae8> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has experimental_relax_shapes=True option that relaxes argument shapes that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/tutorials/customization/performance#python_or_tensor_args and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
 pid:  False
 molscontrol configure file:  configure.json
 ax_con:  [[46], [59]]
