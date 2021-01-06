@@ -5,11 +5,13 @@ import numpy as np
 import shutil
 import time
 import sys
+import json
 import molSimplify.job_manager.tools as tools
 import molSimplify.job_manager.moltools as moltools
 import molSimplify.job_manager.recovery as recovery
 import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.job_manager.classes import resub_history
+from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
 
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
@@ -281,44 +283,64 @@ def resub(directory='in place'):
     return int(number_resubmitted), int(len(completeness['Active'])), hit_queue_limit
 
 
+def resub_psi4(psi4_config):
+    basedir = os.getcwd()
+    for path in os.listdir(basedir):
+        if os.path.isdir(basedir + "/" + path):
+            print("at: ", basedir + "/" + path)
+            os.chdir(basedir + "/" + path)
+            with open("psi4_config.json", "w") as fo:
+                json.dump(psi4_config, fo)
+            write_jobscript(psi4_config)
+            os.chdir(basedir)
+            run_bash(cmd="qsub jobscript.sh",
+                     basedir=basedir,
+                     rundir=basedir + "/" + path)
+            time.sleep(3)
+
+
 def main():
     counter = 0
-    while True:
+    configure_dict = manager_io.read_configure('in place', None)
+    print("configure_dict: ", configure_dict)
+    if not configure_dict["run_psi4"]:
+        while True:
+            print('**********************************')
+            print("****** Assessing Job Status ******")
+            print('**********************************')
+            time1 = time.time()
+            fil = open('complete', 'w')
+            fil.write('Active')
+            fil.close()
+
+            number_resubmitted, number_active, hit_queue_limit = resub()
+
+            print('**********************************')
+            print(("******** " + str(number_resubmitted) + " Jobs Submitted ********"))
+            print('**********************************')
+
+            print(('job cycle took: ' + str(time.time() - time1)))
+            print(('sleeping for: ' + str(configure_dict['sleep'])))
+            sys.stdout.flush()
+            time.sleep(configure_dict[
+                           'sleep'])  # sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
+
+            # Terminate the script if it is no longer submitting jobs
+            if number_resubmitted == 0 and number_active == 0 and not hit_queue_limit:
+                counter += 1
+            else:
+                counter = 0
+            if counter >= 3:
+                break
+
         print('**********************************')
-        print("****** Assessing Job Status ******")
+        print("****** Normal Terminatation ******")
         print('**********************************')
-        time1 = time.time()
         fil = open('complete', 'w')
-        fil.write('Active')
+        fil.write('True')
         fil.close()
-
-        number_resubmitted, number_active, hit_queue_limit = resub()
-
-        print('**********************************')
-        print(("******** " + str(number_resubmitted) + " Jobs Submitted ********"))
-        print('**********************************')
-
-        print(('job cycle took: ' + str(time.time() - time1)))
-        configure_dict = manager_io.read_configure('in place', None)
-        print(('sleeping for: ' + str(configure_dict['sleep'])))
-        sys.stdout.flush()
-        time.sleep(configure_dict[
-                       'sleep'])  # sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
-
-        # Terminate the script if it is no longer submitting jobs
-        if number_resubmitted == 0 and number_active == 0 and not hit_queue_limit:
-            counter += 1
-        else:
-            counter = 0
-        if counter >= 3:
-            break
-
-    print('**********************************')
-    print("****** Normal Terminatation ******")
-    print('**********************************')
-    fil = open('complete', 'w')
-    fil.write('True')
-    fil.close()
+    else:
+        resub_psi4(configure_dict["psi4_config"])
 
 
 if __name__ == '__main__':
