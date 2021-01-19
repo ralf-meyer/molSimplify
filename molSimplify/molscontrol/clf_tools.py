@@ -1,7 +1,9 @@
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 from keras import backend as K
+import tensorflow as tf
 from sklearn.neighbors import BallTree
+from keras import Model
 
 """
 tools for ML models.
@@ -10,9 +12,13 @@ tools for ML models.
 
 def get_layer_outputs(model, layer_index, input,
                       training_flag=False):
-    get_outputs = K.function([model.layers[0].input, K.learning_phase()],
-                             [model.layers[layer_index].output])
-    nn_outputs = get_outputs([input, training_flag])[0]
+    if not tf.__version__ >= '2.0.0':
+        get_outputs = K.function([model.layers[0].input, K.learning_phase()],
+                                 [model.layers[layer_index].output])
+        nn_outputs = get_outputs([input, training_flag])[0]
+    else:
+        partial_model = Model(model.inputs, model.layers[layer_index].output)
+        nn_outputs = partial_model([input], training= training_flag).numpy()  # runs the model in training mode
     return nn_outputs
 
 

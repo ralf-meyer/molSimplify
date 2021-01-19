@@ -1138,14 +1138,12 @@ def prep_general_sp(path, general_config):
             Path to the output file of a finished job.
         general_config : dict
             Dictionary of {index: {config}}. Should have single point configurations.
-       
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts for general single point jobs.
-            
     """
-
     # ----sanity check and set up input config---
     allowed_keys = ["type", "functional", "solvent"]
     default = {"type": "energy", "functional": "b3lyp", "solvent": False}

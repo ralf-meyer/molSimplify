@@ -3627,7 +3627,7 @@ class mol3D:
                                                depth=depth,
                                                check_whole=True,
                                                angle_ref=angle_ref)
-        print("====whole molecule check finishes====")
+        # print("====whole molecule check finishes====")
         liglist, liglist_init, _ = self.match_lig_list(init_mol,
                                                        catoms_arr=catoms_arr,
                                                        flag_loose=flag_loose,

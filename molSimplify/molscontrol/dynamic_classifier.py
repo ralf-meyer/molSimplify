@@ -81,7 +81,7 @@ class dft_control:
                  pid=False):
         self.step_now = -1
         self.mode = mode
-        self.mode_allowed = ["terachem", "geo"]
+        self.mode_allowed = ["terachem", "geo", "oxo"]
         self.step_decisions = [2, 5, 10, 15, 20, 30, 40]
         self.scrpath = scrpath
         self.initxyzfile = initxyzfile
@@ -159,10 +159,14 @@ class dft_control:
                 20: 6.40, 30: 10.44, 40: 9.42
             },
             "oxo": {
-                2: 16.849507096962554, 5: 16.78999692643532,
-                10: 13.038236447952874, 15: 15.220167508748105,
-                20: 13.307740470145665, 30: 28.4607208917763,
-                40: 30.630578431391257},
+                2: 20.563481588788495,
+                5: 16.839565509481957,
+                10: 15.231886708072244,
+                15: 18.282258231748944,
+                20: 16.216676625831397,
+                30: 34.069884702587714,
+                40: 30.742078737505988
+                },
             "custom": {}
         }
         self.files_track = {
@@ -352,7 +356,8 @@ class dft_control:
         # self.feature_mat = scipy.misc.imresize(self.feature_mat[0], (step_chosen + 1, self.feature_mat.shape[-1]),
         #                                        mode='F', interp='nearest')
         self.feature_mat = skitransform.resize(self.feature_mat,
-                                               output_shape=(1, step_chosen + 1, self.feature_mat.shape[-1]),
+                                               output_shape=(
+                                                   1, step_chosen + 1, self.feature_mat.shape[-1]),
                                                order=3)
         # self.feature_mat = self.feature_mat.reshape(
         #     1, step_chosen + 1, self.feature_mat.shape[-1])
