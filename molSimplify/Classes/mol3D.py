@@ -4976,7 +4976,7 @@ class mol3D:
         }
         return results
 
-    def get_features(self, lac=True, force_generate=False, eq_sym=False):
+    def get_features(self, lac=True, force_generate=False, eq_sym=False, use_dist=False):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
@@ -4999,7 +4999,7 @@ class mol3D:
             self.createMolecularGraph()
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral' or force_generate:
-            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym)
+            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")

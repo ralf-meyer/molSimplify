@@ -357,7 +357,8 @@ def read_configure(home_directory, outfile_path):
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
     ss_cutoff, hard_job_limit, use_molscontrol, general_sp = False, False, False, False
-    dissociated_ligand_charges,dissociated_ligand_spinmults = {},{}
+    run_psi4, psi4_config = False, {}
+    dissociated_ligand_charges,dissociated_ligand_spinmults = {}, {}
     for configure in [home_configure, local_configure]:
         for line in configure:
             if 'max_jobs' in line.split(':'):
@@ -394,11 +395,24 @@ def read_configure(home_directory, outfile_path):
             if "use_molscontrol" in line.split(':'):
                 use_molscontrol = bool(int(line.split(":")[-1]))
             if "general_sp" in line.split(':'):
+                print("general SP jobs activated.")
                 localpath = line.split(":")[-1].replace(" ", "")
                 if os.path.isfile(localpath):
                     with open(os.getcwd() + "/" + localpath, "r") as f:
                         try:
                             general_sp = json.load(f)
+                        except:
+                            raise ValueError("%s is not a valid json file." % localpath)
+                else:
+                    raise ValueError("%s does not exits." % localpath)
+            if "run_psi4" in line.split(':'):
+                print("Psi4 jobs activated.")
+                run_psi4 = True
+                localpath = line.split(":")[-1].replace(" ", "")
+                if os.path.isfile(localpath):
+                    with open(os.getcwd() + "/" + localpath, "r") as f:
+                        try:
+                            psi4_config = json.load(f)
                         except:
                             raise ValueError("%s is not a valid json file." % localpath)
                 else:
@@ -430,7 +444,8 @@ def read_configure(home_directory, outfile_path):
             'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit,
             'dissociated_ligand_spinmults': dissociated_ligand_spinmults,
             'dissociated_ligand_charges': dissociated_ligand_charges,
-            "use_molscontrol": use_molscontrol, "general_sp": general_sp}
+            "use_molscontrol": use_molscontrol, "general_sp": general_sp,
+            "run_psi4": run_psi4, "psi4_config": psi4_config}
 
 
 def read_charges(PATH):
