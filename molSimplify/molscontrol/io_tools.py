@@ -213,6 +213,8 @@ def get_bond_order(bofile, job_info, num_sv=4, frame=-1):
     for sv in range(num_sv):
         dict_bondorder.update({'bo_offsv%d' % sv: _sigma[sv]})
     for catom, vals in list(dict_patterns.items()):
+        if catom == metal_ind:
+            catom = 0
         dict_bondorder.update({'bo_%d' % catom: bo_mat[vals[0], vals[1]]})
     dict_bondorder = symmetricalize_dict(job_info, feature_dict=dict_bondorder)
     return dict_bondorder
@@ -249,6 +251,8 @@ def get_gradient(gradfile, job_info, num_sv=3, frame=-1):
     for sv in range(num_sv):
         dict_gradient.update({'grad_sv%d' % sv: sigma[sv]})
     for catom in catoms:
+        if catom == metal_ind:
+            catom = 0
         dict_gradient.update({'grad_%d' % catom: np.linalg.norm(grad_mat[catom, :])})
     max_norm = 0
     for ii in range(natoms):
@@ -293,6 +297,8 @@ def get_mullcharge(chargefile, job_info, frame=-1):
         ll = line.split()
         atom_ind = int(ll[0]) - 1
         if atom_ind in catoms:
+            if atom_ind == metal_ind:
+                atom_ind = 0
             if not "nan" in ll[-1]:
                 dict_mullcharge.update({'charge_%d' % atom_ind: float(ll[-1])})
             else:
