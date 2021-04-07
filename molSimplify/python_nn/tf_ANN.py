@@ -20,6 +20,7 @@ from keras import backend as K
 from keras.models import model_from_json, load_model
 from keras.optimizers import Adam
 from pkg_resources import resource_filename, Requirement
+import tensorflow as tf
 
 from molSimplify.python_nn.clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
 
@@ -512,9 +513,13 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
             print(('LOADED MODEL HAS ' + str(
                 len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
                 len(loaded_model.layers) - 1) + ' layers'))
-        get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
-                                 [loaded_model.layers[len(loaded_model.layers) - 2].output])
-        latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
+        if not tf.__version__ >= '2.0.0':
+            get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                                     [loaded_model.layers[len(loaded_model.layers) - 2].output])
+            latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
+        else:
+            latent_space_vector = get_layer_outputs(loaded_model, len(loaded_model.layers) - 2, 
+                                                    excitation, training_flag=False)
         if debug:
             print('calling ANN model...')
     else:
@@ -599,8 +604,6 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
         print(('loaded model has  ' + str(
             len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
             len(loaded_model.layers) - 1) + ' layers'))
-    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
-                             [loaded_model.layers[len(loaded_model.layers) - 2].output])
     norm_train_mat = []
     for i, row in enumerate(train_mat):
         row = np.array(row)
@@ -608,9 +611,14 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
         norm_train_mat.append(scaled_excitation)
     norm_train_mat = np.squeeze(np.array(norm_train_mat))
     loaded_model = load_keras_ann(predictor)
-    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+    if not tf.__version__ >= '2.0.0':
+        get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
                                  [loaded_model.layers[len(loaded_model.layers) - 2].output])
-    latent_space_train = np.squeeze(np.array(get_outputs([norm_train_mat, 0])))
+        latent_space_train = np.squeeze(np.array(get_outputs([norm_train_mat, 0])))
+    else:
+        latent_space_train = get_layer_outputs(loaded_model, len(loaded_model.layers) - 2,
+                                               norm_train_mat, training_flag=False)
+        latent_space_train = np.squeeze(np.array(latent_space_train))
     dist_array = np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_vector)),axis=1)
     # train_dist_array =  np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_train)),axis=1)
     from scipy.spatial import distance_matrix
@@ -645,12 +653,17 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
         print(('loaded model has  ' + str(
             len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(
             len(loaded_model.layers) - 1) + ' layers'))
-    get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
-                             [loaded_model.layers[len(loaded_model.layers) - 2].output])
+    if not tf.__version__ >= '2.0.0':
+        get_outputs = K.function([loaded_model.layers[0].input, K.learning_phase()],
+                                 [loaded_model.layers[len(loaded_model.layers) - 2].output])
     for i, rows in enumerate(train_mat):
         scaled_row = np.squeeze(
             data_normalize(rows, train_mean_x.T, train_var_x.T, debug = debug))  # Normalizing the row before finding the distance
-        latent_train_row = get_outputs([np.array([scaled_row]), 0])
+        if not tf.__version__ >= '2.0.0':
+            latent_train_row = get_outputs([np.array([scaled_row]), 0])
+        else:
+            latent_train_row = get_layer_outputs(loaded_model, len(loaded_model.layers) - 2,
+                                                 [np.array([scaled_row])], training_flag=False)
         this_dist = np.linalg.norm(np.subtract(np.squeeze(latent_train_row), np.squeeze(latent_space_vector)))
         if this_dist < min_dist:
             min_dist = this_dist
