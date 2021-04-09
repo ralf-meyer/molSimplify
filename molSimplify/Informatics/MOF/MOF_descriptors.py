@@ -111,8 +111,8 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'D_func','all')
                     # print('4',len(descriptor_names),len(descriptors))
                 else:
-                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list(numpy.zeros(int(6*(depth + 1)))),'func','all')
-                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list(numpy.zeros(int(6*(depth + 1)))),'D_func','all')
+                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list([numpy.zeros(int(6*(depth + 1)))]),'func','all')
+                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list([numpy.zeros(int(6*(depth + 1)))]),'D_func','all')
                     # print('5b',len(descriptor_names),len(descriptors))
                 for val in descriptors:
                     if not (type(val) == float or isinstance(val, numpy.float64)):
@@ -290,6 +290,8 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
 
     n_components, labels_components = sparse.csgraph.connected_components(csgraph=adj_matrix, directed=False, return_labels=True)
     metal_list = set([at for at in molcif.findMetal(transition_metals_only=False)])
+    # print('##### METAL LIST', metal_list, [molcif.getAtom(val).symbol() for val in list(metal_list)])
+    # print('##### METAL LIST', metal_list, [val.symbol() for val in molcif.atoms])
     if not len(metal_list) > 0:
         full_names = [0]
         full_descriptors = [0]
@@ -320,6 +322,8 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     """""""""
     SBUlist = set() 
     metal_list = set([at for at in molcif.findMetal(transition_metals_only=False)])
+    # print('##### METAL LIST2', metal_list, [molcif.getAtom(val).symbol() for val in list(metal_list)])
+    # print('##### all LIST2', metal_list, [val.symbol() for val in molcif.atoms])
     [SBUlist.update(set([metal])) for metal in molcif.findMetal(transition_metals_only=False)] #Remove all metals as part of the SBU
     [SBUlist.update(set(molcif.getBondedAtomsSmart(metal))) for metal in molcif.findMetal(transition_metals_only=False)]
     removelist = set()
@@ -494,11 +498,13 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     """""""""
     if len(linker_subgraphlist)>=1: #Featurize cases that did not fail
         try:
+        # if True:
             descriptor_names, descriptors, lc_descriptor_names, lc_descriptors = make_MOF_SBU_RACs(SBU_list, SBU_subgraphlist, molcif, depth, name , cell_v,anc_atoms, sbupath, connections_list, connections_subgraphlist)
             lig_descriptor_names, lig_descriptors = make_MOF_linker_RACs(linker_list, linker_subgraphlist, molcif, depth, name, cell_v, linkerpath)
             full_names = descriptor_names+lig_descriptor_names+lc_descriptor_names #+ ECFP_names
             full_descriptors = list(descriptors)+list(lig_descriptors)+list(lc_descriptors)
             print(len(full_names),len(full_descriptors))
+        # else:
         except:
             full_names = [0]
             full_descriptors = [0]
@@ -518,11 +524,13 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
 
 ##### Example of usage over a set of cif files.
 # featurization_list = []
-# for cif_file in os.listdir('<your base directory here>/cif/'):
+# import sys
+# featurization_directory = sys.argv[1]
+# for cif_file in os.listdir(featurization_directory+'/cif/'):
 #     #### This first part gets the primitive cells ####
-#     get_primitive('<your base directory here>/cif/'+cif_file, '<your base directory here>/primitive/'+cif_file)
-#     full_names, full_descriptors = get_MOF_descriptors('<your base directory here>/primitive/'+cif_file,3,path='<your base directory here>/structures/',
-#         xyzpath='<your base directory here>/structures/xyz/'+cif_file.replace('cif','xyz'))
+#     get_primitive(featurization_directory+'/cif/'+cif_file, featurization_directory+'/primitive/'+cif_file)
+#     full_names, full_descriptors = get_MOF_descriptors(featurization_directory+'/primitive/'+cif_file,3,path=featurization_directory+'/structures/',
+#         xyzpath=featurization_directory+'/structures/xyz/'+cif_file.replace('cif','xyz'))
 #     full_names.append('filename')
 #     full_descriptors.append(cif_file)
 #     featurization = dict(zip(full_names, full_descriptors))
