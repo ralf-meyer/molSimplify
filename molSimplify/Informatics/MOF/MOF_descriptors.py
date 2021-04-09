@@ -529,14 +529,11 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
 # for cif_file in os.listdir(featurization_directory+'/cif/'):
 #     #### This first part gets the primitive cells ####
 #     get_primitive(featurization_directory+'/cif/'+cif_file, featurization_directory+'/primitive/'+cif_file)
-#     full_names, full_descriptors = get_MOF_descriptors(featurization_directory+'/primitive/'+cif_file,3,path=featurization_directory+'/structures/',
-#         xyzpath=featurization_directory+'/structures/xyz/'+cif_file.replace('cif','xyz'))
+#     full_names, full_descriptors = get_MOF_descriptors(featurization_directory+'/primitive/'+cif_file,3,path=featurization_directory+'/',
+#         xyzpath=featurization_directory+'/xyz/'+cif_file.replace('cif','xyz'))
 #     full_names.append('filename')
 #     full_descriptors.append(cif_file)
 #     featurization = dict(zip(full_names, full_descriptors))
 #     featurization_list.append(featurization)
 # df = pd.DataFrame(featurization_list) 
-# df = pd.DataFrame(featurization_list) 
-# keep = [val for val in df.columns.values if ('mc' in val) or ('lc' in val) or ('f-lig' in val) or ('func') in val]
-# df = df[['filename']+keep] ### this gets the 156 RACs reported in the paper. SBU Racs are redundant with mc RACs and are not included.
 # df.to_csv('./full_featurization_frame.csv',index=False) 
