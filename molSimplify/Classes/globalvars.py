@@ -75,6 +75,17 @@ vdwrad = {'H': 1.2, 'He': 1.43, 'Li': 2.12, 'Be': 1.98, 'B': 1.91,
           'Np': 2.82, 'Pu': 2.81, 'Am': 2.83, 'Cm': 3.05, 'Bk': 3.4,
           'Cf': 3.05, 'Es': 2.7 }
 
+# Bondi van der Waals radii for elements
+# From: doi:10.1021/j100881a503
+# Accessed: http://www.knowledgedoor.com/2/elements_handbook/bondi_van_der_waals_radius.html 4/8/2021
+bondivdw = {'Ar': 1.88, 'As': 1.85, 'Br': 1.85, 'Cd': 1.62, 'C': 1.70,
+            'Cl': 1.75, 'Cu': 1.4, 'F': 1.47, 'Ga': 1.87, 'Au': 1.66,
+            'He': 1.40, 'H': 1.20, 'In': 1.93, 'I': 1.98, 'Kr': 2.02,
+            'Pb': 2.02, 'Li': 1.82, 'Mg': 1.73, 'Hg': 1.70, 'Ne': 1.54,
+            'Ni': 1.63, 'N': 1.55, 'O': 1.52, 'Pd': 1.63, 'P': 1.80, 'Pt': 1.7,
+            'K': 2.75, 'Se': 1.90, 'Si': 2.10, 'Ag': 1.72, 'Na': 2.27, 'S': 1.80,
+            'Te': 2.06, 'Tl': 1.96, 'Sn': 1.96, 'U': 1.86, 'Xe': 2.16, 'Zn': 1.39}  
+
 # Period definitions for all element symbols
 # Data from https://en.wikipedia.org/wiki/Group_(periodic_table) (last accessed Sept. 12th 2019)
 
@@ -160,16 +171,17 @@ groups_dict = {'group_1': group_1, 'group_2': group_2, 'group_3': group_3,
 # Metals (includes alkali, alkaline earth, and transition metals)
 alkali_and_alkaline_earth = ['Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
     'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
-    'Al', 'al', 'AL', 'aluminum', 'aluminium',
     'K', 'k', 'potassium', 'Ca', 'ca', 'CA', 'calcium',
     'Rb', 'rb', 'RB', 'rubidium', 'Sr', 'sr', 'SR', 'strontium',
     'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
     'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium']
 
-heavy_metals_and_metalloids = ['Ga', 'ga', 'GA', 'gallium',
+heavy_metals_and_metalloids = [ 'Al', 'al', 'AL', 'aluminum', 'aluminium','Si', 'si', 'SI', 'silicon',
+                                'Ga', 'ga', 'GA', 'gallium', 'Ge', 'ge', 'GE', 'germanium', 'As','as','AS','arsenic',
                                 'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
+                                'Sb','sb','SB','antimony','Te','te','TE','tellurium'
                                 'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead',
-                                'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium',
+                                'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium', 'At','at','AT','astatine',
                                 'La', 'la', 'LA', 'lanthanum',
                                 'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
                                 'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
@@ -186,48 +198,24 @@ heavy_metals_and_metalloids = ['Ga', 'ga', 'GA', 'gallium',
                                 'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
                                 'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
                                 'Lr', 'lr', 'LR', 'lawrencium']
-metalslist = [  # 'Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
-    # 'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
-    # 'Al', 'al', 'AL', 'aluminum', 'aluminium',
-    # 'K', 'k', 'potassium', 'Ca', 'ca', 'CA', 'calcium',
-    # 'Rb', 'rb', 'RB', 'rubidium', 'Sr', 'sr', 'SR', 'strontium',
-    # 'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
-    # 'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium',
+
+### The metals list below contains only TMs. See metalslist function for logic.
+metalslist = [
     'Sc', 'sc', 'SC', 'scandium', 'Ti', 'ti', 'TI', 'titanium',
     'V', 'v', 'vanadium', 'Cr', 'cr', 'CR', 'chromium',
     'Mn', 'mn', 'MN', 'manganese', 'Fe', 'fe', 'FE', 'iron',
     'Co', 'co', 'CO', 'cobalt', 'Ni', 'ni', 'NI', 'nickel',
     'Cu', 'cu', 'CU', 'copper', 'Zn', 'zn', 'ZN', 'zinc',
-    # 'Ga', 'ga', 'GA', 'gallium',
     'Y', 'y', 'yttrium', 'Zr', 'zr', 'ZR', 'zirconium',
     'Nb', 'nb', 'NB', 'niobium', 'Mo', 'mo', 'MO', 'molybdenum',
     'Tc', 'tc', 'TC', 'technetium', 'Ru', 'ru', 'RU', 'ruthenium',
     'Rh', 'rh', 'RH', 'rhodium', 'Pd', 'pd', 'PD', 'palladium',
     'Ag', 'ag', 'AG', 'silver', 'Cd', 'cd', 'CD', 'cadmium',
-    # 'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
     'Hf', 'hf', 'HF', 'hafnium', 'Ta', 'ta', 'TA', 'tantalum',
     'W', 'w', 'tungsten', 'Re', 're', 'RE', 'rhenium',
     'Os', 'os', 'OS', 'osmium', 'Ir', 'ir', 'IR', 'iridium',
     'Pt', 'pt', 'PT', 'platinum', 'Au', 'au', 'AU', 'gold',
     'Hg', 'hg', 'HG', 'mercury', 'X',
-    # 'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead',
-    # 'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium',
-    # 'La', 'la', 'LA', 'lanthanum',
-    # 'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
-    # 'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
-    # 'Sm', 'sm', 'SM', 'samarium', 'Eu', 'eu', 'EU', 'europium',
-    # 'Gd', 'gd', 'GD', 'gadolinium', 'Tb', 'tb', 'TB', 'terbium',
-    # 'Dy', 'dy', 'DY', 'dysprosium', 'Ho', 'ho', 'HO', 'holmium',
-    # 'Er', 'er', 'ER', 'erbium', 'Tm', 'tm', 'TM', 'thulium',
-    # 'Yb', 'yb', 'YB', 'ytterbium', 'Lu', 'lu', 'LU', 'lutetium',
-    # 'Ac', 'ac', 'AC', 'actinium', 'Th', 'th', 'TH', 'thorium',
-    # 'Pa', 'pa', 'PA', 'proactinium', 'U', 'u', 'uranium',
-    # 'Np', 'np', 'NP', 'neptunium', 'Pu', 'pu', 'PU', 'plutonium',
-    # 'Am', 'am', 'AM', 'americium', 'Cu', 'cu', 'CU', 'curium',
-    # 'Bk', 'bk', 'BK', 'berkelium', 'Cf', 'cf', 'CF', 'californium',
-    # 'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
-    # 'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
-    # 'Lr', 'lr', 'LR', 'lawrencium'
 ]
 
 metals_conv = {'scandium': 'Sc', 'titanium': 'Ti', 'vanadium': 'V', 'chromium': 'Cr', 'manganese': 'Mn',
@@ -308,7 +296,7 @@ romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4',
 # bondsdict
 bondsdict = {"H": 1, "Li": 1, "Be": 2, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
              "Na": 1, "Mg": 2, "Al": 3, "Si": 4, "P": 3, "S": 2, "Cl": 1,
-             "As": 3, "Se": 2, "Br": 1, "I": 1}
+             "As": 3, "Se": 2, "Br": 1, "I": 1, "He": 2}
 
 # triple bonds dictionry: Defined as 0.5*(double bond dist + triple bond dist)
 # bond lengths are from http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
