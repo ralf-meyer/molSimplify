@@ -71,8 +71,8 @@ def type_convert(structures):
         else:
             raise ValueError('Not Recognized Structure Type Passed')
         outlist.append(mol)
-    elif isinstance(x,mol3D):
-        outlist.append(x)
+    elif isinstance(structures,mol3D):
+        outlist = structures
     else:
         raise ValueError('Not Recognized Structure Type Passed')
     return outlist
