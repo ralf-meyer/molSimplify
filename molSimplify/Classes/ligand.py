@@ -203,12 +203,19 @@ class ligand:
             y_ = np.arange(-radius,radius,gridspec)
             z_ = np.arange(-radius,radius,gridspec)
             grid = np.meshgrid(x_,y_,z_, indexing='ij')
-            combined = np.vstack(map(np.ravel,grid)).T # Flatten meshgrid to nx3
+            mgrid = list(map(np.ravel,grid))
+            combined = np.vstack(mgrid).T # Flatten meshgrid to nx3
             init_coords = np.array([[0,0,0]]) # We have set metal to (0,0,0)
             # Get distance of all gridpoints from (0,0,0) -> Filter out gridpoints further
             init_dists = np.linalg.norm(init_coords[:,None,:]-combined[None,:,:],axis=-1)
             # Get rid of gridpoints further away than radius and metal
             combined = combined[np.where(init_dists[0,:] <= radius)[0]]
+            # Get rid of ligand atoms that won't interact at all
+            met_ds = np.linalg.norm(init_coords[:,None,:]-coords[None,:,:],axis=-1)
+            met_ds = met_ds - radius - radiusvect
+            mfilter = np.where(met_ds[0] < 0)
+            coords = coords[mfilter]
+            radiusvect = radiusvect[mfilter]
             # Calc distance of all remaining atomic coords to all grid points
             ds = np.linalg.norm(coords[:,None,:]-combined[None,:,:],axis=-1)
             # Compare distances to radii of atoms, flag any less than than or equal to the radii as buried
