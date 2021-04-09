@@ -2392,7 +2392,10 @@ class mol3D:
                 if s_line[3] in ["ar"]:
                     bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1.5
                     bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1.5
-                elif s_line[3] in ["un", 'am']:
+                elif s_line[3] in ["am"]:
+                    bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = 1
+                    bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = 1
+                elif s_line[3] in ["un"]:
                     bo_graph[int(s_line[1]) - 1, int(s_line[2]) - 1] = np.nan
                     bo_graph[int(s_line[2]) - 1, int(s_line[1]) - 1] = np.nan
                 else:

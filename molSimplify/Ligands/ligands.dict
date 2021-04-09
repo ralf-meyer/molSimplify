@@ -268,4 +268,5 @@ no-:no-.mol,no-,0,build functionalize small,N,-1
 ns-:ns-.mol,ns-,0,build functionalize small,N,-1
 nch:nch.mol,nch,0,build functionalize small,N,0
 och2:och2.mol,och2,0,build functionalize small,N,0
+hydrogensulfide:hydrogensulfide.mol, hydrogensulfide,0,build functionalize small,N,0
 
