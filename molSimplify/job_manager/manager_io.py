@@ -541,7 +541,7 @@ def write_terachem_input(infile_dictionary):
             'levelshiftvala ' + str(infile['levelshifta']) + '\n',
             'run ' + infile['run_type'] + '\n',
             'scf diis+a\n',
-            'coordinates ' + infile['coordinates'].replace("#", "3") + '\n',
+            'coordinates ' + infile['coordinates'] + '\n',
             'levelshift yes\n',
             'spinmult ' + str(infile['spinmult']) + '\n',
             'scrdir ./scr\n',
