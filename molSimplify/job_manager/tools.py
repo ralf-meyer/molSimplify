@@ -1482,7 +1482,7 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
 
     # Find the hfx resampling values that we're ready to generate
     hfx_values_to_generate = []
-    existing_resampled_values = glob.glob(os.path.join(hfx_path, name + '_*'))
+    existing_resampled_values = glob.glob(glob.escape(os.path.join(hfx_path, name)) + '_*')
     for existing in existing_resampled_values:
         hfx = int(existing.rsplit('_', 1)[1])
         subname = name + '_' + str(hfx)
