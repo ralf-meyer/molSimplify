@@ -25,11 +25,11 @@
 '''
 # fix OB bug: https://github.com/openbabel/openbabel/issues/1983
 import sys, argparse, os, platform, shutil
-
-flags = sys.getdlopenflags()
+if not('win' in sys.platform):
+    flags = sys.getdlopenflags()
 import openbabel
-
-sys.setdlopenflags(flags)
+if not('win' in sys.platform):
+    sys.setdlopenflags(flags)
 
 from .Scripts.inparse import *
 from .Scripts.generator import *
