@@ -7,6 +7,7 @@
 import numpy as np
 from itertools import combinations
 from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.globalvars import bondivdw,vdwrad
 
 
 # Ligand class for postprocessing DFT results by measuring ligand properties
@@ -21,12 +22,49 @@ class ligand:
             List for ligand connection atom indices.
         dent : int
             Denticity of the ligand
+        read_lig : bool, optional
+            str of file or (xyz/mol2 string) of saved ligand, by default False
+    Raises
+    ------
+        ValueError
+        If read_ligand type is unknown.
     """
-    def __init__(self, master_mol, index_list, dent):
-        self.master_mol = master_mol
-        self.index_list = sorted(index_list)
-        self.dent = dent
-        self.ext_int_dict = dict()  # store
+    def __init__(self, master_mol, index_list, dent, read_lig=False):
+        if isinstance(read_lig,str):
+            thismol = mol3D()
+            if 'TRIPOS' in read_lig:
+                thismol.readfrommol2(read_lig,readstring=True)
+            # Xyz filename
+            elif read_lig[-4:] == '.xyz':
+                thismol.readfromxyz(read_lig)
+            # mol2 filename
+            elif read_lig[-5:] == '.mol2':
+                thismol.readfrommol2(read_lig)
+            # checking for number at start of string -> indicates xyz string
+            elif (len(read_lig.split('\n')) > 3) & (read_lig.split('\n')[0].replace(' ','').isnumeric()):
+                thismol.readfromstring(read_lig)
+            # checking for similar file without header
+            elif (len(read_lig.split('\n')[0].split()) == 4) and read_lig.split('\n')[0].split()[0]:
+                thismol.readfromstring(read_lig)
+            else:
+                raise ValueError('Not Recognized Structure Type!')
+            self.master_mol = thismol
+            met = thismol.findMetal()[0] # Pull out metal
+            self.index_list = [x for x in range(thismol.natoms) if x!=met]
+            self.dent = len(thismol.getBondedAtomsSmart(met))
+            self.ext_int_dict = {i:j for i,j in enumerate(self.index_list)}
+            self.mol2string = thismol.writemol2('ligand',writestring=True)
+            self.lig_mol_graph_det = thismol.get_mol_graph_det()
+            self.percent_buried_volume = False
+        else:
+            self.master_mol = master_mol
+            self.index_list = sorted(index_list)
+            self.dent = dent
+            self.ext_int_dict = dict()  # store
+            self.mol2string = False
+            self.lig_mol_graph_det = False
+            self.percent_buried_volume = False
+
 
     def obtain_mol3d(self):
         """Getting the mol3D of the ligand. Deprecated. Map between int and ext indcies. Obtain the ligand from the complex mol3D object.
@@ -70,7 +108,6 @@ class ligand:
         
         """
         this_mol2 = mol3D()
-        this_ext_int_dict = dict()
         if inds:
             metal_ind = inds
         else:
@@ -103,7 +140,92 @@ class ligand:
             this_mol2.bo_dict = save_bo_dict
         lig_mol_graph_det = this_mol2.get_mol_graph_det()
         lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
+        self.mol2string = lig_mol2_string
+        self.lig_mol_graph_det = lig_mol_graph_det
         return lig_mol_graph_det, lig_mol2_string
+
+    def percent_buried_vol(self,
+                    radius=3.5,
+                    gridspec=0.1, 
+                    bondiscale=1.17, 
+                    hydrogens=True 
+                    ):
+        """Calculate the percent buried volume as described in https://doi.org/10.1039/B922984A,
+        and https://chemistry-europe.onlinelibrary.wiley.com/doi/abs/10.1002/ejic.200801160.
+        Bondi VDW radii are used where possible
+
+        Parameters
+        ----------
+        radius : float, optional
+            Radius of sphere around metal center consider in Angstroms, by default 3.5
+            Paper recommends 3.5
+        gridspec : float, optional
+            xyz grid spacing in Angstroms, by default 0.1
+            Paper recommends 0.05 - this is slower
+        bondiscale : float, optional
+            Scale of the bondi vdw radii for ligand atoms, by default 1.17
+            Paper recommends 1.17
+        hydrogens : bool, optional
+            Include hydrogens in percent buried volume, by default True 
+            Paper recommends to not include hydrogens.
+
+        Returns
+        -------
+        percent_buried_volume : float
+            Percentage of the volume of a sphere around the metal that is buried under ligand atoms.
+            Represents bulkiness of the ligand around the metal center.
+        """
+        if not self.mol2string:
+            _,_ = self.get_lig_mol2()
+        thismol = mol3D()
+        thismol.readfrommol2(self.mol2string,readstring=True)
+        # Accounting for hydrogens by default - otherwise deleting.
+        if not hydrogens:
+            thismol.deleteHs()
+        natoms = thismol.natoms
+        # Catch case where just hydrogen ligand
+        if natoms == 1:
+            percent_buried = 0.0
+        else:
+            met = thismol.findMetal()[0]
+            coords = thismol.coordsvect() - thismol.coordsvect()[met] # Center coordinates to the metal
+            syms = [x for i,x in enumerate(thismol.symvect()) if i != met]
+            radvect = []
+            for sym in syms:
+                if sym in bondivdw: # Take in the bondivdw radii reccomeneded in paper
+                    radvect.append(bondivdw[sym]*bondiscale)
+                else: # Else take in Newer definition of vdw radii
+                    radvect.append(vdwrad[sym]*bondiscale)
+            radiusvect = np.array(radvect)
+            inds = np.array([x for x in range(natoms) if x!=met])
+            coords = coords[inds] # Get rid of metal location from coords
+            x_ = np.arange(-radius,radius,gridspec)
+            y_ = np.arange(-radius,radius,gridspec)
+            z_ = np.arange(-radius,radius,gridspec)
+            grid = np.meshgrid(x_,y_,z_, indexing='ij')
+            mgrid = list(map(np.ravel,grid))
+            combined = np.vstack(mgrid).T # Flatten meshgrid to nx3
+            init_coords = np.array([[0,0,0]]) # We have set metal to (0,0,0)
+            # Get distance of all gridpoints from (0,0,0) -> Filter out gridpoints further
+            init_dists = np.linalg.norm(init_coords[:,None,:]-combined[None,:,:],axis=-1)
+            # Get rid of gridpoints further away than radius and metal
+            combined = combined[np.where(init_dists[0,:] <= radius)[0]]
+            # Get rid of ligand atoms that won't interact at all
+            met_ds = np.linalg.norm(init_coords[:,None,:]-coords[None,:,:],axis=-1)
+            met_ds = met_ds - radius - radiusvect
+            mfilter = np.where(met_ds[0] < 0)
+            coords = coords[mfilter]
+            radiusvect = radiusvect[mfilter]
+            # Calc distance of all remaining atomic coords to all grid points
+            ds = np.linalg.norm(coords[:,None,:]-combined[None,:,:],axis=-1)
+            # Compare distances to radii of atoms, flag any less than than or equal to the radii as buried
+            buried = len(np.where(np.any(np.less_equal(ds[:,:],radiusvect[:,None]),axis=0))[0])
+            total = ds.shape[1]
+            # Percent buried volume 
+            percent_buried = float(buried)/total*100
+        self.percent_buried_volume = percent_buried
+        return percent_buried
+
 
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     """Extract axial and equitorial components of a octahedral complex. 

@@ -75,6 +75,17 @@ vdwrad = {'H': 1.2, 'He': 1.43, 'Li': 2.12, 'Be': 1.98, 'B': 1.91,
           'Np': 2.82, 'Pu': 2.81, 'Am': 2.83, 'Cm': 3.05, 'Bk': 3.4,
           'Cf': 3.05, 'Es': 2.7 }
 
+# Bondi van der Waals radii for elements
+# From: doi:10.1021/j100881a503
+# Accessed: http://www.knowledgedoor.com/2/elements_handbook/bondi_van_der_waals_radius.html 4/8/2021
+bondivdw = {'Ar': 1.88, 'As': 1.85, 'Br': 1.85, 'Cd': 1.62, 'C': 1.70,
+            'Cl': 1.75, 'Cu': 1.4, 'F': 1.47, 'Ga': 1.87, 'Au': 1.66,
+            'He': 1.40, 'H': 1.20, 'In': 1.93, 'I': 1.98, 'Kr': 2.02,
+            'Pb': 2.02, 'Li': 1.82, 'Mg': 1.73, 'Hg': 1.70, 'Ne': 1.54,
+            'Ni': 1.63, 'N': 1.55, 'O': 1.52, 'Pd': 1.63, 'P': 1.80, 'Pt': 1.7,
+            'K': 2.75, 'Se': 1.90, 'Si': 2.10, 'Ag': 1.72, 'Na': 2.27, 'S': 1.80,
+            'Te': 2.06, 'Tl': 1.96, 'Sn': 1.96, 'U': 1.86, 'Xe': 2.16, 'Zn': 1.39}  
+
 # Period definitions for all element symbols
 # Data from https://en.wikipedia.org/wiki/Group_(periodic_table) (last accessed Sept. 12th 2019)
 

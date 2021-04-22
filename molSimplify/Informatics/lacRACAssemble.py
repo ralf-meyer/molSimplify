@@ -579,7 +579,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
     elif prop == 'effective_nuclear_charge':  # Uses number of valence electrons
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
-            values = globs.amass()[keys][0]
+            values = globs.amass()[keys][3]
             prop_dict.update({keys: values}) 
     elif prop == 'ox_nuclear_charge':
         if not modifier:

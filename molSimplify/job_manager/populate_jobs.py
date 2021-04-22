@@ -10,29 +10,46 @@ from molSimplify.job_manager.tools import (manager_io)
 
 
 def isCSD(job):
-    iscsd = True
-    for ii in range(6):
-        if not job[ii].isupper():
-            iscsd = False
-            break
-    return iscsd
+    try:
+        iscsd = True
+        for ii in range(6):
+            if not job[ii].isupper():
+                iscsd = False
+                break
+        return iscsd
+    except:
+        return False
 
 
 def call_molsimplify(geodir, job, jobname):
-    liglist = ",".join(job["ligstr"].split("_"))
+    liglist = ",".join(job["ligstr"].split("_")) # can be a single SMILES string, or list of database ligands (e.g. water_water_water_water_water_water)
     tmp_name = str(np.random.randint(10 ** 18))  # assign a temporary name so that the results are findable
+    temp_rundir = os.path.join(os.path.expanduser('~'), 'Runs')
     bash_command = " ".join(["molsimplify ", '-core ' + job["metal"],
-                             '-lig ' + str(liglist), '-ligocc 1,1,1,1,1,1',
-                             '-keepHs yes,yes,yes,yes,yes,yes',
+                             '-lig ' + str(liglist),
                              '-ligloc ' + 'yes', '-calccharge yes',
                              '-spin ' + str(job["spin"]), '-oxstate ' + str(job["ox"]),
                              "-ffoption " + "b", ' -ff UFF',
-                             "-name", tmp_name])
+                             "-name", tmp_name, "-rundir", temp_rundir])
+    if job["ligocc"]: # must be a string, e.g. "6" or "1,1,1,1,1,1"
+        bash_command = " ".join([bash_command, "-ligocc", job["ligocc"]])
+    else:
+        bash_command = " ".join([bash_command, "-ligocc", "1,1,1,1,1,1"])
+    if job["keepHs"]:
+        bash_command = " ".join([bash_command, "-keepHs", job["keepHs"]])
+    else:
+        bash_command = " ".join([bash_command, "-keepHs", 'yes,yes,yes,yes,yes,yes'])
+    if job["smicat"]: # must be a string, e.g. "1"
+        bash_command = " ".join([bash_command, "-smicat", job["smicat"]])
+    if job["skipANN"]:
+        bash_command = " ".join([bash_command, "-skipANN", job["skipANN"]])
     print(("call: ", bash_command))
     bash_command = bash_command.split()
     subprocess.call(bash_command)
 
-    file_name = os.path.join(os.path.expanduser('~'), 'Runs', tmp_name)
+    file_name = os.path.join(temp_rundir, tmp_name)
+    print(("file_name: ", file_name))
+    print(("geodir: ", geodir))
     inner_folder_path = glob.glob(os.path.join(file_name, '*'))[0]
     xyz_path = glob.glob(os.path.join(inner_folder_path, '*.xyz'))[0]
     xyz_name = os.path.split(xyz_path)[-1]
@@ -103,7 +120,7 @@ def generate_fake_results_from_db(rundir, jobname, tmcdoc):
     return outpath
 
 
-def populate_single_job(basedir, job, db):
+def populate_single_job(basedir, job, db, safe_filenames = True):
     geodir = basedir + "/initial_geometry/"
     if not os.path.isdir(geodir):
         os.makedirs(geodir)
@@ -143,11 +160,25 @@ def populate_single_job(basedir, job, db):
     else:
         if not iscsd:
             print("NO db connection! Generate initial geometry from molsimplify...")
-            charge = call_molsimplify(basedir, job, jobname)
+            jobname_safe = jobname.replace("#", "3").replace("(", "[").replace(")", "]")
+            charge = call_molsimplify(geodir, job, jobname_safe) # this used to say rundir for some reason...
         else:
             raise ValueError("Cannot generate initial geometry for CSD complex...")
+
     rundir = basedir + '/' + jobname
-    rundir_p3 = basedir + '/' + jobname.replace("#", "3")
+    try:
+        rundir_p3 = basedir + '/' + jobname_safe
+    except:
+        rundir_p3 = basedir + '/' + jobname.replace('#','3')
+
+    # p3 option
+    if safe_filenames:
+        rundir = rundir_p3
+        try:
+            jobname = jobname_safe
+        except:
+            jobname = jobname.replace('#','3')
+
     populated = True
     if not os.path.isdir(rundir) and not os.path.isdir(rundir_p3) and recover:
         os.makedirs(rundir)
@@ -157,7 +188,7 @@ def populate_single_job(basedir, job, db):
         if not tmcdoc == None:
             outpath = generate_fake_results_from_db(rundir, jobname, tmcdoc)
         else:
-            manager_io.write_input(jobname, charge, int(job["spin"]), run_type='minimize', solvent=False)
+            manager_io.write_input(name=jobname, coordinates=jobname + '.xyz', charge=charge, spinmult=int(job["spin"]), run_type='minimize', solvent=False)
             manager_io.write_jobscript(jobname)
     elif os.path.isdir(rundir) or os.path.isdir(rundir_p3):
         print("folder exist.")
