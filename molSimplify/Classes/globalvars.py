@@ -165,7 +165,7 @@ alkali_and_alkaline_earth = ['Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'ber
     'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
     'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium']
 
-heavy_metals_and_metalloids = [ 'Al', 'al', 'AL', 'aluminum', 'aluminium','Si', 'si', 'SI', 'silicon',
+heavy_metals_and_metalloids = [ 'Al', 'al', 'AL', 'aluminum', 'aluminium',
                                 'Ga', 'ga', 'GA', 'gallium', 'Ge', 'ge', 'GE', 'germanium', 'As','as','AS','arsenic',
                                 'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
                                 'Sb','sb','SB','antimony','Te','te','TE','tellurium'
