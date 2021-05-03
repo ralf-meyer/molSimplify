@@ -89,7 +89,7 @@ class ligand:
             self.mol.bo_dict = save_bo_dict
         self.ext_int_dict = this_ext_int_dict
     
-    def get_lig_mol2(self, transition_metals_only=True, inds=None):
+    def get_lig_mol2(self, transition_metals_only=True, inds=None, include_metal=True):
         """Write out ligand mol2 string and molecular graph determinant. 
         Include Metal flagged with Symbol "X" for placeholder status.
         Parameters
@@ -105,6 +105,8 @@ class ligand:
                 Molecular graph determinant.
             ligand_mol2_string : str
                 Mol2 string for the ligand.
+            catom_indices : list
+                List of catom indices - only returned if include_metal is set to False
         
         """
         this_mol2 = mol3D()
@@ -113,8 +115,15 @@ class ligand:
         else:
             metal_ind = self.master_mol.findMetal(transition_metals_only=transition_metals_only)
         this_mol2_inds = self.index_list.copy()
-        this_mol2_inds += metal_ind
+        if include_metal:
+            this_mol2_inds += metal_ind
         this_mol2_inds = sorted(this_mol2_inds)
+
+        # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
+        catoms_indices = self.master_mol.getBondedAtomsSmart(metal_ind)
+        catom_selector = np.zeros(self.master_mol.natoms)
+        catom_selector[catoms_indices] = 1
+
         # Add the metal with symbol = 'M'
         new_metal_inds = []
         for j,i in enumerate(this_mol2_inds):
@@ -128,13 +137,17 @@ class ligand:
         if len(self.master_mol.graph): # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
+            catom_selector = np.delete(catom_selector, delete_inds)
+            catoms_indices = np.nonzero(catom_selector)[0]
+
         ##### Check for multiple metal centers. Save more coordinated one.
-        if len(new_metal_inds) == 2:
-            minds = new_metal_inds
-            metal_cns = [len(this_mol2.getBondedAtomsSmart(x)) for x in minds]
-            delind = minds[np.argmin(metal_cns)]
-            this_mol2.deleteatom(minds[np.argmin(metal_cns)])
-            del this_mol2_inds[delind]
+        if include_metal:
+            if len(new_metal_inds) == 2:
+                minds = new_metal_inds
+                metal_cns = [len(this_mol2.getBondedAtomsSmart(x)) for x in minds]
+                delind = minds[np.argmin(metal_cns)]
+                this_mol2.deleteatom(minds[np.argmin(metal_cns)])
+                del this_mol2_inds[delind]
         if self.master_mol.bo_dict:
             save_bo_dict = self.master_mol.get_bo_dict_from_inds(this_mol2_inds)
             this_mol2.bo_dict = save_bo_dict
@@ -142,7 +155,11 @@ class ligand:
         lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
         self.mol2string = lig_mol2_string
         self.lig_mol_graph_det = lig_mol_graph_det
-        return lig_mol_graph_det, lig_mol2_string
+
+        if include_metal:
+            return lig_mol_graph_det, lig_mol2_string
+        else:
+            return lig_mol_graph_det, lig_mol2_string, catoms_indices
 
     def percent_buried_vol(self,
                     radius=3.5,
