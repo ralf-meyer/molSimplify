@@ -50,12 +50,12 @@ def lig_assign_bisdithiolene(inmol,liglist, ligdents, ligcons):
             ax_con = ligcons[i]
             ax_ligand_list.append(this_ligand)
             current_ligand_index_list = this_ligand.index_list
-            ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])
+            ax_con_int_list.append([current_ligand_index_list.index(x) for x in ax_con])
         elif ligdents[i] == 2:
             eq_con = ligcons[i]
             eq_ligand_list.append(this_ligand)
             current_ligand_index_list = this_ligand.index_list
-            eq_con_int_list.append([current_ligand_index_list.index(i) for i in eq_con])
+            eq_con_int_list.append([current_ligand_index_list.index(x) for x in eq_con])
         else:
             raise ValueError('Ligdent unknown: ' + str(ligdents[i]))
     return ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list
