@@ -5007,3 +5007,24 @@ class mol3D:
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
         return results
+    
+    def getMLBondLengths(self):
+        """ Outputs the metal-ligand bond lengths in the complex.
+        
+        Returns
+        -------
+            ml_bls : list of metal-ligand bond lengths
+            rel_bls : list of *relative* metal-ligand bond lengths (i.e. divided contents of ml_bls by the applicable sums of radii)
+        """
+        m = c.getAtom(0) # get the metal, which has ID 0
+        if not m.isMetal(): return [], [] # we don't have a metal, so there are no M-L bonds
+        ligands = c.getBondedAtomsSmart(0) # gets all atoms/ligands bound to metal
+        ml_bls = [] # normal bond lengths
+        rel_bls = [] # relative bond lengths
+        for l_id in ligands:
+            l = c.getAtom(l_id) # get the ligand from its ID
+            bl = m.distance(l) # normal bond length
+            ml_bls.append(bl)
+            rel_bls.append(bl / (m.rad + l.rad)) # append the relative bond length
+        return ml_bls, rel_bls
+            
