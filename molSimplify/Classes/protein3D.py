@@ -17,5 +17,19 @@ class protein3D:
 	"""
 	
 	def __init__(self, use_atom_specific_cutoffs=False):
-		# Number of atoms
+		# Number of atoms part of proteins
 		self.natoms = 0 
+		# Number of atoms not part of proteins
+		self.nhetatms = 0
+		# Number of chains
+		self.nchains = 0
+		# List of atoms part of proteins
+		self.atoms = []
+		# List of atoms not part of proteins
+		self.hetatms = []
+		# List of chains
+		self.chains = []
+		# List of missing atoms
+		self.missing_atoms = []
+		# List of missing amino acids
+		self.missing_aas = []
