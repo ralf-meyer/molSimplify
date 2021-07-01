@@ -14,7 +14,7 @@ class AA3D:
 	
 	"""
 	
-	def __init__(self, name='GLY'):
+	def __init__(self, name='GLY', chain='undef', id=-1):
 		# List of atom3D objects
 		self.atoms = []
 		# Number of atoms
@@ -25,6 +25,10 @@ class AA3D:
         	self.mass = 0
         	# Size of molecule
         	self.size = 0
+		# Chain of amino acid
+		self.chain = chain
+		# ID of amino acid
+		self.id = id
 		
 	def identify(self):
 		""" States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
