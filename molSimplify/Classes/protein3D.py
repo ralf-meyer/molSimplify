@@ -102,7 +102,7 @@ class protein3D:
 		fname = filename.split('.pdb')[0]
 		f = open(fname + '.pdb', r)
 		text = f.read()
-		p = protein3D()
+		p = protein3D(filename)
 		# class attributes
 		aas = {}
 		hetatms = {}
