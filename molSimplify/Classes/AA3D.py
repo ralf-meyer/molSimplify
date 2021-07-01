@@ -21,6 +21,10 @@ class AA3D:
 		self.natoms = 0
 		# 3-letter code of amino acid (in all caps)
 		self.name = ""
+		# Mass of molecule
+        	self.mass = 0
+        	# Size of molecule
+        	self.size = 0
 		
 	def identify(self):
 		""" States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
