@@ -21,3 +21,17 @@ class AA3D:
 		self.natoms = 0
 		# 3-letter code of amino acid (in all caps)
 		self.name = ""
+		
+	def identify(self):
+		""" States whether the amino acid is (positively/negatively) charged, polar, amphipathic, or hydrophobic.
+		
+		Returns
+		-------
+		aa_type : string
+			Positively charged, Negatively charged, Polar, Hydrophobic
+			
+		"""
+		if self.name == "ARG" or self.name == "LYS":  return "Positively charged"
+		elif self.name == "ASP" or self.name == "GLU":  return "Negatively charged"
+		elif self.name in {"GLN", "ASN", "HIS", "SER", "THR", "TYR", "CYS"}: return "Polar"
+		else: return "Hydrophobic"
