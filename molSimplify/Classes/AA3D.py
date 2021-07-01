@@ -14,13 +14,13 @@ class AA3D:
 	
 	"""
 	
-	def __init__(self, name='GLY', chain='undef', id=-1):
+	def __init__(self, three_lc='GLY', chain='undef', id=-1):
 		# List of atom3D objects
 		self.atoms = []
 		# Number of atoms
 		self.natoms = 0
 		# 3-letter code of amino acid (in all caps)
-		self.name = name # if no name is specified, defaults to glycine
+		self.three_lc = three_lc # if no name is specified, defaults to glycine
 		# Mass of molecule
         	self.mass = 0
         	# Size of molecule
