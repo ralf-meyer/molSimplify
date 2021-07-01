@@ -16,7 +16,7 @@ class protein3D:
 	
 	"""
 	
-	def __init__(self, use_atom_specific_cutoffs=False):
+	def __init__(self, pdbfile='undef'):
 		# Number of amino acids
 		self.naas = 0 
 		# Number of atoms not part of proteins
@@ -33,14 +33,70 @@ class protein3D:
 		self.missing_atoms = {}
 		# List of missing amino acids
 		self.missing_aas = []
-		self.pdbfile = 'undef'
+		self.pdbfile = pdbfile
+	
+	def setAAs(self, aas):
+		""" Set amino acids of a protein3D class to different amino acids.
+		Parameters
+		----------
+			aas : dictionary
+				Keyed by AA3D amino acids
+				Valued by atom3D atoms that are in the amino acids
+		"""
+		self.aas = aas
+		self.naas = len(aas.keys())
+
+	def setHetatms(self, hetatms):
+		""" Set heteroatoms of a protein3D class to different heteroatoms.
+		Parameters
+		----------
+			hetatms : dictionary
+				Keyed by the molecule that the heteroatoms together form
+				Valued by heteroatoms
+		"""
+		self.hetatms = hetatms
+		self.nhetatms = len(hetatms.values())
+
+	def setChains(self, chains):
+		""" Set chains of a protein3D class to different chains.
+		Parameters
+		----------
+			chains : list
+				List of desired chain IDs.
+		"""
+		self.chains = chains
+		self.nchains = len(chains)
+
+	def setMissingAtoms(self, missing_atoms):
+		""" Set missing atoms of a protein3D class to a new dictionary.
+		Parameters
+		----------
+			missing_atoms : dictionary
+				Keyed by amino acid residues of origin
+				Valued by missing atoms
+		"""
+		self.missing_atoms = missing_atoms
+
+	def setMissingAAs(self, missing_aas):
+		""" Set missing amino acids of a protein3D class to a new list.
+		Parameters
+		----------
+			missing_aas : list
+				List of missing amino acids.
+		"""
+		self.missing_aas = missing_aas
 
 	def readfrompdb(self, filename):
-		"""Read PDB into a protein3D class instance.
+		""" Read PDB into a protein3D class instance.
 		Parameters
-		-------
+		----------
 			filename : string
 				String of path to PDB file. Path may be local or global.
+		
+		Returns
+		-------
+			p : protein3D
+				A protein3D instance created from the provided PDB file.
 		"""
 		self.pdbfile = filename
 		fname = filename.split('.pdb')[0]
@@ -97,7 +153,6 @@ class protein3D:
 			l = line.split()
 			chains.add(l[2]) # this just gets the letter of the chain
 			chains = list(chains)
-		nchains = len(chains)
 		# start getting amino acids
 		text = text.split('\nATOM')
 		for line in text:
@@ -111,7 +166,6 @@ class protein3D:
 			if a not in aas.keys(): aas[a] = []
 			atom = atom3D(Sym=l[-1], xyz=[l[5], l[6], l[7]])
 			aas[a].append(atom)
-		naas = len(aas.keys())
 		# start getting hetatoms
 		text = text.split('\nHETATM')
 		for line in text:
@@ -124,10 +178,7 @@ class protein3D:
 			if l[2] not in hetatms.keys(): hetatms[l[2]] = [] # l[2] is the name of a compound
 			hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]])
 			hetatms[l[2]].append(hetatm)
-		nhetatms = len(hetatms.values())
-		p.setNAAs(naas)
-		p.setNhetatms(nhetatms)
-		p.setNchains(nchains)
+		p.setChains(chains)
 		p.setAAs(aas)
 		p.setHetatms(hetatms)
 		p.setMissingAtoms(missing_atoms)
