@@ -23,7 +23,7 @@ class AA3D:
 		self.name = ""
 		
 	def identify(self):
-		""" States whether the amino acid is (positively/negatively) charged, polar, amphipathic, or hydrophobic.
+		""" States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
 		
 		Returns
 		-------
