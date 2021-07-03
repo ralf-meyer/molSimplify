@@ -92,17 +92,11 @@ class protein3D:
 		----------
 			filename : string
 				String of path to PDB file. Path may be local or global.
-		
-		Returns
-		-------
-			p : protein3D
-				A protein3D instance created from the provided PDB file.
 		"""
 		self.pdbfile = filename
 		fname = filename.split('.pdb')[0]
 		f = open(fname + '.pdb', r)
 		text = f.read()
-		p = protein3D(filename)
 		# class attributes
 		aas = {}
 		hetatms = {}
@@ -178,11 +172,10 @@ class protein3D:
 			if l[2] not in hetatms.keys(): hetatms[l[2]] = [] # l[2] is the name of a compound
 			hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]])
 			hetatms[l[2]].append(hetatm)
-		p.setChains(chains)
-		p.setAAs(aas)
-		p.setHetatms(hetatms)
-		p.setMissingAtoms(missing_atoms)
-		p.setMissingAAs(missing_aas)
-		return p
+		self.setChains(chains)
+		self.setAAs(aas)
+		self.setHetatms(hetatms)
+		self.setMissingAtoms(missing_atoms)
+		self.setMissingAAs(missing_aas)
 
 
