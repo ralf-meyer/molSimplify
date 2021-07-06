@@ -10,7 +10,7 @@ import os
 from math import sqrt
 
 class AA3D:
-	"""Holds information about an amino acid, ussed to do manipulations.  Reads information from structure file (pdb, cif) or is directly built from molsimplify.
+	"""Holds information about an amino acid, used to do manipulations.  Reads information from structure file (pdb, cif) or is directly built from molsimplify.
 	
 	"""
 	
@@ -27,7 +27,7 @@ class AA3D:
         	self.size = 0
 		# Chain of amino acid
 		self.chain = chain
-		# ID of amino acid
+		# ID of amino acid (position in chain)
 		self.id = id
 		
 	def identify(self):
