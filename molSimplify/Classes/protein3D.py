@@ -27,8 +27,8 @@ class protein3D:
 		self.aas = {}
 		# List of atoms not part of proteins
 		self.hetatms = {}
-		# List of chains
-		self.chains = []
+		# Dictionary of chains
+		self.chains = {}
 		# Dictionary of missing atoms
 		self.missing_atoms = {}
 		# List of missing amino acids
@@ -61,11 +61,12 @@ class protein3D:
 		""" Set chains of a protein3D class to different chains.
 		Parameters
 		----------
-			chains : list
-				List of desired chain IDs.
+			chains : dictionary
+				Keyed by desired chain IDs.
+				Valued by the names of the amino acids in order in the chains (should change this to AA3Ds)
 		"""
 		self.chains = chains
-		self.nchains = len(chains)
+		self.nchains = len(chains.keys())
 
 	def setMissingAtoms(self, missing_atoms):
 		""" Set missing atoms of a protein3D class to a new dictionary.
@@ -100,7 +101,7 @@ class protein3D:
 		# class attributes
 		aas = {}
 		hetatms = {}
-		chains = set() # because we only want distinct chains
+		chains = {}
 		missing_atoms = {}
 		missing_aas = []
 		f.close()
@@ -136,7 +137,7 @@ class protein3D:
 			missing_atoms[a] = []
 			for atom in l[3:]:
 				missing_atoms[a].append(atom3D(Sym=atom))
-		# start getting chains
+		# start getting chains - initialize keys of dictionary
 		text = text.split('\nSEQRES')
 		for line in text:
 			if line == text[-1]:
@@ -145,8 +146,7 @@ class protein3D:
 				line = line[:1]
 				text.replace(line, '')
 			l = line.split()
-			chains.add(l[2]) # this just gets the letter of the chain
-			chains = list(chains)
+			if l[2] not in chains.keys(): chains[l[2]] = [] # this just gets the letter of the chain
 		# start getting amino acids
 		text = text.split('\nATOM')
 		for line in text:
@@ -156,7 +156,8 @@ class protein3D:
 				line = line[:1]
 				text.replace(line, '')
 			l = line.split()
-			a = AA3D(l[2], l[4], l[5])
+			a = AA3D(l[2], l[3], l[4])
+			chains[l[2]].append(a)
 			if a not in aas.keys(): aas[a] = []
 			atom = atom3D(Sym=l[-1], xyz=[l[5], l[6], l[7]])
 			aas[a].append(atom)
