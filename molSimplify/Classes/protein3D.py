@@ -33,6 +33,8 @@ class protein3D:
 		self.missing_atoms = {}
 		# List of missing amino acids
 		self.missing_aas = []
+		# List of possible AA conformations 
+		self.conf = []
 		self.pdbfile = pdbfile
 	
 	def setAAs(self, aas):
@@ -86,6 +88,15 @@ class protein3D:
 				List of missing amino acids.
 		"""
 		self.missing_aas = missing_aas
+		
+	def setConf(self, conf):
+		""" Set possible conformations of a protein3D class to a new list.
+		Parameters
+		----------
+			conf : list
+				List of possible conformations for applicable amino acids.
+		"""
+		self.conf = conf
 
 	def readfrompdb(self, filename):
 		""" Read PDB into a protein3D class instance.
@@ -104,6 +115,7 @@ class protein3D:
 		chains = {}
 		missing_atoms = {}
 		missing_aas = []
+		conf = []
 		f.close()
 		# start getting missing amino acids
 		text = text.split("M RES C SSSEQI")
@@ -156,8 +168,9 @@ class protein3D:
 				line = line[:1]
 				text.replace(line, '')
 			l = line.split()
-			a = AA3D(l[2], l[3], l[4])
-			chains[l[2]].append(a)
+			a = AA3D(l[2], l[3], l[4], float(l[8]))
+			if int(l[8]) != 1 and a not in conf: conf.append(a)
+			if a not in chains[l[2]] and a not in conf: chains[l[2]].append(a)
 			if a not in aas.keys(): aas[a] = []
 			atom = atom3D(Sym=l[-1], xyz=[l[5], l[6], l[7]])
 			aas[a].append(atom)
@@ -173,10 +186,16 @@ class protein3D:
 			if l[2] not in hetatms.keys(): hetatms[l[2]] = [] # l[2] is the name of a compound
 			hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]])
 			hetatms[l[2]].append(hetatm)
+		# deal with conformations
+		for i in range(len(conf)-1):
+			if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
+				if conf[i].occup >= conf[i+1].occup: chains[conf[i].chain].append(conf[i]) # pick the one with higher occupancy or the a chain if it's a tie
+				else: chains[conf[i+1].chain].append(conf[i+1])
 		self.setChains(chains)
 		self.setAAs(aas)
 		self.setHetatms(hetatms)
 		self.setMissingAtoms(missing_atoms)
 		self.setMissingAAs(missing_aas)
+		self.setConf(conf)
 
 
