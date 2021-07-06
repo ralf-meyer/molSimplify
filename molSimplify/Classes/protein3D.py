@@ -35,6 +35,13 @@ class protein3D:
 		self.missing_aas = []
 		# List of possible AA conformations 
 		self.conf = []
+		# R value
+		self.R = -1
+		# Rfree value
+		self.Rfree = -1
+		# RSRZ value
+		self.RSRZ = -1
+		# PDB file (if applicable)
 		self.pdbfile = pdbfile
 	
 	def setAAs(self, aas):
@@ -97,6 +104,33 @@ class protein3D:
 				List of possible conformations for applicable amino acids.
 		"""
 		self.conf = conf
+		
+	def setR(self, R):
+		""" Set R value of protein3D class.
+		Parameters
+		----------
+			R : float
+				The desired new R value.
+		"""
+		self.R = R
+		
+	def setConf(self, Rfree):
+		""" Set Rfree value of protein3D class.
+		Parameters
+		----------
+			Rfree : float
+				The desired new Rfree value.
+		"""
+		self.Rfree = Rfree
+		
+	def setConf(self, RSRZ):
+		""" Set RSRZ value of protein3D class.
+		Parameters
+		----------
+			Rfree : float
+				The desired new Rfree value.
+		"""
+		self.RSRZ = RSRZ
 
 	def readfrompdb(self, filename):
 		""" Read PDB into a protein3D class instance.
@@ -117,6 +151,13 @@ class protein3D:
 		missing_aas = []
 		conf = []
 		f.close()
+		# get R and Rfree values
+		temp = text.split("R VALUE            (WORKING SET) : ")
+		temp = temp[-1]
+		temp = temp.split('\nREMARK   3   FREE R VALUE                     : ')
+		R = float(temp[0])
+		temp = temp[1].split('\n')
+		Rfree = float(temp[0])
 		# start getting missing amino acids
 		text = text.split("M RES C SSSEQI")
 		want = text[-1]
