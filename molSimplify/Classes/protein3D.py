@@ -181,7 +181,7 @@ class protein3D:
 			a = AA3D(l[0], l[1], l[2])
 			missing_aas.append(a)
 		# start getting missing atoms
-		text = text.split("M RES C SSSEQI  ATOMS")
+		text = text.split("M RES CSSEQI  ATOMS")
 		want = text[-1]
 		text = text[0].split('\n')
 		split = text[-1]
