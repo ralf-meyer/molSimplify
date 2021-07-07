@@ -112,7 +112,7 @@ class protein3D:
 		"""
 		self.R = R
 		
-	def setConf(self, Rfree):
+	def setRfree(self, Rfree):
 		""" Set Rfree value of protein3D class.
 		Parameters
 		----------
@@ -121,14 +121,17 @@ class protein3D:
 		"""
 		self.Rfree = Rfree
 		
-	def setConf(self, RSRZ):
-		""" Set RSRZ value of protein3D class.
-		Parameters
-		----------
-			Rfree : float
-				The desired new Rfree value.
+	def getMissingAtoms(self):
+		""" Get missing atoms of a protein3D class.
+
 		"""
-		self.RSRZ = RSRZ
+		return self.missing_atoms.values()
+	
+	def getMissingAAs(self):
+		""" Get missing amino acid residues of a protein3D class.
+
+		"""
+		return self.missing_aas
 
 	def readfrompdb(self, filename):
 		""" Read PDB into a protein3D class instance.
@@ -236,5 +239,7 @@ class protein3D:
 		self.setMissingAtoms(missing_atoms)
 		self.setMissingAAs(missing_aas)
 		self.setConf(conf)
+		self.setR(R)
+		self.setRfree(Rfree)
 
 
