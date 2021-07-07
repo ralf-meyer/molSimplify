@@ -220,7 +220,7 @@ class protein3D:
 			if int(l[8]) != 1 and a not in conf: conf.append(a)
 			if a not in chains[l[2]] and a not in conf: chains[l[2]].append(a)
 			if a not in aas.keys(): aas[a] = []
-			atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9])
+			atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9], occup=float(l[8]), greek=l[1])
 			aas[a].append(atom)
 		# start getting hetatoms
 		text = text.split('\nHETATM')
@@ -232,7 +232,7 @@ class protein3D:
 				text.replace(line, '')
 			l = line.split()
 			if l[2] not in hetatms.keys(): hetatms[l[2]] = [] # l[2] is the name of a compound
-			hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9])
+			hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9], occup=float(l[8]), greek=l[1])
 			hetatms[l[2]].append(hetatm)
 		# deal with conformations
 		for i in range(len(conf)-1):
