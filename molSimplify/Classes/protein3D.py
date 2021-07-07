@@ -132,6 +132,12 @@ class protein3D:
 
 		"""
 		return self.missing_aas
+	
+	def countAAs(self):
+		""" Return the number of amino acid residues in a protein3D class.
+
+		"""
+		return self.naas
 
 	def readfrompdb(self, filename):
 		""" Read PDB into a protein3D class instance.
