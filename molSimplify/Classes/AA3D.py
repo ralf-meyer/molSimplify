@@ -31,18 +31,6 @@ class AA3D:
 		self.id = id
 		# Occupancy of amino acid in chain
 		self.occup = occup
-		# Alpha carbon
-		self.ca = atom3D(Sym='C')
-		# Beta carbon
-		self.cb = []
-		# Gamma carbon
-		self.cg = []
-		# Delta carbon
-		self.cd = []
-		# Epsilon carbon
-		self.ce = []
-		# Zeta carbon
-		self.cz = []
 		
 		
 	def identify(self):
@@ -58,3 +46,24 @@ class AA3D:
 		elif self.name == "ASP" or self.name == "GLU":  return "Negatively charged"
 		elif self.name in {"GLN", "ASN", "HIS", "SER", "THR", "TYR", "CYS"}: return "Polar"
 		else: return "Hydrophobic"
+		
+	def getGreek(self, greek):
+		""" Finds the Greek lettered carbon(s) or other atom(s) of the user's choice.
+		
+		Parameters
+		----------
+		greek : string
+			The Greek lettered atom (e.g. alpha carbon) we want.  Inputs should be form 'CA' or similar.
+			
+		Returns
+		-------
+		greek_atoms : list of atom3Ds
+			A list of atom3D class objects that contains the Greek lettered atom(s) we want.
+			
+		"""
+		greek_atoms = []
+		for a in self.atoms:
+			if greek in a.greek: greek_atoms.append(a)
+		return greek_atoms
+		
+	
