@@ -31,6 +31,19 @@ class AA3D:
 		self.id = id
 		# Occupancy of amino acid in chain
 		self.occup = occup
+		# Alpha carbon
+		self.ca = atom3D(Sym='C')
+		# Beta carbon
+		self.cb = []
+		# Gamma carbon
+		self.cg = []
+		# Delta carbon
+		self.cd = []
+		# Epsilon carbon
+		self.ce = []
+		# Zeta carbon
+		self.cz = []
+		
 		
 	def identify(self):
 		""" States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
