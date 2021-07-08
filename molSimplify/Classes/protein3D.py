@@ -68,17 +68,19 @@ class protein3D:
 
     def setChains(self, chains):
         """ Set chains of a protein3D class to different chains.
+
         Parameters
         ----------
             chains : dictionary
                 Keyed by desired chain IDs.
-                Valued by the names of the amino acids in order in the chains (should change this to AA3Ds)
+                Valued by the list of AA3D amino acids in the chain.
         """
         self.chains = chains
         self.nchains = len(chains.keys())
 
     def setMissingAtoms(self, missing_atoms):
         """ Set missing atoms of a protein3D class to a new dictionary.
+
         Parameters
         ----------
             missing_atoms : dictionary
@@ -89,6 +91,7 @@ class protein3D:
 
     def setMissingAAs(self, missing_aas):
         """ Set missing amino acids of a protein3D class to a new list.
+
         Parameters
         ----------
             missing_aas : list
@@ -98,6 +101,7 @@ class protein3D:
             
     def setConf(self, conf):
         """ Set possible conformations of a protein3D class to a new list.
+
         Parameters
         ----------
             conf : list
@@ -107,6 +111,7 @@ class protein3D:
             
     def setR(self, R):
         """ Set R value of protein3D class.
+
         Parameters
         ----------
                 R : float
@@ -116,6 +121,7 @@ class protein3D:
             
     def setRfree(self, Rfree):
         """ Set Rfree value of protein3D class.
+
         Parameters
         ----------
                 Rfree : float
@@ -191,7 +197,7 @@ class protein3D:
                 three-letter code, default as XAA.
 
         Returns
-        ----------
+        -------
             inds: list
                 a list of amino acid indices with the specified symbol.
         """
@@ -200,6 +206,41 @@ class protein3D:
             if aa.three_lc == three_lc:
                 inds.append(ii)
         return inds
+
+    def getChain(self, chain_id):
+        """ Takes a chain of interest and turns it into its own protein3D class instance.
+        Parameters
+        ----------
+            chain_id : string
+                The letter name of the chain of interest
+
+        Returns
+        -------
+            p : protein3D
+                A protein3D instance consisting of just the chain of interest
+        """
+        p = protein3D()
+        p.setChain(chain[chain_id])
+        p.setAAs(p.chain.values())
+        p.setR(self.R)
+        p.setRfree(self.Rfree)
+        missing_aas = []
+        for aa in self.missing_aas:
+            if aa.chain == chain_id:
+                missing_aas.append(aa)
+        p.setMissingAAs(missing_aas)
+        gone_chain = self.missing_atoms
+        for aa in gone_chain.keys():
+            if aa.chain != chain_id:
+                del gone_chain[aa]
+        p.setMissingAtoms(gone_chain)
+        gone_het = self.hetatms
+        for het in gone_het.keys():
+            tups = gone_het[het]
+            if tups[1] != chain_id:
+                del gone_chain[het]
+        p.setHetatms(gone_chain)
+        return p
 
     def readfrompdb(self, filename):
         """ Read PDB into a protein3D class instance.
@@ -300,7 +341,7 @@ class protein3D:
             if l[2] not in hetatms.keys():
                 hetatms[l[2]] = [] # l[2] is the name of a compound
             hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9], occup=float(l[8]), greek=l[1])
-            hetatms[l[2]].append(hetatm)
+            hetatms[l[2]].append((hetatm, l[3])) # save the chain too
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
