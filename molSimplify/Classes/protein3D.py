@@ -139,6 +139,63 @@ class protein3D:
 		"""
 		return self.naas
 
+        def findAtom(self, sym="X"):
+                """
+                Find atoms with a specific symbol that are contained in amino acids.
+                
+                Parameters
+                ----------
+                        sym: str
+                                element symbol, default as X.
+
+                Returns
+                ----------
+                        inds: list
+                                a list of atom index with the specified symbol.
+                """
+                inds = []
+                for ii, atom in enumerate(self.aas.values()):
+                        if atom.symbol() == sym: inds.append(ii)
+                return inds
+
+        def findHetAtom(self, sym="X"):
+                """
+                Find heteroatoms with a specific symbol.
+                
+                Parameters
+                ----------
+                        sym: str
+                                element symbol, default as X.
+
+                Returns
+                ----------
+                        inds: list
+                                a list of atom index with the specified symbol.
+                """
+                inds = []
+                for ii, atom in enumerate(self.hetatms.values()):
+                        if atom.symbol() == sym: inds.append(ii)
+                return inds
+
+        def findAA(self, three_lc="XAA"):
+                """
+                Find amino acids with a specific three-letter code.
+                
+                Parameters
+                ----------
+                        three_lc: str
+                                three-letter code, default as XAA.
+
+                Returns
+                ----------
+                        inds: list
+                                a list of amino acid indices with the specified symbol.
+                """
+                inds = []
+                for ii, aa in enumerate(self.aas.keys()):
+                        if aa.three_lc == three_lc: inds.append(ii)
+                return inds
+
 	def readfrompdb(self, filename):
 		""" Read PDB into a protein3D class instance.
 		Parameters
