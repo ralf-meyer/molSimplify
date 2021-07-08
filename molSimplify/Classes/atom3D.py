@@ -22,7 +22,7 @@ class atom3D:
             partialcharge : int, optional
                 Charge assigned to atom when added to mol. Default is None.
     """
-    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None, Tfactor=0, greek=Sym, occup=1.00):
+    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None, Tfactor=0, greek='', occup=1.00):
        
         # Element symbol
         self.sym = Sym
@@ -58,7 +58,10 @@ class atom3D:
         self.Tfactor = Tfactor
         
         # Greek letter (e.g. alpha carbon - only useful for proteins)
-        self.greek = greek
+        if greek == '': 
+            self.greek = Sym
+        else:
+            self.greek = greek
         
         # Occupancy (only useful for proteins)
         self.occup = occup
