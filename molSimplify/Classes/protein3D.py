@@ -8,6 +8,8 @@
 # imports
 from math import sqrt
 import os
+from molSimplify.Classes.AA3D import AA3D
+from molSimplify.Classes.atom3D import atom3D
 
 # no GUI support for now
 
@@ -27,8 +29,10 @@ class protein3D:
         self.nchains = 0
         # Dictionary of amino acids
         self.aas = {}
-        # List of atoms not part of proteins
-        self.hetatms = {}
+        # Dictionary of molecules not part of proteins
+        self.hetmols = {}
+        # Tuple of heteroatoms with associated chains
+        self.hetatms = self.hetmols.values()
         # Dictionary of chains
         self.chains = {}
         # Dictionary of missing atoms
@@ -55,16 +59,17 @@ class protein3D:
         self.aas = aas
         self.naas = len(aas.keys())
 
-    def setHetatms(self, hetatms):
+    def setHetatms(self, hetmols):
         """ Set heteroatoms of a protein3D class to different heteroatoms.
         Parameters
         ----------
-            hetatms : dictionary
+            hetmols : dictionary
                 Keyed by the molecule that the heteroatoms together form
                 Valued by heteroatoms
         """
-        self.hetatms = hetatms
-        self.nhetatms = len(hetatms.values())
+        self.hetmols = hetmols
+        self.hetatms = hetmols.values()
+        self.nhetatms = len(hetmols.values())
 
     def setChains(self, chains):
         """ Set chains of a protein3D class to different chains.
