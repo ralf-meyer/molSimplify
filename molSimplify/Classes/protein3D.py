@@ -214,6 +214,7 @@ class protein3D:
 
     def getChain(self, chain_id):
         """ Takes a chain of interest and turns it into its own protein3D class instance.
+
         Parameters
         ----------
             chain_id : string
@@ -247,11 +248,34 @@ class protein3D:
         p.setHetatms(gone_chain)
         return p
 
-    def readfrompdb(self, filename):
-        """ Read PDB into a protein3D class instance.
+    def getResidue(self, atom):
+        """ Finds the amino acid residue that the atom is contained in.
+
         Parameters
         ----------
-            filename : string
+            atom : atom3D
+                the desired atom whose residue we want to find
+
+        Returns
+        -------
+            aa : AA3D
+                the amino acid residue containing the atom
+                returns None if there is no amino acid
+        """
+        for aa in self.aas.keys():
+            if atom in self.aas[aa]:
+                return aa
+        for aa in self.missing_atoms.keys():
+            if atom in self.missing_atoms[aa]:
+                return aa
+        return None # the atom is a heteroatom
+
+    def readfrompdb(self, filename):
+        """ Read PDB into a protein3D class instance.
+
+        Parameters
+        ----------
+            filename : str
                 String of path to PDB file. Path may be local or global.
         """
         self.pdbfile = filename
