@@ -64,6 +64,21 @@ class AA3D:
         for a in self.atoms:
                 if greek in a.greek: greek_atoms.append(a)
         return greek_atoms
+
+    def coords(self):
+        """Method to obtain string of coordinates in amino acid.
+
+        Returns
+        -------
+            coord_string : string
+                String of molecular coordinates with atom identities in XYZ format.
+        """
+        coord_string = ''  # initialize returning string
+        coord_string += "%d \n\n" % self.natoms
+        for atom in self.atoms:
+            xyz = atom.coords()
+            coord_string += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
+        return coord_string
             
     
 
