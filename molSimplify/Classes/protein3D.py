@@ -260,7 +260,7 @@ class protein3D:
         text = f.read()
         # class attributes
         aas = {}
-        hetatms = {}
+        hetmols = {}
         chains = {}
         missing_atoms = {}
         missing_aas = []
@@ -343,10 +343,10 @@ class protein3D:
                 line = line[:1]
                 text.replace(line, '')
             l = line.split()
-            if l[2] not in hetatms.keys():
-                hetatms[l[2]] = [] # l[2] is the name of a compound
+            if l[2] not in hetmols.keys():
+                hetmols[l[2]] = [] # l[2] is the name of a compound
             hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9], occup=float(l[8]), greek=l[1])
-            hetatms[l[2]].append((hetatm, l[3])) # save the chain too
+            hetmols[l[2]].append((hetatm, l[3])) # save the chain too
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
