@@ -320,7 +320,7 @@ amino_acids = {"ALA": "ALA", "A": "ALA",
                "PHE": "PHE", "F": "PHE", "PRO": "PRO", "P": "PRO",
                "SER": "SER", "S": "SER", "ASER": "SER", "BSER": "SER",
                "THR": "THR", 'T': "THR", "TRP": "TRP", "W": "TRP",
-               "TYR": "TYR", "Y", 'TYR',
+               "TYR": "TYR", "Y": 'TYR',
                "VAL": "VAL", 'V': "VAL", 'AVAL': 'VAL', 'BVAL': 'VAL'
                }
 
