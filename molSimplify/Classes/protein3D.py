@@ -45,6 +45,8 @@ class protein3D:
         self.Rfree = -1
         # PDB file (if applicable)
         self.pdbfile = pdbfile
+        # Holder for metals
+        self.metals = False
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
@@ -297,7 +299,26 @@ class protein3D:
         for hetatm in self.hetatms.keys()
             if hetmol in self.hetatms[hetatm]:
                 del self.hetatms[hetatm] 
-        
+
+    def findMetal(self, transition_metals_only=True):
+        """Find metal(s) in a protein3D class.
+        Parameters
+        ----------
+            transition_metals_only : bool, optional
+                Only find transition metals. Default is true. 
+        Returns
+        -------
+            metal_list : list
+                List of indices of metal atoms in mol3D.
+        """
+        if not self.metals:
+            metal_list = []
+            for i, atom in enumerate(self.hetatms.keys()): # no metals in AAs
+                if atom.ismetal(transition_metals_only=transition_metals_only):
+                    metal_list.append(i)
+            self.metals = metal_list
+        return (self.metals)
+    
     def readfrompdb(self, filename):
         """ Read PDB into a protein3D class instance.
 
