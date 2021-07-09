@@ -269,20 +269,20 @@ class protein3D:
                 return aa
         return None # the atom is a heteroatom
 
-    def stripAtoms(self, atoms_stripped)
+    def stripAtoms(self, atoms_stripped):
         """ Removes certain atoms from the protein3D class instance.
-
+        
         Parameters
         ----------
             atoms_stripped : list
-                list of atom3D class instances that should be removed
+                list of atom3D indices that should be removed
         """
         for aa in self.aas.keys():
-            for atom in self.aas[aa]:
+            for atom in self.aas[aa][1]:
                 if atom in atoms_stripped:
                     self.aas[aa].remove(atom)
                     atoms_stripped.remove(atom)
-       for hetatm in self.hetatms.keys()
+        for hetatm in self.hetatms.keys()
             if hetatm in atoms_stripped:
                 del self.hetatms[hetatm]   
                 atoms_stripped.remove(hetatm)
@@ -328,7 +328,6 @@ class protein3D:
         ----------
             atomIdx : int
                 Index for atom to be frozen.
-           
         """
 
         self.atoms[atomIdx].frozen = True
@@ -341,7 +340,6 @@ class protein3D:
         ----------
             Alist : list
                 List of indices for atom3D instances to remove.
-
         """
 
         for h in sorted(Alist, reverse=True):
@@ -437,7 +435,7 @@ class protein3D:
                 aas[a] = []
             atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
                           occup=float(l[8]), greek=l[1])
-            aas[a].append(atom) # terminal oxygens may be missing
+            aas[a].append((int(l[0]), atom)) # terminal Os may be missing
         # start getting hetatoms
         text = text.split('\nHETATM')
         for line in text:
