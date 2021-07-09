@@ -10,6 +10,7 @@ from math import sqrt
 import os
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
+import gzi
 
 # no GUI support for now
 
@@ -305,11 +306,12 @@ class protein3D:
         Parameters
         ----------
             transition_metals_only : bool, optional
-                Only find transition metals. Default is true. 
+                Only find transition metals. Default is true.
+                
         Returns
         -------
             metal_list : list
-                List of indices of metal atoms in mol3D.
+                List of indices of metal atoms in protein3D.
         """
         if not self.metals:
             metal_list = []
@@ -319,18 +321,20 @@ class protein3D:
             self.metals = metal_list
         return (self.metals)
     
-    def readfrompdb(self, filename):
+    def readfrompdb(self, text):
         """ Read PDB into a protein3D class instance.
 
         Parameters
         ----------
-            filename : str
+            text : str
                 String of path to PDB file. Path may be local or global.
+                May also be the text of a PDB file from the internet.
         """
-        self.pdbfile = filename
-        fname = filename.split('.pdb')[0]
-        f = open(fname + '.pdb', r)
-        text = f.read()
+        if '.pdb' in  text: # means this is a filename
+            self.pdbfile = text
+            fname = filename.split('.pdb')[0]
+            f = open(fname + '.pdb', r)
+            text = f.read()
         # class attributes
         aas = {}
         hetatms = {}
@@ -405,7 +409,8 @@ class protein3D:
                 chains[l[2]].append(a)
             if a not in aas.keys():
                 aas[a] = []
-            atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9], occup=float(l[8]), greek=l[1])
+            atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
+                          occup=float(l[8]), greek=l[1])
             aas[a].append(atom) # terminal oxygens may be missing
         # start getting hetatoms
         text = text.split('\nHETATM')
@@ -424,7 +429,8 @@ class protein3D:
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
                 if conf[i].occup >= conf[i+1].occup:
-                    chains[conf[i].chain].append(conf[i]) # pick the one with higher occupancy or the a chain if it's a tie
+                    chains[conf[i].chain].append(conf[i])
+                    # pick chain with higher occupancy or the a chain if tie
                 else:
                     chains[conf[i+1].chain].append(conf[i+1])
         self.setChains(chains)
@@ -436,5 +442,38 @@ class protein3D:
         self.setR(R)
         self.setRfree(Rfree)
 
+    def fetch_pdb(self, pdbCode):
+        """ API query to fetch a pdb and write it as a protein3D class instance
+
+        parameters
+        ----------
+            pdbCode : not sure what this variable is oops
+        """
+        try:
+            import urllib.request as urllib
+        except ImportError:
+            import urllib                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+        remoteCode = pdbCode.upper()
+        if not os.path.exists(pdb_dir):
+            os.mkdir(pdb_dir)
+        try:
+            filename = urllib.urlretrieve(
+                'http://www.rcsb.org/pdb/cgi/export.cgi/' + remoteCode +
+                '.pdb.gz?format=PDB&pdbId=' + remoteCode +
+                '&compression=gz')[0]
+            temp_p = protein3D(pdbfile=filename)
+        except:
+            print("warning: %s not found.\n"%pdbCode)
+        else:
+            if (os.path.getsize(filename) > 0): # If 0, pdb code was invalid
+                try:
+                    abort = 0
+                    temp_p.readfrompdb(gzip.open(filename).read())
+                    print("fetched: %s"%(pdbCode))
+                except IOError:
+                    print('aborted')
+            else:
+                print("warning: %s not valid.\n"%pdbCode)
 
 
