@@ -320,6 +320,32 @@ class protein3D:
                     metal_list.append(i)
             self.metals = metal_list
         return (self.metals)
+
+    def freezeatom(self, atomIdx):
+        """Set the freeze attribute to be true for a given atom3D class.
+
+        Parameters
+        ----------
+            atomIdx : int
+                Index for atom to be frozen.
+           
+        """
+
+        self.atoms[atomIdx].frozen = True
+
+    def freezeatoms(self, Alist):
+        """Set the freeze attribute to be true for a given set of atom3D classes, 
+        given their indices. Preserves ordering, starts from largest index.
+
+        Parameters
+        ----------
+            Alist : list
+                List of indices for atom3D instances to remove.
+
+        """
+
+        for h in sorted(Alist, reverse=True):
+            self.freezeatom(h)
     
     def readfrompdb(self, text):
         """ Read PDB into a protein3D class instance.
