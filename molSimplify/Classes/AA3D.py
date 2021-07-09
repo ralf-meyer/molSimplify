@@ -80,5 +80,32 @@ class AA3D:
             coord_string += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return coord_string
             
-    
+    def centermass(self):
+        """Computes coordinates of center of mass of amino acid.
+        Returns
+        -------
+            center_of_mass : list
+                Coordinates of center of mass. List of length 3: (X, Y, Z).
+        """
+
+        center_of_mass = [0, 0, 0]
+        mmass = 0
+        # loop over atoms in molecule
+        if self.natoms > 0:
+            for atom in self.atoms:
+                # calculate center of mass (relative weight according to atomic mass)
+                xyz = atom.coords()
+                center_of_mass[0] += xyz[0] * atom.mass
+                center_of_mass[1] += xyz[1] * atom.mass
+                center_of_mass[2] += xyz[2] * atom.mass
+                mmass += atom.mass
+            # normalize
+            center_of_mass[0] /= mmass
+            center_of_mass[1] /= mmass
+            center_of_mass[2] /= mmass
+        else:
+            center_of_mass = False
+            print(
+                'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
+        return center_of_mass    
 
