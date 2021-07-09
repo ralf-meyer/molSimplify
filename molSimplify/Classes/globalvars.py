@@ -310,7 +310,8 @@ amino_acids = {"ALA": "ALA", "A": "ALA",
                "ASP": "ASP", "D": "ASP", "ASH": "ASP",
                "CYS": "CYS", "C": "CYS", "CYS2": "CYS", "CYM": "CYS",
                "CYX": "CYS", "GLU": "GLU", "E": "GLU", "GLH": "GLU",
-               "GLN": "GLN", "Q": "GLN", "GLY": "GLY", "G": "GLY",
+               "GLN": "GLN", "Q": "GLN", 'AGLN': 'GLN', 'BGLN': 'GLN',
+               "GLY": "GLY", "G": "GLY",
                "HIS": "HIS", 'H': "HIS", "HID": "HIS", "HIE": "HIS",
                "HIP": "HIS", "HSE": "HIS", "HSD": "HIS", "HSP": "HIS",
                "ILE": "ILE", "I": "ILE", "LEU": "LEU", "L": "LEU",
@@ -319,8 +320,13 @@ amino_acids = {"ALA": "ALA", "A": "ALA",
                "PHE": "PHE", "F": "PHE", "PRO": "PRO", "P": "PRO",
                "SER": "SER", "S": "SER", "ASER": "SER", "BSER": "SER",
                "THR": "THR", 'T': "THR", "TRP": "TRP", "W": "TRP",
-               "TYR": "TYR", "Y", 'TYR', "VAL": "VAL", 'V': "VAL"
+               "TYR": "TYR", "Y", 'TYR',
+               "VAL": "VAL", 'V': "VAL", 'AVAL': 'VAL', 'BVAL': 'VAL'
                }
+
+# Common heteromolecules
+het_mols = ['TAU', 'AKG', 'FE2', 'HOH', 'NAG', 'BMA', 'MAN', 'ACE', 'ACY', 'FE',
+            'HEM', 'BLE', 'MG', 'BGC', 'WAT', 'CA', 'CL1']
 
 # ---Geo_Check_Metrics------
 dict_oct_check_loose = {"mono": {'num_coord_metal': 6,
