@@ -303,6 +303,25 @@ bondsdict = {"H": 1, "Li": 1, "Be": 2, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
 tribonddict = {("C", "C"): 1.27, ("C", "N"): 1.235, ("C", "O"): 1.165, ("N", "N"): 1.175,
                ("N", "C"): 1.235, ("O", "C"): 1.165}
 
+# Amino acids
+amino_acids = {"ALA": "ALA", "A": "ALA",
+               "ARG": "ARG", "R": "ARG", "ARN": "ARG",
+               "ASN": "ASN", "N": "ASN",
+               "ASP": "ASP", "D": "ASP", "ASH": "ASP",
+               "CYS": "CYS", "C": "CYS", "CYS2": "CYS", "CYM": "CYS",
+               "CYX": "CYS", "GLU": "GLU", "E": "GLU", "GLH": "GLU",
+               "GLN": "GLN", "Q": "GLN", "GLY": "GLY", "G": "GLY",
+               "HIS": "HIS", 'H': "HIS", "HID": "HIS", "HIE": "HIS",
+               "HIP": "HIS", "HSE": "HIS", "HSD": "HIS", "HSP": "HIS",
+               "ILE": "ILE", "I": "ILE", "LEU": "LEU", "L": "LEU",
+               "LYS": "LYS", "K": "LYS", "LYN": "LYS",
+               "MET": "MET", "M": "MET", "AMET": "MET", "BMET": "MET",
+               "PHE": "PHE", "F": "PHE", "PRO": "PRO", "P": "PRO",
+               "SER": "SER", "S": "SER", "ASER": "SER", "BSER": "SER",
+               "THR": "THR", 'T': "THR", "TRP": "TRP", "W": "TRP",
+               "TYR": "TYR", "Y", 'TYR', "VAL": "VAL", 'V': "VAL"
+               }
+
 # ---Geo_Check_Metrics------
 dict_oct_check_loose = {"mono": {'num_coord_metal': 6,
                                  'rmsd_max': 0.4, 'atom_dist_max': 0.6,
