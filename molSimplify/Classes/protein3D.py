@@ -29,10 +29,8 @@ class protein3D:
         self.nchains = 0
         # Dictionary of amino acids
         self.aas = {}
-        # Dictionary of molecules not part of proteins
-        self.hetmols = {}
-        # Tuple of heteroatoms with associated chains
-        self.hetatms = self.hetmols.values()
+        # Dictionary of heteroatoms
+        self.hetatms = {}
         # Dictionary of chains
         self.chains = {}
         # Dictionary of missing atoms
@@ -59,17 +57,16 @@ class protein3D:
         self.aas = aas
         self.naas = len(aas.keys())
 
-    def setHetatms(self, hetmols):
+    def setHetatms(self, hetatms):
         """ Set heteroatoms of a protein3D class to different heteroatoms.
         Parameters
         ----------
-            hetmols : dictionary
-                Keyed by the molecule that the heteroatoms together form
-                Valued by heteroatoms
+            hetatms : dictionary
+                Keyed by heteroatoms
+                Valued by a list containing the overarching molecule and chain
         """
-        self.hetmols = hetmols
-        self.hetatms = hetmols.values()
-        self.nhetatms = len(hetmols.values())
+        self.hetatms = hetatms
+        self.nhetatms = len(hetatms.values())
 
     def setChains(self, chains):
         """ Set chains of a protein3D class to different chains.
@@ -240,12 +237,11 @@ class protein3D:
             if aa.chain != chain_id:
                 del gone_chain[aa]
         p.setMissingAtoms(gone_chain)
-        gone_het = self.hetatms
-        for het in gone_het.keys():
-            tups = gone_het[het]
-            if tups[1] != chain_id:
-                del gone_chain[het]
-        p.setHetatms(gone_chain)
+        gone_hets = self.hetatms
+        for het in gone_hets.keys():
+            if gone_hets[het][1] != chain_id:
+                del gone_hets[het]
+        p.setHetatms(gone_hets)
         return p
 
     def getResidue(self, atom):
@@ -270,6 +266,38 @@ class protein3D:
                 return aa
         return None # the atom is a heteroatom
 
+    def stripAtoms(self, atoms_stripped)
+        """ Removes certain atoms from the protein3D class instance.
+
+        Parameters
+        ----------
+            atoms_stripped : list
+                list of atom3D class instances that should be removed
+        """
+        for aa in self.aas.keys():
+            for atom in self.aas[aa]:
+                if atom in atoms_stripped:
+                    self.aas[aa].remove(atom)
+                    atoms_stripped.remove(atom)
+       for hetatm in self.hetatms.keys()
+            if hetatm in atoms_stripped:
+                del self.hetatms[hetatm]   
+                atoms_stripped.remove(hetatm)
+
+    def stripHetMol(self, hetmol):
+        """ Removes all heteroatoms part of the specified heteromolecule from
+            the protein3D class instance.
+
+        Parameters
+        ----------
+            hetmol : str
+                String representing the name of a heteromolecule whose
+                heteroatoms should be stripped from the protein3D class instance
+        """
+        for hetatm in self.hetatms.keys()
+            if hetmol in self.hetatms[hetatm]:
+                del self.hetatms[hetatm] 
+        
     def readfrompdb(self, filename):
         """ Read PDB into a protein3D class instance.
 
@@ -284,7 +312,7 @@ class protein3D:
         text = f.read()
         # class attributes
         aas = {}
-        hetmols = {}
+        hetatms = {}
         chains = {}
         missing_atoms = {}
         missing_aas = []
@@ -367,10 +395,10 @@ class protein3D:
                 line = line[:1]
                 text.replace(line, '')
             l = line.split()
-            if l[2] not in hetmols.keys():
-                hetmols[l[2]] = [] # l[2] is the name of a compound
-            hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9], occup=float(l[8]), greek=l[1])
-            hetmols[l[2]].append((hetatm, l[3])) # save the chain too
+            hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
+                            occup=float(l[8]), greek=l[1])
+            if hetatm not in hetatms.keys():
+                hetatms[hetatm] = [l[2], l[3]] # [cmpd name, chain]
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
