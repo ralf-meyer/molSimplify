@@ -280,17 +280,17 @@ class protein3D:
         Parameters
         ----------
             atoms_stripped : list
-                list of atom3D indices that should be removed
+                list of atom3Ds that should be removed
         """
         for aa in self.aas.keys():
             for atom in self.aas[aa][1]:
                 if atom in atoms_stripped:
                     self.aas[aa].remove(atom)
                     atoms_stripped.remove(atom)
-        for (h_id, hetatm) in self.hetatms.keys():
-            if h_id in atoms_stripped:
-                del self.hetatms[(h_id, hetatm)]   
-                atoms_stripped.remove(h_id)
+        for hetatm in self.hetatms.keys():
+            if hetatm in atoms_stripped:
+                del self.hetatms[hetatm]   
+                atoms_stripped.remove(hetatm)
 
     def stripHetMol(self, hetmol):
         """ Removes all heteroatoms part of the specified heteromolecule from
