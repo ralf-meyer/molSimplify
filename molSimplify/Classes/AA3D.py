@@ -31,6 +31,9 @@ class AA3D:
         self.id = id
         # Occupancy of amino acid in chain
         self.occup = occup
+        # Peptide bond atoms
+        self.c = None
+        self.n = None
             
     def identify(self):
         """ States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
@@ -41,10 +44,14 @@ class AA3D:
             Positively charged, Negatively charged, Polar, Hydrophobic
                 
         """
-        if self.name == "ARG" or self.name == "LYS":  return "Positively charged"
-        elif self.name == "ASP" or self.name == "GLU":  return "Negatively charged"
-        elif self.name in {"GLN", "ASN", "HIS", "SER", "THR", "TYR", "CYS"}: return "Polar"
-        else: return "Hydrophobic"
+        if self.three_lc == "ARG" or self.three_lc == "LYS":
+            return "Positively charged"
+        elif self.three_lc == "ASP" or self.three_lc == "GLU":
+            return "Negatively charged"
+        elif self.three_lc in {"GLN", "ASN", "HIS", "SER", "THR", "TYR", "CYS"}:
+            return "Polar"
+        else:
+            return "Hydrophobic"
             
     def getGreek(self, greek):
         """ Finds the Greek lettered carbon(s) or other atom(s) of the user's choice.
@@ -142,7 +149,17 @@ class AA3D:
                         if 'Z' in a.greek or "D" in a.greek:
                             bonds[key].add(a)
                             bonds[a].add(key)
-        return bonds        
+        return bonds
+
+    def setPeptideAtoms(self):
+        """ Sets the atoms involved in peptide bonding as attributes.
+
+        """
+        for a in self.atoms:
+            if a.greek == "C":
+                self.c = a
+            elif a.greek == "N":
+                self.n = a
                     
                             
             
