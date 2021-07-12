@@ -36,6 +36,8 @@ class AA3D:
         self.n = None
         # Bonds
         self.bonds = {}
+        # Next amino acid in the chain
+        self.next = None
             
     def identify(self):
         """ States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
@@ -159,6 +161,16 @@ class AA3D:
                 self.c = a
             elif a.greek == "N":
                 self.n = a
+
+    def setNext(self, next_aa):
+        """ Sets the next amino acid in the chain of a protein (if applicable).
+
+        Parameters
+        ----------
+            next_aa : AA3D
+                the amino acid that is next in the protein chain
+        """
+        self.next = next_aa
                     
                             
             
