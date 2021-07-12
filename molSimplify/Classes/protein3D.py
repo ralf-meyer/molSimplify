@@ -11,6 +11,7 @@ import os
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
 import gzi
+from itertools import chain
 
 # no GUI support for now
 
@@ -30,6 +31,8 @@ class protein3D:
         self.nchains = 0
         # Dictionary of amino acids
         self.aas = {}
+        # Dictionary of all atoms
+        self.atoms = {}
         # Dictionary of heteroatoms
         self.hetatms = {}
         # Dictionary of chains
@@ -48,6 +51,8 @@ class protein3D:
         self.pdbfile = pdbfile
         # Holder for metals
         self.metals = False
+        # Bonds
+        self.bonds = {}
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
@@ -282,10 +287,10 @@ class protein3D:
                 if atom in atoms_stripped:
                     self.aas[aa].remove(atom)
                     atoms_stripped.remove(atom)
-        for hetatm in self.hetatms.keys()
-            if hetatm in atoms_stripped:
-                del self.hetatms[hetatm]   
-                atoms_stripped.remove(hetatm)
+        for (h_id, hetatm) in self.hetatms.keys():
+            if h_id in atoms_stripped:
+                del self.hetatms[(h_id, hetatm)]   
+                atoms_stripped.remove(h_id)
 
     def stripHetMol(self, hetmol):
         """ Removes all heteroatoms part of the specified heteromolecule from
@@ -297,9 +302,9 @@ class protein3D:
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
         """
-        for hetatm in self.hetatms.keys()
-            if hetmol in self.hetatms[hetatm]:
-                del self.hetatms[hetatm] 
+        for h_id, hetatm in self.hetatms.keys():
+            if hetmol in self.hetatms[(h_id, hetatm)]:
+                del self.hetatms[(h_id, hetatm)] 
 
     def findMetal(self, transition_metals_only=True):
         """Find metal(s) in a protein3D class.
@@ -344,6 +349,38 @@ class protein3D:
 
         for h in sorted(Alist, reverse=True):
             self.freezeatom(h)
+
+    def getAtom(self, idx):
+        """Get atom with a given index.
+
+        Parameters
+        ----------
+            idx : int
+                Index of desired atom.
+
+        Returns
+        -------
+            atom : atom3D
+                atom3D class for element at given index.
+
+        """
+
+        return self.atoms[idx]
+
+    def getBoundAAs(self, hetatm):
+        """Get a list of amino acids bound to a heteroatom, usually a metal.
+
+        Parameters
+        ----------
+            hetatm : atom3D
+                the desired (hetero)atom origin
+
+        Returns
+        -------
+            bound_aas : list
+                list of AA3D instances of amino acids bound to hetatm
+        """
+            return 0
     
     def readfrompdb(self, text):
         """ Read PDB into a protein3D class instance.
@@ -362,10 +399,12 @@ class protein3D:
         # class attributes
         aas = {}
         hetatms = {}
+        atoms = {}
         chains = {}
         missing_atoms = {}
         missing_aas = []
         conf = []
+        bonds = {}
         f.close()
         # get R and Rfree values
         temp = text.split("R VALUE            (WORKING SET) : ")
@@ -436,6 +475,12 @@ class protein3D:
             atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
                           occup=float(l[8]), greek=l[1])
             aas[a].append((int(l[0]), atom)) # terminal Os may be missing
+            atoms[int(l[0])] = atom
+            bonds.update(a.bonds)
+            if a.prev != None:
+                bonds[aa.n].add(aa.prev.c)
+            if aa.next != None:
+                bonds[aa.c].add(aa.next.n)
         # start getting hetatoms
         text = text.split('\nHETATM')
         for line in text:
@@ -449,14 +494,28 @@ class protein3D:
                             occup=float(l[8]), greek=l[1])
             if hetatm not in hetatms.keys():
                 hetatms[hetatm] = [l[2], l[3]] # [cmpd name, chain]
+            atoms[int(l[0])] = hetatm
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
                 if conf[i].occup >= conf[i+1].occup:
                     chains[conf[i].chain].append(conf[i])
-                    # pick chain with higher occupancy or the a chain if tie
+                    # pick chain with higher occupancy or the A chain if tie
                 else:
                     chains[conf[i+1].chain].append(conf[i+1])
+        # get extra connections
+        text = text.split('\nCONECT')
+        for line in text:
+            if line == text[-1]:
+                text = line
+                line = line.split('\n')
+                line = line[:1]
+                text.replace(line, '')
+            l = line.split()
+            if atoms[int(l[0])] not in bonds.keys():
+                bonds[atoms[int(l[0])]] = set()
+            for i in l[1:]:
+                bonds[atoms[int(l[0])]].add(atoms[int(i)])
         self.setChains(chains)
         self.setAAs(aas)
         self.setHetatms(hetatms)
@@ -469,7 +528,7 @@ class protein3D:
     def fetch_pdb(self, pdbCode):
         """ API query to fetch a pdb and write it as a protein3D class instance
 
-        parameters
+        Parameters
         ----------
             pdbCode : not sure what this variable is oops
         """
@@ -500,4 +559,15 @@ class protein3D:
             else:
                 print("warning: %s not valid.\n"%pdbCode)
 
+    def setBonds(self, bonds):
+        """Sets the bonded atoms in the protein.
+        This is effectively the molecular graph.
+         
+        Parameters
+        ----------
+            bonds : dictionary
+                Keyed by atom3D atoms in the protein
+                Valued by a set consisting of bonded atoms
+        """
+        self.bonds = bonds
 
