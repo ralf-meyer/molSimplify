@@ -252,13 +252,13 @@ class protein3D:
         p.setHetatms(gone_hets)
         return p
 
-    def getResidue(self, atom):
+    def getResidue(self, a_id):
         """ Finds the amino acid residue that the atom is contained in.
 
         Parameters
         ----------
-            atom : atom3D
-                the desired atom whose residue we want to find
+            a_id : int
+                the index of the desired atom whose residue we want to find
 
         Returns
         -------
@@ -267,10 +267,10 @@ class protein3D:
                 returns None if there is no amino acid
         """
         for aa in self.aas.keys():
-            if atom in self.aas[aa]:
+            if a_id, atoms[a_id] in self.aas[aa]:
                 return aa
         for aa in self.missing_atoms.keys():
-            if atom in self.missing_atoms[aa]:
+            if a_id, atoms[a_id] in self.missing_atoms[aa]:
                 return aa
         return None # the atom is a heteroatom
 
@@ -280,17 +280,17 @@ class protein3D:
         Parameters
         ----------
             atoms_stripped : list
-                list of atom3Ds that should be removed
+                list of atom3D indices that should be removed
         """
         for aa in self.aas.keys():
-            for atom in self.aas[aa][1]:
-                if atom in atoms_stripped:
-                    self.aas[aa].remove(atom)
-                    atoms_stripped.remove(atom)
-        for hetatm in self.hetatms.keys():
-            if hetatm in atoms_stripped:
-                del self.hetatms[hetatm]   
-                atoms_stripped.remove(hetatm)
+            for a_id, atom in self.aas[aa]:
+                if a_id in atoms_stripped:
+                    self.aas[aa].remove((a_id, atom))
+                    atoms_stripped.remove(a_id)
+        for atoms[h_id] in self.hetatms.keys():
+            if h_id in atoms_stripped:
+                del self.hetatms[atoms[h_id]]   
+                atoms_stripped.remove(h_id)
 
     def stripHetMol(self, hetmol):
         """ Removes all heteroatoms part of the specified heteromolecule from
@@ -380,7 +380,11 @@ class protein3D:
             bound_aas : list
                 list of AA3D instances of amino acids bound to hetatm
         """
-            return 0
+        bound_aas = []
+        for b in self.bonds[hetatm]:
+            if self.getResidue(b) != None:
+                bound_aas.append(self.getResidue(b))
+        return bound_aas
     
     def readfrompdb(self, text):
         """ Read PDB into a protein3D class instance.
