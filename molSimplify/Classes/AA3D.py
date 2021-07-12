@@ -118,15 +118,13 @@ class AA3D:
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
         return center_of_mass
 
-    def getBonds(self):
-        """ Gets the bonds between atoms within the amino acid.
+    def setBonds(self):
+        """ Sets the bonds between atoms within the amino acid.
 
-        Returns
-        -------
-            bonds :  dictionary (represents an undirected graph)
-                Keyed by atom3D atoms in the amino acid
-                Valued by a set consisting of bonded atoms
         """
+        # bonds :  dictionary (represents an undirected graph)
+        #        Keyed by atom3D atoms in the amino acid
+        #        Valued by a set consisting of bonded atoms
         for key in self.atoms:
             if key not in self.bonds.keys():
                 self.bonds[key] = set()
