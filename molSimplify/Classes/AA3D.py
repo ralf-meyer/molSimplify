@@ -154,8 +154,8 @@ class AA3D:
                             self.bonds[a].add(key)
         return bonds
 
-    def setPeptideAtoms(self):
-        """ Sets the atoms involved in peptide bonding as attributes.
+    def getPeptideAtoms(self):
+        """ Makes the atoms involved in peptide bonding attributes.
 
         """
         for a in self.atoms:
