@@ -38,6 +38,8 @@ class AA3D:
         self.bonds = {}
         # Next amino acid in the chain
         self.next = None
+        # Previous amino acid in the chain
+        self.prev = None
             
     def identify(self):
         """ States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
@@ -171,6 +173,16 @@ class AA3D:
                 the amino acid that is next in the protein chain
         """
         self.next = next_aa
+
+    def setPrev(self, prev_aa):
+        """ Sets the previous amino acid in the chain of a protein (if applicable).
+
+        Parameters
+        ----------
+            prev_aa : AA3D
+                the amino acid that comes before self in the protein chain
+        """
+        self.prev = prev_aa
                     
                             
             
