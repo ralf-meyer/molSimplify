@@ -107,5 +107,43 @@ class AA3D:
             center_of_mass = False
             print(
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
-        return center_of_mass    
+        return center_of_mass
+
+    def getBonds(self):
+        """ Gets the bonds between atoms within the amino acid.
+
+        Returns
+        -------
+            bonds :  dictionary (represents an undirected graph)
+                Keyed by atom3D atoms in the amino acid
+                Valued by a set consisting of bonded atoms
+        """
+        bonds = {}
+        for key in self.atoms:
+            if key not in bonds.keys():
+                bonds[key] = set()
+                if key.greek == 'C':
+                    for a in self.atoms:
+                        if a.greek == 'O' or a.greek == "CA":
+                            bonds[key].add(a)
+                            bonds[a].add(key)
+                if key.greek == 'CA':
+                    for a in self.atoms:
+                        if a.greek == 'CB' or a.greek == "N":
+                            bonds[key].add(a)
+                            bonds[a].add(key)
+                if "G" in key.greek:
+                    for a in self.atoms:
+                        if 'B' in a.greek or "D" in a.greek:
+                            bonds[key].add(a)
+                            bonds[a].add(key)
+                if "E" in key.greek:
+                    for a in self.atoms:
+                        if 'Z' in a.greek or "D" in a.greek:
+                            bonds[key].add(a)
+                            bonds[a].add(key)
+        return bonds        
+                    
+                            
+            
 
