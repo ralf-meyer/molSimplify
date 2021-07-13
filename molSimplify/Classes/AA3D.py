@@ -206,12 +206,6 @@ class AA3D:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
-        # If partial charge list exists, add partial charge:
-        if len(self.partialcharges) == self.natoms:
-            partialcharge = atom.partialcharge
-            if partialcharge == None:
-                partialcharge = 0.0
-            self.partialcharges.insert(index, partialcharge)
         if atom.frozen:
             self.atoms[index].frozen = True
         self.natoms += 1
