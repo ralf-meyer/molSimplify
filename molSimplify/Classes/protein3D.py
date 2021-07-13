@@ -267,10 +267,10 @@ class protein3D:
                 returns None if there is no amino acid
         """
         for aa in self.aas.keys():
-            if a_id, atoms[a_id] in self.aas[aa]:
+            if (a_id, atoms[a_id]) in self.aas[aa]:
                 return aa
         for aa in self.missing_atoms.keys():
-            if a_id, atoms[a_id] in self.missing_atoms[aa]:
+            if (a_id, atoms[a_id]) in self.missing_atoms[aa]:
                 return aa
         return None # the atom is a heteroatom
 
@@ -283,7 +283,7 @@ class protein3D:
                 list of atom3D indices that should be removed
         """
         for aa in self.aas.keys():
-            for a_id, atom in self.aas[aa]:
+            for (a_id, atom) in self.aas[aa]:
                 if a_id in atoms_stripped:
                     self.aas[aa].remove((a_id, atom))
                     atoms_stripped.remove(a_id)
@@ -302,7 +302,7 @@ class protein3D:
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
         """
-        for h_id, hetatm in self.hetatms.keys():
+        for (h_id, hetatm) in self.hetatms.keys():
             if hetmol in self.hetatms[(h_id, hetatm)]:
                 del self.hetatms[(h_id, hetatm)] 
 
