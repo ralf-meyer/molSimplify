@@ -134,26 +134,25 @@ class AA3D:
             if key not in self.bonds.keys():
                 self.bonds[key] = set()
                 if key.greek == 'C':
-                    for a in self.atoms:
+                    for (a_id, a) in self.atoms:
                         if a.greek == 'O' or a.greek == "CA":
                             self.bonds[key].add(a)
                             self.bonds[a].add(key)
                 if key.greek == 'CA':
-                    for a in self.atoms:
+                    for (a_id, a) in self.atoms:
                         if a.greek == 'CB' or a.greek == "N":
                             self.bonds[key].add(a)
                             self.bonds[a].add(key)
                 if "G" in key.greek:
-                    for a in self.atoms:
+                    for (a_id, a) in self.atoms:
                         if 'B' in a.greek or "D" in a.greek:
                             self.bonds[key].add(a)
                             self.bonds[a].add(key)
                 if "E" in key.greek:
-                    for a in self.atoms:
+                    for (a_id, a) in self.atoms:
                         if 'Z' in a.greek or "D" in a.greek:
                             self.bonds[key].add(a)
                             self.bonds[a].add(key)
-        return bonds
 
     def getPeptideAtoms(self):
         """ Makes the atoms involved in peptide bonding attributes.
@@ -205,12 +204,9 @@ class AA3D:
         if index == None:
             index = len(self.atoms)
         # self.atoms.append(atom)
-        self.atoms.insert(index, atom)
-        if atom.frozen:
-            self.atoms[index].frozen = True
+        self.atoms.append((index, atom))
         self.natoms += 1
         self.mass += atom.mass
-        self.size = self.molsize()
         self.metal = False                     
             
 
