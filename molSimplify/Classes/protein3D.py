@@ -67,6 +67,7 @@ class protein3D:
 
     def setAtoms(self, atoms):
         """ Set atom indices of a protein3D class to atoms.
+        
         Parameters
         ----------
             atoms : dictionary
@@ -77,6 +78,7 @@ class protein3D:
 
     def setHetatms(self, hetatms):
         """ Set heteroatoms of a protein3D class to different heteroatoms.
+        
         Parameters
         ----------
             hetatms : dictionary
