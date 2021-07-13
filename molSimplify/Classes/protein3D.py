@@ -10,7 +10,7 @@ from math import sqrt
 import os
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
-import gzi
+import gzip
 from itertools import chain
 
 # no GUI support for now
@@ -397,8 +397,8 @@ class protein3D:
         """
         if '.pdb' in  text: # means this is a filename
             self.pdbfile = text
-            fname = filename.split('.pdb')[0]
-            f = open(fname + '.pdb', r)
+            fname = text.split('.pdb')[0]
+            f = open(fname + '.pdb', 'r')
             text = f.read()
         # class attributes
         aas = {}
@@ -427,11 +427,12 @@ class protein3D:
             if line == want[-1]:
                 text = line
                 line = line.split('\n')
-                line = line[:1]
-                text.replace(line, '')
+                line = line[0]
+                text = text.replace(line, '')
             l = line.split()
-            a = AA3D(l[0], l[1], l[2])
-            missing_aas.append(a)
+            if len(l) > 2:
+                a = AA3D(l[0], l[1], int(l[2]))
+                missing_aas.append(a)
         # start getting missing atoms
         text = text.split("M RES CSSEQI  ATOMS")
         want = text[-1]
@@ -442,38 +443,44 @@ class protein3D:
             if line == want[-1]: 
                 text = line
                 line = line.split('\n')
-                line = line[:1]
-                text.replace(line, '')
+                line = line[0]
+                text = text.replace(line, '')
             l = line.split()
-            a = AA3D(l[0], l[1], l[2])
-            missing_atoms[a] = []
-            for atom in l[3:]:
-                missing_atoms[a].append(atom3D(Sym=atom))
+            if len(l) > 2:
+                a = AA3D(l[0], l[1], l[2])
+                missing_atoms[a] = []
+                for atom in l[3:]:
+                    missing_atoms[a].append(atom3D(Sym=atom))
         # start getting chains - initialize keys of dictionary
         text = text.split('\nSEQRES')
         for line in text:
             if line == text[-1]:
                 text = line
                 line = line.split('\n')
-                line = line[:1]
-                text.replace(line, '')
-            l = line.split()
-            if l[2] not in chains.keys():
-                chains[l[2]] = [] # this just gets the letter of the chain
+                line = line[0]
+                text = text.replace(line, '')
+            if len(l) > 1:
+                l = line.split()
+                if l[1] not in chains.keys():
+                    chains[l[1]] = [] # this just gets the letter of the chain
         # start getting amino acids
         text = text.split('\nATOM')
+        text = text[1:]
         for line in text:
             if line == text[-1]:
                 text = line
                 line = line.split('\n')
-                line = line[:1]
-                text.replace(line, '')
+                line = line[0]
+                text = text.replace(line, '')
             l = line.split()
+            if len(l[1]) > 3: # fixes buggy splitting
+                l2 = l
+                l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
             a = AA3D(l[2], l[3], l[4], float(l[8]))
-            if int(l[8]) != 1 and a not in conf:
+            if int(float(l[8])) != 1 and a not in conf:
                 conf.append(a)
-            if a not in chains[l[2]] and a not in conf:
-                chains[l[2]].append(a)
+            if a not in chains[l[3]] and a not in conf:
+                chains[l[3]].append(a)
             if a not in aas.keys():
                 aas[a] = []
             atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
@@ -482,19 +489,19 @@ class protein3D:
             atoms[int(l[0])] = atom
             bonds.update(a.bonds)
             if a.prev != None:
-                bonds[aa.n].add(aa.prev.c)
-            if aa.next != None:
-                bonds[aa.c].add(aa.next.n)
+                bonds[a.n].add(a.prev.c)
+            if a.next != None:
+                bonds[a.c].add(a.next.n)
         # start getting hetatoms
         text = text.split('\nHETATM')
-        for line in text:
+        for line in text[1:]: # remove the terminus line
             if line == text[-1]:
                 text = line
                 line = line.split('\n')
-                line = line[:1]
-                text.replace(line, '')
+                line = line[0]
+                text = text.replace(line, "")
             l = line.split()
-            hetatm = atom3D(sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
+            hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                             occup=float(l[8]), greek=l[1])
             if hetatm not in hetatms.keys():
                 hetatms[hetatm] = [l[2], l[3]] # [cmpd name, chain]
@@ -513,10 +520,10 @@ class protein3D:
             if line == text[-1]:
                 text = line
                 line = line.split('\n')
-                line = line[:1]
-                text.replace(line, '')
+                line = line[0]
+                text = text.replace(line, '')
             l = line.split()
-            if atoms[int(l[0])] not in bonds.keys():
+            if l != [] and atoms[int(l[0])] not in bonds.keys():
                 bonds[atoms[int(l[0])]] = set()
             for i in l[1:]:
                 bonds[atoms[int(l[0])]].add(atoms[int(i)])
