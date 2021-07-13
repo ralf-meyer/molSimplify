@@ -12,6 +12,7 @@ from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
 import gzip
 from itertools import chain
+import urllib.request as urllib
 
 # no GUI support for now
 
@@ -423,11 +424,15 @@ class protein3D:
                 String of path to PDB file. Path may be local or global.
                 May also be the text of a PDB file from the internet.
         """
-        if '.pdb' in  text: # means this is a filename
+        if '.pdb' in text: # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
             f = open(fname + '.pdb', 'r')
             text = f.read()
+            enter = '\n'
+            f.close()
+        else:
+            enter = "\\n"
         # class attributes
         aas = set()
         hetatms = {}
@@ -437,25 +442,24 @@ class protein3D:
         missing_aas = []
         conf = []
         bonds = {}
-        f.close()
         # get R and Rfree values
         temp = text.split("R VALUE            (WORKING SET) : ")
         temp = temp[-1]
-        temp = temp.split('\nREMARK   3   FREE R VALUE                     : ')
+        temp = temp.split(enter + 'REMARK   3   FREE R VALUE                     : ')
         R = float(temp[0])
-        temp = temp[1].split('\n')
+        temp = temp[1].split(enter)
         Rfree = float(temp[0])
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
             text = text.split("M RES C SSSEQI")
             want = text[-1]
-            text = text[0].split('\n')
+            text = text[0].split(enter)
             split = text[-1]
             want = want.split(split)
             for line in want:
                 if line == want[-1]:
                     text = line
-                    line = line.split('\n')
+                    line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
                 l = line.split()
@@ -466,13 +470,13 @@ class protein3D:
         if "M RES CSSEQI  ATOMS" in text:
             text = text.split("M RES CSSEQI  ATOMS")
             want = text[-1]
-            text = text[0].split('\n')
+            text = text[0].split(enter)
             split = text[-1]
             want = want.split(split)
             for line in want:
                 if line == want[-1]: 
                     text = line
-                    line = line.split('\n')
+                    line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
                 l = line.split()
@@ -480,14 +484,15 @@ class protein3D:
                     a = AA3D(l[0], l[1], l[2])
                     missing_atoms[a] = []
                     for atom in l[3:]:
-                        missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
+                        if atom != enter:
+                            missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids
-        text = text.split('\nATOM')
+        text = text.split(enter + 'ATOM')
         text = text[1:]
         for line in text:
             if line == text[-1]:
                 text = line
-                line = line.split('\n')
+                line = line.split(enter)
                 line = line[0]
                 text = text.replace(line, '')
             l = line.split()
@@ -513,11 +518,11 @@ class protein3D:
             if a.next != None:
                 bonds[a.c].add(a.next.n)
         # start getting hetatoms
-        text = text.split('\nHETATM')
+        text = text.split(enter + 'HETATM')
         for line in text[1:]: # remove the terminus line
             if line == text[-1]:
                 text = line
-                line = line.split('\n')
+                line = line.split(enter)
                 line = line[0]
                 text = text.replace(line, "")
             l = line.split()
@@ -537,11 +542,11 @@ class protein3D:
                 else:
                     chains[conf[i+1].chain].append(conf[i+1])
         # get extra connections
-        text = text.split('\nCONECT')
+        text = text.split(enter + 'CONECT')
         for line in text:
             if line == text[-1]:
                 text = line
-                line = line.split('\n')
+                line = line.split(enter)
                 line = line[0]
                 text = text.replace(line, '')
             l = line.split()
@@ -568,32 +573,22 @@ class protein3D:
             pdbCode : str
                 code for protein, e.g. 1os7
         """
-        try:
-            import urllib.request as urllib
-        except ImportError:
-            import urllib                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-
         remoteCode = pdbCode.upper()
-        if not os.path.exists(pdb_dir):
-            os.mkdir(pdb_dir)
         try:
-            filename = urllib.urlretrieve(
-                'http://www.rcsb.org/pdb/cgi/export.cgi/' + remoteCode +
-                '.pdb.gz?format=PDB&pdbId=' + remoteCode +
-                '&compression=gz')[0]
-            temp_p = protein3D(pdbfile=filename)
+            data = urllib.urlopen(
+                'https://files.rcsb.org/view/' + remoteCode +
+                '.pdb').read()
         except:
             print("warning: %s not found.\n"%pdbCode)
         else:
-            if (os.path.getsize(filename) > 0): # If 0, pdb code was invalid
-                try:
-                    abort = 0
-                    temp_p.readfrompdb(gzip.open(filename).read())
-                    print("fetched: %s"%(pdbCode))
-                except IOError:
-                    print('aborted')
+            try:
+                self.readfrompdb(str(data))
+                print("fetched: %s"%(pdbCode))
+            except IOError:
+                print('aborted')
             else:
-                print("warning: %s not valid.\n"%pdbCode)
+                if len(data) == 0:
+                    print("warning: %s not valid.\n"%pdbCode)
 
     def setBonds(self, bonds):
         """Sets the bonded atoms in the protein.
