@@ -89,7 +89,7 @@ class AA3D:
         """
         coord_string = ''  # initialize returning string
         coord_string += "%d \n\n" % self.natoms
-        for atom in self.atoms:
+        for (ii, atom) in self.atoms:
             xyz = atom.coords()
             coord_string += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return coord_string
@@ -106,7 +106,7 @@ class AA3D:
         mmass = 0
         # loop over atoms in molecule
         if self.natoms > 0:
-            for atom in self.atoms:
+            for (ii, atom) in self.atoms:
                 # calculate center of mass (relative weight according to atomic mass)
                 xyz = atom.coords()
                 center_of_mass[0] += xyz[0] * atom.mass
