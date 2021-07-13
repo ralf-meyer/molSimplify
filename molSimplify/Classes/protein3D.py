@@ -277,10 +277,10 @@ class protein3D:
                 returns None if there is no amino acid
         """
         for aa in self.aas.keys():
-            if (a_id, atoms[a_id]) in self.aas[aa]:
+            if (a_id, self.atoms[a_id]) in self.aas[aa]:
                 return aa
         for aa in self.missing_atoms.keys():
-            if (a_id, atoms[a_id]) in self.missing_atoms[aa]:
+            if (a_id, self.atoms[a_id]) in self.missing_atoms[aa]:
                 return aa
         return None # the atom is a heteroatom
 
@@ -297,7 +297,7 @@ class protein3D:
                 if a_id in atoms_stripped:
                     self.aas[aa].remove((a_id, atom))
                     atoms_stripped.remove(a_id)
-        for atoms[h_id] in self.hetatms.keys():
+        for self.atoms[h_id] in self.hetatms.keys():
             if h_id in atoms_stripped:
                 del self.hetatms[atoms[h_id]]   
                 atoms_stripped.remove(h_id)
@@ -377,13 +377,13 @@ class protein3D:
 
         return self.atoms[idx]
 
-    def getBoundAAs(self, hetatm):
+    def getBoundAAs(self, h_id):
         """Get a list of amino acids bound to a heteroatom, usually a metal.
 
         Parameters
         ----------
-            hetatm : atom3D
-                the desired (hetero)atom origin
+            hetatm : int
+                the index of the desired (hetero)atom origin
 
         Returns
         -------
@@ -391,9 +391,10 @@ class protein3D:
                 list of AA3D instances of amino acids bound to hetatm
         """
         bound_aas = []
-        for b in self.bonds[hetatm]:
-            if self.getResidue(b) != None:
-                bound_aas.append(self.getResidue(b))
+        for b_id in self.atoms.keys():
+            if self.atoms[b_id] in self.bonds[self.atoms[h_id]]:
+                if self.getResidue(b_id) != None:
+                    bound_aas.append(self.getResidue(b_id))
         return bound_aas
     
     def readfrompdb(self, text):
@@ -460,7 +461,7 @@ class protein3D:
                 a = AA3D(l[0], l[1], l[2])
                 missing_atoms[a] = []
                 for atom in l[3:]:
-                    missing_atoms[a].append(atom3D(Sym=atom))
+                    missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
         # start getting chains - initialize keys of dictionary
         text = text.split('\nSEQRES')
         for line in text:
@@ -511,6 +512,8 @@ class protein3D:
                 line = line[0]
                 text = text.replace(line, "")
             l = line.split()
+            if l[-1] == "FE":
+                l[-1] = 'Fe' # fix case
             hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                             occup=float(l[8]), greek=l[1])
             if hetatm not in hetatms.keys():
