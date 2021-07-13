@@ -74,8 +74,9 @@ class AA3D:
                 
         """
         greek_atoms = []
-        for a in self.atoms:
-                if greek in a.greek: greek_atoms.append(a)
+        for (ii, a) in self.atoms:
+            if greek in a.greek:
+                greek_atoms.append(a)
         return greek_atoms
 
     def coords(self):
@@ -129,7 +130,7 @@ class AA3D:
         # bonds :  dictionary (represents an undirected graph)
         #        Keyed by atom3D atoms in the amino acid
         #        Valued by a set consisting of bonded atoms
-        for key in self.atoms:
+        for (ii, key) in self.atoms:
             if key not in self.bonds.keys():
                 self.bonds[key] = set()
                 if key.greek == 'C':
@@ -158,7 +159,7 @@ class AA3D:
         """ Makes the atoms involved in peptide bonding attributes.
 
         """
-        for a in self.atoms:
+        for (ii, a) in self.atoms:
             if a.greek == "C":
                 self.c = a
             elif a.greek == "N":
