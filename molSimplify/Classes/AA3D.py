@@ -184,6 +184,38 @@ class AA3D:
         """
         self.prev = prev_aa
                     
-                            
+    def addAtom(self, atom, index=None):
+        """Adds an atom to the atoms attribute, which contains a list of 
+        atom3D class instances. 
+        
+        Parameters
+        ----------
+            atom : atom3D
+                atom3D class instance of added atom.
+            index : int, optional
+                Index of added atom. Default is None.
+            auto_populate_BO_dict : bool, optional
+                Populate bond order dictionary with newly added atom. Default is True.
+        
+        >>> C_atom = atom3D('C',[1, 1, 1])
+        >>> complex_mol.addAtom(C_atom) # Add carbon atom at cartesian position 1, 1, 1 to mol3D object. 
+        """
+
+        if index == None:
+            index = len(self.atoms)
+        # self.atoms.append(atom)
+        self.atoms.insert(index, atom)
+        # If partial charge list exists, add partial charge:
+        if len(self.partialcharges) == self.natoms:
+            partialcharge = atom.partialcharge
+            if partialcharge == None:
+                partialcharge = 0.0
+            self.partialcharges.insert(index, partialcharge)
+        if atom.frozen:
+            self.atoms[index].frozen = True
+        self.natoms += 1
+        self.mass += atom.mass
+        self.size = self.molsize()
+        self.metal = False                     
             
 
