@@ -65,6 +65,16 @@ class protein3D:
         self.aas = aas
         self.naas = len(aas.keys())
 
+    def setAtoms(self, atoms):
+        """ Set atom indices of a protein3D class to atoms.
+        Parameters
+        ----------
+            atoms : dictionary
+                Keyed by atom index
+                Valued by atom3D atom that has that index
+        """
+        self.atoms = atoms
+
     def setHetatms(self, hetatms):
         """ Set heteroatoms of a protein3D class to different heteroatoms.
         Parameters
@@ -529,12 +539,14 @@ class protein3D:
                 bonds[atoms[int(l[0])]].add(atoms[int(i)])
         self.setChains(chains)
         self.setAAs(aas)
+        self.setAtoms(atoms)
         self.setHetatms(hetatms)
         self.setMissingAtoms(missing_atoms)
         self.setMissingAAs(missing_aas)
         self.setConf(conf)
         self.setR(R)
         self.setRfree(Rfree)
+        self.setBonds(bonds)
 
     def fetch_pdb(self, pdbCode):
         """ API query to fetch a pdb and write it as a protein3D class instance
