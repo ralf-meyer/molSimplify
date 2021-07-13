@@ -29,8 +29,8 @@ class protein3D:
         self.nhetatms = 0
         # Number of chains
         self.nchains = 0
-        # Dictionary of amino acids
-        self.aas = {}
+        # Set of amino acids
+        self.aas = set()
         # Dictionary of all atoms
         self.atoms = {}
         # Dictionary of heteroatoms
@@ -58,12 +58,11 @@ class protein3D:
         """ Set amino acids of a protein3D class to different amino acids.
         Parameters
         ----------
-            aas : dictionary
-                Keyed by AA3D amino acids
-                Valued by atom3D atoms that are in the amino acids
+            aas : list
+                Contains AA3D amino acids
         """
         self.aas = aas
-        self.naas = len(aas.keys())
+        self.naas = len(aas)
 
     def setAtoms(self, atoms):
         """ Set atom indices of a protein3D class to atoms.
@@ -134,8 +133,8 @@ class protein3D:
 
         Parameters
         ----------
-                R : float
-                        The desired new R value.
+            R : float
+                The desired new R value.
         """
         self.R = R
             
@@ -144,8 +143,8 @@ class protein3D:
 
         Parameters
         ----------
-                Rfree : float
-                        The desired new Rfree value.
+            Rfree : float
+                The desired new Rfree value.
         """
         self.Rfree = Rfree
             
@@ -182,9 +181,10 @@ class protein3D:
                 a list of atom index with the specified symbol.
         """
         inds = []
-        for ii, atom in enumerate(self.aas.values()):
-            if atom.symbol() == sym:
-                inds.append(ii)
+        for aa in self.aas:
+            for (ii, atom) in aa.atoms:
+                if atom.symbol() == sym:
+                    inds.append(ii)
         return inds
 
     def findHetAtom(self, sym="X"):
@@ -202,7 +202,7 @@ class protein3D:
                 a list of atom index with the specified symbol.
         """
         inds = []
-        for ii, atom in enumerate(self.hetatms.values()):
+        for ii, atom in enumerate(self.hetatms.keys()):
             if atom.symbol() == sym:
                 inds.append(ii)
         return inds
@@ -218,13 +218,13 @@ class protein3D:
 
         Returns
         -------
-            inds: list
-                a list of amino acid indices with the specified symbol.
+            inds: set
+                a set of amino acid indices with the specified symbol.
         """
-        inds = []
-        for ii, aa in enumerate(self.aas.keys()):
+        inds = set()
+        for aa in self.aas:
             if aa.three_lc == three_lc:
-                inds.append(ii)
+                inds.add((aa.chain, aa.id))
         return inds
 
     def getChain(self, chain_id):
@@ -241,8 +241,8 @@ class protein3D:
                 A protein3D instance consisting of just the chain of interest
         """
         p = protein3D()
-        p.setChain(chain[chain_id])
-        p.setAAs(p.chain.values())
+        p.setChains({chain_id: self.chains[chain_id]})
+        p.setAAs(set(self.chains[chain_id]))
         p.setR(self.R)
         p.setRfree(self.Rfree)
         missing_aas = []
@@ -250,16 +250,33 @@ class protein3D:
             if aa.chain == chain_id:
                 missing_aas.append(aa)
         p.setMissingAAs(missing_aas)
-        gone_chain = self.missing_atoms
-        for aa in gone_chain.keys():
-            if aa.chain != chain_id:
-                del gone_chain[aa]
-        p.setMissingAtoms(gone_chain)
+        gone_atoms = {}
+        for aa in self.missing_atoms.keys():
+            if aa.chain == chain_id:
+                gone_atoms[aa] = self.missing_atoms[aa]
+        p.setMissingAtoms(gone_atoms)
         gone_hets = self.hetatms
-        for het in gone_hets.keys():
-            if gone_hets[het][1] != chain_id:
-                del gone_hets[het]
+        atoms = {}
+        for a_id in self.atoms:
+            aa = self.getResidue(a_id)
+            if aa != None:
+                if aa.chain == chain_id:
+                    atoms[a_id] = self.atoms[a_id]
+            else:
+                if chain_id not in gone_hets[(a_id, self.atoms[a_id])]:
+                    del gone_hets[(a_id, self.atoms[a_id])]
+                else:
+                    atoms[a_id] = self.atoms[a_id]
         p.setHetatms(gone_hets)
+        p.setAtoms(atoms)
+        bonds = {}
+        for a in self.bonds.keys():
+            if a in p.atoms.values():
+                bonds[a] = set()
+                for b in self.bonds[a]:
+                    if b in p.atoms.values():
+                        bonds[a].add(b)
+        p.setBonds(bonds)
         return p
 
     def getResidue(self, a_id):
@@ -276,8 +293,8 @@ class protein3D:
                 the amino acid residue containing the atom
                 returns None if there is no amino acid
         """
-        for aa in self.aas.keys():
-            if (a_id, self.atoms[a_id]) in self.aas[aa]:
+        for aa in self.aas:
+            if (a_id, self.atoms[a_id]) in aa.atoms:
                 return aa
         for aa in self.missing_atoms.keys():
             if (a_id, self.atoms[a_id]) in self.missing_atoms[aa]:
@@ -292,14 +309,14 @@ class protein3D:
             atoms_stripped : list
                 list of atom3D indices that should be removed
         """
-        for aa in self.aas.keys():
-            for (a_id, atom) in self.aas[aa]:
+        for aa in self.aas:
+            for (a_id, atom) in aa.atoms:
                 if a_id in atoms_stripped:
                     self.aas[aa].remove((a_id, atom))
                     atoms_stripped.remove(a_id)
-        for self.atoms[h_id] in self.hetatms.keys():
+        for (h_id, hetatm) in self.hetatms.keys():
             if h_id in atoms_stripped:
-                del self.hetatms[atoms[h_id]]   
+                del self.hetatms[(h_id, hetatm)]   
                 atoms_stripped.remove(h_id)
 
     def stripHetMol(self, hetmol):
@@ -330,7 +347,7 @@ class protein3D:
         """
         if not self.metals:
             metal_list = []
-            for i, atom in enumerate(self.hetatms.keys()): # no metals in AAs
+            for (i, atom) in self.hetatms.keys(): # no metals in AAs
                 if atom.ismetal(transition_metals_only=transition_metals_only):
                     metal_list.append(i)
             self.metals = metal_list
@@ -412,7 +429,7 @@ class protein3D:
             f = open(fname + '.pdb', 'r')
             text = f.read()
         # class attributes
-        aas = {}
+        aas = set()
         hetatms = {}
         atoms = {}
         chains = {}
@@ -429,51 +446,41 @@ class protein3D:
         temp = temp[1].split('\n')
         Rfree = float(temp[0])
         # start getting missing amino acids
-        text = text.split("M RES C SSSEQI")
-        want = text[-1]
-        text = text[0].split('\n')
-        split = text[-1]
-        want = want.split(split)
-        for line in want:
-            if line == want[-1]:
-                text = line
-                line = line.split('\n')
-                line = line[0]
-                text = text.replace(line, '')
-            l = line.split()
-            if len(l) > 2:
-                a = AA3D(l[0], l[1], int(l[2]))
-                missing_aas.append(a)
-        # start getting missing atoms
-        text = text.split("M RES CSSEQI  ATOMS")
-        want = text[-1]
-        text = text[0].split('\n')
-        split = text[-1]
-        want = want.split(split)
-        for line in want:
-            if line == want[-1]: 
-                text = line
-                line = line.split('\n')
-                line = line[0]
-                text = text.replace(line, '')
-            l = line.split()
-            if len(l) > 2:
-                a = AA3D(l[0], l[1], l[2])
-                missing_atoms[a] = []
-                for atom in l[3:]:
-                    missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
-        # start getting chains - initialize keys of dictionary
-        text = text.split('\nSEQRES')
-        for line in text:
-            if line == text[-1]:
-                text = line
-                line = line.split('\n')
-                line = line[0]
-                text = text.replace(line, '')
-            if len(l) > 1:
+        if "M RES C SSSEQI" in text:
+            text = text.split("M RES C SSSEQI")
+            want = text[-1]
+            text = text[0].split('\n')
+            split = text[-1]
+            want = want.split(split)
+            for line in want:
+                if line == want[-1]:
+                    text = line
+                    line = line.split('\n')
+                    line = line[0]
+                    text = text.replace(line, '')
                 l = line.split()
-                if l[1] not in chains.keys():
-                    chains[l[1]] = [] # this just gets the letter of the chain
+                if len(l) > 2:
+                    a = AA3D(l[0], l[1], int(l[2]))
+                    missing_aas.append(a)
+        # start getting missing atoms
+        if "M RES CSSEQI  ATOMS" in text:
+            text = text.split("M RES CSSEQI  ATOMS")
+            want = text[-1]
+            text = text[0].split('\n')
+            split = text[-1]
+            want = want.split(split)
+            for line in want:
+                if line == want[-1]: 
+                    text = line
+                    line = line.split('\n')
+                    line = line[0]
+                    text = text.replace(line, '')
+                l = line.split()
+                if len(l) > 2:
+                    a = AA3D(l[0], l[1], l[2])
+                    missing_atoms[a] = []
+                    for atom in l[3:]:
+                        missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids
         text = text.split('\nATOM')
         text = text[1:]
@@ -488,16 +495,18 @@ class protein3D:
                 l2 = l
                 l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
             a = AA3D(l[2], l[3], l[4], float(l[8]))
+            if l[3] not in chains.keys():
+                chains[l[3]] = [] # initialize key of chain dictionary
             if int(float(l[8])) != 1 and a not in conf:
                 conf.append(a)
             if a not in chains[l[3]] and a not in conf:
                 chains[l[3]].append(a)
-            if a not in aas.keys():
-                aas[a] = []
+            aas.add(a)
             atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
                           occup=float(l[8]), greek=l[1])
-            aas[a].append((int(l[0]), atom)) # terminal Os may be missing
+            a.addAtom(atom, int(l[0])) # terminal Os may be missing
             atoms[int(l[0])] = atom
+            a.setBonds()
             bonds.update(a.bonds)
             if a.prev != None:
                 bonds[a.n].add(a.prev.c)
@@ -516,8 +525,8 @@ class protein3D:
                 l[-1] = 'Fe' # fix case
             hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                             occup=float(l[8]), greek=l[1])
-            if hetatm not in hetatms.keys():
-                hetatms[hetatm] = [l[2], l[3]] # [cmpd name, chain]
+            if (int(l[0]), hetatm) not in hetatms.keys():
+                hetatms[(int(l[0]), hetatm)] = [l[2], l[3]] # [cmpd name, chain]
             atoms[int(l[0])] = hetatm
         # deal with conformations
         for i in range(len(conf)-1):
@@ -556,7 +565,8 @@ class protein3D:
 
         Parameters
         ----------
-            pdbCode : not sure what this variable is oops
+            pdbCode : str
+                code for protein, e.g. 1os7
         """
         try:
             import urllib.request as urllib
