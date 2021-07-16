@@ -402,7 +402,7 @@ class protein3D:
 
         Parameters
         ----------
-            hetatm : int
+            h_id : int
                 the index of the desired (hetero)atom origin
 
         Returns
@@ -445,10 +445,10 @@ class protein3D:
         conf = []
         bonds = {}
         # get R and Rfree values
-        temp = text.split("R VALUE            (WORKING SET) : ")
-        temp = temp[-1]
-        temp = temp.split(enter + 'REMARK   3   FREE R VALUE                     : ')
-        R = float(temp[0])
+        temp = text.split("R VALUE            (WORKING SET)")
+        temp2 = temp[-1].split()
+        R = float(temp2[1])
+        R = float(temp2[8])
         temp = temp[1].split(enter)
         Rfree = float(temp[0])
         # start getting missing amino acids
