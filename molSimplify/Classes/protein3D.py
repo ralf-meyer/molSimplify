@@ -450,7 +450,6 @@ class protein3D:
         R = float(temp2[1])
         R = float(temp2[8])
         temp = temp[1].split(enter)
-        Rfree = float(temp[0])
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
             text = text.split("M RES C SSSEQI")
