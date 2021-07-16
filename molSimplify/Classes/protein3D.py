@@ -500,6 +500,9 @@ class protein3D:
             if len(l[1]) > 3: # fixes buggy splitting
                 l2 = l
                 l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
+            if len(l[8]) > 4: # fixes buggy splitting
+                l2 = l
+                l = l2[:7] + [l2[8][:4], l2[8][4:]] + l2[9:]
             a = AA3D(l[2], l[3], l[4], float(l[8]))
             if l[3] not in chains.keys():
                 chains[l[3]] = [] # initialize key of chain dictionary
@@ -529,6 +532,9 @@ class protein3D:
             l = line.split()
             if l[-1] == "FE":
                 l[-1] = 'Fe' # fix case
+            if len(l[8]) > 4: # fixes buggy splitting
+                l2 = l
+                l = l2[:7] + [l2[8][:4], l2[8][4:]] + l2[9:]
             hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                             occup=float(l[8]), greek=l[1])
             if (int(l[0]), hetatm) not in hetatms.keys():
