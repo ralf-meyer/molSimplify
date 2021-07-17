@@ -448,7 +448,7 @@ class protein3D:
         temp = text.split("R VALUE            (WORKING SET)")
         temp2 = temp[-1].split()
         R = float(temp2[1])
-        R = float(temp2[8])
+        Rfree = float(temp2[8])
         temp = temp[1].split(enter)
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
@@ -487,8 +487,8 @@ class protein3D:
                     for atom in l[3:]:
                         if atom != enter:
                             missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
-        # start getting amino acids
-        text = text.split(enter + 'ATOM')
+        # start getting amino acids and heteroatoms
+        text = text.split(enter)
         text = text[1:]
         for line in text:
             if line == text[-1]:
@@ -497,49 +497,94 @@ class protein3D:
                 line = line[0]
                 text = text.replace(line, '')
             l = line.split()
-            if len(l[1]) > 3: # fixes buggy splitting
-                l2 = l
-                l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-            if len(l[8]) > 4: # fixes buggy splitting
-                l2 = l
-                l = l2[:7] + [l2[8][:4], l2[8][4:]] + l2[9:]
-            a = AA3D(l[2], l[3], l[4], float(l[8]))
-            if l[3] not in chains.keys():
-                chains[l[3]] = [] # initialize key of chain dictionary
-            if int(float(l[8])) != 1 and a not in conf:
-                conf.append(a)
-            if a not in chains[l[3]] and a not in conf:
-                chains[l[3]].append(a)
-            aas.add(a)
-            atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
-                          occup=float(l[8]), greek=l[1])
-            a.addAtom(atom, int(l[0])) # terminal Os may be missing
-            atoms[int(l[0])] = atom
-            a.setBonds()
-            bonds.update(a.bonds)
-            if a.prev != None:
-                bonds[a.n].add(a.prev.c)
-            if a.next != None:
-                bonds[a.c].add(a.next.n)
-        # start getting hetatoms
-        text = text.split(enter + 'HETATM')
-        for line in text[1:]: # remove the terminus line
-            if line == text[-1]:
-                text = line
-                line = line.split(enter)
-                line = line[0]
-                text = text.replace(line, "")
-            l = line.split()
-            if l[-1] == "FE":
-                l[-1] = 'Fe' # fix case
-            if len(l[8]) > 4: # fixes buggy splitting
-                l2 = l
-                l = l2[:7] + [l2[8][:4], l2[8][4:]] + l2[9:]
-            hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
-                            occup=float(l[8]), greek=l[1])
-            if (int(l[0]), hetatm) not in hetatms.keys():
-                hetatms[(int(l[0]), hetatm)] = [l[2], l[3]] # [cmpd name, chain]
-            atoms[int(l[0])] = hetatm
+            l_type = l[0]
+            l = l[1:]
+            if "ATOM" in l_type: # we are in an amino acid
+                if len(l_type) > 4: # fixes buggy splitting
+                    l = [l_type[4:]] + l
+                if len(l[1]) > 3: # fixes buggy splitting
+                    l2 = l
+                    l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:10]
+                if len(l[8]) > 4: # fixes buggy splitting
+                    l2 = l
+                    l = l2[:8] + [l2[8][:4], l2[8][4:]] + l2[9:10]
+                a = AA3D(l[2], l[3], l[4], float(l[8]))
+                if l[3] not in chains.keys():
+                    chains[l[3]] = [] # initialize key of chain dictionary
+                if int(float(l[8])) != 1 and a not in conf:
+                    conf.append(a)
+                if a not in chains[l[3]] and a not in conf:
+                    chains[l[3]].append(a)
+                aas.add(a)
+                atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
+                              occup=float(l[8]), greek=l[1])
+                a.addAtom(atom, int(l[0])) # terminal Os may be missing
+                atoms[int(l[0])] = atom
+                a.setBonds()
+                bonds.update(a.bonds)
+                if a.prev != None:
+                    bonds[a.n].add(a.prev.c)
+                if a.next != None:
+                    bonds[a.c].add(a.next.n)
+            elif "HETATM" in l_type: # this is a heteroatom
+                if len(l_type) > 6: # fixes buggy splitting
+                    l = [l_type[6:]] + l
+                if '1+' in l[-1] or '2+' in l[-1]:
+                    l[-1] = l[-1][:(len(l[-1]) - 2)]
+                if len(l[-1]) == 2:
+                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
+                # fixes buggy splitting
+                if len(l[3]) > 1:
+                    l2 = l
+                    l = l2[:2] + [l2[3][:1], l2[3][1:]] + l2[4:10]
+                if len(l[8]) > 4: 
+                    l2 = l
+                    l = l2[:7] + [l2[8][:4], l2[8][4:]] + l2[9:10]
+                hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
+                                occup=float(l[8]), greek=l[1])
+                if (int(l[0]), hetatm) not in hetatms.keys():
+                    hetatms[(int(l[0]), hetatm)] = [l[2], l[3]] # [cmpd name, chain]
+                atoms[int(l[0])] = hetatm
+            elif "CONECT" in l_type: # get extra connections
+                if len(l_type) > 6: # fixes buggy splitting
+                    l = [l_type[6:]] + l
+                l2 = []
+                for i in range(len(l)):
+                    if int(l[i]) > len(atoms): # fixing buggy spacing
+                        if int(l[i][:5]) in atoms.keys():
+                            l2.append(l[i][:5])
+                            if int(l[i][5:]) > len(atoms):
+                                l2.append(l[i][5:10])
+                                if int(l[i][10:]) > len(atoms):
+                                    l2.append(l[i][10:15])
+                                    if int(l[i][15:]) > len(atoms):
+                                        l2.append(l[i][15:20])
+                                        l2.append(l[i][20:])
+                                    else:
+                                        l2.append(l[i][15:])
+                                else:
+                                    l2.append(l[i][10:])
+                            else:
+                                l2.append(l[i][5:])
+                        else:
+                            l2.append(l[i][:4])
+                            if int(l[i][4:]) > len(atoms):
+                                l2.append(l[i][4:9])
+                                if int(l[i][9:]) > len(atoms):
+                                    l2.append(l[i][9:14])
+                                    l2.append(l[i][14:])
+                                else:
+                                    l2.append(l[i][9:])
+                            else:
+                                l2.append(l[i][4:])
+                    else:
+                        l2.append(l[i])
+                l = l2
+                if l != [] and atoms[int(l[0])] not in bonds.keys():
+                    bonds[atoms[int(l[0])]] = set()
+                for i in l[1:]:
+                    if i != '':
+                        bonds[atoms[int(l[0])]].add(atoms[int(i)])
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
@@ -548,19 +593,6 @@ class protein3D:
                     # pick chain with higher occupancy or the A chain if tie
                 else:
                     chains[conf[i+1].chain].append(conf[i+1])
-        # get extra connections
-        text = text.split(enter + 'CONECT')
-        for line in text:
-            if line == text[-1]:
-                text = line
-                line = line.split(enter)
-                line = line[0]
-                text = text.replace(line, '')
-            l = line.split()
-            if l != [] and atoms[int(l[0])] not in bonds.keys():
-                bonds[atoms[int(l[0])]] = set()
-            for i in l[1:]:
-                bonds[atoms[int(l[0])]].add(atoms[int(i)])
         self.setChains(chains)
         self.setAAs(aas)
         self.setAtoms(atoms)
