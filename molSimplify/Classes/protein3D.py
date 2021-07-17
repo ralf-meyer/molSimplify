@@ -536,10 +536,10 @@ class protein3D:
                 # fixes buggy splitting
                 if len(l[3]) > 1:
                     l2 = l
-                    l = l2[:2] + [l2[3][:1], l2[3][1:]] + l2[4:10]
+                    l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:10]
                 if len(l[8]) > 4: 
                     l2 = l
-                    l = l2[:7] + [l2[8][:4], l2[8][4:]] + l2[9:10]
+                    l = l2[:8] + [l2[8][:4], l2[8][4:]] + l2[9:10]
                 hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                                 occup=float(l[8]), greek=l[1])
                 if (int(l[0]), hetatm) not in hetatms.keys():
@@ -550,35 +550,15 @@ class protein3D:
                     l = [l_type[6:]] + l
                 l2 = []
                 for i in range(len(l)):
-                    if int(l[i]) > len(atoms): # fixing buggy spacing
-                        if int(l[i][:5]) in atoms.keys():
-                            l2.append(l[i][:5])
-                            if int(l[i][5:]) > len(atoms):
-                                l2.append(l[i][5:10])
-                                if int(l[i][10:]) > len(atoms):
-                                    l2.append(l[i][10:15])
-                                    if int(l[i][15:]) > len(atoms):
-                                        l2.append(l[i][15:20])
-                                        l2.append(l[i][20:])
-                                    else:
-                                        l2.append(l[i][15:])
-                                else:
-                                    l2.append(l[i][10:])
-                            else:
-                                l2.append(l[i][5:])
+                    x = l[i]
+                    while int(x) not in atoms.keys(): # fixing buggy spacing
+                        if int(x[:5]) in atoms.keys():
+                            l2.append(x[:5])
+                            x = x[5:]
                         else:
-                            l2.append(l[i][:4])
-                            if int(l[i][4:]) > len(atoms):
-                                l2.append(l[i][4:9])
-                                if int(l[i][9:]) > len(atoms):
-                                    l2.append(l[i][9:14])
-                                    l2.append(l[i][14:])
-                                else:
-                                    l2.append(l[i][9:])
-                            else:
-                                l2.append(l[i][4:])
-                    else:
-                        l2.append(l[i])
+                            l2.append(x[:4])
+                            x = x[4:]
+                    l2.append(x)
                 l = l2
                 if l != [] and atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()
