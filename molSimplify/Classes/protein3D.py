@@ -54,6 +54,14 @@ class protein3D:
         self.metals = False
         # Bonds
         self.bonds = {}
+        # Data completeness
+        self.DataCompleteness = 0
+        # RSRZ value
+        self.RSRZ = 100
+        # TwinL score
+        self.TwinL = 0
+        # TwinL^2 score
+        self.TwinL2 = 0
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
@@ -445,10 +453,28 @@ class protein3D:
         conf = []
         bonds = {}
         # get R and Rfree values
-        temp = text.split("R VALUE            (WORKING SET)")
-        temp2 = temp[-1].split()
-        R = float(temp2[1])
-        Rfree = float(temp2[8])
+        if "R VALUE            (WORKING SET)" in text:
+            temp = text.split("R VALUE            (WORKING SET)")
+            temp2 = temp[-1].split()
+            if temp2[1] != 'NULL':
+                R = float(temp2[1])
+            else:
+                R = -100
+            if temp2[8] != 'NULL':
+                Rfree = float(temp2[8])
+            else:
+                Rfree = 100
+        else:
+            temp = text.split("R VALUE          (WORKING SET, NO CUTOFF)")
+            temp2 = temp[-1].split()
+            if temp2[1] != 'NULL':
+                R = float(temp2[1])
+            else:
+                R = -100
+            if temp2[10] != 'NULL':
+                Rfree = float(temp2[10])
+            else:
+                Rfree = 100
         temp = temp[1].split(enter)
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
@@ -465,7 +491,7 @@ class protein3D:
                     text = text.replace(line, '')
                 l = line.split()
                 if len(l) > 2:
-                    a = AA3D(l[0], l[1], int(l[2]))
+                    a = AA3D(l[0], l[1], l[2])
                     missing_aas.append(a)
         # start getting missing atoms
         if "M RES CSSEQI  ATOMS" in text:
@@ -500,14 +526,59 @@ class protein3D:
             l_type = l[0]
             l = l[1:]
             if "ATOM" in l_type: # we are in an amino acid
-                if len(l_type) > 4: # fixes buggy splitting
+                if '+' in l[-1] or '-' in l[-1]: # fix charge of Sym
+                    l[-1] = l[-1][:(len(l[-1]) - 2)]
+                if '0' in l[-1]: # fix number attached
+                    l[-1] = l[-1][:(len(l[-1]) - 1)]
+                if len(l[-1]) == 2:
+                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
+                # fix buggy splitting
+                if len(l_type) > 4: 
                     l = [l_type[4:]] + l
-                if len(l[1]) > 3: # fixes buggy splitting
+                if len(l[1]) > 3 and len(l) != 11:
                     l2 = l
-                    l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:10]
-                if len(l[8]) > 4: # fixes buggy splitting
+                    if len(l[1]) > 4 and (l[1][4] == 'A' or l[1][4] == 'B'):
+                        l = [l2[0], l2[1][:4], l2[1][4:]] + l2[2:]
+                    elif l[1][3] == 'A' or l[1][3] == 'B':
+                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
+                    elif ('1' in l[2] or len(l[2]) == 1):
+                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
+                if len(l[3]) > 1:
                     l2 = l
-                    l = l2[:8] + [l2[8][:4], l2[8][4:]] + l2[9:10]
+                    if len(l[2]) != 1:
+                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
+                    else:
+                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
+                if len(l) > 11 and len(l[2]) == 1:
+                    l2 = l
+                    l = [l2[0], l2[1]+l2[2]] + l2[3:]
+                if len(l[2]) == 1 and len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
+                    l2 = l
+                    l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
+                if '-' in l[5][1:]: # fix coordinates
+                    y = l[5]
+                    y = l[5].split('-')
+                    if y[0] != '':
+                        l = l[:5] + [y[0], '-'+y[1]] + l[6:]
+                    else:
+                        l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
+                if '-' in l[6][1:]:
+                    y = l[6]
+                    y = l[6].split('-')
+                    if y[0] != '':
+                        l = l[:6] + [y[0], '-'+y[1]] + l[7:]
+                    else:
+                        l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
+                if '-' in l[7][1:]:
+                    y = l[7]
+                    y = l[7].split('-')
+                    if y[0] != '':
+                        l = l[:7] + [y[0], '-'+y[1]] + l[8:]
+                    else:
+                        l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
+                if len(l[-2]) > 6: 
+                    l2 = l
+                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
                 a = AA3D(l[2], l[3], l[4], float(l[8]))
                 if l[3] not in chains.keys():
                     chains[l[3]] = [] # initialize key of chain dictionary
@@ -529,17 +600,49 @@ class protein3D:
             elif "HETATM" in l_type: # this is a heteroatom
                 if len(l_type) > 6: # fixes buggy splitting
                     l = [l_type[6:]] + l
-                if '1+' in l[-1] or '2+' in l[-1]:
+                if '+' in l[-1] or '-' in l[-1]: # fix charge of sym
                     l[-1] = l[-1][:(len(l[-1]) - 2)]
                 if len(l[-1]) == 2:
                     l[-1] = l[-1][0] + l[-1][1].lower() # fix case
+                if '0' in l[-1]: # fix number attached
+                    l[-1] = l[-1][:(len(l[-1]) - 1)]
                 # fixes buggy splitting
+                if len(l[1]) > 3 and len(l[2]) == 1:
+                    l2 = l
+                    l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:10]
+                if len(l[2]) == 1 and l[3] in l[1]:
+                    l = l[:1] + l[3:]
+                if len(l[1]) > 4:
+                    if l[1][4] == 'A' or l[1][4] == 'B':
+                        l2 = l
+                        l = [l2[0], l2[2][:3], l2[2][3:]] + l2[3:]
                 if len(l[3]) > 1:
                     l2 = l
                     l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:10]
-                if len(l[8]) > 4: 
+                if '-' in l[5][1:]: # fix coordinates
+                    y = l[5]
+                    y = l[5].split('-')
+                    if y[0] != '':
+                        l = l[:5] + [y[0], '-'+y[1]] + l[6:]
+                    else:
+                        l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
+                if '-' in l[6][1:]:
+                    y = l[6]
+                    y = l[6].split('-')
+                    if y[0] != '':
+                        l = l[:6] + [y[0], '-'+y[1]] + l[7:]
+                    else:
+                        l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
+                if '-' in l[7][1:]:
+                    y = l[7]
+                    y = l[7].split('-')
+                    if y[0] != '':
+                        l = l[:7] + [y[0], '-'+y[1]] + l[8:]
+                    else:
+                        l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
+                if len(l[-2]) > 6: 
                     l2 = l
-                    l = l2[:8] + [l2[8][:4], l2[8][4:]] + l2[9:10]
+                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
                 hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                                 occup=float(l[8]), greek=l[1])
                 if (int(l[0]), hetatm) not in hetatms.keys():
@@ -551,13 +654,17 @@ class protein3D:
                 l2 = []
                 for i in range(len(l)):
                     x = l[i]
-                    while int(x) not in atoms.keys(): # fixing buggy spacing
+                    while x != '' and int(x) not in atoms.keys():
                         if int(x[:5]) in atoms.keys():
                             l2.append(x[:5])
                             x = x[5:]
-                        else:
+                        elif int(x[:4]) in atoms.keys():
                             l2.append(x[:4])
                             x = x[4:]
+                        else: # made a wrong turn
+                            y = l2.pop()
+                            l2.append(y[:-1])
+                            x = y[-1] + x
                     l2.append(x)
                 l = l2
                 if l != [] and atoms[int(l[0])] not in bonds.keys():
@@ -620,4 +727,38 @@ class protein3D:
                 Valued by a set consisting of bonded atoms
         """
         self.bonds = bonds
+
+    def readMetaData(self, pdbCode):
+    """ API query to fetch XML data from a pdb and add its useful attributes
+    to a protein3D class.
+
+    Parameters
+    ----------
+        pdbCode : str
+            code for protein, e.g. 1os7
+    """
+    pdbCodes = set()
+    try:
+        link = 'https://files.rcsb.org/pub/pdb/validation_reports/os/' + pdbCode + '/' + pdbCode + '_validation.xml'
+        xml_doc = requests.get(link)
+    except:
+        print("warning not found", pdbCode)
+    else:
+        try:
+            ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
+            soup = BeautifulSoup(xml_doc.content,'lxml-xml')
+            
+            ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections. 
+            ### This is an example of getting everything with a "sec" tag.
+            body = soup.find_all('wwPDB-validation-information')
+            entry = body[0].find_all("Entry")
+            self.setDataCompleteness(entry[0].attrs["DataCompleteness"])
+            self.setRSRZ(entry[0].attrs["percent-RSRZ-outliers"])
+            self.setTwinL(entry[0].attrs["TwinL"])
+            self.setTwinL2(entry[0].attrs["TwinL2"])
+        except IOError:
+            print('aborted')
+        else:
+            if xml_doc == None:
+                print("warning: %s not valid.\n"%pdbCode)
 
