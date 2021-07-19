@@ -525,8 +525,9 @@ class protein3D:
                     a = AA3D(l[0], l[1], l[2])
                     missing_atoms[a] = []
                     for atom in l[3:]:
-                        if atom != enter:
-                            missing_atoms[a].append(atom3D(Sym=atom[0], greek=atom))
+                        if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
+                            missing_atoms[a].append(atom3D(Sym=atom[0],
+                                                           greek=atom))
         # start getting amino acids and heteroatoms
         text = text.split(enter)
         text = text[1:]
@@ -559,7 +560,7 @@ class protein3D:
                         l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
                 if len(l[3]) > 1:
                     l2 = l
-                    if len(l[2]) != 1:
+                    if len(l[2]) != 1 or l[3][1] == '1':
                         l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
                     else:
                         l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
@@ -675,11 +676,15 @@ class protein3D:
                         elif int(x[:4]) in atoms.keys():
                             l2.append(x[:4])
                             x = x[4:]
+                        elif l2 == [] and int(x[:3]) in atoms.keys():
+                            l2.append(x[:3])
+                            x = x[3:]
                         else: # made a wrong turn
                             y = l2.pop()
                             l2.append(y[:-1])
                             x = y[-1] + x
-                    l2.append(x)
+                    if x != '':
+                        l2.append(x)
                 l = l2
                 if l != [] and atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()
@@ -743,38 +748,38 @@ class protein3D:
         self.bonds = bonds
 
     def readMetaData(self, pdbCode):
-    """ API query to fetch XML data from a pdb and add its useful attributes
-    to a protein3D class.
-
-    Parameters
-    ----------
-        pdbCode : str
-            code for protein, e.g. 1os7
-    """
-    pdbCodes = set()
-    try:
-        link = 'https://files.rcsb.org/pub/pdb/validation_reports/os/' + pdbCode + '/' + pdbCode + '_validation.xml'
-        xml_doc = requests.get(link)
-    except:
-        print("warning not found", pdbCode)
-    else:
+        """ API query to fetch XML data from a pdb and add its useful attributes
+        to a protein3D class.
+        
+        Parameters
+        ----------
+            pdbCode : str
+                code for protein, e.g. 1os7
+        """
+        pdbCodes = set()
         try:
-            ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
-            soup = BeautifulSoup(xml_doc.content,'lxml-xml')
-            
-            ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections. 
-            ### This is an example of getting everything with a "sec" tag.
-            body = soup.find_all('wwPDB-validation-information')
-            entry = body[0].find_all("Entry")
-            self.setDataCompleteness(entry[0].attrs["DataCompleteness"])
-            self.setRSRZ(entry[0].attrs["percent-RSRZ-outliers"])
-            self.setTwinL(entry[0].attrs["TwinL"])
-            self.setTwinL2(entry[0].attrs["TwinL2"])
-        except IOError:
-            print('aborted')
+            link = 'https://files.rcsb.org/pub/pdb/validation_reports/os/' + pdbCode + '/' + pdbCode + '_validation.xml'
+            xml_doc = requests.get(link)
+        except:
+            print("warning not found", pdbCode)
         else:
-            if xml_doc == None:
-                print("warning: %s not valid.\n"%pdbCode)
+            try:
+                ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
+                soup = BeautifulSoup(xml_doc.content,'lxml-xml')
+                
+                ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections. 
+                ### This is an example of getting everything with a "sec" tag.
+                body = soup.find_all('wwPDB-validation-information')
+                entry = body[0].find_all("Entry")
+                self.setDataCompleteness(entry[0].attrs["DataCompleteness"])
+                self.setRSRZ(entry[0].attrs["percent-RSRZ-outliers"])
+                self.setTwinL(entry[0].attrs["TwinL"])
+                self.setTwinL2(entry[0].attrs["TwinL2"])
+            except IOError:
+                print('aborted')
+            else:
+                if xml_doc == None:
+                    print("warning: %s not valid.\n"%pdbCode)
 
     def setDataCompleteness(self, DataCompleteness):
         """ Set DataCompleteness value of protein3D class.
