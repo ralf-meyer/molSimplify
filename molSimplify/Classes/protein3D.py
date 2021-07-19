@@ -7,12 +7,16 @@
 
 # imports
 from math import sqrt
-import os
+import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
 import gzip
 from itertools import chain
 import urllib.request as urllib
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import string
 
 # no GUI support for now
 
