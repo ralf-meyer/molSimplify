@@ -162,6 +162,16 @@ class protein3D:
                 The desired new Rfree value.
         """
         self.Rfree = Rfree
+
+    def setRSRZ(self, RSRZ):
+        """ Set RSRZ score of protein3D class.
+
+        Parameters
+        ----------
+            RSRZ : float
+                The desired new RSRZ score.
+        """
+        self.RSRZ = RSRZ
             
     def getMissingAtoms(self):
         """ Get missing atoms of a protein3D class.
@@ -765,4 +775,34 @@ class protein3D:
         else:
             if xml_doc == None:
                 print("warning: %s not valid.\n"%pdbCode)
+
+    def setDataCompleteness(self, DataCompleteness):
+        """ Set DataCompleteness value of protein3D class.
+
+        Parameters
+        ----------
+            DataCompleteness : float
+                The desired new R value.
+        """
+        self.DataCompleteness = DataCompleteness
+
+    def setTwinL(self, TwinL):
+        """ Set TwinL score of protein3D class.
+
+        Parameters
+        ----------
+            TwinL : float
+                The desired new TwinL score.
+        """
+        self.TwinL = TwinL
+
+    def setTwinL2(self, TwinL2):
+        """ Set TwinL squared score of protein3D class.
+
+        Parameters
+        ----------
+            TwinL2 : float
+                The desired new TwinL squared score.
+        """
+        self.TwinL2 = TwinL2
 
