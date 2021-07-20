@@ -456,7 +456,6 @@ class protein3D:
             enter = '\n'
             f.close()
         else:
-            print('hi')
             enter = "\\n"
         # class attributes
         aas = set()
@@ -577,7 +576,9 @@ class protein3D:
                 if '-' in l[5][1:]: # fix coordinates
                     y = l[5]
                     y = l[5].split('-')
-                    if y[0] != '':
+                    if len(y) > 2: # extra long string case
+                        l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
+                    elif y[0] != '':
                         l = l[:5] + [y[0], '-'+y[1]] + l[6:]
                     else:
                         l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
@@ -606,7 +607,6 @@ class protein3D:
                 if a not in chains[l[3]] and a not in conf:
                     chains[l[3]].append(a)
                 aas.add(a)
-                #print(l)
                 atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
                               occup=float(l[8]), greek=l[1])
                 a.addAtom(atom, int(l[0])) # terminal Os may be missing
@@ -663,7 +663,6 @@ class protein3D:
                 if len(l[-2]) > 6: 
                     l2 = l
                     l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
-                #print(l)
                 hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                                 occup=float(l[8]), greek=l[1])
                 if (int(l[0]), hetatm) not in hetatms.keys():
@@ -783,13 +782,11 @@ class protein3D:
                     print("warning: %s has no DataCompleteness."%pdbCode)
                 else:
                     self.setDataCompleteness(float(entry[0].attrs["DataCompleteness"]))
-                '''
                 if "percent-RSRZ-outliers" not in entry[0].attrs.keys():
                     self.setRSRZ(100)
                     print("warning: %s has no RSRZ.\n"%pdbCode)
                 else:
                     self.setRSRZ(float(entry[0].attrs["percent-RSRZ-outliers"]))
-                '''
                 if "TwinL" not in entry[0].attrs.keys():
                     print("warning: %s has no TwinL."%pdbCode)
                     self.setTwinL(0)
