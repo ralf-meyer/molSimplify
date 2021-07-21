@@ -632,10 +632,10 @@ class protein3D:
                     l = [l_type[6:]] + l
                 if '+' in l[-1] or '-' in l[-1]: # fix charge of sym
                     l[-1] = l[-1][:(len(l[-1]) - 2)]
-                if len(l[-1]) == 2:
-                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
                 if '0' in l[-1]: # fix number attached
                     l[-1] = l[-1][:(len(l[-1]) - 1)]
+                if len(l[-1]) == 2:
+                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
                 # fixes buggy splitting
                 if len(l[1]) > 3 and len(l[2]) == 1:
                     l2 = l
@@ -682,19 +682,25 @@ class protein3D:
                 if len(l_type) > 6: # fixes buggy splitting
                     l = [l_type[6:]] + l
                 l2 = []
+                wrong_turn = False
                 for i in range(len(l)):
                     x = l[i]
+                    wrong_turn = False
                     while x != '' and int(x) not in atoms.keys():
                         if int(x[:5]) in atoms.keys():
                             l2.append(x[:5])
                             x = x[5:]
+                            wrong_turn = False
                         elif int(x[:4]) in atoms.keys():
                             l2.append(x[:4])
                             x = x[4:]
-                        elif l2 == [] and int(x[:3]) in atoms.keys():
+                            wrong_turn = False
+                        elif (l2 == [] or wrong_turn) and int(x[:3]) in atoms.keys():
                             l2.append(x[:3])
                             x = x[3:]
+                            wrong_turn = False
                         else: # made a wrong turn
+                            wrong_turn = True
                             y = l2.pop()
                             l2.append(y[:-1])
                             x = y[-1] + x
