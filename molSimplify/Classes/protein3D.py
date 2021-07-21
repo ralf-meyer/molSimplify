@@ -551,6 +551,9 @@ class protein3D:
                 if len(l[-1]) == 2:
                     l[-1] = l[-1][0] + l[-1][1].lower() # fix case
                 # fix buggy splitting
+                if len(l[-2]) > 6: 
+                    l2 = l
+                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
                 if len(l_type) > 4: 
                     l = [l_type[4:]] + l
                 if len(l[1]) > 3 and len(l) != 11:
@@ -563,23 +566,31 @@ class protein3D:
                         l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
                 if len(l[3]) > 1:
                     l2 = l
-                    if len(l[2]) != 1 or l[3][1] == '1':
+                    if len(l[2]) != 1 or l[3][1] == '1' or l[3][1] == '2':
                         l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
+                    elif l[-2][0] == '0' and len(l) == 11:
+                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
                     else:
                         l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l) > 11 and len(l[2]) == 1:
+                if len(l[2]) == 1:
                     l2 = l
-                    l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                if len(l[2]) == 1 and len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
+                    if len(l) > 11:
+                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
+                    if len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
+                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
+                if len(l) < 11 and len(l[3]) > 1:
                     l2 = l
-                    l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
+                    if l[3][1] == '1' or l[3][1] == '2':
+                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
                 if '-' in l[5][1:]: # fix coordinates
                     y = l[5]
                     y = l[5].split('-')
-                    if len(y) > 2: # extra long string case
+                    if len(y) > 2 and y[0] != '': # extra long string case
                         l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
                     elif y[0] != '':
                         l = l[:5] + [y[0], '-'+y[1]] + l[6:]
+                    elif len(y) > 3: # extra long string case
+                        l = l[:5] + ['-'+y[1], '-'+y[2], '-'+y[3]] + l[6:]
                     else:
                         l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
                 if '-' in l[6][1:]:
@@ -596,9 +607,8 @@ class protein3D:
                         l = l[:7] + [y[0], '-'+y[1]] + l[8:]
                     else:
                         l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-                if len(l[-2]) > 6: 
-                    l2 = l
-                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
+                if "" in l:
+                    l.remove("")
                 a = AA3D(l[2], l[3], l[4], float(l[8]))
                 if l[3] not in chains.keys():
                     chains[l[3]] = [] # initialize key of chain dictionary
