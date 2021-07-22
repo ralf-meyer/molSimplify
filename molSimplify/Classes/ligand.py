@@ -823,12 +823,18 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         return mw
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
     def getAngle(coord_list, pair, m_coord): # Get Angle of atom pair through metal center (stored at coord_list[0])
-        p1 = np.squeeze(np.array(coord_list[pair[0]]))
-        p2 = np.squeeze(np.array(coord_list[pair[1]]))
-        m = m_coord
-        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
-        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
-        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+        # print("coord_list: ", coord_list)
+        # print("pair: ", pair)
+        try:
+            p1 = np.squeeze(np.array(coord_list[pair[0]]))
+            p2 = np.squeeze(np.array(coord_list[pair[1]]))
+            m = m_coord
+            v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+            v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+            angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+            # print("angle: ", angle)
+        except IndexError:
+            angle = 0
         return angle
     if loud:
         print('********************************************')
