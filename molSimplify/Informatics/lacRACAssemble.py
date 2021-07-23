@@ -16,7 +16,8 @@ from molSimplify.Classes.globalvars import globalvars
 globs = globalvars()
 
 def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False, \
-    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False):
+    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False,
+    alleq=False):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters
@@ -64,15 +65,20 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     if not custom_ligand_dict:
         if lacRACs:
             from molSimplify.Classes.ligand import ligand_assign_consistent as ligand_assign
+            from molSimplify.Classes.ligand import ligand_assign_alleq
         else:
             from molSimplify.Classes.ligand import ligand_assign as ligand_assign
         liglist, ligdents, ligcons = ligand_breakdown(this_complex)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
-            ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
-                built_ligand_list = ligand_assign(
-                this_complex, liglist, ligdents, ligcons, loud, eq_sym_match=eq_sym)
+        # print(liglist, ligdents, ligcons)
+        if not alleq:
+            ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
+                ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
+                built_ligand_list = ligand_assign(this_complex, liglist, ligdents, ligcons, loud, eq_sym_match=eq_sym)
+        else:
+            ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list = ligand_assign_alleq(this_complex, liglist, ligdents, ligcons)
         custom_ligand_dict = {'ax_ligand_list':ax_ligand_list, 'eq_ligand_list':eq_ligand_list,
-                               'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
+                              'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
+    print("custom_ligand_dict: ", custom_ligand_dict)
     ## misc descriptors
     results_dictionary = generate_all_ligand_misc(this_complex,loud=False,
                                                     custom_ligand_dict=custom_ligand_dict, smiles_charge=smiles_charge)
@@ -87,27 +93,31 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                                                 use_dist=use_dist, size_normalize=size_normalize)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'f','all')
-
+    # print("f-racs: ", results_dictionary)
     ## ligand ACs
     #print('get ligand ACs')
     results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,
                                                                 flag_name=False,
                                                                 custom_ligand_dict=custom_ligand_dict,
                                                                 NumB=NumB, Zeff=Zeff, use_dist=use_dist, size_normalize=size_normalize)
-    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                        results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
+    # print("lc-racs: ", results_dictionary)
+    if not alleq:
+        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                            results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
-    descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
-                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
+    if not alleq:
+        descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
+                                                            results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
 
     results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,
                                                             custom_ligand_dict=custom_ligand_dict,
                                                             NumB=NumB, Zeff=Zeff, use_dist=use_dist, size_normalize=size_normalize)
-    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
-                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
+    if not alleq:
+        descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
+                                                            results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
 
