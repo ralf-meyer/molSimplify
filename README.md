@@ -24,6 +24,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    ```
 4. Activate the conda environment you just created. Go back to the root directory of molSimplify (where the setup.py file locates). Local install with pip.
    ```bash
+   conda activate mols_test
    cd <root directory to molSimplify>
    pip install -e .
    ```
@@ -41,6 +42,9 @@ For line by line instructions on an installation via docker, please visit [molSi
 
 A set of tutorials covering common use cases is available at the [Kulik group webpage](http://hjkgrp.mit.edu/molSimplify-tutorials).
 
+## Documentation
+
+Documentation for molSimplify can be found at our [readthedocs page](https://molsimplify.readthedocs.io/en/latest/).
 
 ## Citation [![DOI for Citing MDTraj](https://img.shields.io/badge/DOI-10.1002%2Fjcc.24437-blue.svg)](http://dx.doi.org/10.1002/jcc.24437)
 
