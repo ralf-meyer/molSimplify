@@ -529,6 +529,9 @@ class protein3D:
                             missing_atoms[a].append(atom3D(Sym=atom[0],
                                                            greek=atom))
         # start getting amino acids and heteroatoms
+        if "ENDMDL" in text:
+            text.split("ENDMDL")
+            text = text[-2] + text[-1]
         text = text.split(enter)
         text = text[1:]
         for line in text:
@@ -548,6 +551,9 @@ class protein3D:
                 if len(l[-1]) == 2:
                     l[-1] = l[-1][0] + l[-1][1].lower() # fix case
                 # fix buggy splitting
+                if len(l[-2]) > 6: 
+                    l2 = l
+                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
                 if len(l_type) > 4: 
                     l = [l_type[4:]] + l
                 if len(l[1]) > 3 and len(l) != 11:
@@ -556,25 +562,35 @@ class protein3D:
                         l = [l2[0], l2[1][:4], l2[1][4:]] + l2[2:]
                     elif l[1][3] == 'A' or l[1][3] == 'B':
                         l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                    elif ('1' in l[2] or len(l[2]) == 1):
+                    elif ('1' in l[2] or len(l[2]) == 1) and l[1][3] != "'":
                         l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
                 if len(l[3]) > 1:
                     l2 = l
-                    if len(l[2]) != 1 or l[3][1] == '1':
+                    if len(l[2]) != 1 or l[3][1] == '1' or l[3][1] == '2':
                         l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
+                    elif l[-2][0] == '0' and len(l) == 11:
+                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
                     else:
                         l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l) > 11 and len(l[2]) == 1:
+                if len(l[2]) == 1:
                     l2 = l
-                    l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                if len(l[2]) == 1 and len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
+                    if len(l) > 11:
+                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
+                    if len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
+                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
+                if len(l) < 11 and len(l[3]) > 1:
                     l2 = l
-                    l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
+                    if l[3][1] == '1' or l[3][1] == '2':
+                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
                 if '-' in l[5][1:]: # fix coordinates
                     y = l[5]
                     y = l[5].split('-')
-                    if y[0] != '':
+                    if len(y) > 2 and y[0] != '': # extra long string case
+                        l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
+                    elif y[0] != '':
                         l = l[:5] + [y[0], '-'+y[1]] + l[6:]
+                    elif len(y) > 3: # extra long string case
+                        l = l[:5] + ['-'+y[1], '-'+y[2], '-'+y[3]] + l[6:]
                     else:
                         l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
                 if '-' in l[6][1:]:
@@ -591,9 +607,8 @@ class protein3D:
                         l = l[:7] + [y[0], '-'+y[1]] + l[8:]
                     else:
                         l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-                if len(l[-2]) > 6: 
-                    l2 = l
-                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
+                if "" in l:
+                    l.remove("")
                 a = AA3D(l[2], l[3], l[4], float(l[8]))
                 if l[3] not in chains.keys():
                     chains[l[3]] = [] # initialize key of chain dictionary
@@ -624,7 +639,7 @@ class protein3D:
                 # fixes buggy splitting
                 if len(l[1]) > 3 and len(l[2]) == 1:
                     l2 = l
-                    l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:10]
+                    l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
                 if len(l[2]) == 1 and l[3] in l[1]:
                     l = l[:1] + l[3:]
                 if len(l[1]) > 4:
@@ -633,7 +648,7 @@ class protein3D:
                         l = [l2[0], l2[2][:3], l2[2][3:]] + l2[3:]
                 if len(l[3]) > 1:
                     l2 = l
-                    l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:10]
+                    l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
                 if '-' in l[5][1:]: # fix coordinates
                     y = l[5]
                     y = l[5].split('-')
@@ -756,12 +771,12 @@ class protein3D:
             pdbCode : str
                 code for protein, e.g. 1os7
         """
-        pdbCodes = set()
         try:
-            link = 'https://files.rcsb.org/pub/pdb/validation_reports/os/' + pdbCode + '/' + pdbCode + '_validation.xml'
+            start = 'https://files.rcsb.org/pub/pdb/validation_reports/' + pdbCode[1] + pdbCode[2]
+            link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
             xml_doc = requests.get(link)
         except:
-            print("warning not found", pdbCode)
+            print("warning: %s not found.\n"%pdbCode)
         else:
             try:
                 ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
@@ -771,10 +786,27 @@ class protein3D:
                 ### This is an example of getting everything with a "sec" tag.
                 body = soup.find_all('wwPDB-validation-information')
                 entry = body[0].find_all("Entry")
-                self.setDataCompleteness(entry[0].attrs["DataCompleteness"])
-                self.setRSRZ(entry[0].attrs["percent-RSRZ-outliers"])
-                self.setTwinL(entry[0].attrs["TwinL"])
-                self.setTwinL2(entry[0].attrs["TwinL2"])
+                #print("got metadata: %s"%(pdbCode))
+                if "DataCompleteness" not in entry[0].attrs.keys():
+                    self.setDataCompleteness(0)
+                    print("warning: %s has no DataCompleteness."%pdbCode)
+                else:
+                    self.setDataCompleteness(float(entry[0].attrs["DataCompleteness"]))
+                if "percent-RSRZ-outliers" not in entry[0].attrs.keys():
+                    self.setRSRZ(100)
+                    print("warning: %s has no RSRZ.\n"%pdbCode)
+                else:
+                    self.setRSRZ(float(entry[0].attrs["percent-RSRZ-outliers"]))
+                if "TwinL" not in entry[0].attrs.keys():
+                    print("warning: %s has no TwinL."%pdbCode)
+                    self.setTwinL(0)
+                else:
+                    self.setTwinL(float(entry[0].attrs["TwinL"]))
+                if "TwinL2" not in entry[0].attrs.keys():
+                    print("warning: %s has no TwinL2."%pdbCode)
+                    self.setTwinL2(0)
+                else:
+                    self.setTwinL2(float(entry[0].attrs["TwinL2"]))
             except IOError:
                 print('aborted')
             else:

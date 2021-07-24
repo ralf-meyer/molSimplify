@@ -823,12 +823,18 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         return mw
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
     def getAngle(coord_list, pair, m_coord): # Get Angle of atom pair through metal center (stored at coord_list[0])
-        p1 = np.squeeze(np.array(coord_list[pair[0]]))
-        p2 = np.squeeze(np.array(coord_list[pair[1]]))
-        m = m_coord
-        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
-        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
-        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+        # print("coord_list: ", coord_list)
+        # print("pair: ", pair)
+        try:
+            p1 = np.squeeze(np.array(coord_list[pair[0]]))
+            p2 = np.squeeze(np.array(coord_list[pair[1]]))
+            m = m_coord
+            v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+            v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+            angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+            # print("angle: ", angle)
+        except IndexError:
+            angle = 0
         return angle
     if loud:
         print('********************************************')
@@ -839,9 +845,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         print(('denticities are  ' + str(ligdents)))
     # Flag Hexa/Pentadentate, check if denticities incorrect for Octahedral Complex
     if max(ligdents) > 4:  #### Hexa/Pentadentate ligands flagging ####
+        print(max(ligdents))
         if max(ligdents) == 5 and min(ligdents) == 1:
             pentadentate = True
         elif max(ligdents) == 6 and min(ligdents) == 6:
+            hexadentate = True
+        elif max(ligdents) == 5 and min(ligdents) == 5:
+            print("here")
             hexadentate = True
         else:
             valid = False
@@ -1894,6 +1904,19 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     for eq_lig in eq_lig_list:
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
+
+
+def ligand_assign_alleq(mol, liglist, ligdents, ligcons):
+    ax_ligand_list, ax_con_int_list = [], []
+    eq_ligand_list, eq_con_int_list = [], []
+    for i, ligand_indices in enumerate(liglist):
+        this_ligand = ligand(mol, ligand_indices, ligdents[i])
+        this_ligand.obtain_mol3d()
+        eq_con = ligcons[i]
+        eq_ligand_list.append(this_ligand)
+        current_ligand_index_list = this_ligand.index_list
+        eq_con_int_list.append([current_ligand_index_list.index(i) for i in eq_con])
+    return ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list
 
 
 def get_lig_symmetry(mol,loud=False,htol=3):

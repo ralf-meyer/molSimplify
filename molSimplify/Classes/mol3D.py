@@ -842,7 +842,7 @@ class mol3D:
         self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
-    def createMolecularGraph(self, oct=True):
+    def createMolecularGraph(self, oct=True, strict_cutoff=False):
         """Create molecular graph of a molecule given X, Y, Z positions.
         Bond order is not interpreted by this. Updates graph attribute
         of the mol3D class.
@@ -861,14 +861,15 @@ class mol3D:
             for i in index_set:
                 if oct:
                     if self.getAtom(i).ismetal():
-                        this_bonded_atoms = self.get_fcs()
+                        this_bonded_atoms = self.get_fcs(strict_cutoff=strict_cutoff)
                         metal_ind = i
                         catoms_metal = this_bonded_atoms
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
                         this_bonded_atoms = self.getBondedAtomsOct(i, debug=False,
-                                                                   atom_specific_cutoffs=self.use_atom_specific_cutoffs)
+                                                                   atom_specific_cutoffs=self.use_atom_specific_cutoffs,
+                                                                   strict_cutoff=strict_cutoff)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i)
                 for j in index_set:
@@ -1472,9 +1473,9 @@ class mol3D:
 
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
-            distance_max = min(2.75, distance_max)
+            distance_max = min(2.75, distance_max) # 2.75 by 07/22/2021
         if ratom.symbol() == "C" and not atom.symbol() == "H":
-            distance_max = min(2.75, distance_max)
+            distance_max = min(2.75, distance_max) # 2.75 by 07/22/2021
         if ratom.symbol() == "H" and atom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
@@ -1591,7 +1592,8 @@ class mol3D:
 
         return nats
 
-    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
+    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False,
+                          strict_cutoff=False):
         """Gets atoms bonded to an octahedrally coordinated metal. Specifically limitis intruder
         C and H atoms that would otherwise be considered bonded in the distance cutoffs. Limits
         bonding to the CN closest atoms (CN = coordination number).
@@ -1608,6 +1610,8 @@ class mol3D:
                 Use looser cutoffs to determine bonding. Default is False.
             atom_specific_cutoffs: bool, optional
                 Use atom specific cutoffs to determing bonding. Default is False.
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
 
 
         Returns
@@ -1633,8 +1637,10 @@ class mol3D:
                 if atom.ismetal() or ratom.ismetal():
                     if flag_loose:
                         distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
+                    elif strict_cutoff:
+                        distance_max = 1.2 * (atom.rad + ratom.rad)
                     else:
-                        distance_max = 1.37 * (atom.rad + ratom.rad)
+                        distance_max = 1.37 * (atom.rad + ratom.rad) # 1.37 by 07/22/2021
                     if debug:
                         print(('metal in  cat ' + str(atom.symbol()) +
                                ' and rat ' + str(ratom.symbol())))
@@ -1725,7 +1731,7 @@ class mol3D:
                                 'Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def getBondedAtomsSmart(self, idx, oct=True):
+    def getBondedAtomsSmart(self, idx, oct=True, strict_cutoff=False):
         """Get bonded atom with a given index, using the molecular graph. 
         Creates graph if it does not exist.
 
@@ -1743,7 +1749,7 @@ class mol3D:
 
         """
         if not len(self.graph):
-            self.createMolecularGraph(oct=oct)
+            self.createMolecularGraph(oct=oct, strict_cutoff=strict_cutoff)
         return list(np.nonzero(np.ravel(self.graph[idx]))[0])
 
     def getBondedAtomsnotH(self, idx, metal_multiplier=1.35, nonmetal_multiplier=1.15):
@@ -3330,7 +3336,7 @@ class mol3D:
         }
         self.dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
 
-    def get_num_coord_metal(self, debug=False):
+    def get_num_coord_metal(self, debug=False, strict_cutoff=False):
         """Get metal coordination based on get bonded atoms. Store this info.
 
         Parameters
@@ -3346,7 +3352,7 @@ class mol3D:
         if len(self.graph):
             catoms = self.getBondedAtomsSmart(metal_ind)
         elif len(metal_list) > 0:
-            _catoms = self.getBondedAtomsOct(ind=metal_ind)
+            _catoms = self.getBondedAtomsOct(ind=metal_ind, strict_cutoff=strict_cutoff)
             if debug:
                 print("_catoms: ", _catoms)
             dist2metal = {}
@@ -4444,7 +4450,7 @@ class mol3D:
                                                                              num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
-    def get_fcs(self):
+    def get_fcs(self, strict_cutoff=False):
         """ Get first coordination shell of a transition metal complex.
 
         Returns
@@ -4453,7 +4459,7 @@ class mol3D:
                 List of first coordination shell indices.
         """
         metalind = self.findMetal()[0]
-        self.get_num_coord_metal(debug=False)
+        self.get_num_coord_metal(debug=False,  strict_cutoff=strict_cutoff)
         catoms = self.catoms
         # print(catoms, [self.getAtom(x).symbol() for x in catoms])
         if len(catoms) > 6:
@@ -5057,7 +5063,9 @@ class mol3D:
         }
         return results
 
-    def get_features(self, lac=True, force_generate=False, eq_sym=False, use_dist=False, NumB=False, Zeff=False, size_normalize=False):
+    def get_features(self, lac=True, force_generate=False, eq_sym=False, 
+                     use_dist=False, NumB=False, Zeff=False, size_normalize=False,
+                     alleq=False, strict_cutoff=False):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
@@ -5077,10 +5085,12 @@ class mol3D:
         results = dict()
         from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
         if not len(self.graph):
-            self.createMolecularGraph()
+            self.createMolecularGraph(strict_cutoff=strict_cutoff)
+        print("catoms: ", [self.getAtom(ii).symbol() for ii in self.get_fcs(strict_cutoff=strict_cutoff)])
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral' or force_generate:
-            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Zeff=Zeff, size_normalize=size_normalize)
+            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Zeff=Zeff, 
+                                                size_normalize=size_normalize, alleq=alleq)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
