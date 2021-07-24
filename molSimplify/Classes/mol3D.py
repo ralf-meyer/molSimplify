@@ -127,6 +127,84 @@ class mol3D:
                 method_string += method + '\n'
         return method_string
 
+    def RCAngle(self, idx1, idx2, idx3, anglei, anglef, angleint=1.0, dir_name='rc_angle_geometries'):
+        """Generates geometries along a give angle reaction coordinate.
+        In the given molecule, idx1 is rotated about idx2 with respect 
+        idx3. Operates directly on class.  
+           
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            idx3 : int
+                Index of anchor atom 2.
+            anglei : float
+                New initial bond angle in degrees.
+            anglef : float
+                New final bond angle in degrees.
+            angleint : float; default is 1.0 degree
+                The angle interval in which the angle is changed
+            dir_name : string; default is 'rc_angle_geometries'
+                The directory to which generated reaction coordinate
+                geoemtries are written.
+
+        >>> complex_mol.RCAngle(2, 1, 0, 90, 180, 0.5, 'rc_geometries') # Generate reaction coordinates
+        >>>             # with the given geometry by changing the angle between atoms 2, 1, and 0, from
+        >>>             # 90 degrees to 180 degrees in intervals of 0.5 degrees, and write the generated 
+        >>>             # geometries to 'rc_geometries' directory.        
+        >>>  complex_mol.RCAngle(2, 1, 0, 180, 90, -0.5) # Generate reaction coordinates
+        >>>             # with the given geometry by changing the angle between atoms 2, 1, and 0, from
+        >>>             # 180 degrees to 90 degrees in intervals of 0.5 degrees, and write the generated 
+        >>>             # geometries to 'rc_angle_geometries' directory.
+        """
+
+        struc_directory = os.mkdir(dir_name)
+        for ang_val in np.arange(anglei, anglef+angleint, angleint):
+            temp_angle = mol3D() 
+            temp_angle.copymol3D(self)
+            temp_angle.ACM(idx1, idx2, idx3, ang_val)
+            temp_angle.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(ang_val)))+'.xyz')
+
+    def RCDistance(self, idx1, idx2, disti, distf, distint=0.05, dir_name='rc_distance_geometries'):
+        """Generates geometries along a give distance reaction coordinate.
+        In the given molecule, idx1 is moved with respect to idx2.
+        Operates directly on class.  
+           
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            disti : float
+                New initial bond distance in angstrom.
+            distf : float
+                New final bond distance in angstrom.
+            distint : float; default is 0.05 angstrom
+                The distance interval in which the distance is changed
+            dir_name : string; default is 'rc_distance_geometries'
+                The directory to which generated reaction coordinate
+                geoemtries are written.
+
+        >>> complex_mol.RCDistance(1, 0, 1.0, 3.0, 0.01, 'rc_geometries') # Generate reaction coordinates  
+        >>>             # with the given geometry by changing the distance between atoms 1 and 0 from
+        >>>             # 1.0 to 3.0 angstrom (atom 1 is moved) in intervals of 0.01 angstrom, and write 
+        >>>             # the generated geometries to 'rc_geometries' directory.        
+        >>> complex_mol.RCDistance(1, 0, 3.0, 1.0, -0.02) # Generate reaction coordinates
+        >>>             # with the given geometry by changing the distance between atoms 1 and 0 from
+        >>>             # 3.0 to 1.0 angstrom (atom 1 is moved) in intervals of 0.02 angstrom, and write
+        >>>             # the generated geometries to 'rc_distance_geometries' directory.
+        """
+
+        struc_directory = os.mkdir(dir_name)
+        for dist_val in np.arange(disti, distf+distint, distint):
+            temp_angle = mol3D() 
+            temp_angle.copymol3D(self)
+            temp_angle.BCM(idx1, idx2, dist_val)
+            temp_angle.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
+
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
         rotated about idx2. Operates directly on class.
