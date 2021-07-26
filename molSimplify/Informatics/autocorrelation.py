@@ -48,20 +48,28 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, catoms=None, use_dist=Fals
 
 
 def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True, catoms=None):
-    ## this function returns the derivative vector
-    ## of the scalar autocorrelation 
-    ## starting at orig with depth d,
-    ## with respect to the atomic properties
-    ## in prop_vec, for all atoms.
-    ## The return type is np.array
-    ## Be sure to read this carefully!
-    ## for one atom
-    # Inputs:
-    #	mol - mol3D class
-    #	prop_vec - vector, property of atoms in mol in order of index
-    #	orig -  int, zero-indexed starting atom
-    #	d - int, number of hops to travel
-    #	oct - bool, if complex is octahedral, will use better bond checks
+    """Returns derivative vector of products autocorrelations
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D object to calculate derivatives over
+        prop_vec : list
+            property of atoms in mol in order of index
+        orig : int
+            zero-indexed starting atom
+        d : int
+            number of hops to travel
+        oct : bool, optional
+            Flag is octahedral complex, by default True
+        catoms : list, optional
+            List of connecting atom, by default None (use mol3D.getBondedAtomsSmart)
+    Returns
+    -------
+        derivative_mat : list
+            RAC derivatives matrix
+
+    """
     derivative_mat = np.zeros((d + 1, len(prop_vec)))
 
     # loop for each atom
