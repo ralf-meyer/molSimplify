@@ -8,14 +8,31 @@ HF_to_Kcal_mol = 627.503
 
 
 def autocorrelation(mol, prop_vec, orig, d, oct=True, catoms=None, use_dist=False):
-    ## this function returns the autocorrelation
-    ## for one atom
-    # Inputs:
-    #	mol - mol3D class
-    #	prop_vec - vector, property of atoms in mol in order of index
-    #	orig -  int, zero-indexed starting atom
-    #	d - int, number of hops to travel
-    #	oct - bool, if complex is octahedral, will use better bond checks
+    """Calculate and return the products autocorrelation for a single atom
+
+    Parameters
+    ----------
+        mol : mol3D
+            mol3D object to calculate autocorrelation over
+        prop_vec : list
+            property of atoms in mol in order of index
+        orig : int
+            zero-indexed starting atom
+        d : int
+            number of hops to travel
+        oct : bool, optional
+            Flag is octahedral complex, by default True
+        catoms: list, optional
+            List of connecting atoms, by default None (uses mol3D.getBondedAtomsSmart)
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+
+    Returns
+    -------
+        result_vector : list
+            assembled products autocorrelations
+
+    """
     result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
