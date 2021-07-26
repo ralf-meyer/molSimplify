@@ -451,7 +451,8 @@ class protein3D:
                 elif (b_id, b) in self.hetatms.keys():
                     # get amino acids classified as hetatms
                     b_mol = self.hetatms[(b_id, b)][0]
-                    if b_mol in globalvars().amino_acids or b_mol[1:] in globalvars().amino_acids:
+                    aminos = globalvars().getAllAAs()
+                    if b_mol in aminos or b_mol[1:] in aminos:
                         bound_aas.append(self.getResidue(b_id))
         return bound_aas
     
@@ -590,7 +591,7 @@ class protein3D:
             elif "HETATM" in l_type: # this is a heteroatom
 
                 a_dict = read_atom(line)
-                aminos = globalvars().amino_acids
+                aminos = globalvars().getAllAAs()
                 fake_aa = False
                 
                 if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
