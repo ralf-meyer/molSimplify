@@ -127,6 +127,99 @@ class mol3D:
                 method_string += method + '\n'
         return method_string
 
+    def RCAngle(self, idx1, idx2, idx3, anglei, anglef, angleint=1.0, writegeo=False, dir_name='rc_angle_geometries'):
+        """Generates geometries along a given angle reaction coordinate.
+        In the given molecule, idx1 is rotated about idx2 with respect 
+        to idx3. Operates directly on class.  
+           
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            idx3 : int
+                Index of anchor atom 2.
+            anglei : float
+                New initial bond angle in degrees.
+            anglef : float
+                New final bond angle in degrees.
+            angleint : float; default is 1.0 degree
+                The angle interval in which the angle is changed
+            writegeo : if True, the generated geometries will be written 
+                to a directory; if False, they will not be written to a
+                directory; default is False
+            dir_name : string; default is 'rc_angle_geometries'
+                The directory to which generated reaction coordinate
+                geoemtries are written, if writegeo=True.
+
+        >>> complex_mol.RCAngle(2, 1, 0, 90, 180, 0.5, True, 'rc_geometries') # Generate reaction coordinate
+        >>>             # geometries using the given structure by changing the angle between atoms 2, 1, 
+        >>>             # and 0 from 90 degrees to 180 degrees in intervals of 0.5 degrees, and write the 
+        >>>             # generated geometries to 'rc_geometries' directory.        
+        >>> complex_mol.RCAngle(2, 1, 0, 180, 90, -0.5) # Generate reaction coordinates
+        >>>             # with the given geometry by changing the angle between atoms 2, 1, and 0 from
+        >>>             # 180 degrees to 90 degrees in intervals of 0.5 degrees, and the generated 
+        >>>             # geometries will not be written to a directory.
+        """
+        if writegeo==True:
+            struc_directory = os.mkdir(dir_name)
+        temp_list = []
+        for ang_val in np.arange(anglei, anglef+angleint, angleint):
+            temp_angle = mol3D() 
+            temp_angle.copymol3D(self)
+            temp_angle.ACM(idx1, idx2, idx3, ang_val)
+            temp_list.append(temp_angle)
+            if writegeo==True:
+                temp_angle.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(ang_val)))+'.xyz')
+        return temp_list
+
+    def RCDistance(self, idx1, idx2, disti, distf, distint=0.05, writegeo=False, dir_name='rc_distance_geometries'):
+        """Generates geometries along a given distance reaction coordinate.
+        In the given molecule, idx1 is moved with respect to idx2.
+        Operates directly on class.  
+           
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            disti : float
+                New initial bond distance in angstrom.
+            distf : float
+                New final bond distance in angstrom.
+            distint : float; default is 0.05 angstrom
+                The distance interval in which the distance is changed
+            writegeo : if True, the generated geometries will be written 
+                to a directory; if False, they will not be written to a
+                directory; default is False
+            dir_name : string; default is 'rc_distance_geometries'
+                The directory to which generated reaction coordinate
+                geoemtries are written if writegeo=True.
+
+        >>> complex_mol.RCDistance(1, 0, 1.0, 3.0, 0.01, True, 'rc_geometries') # Generate reaction coordinate  
+        >>>             # geometries using the given structure by changing the distance between atoms 1 and 0 
+        >>>             # from 1.0 to 3.0 angstrom (atom 1 is moved) in intervals of 0.01 angstrom, and write 
+        >>>             # the generated geometries to 'rc_geometries' directory.        
+        >>> complex_mol.RCDistance(1, 0, 3.0, 1.0, -0.02) # Generate reaction coordinates
+        >>>             # geometries using the given structure by changing the distance between atoms 1 and 0 
+        >>>             # from 3.0 to 1.0 angstrom (atom 1 is moved) in intervals of 0.02 angstrom, and 
+        >>>             # the generated geometries will not be written to a directory.
+        """
+
+        if writegeo==True:
+            struc_directory = os.mkdir(dir_name)
+        temp_list = []
+        for dist_val in np.arange(disti, distf+distint, distint):
+            temp_dist = mol3D() 
+            temp_dist.copymol3D(self)
+            temp_dist.BCM(idx1, idx2, dist_val)
+            temp_list.append(temp_dist)
+            if writegeo==True:
+                temp_dist.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
+        return temp_list
+
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
         rotated about idx2. Operates directly on class.
@@ -764,7 +857,7 @@ class mol3D:
         self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
-    def createMolecularGraph(self, oct=True):
+    def createMolecularGraph(self, oct=True, strict_cutoff=False):
         """Create molecular graph of a molecule given X, Y, Z positions.
         Bond order is not interpreted by this. Updates graph attribute
         of the mol3D class.
@@ -783,14 +876,15 @@ class mol3D:
             for i in index_set:
                 if oct:
                     if self.getAtom(i).ismetal():
-                        this_bonded_atoms = self.get_fcs()
+                        this_bonded_atoms = self.get_fcs(strict_cutoff=strict_cutoff)
                         metal_ind = i
                         catoms_metal = this_bonded_atoms
                         if i in this_bonded_atoms:
                             this_bonded_atoms.remove(i)
                     else:
                         this_bonded_atoms = self.getBondedAtomsOct(i, debug=False,
-                                                                   atom_specific_cutoffs=self.use_atom_specific_cutoffs)
+                                                                   atom_specific_cutoffs=self.use_atom_specific_cutoffs,
+                                                                   strict_cutoff=strict_cutoff)
                 else:
                     this_bonded_atoms = self.getBondedAtoms(i)
                 for j in index_set:
@@ -1394,9 +1488,9 @@ class mol3D:
 
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
-            distance_max = min(2.75, distance_max)
+            distance_max = min(2.75, distance_max) # 2.75 by 07/22/2021
         if ratom.symbol() == "C" and not atom.symbol() == "H":
-            distance_max = min(2.75, distance_max)
+            distance_max = min(2.75, distance_max) # 2.75 by 07/22/2021
         if ratom.symbol() == "H" and atom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
@@ -1513,7 +1607,8 @@ class mol3D:
 
         return nats
 
-    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False):
+    def getBondedAtomsOct(self, ind, CN=6, debug=False, flag_loose=False, atom_specific_cutoffs=False,
+                          strict_cutoff=False):
         """Gets atoms bonded to an octahedrally coordinated metal. Specifically limitis intruder
         C and H atoms that would otherwise be considered bonded in the distance cutoffs. Limits
         bonding to the CN closest atoms (CN = coordination number).
@@ -1530,6 +1625,8 @@ class mol3D:
                 Use looser cutoffs to determine bonding. Default is False.
             atom_specific_cutoffs: bool, optional
                 Use atom specific cutoffs to determing bonding. Default is False.
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
 
 
         Returns
@@ -1555,8 +1652,10 @@ class mol3D:
                 if atom.ismetal() or ratom.ismetal():
                     if flag_loose:
                         distance_max = min(3.5, 1.75 * (atom.rad + ratom.rad))
+                    elif strict_cutoff:
+                        distance_max = 1.2 * (atom.rad + ratom.rad)
                     else:
-                        distance_max = 1.37 * (atom.rad + ratom.rad)
+                        distance_max = 1.37 * (atom.rad + ratom.rad) # 1.37 by 07/22/2021
                     if debug:
                         print(('metal in  cat ' + str(atom.symbol()) +
                                ' and rat ' + str(ratom.symbol())))
@@ -1647,7 +1746,7 @@ class mol3D:
                                 'Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def getBondedAtomsSmart(self, idx, oct=True):
+    def getBondedAtomsSmart(self, idx, oct=True, strict_cutoff=False):
         """Get bonded atom with a given index, using the molecular graph. 
         Creates graph if it does not exist.
 
@@ -1665,7 +1764,7 @@ class mol3D:
 
         """
         if not len(self.graph):
-            self.createMolecularGraph(oct=oct)
+            self.createMolecularGraph(oct=oct, strict_cutoff=strict_cutoff)
         return list(np.nonzero(np.ravel(self.graph[idx]))[0])
 
     def getBondedAtomsnotH(self, idx, metal_multiplier=1.35, nonmetal_multiplier=1.15):
@@ -3252,7 +3351,7 @@ class mol3D:
         }
         self.dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
 
-    def get_num_coord_metal(self, debug=False):
+    def get_num_coord_metal(self, debug=False, strict_cutoff=False):
         """Get metal coordination based on get bonded atoms. Store this info.
 
         Parameters
@@ -3268,7 +3367,7 @@ class mol3D:
         if len(self.graph):
             catoms = self.getBondedAtomsSmart(metal_ind)
         elif len(metal_list) > 0:
-            _catoms = self.getBondedAtomsOct(ind=metal_ind)
+            _catoms = self.getBondedAtomsOct(ind=metal_ind, strict_cutoff=strict_cutoff)
             if debug:
                 print("_catoms: ", _catoms)
             dist2metal = {}
@@ -4366,7 +4465,7 @@ class mol3D:
                                                                              num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
-    def get_fcs(self):
+    def get_fcs(self, strict_cutoff=False):
         """ Get first coordination shell of a transition metal complex.
 
         Returns
@@ -4375,7 +4474,7 @@ class mol3D:
                 List of first coordination shell indices.
         """
         metalind = self.findMetal()[0]
-        self.get_num_coord_metal(debug=False)
+        self.get_num_coord_metal(debug=False,  strict_cutoff=strict_cutoff)
         catoms = self.catoms
         # print(catoms, [self.getAtom(x).symbol() for x in catoms])
         if len(catoms) > 6:
@@ -4979,7 +5078,9 @@ class mol3D:
         }
         return results
 
-    def get_features(self, lac=True, force_generate=False, eq_sym=False, use_dist=False, NumB=False, Zeff=False, size_normalize=False):
+    def get_features(self, lac=True, force_generate=False, eq_sym=False, 
+                     use_dist=False, NumB=False, Zeff=False, size_normalize=False,
+                     alleq=False, strict_cutoff=False):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
@@ -4999,10 +5100,12 @@ class mol3D:
         results = dict()
         from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
         if not len(self.graph):
-            self.createMolecularGraph()
+            self.createMolecularGraph(strict_cutoff=strict_cutoff)
+        print("catoms: ", [self.getAtom(ii).symbol() for ii in self.get_fcs(strict_cutoff=strict_cutoff)])
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral' or force_generate:
-            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Zeff=Zeff, size_normalize=size_normalize)
+            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Zeff=Zeff, 
+                                                size_normalize=size_normalize, alleq=alleq)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
