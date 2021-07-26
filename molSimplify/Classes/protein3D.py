@@ -19,6 +19,9 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import string
+import subprocess
+import shlex
+import ast
 
 # no GUI support for now
 
@@ -588,7 +591,7 @@ class protein3D:
                     fake_aa = True # an AA is masquerading as hetatms :P
                     a = AA3D(l[2], l[3], l[4], float(l[8]))
                     if l[3] not in chains.keys():
-                    chains[l[3]] = [] # initialize key of chain dictionary
+                        chains[l[3]] = [] # initialize key of chain dictionary
                     if int(float(l[8])) != 1 and a not in conf:
                         conf.append(a)
                     if a not in chains[l[3]] and a not in conf:
@@ -777,4 +780,43 @@ class protein3D:
                 The desired new TwinL squared score.
         """
         self.TwinL2 = TwinL2
+
+    def setEDIAScores(self, pdbCode):
+        """ Sets the EDIA score of a protein3D class.
+
+        Parameters
+        ----------
+            pdbCode : string
+                The 4-character code of the protein3D class.
+        """
+        cmd = 'curl -d \'{"edia":{ "pdbCode":"'+pdbCode+'"}}\' -H "Accept: application/json" -H "Content-Type: application/json" -X POST https://proteins.plus/api/edia_rest'
+        args = shlex.split(cmd)
+        result = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+        out, err = result.communicate()
+        dict_str = out.decode("UTF-8")
+        int_dict = ast.literal_eval(dict_str)
+        res2 = subprocess.Popen(['curl', int_dict['location']],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out2, err2 = res2.communicate()
+        dict2_str = out2.decode("UTF-8")
+        dictionary = ast.literal_eval(dict2_str)
+        link = dictionary["atom_scores"]
+        df = pd.read_csv(link)
+        for i, row in df.iterrows():
+            EDIA = row["EDIA"]
+            index = row["Infile id"]
+            a = self.atoms[index]
+            a.setEDIA(EDIA)
+            if a.occup < 1: # more than one conformation
+                subdf = df[df["Infile id"]==index+1]
+                if subdf.shape[0] == 0:
+                    self.atoms[index+1].setEDIA(EDIA)
+                else:
+                    self.atoms[index-1].setEDIA(EDIA)
+        '''
+        for i in range(1,len(self.atoms)+1):
+            subdf = df[df["Infile id"]==i]
+            print(i, subdf.EDIA.values, subdf.shape)
+        '''
 
