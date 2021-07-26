@@ -270,6 +270,47 @@ def rotation_params(r0, r1, r2):
             u = [1, 1, (-r21[0] - r21[1]) / r21[2]]
     return theta, u
 
+def dihedral(mol, idx1, idx2, idx3, idx4):
+    """Computes dihedral angle for a set of four atom indices.
+    
+        Parameters
+        ----------
+            mol0 : mol3D
+                mol3D class instance of molecule for which we compute dihedral angle.
+            idx1 : int
+                Index of atom 1.
+            idx2 : int
+                Index of atom 2.
+            idx3 : int
+                Index of atom 3.
+            idx4 : int
+                Index of atom 4.
+    """
+
+    r1 = mol.getAtom(idx1).coords()
+    r2 = mol.getAtom(idx2).coords()
+    r3 = mol.getAtom(idx3).coords()
+    r4 = mol.getAtom(idx4).coords()
+
+    v1 = np.array(r2)-np.array(r1) # vector formed between atoms 1 and 2
+    v2 = np.array(r3)-np.array(r2) # vector formed between atoms 2 and 3
+    v3 = np.array(r4)-np.array(r3) # vector formed between atoms 3 and 4
+    
+    v1_x_v2 = np.cross(v1,v2) # cross product of v1 and v2
+    v2_x_v3 = np.cross(v2,v3) # cross product of v2 and v3
+    
+    normal_1 = v1_x_v2/(np.linalg.norm(v1_x_v2)) # normal to the plane formed by 1,2,3
+    normal_2 = v2_x_v3/(np.linalg.norm(v2_x_v3)) # normal to the plane formed by 2,3,4
+    
+    unit_1 = v2/(np.linalg.norm(v2))
+    unit_2 = np.cross(unit_1, normal_2)
+    
+    cos_angle = np.dot(normal_1, normal_2)
+    sine_angle = np.dot(normal_1, unit_2)
+    
+    dihedral_angle = round(np.degrees(-np.arctan2(sine_angle,cos_angle)),3)
+    return dihedral_angle
+
 def kabsch(mol0, mol1):
     """Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
 

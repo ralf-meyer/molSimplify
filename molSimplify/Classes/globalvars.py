@@ -16,8 +16,9 @@ from math import sqrt
 
 # Dictionary containing atomic mass, atomic number, covalent radius, num valence electrons
 # Data from http://www.webelements.com/ (last accessed May 13th 2015)
-amassdict = {'X': (1.0, 0, 0.77, 0),     'H': (1.0079, 1, 0.37, 1),     'He': (4.002602, 2, 0.46, 2),
-             'Li': (6.94, 3, 1.33, 1),   'Be': (9.0121831, 4, 1.02, 2), 'B': (10.83, 5, 0.85, 3),
+amassdict = {'X': (1.0, 0, 0.77, 0), 'H': (1.0079, 1, 0.37, 1),
+             'D': (2.0141, 1, 0.37, 1), 'He': (4.002602, 2, 0.46, 2),
+             'Li': (6.94, 3, 1.33, 1), 'Be': (9.0121831, 4, 1.02, 2), 'B': (10.83, 5, 0.85, 3),
              'C': (12.0107, 6, 0.77, 4), 'N': (14.0067, 7, 0.75, 5),    'O': (15.9994, 8, 0.73, 6), 
              'F': (18.9984, 9, 0.71, 7), 'Ne': (20.1797, 10, 0.67, 8),  'Na': (22.99, 11, 1.55, 1), 
              'Mg': (24.30, 12, 1.39, 2), 'Al': (26.98, 13, 1.26, 3),    'Si': (28.08, 14, 1.16, 4),
@@ -302,6 +303,31 @@ bondsdict = {"H": 1, "Li": 1, "Be": 2, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
 # bond lengths are from http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
 tribonddict = {("C", "C"): 1.27, ("C", "N"): 1.235, ("C", "O"): 1.165, ("N", "N"): 1.175,
                ("N", "C"): 1.235, ("O", "C"): 1.165}
+
+# Amino acids
+amino_acids = {"ALA": "ALA", "A": "ALA",
+               "ARG": "ARG", "R": "ARG", "ARN": "ARG",
+               "ASN": "ASN", "N": "ASN",
+               "ASP": "ASP", "D": "ASP", "ASH": "ASP",
+               "CYS": "CYS", "C": "CYS", "CYS2": "CYS", "CYM": "CYS",
+               "CYX": "CYS", "GLU": "GLU", "E": "GLU", "GLH": "GLU",
+               "GLN": "GLN", "Q": "GLN", 'AGLN': 'GLN', 'BGLN': 'GLN',
+               "GLY": "GLY", "G": "GLY",
+               "HIS": "HIS", 'H': "HIS", "HID": "HIS", "HIE": "HIS",
+               "HIP": "HIS", "HSE": "HIS", "HSD": "HIS", "HSP": "HIS",
+               "ILE": "ILE", "I": "ILE", "LEU": "LEU", "L": "LEU",
+               "LYS": "LYS", "K": "LYS", "LYN": "LYS",
+               "MET": "MET", "M": "MET", "AMET": "MET", "BMET": "MET",
+               "PHE": "PHE", "F": "PHE", "PRO": "PRO", "P": "PRO",
+               "SER": "SER", "S": "SER", "ASER": "SER", "BSER": "SER",
+               "THR": "THR", 'T': "THR", "TRP": "TRP", "W": "TRP",
+               "TYR": "TYR", "Y": 'TYR',
+               "VAL": "VAL", 'V': "VAL", 'AVAL': 'VAL', 'BVAL': 'VAL'
+               }
+
+# Common heteromolecules
+het_mols = ['TAU', 'AKG', 'FE2', 'HOH', 'NAG', 'BMA', 'MAN', 'ACE', 'ACY', 'FE',
+            'HEM', 'BLE', 'MG', 'BGC', 'WAT', 'CA', 'CL1']
 
 # ---Geo_Check_Metrics------
 dict_oct_check_loose = {"mono": {'num_coord_metal': 6,
