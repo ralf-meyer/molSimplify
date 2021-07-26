@@ -563,23 +563,6 @@ class protein3D:
             l_type = l[0]
             l = l[1:]
             if "ATOM" in l_type: # we are in an amino acid
-                """if len(l_type) > 4: # fixes buggy splitting at start
-                    l = [l_type[4:]] + l
-                l = pStripSpaces(l) 
-
-                #Conversions to old string splitting values
-                    print(l[0] + " = " + str(a_dict['Serial']))
-                    print(l[1] + " = " + a_dict['Name'])
-                    print(l[2] + " = " + a_dict['ResName'])
-                    print(l[3] + " = " + a_dict['ChainID'])
-                    print(l[4] + " = " + str(a_dict['ResSeq']))
-                    print(l[5] + " = " + str(a_dict['X']))
-                    print(l[6] + " = " + str(a_dict['Y']))
-                    print(l[7] + " = " + str(a_dict['Z']))
-                    print(l[8] + " = " + str(a_dict['Occupancy']))
-                    print(l[9] + " = " + str(a_dict['TempFactor']))
-                    print(l[10] + " = " + str(a_dict['Element']))
-                """
 
                 a_dict = read_atom(line)
                 a = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'], a_dict['Occupancy'])
