@@ -25,7 +25,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
 4. Activate the conda environment you just created. Go back to the root directory of molSimplify (where the setup.py file locates). Local install with pip.
    ```bash
    conda activate mols_test
-   cd .. #This should take you to the directory called "molSimplify"
+   cd .. 
    pip install -e .
    ```
 5. To test your installation, you can run the command below at the root directory of molSimplify. You are good to go if all the tests are passed!
