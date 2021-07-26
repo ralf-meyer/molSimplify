@@ -563,9 +563,7 @@ class protein3D:
                 line = line.split(enter)
                 line = line[0]
                 text = text.replace(line, '')
-            l = line.split()
-            l_type = l[0]
-            l = l[1:]
+            l_type = line[:6]
             if "ATOM" in l_type: # we are in an amino acid
 
                 a_dict = read_atom(line)
@@ -619,39 +617,12 @@ class protein3D:
                 atoms[a_dict['SerialNum']] = hetatm
 
             elif "CONECT" in l_type: # get extra connections
-                if len(l_type) > 6: # fixes buggy splitting at start
-                    l = [l_type[6:]] + l
-                l2 = []
-                wrong_turn = False
-                for i in range(len(l)):
-                    x = l[i]
-                    wrong_turn = False
-                    while x != '' and int(x) not in atoms.keys():
-                        if int(x[:5]) in atoms.keys():
-                            l2.append(x[:5])
-                            x = x[5:]
-                            wrong_turn = False
-                        elif int(x[:4]) in atoms.keys():
-                            l2.append(x[:4])
-                            x = x[4:]
-                            wrong_turn = False
-                        elif (l2 == [] or wrong_turn) and int(x[:3]) in atoms.keys():
-                            l2.append(x[:3])
-                            x = x[3:]
-                            wrong_turn = False
-                        else: # made a wrong turn
-                            wrong_turn = True
-                            y = l2.pop()
-                            l2.append(y[:-1])
-                            x = y[-1] + x
-                    if x != '':
-                        l2.append(x)
-                l = l2
-                if l != [] and atoms[int(l[0])] not in bonds.keys():
+                line = line[6:] # remove type
+                l = [line[i:i+5] for i in range(0, len(line), 5)]
+                if atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()
                 for i in l[1:]:
-                    if i != '':
-                        bonds[atoms[int(l[0])]].add(atoms[int(i)])
+                    bonds[atoms[int(l[0])]].add(atoms[int(i)])
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
