@@ -323,7 +323,7 @@ class protein3D:
                 the amino acid residue containing the atom
                 returns None if there is no amino acid
         """
-        for aa in self.aas:
+        for aa in self.aas.values():
             if (a_id, self.atoms[a_id]) in aa.atoms:
                 return aa
         for aa in self.missing_atoms.keys():
