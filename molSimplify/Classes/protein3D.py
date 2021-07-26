@@ -10,6 +10,7 @@ from math import sqrt
 import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.helpers import pStripSpaces
 import gzip
 from itertools import chain
 import urllib.request as urllib
@@ -766,71 +767,9 @@ class protein3D:
             l_type = l[0]
             l = l[1:]
             if "ATOM" in l_type: # we are in an amino acid
-                if '+' in l[-1] or '-' in l[-1]: # fix charge of Sym
-                    l[-1] = l[-1][:(len(l[-1]) - 2)]
-                if '0' in l[-1]: # fix number attached
-                    l[-1] = l[-1][:(len(l[-1]) - 1)]
-                if len(l[-1]) == 2:
-                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
-                # fix buggy splitting
-                if len(l[-2]) > 6: 
-                    l2 = l
-                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
-                if len(l_type) > 4: 
+                if len(l_type) > 4: # fixes buggy splitting at start
                     l = [l_type[4:]] + l
-                if len(l[1]) > 3 and len(l) != 11:
-                    l2 = l
-                    if len(l[1]) > 4 and (l[1][4] == 'A' or l[1][4] == 'B'):
-                        l = [l2[0], l2[1][:4], l2[1][4:]] + l2[2:]
-                    elif l[1][3] == 'A' or l[1][3] == 'B':
-                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                    elif ('1' in l[2] or len(l[2]) == 1) and l[1][3] != "'":
-                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                if len(l[3]) > 1:
-                    l2 = l
-                    if len(l[2]) != 1 or l[3][1] == '1' or l[3][1] == '2':
-                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                    elif l[-2][0] == '0' and len(l) == 11:
-                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                    else:
-                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l[2]) == 1:
-                    l2 = l
-                    if len(l) > 11:
-                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                    if len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
-                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l) < 11 and len(l[3]) > 1:
-                    l2 = l
-                    if l[3][1] == '1' or l[3][1] == '2':
-                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                if '-' in l[5][1:]: # fix coordinates
-                    y = l[5]
-                    y = l[5].split('-')
-                    if len(y) > 2 and y[0] != '': # extra long string case
-                        l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
-                    elif y[0] != '':
-                        l = l[:5] + [y[0], '-'+y[1]] + l[6:]
-                    elif len(y) > 3: # extra long string case
-                        l = l[:5] + ['-'+y[1], '-'+y[2], '-'+y[3]] + l[6:]
-                    else:
-                        l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
-                if '-' in l[6][1:]:
-                    y = l[6]
-                    y = l[6].split('-')
-                    if y[0] != '':
-                        l = l[:6] + [y[0], '-'+y[1]] + l[7:]
-                    else:
-                        l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
-                if '-' in l[7][1:]:
-                    y = l[7]
-                    y = l[7].split('-')
-                    if y[0] != '':
-                        l = l[:7] + [y[0], '-'+y[1]] + l[8:]
-                    else:
-                        l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-                if "" in l:
-                    l.remove("")
+                l = pStripSpaces(l)
                 a = AA3D(l[2], l[3], l[4], float(l[8]))
                 if l[3] not in chains.keys():
                     chains[l[3]] = [] # initialize key of chain dictionary
@@ -850,72 +789,9 @@ class protein3D:
                 if a.next != None:
                     bonds[a.c].add(a.next.n)
             elif "HETATM" in l_type: # this is a heteroatom
-                if '+' in l[-1] or '-' in l[-1]: # fix charge of Sym
-                    l[-1] = l[-1][:(len(l[-1]) - 2)]
-                if '0' in l[-1]: # fix number attached
-                    l[-1] = l[-1][:(len(l[-1]) - 1)]
-                if len(l[-1]) == 2:
-                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
-                # fix buggy splitting
-                if len(l[-2]) > 6: 
-                    l2 = l
-                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
-                if len(l_type) > 6: # fixes buggy splitting
+                if len(l_type) > 6: # fixes buggy splitting at start
                     l = [l_type[6:]] + l
-                if len(l[1]) > 3 and len(l) != 11:
-                    l2 = l
-                    if len(l[1]) > 4 and (l[1][4] == 'A' or l[1][4] == 'B'):
-                        l = [l2[0], l2[1][:4], l2[1][4:]] + l2[2:]
-                    elif l[1][3] == 'A' or l[1][3] == 'B':
-                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                    elif ('1' in l[2] or len(l[2]) == 1) and l[1][3] != "'":
-                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                if len(l[3]) > 1:
-                    digits = {'1','2','3','4','5','6','9'} # add more as needed
-                    l2 = l
-                    if len(l[2]) != 1 or l[3][1] in digits:
-                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                    elif l[-2][0] == '0' and len(l) == 11:
-                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                    else:
-                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l[2]) == 1:
-                    l2 = l
-                    if len(l) > 11:
-                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                    if len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
-                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l) < 11 and len(l[3]) > 1:
-                    l2 = l
-                    if l[3][1] == '1' or l[3][1] == '2':
-                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                if '-' in l[5][1:]: # fix coordinates
-                    y = l[5]
-                    y = l[5].split('-')
-                    if len(y) > 2 and y[0] != '': # extra long string case
-                        l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
-                    elif y[0] != '':
-                        l = l[:5] + [y[0], '-'+y[1]] + l[6:]
-                    elif len(y) > 3: # extra long string case
-                        l = l[:5] + ['-'+y[1], '-'+y[2], '-'+y[3]] + l[6:]
-                    else:
-                        l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
-                if '-' in l[6][1:]:
-                    y = l[6]
-                    y = l[6].split('-')
-                    if y[0] != '':
-                        l = l[:6] + [y[0], '-'+y[1]] + l[7:]
-                    else:
-                        l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
-                if '-' in l[7][1:]:
-                    y = l[7]
-                    y = l[7].split('-')
-                    if y[0] != '':
-                        l = l[:7] + [y[0], '-'+y[1]] + l[8:]
-                    else:
-                        l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-                if "" in l:
-                    l.remove("")
+                l = pStripSpaces(l)
                 hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
                                 occup=float(l[8]), greek=l[1])
                 if (int(l[0]), hetatm) not in hetatms.keys():
