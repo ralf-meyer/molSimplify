@@ -98,23 +98,32 @@ def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True, catoms=None):
 
 
 def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None):
-    ## this function returns the ratiometrics
-    ## for one atom
-    # Inputs:
-    #	mol - mol3D class
-    #	prop_vec - vector, property of atoms in mol in order of index
-    #	orig -  int, zero-indexed starting atom
-    #	d - int, number of hops to travel
-    #	oct - bool, if complex is octahedral, will use better bond checks
+    """This function returns the ratiometrics for one atom
+    
+    Parameters:
+    ___________
+        mol : mol3D class
+        prop_vec : vector, property of atoms in mol in order of index
+        orig : int, zero-indexed starting atom
+        d : int, number of hops to travel
+        oct : bool, if complex is octahedral, will use better bond checks
+    
+    Returns
+    ___________
+        result_vector : vector of prop_vec_num / prop_vec_den
+    
+    """
     result_vector = np.zeros(d + 1)
     hopped = 0
     active_set = set([orig])
     historical_set = set()
     result_vector[hopped] = prop_vec_num[orig] / prop_vec_den[orig]
-    #	if oct:
-    #		print('using OCT autocorrelation')
-    #	#else:
-    #		print('NOT using OCT autocorrelation')
+    """
+        if oct:
+            print('using OCT autocorrelation')
+        else:
+            print('NOT using OCT autocorrelation')
+    """
     while hopped < (d):
 
         hopped += 1
