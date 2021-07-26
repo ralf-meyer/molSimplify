@@ -22,6 +22,7 @@ import string
 import subprocess
 import shlex
 import ast
+import time
 
 # no GUI support for now
 
@@ -32,7 +33,7 @@ class protein3D:
     
     """
     
-    def __init__(self, pdbfile='undef'):
+    def __init__(self, pdbCode='undef'):
         # Number of amino acids
         self.naas = 0 
         # Number of atoms not part of proteins
@@ -57,8 +58,8 @@ class protein3D:
         self.R = -1
         # Rfree value
         self.Rfree = -1
-        # PDB file (if applicable)
-        self.pdbfile = pdbfile
+        # PDB code
+        self.pdbCode = pdbCode
         # Holder for metals
         self.metals = False
         # Bonds
@@ -564,7 +565,7 @@ class protein3D:
                 text = text.replace(line, '')
             l_type = line[:6]
             if "ATOM" in l_type: # we are in an amino acid
-
+                line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
                 if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
                     a = AA3D(a_dict['ResName'], a_dict['ChainID'],
@@ -589,7 +590,7 @@ class protein3D:
                     bonds[a.c].add(a.next.n)
 
             elif "HETATM" in l_type: # this is a heteroatom
-
+                line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
                 aminos = globalvars().getAllAAs()
                 fake_aa = False
@@ -607,8 +608,11 @@ class protein3D:
                         conf.append(a)
                     if a not in chains[a_dict['ChainID']] and a not in conf:
                         chains[a_dict['ChainID']].append(a)
-                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'], a_dict['Y'], a_dict['Z']],
-                                Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
+                                                              a_dict['Y'],
+                                                              a_dict['Z']],
+                                Tfactor=a_dict['TempFactor'],
+                                occup=a_dict['Occupancy'], greek=a_dict['Name'])
                 if fake_aa:
                     a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
                     a.setBonds()
@@ -624,11 +628,15 @@ class protein3D:
             elif "CONECT" in l_type: # get extra connections
                 line = line[6:] # remove type
                 l = [line[i:i+5] for i in range(0, len(line), 5)]
-                if atoms[int(l[0])] not in bonds.keys():
+                if int(l[0]) in atoms.keys() and atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()
                 for i in l[1:]:
-                    if i != '     ' and i != '    ':
+                    try:
                         bonds[atoms[int(l[0])]].add(atoms[int(i)])
+                    except:
+                        if "  " not in i:
+                            print("likely OXT")
+                        continue
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
@@ -666,6 +674,7 @@ class protein3D:
         else:
             try:
                 self.readfrompdb(str(data))
+                self.setPDBCode(pdbCode)
                 print("fetched: %s"%(pdbCode))
             except IOError:
                 print('aborted')
@@ -685,7 +694,7 @@ class protein3D:
         """
         self.bonds = bonds
 
-    def readMetaData(self, pdbCode):
+    def readMetaData(self):
         """ API query to fetch XML data from a pdb and add its useful attributes
         to a protein3D class.
         
@@ -694,6 +703,7 @@ class protein3D:
             pdbCode : str
                 code for protein, e.g. 1os7
         """
+        pdbCode = self.pdbCode
         try:
             start = 'https://files.rcsb.org/pub/pdb/validation_reports/' + pdbCode[1] + pdbCode[2]
             link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
@@ -766,7 +776,7 @@ class protein3D:
         """
         self.TwinL2 = TwinL2
 
-    def setEDIAScores(self, pdbCode):
+    def setEDIAScores(self):
         """ Sets the EDIA score of a protein3D class.
 
         Parameters
@@ -774,10 +784,12 @@ class protein3D:
             pdbCode : string
                 The 4-character code of the protein3D class.
         """
-        cmd = 'curl -d \'{"edia":{ "pdbCode":"'+pdbCode+'"}}\' -H "Accept: application/json" -H "Content-Type: application/json" -X POST https://proteins.plus/api/edia_rest'
+        code = self.pdbCode
+        cmd = 'curl -d \'{"edia":{ "pdbCode":"'+code+'"}}\' -H "Accept: application/json" -H "Content-Type: application/json" -X POST https://proteins.plus/api/edia_rest'
         args = shlex.split(cmd)
         result = subprocess.Popen(args, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE)
+        result.wait()
         out, err = result.communicate()
         dict_str = out.decode("UTF-8")
         int_dict = ast.literal_eval(dict_str)
@@ -786,6 +798,18 @@ class protein3D:
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
+        t = 5
+        while dictionary["status_code"] == 202:
+            res2 = subprocess.Popen(['curl', int_dict['location']],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            print('sleeping', t)
+            time.sleep(t)
+            res2.wait()
+            out2, err2 = res2.communicate()
+            dict2_str = out2.decode("UTF-8")
+            dictionary = ast.literal_eval(dict2_str)
+            t += 5
         link = dictionary["atom_scores"]
         df = pd.read_csv(link)
         for i, row in df.iterrows():
@@ -795,13 +819,23 @@ class protein3D:
             a.setEDIA(EDIA)
             if a.occup < 1: # more than one conformation
                 subdf = df[df["Infile id"]==index+1]
-                if subdf.shape[0] == 0:
+                if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
                     self.atoms[index+1].setEDIA(EDIA)
-                else:
+                elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
                     self.atoms[index-1].setEDIA(EDIA)
         '''
         for i in range(1,len(self.atoms)+1):
             subdf = df[df["Infile id"]==i]
             print(i, subdf.EDIA.values, subdf.shape)
         '''
+
+    def setPDBCode(self, pdbCode):
+        """ Sets the 4-letter PDB code of a protein3D class instance
+
+        Parameters
+        ----------
+            pdbCode : string
+                Desired 4-letter PDB code
+        """
+        self.pdbCode = pdbCode
 
