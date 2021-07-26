@@ -39,8 +39,8 @@ class protein3D:
         self.nhetatms = 0
         # Number of chains
         self.nchains = 0
-        # Set of amino acids
-        self.aas = set()
+        # Dictionary of amino acids
+        self.aas = {}
         # Dictionary of all atoms
         self.atoms = {}
         # Dictionary of heteroatoms
@@ -478,7 +478,7 @@ class protein3D:
             enter = "\\n"
 
         # class attributes
-        aas = set()
+        aas = {}
         hetatms = {}
         atoms = {}
         chains = {}
@@ -545,11 +545,10 @@ class protein3D:
                     text = text.replace(line, '')
                 l = line.split()
                 if len(l) > 2:
-                    a = AA3D(l[0], l[1], l[2])
-                    missing_atoms[a] = []
+                    missing_atoms[(l[1],l[2])] = []
                     for atom in l[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[a].append(atom3D(Sym=atom[0],
+                            missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
                                                            greek=atom))
         # start getting amino acids and heteroatoms
         if "ENDMDL" in text:
@@ -567,16 +566,19 @@ class protein3D:
             if "ATOM" in l_type: # we are in an amino acid
 
                 a_dict = read_atom(line)
-                a = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'], a_dict['Occupancy'])
+                if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
+                    a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                             a_dict['ResSeq'], a_dict['Occupancy'])
+                    aas[(a_dict['ChainID'], a_dict['ResSeq'])] = a
                 if a_dict['ChainID'] not in chains.keys():
                     chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
                 if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
                     conf.append(a)
                 if a not in chains[a_dict['ChainID']] and a not in conf:
                     chains[a_dict['ChainID']].append(a)
-                aas.add(a)
                 atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'], a_dict['Z']], Tfactor=a_dict['TempFactor'],
                               occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                a = aas[(a_dict['ChainID'], a_dict['ResSeq'])]
                 a.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
                 atoms[a_dict['SerialNum']] = atom
                 a.setBonds()
@@ -594,14 +596,17 @@ class protein3D:
                 
                 if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
-                    a = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'], a_dict['Occupancy'])
+                    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
+                        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                                 a_dict['ResSeq'], a_dict['Occupancy'])
+                        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = a
+                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])]
                     if a_dict['ChainID'] not in chains.keys():
                         chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
                     if int(a_dict['Occupancy']) != 1 and a not in conf:
                         conf.append(a)
                     if a not in chains[a_dict['ChainID']] and a not in conf:
                         chains[a_dict['ChainID']].append(a)
-                    aas.add(a)
                 hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'], a_dict['Y'], a_dict['Z']],
                                 Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'], greek=a_dict['Name'])
                 if fake_aa:
@@ -622,7 +627,8 @@ class protein3D:
                 if atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()
                 for i in l[1:]:
-                    bonds[atoms[int(l[0])]].add(atoms[int(i)])
+                    if i != '     ' and i != '    ':
+                        bonds[atoms[int(l[0])]].add(atoms[int(i)])
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
