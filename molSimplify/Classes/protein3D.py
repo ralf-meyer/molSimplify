@@ -10,7 +10,7 @@ from math import sqrt
 import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.helpers import pStripSpaces
+from molSimplify.Classes.helpers import read_atom
 from molSimplify.Classes.globalvars import globalvars
 import gzip
 from itertools import chain
@@ -464,6 +464,8 @@ class protein3D:
                 String of path to PDB file. Path may be local or global.
                 May also be the text of a PDB file from the internet.
         """
+
+        # read in PDB file
         if '.pdb' in text: # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
@@ -473,6 +475,7 @@ class protein3D:
             f.close()
         else:
             enter = "\\n"
+
         # class attributes
         aas = set()
         hetatms = {}
@@ -482,7 +485,8 @@ class protein3D:
         missing_aas = []
         conf = []
         bonds = {}
-        # get R and Rfree values
+
+        # get R and Rfree values (text is full file)
         if "R VALUE            (WORKING SET)" in text:
             temp = text.split("R VALUE            (WORKING SET)")
             temp2 = temp[-1].split()
@@ -506,6 +510,7 @@ class protein3D:
             else:
                 Rfree = 100
         temp = temp[1].split(enter)
+
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
             text = text.split("M RES C SSSEQI")
@@ -523,6 +528,7 @@ class protein3D:
                 if len(l) > 2:
                     a = AA3D(l[0], l[1], l[2])
                     missing_aas.append(a)
+
         # start getting missing atoms
         if "M RES CSSEQI  ATOMS" in text:
             text = text.split("M RES CSSEQI  ATOMS")
@@ -560,56 +566,57 @@ class protein3D:
             l_type = l[0]
             l = l[1:]
             if "ATOM" in l_type: # we are in an amino acid
-                if len(l_type) > 4: # fixes buggy splitting at start
-                    l = [l_type[4:]] + l
-                l = pStripSpaces(l)
-                a = AA3D(l[2], l[3], l[4], float(l[8]))
-                if l[3] not in chains.keys():
-                    chains[l[3]] = [] # initialize key of chain dictionary
-                if int(float(l[8])) != 1 and a not in conf:
+
+                a_dict = read_atom(line)
+                a = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'], a_dict['Occupancy'])
+                if a_dict['ChainID'] not in chains.keys():
+                    chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
                     conf.append(a)
-                if a not in chains[l[3]] and a not in conf:
-                    chains[l[3]].append(a)
+                if a not in chains[a_dict['ChainID']] and a not in conf:
+                    chains[a_dict['ChainID']].append(a)
                 aas.add(a)
-                atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
-                              occup=float(l[8]), greek=l[1])
-                a.addAtom(atom, int(l[0])) # terminal Os may be missing
-                atoms[int(l[0])] = atom
+                atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'], a_dict['Z']], Tfactor=a_dict['TempFactor'],
+                              occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                a.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+                atoms[a_dict['SerialNum']] = atom
                 a.setBonds()
                 bonds.update(a.bonds)
                 if a.prev != None:
                     bonds[a.n].add(a.prev.c)
                 if a.next != None:
                     bonds[a.c].add(a.next.n)
+
             elif "HETATM" in l_type: # this is a heteroatom
+
+                a_dict = read_atom(line)
                 aminos = globalvars().amino_acids
-                if len(l_type) > 6: # fixes buggy splitting at start
-                    l = [l_type[6:]] + l
-                l = pStripSpaces(l)
                 fake_aa = False
-                if l[2] in aminos or l[2][1:] in aminos:
+                
+                if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
-                    a = AA3D(l[2], l[3], l[4], float(l[8]))
-                    if l[3] not in chains.keys():
-                        chains[l[3]] = [] # initialize key of chain dictionary
-                    if int(float(l[8])) != 1 and a not in conf:
+                    a = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'], a_dict['Occupancy'])
+                    if a_dict['ChainID'] not in chains.keys():
+                        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                    if int(a_dict['Occupancy']) != 1 and a not in conf:
                         conf.append(a)
-                    if a not in chains[l[3]] and a not in conf:
-                        chains[l[3]].append(a)
+                    if a not in chains[a_dict['ChainID']] and a not in conf:
+                        chains[a_dict['ChainID']].append(a)
                     aas.add(a)
-                hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]],
-                                Tfactor=l[9], occup=float(l[8]), greek=l[1])
+                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'], a_dict['Y'], a_dict['Z']],
+                                Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'], greek=a_dict['Name'])
                 if fake_aa:
-                    a.addAtom(hetatm, int(l[0])) # terminal Os may be missing
+                    a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
                     a.setBonds()
                     bonds.update(a.bonds)
                     if a.prev != None:
                         bonds[a.n].add(a.prev.c)
                     if a.next != None:
                         bonds[a.c].add(a.next.n)
-                if (int(l[0]), hetatm) not in hetatms.keys():
-                    hetatms[(int(l[0]), hetatm)] = [l[2], l[3]] # [cmpd name, chain]
-                atoms[int(l[0])] = hetatm
+                if (a_dict['SerialNum'], hetatm) not in hetatms.keys():
+                    hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']] # [cmpd name, chain]
+                atoms[a_dict['SerialNum']] = hetatm
+
             elif "CONECT" in l_type: # get extra connections
                 if len(l_type) > 6: # fixes buggy splitting at start
                     l = [l_type[6:]] + l
