@@ -11,6 +11,7 @@ import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom
+from molSimplify.Classes.globalvars import globalvars
 import gzip
 from itertools import chain
 import urllib.request as urllib
@@ -20,214 +21,6 @@ import pandas as pd
 import string
 
 # no GUI support for now
-
-waters = {'AHOH', 'CHOH', 'HOH', 'EHOH', 'DHOH', 'BHOH'}
-
-heme_type = {'AHEC', 'HEC', 'BHEC', 'ACOH', 'BCOH', 'SIR', 'CMO', 'HEM', 'B12',
-             'BW9', 'CNC', 'BJ1S', 'PNI', 'COB', 'AJ1R', 'CBY', "CLA", "AHEM",
-             "BHEM", "BCL", "ABCL", "BBCL", 'SRM', "F43", "HDD", 'HEB', 'BCB',
-             'ZNH', 'AZNH', 'BZNH', 'HNI', 'FEC', 'AFEC', 'VOV', 'BVOV', 'DHE',
-             '7HE', '6HE', 'MH0', 'DEU', "NTE", "HKL", 'BVQ', 'OBL', 'HEA',
-             'AHEA', 'BHEA', 'HEV', 'ACMO', 'MI9', 'CL7', 'HAS', 'RUR', 'BCMO',
-             'CHL', '83L', 'CHEM', 'DHEM', 'HCO', '89R', 'A89R', 'B89R', 'MNH',
-             'HNN', 'WXP', 'VEA', 'COH', '4HE', '9QQ'}
-
-others = {'ANCO', 'NCO', 'BNCO', 'NO', 'BNO', 'ANO', 'BEF', 'CEOH', '1PE',
-          'P6G', 'CYN', 'TA6', 'MLI', '2PE', '15P', 'SO4', 'ACT', 'DMS', 'ZL4',
-          'BALF', 'ALF', 'PRP', 'APRP', 'CAC', 'BGQ', 'DBH', 'PO4', 'POP',
-          'GOL', 'PGE', 'PPV', 'BPPV', 'PG6', 'GXT', 'ZN8', 'APEG', 'BPEG',
-          'PER', 'DVT', 'PG4', 'MDN', 'CGU', 'BGC', 'NO3', 'OXY', 'SIN', 'AKG',
-          "F3S", "FES", "IMD", "8K2", "BE7", "ABE7", "TRS", "B22", "B17", 'PC',
-          "RKL", "CUK", "CUA", "EQQ", "BTB", "GB1", "9E8", '9E5', "9DH", 'BU1',
-          'EDO', 'GN1', 'QG1', "AQG1", "QG4", 'QFY', 'Q77', 'PX7', 'Q7A', 'OH',
-          'BUB', 'PYR', 'Q71', "CL", 'EHM', 'LFC', 'Q6D', 'Q64', 'VO4', 'AOS',
-          'FEL', 'RNS', 'KGY', 'FMT', 'MGF', 'TRS', "ZSP", "OPE", "IHP", '5MY',
-          '724', 'ACY', 'Z59', "SCN", 'CHD', "FLC", 'FX7', 'PX7', "FT8", "1IU",
-          'DA4', 'SF4', "WCC", '9NB', "FMT", 'APPV', "JNN", "AJNN", "BJNN",
-          '8XZ', "PLM", "AV50", "BV50", 'V50', 'KIF', "ATRS", "BTRS", "PPY",
-          "XC3", "P2H", "HOA", "ASY", 'GPP', "PEG", '1OU', "1OV", '19N', '1OS',
-          '1OT', 'P5Y', "ABH", "8P8", "CO3", 'CLF', "HCA", 'NFU', 'NMY', "COA",
-          "CIT", 'HAE', 'BB2', "FUC", '8L2', '8L5', "8LB", "8KN", "8KK", "8JQ",
-          '8GJ', '8GK', "OXL", "HCQ", "HCH", 'JC2', '8SH', 'FCN', "1KM", 'TZD',
-          '7MH', '7MF', '7ML', '7MK', "CGOL", "DMJ", "ADMJ", "BDMJ", "HS6",
-          "PEO", 'S7B', 'HS7', 'SO3', "MBY", "AMBY", "DPO", "BDPO", "BHO",
-          "ABHO", "BBHO", 'AGV', "CAC", "ACAC", "AGOL", "BGOL", "TPP", "B3N",
-          'AB3N', 'M3S', "MPO", "AMPO", 'BIX', "ZDC", "FEO", "SHH", "FVZ",
-          "TDP", 'K0I', "GAL", '2KT', "WBA", "BTB", "ABTB", "BBTB", "MVL",
-          '6XO', 'FCO', "PO3", 'XXG', "QMS", "MYR", "THV", "THY", 'L88', "TDK",
-          "TFD", "ATFD", "BTFD", "BFMT", 'O2Y', 'GVM', 'LTG', 'SOL', 'FUD',
-          'TFG', 'AQA', "FSX", 'BFSX', 'ASF4', 'BSF4', 'TBV', 'BG6', 'MBD',
-          'XCC', 'CUV', 'BCUV', 'AXCC', '2M8', 'VN4', '3PG', 'AF3', 'MAN',
-          'AMAN', 'BMA', 'BBMA', 'LMS', 'SHA', 'ASO4', 'BSO4', 'PBC', 'APBC',
-          'KMH', 'AAE', 'NAG', 'YIV', 'PVP', 'BACT', '7GR', 'XI7', 'ETX',
-          '79E', '7K0', 'A7MK', 'HJ5', '24F', '6QC', '2FP', 'HS5', 'HS1', 'ZN',
-          'HS3', '6H0', '8JH', 'FZ1', '79F', 'THW', 'IPT', 'SLB', 'SPV', 'PGA',
-          '6NN', '10B', '7TR', '0XW', 'KG7', '0ZD', 'PEP', 'APEP', 'BPEP',
-          '2PG', 'B2PG', '6ML', 'B6ML', 'H2S', 'CH2S', 'AH2S', '0XX', '7AF',
-          'SPV', 'AZI', 'NMN', 'W45', '4NC', 'DHY', 'NG1', 'IWX', '6EZ', 'FBP',
-          'ACA', 'AACA', 'BACA', 'Y08', 'Y16', 'YZ6', 'Y10', '6C1', '2PN',
-          'ARS', 'DPJ', 'OLC', 'PE5', 'COM', '294', 'IMH', 'AIMH', 'BIMH',
-          'FOM', 'CO2', 'BZS', '7FY', 'B7FY', 'SRO', 'HTD', 'HTL', 'XYP',
-          'ZLM', 'ZLS', 'ZLV', 'V1P', 'PGH', 'P33', 'OLW', 'K9L', 'L5Z', '6J0',
-          'C65', 'HA6', '9RB', 'N5J', '7H1', 'CDPO', 'N4R', 'TSN', 'E1Z', 'MG',
-          '6DK', 'YED', '5OO', "TLA", "QPT", "CPT", "HGB", "IL5", "WO6", "MOS",
-          "MTE", '0F3', 'JSC', "BJSC", "JSD", "JSE", "AJSE", '3WB', "RKM",
-          'HB8', '5YA', 'MMZ', 'XCZ', '82N', 'FE2', 'OXD', 'OE2', '5SR', 'GRX',
-          'AIV', '0UE', 'MCO', 'X8Z', '5V3', '5V0', 'T34', 'GRZ', 'T86', 'GT2',
-          'GRK', 'GQZ', 'GM5', '5PU', 'M2A', 'TG4', '5RD', 'TG5', 'ATG5',
-          'BTG5', 'TD6', '5ON', '9FK', '5O5', '5OM', '5OG', '3YP', 'IP8', 'NI',
-          'TPS', 'TMG', '55L', 'A55L', 'B55L', 'LTQ', '5LD', 'TD4', 'ATD4',
-          'BTD4', 'E7Z', 'PPK', 'APPK', 'E7Q', '5Q1', 'O84', 'NO2', 'BRJ', 'F',
-          'D4B', 'ZAR', 'AZAR', 'BZAR', 'XCH', 'D0Z', 'CXH', 'FZZ', 'AFZZ', 
-          'BYN', 'BBYN', '4LU', 'A4LU', '4MJ', 'BX5', 'B9Z', 'OLC', 'LPW', 'O',
-          'BJ5', 'BJ2', 'B9Z', 'VOH', 'B9N', 'J6A', 'J4P', 'J4S', 'J4V', 'J1V',
-          'J2D', 'J0Y', 'J1G', 'WNN', 'HBV', 'HBJ', 'AHBJ', 'BHBJ', '7MT',
-          'MMA', 'AMMA', 'BMMA', 'BNO2', 'MLT', 'BME', '8YL', 'A8YL', '8F2',
-          '8F3', 'CAP', 'HZK', 'HZW', 'HZE', 'XUL', 'WS2', 'AWS2', '4BW',
-          'EOJ', 'TQJ', 'FBM', 'FBJ', 'TP9', '1GP', 'BU3', 'AEDO', 'CQB', 'HG',
-          'AAKG', '8GH', '8HK', '8HE', '8GE', 'BTN', 'V13', 'AV13', 'BV13',
-          'S3C', 'BCN', 'MPD', 'A2G', 'PMV', 'ETA', 'BETA', 'FB2', '8Q8',
-          'JTY', 'NHC', 'ANHC', 'BNHC', 'ENL', 'AENL', 'BENL', 'BES', '2NO',
-          'VNI', '476', 'MYA', 'HZT', 'HZE', 'PEB', 'URE', '93W', '8V5', '3PO',
-          'J2H', 'SOR', 'XLS', 'XYL', 'V14', 'EZL', 'DJ3', 'ADJ3', 'BDJ3',
-          '91R', 'B91R', '91T', 'A91T', 'BO3', '1R5', 'ZP1', '92K', 'QSP',
-          '1VQ', '9GB', '9GE', 'DHB', '1SD', 'TOR', 'E1E', 'E1F', 'AE1F',
-          'BE1F', '3S0', 'Z3K','NHW', 'E1G', 'EA3', 'JTW', 'AJTW', 'BJTW',
-          'BPGE', '9KB', '9KE', 'BTW', 'GAE', 'LA6', 'BLA6', '0FV', 'A0FV',
-          'ALA6', 'FPS', 'IPM', '13P', 'BCT', 'VNT', 'J9Y', 'AJ9Y', 'ZZ7',
-          'ZTP', 'ASIN', 'BSIN', 'TAR', 'S9N', 'BS9N', 'PK8', 'BPO4', 'CFO',
-          'NTM', 'PS7', 'AHD', 'G6P', 'EF1', 'AEF1', 'BEF1', '4NG', 'LG6',
-          'LXP', 'ADA', 'AADA', 'BADA', 'CADA', 'GTR', 'BGTR', 'YOM', '4KN',
-          'PBD', 'PH2', '4J9', 'PUD', 'TGD', 'ATGD', 'BGTD', 'HY0', "4KD",
-          "4LC", '4KB', '4KC', "R3N", "QZH", "NHE", "RAM", "GST", "FUL", "FUC",
-          "AFUL", "BFUC", "BDF", "FMN", "CEL", "NMH", 'RF7', 'RC5', '43G',
-          '2HA', 'A2HA', 'G16', "GCD", "GMH", '293', 'PIM', "XSP", '0V5', 'CD',
-          'APV', '23N', "GSH", "HSM", "HCS", "AZM", 'C2E', '3X1', '3ZP', 'MVI',
-          'VD9', 'MIV', 'ZM3', '3TV', 'HXD', 'GLC', 'THJ', 'NOE', 'BTHJ', 'PI',
-          '402', '40E', 'HIO', 'NDH', 'T5X', 'T6F', 'FDP', 'MVI', '03W', '3UG',
-          'A03W', '3UF', 'A3UF', 'B3UF', 'BPRP', '3PY', 'A3PY', 'B3PY', 'KAN',
-          'SIA', 'AR6', 'ICT', '9L3', 'DO1', '865', '3S6', 'HBU', 'V1S', '786',
-          'GOA', 'R5X', 'APO4', 'L6G', '8JS', 'BSI', 'V1D', 'GOX', 'OEV', 'CU',
-          'GIM', 'TGJ', 'FC4', 'AFC4', '6KE', 'B6KE', '6ED', '6E7', '6EP',
-          '6EN', 'MQN', 'TZM', 'MMK', 'TQU', 'N9W', 'MB7', '9NK', '9C2', '8XW',
-          '8V8', '7O8', '7NU', 'P6T', '1KH', 'A1KH', 'XPE', 'OJ4', 'ACO3',
-          'BCO3', 'D7K', '4OP', '4PS', 'APER', 'BPER', 'AAZI', 'ANO2', '8M0',
-          'E43', 'TBR', 'WO4', 'AACT', 'ZRW', 'REO', 'CU1', 'MO7', 'TEW',
-          'TFM', '1CL', 'GXW', 'ZW2', '2HE', 'ARW', 'CFM', 'IKX', 'DMU', 'PEK',
-          'TGL', 'BAZI', 'GDS', '9RU', 'A9RU', 'ACOM', '38I', 'ETS', 'A8XQ',
-          '8XQ', 'DZZ', 'TZZ', '1GO', 'T4F', 'T5F', '7BH', '7BF', 'GVR', 'CYC',
-          'BIE', 'AGLC', 'BBGC', 'ETF', 'AETF', 'BETF', '752', 'BLMR', 'ALMR',
-          'LMR', 'B3P', 'PBE', 'NB4', 'NH3', 'ACO', 'DAO', '1EZ', 'PHB', '7DV',
-          'BEZ', 'RC4', 'DTT', '6YQ', 'V51', '6YZ', 'V26', 'V49', '6Z9', '5EF',
-          'A6Z9', 'B6Z9', 'A6N', '6YH', 'A6YH', 'B6YH', 'ICS', '2YU', '4FH',
-          '5MH', '3MH', '3FH', 'ANV', '6XD', 'KKK', 'M8V', 'M8J', '642', 'X7A',
-          'MFU', 'MO0', 'FRU', 'CV50', 'L8J', 'MZM', 'PYZ', 'DOR', '5LC', 'SE',
-          'YNC', 'FUS', 'M3Q', 'KED', 'T6Z', 'YKG', 'XJE', 'FQV', 'FQY', 'VKE',
-          'TWB', 'HL6', 'EZ1', '3ES', 'EPE', 'AHN', 'UCZ', '9P3', '9O9', '9OU',
-          '9OC', 'M9F', 'E08', 'PNN', 'ZA3', 'FM5', '34F', 'PDO', 'E8S', 'ACE',
-          'BUA', 'ABUA', 'BBUA', 'B13P', 'NY2', 'CL6', 'WPG', 'IMP', 'DQJ',
-          'DQG', '90V', 'DNV', 'DKV', 'DKS', 'DKY', 'DKP', 'X93', 'BNAG', 'MO',
-          'NDG', 'ANDG', 'BNF', 'FXY', 'TPU', 'NIO', 'VGL', 'WQP', 'A40E',
-          'BHIO', 'II4', 'NCA', 'SV2', 'CQM', 'AIMD', 'BIMD', '3L4', 'FBV',
-          'C6J', 'C6M', 'FBW', 'IUG', 'RMN', 'OKG', 'VVO', 'NH4', 'MOO', 'CWO',
-          'PLL', 'AMOO', 'LJB', '47S', 'A47S', 'RRE', 'QHL', 'AQHL', 'R1C',
-          'NFS', 'DMA', 'PAY', 'PQQ', 'SGN', 'IDS', 'GCU', 'BEDO', 'R7U', 'RU',
-          'R9A', '11R', 'R5A', 'AR5A', 'R5B', 'BR5B', 'R6A', 'R4A', 'AR4A',
-          'BR4A', 'M27', '6LL', 'PCD', 'H1Z', 'ICE', '4WA', 'TPQ', 'ATPQ',
-          'A6R', 'LHW', 'M10', 'ANO3', 'PDC', 'APDC', 'BPDC', 'OMO', 'BEMC',
-          'EMC', 'DO3', 'FC6', 'AJSD', 'AJSC', 'GXZ', 'AFBU', 'BFBU', 'FBU',
-          'C2O', '28T', 'A28T', 'B28T', 'KJS', 'RZB', 'RZE', 'TAM', 'CUO',
-          '4JE', 'S20', 'AS20', 'BS20', '4J0', '4JC', '1PT', '0FZ', 'D7A',
-          'B09', 'A09', 'RU1', 'SMO', '9UX', 'UNX', 'RCS', 'ARCS', 'SRX',
-          'MMC', 'APEO', 'BPEO', 'TPT', 'EMT', 'CU6', 'MSS', '6RP', 'EDT',
-          'KLT', 'MSS', '9ZQ', 'R1Z', 'BQHL', 'ORS', 'SI7', 'SI8', 'ASQ1',
-          'DPY', 'BSQ1', 'SQ1', 'DRP', '4IR', 'S32', 'S18', 'IUM', 'PMB', 'FE',
-          'ACPT', 'RHD', 'IRI', 'AST', '31Q', 'RUU', 'C1O', 'DCD', 'QUE', 'MN'
-          'KMP', 'A1PT', 'IOD', 'BIOD', 'AQPT', 'ACPT', 'BCPT', '6BP', 'ACL',
-          'B9RU', '3V9', 'HM6', 'GHE', 'F6Q', 'AF6Q', 'BF6Q', 'BAST', 'PSC',
-          'PGV', 'CPO4', 'CDL', 'APCD', '2MO', 'EFK', 'MM2', 'A12', 'AJCT',
-          '52G', 'A52G', 'B52G', 'JCT', 'BJCT', 'UNL', 'DVW', 'ATPP', 'B8EL',
-          '8EL', 'P23', '8FL', '8PO', '8EF', '8N9', '4LF', 'PT7', 'BNZ', 'ART',
-          'AART', 'BART', 'C2C', '7G4', '7CZ', '0TR', 'M3T', 'P9G', 'AP9G',
-          'BP9G', '4H2', '4HO', 'HQT', '7FH', 'B7FH', 'HT4', '75Y', '75W',
-          '2UJ', '108', '109', 'BEW', '1SA', 'BO1', 'BOS', '2T8', 'PBQ', 'KCS',
-          'A2T8', 'B19', 'SBW', 'YPT', 'AYPT', 'BYPT', 'TM7', 'PO1', '2J0',
-          '25Y', 'RU7', '498', 'J3K', 'L7T', 'L4K', 'L1Q', 'KJ5', 'KFH', 'KGK',
-          'AKGK', 'BKGK', 'KBZ', 'FBT', 'AFBT', 'BFBT', 'KBW', 'KBB', 'SAN',
-          '45L', 'FBS', 'K5W', '4NZ', '95B', '9RT', 'RIR', '9QB', 'RU2', '9Q8',
-          'A9Q8', 'FL1', 'V21', 'JR3', 'ACU1', 'BCU1', 'CACY', 'CDJ3', 'AA6R',
-          'J0N', 'JR8', 'J0K', 'REQ', 'R1N', 'O1N', 'OT1', '0TN', 'RKP', '58Z',
-          'RCZ', 'ARCZ', 'BRCZ', 'LC1', 'B8EF', '8EO', 'CAD', 'WO5', 'A73M',
-          '73M', 'CCPT', 'MTV', '3BS', 'COX', '6M4', 'A6M4', 'B6M4', '0WZ',
-          '2OP', '6B7', 'AC1', 'BL0', 'KEL', 'RML', 'TUO', '0KA', 'A2C', 'GZC',
-          'GUS', '5WM', '5WN', 'H4O', 'DOD', 'GP9', 'YX0', 'WR2', 'CM9', 'CMW',
-          'CII', 'ACM9', 'BCM9', 'ACII', 'BCII', 'TDC', 'DQY', 'M11', 'Q39',
-          '1BN', 'FZ0', 'FYL', 'HHR', 'BPY', 'ZI6', 'ZI7', 'XBP', 'FQR', 'FQU',
-          'A13P', 'LGU', 'FPY', 'CAQ', 'M2C', 'M3C', 'BFQ', '1AE', 'M1C', 'CS',
-          'FMF', 'AFMF', 'BFMF','GUL', 'DFS', 'DFB', '164', '24B', 'LKA', 'NA',
-          'LKS', '4SN', '4TE', '5L2', 'F4S', 'NFV', 'S0N', 'OEX', 'LMG', 'KC6',
-          'P6F', 'ATSN', 'BTSN', 'PPF', 'HIW', '210', 'E90', 'E65', 'E2I',
-          'E50', 'BVA', 'RZ1', 'RZ0', 'NK1', 'NK2', 'HPY', 'QKK', 'LB1', 'AUD',
-          '3D1', '86B', 'RYZ', 'RYY', 'RYV', 'RZ8', 'RZ7', 'KPL', 'NLA', 'E49',
-          'E59', 'AE59', 'BE59', 'EVJ', 'INS', 'AINS', 'BINS', '144', 'TCW',
-          'EVI', 'EVH', 'EVG', 'EVF', 'BM3', 'IPD', 'EVE', 'EVD', 'LAC', 'FUQ',
-          '4J8', 'F3K', 'AF3K', 'BF3K', 'ICG', 'CSO4', 'ZKG', '8RO', 'CDO3',
-          'ADO3', 'BDO3', 'WO3', 'CRG', 'RHX', 'MOM', 'J9H', 'AEMC', '6U4',
-          'QID', '42G', 'QEQ', 'PCR', 'HDE', 'BHDE', 'ORT', 'CZM', 'AHDD',
-          'HDD', 'BHDD', 'CHDD', 'DHDD', 'BAKG', 'KYT', 'PRT', 'UZY', 'ARA',
-          'C90', 'UBG', 'GLV', 'O81', 'ZOL', 'RZP', 'I8P', 'IBO', 'AIBO', 'BA',
-          'BIBO', 'AFES', 'AGO', 'PSJ', '3E9', 'RHOH', 'NHOH', 'S3F', 'XS6',
-          'SF3', 'XE1', 'AF3S', 'AFCO', '6YP', '3W6', '3W8', 'M4S', 'DCJ',
-          'GWW', 'GWN', 'MM1', '16G', 'AICS', 'ICH', 'BICH', 'BGW', 'C4R',
-          'BUNX', 'E3D', 'ACU', 'RUI', '4KV', 'BCU', '0JC', 'A0JC', 'B0JC',
-          'KYS', 'AKYS', '8CY', 'A8CY', 'B8CY', 'LSI', 'CSF3', 'BSF3', 'BNO3',
-          'DNC', 'BFES', 'H5Y', 'DP6', 'NGA', 'YOK', '5RP', 'GOS', '9TY',
-          'PW8', '9YD', 'Z82', '0LX', 'PIS', '60N', '0S5', "IPR", '0WO', '0RV',
-          'EF9', '9HK', 'GB3', "ON1", '84A', 'OY5', "BOY5", 'BH2S', 'ENO',
-          'H1W', "AH1W", "BH1W", 'H1T', 'DHJ', "ETK", "IKY", 'U2P', 'VGS',
-          'ARZ', 'V90', 'AV90', 'BV90'}
-
-nucleotides = {'UTP', 'DUP', 'ADUP', 'BDUP', 'TXE', 'UNP', 'GDP', 'AMP', 'A66',
-               '7DD', 'UPG', 'TNM', 'NAI', 'ANAI', 'ACP', 'I2C', 'DGI', 'DUD',
-               'IDP', 'BA3', 'DGT', 'DAT', 'C38', 'UDP', 'NAD', 'B4P', 'UFT',
-               'AGS', 'DUT', 'AU1', 'ADP', 'APR', 'GTP', '01G', 'ANP', 'B6P',
-               'GMV', 'TTP', 'CTP', 'NCC', 'AP5', '8PA', 'APC', 'GPN', 'G5P',
-               'UMP', 'ATP', 'TNV', "MGD", "MBO", "NYN", "BNYN", 'C5P', 'FAD',
-               '0KX', 'DZ4', 'XG4' , 'D3T', 'GNP', 'Y9Z', 'GCP', "DTP", 'JSQ',
-               "ADCP", "GH3", "G", 'E64', "ADTP", "ND7", "AP2", 'ZAN', "STP",
-               "UD1", 'FE9', "ASTP", "BSTP", '6X9', 'T61', 'GQW', 'XG4', 'UDP',
-               "AXG4", "BXG4", 'AS', 'A', '8DG', 'DAU', 'EO7', 'H84', 'BCTP',
-               '2TM', 'DCT', 'U5P', 'CDP', '2KH', 'H27', '3BI', 'BHX', 'G1C',
-               'DUN', 'DCM', 'A3P', 'GDU', 'HF7', 'HDV', 'WS1', 'GAV', 'DMV',
-               '4S9', '4SZ', '4SY', '4TL', '4TM', 'G3D', 'DLL', 'VT6', '1FZ',
-               'ATTP', 'AUDP', 'BUDP', "DCP", 'CA0', "UMA", '48O', "GSP",
-               '4GW', 'B4GW', '3GW', "A3GW", '5GW', '2GW', '3AT', 'THP', 'ZDA',
-               'AZDA', 'BZDA', 'DG3', 'DDS', '5GP', 'WS3', 'U37', '5AD', 'ODP',
-               'THU', 'AMGD', 'BMGD', 'AMBO', 'BMBO', 'MCN', 'PGD', 'MD1',
-               '5FA', 'AHZ', 'BTTP', 'QST', 'XJS', 'TMP', 'ATMP', 'AGTP',
-               'BGTP', 'TAT', 'G2P', "BDCP", "H1Q", 'AU5P', 'BU5P'}
-
-nonstandard_aas = {'ACAS', 'BCAS', 'CAS', 'TYD', 'MSO', 'MSE', 'CAF', 'HIS',
-                   'AHO', 'BH2', 'NLG', 'MHS', "OGA", "CMH", "ACMH", "BCMH",
-                   "NGH", 'CSO', 'INN', 'KCX', "ORN", 'CSX', "DGL", "DAS",
-                   'BFD', "GLY", '6MG', 'CSS', '8OG', "16E", "ALY", '5H8',
-                   "TOX", "ATOX", 'S17', 'SEP', "OCS", 'PSW', 'APSW', 'BPSW',
-                   'E41', 'ARK', 'OKD', 'AR8', 'CI9', 'LEU', '1U4', '6NG',
-                   'R47', 'Y38', '0PJ', 'OHN', 'AR47', 'BR47', 'R45', 'R4B',
-                   'R4C', 'CSD', 'ACSX', 'AOCS', 'CSD', 'BL2', 'LEH', 'E37',
-                   'ILE', 'VAL', 'APHE', 'PHE', 'TYR', 'TRP', 'TYQ', 'BTYQ',
-                   'BC8', '5OL', '5H9', '56O', 'A56O', 'B56O', 'D0W', 'TPO',
-                   '999', '4SQ', 'FGY', 'ACSD', 'HL5', '0Z7', 'B0Z7', 'DNP',
-                   'BOCS', 'SHT', 'BSHT', 'C6L', 'TX4', 'CYS', '0X9', 'ASV',
-                   "ACYS", 'BCYS', 'ALA', 'NHK', 'BINN', 'ACV', 'AGLY', 'BGLY',
-                   '1K4', 'AOGA', 'BOGA', 'HIC', 'AHIC', 'BHIC', '2CO', 'MD6',
-                   'UN9', '1B3', 'X16', '409', 'HSL', 'NCD', 'BCDH', 'ACDH',
-                   'CDH', 'EVV', 'EAL', 'BCAF', 'M2W', 'WT4', 'AWT4', 'BWT4',
-                   'ZZU', 'DAH', 'BDAH', 'DTR', 'HYP', 'ATYQ', 'ASEP', 'BSEP',
-                   'BIR', 'VAZ', 'VB1', 'V20', 'GLU', 'FB6', 'FB5', 'LIZ',
-                   'CUS', 'CME', 'SAH', 'BCV', 'ACSO', 'BCSO', 'LYS', 'BLEU',
-                   'MET', 'HS8', 'AHS8', '2LT', 'BMET', 'S23', 'SAM', "ASAM",
-                   "BSAM", "ACSS", "BCSS", "SCSS", "BCSD"}
 
 class protein3D:
     """Holds information about a protein, used to do manipulations.  Reads
@@ -653,13 +446,10 @@ class protein3D:
                 if self.getResidue(b_id) != None:
                     bound_aas.append(self.getResidue(b_id))
                 elif (b_id, b) in self.hetatms.keys():
-                    # accommodate nonstandard amino acids
+                    # get amino acids classified as hetatms
                     b_mol = self.hetatms[(b_id, b)][0]
-                    #if b_mol in nonstandard_aas:
-                    #print(self.atoms[h_id].sym, b_mol)
-                    if b_mol not in waters and b_mol not in nucleotides and b_mol not in heme_type and b_mol not in others:
-                        if b_mol not in nonstandard_aas:
-                            print('UNKNOWN LIGAND', b_mol)
+                    if b_mol in globalvars().amino_acids or b_mol[1:] in globalvars().amino_acids:
+                        bound_aas.append(self.getResidue(b_id))
         return bound_aas
     
     def readfrompdb(self, text):
@@ -812,19 +602,37 @@ class protein3D:
                     bonds[a.c].add(a.next.n)
 
             elif "HETATM" in l_type: # this is a heteroatom
-                """"if len(l_type) > 6: # fixes buggy splitting at start
-                    l = [l_type[6:]] + l
-                l = pStripSpaces(l)"""
 
                 a_dict = read_atom(line)
-                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'], a_dict['Y'], a_dict['Z']], Tfactor=a_dict['TempFactor'],
-                                occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                aminos = globalvars().amino_acids
+                fake_aa = False
+                
+                if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
+                    fake_aa = True # an AA is masquerading as hetatms :P
+                    a = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'], a_dict['Occupancy'])
+                    if a_dict['ChainID'] not in chains.keys():
+                        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                    if int(a_dict['Occupancy']) != 1 and a not in conf:
+                        conf.append(a)
+                    if a not in chains[a_dict['ChainID']] and a not in conf:
+                        chains[a_dict['ChainID']].append(a)
+                    aas.add(a)
+                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'], a_dict['Y'], a_dict['Z']],
+                                Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                if fake_aa:
+                    a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
+                    a.setBonds()
+                    bonds.update(a.bonds)
+                    if a.prev != None:
+                        bonds[a.n].add(a.prev.c)
+                    if a.next != None:
+                        bonds[a.c].add(a.next.n)
                 if (a_dict['SerialNum'], hetatm) not in hetatms.keys():
                     hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']] # [cmpd name, chain]
                 atoms[a_dict['SerialNum']] = hetatm
 
             elif "CONECT" in l_type: # get extra connections
-                if len(l_type) > 6: # fixes buggy splitting
+                if len(l_type) > 6: # fixes buggy splitting at start
                     l = [l_type[6:]] + l
                 l2 = []
                 wrong_turn = False
