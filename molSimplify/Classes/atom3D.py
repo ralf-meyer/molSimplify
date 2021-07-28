@@ -66,6 +66,9 @@ class atom3D:
         # Occupancy (only useful for proteins)
         self.occup = occup
 
+        # EDIA score (only useful for proteins)
+        self.EDIA = 0
+
     def __repr__(self):
         """Returns all bound methods of the mol3D class..
         
@@ -210,4 +213,14 @@ class atom3D:
         self.__xyz[0] = x + dxyz[0]
         self.__xyz[1] = y + dxyz[1]
         self.__xyz[2] = z + dxyz[2]
+
+    def setEDIA(self, score):
+        """ Sets the EDIA score of an individual atom3D.
+
+        Parameters
+        ----------
+            score : float
+                Desired EDIA score of atom
+        """
+        self.EDIA = score
 

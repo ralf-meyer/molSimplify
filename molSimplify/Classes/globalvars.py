@@ -792,3 +792,13 @@ class globalvars:
             return True
         except:
             return False
+
+    def getAllAAs(self):
+        """ Gets all amino acids
+
+        Returns
+        -------
+            amino_acids : dictionary
+                Dictionary of standard amino acids
+        """
+        return amino_acids

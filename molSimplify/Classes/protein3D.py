@@ -10,6 +10,8 @@ from math import sqrt
 import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.helpers import read_atom
+from molSimplify.Classes.globalvars import globalvars
 import gzip
 from itertools import chain
 import urllib.request as urllib
@@ -17,6 +19,10 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import string
+import subprocess
+import shlex
+import ast
+import time
 
 # no GUI support for now
 
@@ -27,15 +33,15 @@ class protein3D:
     
     """
     
-    def __init__(self, pdbfile='undef'):
+    def __init__(self, pdbCode='undef'):
         # Number of amino acids
         self.naas = 0 
         # Number of atoms not part of proteins
         self.nhetatms = 0
         # Number of chains
         self.nchains = 0
-        # Set of amino acids
-        self.aas = set()
+        # Dictionary of amino acids
+        self.aas = {}
         # Dictionary of all atoms
         self.atoms = {}
         # Dictionary of heteroatoms
@@ -52,8 +58,8 @@ class protein3D:
         self.R = -1
         # Rfree value
         self.Rfree = -1
-        # PDB file (if applicable)
-        self.pdbfile = pdbfile
+        # PDB code
+        self.pdbCode = pdbCode
         # Holder for metals
         self.metals = False
         # Bonds
@@ -318,7 +324,7 @@ class protein3D:
                 the amino acid residue containing the atom
                 returns None if there is no amino acid
         """
-        for aa in self.aas:
+        for aa in self.aas.values():
             if (a_id, self.atoms[a_id]) in aa.atoms:
                 return aa
         for aa in self.missing_atoms.keys():
@@ -434,9 +440,21 @@ class protein3D:
         """
         bound_aas = []
         for b_id in self.atoms.keys():
-            if self.atoms[b_id] in self.bonds[self.atoms[h_id]]:
+            b = self.atoms[b_id]
+            if self.atoms[h_id] not in self.bonds.keys():
+                g = self.atoms[h_id].greek
+                s = self.atoms[h_id].sym
+                if g == 'A' + s or g == 'B' + s: # just different conformation
+                    return None
+            elif b in self.bonds[self.atoms[h_id]]:
                 if self.getResidue(b_id) != None:
                     bound_aas.append(self.getResidue(b_id))
+                elif (b_id, b) in self.hetatms.keys():
+                    # get amino acids classified as hetatms
+                    b_mol = self.hetatms[(b_id, b)][0]
+                    aminos = globalvars().getAllAAs()
+                    if b_mol in aminos or b_mol[1:] in aminos:
+                        bound_aas.append(self.getResidue(b_id))
         return bound_aas
     
     def readfrompdb(self, text):
@@ -448,6 +466,8 @@ class protein3D:
                 String of path to PDB file. Path may be local or global.
                 May also be the text of a PDB file from the internet.
         """
+
+        # read in PDB file
         if '.pdb' in text: # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
@@ -457,8 +477,9 @@ class protein3D:
             f.close()
         else:
             enter = "\\n"
+
         # class attributes
-        aas = set()
+        aas = {}
         hetatms = {}
         atoms = {}
         chains = {}
@@ -466,7 +487,8 @@ class protein3D:
         missing_aas = []
         conf = []
         bonds = {}
-        # get R and Rfree values
+
+        # get R and Rfree values (text is full file)
         if "R VALUE            (WORKING SET)" in text:
             temp = text.split("R VALUE            (WORKING SET)")
             temp2 = temp[-1].split()
@@ -490,6 +512,7 @@ class protein3D:
             else:
                 Rfree = 100
         temp = temp[1].split(enter)
+
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
             text = text.split("M RES C SSSEQI")
@@ -507,6 +530,7 @@ class protein3D:
                 if len(l) > 2:
                     a = AA3D(l[0], l[1], l[2])
                     missing_aas.append(a)
+
         # start getting missing atoms
         if "M RES CSSEQI  ATOMS" in text:
             text = text.split("M RES CSSEQI  ATOMS")
@@ -522,11 +546,10 @@ class protein3D:
                     text = text.replace(line, '')
                 l = line.split()
                 if len(l) > 2:
-                    a = AA3D(l[0], l[1], l[2])
-                    missing_atoms[a] = []
+                    missing_atoms[(l[1],l[2])] = []
                     for atom in l[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[a].append(atom3D(Sym=atom[0],
+                            missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
                                                            greek=atom))
         # start getting amino acids and heteroatoms
         if "ENDMDL" in text:
@@ -540,172 +563,80 @@ class protein3D:
                 line = line.split(enter)
                 line = line[0]
                 text = text.replace(line, '')
-            l = line.split()
-            l_type = l[0]
-            l = l[1:]
+            l_type = line[:6]
             if "ATOM" in l_type: # we are in an amino acid
-                if '+' in l[-1] or '-' in l[-1]: # fix charge of Sym
-                    l[-1] = l[-1][:(len(l[-1]) - 2)]
-                if '0' in l[-1]: # fix number attached
-                    l[-1] = l[-1][:(len(l[-1]) - 1)]
-                if len(l[-1]) == 2:
-                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
-                # fix buggy splitting
-                if len(l[-2]) > 6: 
-                    l2 = l
-                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
-                if len(l_type) > 4: 
-                    l = [l_type[4:]] + l
-                if len(l[1]) > 3 and len(l) != 11:
-                    l2 = l
-                    if len(l[1]) > 4 and (l[1][4] == 'A' or l[1][4] == 'B'):
-                        l = [l2[0], l2[1][:4], l2[1][4:]] + l2[2:]
-                    elif l[1][3] == 'A' or l[1][3] == 'B':
-                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                    elif ('1' in l[2] or len(l[2]) == 1) and l[1][3] != "'":
-                        l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                if len(l[3]) > 1:
-                    l2 = l
-                    if len(l[2]) != 1 or l[3][1] == '1' or l[3][1] == '2':
-                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                    elif l[-2][0] == '0' and len(l) == 11:
-                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                    else:
-                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l[2]) == 1:
-                    l2 = l
-                    if len(l) > 11:
-                        l = [l2[0], l2[1]+l2[2]] + l2[3:]
-                    if len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
-                        l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-                if len(l) < 11 and len(l[3]) > 1:
-                    l2 = l
-                    if l[3][1] == '1' or l[3][1] == '2':
-                        l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                if '-' in l[5][1:]: # fix coordinates
-                    y = l[5]
-                    y = l[5].split('-')
-                    if len(y) > 2 and y[0] != '': # extra long string case
-                        l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
-                    elif y[0] != '':
-                        l = l[:5] + [y[0], '-'+y[1]] + l[6:]
-                    elif len(y) > 3: # extra long string case
-                        l = l[:5] + ['-'+y[1], '-'+y[2], '-'+y[3]] + l[6:]
-                    else:
-                        l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
-                if '-' in l[6][1:]:
-                    y = l[6]
-                    y = l[6].split('-')
-                    if y[0] != '':
-                        l = l[:6] + [y[0], '-'+y[1]] + l[7:]
-                    else:
-                        l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
-                if '-' in l[7][1:]:
-                    y = l[7]
-                    y = l[7].split('-')
-                    if y[0] != '':
-                        l = l[:7] + [y[0], '-'+y[1]] + l[8:]
-                    else:
-                        l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-                if "" in l:
-                    l.remove("")
-                a = AA3D(l[2], l[3], l[4], float(l[8]))
-                if l[3] not in chains.keys():
-                    chains[l[3]] = [] # initialize key of chain dictionary
-                if int(float(l[8])) != 1 and a not in conf:
+                line = line.replace("\\'", "\'")
+                a_dict = read_atom(line)
+                if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
+                    a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                             a_dict['ResSeq'], a_dict['Occupancy'])
+                    aas[(a_dict['ChainID'], a_dict['ResSeq'])] = a
+                if a_dict['ChainID'] not in chains.keys():
+                    chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
                     conf.append(a)
-                if a not in chains[l[3]] and a not in conf:
-                    chains[l[3]].append(a)
-                aas.add(a)
-                atom = atom3D(Sym=l[10], xyz=[l[5], l[6], l[7]], Tfactor=l[9],
-                              occup=float(l[8]), greek=l[1])
-                a.addAtom(atom, int(l[0])) # terminal Os may be missing
-                atoms[int(l[0])] = atom
+                if a not in chains[a_dict['ChainID']] and a not in conf:
+                    chains[a_dict['ChainID']].append(a)
+                atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'], a_dict['Z']], Tfactor=a_dict['TempFactor'],
+                              occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                a = aas[(a_dict['ChainID'], a_dict['ResSeq'])]
+                a.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+                atoms[a_dict['SerialNum']] = atom
                 a.setBonds()
                 bonds.update(a.bonds)
                 if a.prev != None:
                     bonds[a.n].add(a.prev.c)
                 if a.next != None:
                     bonds[a.c].add(a.next.n)
+
             elif "HETATM" in l_type: # this is a heteroatom
-                if len(l_type) > 6: # fixes buggy splitting
-                    l = [l_type[6:]] + l
-                if '+' in l[-1] or '-' in l[-1]: # fix charge of sym
-                    l[-1] = l[-1][:(len(l[-1]) - 2)]
-                if len(l[-1]) == 2:
-                    l[-1] = l[-1][0] + l[-1][1].lower() # fix case
-                if '0' in l[-1]: # fix number attached
-                    l[-1] = l[-1][:(len(l[-1]) - 1)]
-                # fixes buggy splitting
-                if len(l[1]) > 3 and len(l[2]) == 1:
-                    l2 = l
-                    l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-                if len(l[2]) == 1 and l[3] in l[1]:
-                    l = l[:1] + l[3:]
-                if len(l[1]) > 4:
-                    if l[1][4] == 'A' or l[1][4] == 'B':
-                        l2 = l
-                        l = [l2[0], l2[2][:3], l2[2][3:]] + l2[3:]
-                if len(l[3]) > 1:
-                    l2 = l
-                    l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-                if '-' in l[5][1:]: # fix coordinates
-                    y = l[5]
-                    y = l[5].split('-')
-                    if y[0] != '':
-                        l = l[:5] + [y[0], '-'+y[1]] + l[6:]
-                    else:
-                        l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
-                if '-' in l[6][1:]:
-                    y = l[6]
-                    y = l[6].split('-')
-                    if y[0] != '':
-                        l = l[:6] + [y[0], '-'+y[1]] + l[7:]
-                    else:
-                        l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
-                if '-' in l[7][1:]:
-                    y = l[7]
-                    y = l[7].split('-')
-                    if y[0] != '':
-                        l = l[:7] + [y[0], '-'+y[1]] + l[8:]
-                    else:
-                        l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-                if len(l[-2]) > 6: 
-                    l2 = l
-                    l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
-                hetatm = atom3D(Sym=l[-1], xyz = [l[5], l[6], l[7]], Tfactor=l[9],
-                                occup=float(l[8]), greek=l[1])
-                if (int(l[0]), hetatm) not in hetatms.keys():
-                    hetatms[(int(l[0]), hetatm)] = [l[2], l[3]] # [cmpd name, chain]
-                atoms[int(l[0])] = hetatm
+                line = line.replace("\\'", "\'")
+                a_dict = read_atom(line)
+                aminos = globalvars().getAllAAs()
+                fake_aa = False
+                
+                if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
+                    fake_aa = True # an AA is masquerading as hetatms :P
+                    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
+                        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                                 a_dict['ResSeq'], a_dict['Occupancy'])
+                        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = a
+                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])]
+                    if a_dict['ChainID'] not in chains.keys():
+                        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                    if int(a_dict['Occupancy']) != 1 and a not in conf:
+                        conf.append(a)
+                    if a not in chains[a_dict['ChainID']] and a not in conf:
+                        chains[a_dict['ChainID']].append(a)
+                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
+                                                              a_dict['Y'],
+                                                              a_dict['Z']],
+                                Tfactor=a_dict['TempFactor'],
+                                occup=a_dict['Occupancy'], greek=a_dict['Name'])
+                if fake_aa:
+                    a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
+                    a.setBonds()
+                    bonds.update(a.bonds)
+                    if a.prev != None:
+                        bonds[a.n].add(a.prev.c)
+                    if a.next != None:
+                        bonds[a.c].add(a.next.n)
+                if (a_dict['SerialNum'], hetatm) not in hetatms.keys():
+                    hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']] # [cmpd name, chain]
+                atoms[a_dict['SerialNum']] = hetatm
+
             elif "CONECT" in l_type: # get extra connections
-                if len(l_type) > 6: # fixes buggy splitting
-                    l = [l_type[6:]] + l
-                l2 = []
-                for i in range(len(l)):
-                    x = l[i]
-                    while x != '' and int(x) not in atoms.keys():
-                        if int(x[:5]) in atoms.keys():
-                            l2.append(x[:5])
-                            x = x[5:]
-                        elif int(x[:4]) in atoms.keys():
-                            l2.append(x[:4])
-                            x = x[4:]
-                        elif l2 == [] and int(x[:3]) in atoms.keys():
-                            l2.append(x[:3])
-                            x = x[3:]
-                        else: # made a wrong turn
-                            y = l2.pop()
-                            l2.append(y[:-1])
-                            x = y[-1] + x
-                    if x != '':
-                        l2.append(x)
-                l = l2
-                if l != [] and atoms[int(l[0])] not in bonds.keys():
+                line = line[6:] # remove type
+                l = [line[i:i+5] for i in range(0, len(line), 5)]
+                if int(l[0]) in atoms.keys() and atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()
                 for i in l[1:]:
-                    if i != '':
+                    try:
                         bonds[atoms[int(l[0])]].add(atoms[int(i)])
+                    except:
+                        if "  " not in i:
+                            print("likely OXT")
+                        continue
         # deal with conformations
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
@@ -743,6 +674,7 @@ class protein3D:
         else:
             try:
                 self.readfrompdb(str(data))
+                self.setPDBCode(pdbCode)
                 print("fetched: %s"%(pdbCode))
             except IOError:
                 print('aborted')
@@ -762,7 +694,7 @@ class protein3D:
         """
         self.bonds = bonds
 
-    def readMetaData(self, pdbCode):
+    def readMetaData(self):
         """ API query to fetch XML data from a pdb and add its useful attributes
         to a protein3D class.
         
@@ -771,6 +703,7 @@ class protein3D:
             pdbCode : str
                 code for protein, e.g. 1os7
         """
+        pdbCode = self.pdbCode
         try:
             start = 'https://files.rcsb.org/pub/pdb/validation_reports/' + pdbCode[1] + pdbCode[2]
             link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
@@ -842,4 +775,67 @@ class protein3D:
                 The desired new TwinL squared score.
         """
         self.TwinL2 = TwinL2
+
+    def setEDIAScores(self):
+        """ Sets the EDIA score of a protein3D class.
+
+        Parameters
+        ----------
+            pdbCode : string
+                The 4-character code of the protein3D class.
+        """
+        code = self.pdbCode
+        cmd = 'curl -d \'{"edia":{ "pdbCode":"'+code+'"}}\' -H "Accept: application/json" -H "Content-Type: application/json" -X POST https://proteins.plus/api/edia_rest'
+        args = shlex.split(cmd)
+        result = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+        result.wait()
+        out, err = result.communicate()
+        dict_str = out.decode("UTF-8")
+        int_dict = ast.literal_eval(dict_str)
+        res2 = subprocess.Popen(['curl', int_dict['location']],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out2, err2 = res2.communicate()
+        dict2_str = out2.decode("UTF-8")
+        dictionary = ast.literal_eval(dict2_str)
+        t = 5
+        while dictionary["status_code"] == 202:
+            res2 = subprocess.Popen(['curl', int_dict['location']],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            print('sleeping', t)
+            time.sleep(t)
+            res2.wait()
+            out2, err2 = res2.communicate()
+            dict2_str = out2.decode("UTF-8")
+            dictionary = ast.literal_eval(dict2_str)
+            t += 5
+        link = dictionary["atom_scores"]
+        df = pd.read_csv(link)
+        for i, row in df.iterrows():
+            EDIA = row["EDIA"]
+            index = row["Infile id"]
+            a = self.atoms[index]
+            a.setEDIA(EDIA)
+            if a.occup < 1: # more than one conformation
+                subdf = df[df["Infile id"]==index+1]
+                if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
+                    self.atoms[index+1].setEDIA(EDIA)
+                elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
+                    self.atoms[index-1].setEDIA(EDIA)
+        '''
+        for i in range(1,len(self.atoms)+1):
+            subdf = df[df["Infile id"]==i]
+            print(i, subdf.EDIA.values, subdf.shape)
+        '''
+
+    def setPDBCode(self, pdbCode):
+        """ Sets the 4-letter PDB code of a protein3D class instance
+
+        Parameters
+        ----------
+            pdbCode : string
+                Desired 4-letter PDB code
+        """
+        self.pdbCode = pdbCode
 
