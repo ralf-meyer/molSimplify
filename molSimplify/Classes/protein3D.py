@@ -362,8 +362,8 @@ class protein3D:
         """
         for (h_id, hetatm) in self.hetatms.keys():
             if hetmol in self.hetatms[(h_id, hetatm)]:
-                del self.hetatms[(h_id, hetatm)] 
-
+                del self.hetatms[(h_id, hetatm)]
+                
     def findMetal(self, transition_metals_only=True):
         """Find metal(s) in a protein3D class.
         Parameters
@@ -380,7 +380,8 @@ class protein3D:
             metal_list = []
             for (i, atom) in self.hetatms.keys(): # no metals in AAs
                 if atom.ismetal(transition_metals_only=transition_metals_only):
-                    metal_list.append(i)
+                    if atom.occup == 1 or atom in self.bonds.keys():
+                        metal_list.append(i)
             self.metals = metal_list
         return (self.metals)
 
@@ -422,9 +423,25 @@ class protein3D:
                 atom3D class for element at given index.
 
         """
-
         return self.atoms[idx]
 
+    def getIndex(self, atom)
+        """ Get index of a given atom
+
+        Parameters
+        ----------
+            atom : atom3D
+                atom3D class for element at given index.
+            
+        Returns
+        -------
+            idx : int
+                Index of desired atom.
+
+        """
+        idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
+        return idx
+    
     def getBoundAAs(self, h_id):
         """Get a list of amino acids bound to a heteroatom, usually a metal.
 
@@ -439,21 +456,18 @@ class protein3D:
                 list of AA3D instances of amino acids bound to hetatm
         """
         bound_aas = []
+        aminos = globalvars().getAllAAs()
         for b_id in self.atoms.keys():
             b = self.atoms[b_id]
             if self.atoms[h_id] not in self.bonds.keys():
-                g = self.atoms[h_id].greek
-                s = self.atoms[h_id].sym
-                if g == 'A' + s or g == 'B' + s: # just different conformation
-                    return None
-            elif b in self.bonds[self.atoms[h_id]]:
-                if self.getResidue(b_id) != None:
-                    bound_aas.append(self.getResidue(b_id))
-                elif (b_id, b) in self.hetatms.keys():
+                return None
+            elif b in self.bonds[self.atoms[h_id]] and self.getResidue(b_id) != None:
+                #if self.getResidue(b_id).three_lc in aminos.keys():
+                bound_aas.append(self.getResidue(b_id))
+                if (b_id, b) in self.hetatms.keys():
                     # get amino acids classified as hetatms
                     b_mol = self.hetatms[(b_id, b)][0]
-                    aminos = globalvars().getAllAAs()
-                    if b_mol in aminos or b_mol[1:] in aminos:
+                    if b_mol in aminos.keys():
                         bound_aas.append(self.getResidue(b_id))
         return bound_aas
     
@@ -622,7 +636,7 @@ class protein3D:
                     if a.next != None:
                         bonds[a.c].add(a.next.n)
                 if (a_dict['SerialNum'], hetatm) not in hetatms.keys():
-                    hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']] # [cmpd name, chain]
+                    hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']]
                 atoms[a_dict['SerialNum']] = hetatm
 
             elif "CONECT" in l_type: # get extra connections
@@ -634,7 +648,7 @@ class protein3D:
                     try:
                         bonds[atoms[int(l[0])]].add(atoms[int(i)])
                     except:
-                        if "  " not in i:
+                        if "  " not in i and i != " ":
                             print("likely OXT")
                         continue
         # deal with conformations
@@ -798,7 +812,7 @@ class protein3D:
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
-        t = 5
+        t = 20
         while dictionary["status_code"] == 202:
             res2 = subprocess.Popen(['curl', int_dict['location']],
                                     stdout=subprocess.PIPE,
@@ -811,18 +825,21 @@ class protein3D:
             dictionary = ast.literal_eval(dict2_str)
             t += 5
         link = dictionary["atom_scores"]
-        df = pd.read_csv(link)
+        df = pd.read_csv(link, error_bad_lines=False)
         for i, row in df.iterrows():
             EDIA = row["EDIA"]
             index = row["Infile id"]
-            a = self.atoms[index]
-            a.setEDIA(EDIA)
-            if a.occup < 1: # more than one conformation
-                subdf = df[df["Infile id"]==index+1]
-                if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
-                    self.atoms[index+1].setEDIA(EDIA)
-                elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
-                    self.atoms[index-1].setEDIA(EDIA)
+            if index in self.atoms.keys():
+                a = self.atoms[index]
+                a.setEDIA(EDIA)
+                if a.occup < 1: # more than one conformation
+                    subdf = df[df["Infile id"]==index+1]
+                    if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
+                        self.atoms[index+1].setEDIA(EDIA)
+                    elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
+                        self.atoms[index-1].setEDIA(EDIA)
+            else:
+                print("OXT is missing")
         '''
         for i in range(1,len(self.atoms)+1):
             subdf = df[df["Infile id"]==i]
