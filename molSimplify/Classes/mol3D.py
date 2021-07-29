@@ -857,7 +857,7 @@ class mol3D:
         self.bo_dict = mol0.bo_dict
         self.use_atom_specific_cutoffs = mol0.use_atom_specific_cutoffs
 
-    def createMolecularGraph(self, oct=True, strict_cutoff=False):
+    def createMolecularGraph(self, oct=True, strict_cutoff=False, catom_list=None):
         """Create molecular graph of a molecule given X, Y, Z positions.
         Bond order is not interpreted by this. Updates graph attribute
         of the mol3D class.
@@ -876,7 +876,7 @@ class mol3D:
             for i in index_set:
                 if oct:
                     if self.getAtom(i).ismetal():
-                        this_bonded_atoms = self.get_fcs(strict_cutoff=strict_cutoff)
+                        this_bonded_atoms = self.get_fcs(strict_cutoff=strict_cutoff, catom_list=catom_list)
                         metal_ind = i
                         catoms_metal = this_bonded_atoms
                         if i in this_bonded_atoms:
@@ -895,6 +895,12 @@ class mol3D:
                     if not i in catoms_metal:
                         A[i, metal_ind] = 0
                         A[metal_ind, i] = 0
+            if not catom_list == None:
+                geo_based_catoms = self.get_fcs(strict_cutoff=strict_cutoff)
+                for ind in geo_based_catoms:
+                    if not ind in catom_list:
+                        A[ind, metal_ind] = 0
+                        A[metal_ind, ind] = 0
             self.graph = A
 
     def deleteatom(self, atomIdx):
@@ -1746,7 +1752,7 @@ class mol3D:
                                 'Error, mol3D could not understand conenctivity in mol')
         return nats
 
-    def getBondedAtomsSmart(self, idx, oct=True, strict_cutoff=False):
+    def getBondedAtomsSmart(self, idx, oct=True, strict_cutoff=False, catom_list=None):
         """Get bonded atom with a given index, using the molecular graph. 
         Creates graph if it does not exist.
 
@@ -1764,7 +1770,7 @@ class mol3D:
 
         """
         if not len(self.graph):
-            self.createMolecularGraph(oct=oct, strict_cutoff=strict_cutoff)
+            self.createMolecularGraph(oct=oct, strict_cutoff=strict_cutoff, catom_list=catom_list)
         return list(np.nonzero(np.ravel(self.graph[idx]))[0])
 
     def getBondedAtomsnotH(self, idx, metal_multiplier=1.35, nonmetal_multiplier=1.15):
@@ -3351,7 +3357,7 @@ class mol3D:
         }
         self.dict_orientation = {'devi_linear_avrg': -1, 'devi_linear_max': -1}
 
-    def get_num_coord_metal(self, debug=False, strict_cutoff=False):
+    def get_num_coord_metal(self, debug=False, strict_cutoff=False, catom_list=None):
         """Get metal coordination based on get bonded atoms. Store this info.
 
         Parameters
@@ -3366,6 +3372,8 @@ class mol3D:
         metal_coord = self.getAtomCoords(metal_ind)
         if len(self.graph):
             catoms = self.getBondedAtomsSmart(metal_ind)
+        elif not catom_list == None:
+            catoms = catom_list
         elif len(metal_list) > 0:
             _catoms = self.getBondedAtomsOct(ind=metal_ind, strict_cutoff=strict_cutoff)
             if debug:
@@ -4465,7 +4473,7 @@ class mol3D:
                                                                              num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
-    def get_fcs(self, strict_cutoff=False):
+    def get_fcs(self, strict_cutoff=False, catom_list=None):
         """ Get first coordination shell of a transition metal complex.
 
         Returns
@@ -4474,7 +4482,7 @@ class mol3D:
                 List of first coordination shell indices.
         """
         metalind = self.findMetal()[0]
-        self.get_num_coord_metal(debug=False,  strict_cutoff=strict_cutoff)
+        self.get_num_coord_metal(debug=False, strict_cutoff=strict_cutoff, catom_list=catom_list)
         catoms = self.catoms
         # print(catoms, [self.getAtom(x).symbol() for x in catoms])
         if len(catoms) > 6:
@@ -5080,7 +5088,7 @@ class mol3D:
 
     def get_features(self, lac=True, force_generate=False, eq_sym=False, 
                      use_dist=False, NumB=False, Zeff=False, size_normalize=False,
-                     alleq=False, strict_cutoff=False):
+                     alleq=False, strict_cutoff=False, catom_list=None):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
@@ -5100,7 +5108,7 @@ class mol3D:
         results = dict()
         from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
         if not len(self.graph):
-            self.createMolecularGraph(strict_cutoff=strict_cutoff)
+            self.createMolecularGraph(strict_cutoff=strict_cutoff, catom_list=catom_list)
         print("catoms: ", [self.getAtom(ii).symbol() for ii in self.get_fcs(strict_cutoff=strict_cutoff)])
         geo_type = self.get_geometry_type()
         if geo_type['geometry'] == 'octahedral' or force_generate:

@@ -26,10 +26,11 @@ This will take some time. After it is finished, activate your environment:
 
     $ conda activate mols_test
 
-Now, go back to the root directory of molSimplify (where the setup.py file is located). Locally install molSimplify with pip. The period is necessary to specify the current directory.
+Now, use the following commands to go to the root directory of molSimplify (where the setup.py file is located) and locally install molSimplify with pip. The period is necessary to specify the current directory.
 
 ::
 
+    $ cd ..
     $ pip install -e .
 
 To test your installation, you can run the command below at the root directory of molSimplify. You are good to go if all the tests are passed!

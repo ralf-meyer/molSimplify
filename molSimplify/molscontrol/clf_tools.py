@@ -103,3 +103,24 @@ def find_closest_model(step, allowed_steps):
             mindelta = abs(delta)
             step_chosen = _s
     return step_chosen, mindelta
+
+
+def get_lsd(model, X_train, X, labels_train=None):
+    '''
+    Get latent space distance
+    inputs:
+        model: ANN model
+        X_train: np.array, training features
+        X: features for target point(s)
+        labels_train: np.array, names for training poinst (optional)
+    outputs:
+        dist_avrg: np.array, lsd for target points
+    '''
+    if labels_train is None:
+        labels_train = np.array([0 for _ in X_train])
+    ls_train = get_layer_outputs(model, layer_index=-3, input=X_train, training_flag=False)
+    ls = get_layer_outputs(model, layer_index=-3, input=X, training_flag=False)
+    _dist_avrg, _, _ = dist_neighbor(fmat1=ls_train, fmat2=ls_train, labels=labels_train, l=10, dist_ref=1)
+    avrg_ls_train = np.mean(_dist_avrg)
+    dist_avrg, _, _ = dist_neighbor(fmat1=ls, fmat2=ls_train, labels=labels_train, l=10, dist_ref=avrg_ls_train)
+    return dist_avrg

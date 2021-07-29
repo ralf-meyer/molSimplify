@@ -89,7 +89,7 @@ class ligand:
             self.mol.bo_dict = save_bo_dict
         self.ext_int_dict = this_ext_int_dict
     
-    def get_lig_mol2(self, transition_metals_only=True, inds=None, include_metal=True):
+    def get_lig_mol2(self, transition_metals_only=True, inds=None, include_metal=True, bimetal=False):
         """Write out ligand mol2 string and molecular graph determinant. 
         Include Metal flagged with Symbol "X" for placeholder status.
         Parameters
@@ -119,10 +119,11 @@ class ligand:
             this_mol2_inds += metal_ind
         this_mol2_inds = sorted(this_mol2_inds)
 
-        # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
-        catoms_indices = self.master_mol.getBondedAtomsSmart(metal_ind)
-        catom_selector = np.zeros(self.master_mol.natoms)
-        catom_selector[catoms_indices] = 1
+        if (not bimetal):
+        # # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
+            catoms_indices = self.master_mol.getBondedAtomsSmart(metal_ind)
+            catom_selector = np.zeros(self.master_mol.natoms)
+            catom_selector[catoms_indices] = 1
 
         # Add the metal with symbol = 'M'
         new_metal_inds = []
@@ -137,8 +138,9 @@ class ligand:
         if len(self.master_mol.graph): # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
-            catom_selector = np.delete(catom_selector, delete_inds)
-            catoms_indices = np.nonzero(catom_selector)[0]
+            if (not bimetal):
+                catom_selector = np.delete(catom_selector, delete_inds)
+                catoms_indices = np.nonzero(catom_selector)[0]
 
         ##### Check for multiple metal centers. Save more coordinated one.
         if include_metal:
@@ -156,7 +158,7 @@ class ligand:
         self.mol2string = lig_mol2_string
         self.lig_mol_graph_det = lig_mol_graph_det
 
-        if include_metal:
+        if include_metal or bimetal:
             return lig_mol_graph_det, lig_mol2_string
         else:
             return lig_mol_graph_det, lig_mol2_string, catoms_indices
