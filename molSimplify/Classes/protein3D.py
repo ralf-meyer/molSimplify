@@ -6,12 +6,19 @@
 #  Dpt of Chemical Engineering, MIT
 
 # imports
-from math import sqrt
-import os, io
+import os
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom
 from molSimplify.Classes.globalvars import globalvars
+import subprocess
+
+
+### The following packages are not currently
+### dependencies in molSimplify and need to be adjusted
+import shlex
+import ast
+import time
 import gzip
 from itertools import chain
 import urllib.request as urllib
@@ -19,10 +26,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import string
-import subprocess
-import shlex
-import ast
-import time
+from math import sqrt
+import io
 
 # no GUI support for now
 
@@ -645,6 +650,7 @@ class protein3D:
                     # pick chain with higher occupancy or the A chain if tie
                 else:
                     chains[conf[i+1].chain].append(conf[i+1])
+        ### Use helper methods to set everything that was parsed
         self.setChains(chains)
         self.setAAs(aas)
         self.setAtoms(atoms)
@@ -657,7 +663,8 @@ class protein3D:
         self.setBonds(bonds)
 
     def fetch_pdb(self, pdbCode):
-        """ API query to fetch a pdb and write it as a protein3D class instance
+        """ API query to fetch a pdb and write it as a protein3D class instance.
+        This code was adapted from openpymol.
 
         Parameters
         ----------
@@ -823,11 +830,6 @@ class protein3D:
                     self.atoms[index+1].setEDIA(EDIA)
                 elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
                     self.atoms[index-1].setEDIA(EDIA)
-        '''
-        for i in range(1,len(self.atoms)+1):
-            subdf = df[df["Infile id"]==i]
-            print(i, subdf.EDIA.values, subdf.shape)
-        '''
 
     def setPDBCode(self, pdbCode):
         """ Sets the 4-letter PDB code of a protein3D class instance
