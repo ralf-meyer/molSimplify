@@ -5124,11 +5124,13 @@ class mol3D:
         
         Returns
         -------
-            ml_bls : dictionary keyed by ID of metal M and valued by dictionary of M-L bond lengths and relative bond lengths
+            ml_bls : dictionary
+                keyed by ID of metal M and valued by dictionary of M-L bond lengths and relative bond lengths
         """
         metals = self.findMetal() # get the metals in the complex
         bls = {} # initialize empty dictionary of metal-ligand bond lengths
-        if len(metals) == 0: return {} # we don't have a metal, so there are no M-L bonds
+        if len(metals) == 0:
+            return {} # we don't have a metal, so there are no M-L bonds
         for m_id in metals:
             m = self.getAtom(m_id) # get the actual metal
             ligands = self.getBondedAtomsSmart(m_id) # gets all atoms/ligands bound to metal
@@ -5141,4 +5143,14 @@ class mol3D:
                 rel_bls.append(bl / (m.rad + l.rad)) # append the relative bond length
             bls[m_id] = {"M-L bond lengths": ml_bls, "relative bond lengths": rel_bls}
         return bls
+
+    def setAtoms(self, atoms):
+        """ Set atoms of a mol3D class to atoms.
+        
+        Parameters
+        ----------
+            atoms : list
+                contains atom3D instances that should be in the molecule
+        """
+        self.atoms = atoms
             
