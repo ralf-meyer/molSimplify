@@ -1749,7 +1749,7 @@ class mol3D:
                                 distance_max) + ')'))
                         if d < 2 and not atom.symbol() == 'H' and not ratom.symbol() == 'H':
                             print(
-                                'Error, mol3D could not understand conenctivity in mol')
+                                'Error, mol3D could not understand connectivity in mol')
         return nats
 
     def getBondedAtomsSmart(self, idx, oct=True, strict_cutoff=False, catom_list=None):
