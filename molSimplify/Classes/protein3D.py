@@ -148,6 +148,32 @@ class protein3D:
                 List of possible conformations for applicable amino acids.
         """
         self.conf = conf
+
+    def autoChooseConf(self):
+        """ Automatically choose the conformation of a protein3D class
+        instance based first on what the greatest occupancy level is and then
+        the first conformation ihe alphabet with all else equal.
+
+        Returns
+        -------
+            single : protein3D
+                the same protein3D instance as self but in the automatically
+                chosen conformation
+        """
+        p = self
+        l = len(self.conf) - 1
+        for i in range(l):
+            c = self.conf[i]
+            a = c.atoms[0]
+            if a.occup < 0.50:
+                p.stripAtoms(c.atoms)
+            if a.occup == 0.50:
+                if self.conf[i+1].three_lc == c.three_lc:
+                    if self.conf[i+1].atoms[0].occup == 0.50:
+                        p.stripAtoms(self.conf[i+1].atoms)
+            if i == len(self.conf) - 1:
+                i = l - 1
+        return p
             
     def setR(self, R):
         """ Set R value of protein3D class.
@@ -233,7 +259,7 @@ class protein3D:
                 a list of atom index with the specified symbol.
         """
         inds = []
-        for ii, atom in enumerate(self.hetatms.keys()):
+        for (ii, atom) in self.hetatms.keys():
             if atom.symbol() == sym:
                 inds.append(ii)
         return inds
@@ -635,7 +661,7 @@ class protein3D:
                         bonds[a.n].add(a.prev.c)
                     if a.next != None:
                         bonds[a.c].add(a.next.n)
-                if (a_dict['SerialNum'], hetatm) not in hetatms.keys():
+                elif (a_dict['SerialNum'], hetatm) not in hetatms.keys():
                     hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']]
                 atoms[a_dict['SerialNum']] = hetatm
 
