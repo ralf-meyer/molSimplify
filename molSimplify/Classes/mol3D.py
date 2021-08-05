@@ -232,8 +232,8 @@ class mol3D:
 
         >>> complex_mol.unbond_atoms(10,11) # Removes bond between atoms 10 and 11.
         """
-
-        self.createMolecularGraph()
+        if self.graph == []:
+            self.createMolecularGraph()
         self.graph[idx1,idx2] = 0.0
         self.graph[idx2,idx1] = 0.0
 
