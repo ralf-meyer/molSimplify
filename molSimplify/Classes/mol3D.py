@@ -220,6 +220,23 @@ class mol3D:
                 temp_dist.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
         return temp_list
 
+    def unbond_atoms(self, idx1, idx2):
+        """Removes bond between two bonded atoms.
+
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom 1.
+            idx2 : int
+                Index of bonded atom 2.
+
+        >>> complex_mol.unbond_atoms(10,11) # Removes bond between atoms 10 and 11.
+        """
+
+        self.createMolecularGraph()
+        self.graph[idx1,idx2] = 0.0
+        self.graph[idx2,idx1] = 0.0
+
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
         rotated about idx2. Operates directly on class.
