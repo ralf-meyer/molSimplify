@@ -36,23 +36,23 @@ class protein3D:
     def __init__(self, pdbCode='undef'):
         # Number of amino acids
         self.naas = 0 
-        # Number of atoms not part of proteins
-        self.nhetatms = 0
+        # Number of heteromolecules
+        self.nhetmols = 0
         # Number of chains
         self.nchains = 0
         # Dictionary of amino acids
         self.aas = {}
         # Dictionary of all atoms
         self.atoms = {}
-        # Dictionary of heteroatoms
-        self.hetatms = {}
+        # Dictionary of heteromolecules
+        self.hetmols = {}
         # Dictionary of chains
         self.chains = {}
         # Dictionary of missing atoms
         self.missing_atoms = {}
         # List of missing amino acids
         self.missing_aas = []
-        # List of possible AA conformations 
+        # List of possible molecule conformations 
         self.conf = []
         # R value
         self.R = -1
@@ -77,8 +77,9 @@ class protein3D:
         """ Set amino acids of a protein3D class to different amino acids.
         Parameters
         ----------
-            aas : list
-                Contains AA3D amino acids
+            aas : dictionary
+                Keyed by chain and location
+                Valued by AA3D amino acids
         """
         self.aas = aas
         self.naas = len(aas)
@@ -94,17 +95,17 @@ class protein3D:
         """
         self.atoms = atoms
 
-    def setHetatms(self, hetatms):
-        """ Set heteroatoms of a protein3D class to different heteroatoms.
+    def setHetmols(self, hetmols):
+        """ Set heteromolecules of a protein3D class to different ones.
         
         Parameters
         ----------
-            hetatms : dictionary
-                Keyed by heteroatoms
-                Valued by a list containing the overarching molecule and chain
+            hetmols : dictionary
+                Keyed by chain and location
+                Valued by mol3D heteromolecules
         """
-        self.hetatms = hetatms
-        self.nhetatms = len(hetatms.values())
+        self.hetmols = hetmols
+        self.nhetmols = len(hetmols.keys())
 
     def setChains(self, chains):
         """ Set chains of a protein3D class to different chains.
@@ -113,7 +114,7 @@ class protein3D:
         ----------
             chains : dictionary
                 Keyed by desired chain IDs.
-                Valued by the list of AA3D amino acids in the chain.
+                Valued by the list of molecules in the chain.
         """
         self.chains = chains
         self.nchains = len(chains.keys())
@@ -224,45 +225,33 @@ class protein3D:
         """
         return self.naas
 
-    def findAtom(self, sym="X"):
+    def findAtom(self, sym="X", aa=True):
         """
-        Find atoms with a specific symbol that are contained in amino acids.
+        Find atoms with a specific symbol that are contained in amino acids
+        or heteromolecules.
         
         Parameters
         ----------
-            sym: str
+            sym : str
                 element symbol, default as X.
+            aa : boolean
+                True if we want atoms contained in amino acids
+                False if we want atoms contained in heteromolecules
 
         Returns
         ----------
             inds: list
-                a list of atom index with the specified symbol.
+                a list of atom indices with the specified symbol.
         """
         inds = []
-        for aa in self.aas:
-            for (ii, atom) in aa.atoms:
+        if aa:
+            mols = self.aas
+        else:
+            mols = self.hetmols
+        for m in mols:
+            for (ii, atom) in m.atoms:
                 if atom.symbol() == sym:
                     inds.append(ii)
-        return inds
-
-    def findHetAtom(self, sym="X"):
-        """
-        Find heteroatoms with a specific symbol.
-        
-        Parameters
-        ----------
-            sym: str
-                element symbol, default as X.
-
-        Returns
-        ----------
-            inds: list
-                a list of atom index with the specified symbol.
-        """
-        inds = []
-        for (ii, atom) in self.hetatms.keys():
-            if atom.symbol() == sym:
-                inds.append(ii)
         return inds
 
     def findAA(self, three_lc="XAA"):
@@ -537,7 +526,7 @@ class protein3D:
 
         # class attributes
         aas = {}
-        hetatms = {}
+        hetmols = {}
         atoms = {}
         chains = {}
         missing_atoms = {}
