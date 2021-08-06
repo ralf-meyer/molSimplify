@@ -418,10 +418,12 @@ class protein3D:
         """
         if not self.metals:
             metal_list = []
-            for (i, atom) in self.hetatms.keys(): # no metals in AAs
-                if atom.ismetal(transition_metals_only=transition_metals_only):
-                    if atom.occup == 1 or atom in self.bonds.keys():
-                        metal_list.append(i)
+            for l in self.hetmols.keys(): # no metals in AAs
+                for m in l:
+                    for a in m.atoms:
+                        if a.ismetal(transition_metals_only=transition_metals_only):
+                            if a.occup == 1 or a in self.bonds.keys():
+                                metal_list.append(i)
             self.metals = metal_list
         return (self.metals)
 
