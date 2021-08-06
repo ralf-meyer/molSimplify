@@ -156,23 +156,28 @@ class protein3D:
 
         Returns
         -------
-            single : protein3D
+            p : protein3D
                 the same protein3D instance as self but in the automatically
                 chosen conformation
         """
         p = self
         l = len(self.conf) - 1
         for i in range(l):
-            c = self.conf[i]
-            a = c.atoms[0]
-            if a.occup < 0.50:
-                p.stripAtoms(c.atoms)
-            if a.occup == 0.50:
-                if self.conf[i+1].three_lc == c.three_lc:
-                    if self.conf[i+1].atoms[0].occup == 0.50:
-                        p.stripAtoms(self.conf[i+1].atoms)
-            if i == len(self.conf) - 1:
-                i = l - 1
+            if i >= len(p.conf):
+                return p
+            c = p.conf[i]
+            c_ids = []
+            for j in c.atoms:
+                c_ids.append(j[0])
+            k = 0
+            a = c.atoms[k][1]
+            while a.occup != 1.0 and k < len(c.atoms) - 1:
+                k += 1
+                a = c.atoms[k][1]
+            if a.occup < 0.50 or (a.occup == 0.50 and c.loc != "A"):
+                #print(c_ids)
+                p.stripAtoms(c_ids)
+                del p.conf[i]
         return p
             
     def setR(self, R):
@@ -350,9 +355,10 @@ class protein3D:
                 the amino acid residue containing the atom
                 returns None if there is no amino acid
         """
-        for aa in self.aas.values():
-            if (a_id, self.atoms[a_id]) in aa.atoms:
-                return aa
+        for s in self.aas.values():
+            for aa in s:
+                if (a_id, self.atoms[a_id]) in aa.atoms:
+                    return aa
         for aa in self.missing_atoms.keys():
             if (a_id, self.atoms[a_id]) in self.missing_atoms[aa]:
                 return aa
@@ -366,15 +372,36 @@ class protein3D:
             atoms_stripped : list
                 list of atom3D indices that should be removed
         """
-        for aa in self.aas:
-            for (a_id, atom) in aa.atoms:
-                if a_id in atoms_stripped:
-                    self.aas[aa].remove((a_id, atom))
-                    atoms_stripped.remove(a_id)
-        for (h_id, hetatm) in self.hetatms.keys():
+        atoms = self.atoms
+        keys = list(self.aas.keys())
+        for tup in keys:
+            aminos = self.aas[tup].copy()
+            for elt in aminos:
+                for (a_id, atom) in elt.atoms:
+                    if a_id not in self.atoms.keys():
+                        continue
+                    a_id = self.getIndex(atom)
+                    if a_id in atoms_stripped:
+                        elt.atoms.remove((a_id, atom))
+                        if len(elt.atoms) == 0:
+                            self.aas[tup].remove(elt)
+                            if len(self.aas[tup]) == 0:
+                                del self.aas[tup]
+                        atoms_stripped.remove(a_id)
+                        if atom in self.bonds.keys():
+                            del self.bonds[atom]
+                        del atoms[a_id]
+        keys = list(self.hetatms.keys())
+        for (h_id, hetatm) in keys:
+            if (h_id, hetatm) not in self.hetatms.keys():
+                continue
             if h_id in atoms_stripped:
                 del self.hetatms[(h_id, hetatm)]   
                 atoms_stripped.remove(h_id)
+                if hetatm in self.bonds.keys():
+                    del self.bonds[hetatm]
+                del atoms[h_id]
+        self.setAtoms(atoms)
 
     def stripHetMol(self, hetmol):
         """ Removes all heteroatoms part of the specified heteromolecule from
@@ -592,6 +619,7 @@ class protein3D:
                             missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
                                                            greek=atom))
         # start getting amino acids and heteroatoms
+        prev_a_dict = {'AltLoc': ""}
         if "ENDMDL" in text:
             text.split("ENDMDL")
             text = text[-2] + text[-1]
@@ -607,10 +635,19 @@ class protein3D:
             if "ATOM" in l_type: # we are in an amino acid
                 line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
+                loc = a_dict['AltLoc']
+                if loc != '' and prev_a_dict["AltLoc"] != '':
+                    if loc > chr(l) and len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]) == l-64:
+                        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                             a_dict['ResSeq'], a_dict['Occupancy'], loc)
+                        aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
+                prev_a_dict = a_dict
+                if loc != '':
+                    l = ord(a_dict["AltLoc"])
                 if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
                     a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                             a_dict['ResSeq'], a_dict['Occupancy'])
-                    aas[(a_dict['ChainID'], a_dict['ResSeq'])] = a
+                         a_dict['ResSeq'], a_dict['Occupancy'], loc)
+                    aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
                 if a_dict['ChainID'] not in chains.keys():
                     chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
                 if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
@@ -619,7 +656,12 @@ class protein3D:
                     chains[a_dict['ChainID']].append(a)
                 atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'], a_dict['Z']], Tfactor=a_dict['TempFactor'],
                               occup=a_dict['Occupancy'], greek=a_dict['Name'])
-                a = aas[(a_dict['ChainID'], a_dict['ResSeq'])]
+                if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
+                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
+                elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
+                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
+                else:
+                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
                 a.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
                 atoms[a_dict['SerialNum']] = atom
                 a.setBonds()
@@ -637,15 +679,23 @@ class protein3D:
                 
                 if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
+                    loc = a_dict['AltLoc']
+                    if loc != '' and prev_a_dict["AltLoc"] != '':
+                        if loc > chr(l) and len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]) == l-64:
+                            a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                                 a_dict['ResSeq'], a_dict['Occupancy'], loc)
+                            aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
+                    prev_a_dict = a_dict
+                    if loc != '':
+                        l = ord(a_dict["AltLoc"])
                     if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
                         a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                                 a_dict['ResSeq'], a_dict['Occupancy'])
-                        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = a
-                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])]
-                    if a_dict['ChainID'] not in chains.keys():
-                        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                             a_dict['ResSeq'], a_dict['Occupancy'], loc)
+                        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
                     if int(a_dict['Occupancy']) != 1 and a not in conf:
                         conf.append(a)
+                    if a_dict['ChainID'] not in chains.keys():
+                        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
                     if a not in chains[a_dict['ChainID']] and a not in conf:
                         chains[a_dict['ChainID']].append(a)
                 hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
@@ -654,6 +704,12 @@ class protein3D:
                                 Tfactor=a_dict['TempFactor'],
                                 occup=a_dict['Occupancy'], greek=a_dict['Name'])
                 if fake_aa:
+                    if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
+                        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
+                    elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
+                        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
+                    else:
+                        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
                     a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
                     a.setBonds()
                     bonds.update(a.bonds)
