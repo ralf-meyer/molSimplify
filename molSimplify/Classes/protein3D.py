@@ -637,7 +637,8 @@ class protein3D:
                 a_dict = read_atom(line)
                 loc = a_dict['AltLoc']
                 if loc != '' and prev_a_dict["AltLoc"] != '':
-                    if loc > chr(l) and len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]) == l-64:
+                    if loc > chr(l) and len(aas[(a_dict['ChainID'],
+                                                 a_dict['ResSeq'])]) == l-64:
                         a = AA3D(a_dict['ResName'], a_dict['ChainID'],
                              a_dict['ResSeq'], a_dict['Occupancy'], loc)
                         aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
@@ -654,7 +655,10 @@ class protein3D:
                     conf.append(a)
                 if a not in chains[a_dict['ChainID']] and a not in conf:
                     chains[a_dict['ChainID']].append(a)
-                atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'], a_dict['Z']], Tfactor=a_dict['TempFactor'],
+                atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'],
+                                                          a_dict['Y'],
+                                                          a_dict['Z']],
+                              Tfactor=a_dict['TempFactor'],
                               occup=a_dict['Occupancy'], greek=a_dict['Name'])
                 if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
                     a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
@@ -676,12 +680,12 @@ class protein3D:
                 a_dict = read_atom(line)
                 aminos = globalvars().getAllAAs()
                 fake_aa = False
-                
-                if a_dict['ResName'] in aminos or a_dict['ResName'][1:] in aminos:
+                loc = a_dict['AltLoc']
+                if a_dict['ResName'] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
-                    loc = a_dict['AltLoc']
                     if loc != '' and prev_a_dict["AltLoc"] != '':
-                        if loc > chr(l) and len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]) == l-64:
+                        if loc > chr(l) and len(aas[(a_dict['ChainID'],
+                                                     a_dict['ResSeq'])]) == l-64:
                             a = AA3D(a_dict['ResName'], a_dict['ChainID'],
                                  a_dict['ResSeq'], a_dict['Occupancy'], loc)
                             aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
@@ -695,7 +699,7 @@ class protein3D:
                     if int(a_dict['Occupancy']) != 1 and a not in conf:
                         conf.append(a)
                     if a_dict['ChainID'] not in chains.keys():
-                        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+                        chains[a_dict['ChainID']] = [] # initialize key
                     if a not in chains[a_dict['ChainID']] and a not in conf:
                         chains[a_dict['ChainID']].append(a)
                 hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
@@ -733,7 +737,7 @@ class protein3D:
                         if "  " not in i and i != " ":
                             print("likely OXT")
                         continue
-        # deal with conformations
+        # deal with conformations in chains
         for i in range(len(conf)-1):
             if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
                 if conf[i].occup >= conf[i+1].occup:
