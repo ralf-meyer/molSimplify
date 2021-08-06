@@ -505,7 +505,6 @@ class protein3D:
                 list of AA3D instances of amino acids bound to hetatm
         """
         bound_aas = []
-        aminos = globalvars().getAllAAs()
         for b_id in self.atoms.keys():
             b = self.atoms[b_id]
             if self.atoms[h_id] not in self.bonds.keys():
@@ -513,11 +512,6 @@ class protein3D:
             elif b in self.bonds[self.atoms[h_id]] and self.getResidue(b_id) != None:
                 #if self.getResidue(b_id).three_lc in aminos.keys():
                 bound_aas.append(self.getResidue(b_id))
-                if (b_id, b) in self.hetatms.keys():
-                    # get amino acids classified as hetatms
-                    b_mol = self.hetatms[(b_id, b)][0]
-                    if b_mol in aminos.keys():
-                        bound_aas.append(self.getResidue(b_id))
         return bound_aas
     
     def readfrompdb(self, text):
