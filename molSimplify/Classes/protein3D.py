@@ -635,37 +635,12 @@ class protein3D:
             if "ATOM" in l_type: # we are in an amino acid
                 line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
-                loc = a_dict['AltLoc']
-                if loc != '' and prev_a_dict["AltLoc"] != '':
-                    if loc > chr(l) and len(aas[(a_dict['ChainID'],
-                                                 a_dict['ResSeq'])]) == l-64:
-                        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                             a_dict['ResSeq'], a_dict['Occupancy'], loc)
-                        aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
-                prev_a_dict = a_dict
-                if loc != '':
-                    l = ord(a_dict["AltLoc"])
-                if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
-                    a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                         a_dict['ResSeq'], a_dict['Occupancy'], loc)
-                    aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
-                if a_dict['ChainID'] not in chains.keys():
-                    chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
-                if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
-                    conf.append(a)
-                if a not in chains[a_dict['ChainID']] and a not in conf:
-                    chains[a_dict['ChainID']].append(a)
+                a = make_aa(a_dict, aas, prev_a_dict)
                 atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'],
                                                           a_dict['Y'],
                                                           a_dict['Z']],
                               Tfactor=a_dict['TempFactor'],
                               occup=a_dict['Occupancy'], greek=a_dict['Name'])
-                if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
-                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
-                elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
-                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
-                else:
-                    a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
                 a.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
                 atoms[a_dict['SerialNum']] = atom
                 a.setBonds()
@@ -683,37 +658,13 @@ class protein3D:
                 loc = a_dict['AltLoc']
                 if a_dict['ResName'] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
-                    if loc != '' and prev_a_dict["AltLoc"] != '':
-                        if loc > chr(l) and len(aas[(a_dict['ChainID'],
-                                                     a_dict['ResSeq'])]) == l-64:
-                            a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                                 a_dict['ResSeq'], a_dict['Occupancy'], loc)
-                            aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
-                    prev_a_dict = a_dict
-                    if loc != '':
-                        l = ord(a_dict["AltLoc"])
-                    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
-                        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                             a_dict['ResSeq'], a_dict['Occupancy'], loc)
-                        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
-                    if int(a_dict['Occupancy']) != 1 and a not in conf:
-                        conf.append(a)
-                    if a_dict['ChainID'] not in chains.keys():
-                        chains[a_dict['ChainID']] = [] # initialize key
-                    if a not in chains[a_dict['ChainID']] and a not in conf:
-                        chains[a_dict['ChainID']].append(a)
+                    a = make_aa(a_dict, aas, prev_a_dict)
                 hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
                                                               a_dict['Y'],
                                                               a_dict['Z']],
                                 Tfactor=a_dict['TempFactor'],
                                 occup=a_dict['Occupancy'], greek=a_dict['Name'])
                 if fake_aa:
-                    if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
-                        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
-                    elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
-                        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
-                    else:
-                        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
                     a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
                     a.setBonds()
                     bonds.update(a.bonds)
