@@ -43,7 +43,7 @@ class mol3D:
     
     """
 
-    def __init__(self, ident='ABC', loc='', use_atom_specific_cutoffs=False):
+    def __init__(self, name='ABC', loc='', use_atom_specific_cutoffs=False):
         # List of atom3D objects
         self.atoms = []
         # Number of atoms
@@ -56,8 +56,8 @@ class mol3D:
         self.charge = 0
         # Force field optimization settings
         self.ffopt = 'BA'
-        # Name of molecule
-        self.name = ''
+        # Name of molecule (analogous to three_lc in AA3D)
+        self.name = name
         # Holder for openbabel molecule
         self.OBMol = False
         # Holder for bond order matrix
@@ -68,8 +68,8 @@ class mol3D:
         self.cat = []
         # Denticity
         self.denticity = 0
-        # Identifier (analogous to three_lc in AA3D)
-        self.ident = ident
+        # Identifier
+        self.ident = ''
         # Holder for global variables
         self.globs = globalvars()
         # Holder for molecular graph
