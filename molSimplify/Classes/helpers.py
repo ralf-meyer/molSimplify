@@ -31,7 +31,7 @@ def read_atom(line):
     atom_dict['Element'] = atom_dict['Element'][0] + atom_dict['Element'][1:].lower()
     return atom_dict
 
-def make_aa(a_dict, aas, prev_a_dict):
+def make_aa(a_dict, aas, conf, chains, prev_a_dict):
     """ Creates an AA3D from a_dicts and adds it to the appropriate places.
 
     Parameters
@@ -42,6 +42,8 @@ def make_aa(a_dict, aas, prev_a_dict):
             keyed by chain and location, valued by AA3Ds
         conf : list
             contains amino acid conformations
+        chains : dictionary
+            contains amino acid chains
         prev_a_dict : dictionary
             the a_dict from the previous run
 
@@ -78,3 +80,53 @@ def make_aa(a_dict, aas, prev_a_dict):
     else:
         a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
     return a, aas, conf, prev_a_dict
+
+def make_hetmol(a_dict, aas, conf, chains, prev_a_dict):
+    """ Creates an AA3D from a_dicts and adds it to the appropriate places.
+
+    Parameters
+    ----------
+        a_dict : dictionary
+            created from the read_atom method
+        aas : dictionary
+            keyed by chain and location, valued by AA3Ds
+        conf : list
+            contains amino acid conformations
+        chains : dictionary
+            contains amino acid chains
+        prev_a_dict : dictionary
+            the a_dict from the previous run
+
+    Returns
+    -------
+        a : AA3D
+            AA3D created from the a_dict
+        other attributes listed above are updated
+    """
+    loc = a_dict['AltLoc']
+    if loc != '' and prev_a_dict["AltLoc"] != '':
+        if loc > chr(l) and len(aas[(a_dict['ChainID'],
+                                     a_dict['ResSeq'])]) == l-64:
+            a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                 a_dict['ResSeq'], a_dict['Occupancy'], loc)
+            aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
+    prev_a_dict = a_dict
+    if loc != '':
+        l = ord(a_dict["AltLoc"])
+    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
+        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+             a_dict['ResSeq'], a_dict['Occupancy'], loc)
+        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
+    if a_dict['ChainID'] not in chains.keys():
+        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+    if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
+        conf.append(a)
+    if a not in chains[a_dict['ChainID']] and a not in conf:
+        chains[a_dict['ChainID']].append(a)
+    if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
+        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
+    elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
+        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
+    else:
+        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
+    return a, aas, conf, chains, prev_a_dict
