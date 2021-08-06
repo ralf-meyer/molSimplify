@@ -615,7 +615,7 @@ class protein3D:
                             missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
                                                            greek=atom))
         # start getting amino acids and heteroatoms
-        prev_a_dict = {'AltLoc': ""}
+        pa_dict = {'AltLoc': ""}
         if "ENDMDL" in text:
             text.split("ENDMDL")
             text = text[-2] + text[-1]
@@ -631,7 +631,7 @@ class protein3D:
             if "ATOM" in l_type: # we are in an amino acid
                 line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
-                a, aas, conf, prev_a_dict = make_aa(a_dict, aas, prev_a_dict)
+                a, aas, conf, chains, pa_dict = make_aa(a_dict, aas, conf, chains, pa_dict)
                 atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'],
                                                           a_dict['Y'],
                                                           a_dict['Z']],
@@ -654,7 +654,7 @@ class protein3D:
                 loc = a_dict['AltLoc']
                 if a_dict['ResName'] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
-                    a, aas, conf, prev_a_dict = make_aa(a_dict, aas, prev_a_dict)
+                    a, aas, conf, chains, prev_a_dict = make_aa(a_dict, aas, conf, chains, pa_dict)
                 hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
                                                               a_dict['Y'],
                                                               a_dict['Z']],
