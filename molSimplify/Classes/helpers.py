@@ -31,102 +31,71 @@ def read_atom(line):
     atom_dict['Element'] = atom_dict['Element'][0] + atom_dict['Element'][1:].lower()
     return atom_dict
 
-def make_aa(a_dict, aas, conf, chains, prev_a_dict):
+def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
     """ Creates an AA3D from a_dicts and adds it to the appropriate places.
 
     Parameters
     ----------
         a_dict : dictionary
             created from the read_atom method
-        aas : dictionary
-            keyed by chain and location, valued by AA3Ds
+        mols : dictionary
+            keyed by chain and location, valued by AA3Ds or mol3Ds
         conf : list
             contains amino acid conformations
         chains : dictionary
             contains amino acid chains
         prev_a_dict : dictionary
             the a_dict from the previous run
+        aa : boolean
+            True if mols consists of AA3Ds, False if consists of mol3Ds
 
     Returns
     -------
-        a : AA3D
-            AA3D created from the a_dict
-        other attributes listed above are updated
+        mols, conf, chains, prev_a_dict as updated
     """
     loc = a_dict['AltLoc']
     if loc != '' and prev_a_dict["AltLoc"] != '':
-        if loc > chr(l) and len(aas[(a_dict['ChainID'],
+        if loc > chr(l) and len(mols[(a_dict['ChainID'],
                                      a_dict['ResSeq'])]) == l-64:
-            a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                 a_dict['ResSeq'], a_dict['Occupancy'], loc)
-            aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
+            if aa:
+                m = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                         a_dict['ResSeq'], a_dict['Occupancy'], loc)
+            else:
+                m = mol3D(a_dict['ResName'], loc)
+            mols[(a_dict['ChainID'], a_dict['ResSeq'])].append(m)
     prev_a_dict = a_dict
     if loc != '':
         l = ord(a_dict["AltLoc"])
-    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
-        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-             a_dict['ResSeq'], a_dict['Occupancy'], loc)
-        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
+    if (a_dict['ChainID'], a_dict['ResSeq']) not in mols.keys():
+        if aa:
+            m = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'],
+                     a_dict['Occupancy'], loc)
+        else:
+            m = mol3D(a_dict['ResName'], loc)
+        mols[(a_dict['ChainID'], a_dict['ResSeq'])] = [m]
     if a_dict['ChainID'] not in chains.keys():
         chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
-    if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
-        conf.append(a)
-    if a not in chains[a_dict['ChainID']] and a not in conf:
-        chains[a_dict['ChainID']].append(a)
+    if int(float(a_dict['Occupancy'])) != 1 and m not in conf:
+        conf.append(m)
+    if m not in chains[a_dict['ChainID']] and m not in conf:
+        chains[a_dict['ChainID']].append(m)
     if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
-        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
-    elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
-        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
+        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][0]
+    elif (l-65) < len(mols[(a_dict['ChainID'], a_dict['ResSeq'])]):
+        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
     else:
-        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
-    return a, aas, conf, prev_a_dict
-
-def make_hetmol(a_dict, aas, conf, chains, prev_a_dict):
-    """ Creates an AA3D from a_dicts and adds it to the appropriate places.
-
-    Parameters
-    ----------
-        a_dict : dictionary
-            created from the read_atom method
-        aas : dictionary
-            keyed by chain and location, valued by AA3Ds
-        conf : list
-            contains amino acid conformations
-        chains : dictionary
-            contains amino acid chains
-        prev_a_dict : dictionary
-            the a_dict from the previous run
-
-    Returns
-    -------
-        a : AA3D
-            AA3D created from the a_dict
-        other attributes listed above are updated
-    """
-    loc = a_dict['AltLoc']
-    if loc != '' and prev_a_dict["AltLoc"] != '':
-        if loc > chr(l) and len(aas[(a_dict['ChainID'],
-                                     a_dict['ResSeq'])]) == l-64:
-            a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-                 a_dict['ResSeq'], a_dict['Occupancy'], loc)
-            aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
-    prev_a_dict = a_dict
-    if loc != '':
-        l = ord(a_dict["AltLoc"])
-    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
-        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
-             a_dict['ResSeq'], a_dict['Occupancy'], loc)
-        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
-    if a_dict['ChainID'] not in chains.keys():
-        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
-    if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
-        conf.append(a)
-    if a not in chains[a_dict['ChainID']] and a not in conf:
-        chains[a_dict['ChainID']].append(a)
-    if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
-        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
-    elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
-        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
-    else:
-        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
-    return a, aas, conf, chains, prev_a_dict
+        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
+    atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'],
+                                              a_dict['Z']],
+                  Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'],
+                  greek=a_dict['Name'])
+    m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+    atoms[a_dict['SerialNum']] = atom
+    if aa:
+        m.setBonds()
+        bonds.update(m.bonds)
+        if m.prev != None:
+            bonds[m.n].add(m.prev.c)
+        if a.next != None:
+            bonds[m.c].add(m.next.n)
+    return mols, conf, chains, prev_a_dict
