@@ -397,9 +397,12 @@ class protein3D:
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
         """
-        for (h_id, hetatm) in self.hetatms.keys():
-            if hetmol in self.hetatms[(h_id, hetatm)]:
-                del self.hetatms[(h_id, hetatm)]
+        h = list(self.hetmols.keys()).copy()
+        for k in h:
+            for m in h[k]:
+                if m.name == hetmol:
+                    self.stripAtoms(m.atoms)
+                    del self.hetmols[k]
                 
     def findMetal(self, transition_metals_only=True):
         """Find metal(s) in a protein3D class.
