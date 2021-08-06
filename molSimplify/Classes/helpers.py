@@ -6,88 +6,74 @@
 #  Dpt of Chemical Engineering, MIT
 
 def read_atom(line):
-    labels = ['Type', 'SerialNum', 'Name', 'AltLoc', 'ResName', 'ChainID', 'ResSeq', 'ICode', 'X', 'Y', 'Z', 'Occupancy', 'TempFactor', 'Element', 'Charge']
-    data = [line[0:6].strip(), int(line[6:11]), line[12:16].strip(), line[16:17].strip(), line[17:20].strip(), line[21:22].strip(), int(line[22:26]), line[26:27].strip(), float(line[30:38]), float(line[38:46]), float(line[46:54]), float(line[54:60]), float(line[60:66]), line[70:78].strip(), line[78:80].strip()]
+    """ Reads a line of a pdb into an atom dictionary.
+
+    Parameters
+    ----------
+        line : str
+            a line of a pdb file
+
+    Returns
+    -------
+        atom_dict : dictionary
+            dictionary containing attributes of atom when reading the pdb
+    """
+            
+    labels = ['Type', 'SerialNum', 'Name', 'AltLoc', 'ResName', 'ChainID',
+              'ResSeq', 'ICode', 'X', 'Y', 'Z', 'Occupancy', 'TempFactor',
+              'Element', 'Charge']
+    data = [line[0:6].strip(), int(line[6:11]), line[12:16].strip(),
+            line[16:17].strip(), line[17:20].strip(), line[21:22].strip(),
+            int(line[22:26]), line[26:27].strip(), float(line[30:38]),
+            float(line[38:46]), float(line[46:54]), float(line[54:60]),
+            float(line[60:66]), line[70:78].strip(), line[78:80].strip()]
     atom_dict = dict(zip(labels, data))
     atom_dict['Element'] = atom_dict['Element'][0] + atom_dict['Element'][1:].lower()
     return atom_dict
 
-"""
-def pStripSpaces(l):
-    #When reading a string from a pdb file, fixes some of the spacing issues
-    #that result from strange behavior with whitespace.
+def make_aa(a_dict, aas, prev_a_dict):
+    """ Creates an AA3D from a_dicts and adds it to the appropriate places.
 
-    #Parameters
-    #----------
-    #    lst : a list that has just been split by whitespace from a pdb file
+    Parameters
+    ----------
+        a_dict : dictionary
+            created from the read_atom method
+        aas : dictionary
+            keyed by chain and location, valued by AA3Ds
+        conf : list
+            contains amino acid conformations
+        prev_a_dict : dictionary
+            the a_dict from the previous run
 
-    #Returns
-    #-------
-    #    good_lst : a list with proper spacing, so it can be read properly
-
-    if '+' in l[-1] or '-' in l[-1]: # fix charge of Sym
-        l[-1] = l[-1][:(len(l[-1]) - 2)]
-    if '0' in l[-1]: # fix number attached
-        l[-1] = l[-1][:(len(l[-1]) - 1)]
-    if len(l[-1]) == 2:# fix case
-        l[-1] = l[-1][0] + l[-1][1].lower() 
-    if len(l[-2]) > 6: # occupancy has too many characters
-        l2 = l
-        l = l2[:-2] + [l2[-2][:4], l2[-2][4:], l2[-1]]
-    if len(l[1]) > 3 and len(l) != 11:
-        l2 = l
-        if len(l[1]) > 4 and (l[1][4] == 'A' or l[1][4] == 'B'):
-            l = [l2[0], l2[1][:4], l2[1][4:]] + l2[2:]
-        elif l[1][3] == 'A' or l[1][3] == 'B':
-            l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-        elif ('1' in l[2] or len(l[2]) == 1) and l[1][3] != "'":
-            l = [l2[0], l2[1][:3], l2[1][3:]] + l2[2:]
-    if len(l[3]) > 1:
-        digits = {'1','2','3','4','5','6','9'} # add more as needed
-        l2 = l
-        if len(l[2]) != 1 or l[3][1] in digits:
-            l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-        elif l[-2][0] == '0' and len(l) == 11:
-            l = [l2[0], l2[1]+l2[2]] + l2[3:]
-        else:
-            l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-    if len(l[2]) == 1:
-        l2 = l
-        if len(l) > 11:
-             l = [l2[0], l2[1]+l2[2]] + l2[3:]
-        if len(l[3]) == 1 and l[4] == 'b': # 1 lcs exist
-            l = l2[:2] + [l2[2]+l2[3]] + l2[4:]
-    if len(l) < 11 and len(l[3]) > 1:
-        l2 = l
-        if l[3][1] == '1' or l[3][1] == '2':
-            l = l2[:3] + [l2[3][:1], l2[3][1:]] + l2[4:]
-    # fix coordinate spacing
-    if '-' in l[5][1:]: 
-        y = l[5]
-        y = l[5].split('-')
-        if len(y) > 2 and y[0] != '': # extra long string case
-            l = l[:5] + [y[0], '-'+y[1], '-'+y[2]] + l[6:]
-        elif y[0] != '':
-            l = l[:5] + [y[0], '-'+y[1]] + l[6:]
-        elif len(y) > 3: # extra long string case
-            l = l[:5] + ['-'+y[1], '-'+y[2], '-'+y[3]] + l[6:]
-        else:
-            l = l[:5] + ['-'+y[1], '-'+y[2]] + l[6:]
-    if '-' in l[6][1:]:
-        y = l[6]
-        y = l[6].split('-')
-        if y[0] != '':
-            l = l[:6] + [y[0], '-'+y[1]] + l[7:]
-        else:
-            l = l[:6] + ['-'+y[1], '-'+y[2]] + l[7:]
-    if '-' in l[7][1:]:
-        y = l[7]
-        y = l[7].split('-')
-        if y[0] != '':
-            l = l[:7] + [y[0], '-'+y[1]] + l[8:]
-        else:
-            l = l[:7] + ['-'+y[1], '-'+y[2]] + l[8:]
-    if "" in l:
-        l.remove("")
-    return l
-"""
+    Returns
+    -------
+        a : AA3D
+            AA3D created from the a_dict
+    """
+    loc = a_dict['AltLoc']
+    if loc != '' and prev_a_dict["AltLoc"] != '':
+        if loc > chr(l) and len(aas[(a_dict['ChainID'],
+                                     a_dict['ResSeq'])]) == l-64:
+            a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                 a_dict['ResSeq'], a_dict['Occupancy'], loc)
+            aas[(a_dict['ChainID'], a_dict['ResSeq'])].append(a)
+    prev_a_dict = a_dict
+    if loc != '':
+        l = ord(a_dict["AltLoc"])
+    if (a_dict['ChainID'], a_dict['ResSeq']) not in aas.keys():
+        a = AA3D(a_dict['ResName'], a_dict['ChainID'],
+             a_dict['ResSeq'], a_dict['Occupancy'], loc)
+        aas[(a_dict['ChainID'], a_dict['ResSeq'])] = [a]
+    if a_dict['ChainID'] not in chains.keys():
+        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+    if int(float(a_dict['Occupancy'])) != 1 and a not in conf:
+        conf.append(a)
+    if a not in chains[a_dict['ChainID']] and a not in conf:
+        chains[a_dict['ChainID']].append(a)
+    if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
+        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][0]
+    elif (l-65) < len(aas[(a_dict['ChainID'], a_dict['ResSeq'])]):
+        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
+    else:
+        a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
+    return a
