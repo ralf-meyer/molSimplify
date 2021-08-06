@@ -169,11 +169,7 @@ class protein3D:
             c_ids = []
             for j in c.atoms:
                 c_ids.append(j[0])
-            k = 0
-            a = c.atoms[k][1]
-            while a.occup != 1.0 and k < len(c.atoms) - 1:
-                k += 1
-                a = c.atoms[k][1]
+            a = c.atoms[0][1]
             if a.occup < 0.50 or (a.occup == 0.50 and c.loc != "A"):
                 #print(c_ids)
                 p.stripAtoms(c_ids)
@@ -635,7 +631,7 @@ class protein3D:
             if "ATOM" in l_type: # we are in an amino acid
                 line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
-                a = make_aa(a_dict, aas, prev_a_dict)
+                a, aas, conf, prev_a_dict = make_aa(a_dict, aas, prev_a_dict)
                 atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'],
                                                           a_dict['Y'],
                                                           a_dict['Z']],
@@ -658,7 +654,7 @@ class protein3D:
                 loc = a_dict['AltLoc']
                 if a_dict['ResName'] in aminos:
                     fake_aa = True # an AA is masquerading as hetatms :P
-                    a = make_aa(a_dict, aas, prev_a_dict)
+                    a, aas, conf, prev_a_dict = make_aa(a_dict, aas, prev_a_dict)
                 hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
                                                               a_dict['Y'],
                                                               a_dict['Z']],
@@ -673,6 +669,7 @@ class protein3D:
                     if a.next != None:
                         bonds[a.c].add(a.next.n)
                 elif (a_dict['SerialNum'], hetatm) not in hetatms.keys():
+                    
                     hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']]
                 atoms[a_dict['SerialNum']] = hetatm
 
