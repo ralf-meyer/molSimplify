@@ -49,6 +49,7 @@ def make_aa(a_dict, aas, prev_a_dict):
     -------
         a : AA3D
             AA3D created from the a_dict
+        other attributes listed above are updated
     """
     loc = a_dict['AltLoc']
     if loc != '' and prev_a_dict["AltLoc"] != '':
@@ -76,4 +77,4 @@ def make_aa(a_dict, aas, prev_a_dict):
         a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
     else:
         a = aas[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
-    return a
+    return a, aas, conf, prev_a_dict
