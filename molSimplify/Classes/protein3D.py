@@ -9,8 +9,9 @@
 from math import sqrt
 import os, io
 from molSimplify.Classes.AA3D import AA3D
+from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.helpers import read_atom
+from molSimplify.Classes.helpers import read_atom, makeMol
 from molSimplify.Classes.globalvars import globalvars
 import gzip
 from itertools import chain
@@ -620,12 +621,10 @@ class protein3D:
                 a_dict = read_atom(line)
                 if a_dict['ResName'] in globalvars().getAllAAs() or "ATOM" in l_type:
                     # have an amino acid or biomolecule monomer
-                    aas, conf, chains, pa_dict = makeMol(a_dict, aas, conf,
-                                                         chains, pa_dict)
+                    a, aas, conf, chains, pa_dict, bonds = makeMol(a_dict, aas, conf, chains, pa_dict, bonds)
                 else: # have a normal heteromolecule
-                    hetmols, conf, chains, pa_dict = makeMol(a_dict, hetmols,
-                                                             conf, chains,
-                                                             pa_dict, False)
+                    a, hetmols, conf, chains, pa_dict, bonds = makeMol(a_dict, hetmols, conf, chains, pa_dict, bonds, False)
+                atoms[a_dict['SerialNum']] = a
 
             elif "CONECT" in l_type: # get extra connections
                 line = line[6:] # remove type
@@ -641,16 +640,17 @@ class protein3D:
                         continue
         # deal with conformations in chains
         for i in range(len(conf)-1):
-            if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
-                if conf[i].occup >= conf[i+1].occup:
-                    chains[conf[i].chain].append(conf[i])
-                    # pick chain with higher occupancy or the A chain if tie
-                else:
-                    chains[conf[i+1].chain].append(conf[i+1])
+            if type(conf[i]) == AA3D and type(conf[i+1]) == AA3D:
+                if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
+                    if conf[i].occup >= conf[i+1].occup:
+                        chains[conf[i].chain].append(conf[i])
+                        # pick chain with higher occupancy or the A chain if tie
+                    else:
+                        chains[conf[i+1].chain].append(conf[i+1])
         self.setChains(chains)
         self.setAAs(aas)
         self.setAtoms(atoms)
-        self.setHetatms(hetatms)
+        self.setHetmols(hetmols)
         self.setMissingAtoms(missing_atoms)
         self.setMissingAAs(missing_aas)
         self.setConf(conf)
