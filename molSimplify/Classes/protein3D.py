@@ -628,50 +628,17 @@ class protein3D:
                 line = line[0]
                 text = text.replace(line, '')
             l_type = line[:6]
-            if "ATOM" in l_type: # we are in an amino acid
+            if "ATOM" in l_type or "HETATM" in l_type:
                 line = line.replace("\\'", "\'")
                 a_dict = read_atom(line)
-                a, aas, conf, chains, pa_dict = make_aa(a_dict, aas, conf, chains, pa_dict)
-                atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'],
-                                                          a_dict['Y'],
-                                                          a_dict['Z']],
-                              Tfactor=a_dict['TempFactor'],
-                              occup=a_dict['Occupancy'], greek=a_dict['Name'])
-                a.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
-                atoms[a_dict['SerialNum']] = atom
-                a.setBonds()
-                bonds.update(a.bonds)
-                if a.prev != None:
-                    bonds[a.n].add(a.prev.c)
-                if a.next != None:
-                    bonds[a.c].add(a.next.n)
-
-            elif "HETATM" in l_type: # this is a heteroatom
-                line = line.replace("\\'", "\'")
-                a_dict = read_atom(line)
-                aminos = globalvars().getAllAAs()
-                fake_aa = False
-                loc = a_dict['AltLoc']
-                if a_dict['ResName'] in aminos:
-                    fake_aa = True # an AA is masquerading as hetatms :P
-                    a, aas, conf, chains, prev_a_dict = make_aa(a_dict, aas, conf, chains, pa_dict)
-                hetatm = atom3D(Sym=a_dict['Element'], xyz = [a_dict['X'],
-                                                              a_dict['Y'],
-                                                              a_dict['Z']],
-                                Tfactor=a_dict['TempFactor'],
-                                occup=a_dict['Occupancy'], greek=a_dict['Name'])
-                if fake_aa:
-                    a.addAtom(hetatm, a_dict['SerialNum']) # terminal Os may be missing
-                    a.setBonds()
-                    bonds.update(a.bonds)
-                    if a.prev != None:
-                        bonds[a.n].add(a.prev.c)
-                    if a.next != None:
-                        bonds[a.c].add(a.next.n)
-                elif (a_dict['SerialNum'], hetatm) not in hetatms.keys():
-                    
-                    hetatms[(a_dict['SerialNum'], hetatm)] = [a_dict['ResName'], a_dict['ChainID']]
-                atoms[a_dict['SerialNum']] = hetatm
+                if a_dict['ResName'] in globalvars().getAllAAs() or "ATOM" in l_type:
+                    # have an amino acid or biomolecule monomer
+                    aas, conf, chains, pa_dict = makeMol(a_dict, aas, conf,
+                                                         chains, pa_dict)
+                else: # have a normal heteromolecule
+                    hetmols, conf, chains, pa_dict = makeMol(a_dict, hetmols,
+                                                             conf, chains,
+                                                             pa_dict, False)
 
             elif "CONECT" in l_type: # get extra connections
                 line = line[6:] # remove type
