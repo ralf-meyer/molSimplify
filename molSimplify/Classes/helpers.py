@@ -5,6 +5,10 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+from molSimplify.Classes.AA3D import AA3D
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.atom3D import atom3D
+
 def read_atom(line):
     """ Reads a line of a pdb into an atom dictionary.
 
@@ -31,7 +35,7 @@ def read_atom(line):
     atom_dict['Element'] = atom_dict['Element'][0] + atom_dict['Element'][1:].lower()
     return atom_dict
 
-def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
+def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     """ Creates an AA3D from a_dicts and adds it to the appropriate places.
 
     Parameters
@@ -46,6 +50,8 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
             contains amino acid chains
         prev_a_dict : dictionary
             the a_dict from the previous run
+        bonds : dictionary
+            contains bonding info
         aa : boolean
             True if mols consists of AA3Ds, False if consists of mol3Ds
 
@@ -54,7 +60,9 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
         mols, conf, chains, prev_a_dict as updated
     """
     loc = a_dict['AltLoc']
+    m = 0
     if loc != '' and prev_a_dict["AltLoc"] != '':
+        l = ord(prev_a_dict["AltLoc"])
         if loc > chr(l) and len(mols[(a_dict['ChainID'],
                                      a_dict['ResSeq'])]) == l-64:
             if aa:
@@ -64,8 +72,6 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
                 m = mol3D(a_dict['ResName'], loc)
             mols[(a_dict['ChainID'], a_dict['ResSeq'])].append(m)
     prev_a_dict = a_dict
-    if loc != '':
-        l = ord(a_dict["AltLoc"])
     if (a_dict['ChainID'], a_dict['ResSeq']) not in mols.keys():
         if aa:
             m = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'],
@@ -75,9 +81,9 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
         mols[(a_dict['ChainID'], a_dict['ResSeq'])] = [m]
     if a_dict['ChainID'] not in chains.keys():
         chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
-    if int(float(a_dict['Occupancy'])) != 1 and m not in conf:
+    if m != 0 and int(float(a_dict['Occupancy'])) != 1 and m not in conf:
         conf.append(m)
-    if m not in chains[a_dict['ChainID']] and m not in conf:
+    if m != 0 and m not in chains[a_dict['ChainID']] and m not in conf:
         chains[a_dict['ChainID']].append(m)
     if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
         m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][0]
@@ -90,12 +96,11 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, aa=True):
                   Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'],
                   greek=a_dict['Name'])
     m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
-    atoms[a_dict['SerialNum']] = atom
     if aa:
         m.setBonds()
         bonds.update(m.bonds)
         if m.prev != None:
             bonds[m.n].add(m.prev.c)
-        if a.next != None:
+        if m.next != None:
             bonds[m.c].add(m.next.n)
-    return mols, conf, chains, prev_a_dict
+    return atom, mols, conf, chains, prev_a_dict, bonds
