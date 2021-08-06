@@ -60,9 +60,10 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         mols, conf, chains, prev_a_dict as updated
     """
     loc = a_dict['AltLoc']
+    ploc = prev_a_dict["AltLoc"]
     m = 0
-    if loc != '' and prev_a_dict["AltLoc"] != '':
-        l = ord(prev_a_dict["AltLoc"])
+    if loc != '' and ploc != '':
+        l = ord(ploc)
         if loc > chr(l) and len(mols[(a_dict['ChainID'],
                                      a_dict['ResSeq'])]) == l-64:
             if aa:
@@ -85,7 +86,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         conf.append(m)
     if m != 0 and m not in chains[a_dict['ChainID']] and m not in conf:
         chains[a_dict['ChainID']].append(m)
-    if a_dict["AltLoc"] == '' or a_dict["AltLoc"] == "A":
+    if loc == '' or a_dict["AltLoc"] == "A" or ploc == '':
         m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][0]
     elif (l-65) < len(mols[(a_dict['ChainID'], a_dict['ResSeq'])]):
         m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
