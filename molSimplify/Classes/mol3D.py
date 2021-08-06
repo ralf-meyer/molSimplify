@@ -43,7 +43,7 @@ class mol3D:
     
     """
 
-    def __init__(self, use_atom_specific_cutoffs=False):
+    def __init__(self, ident='ABC', loc='', use_atom_specific_cutoffs=False):
         # List of atom3D objects
         self.atoms = []
         # Number of atoms
@@ -68,8 +68,8 @@ class mol3D:
         self.cat = []
         # Denticity
         self.denticity = 0
-        # Identifier
-        self.ident = ''
+        # Identifier (analogous to three_lc in AA3D)
+        self.ident = ident
         # Holder for global variables
         self.globs = globalvars()
         # Holder for molecular graph
@@ -79,8 +79,10 @@ class mol3D:
         self.needsconformer = False
         # Holder for molecular group
         self.grps = False
-        # Holder rfor metals
+        # Holder for metals
         self.metals = False
+        # Conformation (empty string if irrelevant)
+        self.loc = loc
 
         # Holder for partial charge for each atom
         self.partialcharges = []
@@ -219,23 +221,6 @@ class mol3D:
             if writegeo==True:
                 temp_dist.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
         return temp_list
-
-    def unbond_atoms(self, idx1, idx2):
-        """Removes bond between two bonded atoms.
-
-        Parameters
-        ----------
-            idx1 : int
-                Index of bonded atom 1.
-            idx2 : int
-                Index of bonded atom 2.
-
-        >>> complex_mol.unbond_atoms(10,11) # Removes bond between atoms 10 and 11.
-        """
-        if self.graph == []:
-            self.createMolecularGraph()
-        self.graph[idx1,idx2] = 0.0
-        self.graph[idx2,idx1] = 0.0
 
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
