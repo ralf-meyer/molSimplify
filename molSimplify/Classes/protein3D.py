@@ -275,6 +275,7 @@ class protein3D:
         return inds
 
     def getChain(self, chain_id):
+        # BUGGY
         """ Takes a chain of interest and turns it into its own protein3D class instance.
 
         Parameters
@@ -358,10 +359,13 @@ class protein3D:
                 list of atom3D indices that should be removed
         """
         atoms = self.atoms
-        keys = list(self.aas.keys())
+        keys = list(self.aas.keys()) + list(self.hetmols.keys())
         for tup in keys:
-            aminos = self.aas[tup].copy()
-            for elt in aminos:
+            if tup in self.aas.keys():
+                mol_set = self.aas[tup].copy()
+            else:
+                mol_set = self.hetmols[tup].copy()
+            for elt in mol_set:
                 for (a_id, atom) in elt.atoms:
                     if a_id not in self.atoms.keys():
                         continue
@@ -369,23 +373,18 @@ class protein3D:
                     if a_id in atoms_stripped:
                         elt.atoms.remove((a_id, atom))
                         if len(elt.atoms) == 0:
-                            self.aas[tup].remove(elt)
-                            if len(self.aas[tup]) == 0:
-                                del self.aas[tup]
+                            if tup in self.aas.keys():
+                                self.aas[tup].remove(elt)
+                                if len(self.aas[tup]) == 0:
+                                    del self.aas[tup]
+                            else:
+                                self.hetmols[tup].remove(elt)
+                                if len(self.hetmols[tup]) == 0:
+                                    del self.hetmols[tup]
                         atoms_stripped.remove(a_id)
                         if atom in self.bonds.keys():
                             del self.bonds[atom]
                         del atoms[a_id]
-        keys = list(self.hetatms.keys())
-        for (h_id, hetatm) in keys:
-            if (h_id, hetatm) not in self.hetatms.keys():
-                continue
-            if h_id in atoms_stripped:
-                del self.hetatms[(h_id, hetatm)]   
-                atoms_stripped.remove(h_id)
-                if hetatm in self.bonds.keys():
-                    del self.bonds[hetatm]
-                del atoms[h_id]
         self.setAtoms(atoms)
 
     def stripHetMol(self, hetmol):
