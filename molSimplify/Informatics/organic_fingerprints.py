@@ -1,6 +1,6 @@
-# from rdkit import Chem
-# from rdkit.Chem import AllChem
-# from rdkit.Chem.AtomPairs import Torsions
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit.Chem.AtomPairs import Torsions
 from molSimplify.Classes.mol3D import mol3D
 
 
@@ -47,6 +47,8 @@ def get_substructure_smiles(mol, atomID, radius):
         environment_morgan = None
     smiles_1 = Chem.MolFragmentToSmiles(m,atoms_to_use,bondsToUse=environment_morgan,allHsExplicit=True, allBondsExplicit=True, rootedAtAtom=atomID)
     return smiles_1
+
+
 
 # bit_vector_benzene = get_morgan(mol='c1ccccc1')
 # smi = get_substructure_smiles('c1ccccc1',list(bit_vector_benzene.values())[0][0][0],list(bit_vector_benzene.values())[0][0][1])

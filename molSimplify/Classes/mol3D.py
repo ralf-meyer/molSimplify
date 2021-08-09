@@ -1109,9 +1109,9 @@ class mol3D:
         forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         if constraints:
-            for catom in range(constraints):
+            for catom in constraints:
                 # Openbabel uses a 1 index instead of a 0 index.
-                constr.AddAtomConstraint(catom+1) 
+                constr.AddAtomConstraint(catom+1) # These atoms won't be force field optimized.
         self.convert2OBMol()
         forcefield.Setup(self.OBMol,constr)
         if self.OBMol.NumHvyAtoms() > 10:
