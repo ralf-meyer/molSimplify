@@ -32,7 +32,7 @@ from pkg_resources import resource_filename, Requirement
 #  @param ffopt Flag for ligand FF optimization
 #  @return Error messages
 
-def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
+def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=None):
     emsg = False
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
@@ -80,11 +80,13 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt):
         print("smimol is "+str(smimol))
         print("sminame is "+str(sminame))
         # sanitize ff options:
-        if not ffopt in ["A", "B", "BA"]:
+        if not ffopt in ["A", "B", "BA", "N"]:
             print('warning: incompatible ffopt choice. Options are ' +
                   str(["A", "B", "BA", "N"]))
             sys.exit(1)
 
+        if smichg != None:
+            lig.charge = smichg
         # new entry for dictionary
         if '.mol' in smimol:
             shutil.copy2(smimol, ligands_folder + sminame+'.mol')

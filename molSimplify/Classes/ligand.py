@@ -89,7 +89,7 @@ class ligand:
             self.mol.bo_dict = save_bo_dict
         self.ext_int_dict = this_ext_int_dict
     
-    def get_lig_mol2(self, transition_metals_only=True, inds=None):
+    def get_lig_mol2(self, transition_metals_only=True, inds=None, include_metal=True, bimetal=False):
         """Write out ligand mol2 string and molecular graph determinant. 
         Include Metal flagged with Symbol "X" for placeholder status.
         Parameters
@@ -105,6 +105,8 @@ class ligand:
                 Molecular graph determinant.
             ligand_mol2_string : str
                 Mol2 string for the ligand.
+            catom_indices : list
+                List of catom indices - only returned if include_metal is set to False
         
         """
         this_mol2 = mol3D()
@@ -113,8 +115,16 @@ class ligand:
         else:
             metal_ind = self.master_mol.findMetal(transition_metals_only=transition_metals_only)
         this_mol2_inds = self.index_list.copy()
-        this_mol2_inds += metal_ind
+        if include_metal:
+            this_mol2_inds += metal_ind
         this_mol2_inds = sorted(this_mol2_inds)
+
+        if (not bimetal):
+        # # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
+            catoms_indices = self.master_mol.getBondedAtomsSmart(metal_ind)
+            catom_selector = np.zeros(self.master_mol.natoms)
+            catom_selector[catoms_indices] = 1
+
         # Add the metal with symbol = 'M'
         new_metal_inds = []
         for j,i in enumerate(this_mol2_inds):
@@ -128,13 +138,18 @@ class ligand:
         if len(self.master_mol.graph): # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
+            if (not bimetal):
+                catom_selector = np.delete(catom_selector, delete_inds)
+                catoms_indices = np.nonzero(catom_selector)[0]
+
         ##### Check for multiple metal centers. Save more coordinated one.
-        if len(new_metal_inds) == 2:
-            minds = new_metal_inds
-            metal_cns = [len(this_mol2.getBondedAtomsSmart(x)) for x in minds]
-            delind = minds[np.argmin(metal_cns)]
-            this_mol2.deleteatom(minds[np.argmin(metal_cns)])
-            del this_mol2_inds[delind]
+        if include_metal:
+            if len(new_metal_inds) == 2:
+                minds = new_metal_inds
+                metal_cns = [len(this_mol2.getBondedAtomsSmart(x)) for x in minds]
+                delind = minds[np.argmin(metal_cns)]
+                this_mol2.deleteatom(minds[np.argmin(metal_cns)])
+                del this_mol2_inds[delind]
         if self.master_mol.bo_dict:
             save_bo_dict = self.master_mol.get_bo_dict_from_inds(this_mol2_inds)
             this_mol2.bo_dict = save_bo_dict
@@ -142,7 +157,11 @@ class ligand:
         lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
         self.mol2string = lig_mol2_string
         self.lig_mol_graph_det = lig_mol_graph_det
-        return lig_mol_graph_det, lig_mol2_string
+
+        if include_metal or bimetal:
+            return lig_mol_graph_det, lig_mol2_string
+        else:
+            return lig_mol_graph_det, lig_mol2_string, catoms_indices
 
     def percent_buried_vol(self,
                     radius=3.5,
@@ -806,12 +825,18 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         return mw
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
     def getAngle(coord_list, pair, m_coord): # Get Angle of atom pair through metal center (stored at coord_list[0])
-        p1 = np.squeeze(np.array(coord_list[pair[0]]))
-        p2 = np.squeeze(np.array(coord_list[pair[1]]))
-        m = m_coord
-        v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
-        v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
-        angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+        # print("coord_list: ", coord_list)
+        # print("pair: ", pair)
+        try:
+            p1 = np.squeeze(np.array(coord_list[pair[0]]))
+            p2 = np.squeeze(np.array(coord_list[pair[1]]))
+            m = m_coord
+            v1u = np.squeeze(np.array((m - p1) / np.linalg.norm((m - p1))))
+            v2u = np.squeeze(np.array((m - p2) / np.linalg.norm((m - p2))))
+            angle = np.rad2deg(np.arccos(np.clip(np.dot(v1u, v2u), -1.0, 1.0)))
+            # print("angle: ", angle)
+        except IndexError:
+            angle = 0
         return angle
     if loud:
         print('********************************************')
@@ -822,9 +847,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         print(('denticities are  ' + str(ligdents)))
     # Flag Hexa/Pentadentate, check if denticities incorrect for Octahedral Complex
     if max(ligdents) > 4:  #### Hexa/Pentadentate ligands flagging ####
+        print(max(ligdents))
         if max(ligdents) == 5 and min(ligdents) == 1:
             pentadentate = True
         elif max(ligdents) == 6 and min(ligdents) == 6:
+            hexadentate = True
+        elif max(ligdents) == 5 and min(ligdents) == 5:
+            print("here")
             hexadentate = True
         else:
             valid = False
@@ -1877,6 +1906,19 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     for eq_lig in eq_lig_list:
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
+
+
+def ligand_assign_alleq(mol, liglist, ligdents, ligcons):
+    ax_ligand_list, ax_con_int_list = [], []
+    eq_ligand_list, eq_con_int_list = [], []
+    for i, ligand_indices in enumerate(liglist):
+        this_ligand = ligand(mol, ligand_indices, ligdents[i])
+        this_ligand.obtain_mol3d()
+        eq_con = ligcons[i]
+        eq_ligand_list.append(this_ligand)
+        current_ligand_index_list = this_ligand.index_list
+        eq_con_int_list.append([current_ligand_index_list.index(i) for i in eq_con])
+    return ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list
 
 
 def get_lig_symmetry(mol,loud=False,htol=3):

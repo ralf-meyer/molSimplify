@@ -22,7 +22,7 @@ class atom3D:
             partialcharge : int, optional
                 Charge assigned to atom when added to mol. Default is None.
     """
-    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None):
+    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None, Tfactor=0, greek='', occup=1.00):
        
         # Element symbol
         self.sym = Sym
@@ -53,6 +53,21 @@ class atom3D:
 
         # Coordinates
         self.__xyz = xyz
+        
+        # Temperature factor (only useful for proteins)
+        self.Tfactor = Tfactor
+        
+        # Greek letter (e.g. alpha carbon - only useful for proteins)
+        if greek == '': 
+            self.greek = Sym
+        else:
+            self.greek = greek
+        
+        # Occupancy (only useful for proteins)
+        self.occup = occup
+
+        # EDIA score (only useful for proteins)
+        self.EDIA = 0
 
     def __repr__(self):
         """Returns all bound methods of the mol3D class..
@@ -198,4 +213,14 @@ class atom3D:
         self.__xyz[0] = x + dxyz[0]
         self.__xyz[1] = y + dxyz[1]
         self.__xyz[2] = z + dxyz[2]
+
+    def setEDIA(self, score):
+        """ Sets the EDIA score of an individual atom3D.
+
+        Parameters
+        ----------
+            score : float
+                Desired EDIA score of atom
+        """
+        self.EDIA = score
 

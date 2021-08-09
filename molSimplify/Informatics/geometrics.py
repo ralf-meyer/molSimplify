@@ -6,7 +6,7 @@ from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.globalvars import *
 
 
-def get_percentile_csd_geometrics(geometrics_csd, geodict, geotype,
+def get_percentile_csd_geometrics(geometrics_csd, geodict, geotype, maxdent,
                                   metrics=['oct_angle_devi_max', 'max_del_sig_angle',
                                            'dist_del_all', 'dist_del_all_relative'],
                                   path2metric="molSimplify/Informatics/geometrics_csd.json"):
@@ -24,8 +24,9 @@ def get_percentile_csd_geometrics(geometrics_csd, geodict, geotype,
         geometrics_csd = json.load(open(jsonpath, "r"))
     percentile_dict = {}
     for k in metrics:
-        percentile_dict[k] = [round(geodict[k], 2), round(sum(np.abs(
-            geometrics_csd[geotype][k]) < geodict[k]) / float(len(geometrics_csd[geotype][k])) * 100)]
+        percentile_dict[k] = [round(geodict[k], 2),
+                              round(sum(np.abs(geometrics_csd[geotype]["all"][k]) < geodict[k]) / float(len(geometrics_csd[geotype]["all"][k])) * 100),
+                              round(sum(np.abs(geometrics_csd[geotype][str(maxdent)][k]) < geodict[k]) / float(len(geometrics_csd[geotype][str(maxdent)][k])) * 100 + 1e-4)]
     return percentile_dict
 
 
@@ -43,6 +44,7 @@ def get_percentile_from_mol2(mol2string,
     '''
     mol = mol3D()
     mol.readfrommol2(mol2string, readstring=True)
+    eqsym, maxdent, ligdents, homoleptic, ligsymmetry = mol.get_symmetry_denticity()
     results = mol.get_geometry_type()
     geotype = results['geometry']
     if geotype in ["sandwich", "edge"]:
@@ -51,4 +53,4 @@ def get_percentile_from_mol2(mol2string,
         for k in metrics:
             d[k] = False
         return d
-    return get_percentile_csd_geometrics(geometrics_csd=geometrics_csd, geodict=results['summary'][geotype], geotype=geotype, metrics=metrics, path2metric=path2metric)
+    return get_percentile_csd_geometrics(geometrics_csd=geometrics_csd, geodict=results['summary'][geotype], geotype=geotype, maxdent=maxdent, metrics=metrics, path2metric=path2metric)

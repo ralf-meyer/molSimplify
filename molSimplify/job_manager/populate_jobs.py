@@ -31,17 +31,21 @@ def call_molsimplify(geodir, job, jobname):
                              '-spin ' + str(job["spin"]), '-oxstate ' + str(job["ox"]),
                              "-ffoption " + "b", ' -ff UFF',
                              "-name", tmp_name, "-rundir", temp_rundir])
-    if job["ligocc"]: # must be a string, e.g. "6" or "1,1,1,1,1,1"
+    if "geometry" in job:
+        bash_command = " ".join([bash_command, "-geometry", job["geometry"]])
+    if "coord" in job:
+        bash_command = " ".join([bash_command, "-coord", str(job["coord"])])
+    if "ligocc" in job: # must be a string, e.g. "6" or "1,1,1,1,1,1"
         bash_command = " ".join([bash_command, "-ligocc", job["ligocc"]])
     else:
         bash_command = " ".join([bash_command, "-ligocc", "1,1,1,1,1,1"])
-    if job["keepHs"]:
+    if "keepHs" in job:
         bash_command = " ".join([bash_command, "-keepHs", job["keepHs"]])
     else:
         bash_command = " ".join([bash_command, "-keepHs", 'yes,yes,yes,yes,yes,yes'])
-    if job["smicat"]: # must be a string, e.g. "1"
+    if "smicat" in job: # must be a string, e.g. "1"
         bash_command = " ".join([bash_command, "-smicat", job["smicat"]])
-    if job["skipANN"]:
+    if "skipANN" in job:
         bash_command = " ".join([bash_command, "-skipANN", job["skipANN"]])
     print(("call: ", bash_command))
     bash_command = bash_command.split()
