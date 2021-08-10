@@ -85,10 +85,10 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         conf.append(m)
     if m != 0 and m not in chains[a_dict['ChainID']] and m not in conf:
         chains[a_dict['ChainID']].append(m)
-    if loc == '' or a_dict["AltLoc"] == "A" or ploc == '':
+    if loc == '' or loc == "A" or ploc == '':
         m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][0]
-    elif (l-65) < len(mols[(a_dict['ChainID'], a_dict['ResSeq'])]):
-        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][l-65]
+    elif (l-64) < len(mols[(a_dict['ChainID'], a_dict['ResSeq'])]):
+        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][l-64]
     else:
         m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
     atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'],
