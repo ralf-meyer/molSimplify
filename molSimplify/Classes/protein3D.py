@@ -170,12 +170,19 @@ class protein3D:
             c = p.conf[i]
             c_ids = []
             for j in c.atoms:
-                c_ids.append(j[0])
-            a = c.atoms[0][1]
-            if a.occup < 0.50 or (a.occup == 0.50 and c.loc != "A"):
-                #print(c_ids)
-                p.stripAtoms(c_ids)
-                del p.conf[i]
+                if type(j) != atom3D:
+                    c_ids.append(j[0])
+                else:
+                    c_ids.append(p.getIndex(j))
+            if len(c.atoms) != 0:
+                if type(c.atoms[0]) != atom3D:
+                    a = c.atoms[0][1]
+                else:
+                    a = c.atoms[0]
+                if a.occup < 0.50 or (a.occup == 0.50 and c.loc != "A"):
+                    #print(c_ids)
+                    p.stripAtoms(c_ids)
+                    del p.conf[i]
         return p
             
     def setR(self, R):
@@ -246,13 +253,19 @@ class protein3D:
         """
         inds = []
         if aa:
-            mols = self.aas
+            mols = self.aas.values()
         else:
-            mols = self.hetmols
-        for m in mols:
-            for (ii, atom) in m.atoms:
-                if atom.symbol() == sym:
-                    inds.append(ii)
+            mols = self.hetmols.values()
+        for s in mols:
+            for m in s:
+                for a in m.atoms:
+                    if type(a) == tuple:
+                        ii = a[0]
+                        a = a[1]
+                    else:
+                        ii = p.getIndex(a)
+                    if a.symbol() == sym:
+                        inds.append(ii)
         return inds
 
     def findAA(self, three_lc="XAA"):
@@ -367,12 +380,21 @@ class protein3D:
             else:
                 mol_set = self.hetmols[tup].copy()
             for elt in mol_set:
-                for (a_id, atom) in elt.atoms:
+                for a in elt.atoms:
+                    if type(a) != atom3D:
+                        a_id = a[0]
+                        atom = a[1]
+                    else:
+                        a_id = self.getIndex(a)
+                        atom = a
                     if a_id not in self.atoms.keys():
                         continue
                     a_id = self.getIndex(atom)
                     if a_id in atoms_stripped:
-                        elt.atoms.remove((a_id, atom))
+                        if (a_id, atom) in elt.atoms:
+                            elt.atoms.remove((a_id, atom))
+                        elif atom in elt.atoms:
+                            elt.atoms.remove(atom)
                         if len(elt.atoms) == 0:
                             if tup in self.aas.keys():
                                 self.aas[tup].remove(elt)
