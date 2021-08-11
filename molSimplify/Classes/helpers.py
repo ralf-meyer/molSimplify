@@ -89,10 +89,10 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         chains[a_dict['ChainID']].append(m)
     if loc == '' or loc == "A" or ploc == '':
         m = mols[key][0]
-    elif (l-64) < len(mols[key]):
-        m = mols[key][l-64]
     else:
-        m = mols[key][-1]
+        for i in mols[key]:
+            if i.loc == loc:
+                m = i
     atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'],
                                               a_dict['Z']],
                   Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'],
