@@ -1211,9 +1211,9 @@ class mol3D:
         forcefield = openbabel.OBForceField.FindForceField(ff)
         constr = openbabel.OBFFConstraints()
         if constraints:
-            for catom in constraints:
+            for catom in range(constraints):
                 # Openbabel uses a 1 index instead of a 0 index.
-                constr.AddAtomConstraint(catom+1) # These atoms won't be force field optimized.
+                constr.AddAtomConstraint(catom+1) 
         self.convert2OBMol()
         forcefield.Setup(self.OBMol,constr)
         if self.OBMol.NumHvyAtoms() > 10:
@@ -5155,4 +5155,14 @@ class mol3D:
                 contains atom3D instances that should be in the molecule
         """
         self.atoms = atoms
+
+    def setLoc(self, loc):
+        """ Sets the conformation of an amino acid in the chain of a protein.
+
+        Parameters
+        ----------
+            loc : str
+                a one-character string representing the conformation
+        """
+        self.loc = loc
             
