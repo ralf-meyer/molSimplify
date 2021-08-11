@@ -53,7 +53,7 @@ class protein3D:
         self.missing_atoms = {}
         # List of missing amino acids
         self.missing_aas = []
-        # List of possible molecule conformations 
+        # List of chain locations with more than one conformation
         self.conf = []
         # R value
         self.R = -1
@@ -163,26 +163,26 @@ class protein3D:
                 chosen conformation
         """
         p = self
-        l = len(self.conf) - 1
-        for i in range(l):
-            if i >= len(p.conf):
-                return p
-            c = p.conf[i]
+        for c in self.conf:
             c_ids = []
-            for j in c.atoms:
-                if type(j) != atom3D:
-                    c_ids.append(j[0])
-                else:
-                    c_ids.append(p.getIndex(j))
-            if len(c.atoms) != 0:
-                if type(c.atoms[0]) != atom3D:
-                    a = c.atoms[0][1]
-                else:
-                    a = c.atoms[0]
-                if a.occup < 0.50 or (a.occup == 0.50 and c.loc != "A"):
-                    #print(c_ids)
+            if c in self.aas.keys():
+                lst = self.aas[c]
+            else:
+                lst = self.hetmols[c]
+            for l in lst:
+                if l not in self.chains[c[0]]:
+                    for j in l.atoms:
+                        if type(j) != atom3D:
+                            c_ids.append(j[0])
+                        else:
+                            c_ids.append(p.getIndex(j))
+                    print(c_ids)
                     p.stripAtoms(c_ids)
-                    del p.conf[i]
+                    if type(l) == AA3D and l in p.aas[c]:
+                        p.aas[c].remove(l)
+                    elif type(l) == mol3D and l in p.hetmols[c]:
+                        p.hetmols[c].remove(l)
+        p.setConf([])
         return p
             
     def setR(self, R):
@@ -263,7 +263,7 @@ class protein3D:
                         ii = a[0]
                         a = a[1]
                     else:
-                        ii = p.getIndex(a)
+                        ii = self.getIndex(a)
                     if a.symbol() == sym:
                         inds.append(ii)
         return inds
@@ -341,28 +341,32 @@ class protein3D:
         p.setBonds(bonds)
         return p
 
-    def getResidue(self, a_id):
-        """ Finds the amino acid residue that the atom is contained in.
+    def getMolecule(self, a_id, aas_only=False):
+        """ Finds the molecule that the atom is contained in.
 
         Parameters
         ----------
             a_id : int
-                the index of the desired atom whose residue we want to find
+                the index of the desired atom whose molecule we want to find
 
         Returns
         -------
-            aa : AA3D
-                the amino acid residue containing the atom
-                returns None if there is no amino acid
+            mol : AA3D or mol3D
+                the amino acid residue or heteromolecule containing the atom
         """
         for s in self.aas.values():
-            for aa in s:
-                if (a_id, self.atoms[a_id]) in aa.atoms:
-                    return aa
-        for aa in self.missing_atoms.keys():
-            if (a_id, self.atoms[a_id]) in self.missing_atoms[aa]:
-                return aa
-        return None # the atom is a heteroatom
+            for mol in s: # mol is AA3D
+                if (a_id, self.atoms[a_id]) in mol.atoms:
+                    return mol
+        for mol in self.missing_atoms.keys(): # mol is incomplete AA3D
+            if (a_id, self.atoms[a_id]) in self.missing_atoms[mol]:
+                return mol
+        if not aas_only:
+            for s in self.hetmols.values():
+                for mol in s: # mol is mol3D
+                    if self.atoms[a_id] in mol.atoms:
+                        return mol
+        return None # something is wrong
 
     def stripAtoms(self, atoms_stripped):
         """ Removes certain atoms from the protein3D class instance.
@@ -507,28 +511,30 @@ class protein3D:
         idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
         return idx
     
-    def getBoundAAs(self, h_id):
-        """Get a list of amino acids bound to a heteroatom, usually a metal.
+    def getBoundMols(self, h_id, aas_only=False):
+        """Get a list of moleculess bound to a heteroatom, usually a metal.
 
         Parameters
         ----------
             h_id : int
                 the index of the desired (hetero)atom origin
+            aas_only : boolean
+                whether or not to only consider amino acids, defaults False
 
         Returns
         -------
-            bound_aas : list
-                list of AA3D instances of amino acids bound to hetatm
+            bound_mols : list
+                list of AA3D and/or mol3D instances of molecules bound to hetatm
         """
-        bound_aas = []
+        bound_mols = []
         for b_id in self.atoms.keys():
             b = self.atoms[b_id]
             if self.atoms[h_id] not in self.bonds.keys():
                 return None
-            elif b in self.bonds[self.atoms[h_id]] and self.getResidue(b_id) != None:
-                #if self.getResidue(b_id).three_lc in aminos.keys():
-                bound_aas.append(self.getResidue(b_id))
-        return bound_aas
+            elif b in self.bonds[self.atoms[h_id]]:
+                if self.getMolecule(b_id, aas_only) != None:
+                    bound_mols.append(self.getMolecule(b_id, aas_only))
+        return bound_mols
     
     def readfrompdb(self, text):
         """ Read PDB into a protein3D class instance.
@@ -661,14 +667,22 @@ class protein3D:
                             print("likely OXT")
                         continue
         # deal with conformations in chains
-        for i in range(len(conf)-1):
-            if type(conf[i]) == AA3D and type(conf[i+1]) == AA3D:
-                if conf[i].chain == conf[i+1].chain and conf[i].id == conf[i+1].id:
-                    if conf[i].occup >= conf[i+1].occup:
-                        chains[conf[i].chain].append(conf[i])
-                        # pick chain with higher occupancy or the A chain if tie
-                    else:
-                        chains[conf[i+1].chain].append(conf[i+1])
+        for i in conf:
+            if i in aas.keys():
+                c = aas[i]
+            else:
+                c = hetmols[i]
+            for j in range(len(c)):
+                # pick chain with higher occupancy or the A chain if tie
+                if type(c[j]) == mol3D:
+                    if c[j].atoms[0].occup > 1/len(c):
+                        chains[i[0]].append(c[j])
+                    elif c[j].atoms[0].occup*100 == 100//len(c) and j == 0:
+                        chains[i[0]].append(c[j])
+                elif c[j].occup > 1/len(c):
+                    chains[i[0]].append(c[j])
+                elif c[j].occup*100 == 100//len(c) and j == 0:
+                    chains[i[0]].append(c[j])
         self.setChains(chains)
         self.setAAs(aas)
         self.setAtoms(atoms)
@@ -743,7 +757,6 @@ class protein3D:
                 ### This is an example of getting everything with a "sec" tag.
                 body = soup.find_all('wwPDB-validation-information')
                 entry = body[0].find_all("Entry")
-                #print("got metadata: %s"%(pdbCode))
                 if "DataCompleteness" not in entry[0].attrs.keys():
                     self.setDataCompleteness(0)
                     print("warning: %s has no DataCompleteness."%pdbCode)
