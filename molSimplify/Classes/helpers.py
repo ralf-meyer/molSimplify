@@ -61,6 +61,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     """
     loc = a_dict['AltLoc']
     ploc = prev_a_dict["AltLoc"]
+    hack = False
     m = 0
     key = (a_dict['ChainID'], a_dict['ResSeq'])
     if key not in mols.keys():
@@ -76,10 +77,17 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
             if aa:
                 m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                          a_dict['ResSeq'], a_dict['Occupancy'], loc)
+                m.temp_list = mols[key][-1].temp_list
             else:
                 m = mol3D(a_dict['ResName'], loc)
+                m.temp_list = mols[key][-1].temp_list
             if mols[key][-1].loc != loc:
                 mols[key].append(m)
+    elif loc == '':
+        hack = True
+    elif ploc == '':
+        mols[key][0].setLoc(loc)
+        mols[key][0].temp_list = mols[key][0].atoms
     prev_a_dict = a_dict
     if a_dict['ChainID'] not in chains.keys():
         chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
@@ -91,13 +99,24 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         m = mols[key][0]
     else:
         for i in mols[key]:
+            print(key, i.loc, loc)
             if i.loc == loc:
+                print('here')
                 m = i
     atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'],
                                               a_dict['Z']],
                   Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'],
                   greek=a_dict['Name'])
-    m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+    for a in m.temp_list:
+        if type(a) == tuple:
+            m.addAtom(a[1], a[0])
+        else:
+            m.addAtom(a)
+    if hack:
+        for i in mols[key]:
+            i.addAtom(atom, a_dict['SerialNum'])
+    else:
+        m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
     if aa:
         m.setBonds()
         bonds.update(m.bonds)
