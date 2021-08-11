@@ -209,6 +209,16 @@ class AA3D:
         self.atoms.append((index, atom))
         self.natoms += 1
         self.mass += atom.mass
-        self.metal = False                     
+        self.metal = False
+
+    def setLoc(self, loc):
+        """ Sets the conformation of an amino acid in the chain of a protein.
+
+        Parameters
+        ----------
+            loc : str
+                a one-character string representing the conformation
+        """
+        self.loc = loc
             
 
