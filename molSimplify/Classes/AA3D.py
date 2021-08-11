@@ -42,6 +42,8 @@ class AA3D:
         self.prev = None
         # Location (if more than one conformation)
         self.loc = loc
+        # Temporary list for storing conformations
+        self.temp_list = []
             
     def identify(self):
         """ States whether the amino acid is (positively/negatively) charged, polar, or hydrophobic.
