@@ -83,6 +83,8 @@ class mol3D:
         self.metals = False
         # Conformation (empty string if irrelevant)
         self.loc = loc
+        # Temporary list for storing conformations
+        self.temp_list = []
 
         # Holder for partial charge for each atom
         self.partialcharges = []
