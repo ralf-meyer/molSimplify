@@ -62,35 +62,37 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     loc = a_dict['AltLoc']
     ploc = prev_a_dict["AltLoc"]
     m = 0
-    if (a_dict['ChainID'], a_dict['ResSeq']) not in mols.keys():
+    key = (a_dict['ChainID'], a_dict['ResSeq'])
+    if key not in mols.keys():
         if aa:
             m = AA3D(a_dict['ResName'], a_dict['ChainID'], a_dict['ResSeq'],
                      a_dict['Occupancy'], loc)
         else:
             m = mol3D(a_dict['ResName'], loc)
-        mols[(a_dict['ChainID'], a_dict['ResSeq'])] = [m]
-    if loc != '' and ploc != '':
+        mols[key] = [m]
+    elif loc != '' and ploc != '':
         l = ord(ploc)
-        if loc > chr(l) and len(mols[(a_dict['ChainID'], a_dict['ResSeq'])]) == l-64:
+        if loc > chr(l) and len(mols[key]) <= l-64:
             if aa:
                 m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                          a_dict['ResSeq'], a_dict['Occupancy'], loc)
             else:
                 m = mol3D(a_dict['ResName'], loc)
-            mols[(a_dict['ChainID'], a_dict['ResSeq'])].append(m)
+            if mols[key][-1].loc != loc:
+                mols[key].append(m)
     prev_a_dict = a_dict
     if a_dict['ChainID'] not in chains.keys():
         chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
-    if m != 0 and int(float(a_dict['Occupancy'])) != 1 and m not in conf:
-        conf.append(m)
-    if m != 0 and m not in chains[a_dict['ChainID']] and m not in conf:
+    if m != 0 and key not in conf and loc != '' and float(a_dict['Occupancy']) < 1:
+        conf.append(key)
+    if m != 0 and m not in chains[a_dict['ChainID']] and key not in conf:
         chains[a_dict['ChainID']].append(m)
     if loc == '' or loc == "A" or ploc == '':
-        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][0]
-    elif (l-64) < len(mols[(a_dict['ChainID'], a_dict['ResSeq'])]):
-        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][l-64]
+        m = mols[key][0]
+    elif (l-64) < len(mols[key]):
+        m = mols[key][l-64]
     else:
-        m = mols[(a_dict['ChainID'], a_dict['ResSeq'])][-1]
+        m = mols[key][-1]
     atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'],
                                               a_dict['Z']],
                   Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'],
@@ -104,3 +106,5 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         if m.next != None:
             bonds[m.c].add(m.next.n)
     return atom, mols, conf, chains, prev_a_dict, bonds
+            
+            
