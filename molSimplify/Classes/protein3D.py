@@ -177,7 +177,6 @@ class protein3D:
         """
         p = self
         for c in self.conf:
-            print(c)
             c_ids = []
             if c in self.aas.keys():
                 lst = self.aas[c]
@@ -189,9 +188,13 @@ class protein3D:
                 for l in lst:
                     if l not in self.chains[c[0]]:
                         for j in l.atoms:
-                            if type(j) != atom3D:
+                            in_more_confs = False
+                            for m in lst:
+                                if m != l and j in m.atoms:
+                                    in_more_confs = True
+                            if type(j) != atom3D and not in_more_confs:
                                 c_ids.append(j[0])
-                            else:
+                            elif not in_more_confs:
                                 c_ids.append(p.getIndex(j))
                         p.stripAtoms(c_ids)
                         if type(l) == AA3D and l in p.aas[c]:
@@ -405,9 +408,8 @@ class protein3D:
                         a_id = a[0]
                         atom = a[1]
                     else:
-                        a_id = self.getIndex(a)
                         atom = a
-                    if a_id not in self.atoms.keys():
+                    if atom not in self.a_ids.keys():
                         continue
                     a_id = self.getIndex(atom)
                     if a_id in atoms_stripped:
@@ -428,6 +430,7 @@ class protein3D:
                         if atom in self.bonds.keys():
                             del self.bonds[atom]
                         del atoms[a_id]
+                        del self.a_ids[atom]
         self.setAtoms(atoms)
 
     def stripHetMol(self, hetmol):
@@ -525,7 +528,7 @@ class protein3D:
 
         """
         if hasattr(self, 'a_ids'):
-            idx = a_ids[atom]
+            idx = self.a_ids[atom]
         else:
             idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
         return idx
@@ -707,6 +710,7 @@ class protein3D:
         self.setChains(chains)
         self.setAAs(aas)
         self.setAtoms(atoms)
+        self.setIndices(a_ids)
         self.setHetmols(hetmols)
         self.setMissingAtoms(missing_atoms)
         self.setMissingAAs(missing_aas)
