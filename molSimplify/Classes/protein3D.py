@@ -45,6 +45,8 @@ class protein3D:
         self.aas = {}
         # Dictionary of all atoms
         self.atoms = {}
+        # Dictionary of all atom indices
+        self.a_ids = {}
         # Dictionary of heteromolecules
         self.hetmols = {}
         # Dictionary of chains
@@ -95,6 +97,17 @@ class protein3D:
                 Valued by atom3D atom that has that index
         """
         self.atoms = atoms
+
+    def setIndices(self, a_ids):
+        """ Set atom indices of a protein3D class to atoms.
+        
+        Parameters
+        ----------
+            a_ids : dictionary
+                Keyed by atom3D atom
+                Valued by its index
+        """
+        self.a_ids = a_ids
 
     def setHetmols(self, hetmols):
         """ Set heteromolecules of a protein3D class to different ones.
@@ -164,24 +177,27 @@ class protein3D:
         """
         p = self
         for c in self.conf:
+            print(c)
             c_ids = []
             if c in self.aas.keys():
                 lst = self.aas[c]
             else:
                 lst = self.hetmols[c]
-            for l in lst:
-                if l not in self.chains[c[0]]:
-                    for j in l.atoms:
-                        if type(j) != atom3D:
-                            c_ids.append(j[0])
-                        else:
-                            c_ids.append(p.getIndex(j))
-                    print(c_ids)
-                    p.stripAtoms(c_ids)
-                    if type(l) == AA3D and l in p.aas[c]:
-                        p.aas[c].remove(l)
-                    elif type(l) == mol3D and l in p.hetmols[c]:
-                        p.hetmols[c].remove(l)
+            if len(lst) == 1:
+                self.chains[c[0]].insert(c[1]-1, lst[0])
+            else:
+                for l in lst:
+                    if l not in self.chains[c[0]]:
+                        for j in l.atoms:
+                            if type(j) != atom3D:
+                                c_ids.append(j[0])
+                            else:
+                                c_ids.append(p.getIndex(j))
+                        p.stripAtoms(c_ids)
+                        if type(l) == AA3D and l in p.aas[c]:
+                            p.aas[c].remove(l)
+                        elif type(l) == mol3D and l in p.hetmols[c]:
+                            p.hetmols[c].remove(l)
         p.setConf([])
         return p
             
@@ -508,7 +524,10 @@ class protein3D:
                 Index of desired atom.
 
         """
-        idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
+        if hasattr(self, 'a_ids'):
+            idx = a_ids[atom]
+        else:
+            idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
         return idx
     
     def getBoundMols(self, h_id, aas_only=False):
@@ -561,6 +580,7 @@ class protein3D:
         aas = {}
         hetmols = {}
         atoms = {}
+        a_ids = {}
         chains = {}
         missing_atoms = {}
         missing_aas = []
@@ -653,6 +673,7 @@ class protein3D:
                 else: # have a normal heteromolecule
                     a, hetmols, conf, chains, pa_dict, bonds = makeMol(a_dict, hetmols, conf, chains, pa_dict, bonds, False)
                 atoms[a_dict['SerialNum']] = a
+                a_ids[a] = a_dict['SerialNum']
 
             elif "CONECT" in l_type: # get extra connections
                 line = line[6:] # remove type
