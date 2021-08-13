@@ -59,9 +59,11 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     -------
         mols, conf, chains, prev_a_dict as updated
     """
+    #print(a_dict)
     loc = a_dict['AltLoc']
     ploc = prev_a_dict["AltLoc"]
     hack = False
+    hack2 = False
     m = 0
     key = (a_dict['ChainID'], a_dict['ResSeq'])
     if key not in mols.keys():
@@ -83,11 +85,27 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
                 m.temp_list = mols[key][-1].temp_list
             if mols[key][-1].loc != loc:
                 mols[key].append(m)
+        else:
+            weirdo = True
+            for mol in mols[key]:
+                if mol.loc == loc:
+                    weirdo = False
+            if weirdo:
+                if aa:
+                    m = AA3D(a_dict['ResName'], a_dict['ChainID'],
+                             a_dict['ResSeq'], a_dict['Occupancy'], loc)
+                    m.temp_list = mols[key][-1].temp_list
+                else:
+                    m = mol3D(a_dict['ResName'], loc)
+                    m.temp_list = mols[key][-1].temp_list
+                if mols[key][-1].loc != loc:
+                    mols[key].append(m)
     elif loc == '':
         hack = True
-    elif ploc == '':
+    elif key in mols.keys() and ploc == '' and len(mols[key]) == 1:
+        hack2 = True
         mols[key][0].setLoc(loc)
-        mols[key][0].temp_list = mols[key][0].atoms
+        mols[key][0].temp_list = mols[key][0].atoms.copy()
     prev_a_dict = a_dict
     if a_dict['ChainID'] not in chains.keys():
         chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
@@ -99,19 +117,19 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         m = mols[key][0]
     else:
         for i in mols[key]:
-            print(key, i.loc, loc)
             if i.loc == loc:
-                print('here')
                 m = i
     atom = atom3D(Sym=a_dict['Element'], xyz=[a_dict['X'], a_dict['Y'],
                                               a_dict['Z']],
                   Tfactor=a_dict['TempFactor'], occup=a_dict['Occupancy'],
                   greek=a_dict['Name'])
-    for a in m.temp_list:
-        if type(a) == tuple:
-            m.addAtom(a[1], a[0])
-        else:
-            m.addAtom(a)
+    if not hack2:
+        for a in m.temp_list:
+            if type(a) == tuple:
+                m.addAtom(a[1], a[0])
+            else:
+                m.addAtom(a)
+        m.temp_list = []
     if hack:
         for i in mols[key]:
             i.addAtom(atom, a_dict['SerialNum'])
