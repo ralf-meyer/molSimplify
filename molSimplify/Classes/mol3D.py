@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET
 from math import sqrt
 import numpy as np
 import openbabel
+from scipy.spatial import ConvexHull
 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
@@ -85,6 +86,8 @@ class mol3D:
         self.loc = loc
         # Temporary list for storing conformations
         self.temp_list = []
+        # Convex hull
+        self.hull = []
 
         # Holder for partial charge for each atom
         self.partialcharges = []
@@ -5167,4 +5170,24 @@ class mol3D:
                 a one-character string representing the conformation
         """
         self.loc = loc
+
+    def convexhull(self):
+        """Computes convex hull of molecule.
+        
+        Returns
+        -------
+            hull : array
+                Coordinates of convex hull.
+        """
+        points = []
+        # loop over atoms in protein
+        if self.natoms > 0:
+            for atom in self.atoms.values():
+                points.append(atom.coords())
+            hull = ConvexHull(points)
+        else:
+            hull = False
+            print(
+                'ERROR: Convex hull calculation failed. Structure will be inaccurate.\n')
+        self.hull = hull
             
