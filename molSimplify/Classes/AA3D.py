@@ -127,6 +127,29 @@ class AA3D:
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
         return center_of_mass
 
+    def centroid(self):
+        """Computes coordinates of centroid of amino acid.
+        Returns
+        -------
+            centroid : list
+                Coordinates of centroid. List of length 3: (X, Y, Z).
+        """
+
+        centroid = [0, 0, 0]
+        # loop over atoms in molecule
+        if self.natoms > 0:
+            for (ii, atom) in self.atoms:
+                # calculate center of mass (relative weight according to atomic mass)
+                xyz = atom.coords()
+                centroid[0] += xyz[0]
+                centroid[1] += xyz[1]
+                centroid[2] += xyz[2]
+        else:
+            centroid= False
+            print(
+                'ERROR: Centroid calculation failed. Structure will be inaccurate.\n')
+        return centroid
+
     def setBonds(self):
         """ Sets the bonds between atoms within the amino acid.
 
@@ -141,21 +164,29 @@ class AA3D:
                     for (a_id, a) in self.atoms:
                         if a.greek == 'O' or a.greek == "CA":
                             self.bonds[key].add(a)
+                            if a not in self.bonds.keys():
+                                self.bonds[a] = set()
                             self.bonds[a].add(key)
                 if key.greek == 'CA':
                     for (a_id, a) in self.atoms:
                         if a.greek == 'CB' or a.greek == "N":
                             self.bonds[key].add(a)
+                            if a not in self.bonds.keys():
+                                self.bonds[a] = set()
                             self.bonds[a].add(key)
                 if "G" in key.greek:
                     for (a_id, a) in self.atoms:
                         if 'B' in a.greek or "D" in a.greek:
                             self.bonds[key].add(a)
+                            if a not in self.bonds.keys():
+                                self.bonds[a] = set()
                             self.bonds[a].add(key)
                 if "E" in key.greek:
                     for (a_id, a) in self.atoms:
                         if 'Z' in a.greek or "D" in a.greek:
                             self.bonds[key].add(a)
+                            if a not in self.bonds.keys():
+                                self.bonds[a] = set()
                             self.bonds[a].add(key)
 
     def getPeptideAtoms(self):
