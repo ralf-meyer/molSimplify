@@ -91,6 +91,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
                 if mol.loc == loc:
                     weirdo = False
             if weirdo:
+                #print(a_dict, 'here')
                 if aa:
                     m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                              a_dict['ResSeq'], a_dict['Occupancy'], loc)
@@ -113,7 +114,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         conf.append(key)
     if m != 0 and m not in chains[a_dict['ChainID']] and key not in conf:
         chains[a_dict['ChainID']].append(m)
-    if loc == '' or loc == "A" or ploc == '':
+    if loc == '' or ploc == '':
         m = mols[key][0]
     else:
         for i in mols[key]:
