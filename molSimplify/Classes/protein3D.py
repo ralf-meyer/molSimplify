@@ -75,6 +75,10 @@ class protein3D:
         self.TwinL = 0
         # TwinL^2 score
         self.TwinL2 = 0
+        # center of mass
+        self.com = []
+        # centroid
+        self.centroid = []
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
@@ -527,9 +531,10 @@ class protein3D:
                 Index of desired atom.
 
         """
-        if hasattr(self, 'a_ids'):
+        if hasattr(self, 'a_ids') and atom in self.a_ids.keys():
             idx = self.a_ids[atom]
         else:
+            print(atom.sym)
             idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
         return idx
     
@@ -860,7 +865,7 @@ class protein3D:
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
-        t = 20
+        t = 5
         while dictionary["status_code"] == 202:
             res2 = subprocess.Popen(['curl', int_dict['location']],
                                     stdout=subprocess.PIPE,
@@ -871,7 +876,6 @@ class protein3D:
             out2, err2 = res2.communicate()
             dict2_str = out2.decode("UTF-8")
             dictionary = ast.literal_eval(dict2_str)
-            t += 5
         link = dictionary["atom_scores"]
         df = pd.read_csv(link, error_bad_lines=False)
         for i, row in df.iterrows():
@@ -899,3 +903,68 @@ class protein3D:
         """
         self.pdbCode = pdbCode
 
+    def centermass(self):
+        """Computes coordinates of center of mass of protein.
+        
+        """
+
+        center_of_mass = [0, 0, 0] # coordinates of center of mass (X, Y, Z)
+        mmass = 0
+        # loop over atoms in molecule
+        if self.natoms > 0:
+            for atom in self.atoms.values():
+                # calculate center of mass (relative weight according to atomic mass)
+                xyz = atom.coords()
+                center_of_mass[0] += xyz[0] * atom.mass
+                center_of_mass[1] += xyz[1] * atom.mass
+                center_of_mass[2] += xyz[2] * atom.mass
+                mmass += atom.mass
+            # normalize
+            center_of_mass[0] /= mmass
+            center_of_mass[1] /= mmass
+            center_of_mass[2] /= mmass
+        else:
+            center_of_mass = False
+            print(
+                'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
+        self.com = center_of_mass
+
+    def centroid(self):
+        """Computes coordinates of center of mass of protein.
+        
+        """
+
+        centroid = [0, 0, 0] # coordinates of centroid (X, Y, Z)
+        # loop over atoms in protein
+        if self.natoms > 0:
+            for atom in self.atoms.values():
+                # calculate center of mass (relative weight according to atomic mass)
+                xyz = atom.coords()
+                centroid[0] += xyz[0]
+                centroid[1] += xyz[1]
+                centroid[2] += xyz[2]
+        else:
+            centroid = False
+            print(
+                'ERROR: Centroid calculation failed. Structure will be inaccurate.\n')
+        self.centroid = centroid
+
+    def convexhull(self):
+        """Computes convex hull of protein.
+        
+        Returns
+        -------
+            hull : list
+                Coordinates of center of mass. List of length 3: (X, Y, Z).
+        """
+        points = []
+        # loop over atoms in protein
+        if self.natoms > 0:
+            for atom in self.atoms.values():
+                points.append(atom.coords())
+            hull = ConvexHull(points)
+        else:
+            hull = False
+            print(
+                'ERROR: Convex hull calculation failed. Structure will be inaccurate.\n')
+        return hull
