@@ -203,7 +203,6 @@ class protein3D:
                                 c_ids.append(j[0])
                             elif not in_more_confs:
                                 c_ids.append(p.getIndex(j))
-                        print(c_ids)
                         p.stripAtoms(c_ids)
                         if type(l) == AA3D and l in p.aas[c]:
                             p.aas[c].remove(l)
