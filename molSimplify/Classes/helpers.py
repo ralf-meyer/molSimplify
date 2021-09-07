@@ -90,7 +90,6 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
                 if mol.loc == loc:
                     weirdo = False
             if weirdo:
-                print(a_dict, 'here')
                 if aa:
                     m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                              a_dict['ResSeq'], a_dict['Occupancy'], loc)
@@ -137,7 +136,6 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     else:
         m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
     if key in conf and chains[a_dict['ChainID']] != []:
-        print(key, 'reset')
         chains[a_dict['ChainID']] = []
     if aa:
         m.setBonds()
