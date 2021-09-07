@@ -5182,7 +5182,7 @@ class mol3D:
         points = []
         # loop over atoms in protein
         if self.natoms > 0:
-            for atom in self.atoms.values():
+            for atom in self.atoms:
                 points.append(atom.coords())
             hull = ConvexHull(points)
         else:
