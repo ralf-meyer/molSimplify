@@ -203,6 +203,7 @@ class protein3D:
                                 c_ids.append(j[0])
                             elif not in_more_confs:
                                 c_ids.append(p.getIndex(j))
+                        print(c_ids)
                         p.stripAtoms(c_ids)
                         if type(l) == AA3D and l in p.aas[c]:
                             p.aas[c].remove(l)
@@ -707,7 +708,11 @@ class protein3D:
             for j in range(len(c)):
                 # pick chain with higher occupancy or the A chain if tie
                 if type(c[j]) == mol3D:
-                    if c[j].atoms[0].occup > 1/len(c):
+                    for a in c[j].atoms:
+                        full = True
+                        if a.occup <= 1/len(c):
+                            full = False
+                    if full:
                         chains[i[0]].append(c[j])
                     elif c[j].atoms[0].occup*100 == 100//len(c) and j == 0:
                         chains[i[0]].append(c[j])
@@ -932,7 +937,7 @@ class protein3D:
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
         self.com = center_of_mass
 
-    def centroid(self):
+    def setCentroid(self):
         """Computes coordinates of center of mass of protein.
         
         """
@@ -947,9 +952,9 @@ class protein3D:
                 centroid[1] += xyz[1]
                 centroid[2] += xyz[2]
             # normalize
-            center_of_mass[0] /= len(self.atoms.keys())
-            center_of_mass[1] /= len(self.atoms.keys())
-            center_of_mass[2] /= len(self.atoms.keys())
+            centroid[0] /= len(self.atoms.keys())
+            centroid[1] /= len(self.atoms.keys())
+            centroid[2] /= len(self.atoms.keys())
         else:
             centroid = False
             print(
@@ -961,8 +966,8 @@ class protein3D:
         
         Returns
         -------
-            hull : list
-                Coordinates of center of mass. List of length 3: (X, Y, Z).
+            hull : array
+                Coordinates of convex hull.
         """
         points = []
         # loop over atoms in protein
