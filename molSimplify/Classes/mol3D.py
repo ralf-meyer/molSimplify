@@ -171,15 +171,14 @@ class mol3D:
         """
         if writegeo==True:
             struc_directory = os.mkdir(dir_name)
-        temp_list = []
-        for ang_val in np.arange(anglei, anglef+angleint, angleint):
-            temp_angle = mol3D() 
-            temp_angle.copymol3D(self)
-            temp_angle.ACM(idx1, idx2, idx3, ang_val)
-            temp_list.append(temp_angle)
-            if writegeo==True:
+            temp_list = []
+            for ang_val in np.arange(anglei, anglef+angleint, angleint):
+                temp_angle = mol3D() 
+                temp_angle.copymol3D(self)
+                temp_angle.ACM(idx1, idx2, idx3, ang_val)
+                temp_list.append(temp_angle)
                 temp_angle.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(ang_val)))+'.xyz')
-        return temp_list
+            return temp_list
 
     def RCDistance(self, idx1, idx2, disti, distf, distint=0.05, writegeo=False, dir_name='rc_distance_geometries'):
         """Generates geometries along a given distance reaction coordinate.
@@ -217,15 +216,14 @@ class mol3D:
 
         if writegeo==True:
             struc_directory = os.mkdir(dir_name)
-        temp_list = []
-        for dist_val in np.arange(disti, distf+distint, distint):
-            temp_dist = mol3D() 
-            temp_dist.copymol3D(self)
-            temp_dist.BCM(idx1, idx2, dist_val)
-            temp_list.append(temp_dist)
-            if writegeo==True:
+            temp_list = []
+            for dist_val in np.arange(disti, distf+distint, distint):
+                temp_dist = mol3D() 
+                temp_dist.copymol3D(self)
+                temp_dist.BCM(idx1, idx2, dist_val)
+                temp_list.append(temp_dist)
                 temp_dist.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
-        return temp_list
+            return temp_list
 
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
