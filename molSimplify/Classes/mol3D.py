@@ -2398,7 +2398,7 @@ class mol3D:
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return (ss)
 
-    def readfromxyz(self, filename):
+    def readfromxyz(self, filename, fictitious_elecment=False):
         """Read XYZ into a mol3D class instance.
 
         Parameters
@@ -2420,17 +2420,19 @@ class mol3D:
             if len(line_split) == 4 and line_split[0]:
                 # this looks for unique atom IDs in files
                 lm = re.search(r'\d+$', line_split[0])
+                # print(line_split, line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
-                if lm is not None:
+                if line_split[0] in list(amassdict.keys()) or fictitious_elecment:
+                    # print(line_split, line_split[0])
+                    atom = atom3D(line_split[0], [float(line_split[1]), float(
+                        line_split[2]), float(line_split[3])])
+                elif lm is not None:
                     symb = re.sub('\d+', '', line_split[0])
                     number = lm.group()
                     # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                                   name=line_split[0])
-                elif line_split[0] in list(amassdict.keys()):
-                    atom = atom3D(line_split[0], [float(line_split[1]), float(
-                        line_split[2]), float(line_split[3])])
                 else:
                     print('cannot find atom type')
                     sys.exit()
@@ -5092,7 +5094,7 @@ class mol3D:
 
     def get_features(self, lac=True, force_generate=False, eq_sym=False, 
                      use_dist=False, NumB=False, Zeff=False, size_normalize=False,
-                     alleq=False, strict_cutoff=False, catom_list=None):
+                     alleq=False, strict_cutoff=False, catom_list=None, MRdiag_dict={}):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
@@ -5113,11 +5115,12 @@ class mol3D:
         from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
         if not len(self.graph):
             self.createMolecularGraph(strict_cutoff=strict_cutoff, catom_list=catom_list)
-        print("catoms: ", [self.getAtom(ii).symbol() for ii in self.get_fcs(strict_cutoff=strict_cutoff)])
-        geo_type = self.get_geometry_type()
-        if geo_type['geometry'] == 'octahedral' or force_generate:
+        # print("catoms: ", [self.getAtom(ii).symbol() for ii in self.get_fcs(strict_cutoff=strict_cutoff)])
+        if not force_generate:
+            geo_type = self.get_geometry_type()
+        if force_generate or geo_type['geometry'] == 'octahedral':
             names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Zeff=Zeff, 
-                                                size_normalize=size_normalize, alleq=alleq)
+                                                size_normalize=size_normalize, alleq=alleq, MRdiag_dict=MRdiag_dict)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
