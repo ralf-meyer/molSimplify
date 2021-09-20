@@ -208,7 +208,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
     for filename in os.listdir("./"):
         if ("psi." in filename) or ("default" in filename):
             print("removing: :", filename)
-            os.remove(filename) 
+            os.remove(filename)
     os.chdir(basedir)
     return success
 
@@ -251,7 +251,7 @@ def run_general(psi4_config, functional):
     for filename in os.listdir("./"):
         if ("psi." in filename) or ("default" in filename):
             print("removing: :", filename)
-            os.remove(filename) 
+            os.remove(filename)
     os.chdir(basedir)
     return success
 
@@ -273,6 +273,9 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     ## Copy wfn file to the right place with a right name---
     pid = str(os.getpid())
     targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
+    if not os.path.isfile(wfn):
+        print("Previous calculation failed... This one is skipped.")
+        return False
     shutil.copyfile(wfn, targetfile)
     ## Final scf---
     psi4.set_options({
@@ -289,7 +292,7 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     for filename in os.listdir("./"):
         if ("psi." in filename) or ("default" in filename):
             print("removing: :", filename)
-            os.remove(filename) 
+            os.remove(filename)
     os.chdir(basedir)
     return success
 
@@ -334,7 +337,7 @@ def get_hfx_functional(functional, hfx):
         mega = "" if "PBE" in functional else "M"
         hfx_func = {
             "name": "hfx_func",
-            "x_functionals": {"%sGGA_X_%s"%(mega, fmap[functional]): {"alpha": 1-hfx}*0.01},
+            "x_functionals": {"%sGGA_X_%s"%(mega, fmap[functional]): {"alpha": 1-hfx*0.01}},
             "x_hf": {"alpha": hfx*0.01},
             "c_functionals": {"%sGGA_C_%s"%(mega, fmap[functional]): {}}
         }
@@ -377,19 +380,19 @@ def write_jobscript(psi4_config):
                 fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup3.out\n")
             fo.write("mv * $SGE_O_WORKDIR\n")
     elif psi4_config["cluster"] == "expanse":
-        mem = int(psi4_config['memory'].split(" ")[0]/psi4_config['num_threads'])/1000
+        mem = int(psi4_config['memory'].split(" ")[0])/psi4_config['num_threads']/1000
         with open("./jobscript.sh", "w") as fo:
             fo.write("#!/bin/sh\n")
             fo.write("#SBATCH -A mit136\n")
             fo.write("#SBATCH --job-name=psi4_multiDFA\n")
             fo.write("#SBATCH --partition=shared\n")
-            fo.write("#SBATCH -t 64:00:00\n")
+            fo.write("#SBATCH -t 48:00:00\n")
             fo.write("#SBATCH --nodes=1\n")
-            fo.write("#SBATCH --ntasks-per-node=%d\n"%psi4_config['num_threads'])
+            fo.write("#SBATCH --ntasks-per-node=16\n")
             fo.write("#SBATCH --error=job.%J.err\n")
             fo.write("#SBATCH --output=job.%J.out\n")
             fo.write("#SBATCH --export=ALL\n")
-            fo.write("#SBATCH --mem-per-cpu=%dG\n"%mem)
+            fo.write("#SBATCH --mem=64G\n")
 
             fo.write("source /home/crduan/.bashrc\n")
             fo.write("conda activate mols_psi4\n")
