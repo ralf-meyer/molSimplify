@@ -24,6 +24,7 @@ import subprocess
 import shlex
 import ast
 import time
+from scipy.spatial import ConvexHull
 
 # no GUI support for now
 
@@ -79,6 +80,8 @@ class protein3D:
         self.com = []
         # centroid
         self.centroid = []
+        # convex hull
+        self.hull = []
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
@@ -704,7 +707,11 @@ class protein3D:
             for j in range(len(c)):
                 # pick chain with higher occupancy or the A chain if tie
                 if type(c[j]) == mol3D:
-                    if c[j].atoms[0].occup > 1/len(c):
+                    for a in c[j].atoms:
+                        full = True
+                        if a.occup <= 1/len(c):
+                            full = False
+                    if full:
                         chains[i[0]].append(c[j])
                     elif c[j].atoms[0].occup*100 == 100//len(c) and j == 0:
                         chains[i[0]].append(c[j])
@@ -911,7 +918,7 @@ class protein3D:
         center_of_mass = [0, 0, 0] # coordinates of center of mass (X, Y, Z)
         mmass = 0
         # loop over atoms in molecule
-        if self.natoms > 0:
+        if len(self.atoms.keys()) > 0:
             for atom in self.atoms.values():
                 # calculate center of mass (relative weight according to atomic mass)
                 xyz = atom.coords()
@@ -929,20 +936,24 @@ class protein3D:
                 'ERROR: Center of mass calculation failed. Structure will be inaccurate.\n')
         self.com = center_of_mass
 
-    def centroid(self):
+    def setCentroid(self):
         """Computes coordinates of center of mass of protein.
         
         """
 
         centroid = [0, 0, 0] # coordinates of centroid (X, Y, Z)
         # loop over atoms in protein
-        if self.natoms > 0:
+        if len(self.atoms.keys()) > 0:
             for atom in self.atoms.values():
                 # calculate center of mass (relative weight according to atomic mass)
                 xyz = atom.coords()
                 centroid[0] += xyz[0]
                 centroid[1] += xyz[1]
                 centroid[2] += xyz[2]
+            # normalize
+            centroid[0] /= len(self.atoms.keys())
+            centroid[1] /= len(self.atoms.keys())
+            centroid[2] /= len(self.atoms.keys())
         else:
             centroid = False
             print(
@@ -954,12 +965,12 @@ class protein3D:
         
         Returns
         -------
-            hull : list
-                Coordinates of center of mass. List of length 3: (X, Y, Z).
+            hull : array
+                Coordinates of convex hull.
         """
         points = []
         # loop over atoms in protein
-        if self.natoms > 0:
+        if len(self.atoms.keys()) > 0:
             for atom in self.atoms.values():
                 points.append(atom.coords())
             hull = ConvexHull(points)
@@ -967,4 +978,4 @@ class protein3D:
             hull = False
             print(
                 'ERROR: Convex hull calculation failed. Structure will be inaccurate.\n')
-        return hull
+        self.hull = hull

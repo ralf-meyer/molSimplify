@@ -16,3 +16,8 @@ CLIinput.inp
 files.txt
 molSimplify.egg-info
 setup.BACKUP
+.DS_Store
+molSimplify/Scripts/.DS_Store
+molSimplify/Informatics/.DS_Store
+molSimplify/Informatics/MOF/.DS_Store
+

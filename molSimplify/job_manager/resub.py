@@ -16,16 +16,16 @@ from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
     """This function takes a list of job names and kills the jobs associated with them, if the jobs are active
-        
+
         Parameters
         ----------
             kill_names : list
-                List of jobs to kill. 
+                List of jobs to kill.
             message1 : str
                 Message prefix to report to stdout.
             message2 : str
                 Message suffix to report to stdout.
-            
+
     """
     # This function takes a list of job names and kills the jobs associated with them, if the jobs are active
     if type(kill_names) != list:
@@ -49,14 +49,14 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
 
 def prep_derivative_jobs(directory, list_of_outfiles):
     """This function takes a directory and output files and spawns derivative jobs.
-        
+
         Parameters
         ----------
             directory : str
                 Directory of interest to analyze.
             list_of_outfiles : list
                 List of output files that aree read to spawn derivative jobs.
-            
+
     """
     for job in list_of_outfiles:
         configure_dict = manager_io.read_configure(directory, job)
@@ -81,12 +81,12 @@ def prep_derivative_jobs(directory, list_of_outfiles):
 
 def resub(directory='in place'):
     """This function takes a directory and submits calculations.
-        
+
         Parameters
         ----------
             directory : str
                 Directory of interest to analyze.
-            
+
     """
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
     configure_dict = manager_io.read_configure(directory, None)
@@ -293,7 +293,11 @@ def resub_psi4(psi4_config):
                 json.dump(psi4_config, fo)
             write_jobscript(psi4_config)
             os.chdir(basedir)
-            run_bash(cmd="qsub jobscript.sh",
+            if not "cluster" in psi4_config:
+                cmd = "qsub jobscript.sh"
+            else:
+                cmd = "sbatch jobscript.sh"
+            run_bash(cmd=cmd,
                      basedir=basedir,
                      rundir=basedir + "/" + path)
             time.sleep(3)

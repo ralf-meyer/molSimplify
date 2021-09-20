@@ -59,7 +59,6 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     -------
         mols, conf, chains, prev_a_dict as updated
     """
-    #print(a_dict)
     loc = a_dict['AltLoc']
     ploc = prev_a_dict["AltLoc"]
     hack = False
@@ -91,7 +90,6 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
                 if mol.loc == loc:
                     weirdo = False
             if weirdo:
-                #print(a_dict, 'here')
                 if aa:
                     m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                              a_dict['ResSeq'], a_dict['Occupancy'], loc)
@@ -102,6 +100,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
                 if mols[key][-1].loc != loc:
                     mols[key].append(m)
     elif loc == '':
+        # atom must be added to multiple conformations
         hack = True
     elif key in mols.keys() and ploc == '' and len(mols[key]) == 1:
         hack2 = True
@@ -136,6 +135,8 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
             i.addAtom(atom, a_dict['SerialNum'])
     else:
         m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+    if key in conf and chains[a_dict['ChainID']] != []:
+        chains[a_dict['ChainID']] = []
     if aa:
         m.setBonds()
         bonds.update(m.bonds)
