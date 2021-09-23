@@ -38,18 +38,27 @@ from molSimplify.Informatics.MOF.PBC_functions import *
 #########################################################################################
 
 def identify_main_chain(temp_mol, link_list):
-    G = nx.from_numpy_matrix(temp_mol)
+    G = nx.from_numpy_matrix(temp_mol.graph)
     pairs = []
     for a,b in itertools.combinations(link_list, 2):
         pair = (a,b)
         pairs.append(pair)
     paths = []
+    shorts = []
     for i in pairs:
-        path = list(nx.all_simple_paths(G, source=i[0], target = i[1]))
-        flat = list(itertools.chain(*path))
-        paths.append(flat)
-    main = list(itertools.chain(*paths))
-    return(main)
+        short = list(nx.all_shortest_paths(G, source=i[0], target=i[1]))
+        short_flat = list(itertools.chain(*short))
+        shorts.append(short_flat)
+    if len(set(list(itertools.chain(*shorts)))) == temp_mol.count_nonH_atoms():
+        main = list(itertools.chain(*shorts))
+        return main
+    else:
+        for i in pairs:
+            path = list(nx.all_simple_paths(G, source=i[0], target = i[1]))
+            flat = list(itertools.chain(*path))
+            paths.append(flat)
+            main = list(itertools.chain(*paths))
+            return main
 
 def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_atoms, sbupath=False, connections_list=False, connections_subgraphlist=False):
     descriptor_list = []
@@ -114,7 +123,7 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                 """""""""
                 functional_atoms = []
                 for jj in range(len(temp_mol.graph)):
-                    main = identify_main_chain(temp_mol.graph, link_list)
+                    main = identify_main_chain(temp_mol, link_list)
                     #print(main)
                     if jj in main:
                         if not jj in link_list:
