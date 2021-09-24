@@ -40,11 +40,15 @@ def get_primitive(datapath, writepath):
 def identify_main_chain(temp_mol, link_list):
     G = nx.from_numpy_matrix(temp_mol.graph)
     pairs = []
-    for a,b in itertools.combinations(link_list, 2):
-        pair = (a,b)
-        pairs.append(pair)
-    paths = []
-    shorts = []
+    if len(link_list) == 1:
+        main = list(G.nodes)
+        return main
+    else:
+        for a,b in itertools.combinations(link_list, 2):
+            pair = (a,b)
+            pairs.append(pair)
+        paths = []
+        shorts = []
     for i in pairs:
         short = list(nx.all_shortest_paths(G, source=i[0], target=i[1]))
         short_flat = list(itertools.chain(*short))
@@ -57,8 +61,8 @@ def identify_main_chain(temp_mol, link_list):
             path = list(nx.all_simple_paths(G, source=i[0], target = i[1]))
             flat = list(itertools.chain(*path))
             paths.append(flat)
-            main = list(itertools.chain(*paths))
-            return main
+        main = list(itertools.chain(*paths))
+        return main
 
 def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_atoms, sbupath=False, connections_list=False, connections_subgraphlist=False):
     descriptor_list = []
@@ -127,7 +131,7 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                     #print(main)
                     if jj in main:
                         if not jj in link_list:
-                            if not set({temp_mol.atoms[jj].sym}) & set({"C"}):
+                            if not set({temp_mol.atoms[jj].sym}) & set({"C","H"}):
                                 functional_atoms.append(jj)
                     else:
                         if not set({temp_mol.atoms[jj].sym}) & set({"H"}):
