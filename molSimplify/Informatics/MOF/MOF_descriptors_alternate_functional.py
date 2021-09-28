@@ -47,21 +47,30 @@ def identify_main_chain(temp_mol, link_list):
         for a,b in itertools.combinations(link_list, 2):
             pair = (a,b)
             pairs.append(pair)
-        paths = []
         shorts = []
-    for i in pairs:
-        short = list(nx.all_shortest_paths(G, source=i[0], target=i[1]))
-        short_flat = list(itertools.chain(*short))
-        shorts.append(short_flat)
-    if len(set(list(itertools.chain(*shorts)))) == temp_mol.count_nonH_atoms():
-        main = list(itertools.chain(*shorts))
-        return main
-    else:
         for i in pairs:
-            path = list(nx.all_simple_paths(G, source=i[0], target = i[1]))
-            flat = list(itertools.chain(*path))
-            paths.append(flat)
-        main = list(itertools.chain(*paths))
+            short = list(nx.shortest_path(G, source=i[0], target=i[1]))
+            shorts.append(short)
+        paths = list(itertools.chain(*shorts))
+        min_cycles = (nx.minimum_cycle_basis(G))
+        min_cycles_copy = min_cycles.copy()
+        min_cycles_copy_2 = []
+        paths_copy = paths.copy()
+        while len(min_cycles_copy) != len(min_cycles_copy_2):
+            min_cycles_copy_2 = min_cycles_copy.copy()
+            for i in min_cycles:
+                paths = paths_copy.copy()
+                if set(paths) & set(i):
+                    if not set(i).issubset(set((paths))):
+                        #print('intersection')
+                        #print(set(i))
+                        paths_copy += set(i)
+                        #print(paths_copy)
+                        min_cycles_copy.remove(i)
+                        #print(min_cycles_copy)
+                        #print(len(min_cycles_copy))
+
+        main = paths
         return main
 
 def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_atoms, sbupath=False, connections_list=False, connections_subgraphlist=False):
@@ -125,15 +134,18 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                 If heteroatom functional groups exist (anything that is not C or H, so methyl is missed, also excludes anything lc, so carboxylic metal-coordinating oxygens skipped), 
                 compile the list of atoms
                 """""""""
+                #import time
+                #print(time.time())
                 functional_atoms = []
+                main = identify_main_chain(temp_mol, link_list)
                 for jj in range(len(temp_mol.graph)):
-                    main = identify_main_chain(temp_mol, link_list)
                     #print(link_list)
                     #print(main)
                     if not jj in main:
                         if not set({temp_mol.atoms[jj].sym}) & set({"H"}):
                             functional_atoms.append(jj)
                 print(functional_atoms)
+                #print(time.time())
             
                 if len(functional_atoms) > 0:
                     results_dictionary = generate_atomonly_autocorrelations(temp_mol, functional_atoms , loud=False, depth=depth, oct=False, polarizability=False,Zeff=True)
