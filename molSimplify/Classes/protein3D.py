@@ -175,14 +175,7 @@ class protein3D:
         """ Automatically choose the conformation of a protein3D class
         instance based first on what the greatest occupancy level is and then
         the first conformation ihe alphabet with all else equal.
-
-        Returns
-        -------
-            p : protein3D
-                the same protein3D instance as self but in the automatically
-                chosen conformation
         """
-        p = self
         for c in self.conf:
             c_ids = []
             if c in self.aas.keys():
@@ -202,14 +195,14 @@ class protein3D:
                             if type(j) != atom3D and not in_more_confs:
                                 c_ids.append(j[0])
                             elif not in_more_confs:
-                                c_ids.append(p.getIndex(j))
-                        p.stripAtoms(c_ids)
-                        if type(l) == AA3D and l in p.aas[c]:
-                            p.aas[c].remove(l)
-                        elif type(l) == mol3D and l in p.hetmols[c]:
-                            p.hetmols[c].remove(l)
-        p.setConf([])
-        return p
+                                c_ids.append(self.getIndex(j))
+                        #print(c_ids)
+                        self.stripAtoms(c_ids)
+                        if type(l) == AA3D and l in self.aas[c]:
+                            self.aas[c].remove(l)
+                        elif type(l) == mol3D and l in self.hetmols[c]:
+                            self.hetmols[c].remove(l)
+        self.setConf([])
             
     def setR(self, R):
         """ Set R value of protein3D class.
@@ -403,6 +396,7 @@ class protein3D:
                 list of atom3D indices that should be removed
         """
         atoms = self.atoms
+        a_ids = self.a_ids
         keys = list(self.aas.keys()) + list(self.hetmols.keys())
         for tup in keys:
             if tup in self.aas.keys():
@@ -424,21 +418,40 @@ class protein3D:
                             elt.atoms.remove((a_id, atom))
                         elif atom in elt.atoms:
                             elt.atoms.remove(atom)
-                        if len(elt.atoms) == 0:
-                            if tup in self.aas.keys():
-                                self.aas[tup].remove(elt)
-                                if len(self.aas[tup]) == 0:
-                                    del self.aas[tup]
-                            else:
-                                self.hetmols[tup].remove(elt)
-                                if len(self.hetmols[tup]) == 0:
-                                    del self.hetmols[tup]
                         atoms_stripped.remove(a_id)
                         if atom in self.bonds.keys():
+                            for at in self.bonds[atom]:
+                                temp = self.bonds[at].copy()
+                                if atom in temp:
+                                    temp.remove(atom)
+                                self.bonds[at] = temp
                             del self.bonds[atom]
                         del atoms[a_id]
-                        del self.a_ids[atom]
+                        del a_ids[atom]
+                if len(elt.atoms) == 0:
+                    if tup in self.aas.keys():
+                        self.aas[tup].remove(elt)
+                        if len(self.aas[tup]) == 0:
+                            del self.aas[tup]
+                    else:
+                        self.hetmols[tup].remove(elt)
+                        if len(self.hetmols[tup]) == 0:
+                            del self.hetmols[tup]
+        while len(atoms_stripped) != 0:
+            a_id = atoms_stripped[0]
+            atom = atoms[a_id]
+            atoms_stripped.pop(0)
+            if atom in self.bonds.keys():
+                for at in self.bonds[atom]:
+                    temp = self.bonds[at].copy()
+                    if atom in temp:
+                        temp.remove(atom)
+                    self.bonds[at] = temp
+                del self.bonds[atom]
+            del atoms[a_id]
+            del a_ids[atom]
         self.setAtoms(atoms)
+        self.setIndices(a_ids)
 
     def stripHetMol(self, hetmol):
         """ Removes all heteroatoms part of the specified heteromolecule from
@@ -694,9 +707,20 @@ class protein3D:
                 for i in l[1:]:
                     try:
                         bonds[atoms[int(l[0])]].add(atoms[int(i)])
+                        if atoms[int(l[0])].loc != '':
+                            for j in {1, -1}:
+                                if atoms[int(l[0]) + j].greek == atoms[int(l[0])].greek:
+                                    if atoms[int(l[0]) + j] not in bonds.keys():
+                                        bonds[atoms[int(l[0]) + j]] = {atoms[int(i)]}
+                                    else:
+                                        bonds[atoms[int(l[0]) + j]].add(atoms[int(i)])
+                                    if atoms[int(i)] not in bonds.keys():
+                                        bonds[atoms[int(i)]] = {atoms[int(l[0]) + j]}
+                                    else:
+                                        bonds[atoms[int(i)]].add(atoms[int(l[0]) + j])
                     except:
-                        if "  " not in i and i != " ":
-                            print("likely OXT")
+                        #if "  " not in i and i != " ":
+                        #    print("likely OXT")
                         continue
         # deal with conformations in chains
         for i in conf:
@@ -872,12 +896,12 @@ class protein3D:
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
-        t = 5
+        t = 5 # can change depending on how frequently to loop
         while dictionary["status_code"] == 202:
             res2 = subprocess.Popen(['curl', int_dict['location']],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            print('sleeping', t)
+            #print('sleeping', t)
             time.sleep(t)
             res2.wait()
             out2, err2 = res2.communicate()
