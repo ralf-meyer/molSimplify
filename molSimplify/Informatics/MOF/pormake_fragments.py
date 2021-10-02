@@ -71,7 +71,7 @@ def identify_main_chain(temp_mol, link_list):
 
 def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_atoms, sbupath=False, connections_list=False, connections_subgraphlist=False, linkerpath=False):
     n_sbu = len(SBUlist)
-    print(SBUlist)
+    # print(SBUlist)
     G=nx.from_numpy_matrix(molcif.graph)
     cycles = nx.minimum_cycle_basis(G) # gets all closed rings in graph
     subcycle_list = []
@@ -90,20 +90,14 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
     all_SBU_atoms = []
     all_SBU_X_atoms = []
     for i, SBU in enumerate(SBUlist):
-        # if i != 2:
-        #     # skip over the first
-        #     continue
         atoms_in_sbu = []
         atoms_that_are_X = []
         main_paths = []
         for j, linker in enumerate(connections_list):
-            # if len(set(SBU).intersection(linker))>0:
-                #### This means that the SBU and linker are connected.
             linker_mol = mol3D()
             link_list = []
             linker_dict = {}
             for jj, val2 in enumerate(linker):
-                # print('val2',val2)
                 linker_dict[jj] = val2
                 if val2 in anchoring_atoms:
                     link_list.append(jj)
@@ -124,16 +118,10 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
             non_ring_added_atom_index = SBU_mol.natoms-1
             if not in_cycles:
                 for bonded_atoms_non_ring in molcif.getBondedAtoms(val):
-                    print(bonded_atoms_non_ring,'nonring bonded atoms',val)
-                    print('====',[molcif.getAtom(newval).symbol() for newval in molcif.getBondedAtoms(val)])
-                    print('====',[newval for newval in molcif.getBondedAtoms(val)])
                     if (molcif.getAtom(int(bonded_atoms_non_ring)).symbol() == 'H') or ((molcif.getAtom(int(bonded_atoms_non_ring)).symbol() == 'O')):
                         atoms_in_sbu.append(bonded_atoms_non_ring)
                         SBU_mol.addAtom(molcif.getAtom(bonded_atoms_non_ring))
-                        print(atoms_in_sbu)
-                    # if (molcif.getAtom(int(bonded_atoms_non_ring)).symbol() in ['C','N']) and (bonded_atoms_non_ring not in SBU):
                     if (bonded_atoms_non_ring in main_paths) and (not (bonded_atoms_non_ring in SBU)):
-                    # if not (bonded_atoms_non_ring in SBU):
                         atoms_in_sbu.append(bonded_atoms_non_ring)
                         atoms_that_are_X.append(bonded_atoms_non_ring)
                         temp_atom = molcif.getAtom(bonded_atoms_non_ring)
@@ -143,8 +131,10 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                         unit_vector = np.array(vector)/np.linalg.norm(vector)
                         new_position = np.array(original_atom_coords)+0.75*unit_vector
                         new_atom = atom3D(Sym='X',xyz=new_position)
-                        # new_atom = atom3D(Sym='X',xyz=temp_atom.coords())
                         SBU_mol.addAtom(new_atom)
+                        if len(set(SBU_mol.getBondedAtomsByThreshold(SBU_mol.natoms-1,1.1)))>1:
+                            SBU_mol.getAtom(SBU_mol.natoms-1).setcoords(np.array(original_atom_coords)-0.75*unit_vector)
+
         # At this point, we look at the cycles for the graph, then add atoms if they are part of a cycle
         for cycle in subcycle_list:
             if (len(set(SBU).intersection(cycle))>0) and (len(set(SBU_mol.findMetal()).intersection(cycle))==0):
@@ -156,28 +146,36 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                         if (molcif.getAtom(int(ringatom_connected_atoms)).symbol() == 'H') or ((molcif.getAtom(int(ringatom_connected_atoms)).symbol() == 'O')):
                             atoms_in_sbu.append(ringatom_connected_atoms)
                             SBU_mol.addAtom(molcif.getAtom(ringatom_connected_atoms))
-                        # if (molcif.getAtom(int(ringatom_connected_atoms)).symbol() in ['C','N']) and (ringatom_connected_atoms not in cycle):
                         if (ringatom_connected_atoms in main_paths) and (not (ringatom_connected_atoms in cycle)):
-                        # if not (ringatom_connected_atoms in cycle):
                             atoms_in_sbu.append(ringatom_connected_atoms)
                             atoms_that_are_X.append(bonded_atoms_non_ring)
                             temp_atom = molcif.getAtom(ringatom_connected_atoms)
                             temp_atom_coords = temp_atom.coords()
                             new_atom = atom3D(Sym='X',xyz=np.array(temp_atom_coords))
                             SBU_mol.addAtom(new_atom)
-                            # SBU_mol.BCM(SBU_mol.natoms-1,added_atom_index,0.75)
-        # Xs = SBU_mol.find_atom()
+                            SBU_mol.BCM(SBU_mol.natoms-1,added_atom_index,0.75)
+        Xs = SBU_mol.find_atom()
         # for X in Xs:
-        #     if len(set(SBU_mol.getBondedAtomsByThreshold(X, 1.1)))>1:
+        #     # threshold = 0.5
+        #     # while len(SBU_mol.getBondedAtomsByThreshold(X,threshold))==0:
+        #     #     threshold += 0.01
+        #     # if threshold <= 0.75:
+
+        #     # used_connection = SBU_mol.getBondedAtomsByThreshold(threshold)[0]
+        #     if len(set(SBU_mol.getBondedAtomsByThreshold(X,1.1)))>1:
         #         direct_connection = SBU_mol.getBondedAtomsByThreshold(X,0.8)[0]
-        #         print('entered',i,direct_connection)
-        #         print((set(SBU_mol.getBondedAtomsByThreshold(X, 1.1))))
-        #         print('===')
-        #         connecting_atom_coords = SBU_mol.getAtom(direct_connection).coords()
+        #         used_connection = direct_connection
+        #         #     used_connection = None
+        #         #     for val in direct_connection:
+        #         #         if SBU_mol.getAtom(val).symbol() in ['N', 'C']:
+        #         #             used_connection = val
+        #         #     if used_connection == None:
+        #         #         used_connection = direct_connection[0]
+        #         connecting_atom_coords = SBU_mol.getAtom(used_connection).coords()
         #         X_coords = SBU_mol.getAtom(X).coords()
         #         vector = (np.array(connecting_atom_coords)-np.array(X_coords))
         #         unit_vector = np.array(vector)/np.linalg.norm(vector)
-        #         new_position = np.array(connecting_atom_coords)+0.75*unit_vector
+        #         new_position = np.array(connecting_atom_coords)-0.75*unit_vector
         #         SBU_mol.getAtom(X).setcoords(xyz=list(np.array(new_position)))
         # This part gets the subgraph and reassigns it, because we added atoms to the SBU
         tempgraph= molcif.graph[np.ix_(atoms_in_sbu,atoms_in_sbu)]
@@ -185,7 +183,6 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
         SBU_mol_cart_coords=np.array([atom.coords() for atom in  SBU_mol.atoms])
         SBU_mol_atom_labels=[atom.sym for atom in  SBU_mol.atoms]
         SBU_mol_adj_mat = np.array(SBU_mol.graph)
-        print(atoms_in_sbu)
         ###### WRITE THE SBU MOL TO THE PLACE
         if sbupath and not os.path.exists(sbupath+"/"+str(name)+str(i)+'.xyz'):
             xyzname = sbupath+"/"+str(name)+"_sbu_"+str(i)+".xyz"
@@ -194,17 +191,23 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
         for r in range(SBU_mol.natoms):
             SBU_mol.getAtom(r).setcoords(coord_list[r])
         Xs = SBU_mol.find_atom()
-        for X in Xs:
-            direct_connection = SBU_mol.getBondedAtoms(X)[0]
-            SBU_mol.BCM(X,direct_connection,0.75)
-            if len(set(SBU_mol.getBondedAtomsByThreshold(X,1.1)))>1:
-                direct_connection = SBU_mol.getBondedAtomsByThreshold(X,0.8)[0]
-                connecting_atom_coords = SBU_mol.getAtom(direct_connection).coords()
-                X_coords = SBU_mol.getAtom(X).coords()
-                vector = (np.array(connecting_atom_coords)-np.array(X_coords))
-                unit_vector = np.array(vector)/np.linalg.norm(vector)
-                new_position = np.array(connecting_atom_coords)+0.75*unit_vector
-                SBU_mol.getAtom(X).setcoords(xyz=list(np.array(new_position)))
+        # for X in Xs:
+        #     if len(set(SBU_mol.getBondedAtomsByThreshold(X,1.1)))>1:
+        #         # direct_connection = SBU_mol.getBondedAtomsByThreshold(X,0.8)
+        #         # used_connection = None
+        #         # for val in direct_connection:
+        #         #     if SBU_mol.getAtom(val).symbol() in ['N', 'C']:
+        #         #         used_connection = val
+        #         # if used_connection == None:
+        #         #     used_connection = direct_connection[0]
+        #         direct_connection = SBU_mol.getBondedAtomsByThreshold(X,0.8)[0]
+        #         used_connection = direct_connection
+        #         connecting_atom_coords = SBU_mol.getAtom(used_connection).coords()
+        #         X_coords = SBU_mol.getAtom(X).coords()
+        #         vector = (np.array(connecting_atom_coords)-np.array(X_coords))
+        #         unit_vector = np.array(vector)/np.linalg.norm(vector)
+        #         new_position = np.array(connecting_atom_coords)-0.75*unit_vector
+        #         SBU_mol.getAtom(X).setcoords(xyz=list(np.array(new_position)))
         SBU_mol.writexyz(xyzname)
         all_SBU_atoms.extend(atoms_in_sbu)
         all_SBU_X_atoms.extend(atoms_that_are_X)
@@ -234,6 +237,8 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
         linker_mol_cart_coords=np.array([atom.coords() for atom in  linker_mol.atoms])
         linker_mol_atom_labels=[atom.sym for atom in  linker_mol.atoms]
         linker_mol_adj_mat = np.array(linker_mol.graph)
+        if linker_mol.natoms == 0:
+            continue
         ###### WRITE THE LINKER MOL TO THE PLACE
         if linkerpath and not os.path.exists(linkerpath+"/"+str(name)+str(i)+".xyz"):
             xyzname = linkerpath+"/"+str(name)+"_linker_"+str(i)+".xyz"
@@ -246,7 +251,6 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                 direct_connection = linker_mol.getBondedAtoms(X)[0]
                 linker_mol.BCM(X,direct_connection,0.75)
             linker_mol.writexyz(xyzname)
-
     return None, None, None, None
 
 def make_MOF_linker_RACs(linkerlist, linker_subgraphlist, molcif, depth, name, cell, linkerpath=False):
