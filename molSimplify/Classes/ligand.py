@@ -247,7 +247,7 @@ class ligand:
 
 
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
-    """Extract axial and equitorial components of a octahedral complex. 
+    """Extract axial and equatorial components of a octahedral complex. 
     
     Parameters
     ----------
