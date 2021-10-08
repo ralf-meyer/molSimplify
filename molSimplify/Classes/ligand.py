@@ -97,7 +97,7 @@ class ligand:
             transition_metals_only : bool
                 flag only transition metals with findMetal() function.
             inds : list
-                indicies of metals if passing in multimetal system
+                indices of metals if passing in multimetal system
 
         Returns
         -------
