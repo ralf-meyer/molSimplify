@@ -105,7 +105,7 @@ class ligand:
                 Molecular graph determinant.
             ligand_mol2_string : str
                 Mol2 string for the ligand.
-            catom_indices : list
+            catoms_indices : list
                 List of catom indices - only returned if include_metal is set to False
         
         """
