@@ -97,7 +97,7 @@ class ligand:
             transition_metals_only : bool
                 flag only transition metals with findMetal() function.
             inds : list
-                indicies of metals if passing in multimetal system
+                indices of metals if passing in multimetal system
 
         Returns
         -------
@@ -105,7 +105,7 @@ class ligand:
                 Molecular graph determinant.
             ligand_mol2_string : str
                 Mol2 string for the ligand.
-            catom_indices : list
+            catoms_indices : list
                 List of catom indices - only returned if include_metal is set to False
         
         """
@@ -247,7 +247,7 @@ class ligand:
 
 
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
-    """Extract axial and equitorial components of a octahedral complex. 
+    """Extract axial and equatorial components of a octahedral complex. 
     
     Parameters
     ----------

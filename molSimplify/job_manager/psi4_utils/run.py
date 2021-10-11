@@ -174,7 +174,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
         psi4.core.set_output_file(filename + '.dat', False)
         print("Warning: no Molden file is used to initialize this calculation!")
         psi4.set_options({
-            "maxiter": 250,
+            "maxiter": 250 if "maxiter" not in psi4_config else psi4_config["maxiter"],
             "D_CONVERGENCE": 3e-5,
             "E_CONVERGENCE": 3e-5,
             "fail_on_maxiter": True})
@@ -193,7 +193,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
     except:
         print("This calculation does not converge.")
     if psi4_config["basis"] == "def2-tzvp" and sucess:
-        psi4.set_options({"basis": "def2-tzvp", "maxiter": 200,})
+        psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"],})
         try:
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
@@ -234,7 +234,7 @@ def run_general(psi4_config, functional):
     shutil.copyfile(psi4_config["wfnfile"], targetfile)
     ## Final scf---
     psi4.set_options({
-        "maxiter": 50,
+        "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
@@ -283,7 +283,7 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     shutil.copyfile(wfn, targetfile)
     ## Final scf---
     psi4.set_options({
-        "maxiter": 50,
+        "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
