@@ -166,8 +166,8 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
         # Final scf---
         psi4.set_options({
             "maxiter": 50,
-            "D_CONVERGENCE": 1e-6,
-            "E_CONVERGENCE": 1e-6,
+            "D_CONVERGENCE": 3e-6,
+            "E_CONVERGENCE": 3e-6,
             "fail_on_maxiter": True})
     else:
         os.chdir(rundir)
@@ -238,14 +238,18 @@ def run_general(psi4_config, functional):
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
-    try:
-        if not functional in b3lyp_d:
+    if True:
+        if (not functional in b3lyp_d) and (not "hfx_" in functional):
             e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+        elif "hfx_" in functional:
+            basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
+            print("HFX sampling: ", basefunc, hfx)
+            e, wfn = psi4.energy("scf", dft_functional=get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
         else:
             print("customized b3lyp with different HFX: ", functional)
             e, wfn = psi4.energy("scf", dft_functional=b3lyp_d[functional],  molecule=mol, return_wfn=True)
         wfn.to_file("wfn.180")
-    except:
+    else:
         print("This calculation does not converge.")
     success = check_sucess()
     for filename in os.listdir("./"):
