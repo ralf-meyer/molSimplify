@@ -1432,6 +1432,18 @@ class mol3D:
 
         return self.atoms[idx].coords()
 
+    def getNumAtoms(self):
+        """Get the number of atoms within a molecule.
+
+        Returns
+        -------
+            self.natoms : int
+                The number of atoms in the mol3D object.
+
+        """
+
+        return self.natoms
+
     def getBondedAtomsBOMatrix(self, idx):
         """Get atoms bonded by an atom referenced by index, using the BO matrix.
 

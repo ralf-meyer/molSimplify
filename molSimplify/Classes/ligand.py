@@ -106,7 +106,7 @@ class ligand:
             ligand_mol2_string : str
                 Mol2 string for the ligand.
             catoms_indices : list
-                List of catom indices - only returned if include_metal is set to False
+                List of catom (connection atom) indices - only returned if include_metal is set to False
         
         """
         this_mol2 = mol3D()
