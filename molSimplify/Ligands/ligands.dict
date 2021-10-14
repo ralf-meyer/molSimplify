@@ -370,3 +370,4 @@ NN_A4:NN_A4.mol,NN_A4,5 10, build bidentate, A, 0
 NN_A5:NN_A5.mol,NN_A5,5 10, build bidentate, A, 0
 NN_B2:NN_B2.mol,NN_B2,4 12, build bidentate, A, 0
 NN_B:NN_B.mol,NN_B,4 13, build bidentate, A, 0
+ethgly:NOZKES.xyz,ethgly,0 2,build bidentate,BA,0

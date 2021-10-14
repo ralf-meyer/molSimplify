@@ -430,7 +430,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
     lig3D.copymol3D(lig)
     # check for pi-coordinating ligand
     ligpiatoms = []
-    if 'pi' in lig.cat:
+    if 'pi' in lig.cat: 
         lig3Dpiatoms = mol3D()
         for k in lig.cat[:-1]:
             lig3Dpiatoms.addAtom(lig3D.getAtom(k))
@@ -458,20 +458,21 @@ def init_ligand(args, lig, tcats, keepHs, i):
                 else:
                     keepHs[i][j] = True
         # remove one hydrogen from each connecting atom with keepH false
-        for j, cat in enumerate(lig.cat):
+        for j, cat in enumerate(lig.cat): # lig.cat are the connecting atoms
             Hs = lig3D.getHsbyIndex(cat)
             if len(Hs) > 0 and not keepHs[i][j]:
                 if args.debug:
-                    print(('modifying charge down from ' + str(lig3D.charge)))
+                    print(f'modifying charge down from {lig3D.charge}')
                     try:
-                        print(('debug keepHs check, removing? ' + str(keepHs) + ' i = ' + str(i) +
-                               ' , j = ' + str(j) + ' lig = ' + str(lig.coords()) + ' is keephs[i] ' + str(keepHs[i]) +
-                               ' length of keepHs list  ' + str(len(keepHs))))
+                        print(f'Debug keepHs check\nRemoving? {keepHs} \ni = {i}, j = {j}\nlig = \n{lig.coords()}\nkeepHs[i]: {keepHs[i]}\n'
+                              f'length of keepHs list : {len(keepHs)}')
                     except:
                         pass
-                # check for cats indices
-                if cat > Hs[0]:
-                    lig.cat[j] -= 1
+                # Need to shift all connecting atom indices if they are greater than Hs[0], i.e. the index of the hydrogen atom that is connected to the current connecting atom and is to be removed.
+                # Note that only one hydrogen atom is removed at the most under the current implementation.
+                for _i, connecting_index in enumerate(lig.cat):
+                    if connecting_index > Hs[0]:
+                      lig.cat[_i] -= 1
                 lig3D.deleteatom(Hs[0])
                 lig3D.charge = lig3D.charge - 1
     # Conformer search for multidentate SMILES ligands
@@ -691,9 +692,11 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
                 print(('using frozenats to freeze atom number: ' + str(cat)))
             constr.AddAtomConstraint(cat+1)  # indexing babel
         if debug:
-            for iiat, atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
-                print((' atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence ' +
-                       str(atom.GetValence()) + ' is fixed ' + str(constr.IsFixed(iiat+1))))
+            # for iiat, atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
+            #     print((' atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence ' +
+            #            str(atom.GetValence()) + ' is fixed ' + str(constr.IsFixed(iiat+1))))
+        
+            print('Commented out') # Commented out the preceding for loop because it was throwing the following error -> AttributeError: 'OBAtom' object has no attribute 'GetValence'
         # set up forcefield
         s = forcefield.Setup(OBMol, constr)
         if s == False:
@@ -2201,7 +2204,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                     avg_MLdists = sum_MLdists/4
                     # scale template by average M-L distance
                     auxmol_m3D.addAtom(m3D.getAtom(0))
-                    #! TODO BCM defition slightly modified. Keep an eye for unexpected structures
+                    #! TODO BCM definition slightly modified. Keep an eye for unexpected structures
                     for iiax in range(0, 4):
                         auxmol_m3D.BCM(iiax, 4, avg_MLdists)
                     auxmol_m3D.deleteatom(4)
