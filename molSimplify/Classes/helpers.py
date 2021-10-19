@@ -143,9 +143,9 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         if m.prev == None and (a_dict['ChainID'], a_dict['ResSeq'] - 1) in mols.keys():
             m.setPrev(mols[(a_dict['ChainID'], a_dict['ResSeq'] - 1)])
         if m.prev != None:
+            if m.prev.next == None:
+                m.prev.setNext(m)
             bonds[m.n].add(m.prev.c)
-        if m.next != None:
-            bonds[m.c].add(m.next.n)
     return atom, mols, conf, chains, prev_a_dict, bonds
             
             
