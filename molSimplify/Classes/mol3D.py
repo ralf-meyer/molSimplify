@@ -392,6 +392,45 @@ class mol3D:
                 inds.append(ii)
         return inds
 
+    def add_bond(self, idx1, idx2, bond_type):
+        """
+        Add a bond of order bond_type between the atom at idx1 and the atom at idx2.
+        Adjusts bo_dict and graph only, not BO_mat nor OBMol.
+
+        Parameters
+        ----------
+            idx1: int
+                Index of first atom.
+            idx2: int
+                Index of second atom.
+            bond_type: int
+                The order of the new bond.                
+
+        Returns
+        ----------
+            self.bo_dict: dict
+                The modified bond order dictionary.   
+        """        
+
+        if not (isinstance(idx1, int) and isinstance(idx2, int) and isinstance(bond_type, int)):
+            print('Incorrect input!')
+            return 0 # Error handling. The user gave input of the wrong type to the add_bond function.
+
+        # Keys in bo_dict must be sorted tuples, where the first index is smaller than the second.
+        if idx1 < idx2:
+            self.bo_dict[(idx1,idx2)] = bond_type
+        elif idx2 < idx1:
+            self.bo_dict[(idx2,idx1)] = bond_type
+        else:
+            print('Indices should be different!')
+            return 0 # can't have an atom bond to itself
+
+        # Adjusting the graph as well.
+        self.graph[idx1][idx2] = float(bond_type)
+        self.graph[idx2][idx1] = float(bond_type)
+
+        return self.bo_dict
+
     def count_nonH_atoms(self):
         """
         Count the number of heavy atoms.
@@ -1431,6 +1470,18 @@ class mol3D:
         """
 
         return self.atoms[idx].coords()
+
+    def getNumAtoms(self):
+        """Get the number of atoms within a molecule.
+
+        Returns
+        -------
+            self.natoms : int
+                The number of atoms in the mol3D object.
+
+        """
+
+        return self.natoms
 
     def getBondedAtomsBOMatrix(self, idx):
         """Get atoms bonded by an atom referenced by index, using the BO matrix.
