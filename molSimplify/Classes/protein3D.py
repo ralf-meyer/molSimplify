@@ -352,13 +352,6 @@ class protein3D:
         -------
             p : protein3D
                 A protein3D instance consisting of just the chain of interest
-
-        Example demonstration of this method:
-
-        >>> pdb_system = protein3D() 
-        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
-        >>> pdb_system.getChain('A') # Get chain A of the PDB
-
         """
         p = protein3D()
         p.setChains({chain_id: self.chains[chain_id]})
@@ -406,27 +399,11 @@ class protein3D:
         ----------
             a_id : int
                 the index of the desired atom whose molecule we want to find
-            aas_only : boolean
-                True if we want ito find atoms contained in amino acids only.
-                False if we want atoms contained in all molecules. Default is False.
-
 
         Returns
         -------
             mol : AA3D or mol3D
                 the amino acid residue or heteromolecule containing the atom
-
-        Example demonstration of this method:
-
-        >>> pdb_system = protein3D() 
-        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
-        >>> pdb_system.getMolecule(a_id=2166) # This returns an molSimplify.Classes.AA3D.AA3D obejct indicating 
-        >>>                                   # we that the atom is part of an amino acid
-        >>> pdb_system.getMolecule(a_id=2166).three_lc() # This prints the three letter code of the amino acid of which
-        >>>                                              # atom 2166 is a part of
-        >>> pdb_system.getMolecule(a_id=9164) # This returns a mol3D object indicating that the atom is part of a molecule
-        >>>                                   # that is not an amino acid
-        >>> pdb_system.getMolecule(a_id=9164).name # This prints the name of the molecule, in this case, it is 'TAU'
         """
         for s in self.aas.values():
             for mol in s: # mol is AA3D
@@ -449,13 +426,6 @@ class protein3D:
         ----------
             atoms_stripped : list
                 list of atom3D indices that should be removed
-
-        Example demonstration of this method:
-
-        >>> pdb_system = protein3D() 
-        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
-        >>> pdb_system.stripAtoms([2166, 4442, 6733, 2165]) # This removes the list of atoms with 
-        >>>                                                # indices listedin the code
         """
         atoms = self.atoms
         a_ids = self.a_ids
@@ -531,12 +501,6 @@ class protein3D:
             hetmol : str
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
-
-        Example demonstration of this method:
-
-        >>> pdb_system = protein3D() 
-        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
-        >>> pdb_system.stripHetMol
         """
         h = list(self.hetmols.keys()).copy()
         for k in h:
