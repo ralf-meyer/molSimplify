@@ -1128,6 +1128,16 @@ def parseinputs_basic(*p):
     parser.add_argument(
         "-keepHs", help="force keep hydrogens, default auto for each ligand")
     parser.add_argument("-skipANN", help="skip attempting ANN predictions")
+    parser.add_argument(
+        "-rundir", help="directory for jobs, default ~/Runs", action="store_true")
+    parser.add_argument(
+        "-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]", action="store_true")
+    parser.add_argument(
+        "-ligloc", help="force location of ligands in the structure generation (default False)", default=False)
+    parser.add_argument(
+        "-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical", default='uff')
+    parser.add_argument(
+        "-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
     if len(p) == 1:  # only one input, printing help only
         args = parser.parse_args()
         return args
@@ -1144,10 +1154,6 @@ def parseinputs_advanced(*p):
     parser = p[0]
     # advanced structure generation options
     parser.add_argument(
-        "-rundir", help="directory for jobs, default ~/Runs", action="store_true")
-    parser.add_argument(
-        "-smicat", help="connecting atoms corresponding to smiles. Indexing starts at 1 which is the default value as well. Use [] for multiple SMILES ligands, e.g. [1],[2]", action="store_true")
-    parser.add_argument(
         "-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default='1')
     parser.add_argument(
         "-scoreconfs", help="Attempt to filter out identical conformers and rank them by rmsd to the desired template, default false", default=False)
@@ -1157,13 +1163,7 @@ def parseinputs_advanced(*p):
     parser.add_argument(
         "-calccharge", help="Automatically calculate net complex charge. By default this is ON.", default=True)
     parser.add_argument(
-        "-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical", default='uff')
-    parser.add_argument(
-        "-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
-    parser.add_argument(
         "-genall", help="Generate complex both with and without FF opt, default False", action="store_true")  # geometry
-    parser.add_argument(
-        "-ligloc", help="force location of ligands in the structure generation (default False)", default=False)
     parser.add_argument("-decoration_index", help="list of indicies on each ligand to decorate",
                         action="store_true")  # decoration indexes, one list per ligand
     parser.add_argument("-decoration", help="list of SMILES for each decoratation",
