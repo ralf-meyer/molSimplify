@@ -4,8 +4,8 @@ import math
 import numpy as np
 import scipy as sp
 import os
-from keras.callbacks import EarlyStopping
-from keras.models import model_from_json
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.models import model_from_json
 from tensorflow.keras import backend as K
 
 from pkg_resources import resource_filename, Requirement
