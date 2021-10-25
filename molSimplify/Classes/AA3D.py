@@ -32,8 +32,8 @@ class AA3D:
         # Occupancy of amino acid in chain
         self.occup = occup
         # Peptide bond atoms
-        self.c = None
-        self.n = None
+        self.c = []
+        self.n = []
         # Bonds
         self.bonds = {}
         # Next amino acid in the chain
