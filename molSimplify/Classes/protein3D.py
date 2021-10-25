@@ -416,6 +416,10 @@ class protein3D:
                     if a_id in atoms_stripped:
                         if (a_id, atom) in elt.atoms:
                             elt.atoms.remove((a_id, atom))
+                            if atom in elt.c:
+                                elt.c.remove(atom)
+                            elif atom in elt.n:
+                                elt.n.remove(atom)
                         elif atom in elt.atoms:
                             elt.atoms.remove(atom)
                         atoms_stripped.remove(a_id)
@@ -470,7 +474,10 @@ class protein3D:
         for k in h:
             for m in h[k]:
                 if m.name == hetmol:
-                    self.stripAtoms(m.atoms)
+                    ids = []
+                    for a in m.atoms:
+                        ids.append(self.a_ids[a])
+                    self.stripAtoms(ids)
                     del self.hetmols[k]
                 
     def findMetal(self, transition_metals_only=True):
