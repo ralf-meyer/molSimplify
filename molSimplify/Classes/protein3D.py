@@ -530,7 +530,7 @@ class protein3D:
         Example demonstration of this method:
         >>> pdb_system = protein3D() 
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
-        >>> pdb_system.stripHetMol()
+        >>> pdb_system.stripHetMol('TAU') # Removes the molecule specificed (all atoms in the molecule), in this case 'TAU'.
         """
         hets = self.hetmols.copy()
         for k in hets.keys():
@@ -560,6 +560,10 @@ class protein3D:
   
         >>> pdb_system = protein3D()
         >>> pdb_system.fetch_pdb('1os7')
+        >>> pdb_system.findMetal() # Return a list of atom indices that correspond to transition metals in the PDB
+        >>> pdb_system.getMolecule(a_id=9214).name # You can use this with the metal atom index to find out the
+        >>>                                        # name of the metal in the PDB.
+
         """
         if not self.metals:
             metal_list = []
