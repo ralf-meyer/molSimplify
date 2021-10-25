@@ -5243,3 +5243,38 @@ class mol3D:
                 'ERROR: Convex hull calculation failed. Structure will be inaccurate.\n')
         self.hull = hull
             
+
+    def numRings(self, index):
+        """Computes the number of simple rings an atom is in.
+        
+        Parameters
+        ----------
+            index : int
+                The index of the atom in question. Zero-indexing, so the first atom has an index of zero.
+
+        Returns
+        -------
+            myNumRings : int
+                The number of rings the atom is in.
+        """
+
+        self.convert2OBMol() # Need to populate the self.OBMol field
+        ringlist = self.OBMol.GetSSSR() # Get the smallest set of simple rings for a molecule. 
+        ringinds = []
+        for obmol_ring in ringlist: # loop through the simple rings
+            _inds = []
+            for ii in range(1, self.natoms+1): # loop through all atoms in the mol3D object
+                if obmol_ring.IsInRing(ii): # check if a given atom is in the current ring
+                    _inds.append(ii-1)
+            ringinds.append(_inds)
+
+        # ringinds is an array of arrays, where each inner array contains the atom indices of the atoms in a simple ring
+        # The length of ringinds is the number of simple rings in the mol3D object calling numRings
+
+        myNumRings = 0 # running tally
+
+        for idx_list in ringinds:
+            if index in idx_list:
+                myNumRings += 1
+
+        return myNumRings
