@@ -681,10 +681,20 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
                         deleted_bonds += 1
                 print(('FFopt deleted ' + str(deleted_bonds) + ' bonds'))
                 # then add back one metal-ligand bond for FF
-                if OBMol.GetAtom(m+1).GetValence() == 0:
+                try:
+                    numNeighbors = OBMol.GetAtom(m+1).GetValence()
+                except AttributeError:
+                    # quick workaround for openbabel 3.1.0 compatibility
+                    numNeighbors = OBMol.GetAtom(m + 1).GetExplicitDegree()
+                if numNeighbors == 0:
                     # getBondedAtomsOct(m,deleted_bonds+len(bridgingatoms)):
                     for i in mol.getBondedAtoms(m):
-                        if OBMol.GetAtom(m+1).GetValence() < 1 and i not in bridgingatoms:
+                        # quick workaround for openbabel 3.1.0 compatibility
+                        try:
+                            _numNeighbors = OBMol.GetAtom(m+1).GetValence()
+                        except AttributeError:
+                            _numNeighbors = OBMol.GetAtom(m + 1).GetExplicitDegree()
+                        if _numNeighbors < 1 and i not in bridgingatoms:
                             OBMol.AddBond(m+1, i+1, 1)
         # freeze small ligands
         for cat in frozenats:

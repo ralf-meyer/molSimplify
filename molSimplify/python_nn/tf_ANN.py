@@ -16,9 +16,9 @@ import os
 import numpy as np
 import pandas as pd
 import scipy
-from keras import backend as K
-from keras.models import model_from_json, load_model
-from keras.optimizers import Adam
+from tensorflow.keras import backend as K
+from tensorflow.keras.models import model_from_json, load_model
+from tensorflow.keras.optimizers import Adam
 from pkg_resources import resource_filename, Requirement
 import tensorflow as tf
 

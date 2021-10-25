@@ -1,9 +1,9 @@
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
-from keras import backend as K
+from tensorflow.keras import backend as K
 import tensorflow as tf
 from sklearn.neighbors import BallTree
-from keras import Model
+from tensorflow.keras import Model
 
 """
 tools for ML models.
