@@ -535,9 +535,9 @@ class protein3D:
         h = list(self.hetmols.keys()).copy()
         for k in h:
             for m in h[k]:
-                if m.name == hetmol:
+                if m[0].name == hetmol:
                     ids = []
-                    for a in m.atoms:
+                    for a in m[0].atoms:
                         ids.append(self.a_ids[a])
                     self.stripAtoms(ids)
                     del self.hetmols[k]
