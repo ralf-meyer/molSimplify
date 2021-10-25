@@ -583,6 +583,12 @@ class protein3D:
         ----------
             atomIdx : int
                 Index for atom to be frozen.
+
+        Example of fetching a PDB file:
+  
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7')
+        >>> pdb_system.freezeatom(9214)
         """
 
         self.atoms[atomIdx].frozen = True
