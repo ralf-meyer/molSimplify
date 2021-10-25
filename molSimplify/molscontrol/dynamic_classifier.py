@@ -9,7 +9,7 @@ import scipy.misc
 import skimage.transform as skitransform
 import pickle
 import json
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from molSimplify.molscontrol.io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_bond_order, get_gradient, \
     get_mullcharge, kill_job, check_pid, get_ss_del, get_metal_spin_del
 from molSimplify.molscontrol.clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
