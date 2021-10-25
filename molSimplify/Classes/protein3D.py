@@ -532,9 +532,11 @@ class protein3D:
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
         >>> pdb_system.stripHetMol()
         """
-        h = list(self.hetmols.keys()).copy()
-        for k in h:
-            for m in h[k]:
+        hets = self.hetmols.copy()
+        for k in hets.keys():
+            if k not in self.hetmols.keys():
+                continue
+            for m in hets[k]:
                 if m[0].name == hetmol:
                     ids = []
                     for a in m[0].atoms:
