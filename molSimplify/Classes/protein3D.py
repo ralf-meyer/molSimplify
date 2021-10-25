@@ -421,10 +421,11 @@ class protein3D:
                         atoms_stripped.remove(a_id)
                         if atom in self.bonds.keys():
                             for at in self.bonds[atom]:
-                                temp = self.bonds[at].copy()
-                                if atom in temp:
-                                    temp.remove(atom)
-                                self.bonds[at] = temp
+                                if at in self.bonds.keys():
+                                    temp = self.bonds[at].copy()
+                                    if atom in temp:
+                                        temp.remove(atom)
+                                    self.bonds[at] = temp
                             del self.bonds[atom]
                         del atoms[a_id]
                         del a_ids[atom]
@@ -439,8 +440,10 @@ class protein3D:
                             del self.hetmols[tup]
         while len(atoms_stripped) != 0:
             a_id = atoms_stripped[0]
-            atom = atoms[a_id]
             atoms_stripped.pop(0)
+            if a_id not in atoms.keys():
+                continue
+            atom = atoms[a_id]
             if atom in self.bonds.keys():
                 for at in self.bonds[atom]:
                     temp = self.bonds[at].copy()
@@ -484,7 +487,7 @@ class protein3D:
         """
         if not self.metals:
             metal_list = []
-            for l in self.hetmols.keys(): # no metals in AAs
+            for l in self.hetmols.values(): # no metals in AAs
                 for m in l:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
