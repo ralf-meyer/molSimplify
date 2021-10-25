@@ -236,19 +236,39 @@ class protein3D:
             
     def getMissingAtoms(self):
         """ Get missing atoms of a protein3D class.
-
+        
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()  
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> for symbol_list in pdb_system.getMissingAtoms(): 
+        >>>     for symbol in symbol_list:      
+        >>>         print(symbol.sym) # Prints the symbol of missing atom
+        >>>         print(symbol.coords()) # Prints the coordinates of the missing atom - they are all the 
+        >>>                         # coordinates of origin by default (0.0,0.0,0.0) for missing atoms
         """
         return self.missing_atoms.values()
     
     def getMissingAAs(self):
         """ Get missing amino acid residues of a protein3D class.
 
+        Example demonstration of this method:
+            
+        >>> pdb_system = protein3D()    
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getMissingAAs()   # This gives a list of AA3D objects
+        >>> [pdb_system.getMissingAAs()[x].three_lc for x in range(len(val.getMissingAAs()))] # This returns
+        >>>                     # the list of missing AAs by their 3-letter codes
         """
         return self.missing_aas
     
     def countAAs(self):
         """ Return the number of amino acid residues in a protein3D class.
 
+        Example demonstration of this method:
+        
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.countAAs() # This return the number of AAs in the PDB for all the chains.
         """
         return self.naas
 
@@ -269,6 +289,12 @@ class protein3D:
         ----------
             inds: list
                 a list of atom indices with the specified symbol.
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.findAtom(sym="S", aa=True) # Returns indices of sulphur atoms present in amino acids
+        >>> pdb_system.findAtom(sym="S", aa=False) # Returns indices of sulphur atoms present in heteromolecules
         """
         inds = []
         if aa:
@@ -300,11 +326,17 @@ class protein3D:
         -------
             inds: set
                 a set of amino acid indices with the specified symbol.
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.findAA(three_lc = 'MET') # Returns a set of pairs where each pair is a combination of the chain name
+        >>>                              # and the index of the amino acid specified (in this case, 'MET')
         """
         inds = set()
-        for aa in self.aas:
-            if aa.three_lc == three_lc:
-                inds.add((aa.chain, aa.id))
+        for aa in self.aas.values():
+            if aa[0].three_lc == three_lc:
+                inds.add((aa[0].chain, aa[0].id))
         return inds
 
     def getChain(self, chain_id):
@@ -491,6 +523,11 @@ class protein3D:
         -------
             metal_list : list
                 List of indices of metal atoms in protein3D.
+
+        Example of fetching a PDB file:
+  
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7')
         """
         if not self.metals:
             metal_list = []
