@@ -759,7 +759,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
-        from keras import backend as K
+        from tensorflow.keras import backend as K
         # This is done to get rid of the attribute error that is a bug in tensorflow.
         K.clear_session()
         current_time = time.time()
@@ -963,7 +963,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
-        from keras import backend as K
+        from tensorflow.keras import backend as K
         # This is done to get rid of the attribute error that is a bug in tensorflow.
         K.clear_session()
 

@@ -6,7 +6,7 @@ import scipy as sp
 import os
 from keras.callbacks import EarlyStopping
 from keras.models import model_from_json
-from keras import backend as K
+from tensorflow.keras import backend as K
 
 from pkg_resources import resource_filename, Requirement
 from sklearn.utils import shuffle
