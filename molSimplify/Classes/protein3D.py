@@ -492,7 +492,7 @@ class protein3D:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
                             if a.occup == 1 or a in self.bonds.keys():
-                                metal_list.append(i)
+                                metal_list.append(self.getIndex(a))
             self.metals = metal_list
         return (self.metals)
 
