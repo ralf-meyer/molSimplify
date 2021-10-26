@@ -97,7 +97,7 @@ class ligand:
             transition_metals_only : bool
                 flag only transition metals with findMetal() function.
             inds : list
-                indicies of metals if passing in multimetal system
+                indices of metals if passing in multimetal system
 
         Returns
         -------
@@ -105,8 +105,8 @@ class ligand:
                 Molecular graph determinant.
             ligand_mol2_string : str
                 Mol2 string for the ligand.
-            catom_indices : list
-                List of catom indices - only returned if include_metal is set to False
+            catoms_indices : list
+                List of catom (connection atom) indices - only returned if include_metal is set to False
         
         """
         this_mol2 = mol3D()
@@ -247,7 +247,7 @@ class ligand:
 
 
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
-    """Extract axial and equitorial components of a octahedral complex. 
+    """Extract axial and equatorial components of a octahedral complex. 
     
     Parameters
     ----------
@@ -437,10 +437,10 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
                ' is the max and min in  ' + str(min(ligand_counts))))
     n_unique_ligs = len(unique_ligands)
     if (n_ligs == 3) or (n_ligs == 4):  # most common case,
-        # one/two equitorial and 2 axial mono
+        # one/two equatorial and 2 axial mono
         # or three bidentate
         for i, ligs in enumerate(liglist):
-            if ligdents[i] == 1 and min_dent == 1:  # anything with equitorial monos will
+            if ligdents[i] == 1 and min_dent == 1:  # anything with equatorial monos will
                 # have higher than 4 n_ligs
                 ax_lig_list.append(i)
                 if loud:
@@ -994,7 +994,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         if n_unique_ligs == 1: # Purely Homoleptic monodentate, by best fit plane
             if loud:
                 print('homoleptic monodentate')
-            eq_lig_list = eq_points # Assign 4 lig_cons to equitorial plane, by best fit plane
+            eq_lig_list = eq_points # Assign 4 lig_cons to equatorial plane, by best fit plane
             eq_con_list = [ligcons[j] for j in eq_lig_list]
             ax_lig_list = list(set(allowed)-set(eq_lig_list)) # Last 2 lig_cons to axial positions
             ax_con_list = [ligcons[j] for j in ax_lig_list]
@@ -1054,7 +1054,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                                 ax_lig_list.append(j)
                                 ax_con_list.append(ligcons[j])
                     ### Calculate which of the 5 repeats has highest angle from 1 unique
-                    ### Set highest angle as axial, rest assigned as equitorial
+                    ### Set highest angle as axial, rest assigned as equatorial
                     coord_list = [flat_coord_list[ax_lig_list[0]]]+[flat_coord_list[x] for x in five_repeats]
                     pair_combos = [(0,1), (0,2), (0,3), (0,4), (0,5)]
                     angle_list = list()
@@ -1338,7 +1338,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         opposite_lig = combos[np.argmax(angle_list_eq)][1]
         others = list(set([1,2,3])-set([opposite_lig]))
         eq_order = [0,others[0],opposite_lig,others[1]]
-        # Reorder equitorial plane
+        # Reorder equatorial plane
         eq_con_list = [eq_con_list[x] for x in eq_order]
         eq_lig_list = [eq_lig_list[x] for x in eq_order]
     elif (n_ligs ==5): # 2+1+1+1+1 
@@ -1626,7 +1626,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             bidentate_cons_1 = ligcons[0]
             bidentate_cons_2 = ligcons[1]
             bidentate_cons_3 = ligcons[2]
-            #### Using previously defined eq plane with max_mw to define equitorial plane
+            #### Using previously defined eq plane with max_mw to define equatorial plane
             eq_ligcons = set([flat_ligcons[j] for j in eq_points_max_mw])
             eq_con_bidentate_list = [list(set(bidentate_cons_1).intersection(eq_ligcons)),
                                      list(set(bidentate_cons_2).intersection(eq_ligcons)),
@@ -1891,6 +1891,24 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
+    if (max(ligdents) == 2) and (min(ligdents) == 2): # 2+2+2; merging parts of ax_con_list and eq_con_list in the case of three bidentante ligands
+        _i = 0 # starting from the beginning of ax_con_list and eq_con_list
+        _j = 0
+        # ax_con_list will be an array with two entries while eq_con_list will be an array with three entries, in the 2+2+2 case
+        # ax_con_list's entries will both be single element arrays
+        # eq_con_list will have two single element array entries, and one length 2 array entry
+            # while loop below finds out which entries are the single element arrays, to be merged with those of ax_con_list        
+        while _i < len(ax_con_list) and _j < len(eq_con_list): # make sure we don't go out of bounds
+            if len(ax_con_list[_i]) == 1 and len(eq_con_list[_j]) == 1: # only have one of the two connecting atoms accounted for
+                ax_value = ax_con_list[_i][0] # extracting the values
+                eq_value = eq_con_list[_j][0]
+                new_entry = [ax_value, eq_value] # making the new entry, which accounts for both connecting atoms
+                ax_con_list[_i] = new_entry
+                eq_con_list[_j] = new_entry
+                _i += 1 # step forward in both the ax_con_list and eq_con_list
+                _j += 1
+            else:
+                _j += 1 # step forward only in eq_con_list, since the last entry was the length 2 array entry
     for j, ax_con in enumerate(ax_con_list):
         current_ligand_index_list = built_ligand_list[ax_lig_list[j]].index_list
         ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])

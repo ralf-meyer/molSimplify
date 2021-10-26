@@ -166,8 +166,8 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
         # Final scf---
         psi4.set_options({
             "maxiter": 50,
-            "D_CONVERGENCE": 1e-6,
-            "E_CONVERGENCE": 1e-6,
+            "D_CONVERGENCE": 3e-6,
+            "E_CONVERGENCE": 3e-6,
             "fail_on_maxiter": True})
     else:
         os.chdir(rundir)
@@ -238,14 +238,18 @@ def run_general(psi4_config, functional):
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
-    try:
-        if not functional in b3lyp_d:
+    if True:
+        if (not functional in b3lyp_d) and (not "hfx_" in functional):
             e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+        elif "hfx_" in functional:
+            basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
+            print("HFX sampling: ", basefunc, hfx)
+            e, wfn = psi4.energy("scf", dft_functional=get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
         else:
             print("customized b3lyp with different HFX: ", functional)
             e, wfn = psi4.energy("scf", dft_functional=b3lyp_d[functional],  molecule=mol, return_wfn=True)
         wfn.to_file("wfn.180")
-    except:
+    else:
         print("This calculation does not converge.")
     success = check_sucess()
     for filename in os.listdir("./"):
@@ -406,6 +410,49 @@ def write_jobscript(psi4_config):
                 fo.write("python -u loop_rescue.py > rescue_nohup1.out\n")
                 fo.write("python -u loop_rescue.py > rescue_nohup2.out\n")
                 fo.write("python -u loop_rescue.py > rescue_nohup3.out\n")
+    elif psi4_config["cluster"] == "mustang":
+        with open("./jobscript.sh", "w") as fo:
+            fo.write("#!/bin/bash\n")
+            fo.write("#PBS -N psi4_multiDFA\n")
+            fo.write("#PBS -A ONRDC42143511\n")
+            fo.write("#PBS -o psi4.out\n")
+            fo.write("#PBS -e psi4.err\n")
+            fo.write("#PBS -l select=1:ncpus=48:mpiprocs=48\n")
+            fo.write("#PBS -l walltime=6:00:00\n")
+            fo.write("#PBS -q standard\n")
+            fo.write("#PBS -j oe\n")
+            fo.write("#PBE -V\n")
+
+            fo.write("source $HOME/.personal.bashrc\n")
+            fo.write("export PSI_SCRATCH='./'\n")
+            fo.write("rundir=$PBS_O_WORKDIR\n")
+            fo.write("cd $rundir\n")
+            fo.write("homekey='home'\n")
+            fo.write("homedir=${rundir/work1/$homekey}\n")
+            fo.write("echo homedir: $homedir\n")
+            fo.write("echo rundir: $rundir\n")
+            fo.write("mkdir -p $homedir\n")
+            fo.write("python -u loop_run.py  > nohup1.out\n")
+            fo.write("zip -r outdat.zip */*.dat > zip.out\n")
+            fo.write("cp outdat.zip $homedir\n")
+            fo.write("python -u loop_run.py  > nohup2.out\n")
+            fo.write("zip -r outdat.zip */*.dat > zip.out\n")
+            fo.write("cp outdat.zip $homedir\n")
+            fo.write("python -u loop_run.py  > nohup3.out\n")
+            fo.write("zip -r outdat.zip */*.dat > zip.out\n")
+            fo.write("cp outdat.zip $homedir\n")
+            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                fo.write("echo rescuing...\n")
+                fo.write("python -u loop_rescue.py > rescue_nohup1.out\n")
+                fo.write("zip -r outdat.zip */*.dat > zip.out\n")
+                fo.write("cp outdat.zip $homedir\n")
+                fo.write("python -u loop_rescue.py > rescue_nohup2.out\n")
+                fo.write("zip -r outdat.zip */*.dat > zip.out\n")
+                fo.write("cp outdat.zip $homedir\n")
+                fo.write("python -u loop_rescue.py > rescue_nohup3.out\n")
+                fo.write("zip -r outdat.zip */*.dat > zip.out\n")
+                fo.write("cp outdat.zip $homedir\n")
+            fo.write("echo all done.\n")
 
 
 def run_bash(cmd, basedir, rundir):

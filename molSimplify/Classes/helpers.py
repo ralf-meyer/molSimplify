@@ -135,15 +135,26 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
             i.addAtom(atom, a_dict['SerialNum'])
     else:
         m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+        if aa:
+            if atom.greek == "C":
+                m.c.append(atom)
+            if atom.greek == "N":
+                m.n.append(atom)
     if key in conf and chains[a_dict['ChainID']] != []:
         chains[a_dict['ChainID']] = []
     if aa:
         m.setBonds()
         bonds.update(m.bonds)
-        if m.prev != None:
-            bonds[m.n].add(m.prev.c)
-        if m.next != None:
-            bonds[m.c].add(m.next.n)
+        if m.prev == None and (a_dict['ChainID'], a_dict['ResSeq'] - 1) in mols.keys():
+            m.setPrev(mols[(a_dict['ChainID'], a_dict['ResSeq'] - 1)][0])
+        prev_mol = m.prev
+        if prev_mol != None:
+            if prev_mol.next == None:
+                prev_mol.setNext(m)
+            for n in m.n:
+                for c in prev_mol.c:
+                    bonds[n].add(c)
+                    bonds[c].add(n)
     return atom, mols, conf, chains, prev_a_dict, bonds
             
             
