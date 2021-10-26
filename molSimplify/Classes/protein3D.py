@@ -85,6 +85,7 @@ class protein3D:
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
+        
         Parameters
         ----------
             aas : dictionary
