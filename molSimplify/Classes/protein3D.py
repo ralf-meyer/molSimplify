@@ -236,9 +236,8 @@ class protein3D:
             
     def getMissingAtoms(self):
         """ Get missing atoms of a protein3D class.
-
+        
         Example demonstration of this method:
-
         >>> pdb_system = protein3D()  
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
         >>> for symbol_list in pdb_system.getMissingAtoms(): 
@@ -292,7 +291,6 @@ class protein3D:
                 a list of atom indices with the specified symbol.
 
         Example demonstration of this method:
-
         >>> pdb_system = protein3D() 
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
         >>> pdb_system.findAtom(sym="S", aa=True) # Returns indices of sulphur atoms present in amino acids
@@ -330,7 +328,6 @@ class protein3D:
                 a set of amino acid indices with the specified symbol.
 
         Example demonstration of this method:
-
         >>> pdb_system = protein3D() 
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
         >>> pdb_system.findAA(three_lc = 'MET') # Returns a set of pairs where each pair is a combination of the chain name
@@ -355,6 +352,11 @@ class protein3D:
         -------
             p : protein3D
                 A protein3D instance consisting of just the chain of interest
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getChain('A') # Get chain A of the PDB
         """
         p = protein3D()
         p.setChains({chain_id: self.chains[chain_id]})
@@ -402,11 +404,25 @@ class protein3D:
         ----------
             a_id : int
                 the index of the desired atom whose molecule we want to find
+            aas_only : boolean
+                True if we want ito find atoms contained in amino acids only.
+                False if we want atoms contained in all molecules. Default is False.
 
         Returns
         -------
             mol : AA3D or mol3D
                 the amino acid residue or heteromolecule containing the atom
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getMolecule(a_id=2166) # This returns an molSimplify.Classes.AA3D.AA3D obejct indicating 
+        >>>                                   # we that the atom is part of an amino acid
+        >>> pdb_system.getMolecule(a_id=2166).three_lc() # This prints the three letter code of the amino acid of which
+        >>>                                              # atom 2166 is a part of
+        >>> pdb_system.getMolecule(a_id=9164) # This returns a mol3D object indicating that the atom is part of a molecule
+        >>>                                   # that is not an amino acid
+        >>> pdb_system.getMolecule(a_id=9164).name # This prints the name of the molecule, in this case, it is 'TAU'
         """
         for s in self.aas.values():
             for mol in s: # mol is AA3D
@@ -429,6 +445,12 @@ class protein3D:
         ----------
             atoms_stripped : list
                 list of atom3D indices that should be removed
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.stripAtoms([2166, 4442, 6733, 2165]) # This removes the list of atoms with 
+        >>>                                                # indices listedin the code
         """
         atoms = self.atoms
         a_ids = self.a_ids
@@ -451,6 +473,10 @@ class protein3D:
                     if a_id in atoms_stripped:
                         if (a_id, atom) in elt.atoms:
                             elt.atoms.remove((a_id, atom))
+                            if atom in elt.c:
+                                elt.c.remove(atom)
+                            elif atom in elt.n:
+                                elt.n.remove(atom)
                         elif atom in elt.atoms:
                             elt.atoms.remove(atom)
                         atoms_stripped.remove(a_id)
@@ -500,12 +526,22 @@ class protein3D:
             hetmol : str
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.stripHetMol('TAU') # Removes the molecule specificed (all atoms in the molecule), in this case 'TAU'.
         """
-        h = list(self.hetmols.keys()).copy()
-        for k in h:
-            for m in h[k]:
+        hets = self.hetmols.copy()
+        for k in hets.keys():
+            if k not in self.hetmols.keys():
+                continue
+            for m in hets[k]:
                 if m.name == hetmol:
-                    self.stripAtoms(m.atoms)
+                    ids = []
+                    for a in m.atoms:
+                        ids.append(self.a_ids[a])
+                    self.stripAtoms(ids)
                     del self.hetmols[k]
                 
     def findMetal(self, transition_metals_only=True):
@@ -519,6 +555,15 @@ class protein3D:
         -------
             metal_list : list
                 List of indices of metal atoms in protein3D.
+
+        Example of fetching a PDB file:
+  
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7')
+        >>> pdb_system.findMetal() # Return a list of atom indices that correspond to transition metals in the PDB
+        >>> pdb_system.getMolecule(a_id=9214).name # You can use this with the metal atom index to find out the
+        >>>                                        # name of the metal in the PDB.
+
         """
         if not self.metals:
             metal_list = []
@@ -538,6 +583,12 @@ class protein3D:
         ----------
             atomIdx : int
                 Index for atom to be frozen.
+
+        Example of fetching a PDB file:
+  
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7')
+        >>> pdb_system.freezeatom(9214)
         """
 
         self.atoms[atomIdx].frozen = True
@@ -800,12 +851,6 @@ class protein3D:
         ----------
             pdbCode : str
                 code for protein, e.g. 1os7
-
-        Example of fetching a PDB file:
-  
-        >>> pdb_system = protein3D()
-        >>> pdb_system.fetch_pdb('1os7')
-
         """
         remoteCode = pdbCode.upper()
         try:
