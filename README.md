@@ -8,7 +8,7 @@ molSimplify is an open source toolkit for the automated, first-principles screen
 
 ### via conda
 We currently recommend installation via the [Conda](https://conda.io/docs/) package management system.
-1. Prerequisite: have [Anaconda or miniconda](https://www.anaconda.com/distribution/) installed on your system.
+1. Prerequisite: have [Anaconda or miniconda](https://www.anaconda.com/distribution/) installed on your system. **For M1 Macs, please use [Miniforge](https://github.com/conda-forge/miniforge) for Mac OSX arm64.**
 
 2. Clone molSimplify source from github.
 
@@ -16,7 +16,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    git clone https://github.com/hjkgrp/molSimplify.git
    ```
    
-3. Go to the folder root folder for molSimplify, create the conda environment from the yaml file (mols.yml). This step will help you get all the dependecies correct in a newly created conda environment named "mols_test". You can specify a different name for this environment at the first line of the yaml file.
+3. Go to the folder root folder for molSimplify, create the conda environment from the yaml file (`conda_envs/mols.yml`). **For M1 Macs, use mols_m1.yml instead.** This step will help you get all the dependecies correct in a newly created conda environment named "mols_test". You can specify a different name for this environment at the first line of the yaml file.
 
    ```bash
    cd molSimplify/conda-envs 
@@ -28,7 +28,8 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    cd .. 
    pip install -e .
    ```
-5. To test your installation, you can run the command below at the root directory of molSimplify. You are good to go if all the tests are passed!
+5. **(For M1 Macs only)** Install the M1-compatible version of Tensorflow by running `source conda_envs/install_tensorflow_m1.sh`.
+6. To test your installation, you can run the command below at the root directory of molSimplify. You are good to go if all the tests are passed!
    ```bash
    python setup.py test
    ```
