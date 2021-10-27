@@ -7,7 +7,7 @@ Regardless of install method, we recommend using anaconda to manage virtual envi
 Installing from Source
 ----------------------
 
-To install from source, please follow the install instructions on the front page of our github page: https://github.com/hjkgrp/molSimplify.
+To install from source, please follow the install instructions on the front page of our github page: https://github.com/hjkgrp/molSimplify. There are special instructions there if you have a Mac with an M1 chip.
 
 
 Using a Docker Image
