@@ -1,5 +1,6 @@
 Instructions for Installing and Running Test Cases for molSimplify
       by Fang Liu  10/24/2017
+      edited by Chenru Duan 10/28/2021
 
 
 I.  The structure of the repo
@@ -79,10 +80,12 @@ III. Run Test Cases
      it breaks. Standard output of molSimplify will not be printed unless the 
      test fails (then the output will be captured by pytest)
 
-     If one wants to see all the stanford output on the screen, we can try:
+     If one wants to see all the standard output on the screen, we can try:
      (1) Run pytest without capture:
          pytest -s
 
-     (2) Manually run each test case under the tests/ directory
-         python test_yourTestCase.py
+     (2) Manually run  test case under the tests/ directory
+         py.test -k <keyword-of-your-test>
+         For example, to run all the tests for generation of tetrahedral complexes, do:
+         py.test -k tetrahedral
 
