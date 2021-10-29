@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='molSimplify',
-      version="v1.2.7-alpha",
+      version="v1.6.0",
       packages=find_packages(),
       entry_points={
           'console_scripts': ['molsimplify = molSimplify.__main__:main',
