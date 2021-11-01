@@ -25,6 +25,7 @@ import shlex
 import ast
 import time
 from scipy.spatial import ConvexHull
+from pymol import cmd, stored
 
 # no GUI support for now
 
@@ -85,7 +86,6 @@ class protein3D:
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
-        
         Parameters
         ----------
             aas : dictionary
@@ -531,7 +531,7 @@ class protein3D:
         Example demonstration of this method:
         >>> pdb_system = protein3D() 
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
-        >>> pdb_system.stripHetMol('TAU') # Removes the molecule specificed (all atoms in the molecule), in this case 'TAU'.
+        >>> pdb_system.stripHetMol()
         """
         hets = self.hetmols.copy()
         for k in hets.keys():
@@ -561,10 +561,6 @@ class protein3D:
   
         >>> pdb_system = protein3D()
         >>> pdb_system.fetch_pdb('1os7')
-        >>> pdb_system.findMetal() # Return a list of atom indices that correspond to transition metals in the PDB
-        >>> pdb_system.getMolecule(a_id=9214).name # You can use this with the metal atom index to find out the
-        >>>                                        # name of the metal in the PDB.
-
         """
         if not self.metals:
             metal_list = []
@@ -584,12 +580,6 @@ class protein3D:
         ----------
             atomIdx : int
                 Index for atom to be frozen.
-
-        Example of fetching a PDB file:
-  
-        >>> pdb_system = protein3D()
-        >>> pdb_system.fetch_pdb('1os7')
-        >>> pdb_system.freezeatom(9214)
         """
 
         self.atoms[atomIdx].frozen = True
