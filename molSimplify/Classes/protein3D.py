@@ -86,34 +86,38 @@ class protein3D:
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
+
         Parameters
         ----------
             aas : dictionary
                 Keyed by chain and location
                 Valued by AA3D amino acids
+
         """
         self.aas = aas
         self.naas = len(aas)
 
     def setAtoms(self, atoms):
         """ Set atom indices of a protein3D class to atoms.
-        
+
         Parameters
         ----------
             atoms : dictionary
                 Keyed by atom index
                 Valued by atom3D atom that has that index
+
         """
         self.atoms = atoms
 
     def setIndices(self, a_ids):
         """ Set atom indices of a protein3D class to atoms.
-        
+
         Parameters
         ----------
             a_ids : dictionary
                 Keyed by atom3D atom
                 Valued by its index
+
         """
         self.a_ids = a_ids
 
@@ -125,6 +129,7 @@ class protein3D:
             hetmols : dictionary
                 Keyed by chain and location
                 Valued by mol3D heteromolecules
+
         """
         self.hetmols = hetmols
         self.nhetmols = len(hetmols.keys())
@@ -137,6 +142,7 @@ class protein3D:
             chains : dictionary
                 Keyed by desired chain IDs.
                 Valued by the list of molecules in the chain.
+
         """
         self.chains = chains
         self.nchains = len(chains.keys())
@@ -149,6 +155,7 @@ class protein3D:
             missing_atoms : dictionary
                 Keyed by amino acid residues of origin
                 Valued by missing atoms
+
         """
         self.missing_atoms = missing_atoms
 
@@ -159,6 +166,7 @@ class protein3D:
         ----------
             missing_aas : list
                 List of missing amino acids.
+
         """
         self.missing_aas = missing_aas
             
@@ -169,6 +177,7 @@ class protein3D:
         ----------
             conf : list
                 List of possible conformations for applicable amino acids.
+
         """
         self.conf = conf
 
@@ -212,6 +221,7 @@ class protein3D:
         ----------
             R : float
                 The desired new R value.
+
         """
         self.R = R
             
@@ -222,6 +232,7 @@ class protein3D:
         ----------
             Rfree : float
                 The desired new Rfree value.
+
         """
         self.Rfree = Rfree
 
@@ -232,6 +243,7 @@ class protein3D:
         ----------
             RSRZ : float
                 The desired new RSRZ score.
+
         """
         self.RSRZ = RSRZ
             
@@ -277,7 +289,7 @@ class protein3D:
         """
         Find atoms with a specific symbol that are contained in amino acids
         or heteromolecules.
-        
+
         Parameters
         ----------
             sym : str
@@ -296,6 +308,7 @@ class protein3D:
         >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
         >>> pdb_system.findAtom(sym="S", aa=True) # Returns indices of sulphur atoms present in amino acids
         >>> pdb_system.findAtom(sym="S", aa=False) # Returns indices of sulphur atoms present in heteromolecules
+
         """
         inds = []
         if aa:
