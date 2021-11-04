@@ -308,7 +308,8 @@ class mol3D:
                     graph.append(templine)
             graph = np.array(graph)
             self.graph = graph
-        return graph
+        if return_graph:
+            return graph
 
     def find_atom(self, sym="X"):
         """
