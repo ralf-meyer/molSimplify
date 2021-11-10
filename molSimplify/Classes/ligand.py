@@ -746,7 +746,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
-
+### DISCLAIMER!!! Please be careful while modifying any part of 'ligand_assign_consistent' as that could affect everything else ###
 def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False, eq_sym_match=False):
     """This ligand assignment code handles octahedral complexes consistently. Assigns any octahedral complex.
     
@@ -1891,24 +1891,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                str(list(built_ligand_list[eq_lig_list[0]].ext_int_dict.keys()))))
         print(('eq_con is ' + str((eq_con_list))))
         print(('ax_con is ' + str((ax_con_list))))
-    if (max(ligdents) == 2) and (min(ligdents) == 2): # 2+2+2; merging parts of ax_con_list and eq_con_list in the case of three bidentante ligands
-        _i = 0 # starting from the beginning of ax_con_list and eq_con_list
-        _j = 0
-        # ax_con_list will be an array with two entries while eq_con_list will be an array with three entries, in the 2+2+2 case
-        # ax_con_list's entries will both be single element arrays
-        # eq_con_list will have two single element array entries, and one length 2 array entry
-            # while loop below finds out which entries are the single element arrays, to be merged with those of ax_con_list        
-        while _i < len(ax_con_list) and _j < len(eq_con_list): # make sure we don't go out of bounds
-            if len(ax_con_list[_i]) == 1 and len(eq_con_list[_j]) == 1: # only have one of the two connecting atoms accounted for
-                ax_value = ax_con_list[_i][0] # extracting the values
-                eq_value = eq_con_list[_j][0]
-                new_entry = [ax_value, eq_value] # making the new entry, which accounts for both connecting atoms
-                ax_con_list[_i] = new_entry
-                eq_con_list[_j] = new_entry
-                _i += 1 # step forward in both the ax_con_list and eq_con_list
-                _j += 1
-            else:
-                _j += 1 # step forward only in eq_con_list, since the last entry was the length 2 array entry
+
     for j, ax_con in enumerate(ax_con_list):
         current_ligand_index_list = built_ligand_list[ax_lig_list[j]].index_list
         ax_con_int_list.append([current_ligand_index_list.index(i) for i in ax_con])
