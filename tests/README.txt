@@ -26,7 +26,7 @@ I.  The structure of the repo
     |_ setup.py
 
     Reason for using this structure, please refer to: https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure
-    Notice that pytest automatically find test cases by look at python files
+    Notice that pytest automatically finds test cases by looking at python files
     named with
           test_XXX.py  XXX_test.py
     
@@ -42,9 +42,9 @@ II. Add a test case
   3. Create a test python script with the template shown below. 
      threshMLBL: the threshold for checking metal-ligand bondlength and defaults to 0.1 A
      threshLG: tolerance for RMSD comparison of Ligand Geometries, and defaults to 0.1 A.
-     threshOG: tolerance for RMSD comparison of Overal Geometries, and defaults to 2.0 A
-     If you are adding a small test cas (e.g. hexachloride), consider
-     reducing this parameter. Otherwise it is likely fine it is. 
+     threshOG: tolerance for RMSD comparison of Overall Geometries, and defaults to 2.0 A
+     If you are adding a small test case (e.g. hexachloride), consider
+     reducing this parameter. Otherwise it is likely fine the way it is. 
 
 ############ test_yourTestCase.py  #########
 import helperFuncs as hp
@@ -64,7 +64,7 @@ def test_example_1(tmpdir):
 #############################################
 
 III. Run Test Cases
-  1. Tests will be automatically run by Travis. However, it's higly recomended
+  1. Tests will be automatically run by Travis. However, it's highly recommended
      that one runs the tests locally before commiting or push to repository to
      avoid breaking things
 
@@ -84,8 +84,11 @@ III. Run Test Cases
      (1) Run pytest without capture:
          pytest -s
 
-     (2) Manually run  test case under the tests/ directory
-         py.test -k <keyword-of-your-test>
+     (2) Manually run test case under the tests/ directory
+
+
+
+py.test -k <keyword-of-your-test>
          For example, to run all the tests for generation of tetrahedral complexes, do:
          py.test -k tetrahedral
 
