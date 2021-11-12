@@ -178,6 +178,8 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 if globs.testTF():
                     # new RACs-ANN
                     from molSimplify.Scripts.tf_nn_prep import tf_ANN_preproc
+                    if args.debug:
+                        print('Using tf_ANN_preproc')
                     ANN_flag, ANN_reason, ANN_attributes, catalysis_flag = tf_ANN_preproc(
                         args, ligands, occs, dents, batslist, tcats, licores)
                 else:
@@ -196,7 +198,7 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 ANN_bondl = len(
                     [item for items in batslist for item in items])*[False]
                 if args.debug:
-                    print(("ANN called failed with reason: " + ANN_reason))
+                    print(("ANN call failed with reason: " + ANN_reason))
         #except:
         else:
             print("ANN call rejected")
@@ -2001,7 +2003,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
     # if using decorations, make repeatable list
     if args.decoration:
         if not args.decoration_index:
-            print('Warning, no deocoration index given, assuming first ligand')
+            print('Warning, no decoration index given, assuming first ligand')
             args.decoration_index = [[0]]
         if len(args.decoration_index) != len(ligs):
             new_decoration_index = []
