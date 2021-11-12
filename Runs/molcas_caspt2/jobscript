@@ -1,0 +1,11 @@
+#$ -S /bin/bash
+#$ -N job0
+#$ -R y
+#$ -cwd
+#$ -l h_rt=168:00:00
+#$ -l h_rss=8G
+#$ -q cpus
+#$ -l cpus=1
+#$ -pe smp 1
+export OMP_NUM_THREADS=1
+pymolcas molcas.input -f

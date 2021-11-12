@@ -1,0 +1,21 @@
+# Input file generated from molSimplify at 11/12/2021 13:59
+-core ferrcore
+-lig methyl
+-ligocc 1
+-keepHs True
+-rundir /Users/gianmarcoterrones/molSimplify/Runs
+-ff uff
+-ffoption no
+-nconfs 1
+-calccharge True
+-distort 0
+-qccode terachem
+-runtyp energy
+-method b3lyp
+-basis lacvps_ecp
+-jsched sge
+-jobdir tutorial_3
+-bcharge 0
+-replig True
+-ccatoms 20
+-name tutorial_3

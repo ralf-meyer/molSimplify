@@ -1,0 +1,26 @@
+# Input file generated from molSimplify at 11/12/2021 13:59
+-core zncat
+-oxstate II
+-geometry tbp
+-lig NCCCN
+-ligocc 1
+-spin 1
+-keepHs auto
+-rundir /Users/gianmarcoterrones/molSimplify/Runs
+-smicat 0,4
+-ff uff
+-ffoption ba
+-nconfs 1
+-charge 2
+-calccharge True
+-distort 0
+-qccode terachem
+-runtyp energy
+-method b3lyp
+-basis lacvps_ecp
+-jsched sge
+-jobdir tutorial_09_part_one
+-bcharge 0
+-replig True
+-ccatoms 3
+-name tutorial_09_part_one

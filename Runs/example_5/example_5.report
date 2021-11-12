@@ -1,0 +1,26 @@
+Bad structure?, False
+Min_dist (A), 1000
+Was ANN used?, True
+geo_label, 1
+geo_prob, 0.9925665855407715
+geo_LSE, 0.6847506076210044
+geo_label_trust, very low
+sc_label, 1
+sc_prob, 0.6455776691436768
+sc_LSE, 0.6931353048085005
+sc_label_trust, very low
+split, 30.773133198072472
+split_dist, 10.532759994560886
+This spin, 2
+ANN_ground_state, 2
+homo, -16.445466279385116
+gap, 4.492758046170907
+homo_dist, 0.72919613
+gap_dist, 0.4329183
+ANN_bondl, [2.1082265392244155, 2.1082265392244155, 2.1082265392244155, 2.1082265392244155, 2.12521094040128, 2.006144188934934]
+homo_trust, high
+gap_trust, high
+split_trust, very low
+Was Catalytic ANN used?, False
+Catalytic ANN reason, False
+ML-bl (database, A), 2.03

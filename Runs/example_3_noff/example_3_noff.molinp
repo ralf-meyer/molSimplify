@@ -1,0 +1,27 @@
+# Input file generated from molSimplify at 11/12/2021 13:58
+-rprompt True
+-core ferrcore
+-oxstate 0
+-coord 6
+-geometry oct
+-lig methyl
+-ligocc 1
+-spin 1
+-keepHs True
+-rundir /Users/gianmarcoterrones/molSimplify/Runs
+-ff uff
+-ffoption ba
+-nconfs 1
+-calccharge True
+-ligalign True
+-distort 0
+-qccode terachem
+-runtyp energy
+-method b3lyp
+-basis lacvps_ecp
+-jsched sge
+-jobdir example_3_noff
+-bcharge 0
+-replig True
+-ccatoms 20
+-name example_3_noff

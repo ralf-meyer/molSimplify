@@ -1,0 +1,26 @@
+# Input file generated from molSimplify at 11/12/2021 13:59
+-core Fe
+-oxstate II
+-coord 6
+-geometry oct
+-lig water
+-ligocc 6
+-spin 5
+-keepHs True
+-rundir /Users/gianmarcoterrones/molSimplify/Runs
+-smicat -1
+-ff mmff94
+-ffoption ba
+-nconfs 1
+-charge 2
+-calccharge True
+-distort 0
+-qccode MOLCAS
+-runtyp energy
+-method CASPT2
+-basis lacvps_ecp
+-qoption grid_it,yes
+-jsched sge
+-jobdir molcas_caspt2
+-bcharge 0
+-name molcas_caspt2
