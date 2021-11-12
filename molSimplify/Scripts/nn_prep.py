@@ -64,9 +64,9 @@ def check_ligands(ligs, batlist, dents, tcats):
     n_ligs = len(ligs)
     unique_ligands = []
     axial_ind_list = []
-    equitorial_ind_list = []
+    equatorial_ind_list = []
     axial_ligs = []
-    equitorial_ligs = []
+    equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
     eq_ligs = []
@@ -88,17 +88,17 @@ def check_ligands(ligs, batlist, dents, tcats):
             if not (this_lig in unique_ligs):
                 unique_ligs.append(this_lig)
                 ucats.append(tcats[i])
-            elif (this_lig in unique_ligs) and not (this_lig in equitorial_ligs):
-                equitorial_ligs.append(this_lig)
+            elif (this_lig in unique_ligs) and not (this_lig in equatorial_ligs):
+                equatorial_ligs.append(this_lig)
                 eq_dent = this_dent
                 eq_tcat = tcats[i]
         if len(unique_ligs) == 1:
-            axial_ligs.append(equitorial_ligs[0])
+            axial_ligs.append(equatorial_ligs[0])
             ax_dent = 2
             ax_tcat = eq_tcat
         elif len(unique_ligs) == 2:
             for i, uligs in enumerate(unique_ligs):
-                if not (uligs in equitorial_ligs):  # only occured once
+                if not (uligs in equatorial_ligs):  # only occured once
                     axial_ligs.append(uligs)
                     ax_dent = 2
                     ax_tcat = ucats[i]
@@ -118,26 +118,26 @@ def check_ligands(ligs, batlist, dents, tcats):
                         ax_dent = this_dent
                         ax_tcat = tcats[i]
                 else:
-                    if not (this_lig in equitorial_ligs):
-                        equitorial_ligs.append(this_lig)
+                    if not (this_lig in equatorial_ligs):
+                        equatorial_ligs.append(this_lig)
                         eq_dent = this_dent
                         eq_tcat = tcats[i]
             else:
-                if not (this_lig in equitorial_ligs):
-                    equitorial_ligs.append(this_lig)
+                if not (this_lig in equatorial_ligs):
+                    equatorial_ligs.append(this_lig)
                     eq_dent = this_dent
                     eq_tcat = tcats[i]
     if not (len(axial_ligs) == 1):
         print(('axial ligs mismatch: ', axial_ligs, ax_dent))
         valid = False
-    if not (len(equitorial_ligs) == 1):
-        print(('equitorial ligs mismatch: ', equitorial_ligs, eq_dent))
+    if not (len(equatorial_ligs) == 1):
+        print(('equatorial ligs mismatch: ', equatorial_ligs, eq_dent))
         valid = False
     if valid:  # get the index position in ligs
         axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
-        equitorial_ind_list = [ligs.index(eq_lig)
-                               for eq_lig in equitorial_ligs]
-    return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list
+        equatorial_ind_list = [ligs.index(eq_lig)
+                               for eq_lig in equatorial_ligs]
+    return valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list
 
 
 def check_metal(metal, oxidation_state):
@@ -252,7 +252,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if emsg:
         print((str(" ".join(["ANN messages:"] + [str(i) for i in emsg]))))
     if valid:
-        valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list = check_ligands(
+        valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list = check_ligands(
             ligs, batslist, dents, tcats)
         if args.debug:
             print("\n")
@@ -267,7 +267,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(batslist)
             print(('lig validity', valid))
             print(('ax ligs', axial_ligs))
-            print(('eq ligs', equitorial_ligs))
+            print(('eq ligs', equatorial_ligs))
             print(('spin is', spin))
         if not valid:
             ANN_reason = 'found incorrect ligand symmetry'
@@ -285,12 +285,12 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         ax_lig3D.convert2mol3D()  # mol3D representation of ligand
         # eq
-        eq_lig3D, r_emsg = lig_load(equitorial_ligs[0], licores)  # load ligand
+        eq_lig3D, r_emsg = lig_load(equatorial_ligs[0], licores)  # load ligand
         if newdecs:
-            if newdecs[equitorial_ind_list[0]]:
-                #print('decorating ' + str(equitorial_ligs[0]) + ' with ' +str(newdecs[equitorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equitorial_ind_list[0]]))
+            if newdecs[equatorial_ind_list[0]]:
+                #print('decorating ' + str(equatorial_ligs[0]) + ' with ' +str(newdecs[equatorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equatorial_ind_list[0]]))
                 eq_lig3D = decorate_ligand(
-                    args, equitorial_ligs[0], newdecs[equitorial_ind_list[0]], newdec_inds[equitorial_ind_list[0]])
+                    args, equatorial_ligs[0], newdecs[equatorial_ind_list[0]], newdec_inds[equatorial_ind_list[0]])
         if r_emsg:
             emsg += r_emsg
         eq_lig3D.convert2mol3D()  # mol3D representation of ligand
@@ -322,7 +322,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         if axial_ligs[0] in ['carbonyl', 'cn']:
             ax_bo = 3
-        if equitorial_ligs[0] in ['carbonyl', 'cn']:
+        if equatorial_ligs[0] in ['carbonyl', 'cn']:
             eq_bo = 3
         eq_charge = eq_lig3D.OBMol.GetTotalCharge()
         ax_charge = ax_lig3D.OBMol.GetTotalCharge()

@@ -74,7 +74,7 @@ def getbackbcombsall(nums):
     Returns
     -------
         bbcombs : list
-            List of possible backbone atom combinations
+            List of possible backbone atom combinations.
 
     """
     bbcombs = []
@@ -501,7 +501,7 @@ def modifybackbonep(backb, pangles):
     Returns
     -------
         backb : list
-            List of distorted backbone points
+            List of distorted backbone points.
             
     """
     for i, ll in enumerate(pangles):
@@ -525,7 +525,7 @@ def distortbackbone(backb, distort):
     Returns
     -------
         backb : list
-            List of distorted backbone points
+            List of distorted backbone points.
         
     """
     for i in range(1, len(backb)):
@@ -820,7 +820,7 @@ def findsmarts(lig3D, smarts, catom):
         smarts : list
             List of SMARTS patterns (strings).
         catom : int
-            onnecting atom of lig3D (zero based numbering).
+            connecting atom of lig3D (zero based numbering).
 
     Returns
     -------
@@ -859,7 +859,7 @@ def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBen
         core3D : mol3D
             mol3D instance of partially built complex.
         EnableAutoLinearBend : bool
-            Flag for enabling automatic bending of linear ligands (e.g. superoxo)
+            Flag for enabling automatic bending of linear ligands (e.g. superoxo).
 
     Returns
     -------
@@ -1247,7 +1247,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
         args : Namespace
             Namespace of arguments.
         lig3D : mol3D
-            mol3D class instance of the ligand
+            mol3D class instance of the ligand.
         atom0 : int
             Ligand connecting atom index.
         ligand : str
@@ -1255,7 +1255,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
         metal : atom3D
             atom3D class instance of the first atom (usually a metal).
         MLb : float
-            Custom M-L bond length (if any)
+            Custom M-L bond length (if any).
         i : int
             Ligand index number.
         ANN_flag : bool
@@ -1313,7 +1313,7 @@ def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
         metal : atom3D
             atom3D class instance of the first atom (usually a metal).
         lig3D : mol3D
-            mol3D class instance of the ligand
+            mol3D class instance of the ligand.
         atom0 : int
             Ligand connecting atom index.
         ligand : str
@@ -1372,7 +1372,7 @@ def get_batoms(args, batslist, ligsused):
         batslist : list
             List of backbone connecting atoms for each ligand.
         ligsused : int
-            Number of ligands placed
+            Number of ligands placed.
 
     Returns
     -------
@@ -1396,11 +1396,11 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
         args : Namespace
             Namespace of arguments.
         lig3D : mol3D
-            mol3D class instance of the ligand
+            mol3D class instance of the ligand.
         core3D : mol3D
-            mol3D class instance of partially build complex
+            mol3D class instance of partially built complex.
         catoms : list
-            List of ligand connecting atom indices
+            List of ligand connecting atom indices.
         r1 : list
             Coordinates of ligand first connecting atom.
         r0 : list
@@ -1410,7 +1410,7 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
         batoms : list
             List of backbone atom indices.
         corerefcoords : list
-            Coordinates of core reference atom
+            Coordinates of core reference atom.
 
     Returns
     -------
@@ -1500,7 +1500,7 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     return lig3D_aligned, r1b
 
 def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarget, coreref, MLoptbds):
-    """Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.. 
+    """Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.
 
     Parameters
     ----------
@@ -1517,7 +1517,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
         r0 : list
             Coordinates of core reference point.
         core3D : mol3D
-            mol3D class instance of partially build complex.
+            mol3D class instance of partially built complex.
         rtarget : list
             Coordinates of target point for second connecting atom.
         coreref : atom3D
@@ -1633,7 +1633,7 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=
         i : int, optional
             Ligand serial number. Default is 0.
         EnableAutoLinearBend : bool, optional
-            Flag for enabling automatic bending of linear ligands (e.g. superoxo)
+            Flag for enabling automatic bending of linear ligands (e.g. superoxo).
 
     Returns
     -------
@@ -1684,9 +1684,9 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         cpoint : atom3D
             atom3D class instance containing backbone connecting point.
         batoms : list
-            List of backbone atom indices
+            List of backbone atom indices.
         m3D : mol3D
-            mol3D of backbone template
+            mol3D of backbone template.
         core3D : mol3D
             mol3D class instance of partially built complex.
         coreref : atom3D
@@ -1698,7 +1698,7 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         catoms : list
             List of ligand connecting atom indices.
         MLb : list
-            Custom M-L bond length (if any)
+            Custom M-L bond length (if any).
         ANN_flag : bool
             Flag for ANN activation.
         ANN_bondl : list
@@ -1771,9 +1771,9 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         cpoint : atom3D
             atom3D class instance containing backbone connecting point.
         batoms : list
-            List of backbone atom indices
+            List of backbone atom indices.
         m3D : mol3D
-            mol3D of backbone template
+            mol3D of backbone template.
         core3D : mol3D
             mol3D class instance of partially built complex.
         coreref : atom3D
@@ -1785,7 +1785,7 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         catoms : list
             List of ligand connecting atom indices.
         MLb : list
-            Custom M-L bond length (if any)
+            Custom M-L bond length (if any).
         ANN_flag : bool
             Flag for ANN activation.
         ANN_bondl : list
