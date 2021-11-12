@@ -30,7 +30,7 @@ I.  The structure of the repo
     named with
           test_XXX.py  XXX_test.py
     
-    Under this stracture, the test files MUST have unique names
+    Under this structure, the test files MUST have unique names
 
 II. Add a test case
   1. Name the test input and output files in a consistent way:
@@ -65,7 +65,7 @@ def test_example_1(tmpdir):
 
 III. Run Test Cases
   1. Tests will be automatically run by Travis. However, it's highly recommended
-     that one runs the tests locally before commiting or push to repository to
+     that one runs the tests locally before committing or push to repository to
      avoid breaking things
 
   2. Here are some different ways to run the tests. Assume that the we are at the
@@ -85,10 +85,7 @@ III. Run Test Cases
          pytest -s
 
      (2) Manually run test case under the tests/ directory
-
-
-
-py.test -k <keyword-of-your-test>
+         py.test -k <keyword-of-your-test>
          For example, to run all the tests for generation of tetrahedral complexes, do:
          py.test -k tetrahedral
 
