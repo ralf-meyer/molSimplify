@@ -623,7 +623,7 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s'  # force fields
 
     if ff.lower() not in ffav:
-        print('Requested force field not available. Defaulting to MMFF94')
+        print('Requested force field not available. Defaulting to UFF')
         ff = 'uff'
     if debug:
         print(('using ff: ' + ff))
