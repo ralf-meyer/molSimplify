@@ -7,7 +7,6 @@
 
 import os
 import re
-import subprocess
 import sys
 import tempfile
 import time
@@ -19,12 +18,14 @@ from scipy.spatial import ConvexHull
 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-from molSimplify.Scripts.geometry import distance, connectivity_match, vecangle, rotation_params, rotate_around_axis
+from molSimplify.Scripts.geometry import (distance, connectivity_match,
+                                          vecangle, rotation_params,
+                                          rotate_around_axis)
 from molSimplify.Scripts.rmsd import rigorous_rmsd
 
 try:
     import PyQt5
-    from molSimplify.Classes.miniGUI import *
+    from molSimplify.Classes.miniGUI import miniGUI
 
     # PyQt5 flag
     qtflag = True
