@@ -105,7 +105,7 @@ def tensorflow_silence():
 
 try:
     import PyQt5
-    from PyQt5.QtGui import QApplication
+    from PyQt5.QtWidgets import QApplication
     from molSimplify.Classes.mGUI import mGUI
 
     qtflag = True
