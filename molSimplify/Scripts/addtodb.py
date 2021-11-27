@@ -5,22 +5,15 @@
 #  Modified by JP Janet and Aditya Nandy
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
-try:
-    from molSimplify.Classes.mWidgets import *
-except:
-    pass
+from molSimplify.Scripts.molSimplify_io import (copy_to_custom_path, readdict,
+                                                lig_load, core_load, bind_load)
+from molSimplify.Classes.globalvars import globalvars
 import os
 import sys
-import subprocess
 import re
 import unicodedata
 import openbabel
-import random
 import shutil
-from pkg_resources import resource_filename, Requirement
 
 # Add molecule to ligand database
 #  @param smimol SMILES string or molecule file to be added
