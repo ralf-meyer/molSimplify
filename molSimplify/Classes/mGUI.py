@@ -7,25 +7,39 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-#from PyQt5.QtSvg import *
-from molSimplify.Classes.mWidgets import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.mol3D import mol3D
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QStackedLayout, QAction,
+                             QFileDialog, QMessageBox, QPushButton,
+                             QDesktopWidget)
+from PyQt5.QtGui import QPalette, QFont, QIcon
+from molSimplify.Classes.mWidgets import (mQMainWindow, mQPixmap, mQLabel,
+                                          mQLineEdit, mQLineEditL, mQTextEdit,
+                                          mQCheckBox, mQComboBox, mQSpinBox,
+                                          mQPushButton, mQSlider, mQDialogWarn,
+                                          mSvgWidget, relresize, center)
+from molSimplify.Classes.globalvars import globalvars, mybash
 from molSimplify.Scripts.generator import startgen
-from molSimplify.Scripts.grabguivars import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Scripts.addtodb import *
+from molSimplify.Scripts.grabguivars import (grabguivars, grabguivarsqch,
+                                             grabguivarstc, grabguivarsgam,
+                                             grabguivarsjob, grabguivarsP,
+                                             grabdbguivars, loadfrominputfile,
+                                             loadfrominputtc, loadfrominputgam,
+                                             loadfrominputqch, writeinputc,
+                                             loadfrominputjob)
+from molSimplify.Scripts.molSimplify_io import (readdict, getgeoms,
+                                                getcores, getmcores, getbcores,
+                                                getlicores, getslicores,
+                                                getligs, getbinds, getligroups,
+                                                lig_load, copy_to_custom_path)
+from molSimplify.Scripts.addtodb import (addtoldb, addtocdb, addtobdb,
+                                         removefromDB)
 import sys
 import os
-import random
 import shutil
 import unicodedata
-import inspect
 import glob
-import time
 import tempfile
+import re
 from pkg_resources import resource_filename, Requirement
 import xml.etree.ElementTree as ET
 

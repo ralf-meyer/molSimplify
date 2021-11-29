@@ -9,13 +9,11 @@ import glob
 import os
 import shutil
 import re
-import argparse
-import sys
 import random
 import openbabel
 import copy
-from molSimplify.Classes.mol3D import *
-from molSimplify.Classes.globalvars import *
+import time
+from molSimplify.Classes.globalvars import globalvars, romans
 from molSimplify.Classes.mol3D import mol3D
 from pkg_resources import resource_filename, Requirement
 

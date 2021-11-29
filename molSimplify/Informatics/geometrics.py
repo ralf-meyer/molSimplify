@@ -3,7 +3,6 @@ import numpy as np
 import json
 from pkg_resources import resource_filename, Requirement
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.globalvars import *
 
 
 def get_percentile_csd_geometrics(geometrics_csd, geodict, geotype, maxdent,

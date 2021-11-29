@@ -24,16 +24,22 @@
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 # fix OB bug: https://github.com/openbabel/openbabel/issues/1983
-import sys, argparse, os, platform, shutil
+import sys
+import argparse
+import os
 if not('win' in sys.platform):
     flags = sys.getdlopenflags()
-import openbabel
 if not('win' in sys.platform):
     sys.setdlopenflags(flags)
 
-from .Scripts.inparse import *
-from .Scripts.generator import *
-from molSimplify.Classes.globalvars import *
+from .Scripts.inparse import (parseinputs_advanced, parseinputs_slabgen,
+                              parseinputs_db, parseinputs_inputgen,
+                              parseinputs_postproc, parseinputs_random,
+                              parseinputs_binding, parseinputs_tsgen,
+                              parseinputs_customcore, parseinputs_naming,
+                              parseinputs_basic, parseCLI)
+from .Scripts.generator import startgen
+from molSimplify.Classes.globalvars import globalvars
 
 globs = globalvars()
 ## Basic help description string
@@ -99,8 +105,8 @@ def tensorflow_silence():
 
 try:
     import PyQt5
-    from PyQt5.QtGui import *
-    from molSimplify.Classes.mGUI import *
+    from PyQt5.QtWidgets import QApplication
+    from molSimplify.Classes.mGUI import mGUI
 
     qtflag = True
 except ImportError:
