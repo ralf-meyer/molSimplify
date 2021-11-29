@@ -385,6 +385,46 @@ class mol3D:
                 count += 1
         return count
 
+    def count_atoms(self, exclude=['H','h','x','X']):
+        """
+        Count the number of atoms, excluding certain atoms.
+
+        Parameters
+        ----------
+            exclude: list
+                list of symbols for atoms to exclude.
+
+        Returns
+        ----------
+            count: integer
+                the number of heavy atoms
+        """
+        count = 0
+        for ii in range(self.natoms):
+            if not self.getAtom(ii).symbol() in exclude:
+                count += 1
+        return count
+
+    def count_specific_atoms(self, atom_types=['x','X']):
+        """
+        Count the number of atoms, excluding certain atoms.
+
+        Parameters
+        ----------
+            atom_types: list
+                list of symbols for atoms to include.
+
+        Returns
+        ----------
+            count: integer
+                the number of heavy atoms
+        """
+        count = 0
+        for ii in range(self.natoms):
+            if self.getAtom(ii).symbol() in atom_types:
+                count += 1
+        return count
+
     def count_electrons(self, charge=0):
         """
         Count the number of electrons in a molecule. 
@@ -1365,6 +1405,31 @@ class mol3D:
         """
 
         return [self.atoms[idx] for idx in inds]
+
+    def getAtomwithSyms(self, syms=['X'], return_index=False):
+        """Get atoms with a given list of symbols.
+
+        Parameters
+        ----------
+            idx : list
+                List of desired atom symbols.
+            return_index : bool
+                True or false for returning the atom indices instead of atom3D classes. Returns indices if True.
+
+        Returns
+        -------
+            atom_list : list
+                List of atom3D classes for elements with given symbols.
+
+        """
+        temp_list = []
+        for i, atom in enumerate(self.atoms):
+            if atom.symbol() in syms:
+                temp_list.append(i)
+        if return_index:
+            return temp_list
+        else:
+            return [self.atoms[idx] for idx in temp_list]
 
     def getAtoms(self):
         """Get all atoms within a molecule.
