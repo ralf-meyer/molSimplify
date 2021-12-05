@@ -11,8 +11,8 @@ import glob
 import argparse
 import copy
 from molSimplify.Classes.globalvars import (globalvars)
-from molSimplify.Scripts.addtodb import (addtoldb,
-                                         loadcdxml)
+from molSimplify.Scripts.addtodb import addtoldb
+from molSimplify.Scripts.molSimplify_io import loadcdxml
 from molSimplify.Scripts.cellbuilder import (slab_module_supervisor)
 from molSimplify.Scripts.chains import (chain_builder_supervisor)
 from molSimplify.Scripts.dbinteract import (dbsearch)

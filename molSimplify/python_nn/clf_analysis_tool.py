@@ -2,8 +2,8 @@
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 import tensorflow as tf
-from keras import backend as K
-from keras import Model
+from tensorflow.keras import backend as K
+from tensorflow.keras import Model
 
 
 def get_acc(pred_std, pred_err, stds):

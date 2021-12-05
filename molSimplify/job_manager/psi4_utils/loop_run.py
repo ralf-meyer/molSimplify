@@ -51,7 +51,7 @@ for ii, functional in enumerate(psi4_config["functional"]):
         else:
             with open(functional + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
-            if not "==> Iterations <==" in txt:
+            if not "==> Iterations <==" in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt))):
                 resubed = True
         if resubed:
             print("previous errored out. resubmitting...")

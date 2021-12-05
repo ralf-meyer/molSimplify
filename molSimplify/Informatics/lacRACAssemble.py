@@ -15,9 +15,9 @@ from molSimplify.Classes.globalvars import globalvars
 
 globs = globalvars()
 
-def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False, \
+def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Gval=False, \
     lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False,
-    alleq=False):
+    alleq=False, MRdiag_dict={}):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters
@@ -38,13 +38,13 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             {"Fe":2, "Co": 3} etc, by default False
         NumB : bool, optional
             Use Number of Bonds as additional RAC, by default False
-        Zeff : bool, optional
-            Use effecitve nuclear charge as RAC, by default False
+        Gval : bool, optional
+            Use group number as RAC, by default False
         lacRACs : bool, optional
             Use ligand_assign_consistent (lac) to represent mol3D given
             if False, use ligand_assign (older), default True
         loud : bool, optional
-            Print degubbging information, by default False
+            Print debugging information, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
         smiles_charge : bool, optional
@@ -89,8 +89,8 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     ## full ACs
     results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
-                                                                modifier=ox_modifier, NumB=NumB, Zeff=Zeff,
-                                                                use_dist=use_dist, size_normalize=size_normalize)
+                                                                modifier=ox_modifier, NumB=NumB, Gval=Gval,
+                                                                use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'f','all')
     # print("f-racs: ", results_dictionary)
@@ -99,7 +99,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,
                                                                 flag_name=False,
                                                                 custom_ligand_dict=custom_ligand_dict,
-                                                                NumB=NumB, Zeff=Zeff, use_dist=use_dist, size_normalize=size_normalize)
+                                                                NumB=NumB, Gval=Gval, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     # print("lc-racs: ", results_dictionary)
     if not alleq:
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
@@ -114,7 +114,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,
                                                             custom_ligand_dict=custom_ligand_dict,
-                                                            NumB=NumB, Zeff=Zeff, use_dist=use_dist, size_normalize=size_normalize)
+                                                            NumB=NumB, Gval=Gval, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     if not alleq:
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                             results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
@@ -125,13 +125,13 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     #print('getting metal ACs')
     results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
                                                             modifier=ox_modifier,
-                                                            NumB=NumB,Zeff=Zeff, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+                                                            NumB=NumB,Gval=Gval, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
 
     results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
                                                         modifier=ox_modifier,
-                                                        NumB=NumB,Zeff=Zeff, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+                                                        NumB=NumB,Gval=Gval, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 
@@ -170,7 +170,7 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
             Use ligand_assign_consistent (lac) to represent mol3D given
             if False, use ligand_assign (older), default True
         loud : bool, optional
-            Print degubbging information, by default False
+            Print debugging information, by default False
         metal_ind : bool, optional
             index of the metal atom to generate RACs from, by default False
 
@@ -539,7 +539,7 @@ def deltametric_derivative(mol, prop_vec, orig, d, oct=True):
     return (derivative_mat)
 
 
-def construct_property_vector(mol, prop, oct=True, modifier=False):
+def construct_property_vector(mol, prop, oct=True, modifier=False, MRdiag_dict={}):
     """Assigns the value of property for atom i (zero index) in mol.
 
     Parameters
@@ -549,7 +549,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         prop : str
             Property to generate vector for - Acceptable prop values: ['electronegativity', 
             'nuclear_charge', 'ident', 'topology', 'ox_nuclear_charge', 'size', 'vdwrad', 
-            'effective_nuclear_charge', 'polarizability', 'bondvalence', 'num_bonds', 
+            'group_number', 'polarizability', 'bondvalence', 'num_bonds', 
             'bondvalence_devi', 'bodavrg', 'bodstd', 'charge']
         oct : bool, optional
             Flag is octahedral complex, by default True
@@ -565,8 +565,12 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
 
     """
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology',
-                       'ox_nuclear_charge', 'size', 'vdwrad', 'effective_nuclear_charge', 'polarizability',
-                       'bondvalence', 'num_bonds', 'bondvalence_devi', 'bodavrg', 'bodstd', 'charge']
+                       'ox_nuclear_charge', 'size', 'vdwrad', 'group_number', 'polarizability',
+                       'bondvalence', 'num_bonds', 'bondvalence_devi', 'bodavrg', 'bodstd', 'charge',
+                       ]
+    if len(MRdiag_dict):
+        for k in list(MRdiag_dict):
+            allowed_strings += [k]
     prop_dict = dict()
     w = np.zeros(mol.natoms)
     done = False
@@ -586,7 +590,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         for keys in at_keys:
             values = globs.amass()[keys][1]
             prop_dict.update({keys: values})
-    elif prop == 'effective_nuclear_charge':  # Uses number of valence electrons
+    elif prop == 'group_number':  # Uses number of valence electrons
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][3]
@@ -656,13 +660,17 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         for i, atoms in enumerate(mol.getAtoms()):
             w[i] = mol.charge_dict[i]
         done = True
+    elif prop in ['A25PBE', 'B1', 'rND_PBE', 'IND_PBE', 'nLUMO_MP2', 'T1', 'largest_amp', 'TAE', 'C0^2', 'nLUMO_CAS', '%CorrE_orca']:
+        for i, atoms in enumerate(mol.getAtoms()):
+            w[i] = MRdiag_dict[prop][mol.getAtom(i).symbol()]
+        done = True
     if not done:
         for i, atoms in enumerate(mol.getAtoms()):
             w[i] = prop_dict[atoms.symbol()]
     return (w)
 
 
-def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False, size_normalize=False):
+def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Calculate full scope product autocorrelations (i.e. start at every atom up to depth d)
 
     Parameters
@@ -686,7 +694,7 @@ def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False,
             full scope product autocorrelation values
 
     """
-    w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
+    w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
     index_set = list(range(0, mol.natoms))
     autocorrelation_vector = np.zeros(d + 1)
     for centers in index_set:
@@ -728,7 +736,9 @@ def full_autocorrelation_derivative(mol, prop, d, oct=True, modifier=False):
 def generate_full_complex_autocorrelations(mol, loud,
                                            depth=4, oct=True,
                                            flag_name=False, modifier=False,
-                                           use_dist=False, size_normalize=False, NumB=False, Zeff=False, polarizability=False):
+                                           use_dist=False, size_normalize=False,
+                                           NumB=False, Gval=False, polarizability=False,
+                                           MRdiag_dict={}):
     """Utility to manage full complex autocorrelation generation and labeling.
 
     Parameters
@@ -749,8 +759,8 @@ def generate_full_complex_autocorrelations(mol, loud,
             Weigh autocorrelations by interatomic distances, by default False
         NumB : bool, optional
             use number of bonds as RAC, by default False
-        Zeff : bool, optional
-            use Z effective as RAC, by default False
+        Gval : bool, optional
+            use G value as RAC, by default False
         polarizability : bool, optional
             Use polarizability (alpha) as RAC, by default False
 
@@ -764,19 +774,24 @@ def generate_full_complex_autocorrelations(mol, loud,
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     if polarizability:
         allowed_strings += ["polarizability"]
         labels_strings += ["alpha"]
+    if len(MRdiag_dict):
+        allowed_strings, labels_strings = [], []
+        for k in list(MRdiag_dict):
+            allowed_strings += [k]
+            labels_strings += [k]
     for ii, properties in enumerate(allowed_strings):
         metal_ac = full_autocorrelation(mol, properties, depth,
                                         oct=oct, modifier=modifier,
-                                        use_dist=use_dist, size_normalize=size_normalize)
+                                        use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -790,7 +805,7 @@ def generate_full_complex_autocorrelations(mol, loud,
 
 
 def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=True, flag_name=False,
-                                                      modifier=False, NumB=False, Zeff=False):
+                                                      modifier=False, NumB=False, Gval=False):
     """Utility to manage full complex autocorrelation derivative generation and labeling.
 
     Parameters
@@ -809,8 +824,8 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
             Use ox_modifier on metal charge, by default False
         NumB : bool, optional
             use number of bonds as RAC, by default False
-        Zeff : bool, optional
-            use Z effective as RAC, by default False
+        Gval : bool, optional
+            use G value as RAC, by default False
 
     Returns
     -------
@@ -822,9 +837,9 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -845,7 +860,7 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
     return results_dictionary
 
 
-def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True, use_dist=False, size_normalize=False):
+def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True, use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Calculate product autocorrelation vectors from a given atom or list of atoms 
     (e.g. up to depth 4 from the connecting atoms)
 
@@ -868,7 +883,7 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True, use_dist=False, s
             list of atom-only autocorrelations
 
     """
-    w = construct_property_vector(mol, prop, oct)
+    w = construct_property_vector(mol, prop, oct, MRdiag_dict=MRdiag_dict)
     autocorrelation_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
@@ -914,7 +929,7 @@ def atom_only_autocorrelation_derivative(mol, prop, d, atomIdx, oct=True):
 
 
 def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
-                               func=autocorrelation, modifier=False, use_dist=False, size_normalize=False):
+                               func=autocorrelation, modifier=False, use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Calculate the metal_only product autocorrelations 
     (e.g. metal-centered atom-only RACs)
 
@@ -945,7 +960,7 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
     try:
         if not isinstance(metal_ind,int):
             metal_ind = mol.findMetal()[0]
-        w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
+        w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
         autocorrelation_vector = func(mol, w, metal_ind, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
     except:
         print('Error, no metal found in mol object!')
@@ -993,7 +1008,7 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True, metal_ind=None
     return (autocorrelation_vector_derivative)
 
 
-def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False, use_dist=False, size_normalize=False):
+def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False, use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Calculate deltametric autocorrelation vectors from a given atom or list of atoms 
     (e.g. up to depth 4 from the connecting atoms)
 
@@ -1016,7 +1031,7 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False, use_d
             list of atom-only deltametric autocorrelations
 
     """
-    w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
+    w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
     deltametric_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
@@ -1105,7 +1120,7 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True, metal_ind=None,
 
 
 def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
-                           func=deltametric, modifier=False, use_dist=False, size_normalize=False):
+                           func=deltametric, modifier=False, use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Gets the metal atom-only deltametric RAC
 
     Parameters
@@ -1135,7 +1150,7 @@ def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
     try:
         if not isinstance(metal_ind,int):
             metal_ind = mol.findMetal()[0]
-        w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
+        w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
         deltametric_vector = func(mol, w, metal_ind, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
     except:
         print('Error, no metal found in mol object!')
@@ -1247,8 +1262,8 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False, smiles_charge=
 
 
 def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
-                                         custom_ligand_dict=False, NumB=False, Zeff=False, 
-                                         use_dist=False, size_normalize=False):
+                                         custom_ligand_dict=False, NumB=False, Gval=False, 
+                                         use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Utility for generating all ligand-based product autocorrelations for a complex
 
     Parameters
@@ -1265,8 +1280,8 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
             Dict of ligands if passed - see generate_descriptor_vector, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
 
     Returns
     -------
@@ -1278,12 +1293,17 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
     """
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+=['effective_nuclear_charge']
-        labels_strings += ['Zeff']
+    if Gval:
+        allowed_strings+=['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if len(MRdiag_dict):
+        allowed_strings, labels_strings = [], []
+        for k in list(MRdiag_dict):
+            allowed_strings += [k]
+            labels_strings += [k]
     result_ax_full = list()
     result_eq_full = list()
     result_ax_con = list()
@@ -1309,29 +1329,29 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
         eq_ligand_ac_full = []
         for i in range(0, n_ax):
             if not list(ax_ligand_ac_full):
-                ax_ligand_ac_full = full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize)
+                ax_ligand_ac_full = full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                ax_ligand_ac_full += full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize)
+                ax_ligand_ac_full += full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         ax_ligand_ac_full = np.divide(ax_ligand_ac_full, n_ax)
         for i in range(0, n_eq):
             if not list(eq_ligand_ac_full):
-                eq_ligand_ac_full = full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize)
+                eq_ligand_ac_full = full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                eq_ligand_ac_full += full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize)
+                eq_ligand_ac_full += full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         eq_ligand_ac_full = np.divide(eq_ligand_ac_full, n_eq)
         ax_ligand_ac_con = []
         eq_ligand_ac_con = []
         for i in range(0, n_ax):
             if not list(ax_ligand_ac_con):
-                ax_ligand_ac_con = atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                ax_ligand_ac_con = atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                ax_ligand_ac_con += atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                ax_ligand_ac_con += atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         ax_ligand_ac_con = np.divide(ax_ligand_ac_con, n_ax)
         for i in range(0, n_eq):
             if not list(eq_ligand_ac_con):
-                eq_ligand_ac_con = atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                eq_ligand_ac_con = atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                eq_ligand_ac_con += atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                eq_ligand_ac_con += atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         eq_ligand_ac_con = np.divide(eq_ligand_ac_con, n_eq)
         ################
         this_colnames = []
@@ -1353,7 +1373,7 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
 
 
 def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_name=False,
-                                                    custom_ligand_dict=False, NumB=False, Zeff=False):
+                                                    custom_ligand_dict=False, NumB=False, Gval=False):
     """Utility for generating all ligand-based autocorrelation derivatives for a complex
 
     Parameters
@@ -1370,8 +1390,8 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
             Dict of ligands if passed - see generate_descriptor_vector, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
 
     Returns
     -------
@@ -1389,9 +1409,9 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings += ['effective_nuclear_charge']
-        labels_strings += ['Zeff']
+    if Gval:
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1478,8 +1498,8 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
 
 
 def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
-                                     custom_ligand_dict=False, NumB=False, Zeff=False,
-                                     use_dist=False, size_normalize=False):
+                                     custom_ligand_dict=False, NumB=False, Gval=False,
+                                     use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Utility for generating all ligand-based deltametric autocorrelations for a complex
 
     Parameters
@@ -1496,8 +1516,8 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
             Dict of ligands if passed - see generate_descriptor_vector, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
 
     Returns
     -------
@@ -1511,12 +1531,17 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if len(MRdiag_dict):
+        allowed_strings, labels_strings = [], []
+        for k in list(MRdiag_dict):
+            allowed_strings += [k]
+            labels_strings += [k]
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
@@ -1537,15 +1562,15 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
         eq_ligand_ac_con = []
         for i in range(0, n_ax):
             if not list(ax_ligand_ac_con):
-                ax_ligand_ac_con = atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                ax_ligand_ac_con = atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                ax_ligand_ac_con += atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                ax_ligand_ac_con += atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         ax_ligand_ac_con = np.divide(ax_ligand_ac_con, n_ax)
         for i in range(0, n_eq):
             if not list(eq_ligand_ac_con):
-                eq_ligand_ac_con = atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                eq_ligand_ac_con = atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                eq_ligand_ac_con += atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize)
+                eq_ligand_ac_con += atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         eq_ligand_ac_con = np.divide(eq_ligand_ac_con, n_eq)
         ####################
         this_colnames = []
@@ -1563,7 +1588,7 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
 
 
 def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=False,
-                                                custom_ligand_dict=False, NumB=False, Zeff=False):
+                                                custom_ligand_dict=False, NumB=False, Gval=False):
     """Utility for generating all ligand-based deltametric derivatives for a complex
 
     Parameters
@@ -1580,8 +1605,8 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
             Dict of ligands if passed - see generate_descriptor_vector, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
 
     Returns
     -------
@@ -1596,9 +1621,9 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1654,8 +1679,8 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
 
 
 def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False,
-                                    modifier=False, NumB=False, Zeff=False, metal_ind=None,
-                                    use_dist=False, size_normalize=False):
+                                    modifier=False, NumB=False, Gval=False, metal_ind=None,
+                                    use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Utility for generating all metal-centered product autocorrelations for a complex
 
     Parameters
@@ -1674,8 +1699,8 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
             Use ox_modifier for metal, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
 
@@ -1690,15 +1715,20 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if len(MRdiag_dict):
+        allowed_strings, labels_strings = [], []
+        for k in list(MRdiag_dict):
+            allowed_strings += [k]
+            labels_strings += [k]
     for ii, properties in enumerate(allowed_strings):
         metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct, 
-                                              modifier=modifier, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+                                              modifier=modifier, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1712,7 +1742,7 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
 
 
 def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, flag_name=False,
-                                               modifier=False, NumB=False, Zeff=False, metal_ind=None):
+                                               modifier=False, NumB=False, Gval=False, metal_ind=None):
     """Utility for generating all metal-centered product autocorrelation derivatives for a complex
 
     Parameters
@@ -1731,8 +1761,8 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
             Use ox_modifier for metal, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
 
@@ -1747,9 +1777,9 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1772,8 +1802,8 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
 
 
 def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
-                                modifier=False, NumB=False, Zeff=False, metal_ind=None,
-                                use_dist=False, size_normalize=False):
+                                modifier=False, NumB=False, Gval=False, metal_ind=None,
+                                use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Utility for generating all metal-centered deltametric autocorrelations for a complex
 
     Parameters
@@ -1792,8 +1822,8 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
             Use ox_modifier for metal, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
 
@@ -1808,16 +1838,21 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings+= ['effective_nuclear_charge']
-        labels_strings+= ['Zeff']
+    if Gval:
+        allowed_strings+= ['group_number']
+        labels_strings+= ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
+    if len(MRdiag_dict):
+        allowed_strings, labels_strings = [], []
+        for k in list(MRdiag_dict):
+            allowed_strings += [k]
+            labels_strings += [k]
     for ii, properties in enumerate(allowed_strings):
         metal_ac = metal_only_deltametric(mol, properties, depth, oct=oct, 
                                           modifier=modifier, metal_ind=metal_ind,
-                                          use_dist=use_dist, size_normalize=size_normalize)
+                                          use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1831,7 +1866,7 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
 
 
 def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_name=False,
-                                           modifier=False, NumB=False, Zeff=False, metal_ind=None):
+                                           modifier=False, NumB=False, Gval=False, metal_ind=None):
     """Utility for generating all metal-centered deltametric autocorrelation derivatives
     for a complex
 
@@ -1851,8 +1886,8 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
             Use ox_modifier for metal, by default False
         NumB : bool, optional
             Use number of bonds as descriptor property, by default False
-        Zeff : bool, optional
-            Use Z effective as descriptor property, by default False
+        Gval : bool, optional
+            Use G value as descriptor property, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
 
@@ -1867,9 +1902,9 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    if Zeff:
-        allowed_strings += ['effective_nuclear_charge']
-        labels_strings += ['Zeff']
+    if Gval:
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
