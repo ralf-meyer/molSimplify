@@ -110,7 +110,7 @@ def obtain_jobinfo(xyzfile, frame=-1, txt=False):
     print("ax_con: ", _ax_con)
     print("eq_con: ", _eq_con)
     job_info = {}
-    info_list = ['ax_con', 'eq_con', 'ax_con_sym', 'eq_con_sym', 'catoms', 'natoms', 'metal_ind']
+    info_list = ['ax_con', 'eq_con', 'ax_con_sym', 'eq_con_sym', 'catoms', 'natoms', 'metal_ind', "symbols"]
     eq_con, ax_con = [], []
     for x in _eq_con:
         eq_con += x
@@ -119,6 +119,7 @@ def obtain_jobinfo(xyzfile, frame=-1, txt=False):
     ax_con_sym = [init_mol.atoms[x].sym for x in ax_con]
     eq_con_sym = [init_mol.atoms[x].sym for x in eq_con]
     catoms = [x for x in eq_con] + [x for x in ax_con]
+    symbols = [init_mol.atoms[ii].sym for ii in range(natoms)]
     for info in info_list:
         job_info.update({info: locals()[info]})
     return job_info

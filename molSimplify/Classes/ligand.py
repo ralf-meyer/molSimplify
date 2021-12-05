@@ -87,6 +87,14 @@ class ligand:
         if self.master_mol.bo_dict:
             save_bo_dict = self.master_mol.get_bo_dict_from_inds(self.index_list)
             self.mol.bo_dict = save_bo_dict
+        if hasattr(self.master_mol, 'prop_tensor'):
+            prop_tensor = np.zeros(shape=(len(self.index_list), len(self.master_mol.prop_name)))
+            c = 0
+            for i in self.index_list:
+                prop_tensor[c, :] = self.master_mol.prop_tensor[i, :]
+                c += 1
+            self.mol.prop_tensor = prop_tensor
+            self.mol.prop_name = self.master_mol.prop_name
         self.ext_int_dict = this_ext_int_dict
     
     def get_lig_mol2(self, transition_metals_only=True, inds=None, include_metal=True, bimetal=False):
