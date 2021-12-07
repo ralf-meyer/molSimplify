@@ -25,7 +25,7 @@ import shlex
 import ast
 import time
 from scipy.spatial import ConvexHull
-from pymol import cmd, stored
+#from pymol import cmd, stored
 
 # no GUI support for now
 
@@ -635,7 +635,7 @@ class protein3D:
         return idx
     
     def getBoundMols(self, h_id, aas_only=False):
-        """Get a list of moleculess bound to a heteroatom, usually a metal.
+        """Get a list of molecules bound to a heteroatom, usually a metal.
 
         Parameters
         ----------
@@ -703,7 +703,8 @@ class protein3D:
                 Rfree = float(temp2[8])
             else:
                 Rfree = 100
-        else:
+            temp = temp[1].split(enter)
+        elif "R VALUE          (WORKING SET, NO CUTOFF)" in text:
             temp = text.split("R VALUE          (WORKING SET, NO CUTOFF)")
             temp2 = temp[-1].split()
             if temp2[1] != 'NULL':
@@ -714,7 +715,7 @@ class protein3D:
                 Rfree = float(temp2[10])
             else:
                 Rfree = 100
-        temp = temp[1].split(enter)
+            temp = temp[1].split(enter)
 
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
