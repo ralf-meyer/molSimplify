@@ -12,7 +12,7 @@ from molSimplify.Scripts.geometry import distance
 
 def getOctBondDistances(mol):
     ## This function gets
-    ## ax and equitorial 
+    ## ax and equatorial 
     ## min and max bond lengths
     liglist, ligdents, ligcons = ligand_breakdown(mol)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign_consistent(
@@ -34,7 +34,7 @@ def getOctBondDistances(mol):
 
 def getLigFormulae(mol):
     ## This function gets
-    ## ax and equitorial 
+    ## ax and equatorial 
     ## ligand names for octahedral complexes 
     axnames = []
     eqnames = []

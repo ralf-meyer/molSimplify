@@ -7,7 +7,6 @@
 
 import os
 import re
-import subprocess
 import sys
 import tempfile
 import time
@@ -19,12 +18,14 @@ from scipy.spatial import ConvexHull
 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
-from molSimplify.Scripts.geometry import distance, connectivity_match, vecangle, rotation_params, rotate_around_axis
+from molSimplify.Scripts.geometry import (distance, connectivity_match,
+                                          vecangle, rotation_params,
+                                          rotate_around_axis)
 from molSimplify.Scripts.rmsd import rigorous_rmsd
 
 try:
     import PyQt5
-    from molSimplify.Classes.miniGUI import *
+    from molSimplify.Classes.miniGUI import miniGUI
 
     # PyQt5 flag
     qtflag = True
@@ -133,97 +134,6 @@ class mol3D:
             if callable(getattr(self, method)):
                 method_string += method + '\n'
         return method_string
-
-    def RCAngle(self, idx1, idx2, idx3, anglei, anglef, angleint=1.0, writegeo=False, dir_name='rc_angle_geometries'):
-        """Generates geometries along a given angle reaction coordinate.
-        In the given molecule, idx1 is rotated about idx2 with respect 
-        to idx3. Operates directly on class.  
-           
-        Parameters
-        ----------
-            idx1 : int
-                Index of bonded atom containing submolecule to be moved.
-            idx2 : int
-                Index of anchor atom 1.
-            idx3 : int
-                Index of anchor atom 2.
-            anglei : float
-                New initial bond angle in degrees.
-            anglef : float
-                New final bond angle in degrees.
-            angleint : float; default is 1.0 degree
-                The angle interval in which the angle is changed
-            writegeo : if True, the generated geometries will be written 
-                to a directory; if False, they will not be written to a
-                directory; default is False
-            dir_name : string; default is 'rc_angle_geometries'
-                The directory to which generated reaction coordinate
-                geoemtries are written, if writegeo=True.
-
-        >>> complex_mol.RCAngle(2, 1, 0, 90, 180, 0.5, True, 'rc_geometries') # Generate reaction coordinate
-        >>>             # geometries using the given structure by changing the angle between atoms 2, 1, 
-        >>>             # and 0 from 90 degrees to 180 degrees in intervals of 0.5 degrees, and write the 
-        >>>             # generated geometries to 'rc_geometries' directory.        
-        >>> complex_mol.RCAngle(2, 1, 0, 180, 90, -0.5) # Generate reaction coordinates
-        >>>             # with the given geometry by changing the angle between atoms 2, 1, and 0 from
-        >>>             # 180 degrees to 90 degrees in intervals of 0.5 degrees, and the generated 
-        >>>             # geometries will not be written to a directory.
-        """
-        if writegeo==True:
-            struc_directory = os.mkdir(dir_name)
-            temp_list = []
-            for ang_val in np.arange(anglei, anglef+angleint, angleint):
-                temp_angle = mol3D() 
-                temp_angle.copymol3D(self)
-                temp_angle.ACM(idx1, idx2, idx3, ang_val)
-                temp_list.append(temp_angle)
-                temp_angle.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(ang_val)))+'.xyz')
-            return temp_list
-
-    def RCDistance(self, idx1, idx2, disti, distf, distint=0.05, writegeo=False, dir_name='rc_distance_geometries'):
-        """Generates geometries along a given distance reaction coordinate.
-        In the given molecule, idx1 is moved with respect to idx2.
-        Operates directly on class.  
-           
-        Parameters
-        ----------
-            idx1 : int
-                Index of bonded atom containing submolecule to be moved.
-            idx2 : int
-                Index of anchor atom 1.
-            disti : float
-                New initial bond distance in angstrom.
-            distf : float
-                New final bond distance in angstrom.
-            distint : float; default is 0.05 angstrom
-                The distance interval in which the distance is changed
-            writegeo : if True, the generated geometries will be written 
-                to a directory; if False, they will not be written to a
-                directory; default is False
-            dir_name : string; default is 'rc_distance_geometries'
-                The directory to which generated reaction coordinate
-                geoemtries are written if writegeo=True.
-
-        >>> complex_mol.RCDistance(1, 0, 1.0, 3.0, 0.01, True, 'rc_geometries') # Generate reaction coordinate  
-        >>>             # geometries using the given structure by changing the distance between atoms 1 and 0 
-        >>>             # from 1.0 to 3.0 angstrom (atom 1 is moved) in intervals of 0.01 angstrom, and write 
-        >>>             # the generated geometries to 'rc_geometries' directory.        
-        >>> complex_mol.RCDistance(1, 0, 3.0, 1.0, -0.02) # Generate reaction coordinates
-        >>>             # geometries using the given structure by changing the distance between atoms 1 and 0 
-        >>>             # from 3.0 to 1.0 angstrom (atom 1 is moved) in intervals of 0.02 angstrom, and 
-        >>>             # the generated geometries will not be written to a directory.
-        """
-
-        if writegeo==True:
-            struc_directory = os.mkdir(dir_name)
-            temp_list = []
-            for dist_val in np.arange(disti, distf+distint, distint):
-                temp_dist = mol3D() 
-                temp_dist.copymol3D(self)
-                temp_dist.BCM(idx1, idx2, dist_val)
-                temp_list.append(temp_dist)
-                temp_dist.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
-            return temp_list
 
     def ACM(self, idx1, idx2, idx3, angle):
         """Performs angular movement on mol3D class. A submolecule is 
@@ -372,6 +282,36 @@ class mol3D:
         self.size = self.molsize()
         self.metal = False
 
+    def assign_graph_from_net(self, path_to_net, return_graph=False):
+        """
+        Uses a .net file to assign a graph (and return if needed)
+
+        Parameters
+        ----------
+            path_to_net : str
+                path to .net file containing the molecular graph
+            return_graph : bool
+                Return the graph in addition to assigning it to self. Default is False.
+
+        Returns
+        ----------
+            graph: np.array
+                a numpy array containing the unattributed molecular graph
+        """
+        with open(path_to_net,'r') as f:
+            strgraph = f.readlines() 
+            graph = []
+            for i, line in enumerate(strgraph):
+                if i == 0:
+                    continue
+                else:
+                    templine = np.array([int(val) for val in line.strip('\n').split(',')])
+                    graph.append(templine)
+            graph = np.array(graph)
+            self.graph = graph
+        if return_graph:
+            return graph
+
     def find_atom(self, sym="X"):
         """
         Find atoms with a specific symbol.
@@ -443,6 +383,46 @@ class mol3D:
         count = 0
         for ii in range(self.natoms):
             if not self.getAtom(ii).symbol() in ["H", "h"]:
+                count += 1
+        return count
+
+    def count_atoms(self, exclude=['H','h','x','X']):
+        """
+        Count the number of atoms, excluding certain atoms.
+
+        Parameters
+        ----------
+            exclude: list
+                list of symbols for atoms to exclude.
+
+        Returns
+        ----------
+            count: integer
+                the number of heavy atoms
+        """
+        count = 0
+        for ii in range(self.natoms):
+            if not self.getAtom(ii).symbol() in exclude:
+                count += 1
+        return count
+
+    def count_specific_atoms(self, atom_types=['x','X']):
+        """
+        Count the number of atoms, excluding certain atoms.
+
+        Parameters
+        ----------
+            atom_types: list
+                list of symbols for atoms to include.
+
+        Returns
+        ----------
+            count: integer
+                the number of heavy atoms
+        """
+        count = 0
+        for ii in range(self.natoms):
+            if self.getAtom(ii).symbol() in atom_types:
                 count += 1
         return count
 
@@ -972,6 +952,7 @@ class mol3D:
             self.bo_dict = save_bo_dict
         else:
             self.convert2OBMol()
+        print(atomIdx, 'from inside mol3d')
         self.OBMol.DeleteAtom(self.OBMol.GetAtom(atomIdx + 1))
         self.mass -= self.getAtom(atomIdx).mass
         self.natoms -= 1
@@ -1425,6 +1406,31 @@ class mol3D:
         """
 
         return [self.atoms[idx] for idx in inds]
+
+    def getAtomwithSyms(self, syms=['X'], return_index=False):
+        """Get atoms with a given list of symbols.
+
+        Parameters
+        ----------
+            idx : list
+                List of desired atom symbols.
+            return_index : bool
+                True or false for returning the atom indices instead of atom3D classes. Returns indices if True.
+
+        Returns
+        -------
+            atom_list : list
+                List of atom3D classes for elements with given symbols.
+
+        """
+        temp_list = []
+        for i, atom in enumerate(self.atoms):
+            if atom.symbol() in syms:
+                temp_list.append(i)
+        if return_index:
+            return temp_list
+        else:
+            return [self.atoms[idx] for idx in temp_list]
 
     def getAtoms(self):
         """Get all atoms within a molecule.
@@ -2434,6 +2440,97 @@ class mol3D:
             ss = "%s \t%f\t%f\t%f" % (atom.sym, xyz[0], xyz[1], xyz[2])
             print(ss)
 
+    def RCAngle(self, idx1, idx2, idx3, anglei, anglef, angleint=1.0, writegeo=False, dir_name='rc_angle_geometries'):
+        """Generates geometries along a given angle reaction coordinate.
+        In the given molecule, idx1 is rotated about idx2 with respect 
+        to idx3. Operates directly on class.  
+           
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            idx3 : int
+                Index of anchor atom 2.
+            anglei : float
+                New initial bond angle in degrees.
+            anglef : float
+                New final bond angle in degrees.
+            angleint : float; default is 1.0 degree
+                The angle interval in which the angle is changed
+            writegeo : if True, the generated geometries will be written 
+                to a directory; if False, they will not be written to a
+                directory; default is False
+            dir_name : string; default is 'rc_angle_geometries'
+                The directory to which generated reaction coordinate
+                geoemtries are written, if writegeo=True.
+
+        >>> complex_mol.RCAngle(2, 1, 0, 90, 180, 0.5, True, 'rc_geometries') # Generate reaction coordinate
+        >>>             # geometries using the given structure by changing the angle between atoms 2, 1, 
+        >>>             # and 0 from 90 degrees to 180 degrees in intervals of 0.5 degrees, and write the 
+        >>>             # generated geometries to 'rc_geometries' directory.        
+        >>> complex_mol.RCAngle(2, 1, 0, 180, 90, -0.5) # Generate reaction coordinates
+        >>>             # with the given geometry by changing the angle between atoms 2, 1, and 0 from
+        >>>             # 180 degrees to 90 degrees in intervals of 0.5 degrees, and the generated 
+        >>>             # geometries will not be written to a directory.
+        """
+        if writegeo==True:
+            struc_directory = os.mkdir(dir_name)
+            temp_list = []
+            for ang_val in np.arange(anglei, anglef+angleint, angleint):
+                temp_angle = mol3D() 
+                temp_angle.copymol3D(self)
+                temp_angle.ACM(idx1, idx2, idx3, ang_val)
+                temp_list.append(temp_angle)
+                temp_angle.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(ang_val)))+'.xyz')
+            return temp_list
+
+    def RCDistance(self, idx1, idx2, disti, distf, distint=0.05, writegeo=False, dir_name='rc_distance_geometries'):
+        """Generates geometries along a given distance reaction coordinate.
+        In the given molecule, idx1 is moved with respect to idx2.
+        Operates directly on class.  
+           
+        Parameters
+        ----------
+            idx1 : int
+                Index of bonded atom containing submolecule to be moved.
+            idx2 : int
+                Index of anchor atom 1.
+            disti : float
+                New initial bond distance in angstrom.
+            distf : float
+                New final bond distance in angstrom.
+            distint : float; default is 0.05 angstrom
+                The distance interval in which the distance is changed
+            writegeo : if True, the generated geometries will be written 
+                to a directory; if False, they will not be written to a
+                directory; default is False
+            dir_name : string; default is 'rc_distance_geometries'
+                The directory to which generated reaction coordinate
+                geoemtries are written if writegeo=True.
+
+        >>> complex_mol.RCDistance(1, 0, 1.0, 3.0, 0.01, True, 'rc_geometries') # Generate reaction coordinate  
+        >>>             # geometries using the given structure by changing the distance between atoms 1 and 0 
+        >>>             # from 1.0 to 3.0 angstrom (atom 1 is moved) in intervals of 0.01 angstrom, and write 
+        >>>             # the generated geometries to 'rc_geometries' directory.        
+        >>> complex_mol.RCDistance(1, 0, 3.0, 1.0, -0.02) # Generate reaction coordinates
+        >>>             # geometries using the given structure by changing the distance between atoms 1 and 0 
+        >>>             # from 3.0 to 1.0 angstrom (atom 1 is moved) in intervals of 0.02 angstrom, and 
+        >>>             # the generated geometries will not be written to a directory.
+        """
+
+        if writegeo==True:
+            struc_directory = os.mkdir(dir_name)
+            temp_list = []
+            for dist_val in np.arange(disti, distf+distint, distint):
+                temp_dist = mol3D() 
+                temp_dist.copymol3D(self)
+                temp_dist.BCM(idx1, idx2, dist_val)
+                temp_list.append(temp_dist)
+                temp_dist.writexyz(str(dir_name)+"/rc_"+str(str("{:.4f}".format(dist_val)))+'.xyz')
+            return temp_list
+
     def returnxyz(self):
         """Print XYZ info of mol3D class instance to stdout. To write to file 
         (more common), use writexyz() instead.
@@ -3127,7 +3224,7 @@ class mol3D:
         f.write(ss)
         f.close()
 
-    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False, writestring=False):
+    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False, writestring=False, withgraph=False, specialheader=False):
         """Write standard XYZ file.
 
         Parameters
@@ -3142,6 +3239,10 @@ class mol3D:
                 If handed a list, will order atoms in a specific order. Default is False.
             writestring : bool, optional
                 Flag to write to a string if True or file if False. Default is False.
+            withgraph : bool, optional
+                Flag to write with graph (after XYZ) if True. Default is False. If True, sparse graph written.
+            specialheader : str, optional
+                String to write information into header. Default is False. If True, a special string is written.
 
         """
 
@@ -3152,8 +3253,12 @@ class mol3D:
         if ignoreX:
             natoms -= sum([1 for i in self.atoms if i.sym == "X"])
 
-        ss += str(natoms) + "\n" + time.strftime(
-            '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
+        if specialheader:
+            ss += str(natoms) + "\n" 
+            ss += specialheader + "\n"
+        else:
+            ss += str(natoms) + "\n" + time.strftime(
+                '%m/%d/%Y %H:%M') + ", XYZ structure generated by mol3D Class, " + self.globs.PROGRAM + "\n"
         for ii in ordering:
             atom = self.getAtom(ii)
             if not (ignoreX and atom.sym == 'X'):
@@ -3164,6 +3269,26 @@ class mol3D:
                 else:
                     ss += "%s \t%f\t%f\t%f\n" % (atom.name,
                                                  xyz[0], xyz[1], xyz[2])
+        if withgraph:
+            from scipy.sparse import csgraph
+            csg = csgraph.csgraph_from_dense(self.graph)
+            x,y = csg.nonzero()
+            tempstr = ''
+            for row1, row2 in zip(x,y):
+                if row1 >= 100:
+                    tempstr += ' '+str(row1)
+                elif row1 >= 10:
+                    tempstr += '  '+str(row1)
+                else:
+                    tempstr += '   '+str(row1)
+                if row2 >= 100:
+                    tempstr += '  '+str(row2)+' S\n'
+                elif row2 >= 10:
+                    tempstr += '   '+str(row2)+' S\n'
+                else:
+                    tempstr += '    '+str(row2)+' S\n'
+            ss += tempstr
+
         if writestring:
             return ss
         else:
@@ -5145,7 +5270,7 @@ class mol3D:
         return results
 
     def get_features(self, lac=True, force_generate=False, eq_sym=False, 
-                     use_dist=False, NumB=False, Zeff=False, size_normalize=False,
+                     use_dist=False, NumB=False, Gval=False, size_normalize=False,
                      alleq=False, strict_cutoff=False, catom_list=None, MRdiag_dict={}):
         """Get geo-based RAC features for this complex (if octahedral)
 
@@ -5171,7 +5296,7 @@ class mol3D:
         if not force_generate:
             geo_type = self.get_geometry_type()
         if force_generate or geo_type['geometry'] == 'octahedral':
-            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Zeff=Zeff, 
+            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Gval=Gval, 
                                                 size_normalize=size_normalize, alleq=alleq, MRdiag_dict=MRdiag_dict)
             results = dict(zip(names, racs))
         else:

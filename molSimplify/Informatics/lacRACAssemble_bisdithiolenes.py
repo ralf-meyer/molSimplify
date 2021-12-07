@@ -61,7 +61,7 @@ def lig_assign_bisdithiolene(inmol,liglist, ligdents, ligcons):
     return ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list
 
 
-def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Zeff=False, \
+def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Gval=False, \
     lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
@@ -83,8 +83,8 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             {"Fe":2, "Co": 3} etc, by default False
         NumB : bool, optional
             Use Number of Bonds as additional RAC, by default False
-        Zeff : bool, optional
-            Use effecitve nuclear charge as RAC, by default False
+        Gval : bool, optional
+            Use group number as RAC, by default False
         lacRACs : bool, optional
             Use ligand_assign_consistent (lac) to represent mol3D given
             if False, use ligand_assign (older), default True
@@ -137,7 +137,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     ## full ACs
     results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
-                                                                modifier=ox_modifier, NumB=NumB, Zeff=Zeff,
+                                                                modifier=ox_modifier, NumB=NumB, Gval=Gval,
                                                                 use_dist=use_dist, size_normalize=size_normalize)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'f','all')
@@ -147,7 +147,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,
                                                                 flag_name=False,
                                                                 custom_ligand_dict=custom_ligand_dict,
-                                                                NumB=NumB, Zeff=Zeff, use_dist=use_dist, size_normalize=size_normalize)
+                                                                NumB=NumB, Gval=Gval, use_dist=use_dist, size_normalize=size_normalize)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
@@ -159,7 +159,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,
                                                             custom_ligand_dict=custom_ligand_dict,
-                                                            NumB=NumB, Zeff=Zeff, use_dist=use_dist, size_normalize=size_normalize)
+                                                            NumB=NumB, Gval=Gval, use_dist=use_dist, size_normalize=size_normalize)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
@@ -169,13 +169,13 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     #print('getting metal ACs')
     results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
                                                             modifier=ox_modifier,
-                                                            NumB=NumB,Zeff=Zeff, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+                                                            NumB=NumB,Gval=Gval, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
 
     results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
                                                         modifier=ox_modifier,
-                                                        NumB=NumB,Zeff=Zeff, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+                                                        NumB=NumB,Gval=Gval, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 

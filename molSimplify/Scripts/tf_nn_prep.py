@@ -46,8 +46,8 @@ def spin_classify(metal, spin, ox):
     return high_spin, spin_ops
 
 
-# wrapper to get AN predictions from a known mol3D()
-# generally unsfae
+# wrapper to get ANN predictions from a known mol3D()
+# generally unsafe
 def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
 
     tensorflow_silence()
@@ -74,7 +74,7 @@ def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
     split, latent_split = ANN_supervisor(
         'split', descriptors, descriptor_names, debug)
 
-    # call ANN for bond lenghts
+    # call ANN for bond lengths
     if oxidation_state == 2:
         r_ls, latent_r_ls = ANN_supervisor(
             'ls_ii', descriptors, descriptor_names, debug)
@@ -99,7 +99,7 @@ def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
 
 def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     # tests if ligand combination
-    # is compatiable with the ANN
+    # is compatible with the ANN
     # INPUT:
     #   - ligs:  list of mol3D class, ligands
     #   - batlist: list of int, occupations
@@ -108,7 +108,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     # OUTPUT:
     #   - valid: bool
     # tcats controls
-    # manual overide
+    # manual override
     # of connection atoms
 
     n_ligs = len(ligs)
@@ -120,9 +120,9 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
 
     unique_ligands = []
     axial_ind_list = []
-    equitorial_ind_list = []
+    equatorial_ind_list = []
     axial_ligs = []
-    equitorial_ligs = []
+    equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
     eq_ligs = []
@@ -160,7 +160,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             ax_dent = 2
             ax_tcat = tcats[0]
             ax_occs.append(1)
-            equitorial_ligs.append(ligs[0])
+            equatorial_ligs.append(ligs[0])
             eq_dent = 2
             eq_tcat = tcats[0]
             eq_occs.append(2)
@@ -172,7 +172,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                     ax_occs.append(1)
                     ax_tcat = tcats[ligs.index(key)]
                 elif unique_dict[key] == 2:
-                    equitorial_ligs.append(key)
+                    equatorial_ligs.append(key)
                     eq_dent = 2
                     eq_occs.append(2)
                     eq_tcat = tcats[ligs.index(key)]
@@ -197,12 +197,12 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             # mulitple points
             if len(this_bat) > 1:
                 if debug:
-                    print(('adding ' + str(this_lig) + ' to equitorial'))
-                equitorial_ligs.append(this_lig)
+                    print(('adding ' + str(this_lig) + ' to equatorial'))
+                equatorial_ligs.append(this_lig)
                 eq_dent = 4
                 eq_tcat = tcats[i]
                 eq_occs.append(1)
-                equitorial_ind_list.append(i)
+                equatorial_ind_list.append(i)
             if debug:
                 print(('adding ' + str(this_lig) + ' to axial'))
             axial_ligs.append(this_lig)
@@ -238,18 +238,18 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                     axial_ind_list.append(i)
                 else:
                     if debug:
-                        print(('adding ' + str(this_lig) + ' to equitorial'))
-                    equitorial_ligs.append(this_lig)
+                        print(('adding ' + str(this_lig) + ' to equatorial'))
+                    equatorial_ligs.append(this_lig)
                     eq_dent = this_dent
                     eq_tcat = tcats[i]
                     eq_occs.append(occs[i])
-                    equitorial_ind_list.append(i)
+                    equatorial_ind_list.append(i)
             else:
-                equitorial_ligs.append(this_lig)
+                equatorial_ligs.append(this_lig)
                 eq_dent = this_dent
                 eq_tcat = tcats[i]
                 eq_occs.append(occs[i])
-                equitorial_ind_list.append(i)
+                equatorial_ind_list.append(i)
     if (len(axial_ligs) > 2):
         print(('axial lig error : ', axial_ligs, ax_dent, ax_tcat, ax_occs))
         valid = False
@@ -257,15 +257,15 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print(('eq occupations  ' + str(eq_occs)))
         print(('eq dent   ' + str(eq_dent)))
     if not (4.0 / (float(eq_dent) * sum(eq_occs)) == 1):
-        print(('equitorial ligs error: ', equitorial_ligs, eq_dent, eq_tcat))
+        print(('equatorial ligs error: ', equatorial_ligs, eq_dent, eq_tcat))
         valid = False
     if valid and len(axial_ind_list) == 0:  # get the index position in ligs
         axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
-    if valid and len(equitorial_ind_list) == 0:  # get the index position in ligs
-        equitorial_ind_list = [ligs.index(eq_lig)
-                               for eq_lig in equitorial_ligs]
+    if valid and len(equatorial_ind_list) == 0:  # get the index position in ligs
+        equatorial_ind_list = [ligs.index(eq_lig)
+                               for eq_lig in equatorial_ligs]
 
-    return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list, ax_occs, eq_occs, pentadentate
+    return valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list, ax_occs, eq_occs, pentadentate
 
 
 def check_metal(metal, oxidation_state):
@@ -330,7 +330,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     tcats = newcats
     occs = newoccs
     if args.debug:
-        print('tf_nn has finisihed prepping ligands')
+        print('tf_nn has finished prepping ligands')
 
     if not args.geometry == "oct":
         emsg.append(
@@ -344,6 +344,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if valid:
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(this_metal, oxidation_state)
+        if args.debug:
+            print(f'valid after running check_metal? {valid}')
         if int(oxidation_state) in [3, 4, 5]:
             catalytic_moieties = ['oxo', 'x', 'hydroxyl', '[O--]', '[OH-]']
             if args.debug:
@@ -358,6 +360,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('metal is ' + str(this_metal)))
             print(('metal validity', valid))
     if not valid and not catalysis:
+        emsg.append("\n The only metals that are supported are Fe, Mn, Cr, Co, and Ni")
         emsg.append("\n Oxidation state not available for this metal")
         ANN_reason = 'ox state not available for metal'
     if valid:
@@ -376,8 +379,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                "{0:.2f}".format(metal_check_time) + ' seconds'))
 
     if valid or catalysis:
-        (valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list,
-         equitorial_ind_list, ax_occs, eq_occs, pentadentate) = tf_check_ligands(
+        (valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list,
+         equatorial_ind_list, ax_occs, eq_occs, pentadentate) = tf_check_ligands(
             ligs, batslist, dents, tcats, occs, args.debug)
 
         if args.debug:
@@ -388,13 +391,13 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('Bats (backbone atoms)', batslist))
             print(('lig validity', valid))
             print(('ax ligs', axial_ligs))
-            print(('eq ligs', equitorial_ligs))
+            print(('eq ligs', equatorial_ligs))
             print(('spin is', spin))
 
         if catalysis:
             valid = False
     if (not valid) and (not catalysis):
-        ANN_reason = 'found incorrect ligand symmetry'
+        ANN_reason = 'found incorrect ligand symmetry' # or, an invalid metal, oxidation state, spin state combination was used
     elif not valid and catalysis:
         if args.debug:
             print('tf_nn detects catalytic')
@@ -441,8 +444,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print([h.mol.cat for h in ax_ligands_list])
 
         if args.debug:
-            print(('loading equitorial ligands ' + str(equitorial_ligs)))
-        for ii, eql in enumerate(equitorial_ligs):
+            print(('loading equatorial ligands ' + str(equatorial_ligs)))
+        for ii, eql in enumerate(equatorial_ligs):
             eq_lig3D, r_emsg = lig_load(eql, licores)  # load ligand
             net_lig_charge += eq_lig3D.charge
             if r_emsg:
@@ -457,14 +460,14 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             if newdecs:
                 if args.debug:
                     print(('newdecs' + str(newdecs)))
-                    print(('equitorial_ind_list is ' + str(equitorial_ind_list)))
+                    print(('equatorial_ind_list is ' + str(equatorial_ind_list)))
                 c = 0
-                if newdecs[equitorial_ind_list[ii]]:
+                if newdecs[equatorial_ind_list[ii]]:
                     if args.debug:
                         print(('decorating ' + str(eql) + ' with ' + str(
-                            newdecs[equitorial_ind_list[ii]]) + ' at sites ' + str(newdec_inds[equitorial_ind_list[ii]])))
-                    eq_lig3D = decorate_ligand(args, eql, newdecs[equitorial_ind_list[ii]],
-                                               newdec_inds[equitorial_ind_list[ii]])
+                            newdecs[equatorial_ind_list[ii]]) + ' at sites ' + str(newdec_inds[equatorial_ind_list[ii]])))
+                    eq_lig3D = decorate_ligand(args, eql, newdecs[equatorial_ind_list[ii]],
+                                               newdec_inds[equatorial_ind_list[ii]])
                     c += 1
 
             eq_lig3D.convert2mol3D()  # mol3D representation of ligand
@@ -665,7 +668,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         # in order for molSimplify to understand if
         ANN_bondl = len(ligs) * [False]
         added = 0
-        for ii, eql in enumerate(equitorial_ind_list):
+        for ii, eql in enumerate(equatorial_ind_list):
             for jj in range(0, eq_occs[ii]):
                 ANN_bondl[added] = r[2]
                 added += 1

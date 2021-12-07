@@ -154,7 +154,6 @@ def import_from_cif(fst, return_extra_cif_info=False):
         emsg = emsg.append('Error in creating unit cell from cif informtation')
         exit_status = 2
     for i, rows in enumerate(cell_vector):
-        print(rows)
         for j, elements in enumerate(rows):
             if abs(elements) <= 1e-8:
                 cell_vector[i][j] = 0

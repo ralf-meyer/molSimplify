@@ -148,10 +148,7 @@ def XYZ_connected(cell,cart_coords,adj_mat):
     connected_components=[0]
     checked=[]
     counter=0
-    # print(cart_coords.shape)
-    # print(adj_mat.shape)
     while len(connected_components) < len(cart_coords):
-        # print(connected_components,'connected_components',counter)
         current_node = connected_components[counter]
         for j,v in enumerate(adj_mat[current_node]):
             if v==1 and j not in checked and j not in connected_components:
@@ -186,7 +183,8 @@ def returnXYZandGraph(filename,atoms,cell,fcoords,molgraph):
         cart_coord=np.dot(fcoord,cell)
         coord_list.append([cart_coord[0],cart_coord[1],cart_coord[2]])
     tmpstr=",".join([at for at in atoms])
-    np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
+    if filename != None: 
+        np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
     return coord_list, molgraph
 
 def writeXYZcoords(filename,atoms,coords):
