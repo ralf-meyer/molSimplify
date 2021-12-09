@@ -690,7 +690,7 @@ class protein3D:
         missing_aas = []
         conf = []
         bonds = {}
-
+        
         # get R and Rfree values (text is full file)
         if "R VALUE            (WORKING SET)" in text:
             temp = text.split("R VALUE            (WORKING SET)")
@@ -719,7 +719,7 @@ class protein3D:
         else:
             R = -100
             Rfree = 100
-
+        
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
             text = text.split("M RES C SSSEQI")
