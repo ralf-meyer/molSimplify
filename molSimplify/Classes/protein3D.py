@@ -86,6 +86,7 @@ class protein3D:
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
+
         Parameters
         ----------
             aas : dictionary
@@ -176,6 +177,7 @@ class protein3D:
         """ Automatically choose the conformation of a protein3D class
         instance based first on what the greatest occupancy level is and then
         the first conformation ihe alphabet with all else equal.
+        
         """
         for c in self.conf:
             c_ids = []
