@@ -166,8 +166,8 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
         # Final scf---
         psi4.set_options({
             "maxiter": 50,
-            "D_CONVERGENCE": 3e-6,
-            "E_CONVERGENCE": 3e-6,
+            "D_CONVERGENCE": 3e-5,
+            "E_CONVERGENCE": 3e-5,
             "fail_on_maxiter": True})
     else:
         os.chdir(rundir)
@@ -218,10 +218,10 @@ def run_general(psi4_config, functional):
     psi4_scr = './'
     filename = "output"
     basedir = os.getcwd()
-    rundir = "./" + functional
+    rundir = "./" + functional.replace("(", "l-").replace(")", "-r")
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
-    shutil.copyfile("geo.xyz", functional + '/geo.xyz')
+    shutil.copyfile("geo.xyz", functional.replace("(", "l-").replace(")", "-r") + '/geo.xyz')
     ensure_dir(rundir)
     os.chdir(rundir)
     psi4.core.set_output_file(filename + '.dat', False)
@@ -238,19 +238,32 @@ def run_general(psi4_config, functional):
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
-    if True:
-        if (not functional in b3lyp_d) and (not "hfx_" in functional):
-            e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
-        elif "hfx_" in functional:
-            basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
-            print("HFX sampling: ", basefunc, hfx)
-            e, wfn = psi4.energy("scf", dft_functional=get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
-        else:
-            print("customized b3lyp with different HFX: ", functional)
-            e, wfn = psi4.energy("scf", dft_functional=b3lyp_d[functional],  molecule=mol, return_wfn=True)
-        wfn.to_file("wfn.180")
+    if not "ccsd" in functional:
+        try:
+            if (not functional in b3lyp_d) and (not "hfx_" in functional) and (not "ccsd" in functional):
+                e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+            elif "hfx_" in functional:
+                basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
+                print("HFX sampling: ", basefunc, hfx)
+                e, wfn = psi4.energy("scf", dft_functional=get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
+            elif "ccsd" in functional:
+                print("running CC: ", functional)
+                psi4.set_options({'reference': d['ref'].replace("ks", "hf")})
+                e = psi4.energy(functional, molecule=mol)
+            else:
+                print("customized b3lyp with different HFX: ", functional)
+                e, wfn = psi4.energy("scf", dft_functional=b3lyp_d[functional],  molecule=mol, return_wfn=True)
+            # wfn.to_file("wfn.180")
+        except:
+            print("This calculation does not converge.")
     else:
-        print("This calculation does not converge.")
+        print("running CC: ", functional)
+        psi4.set_options({
+            'reference': d['ref'].replace("ks", "hf"),
+            # 'R_CONVERGENCE': 1e-5, 
+            # "GUESS": "GWH",
+            })
+        e = psi4.energy(functional, molecule=mol)
     success = check_sucess()
     for filename in os.listdir("./"):
         if ("psi." in filename) or ("default" in filename):
@@ -288,8 +301,9 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
     try:
-        e, wfn = psi4.energy("scf", molecule=mol, return_wfn=True, dft_functional=get_hfx_functional(functional, hfx))
-        wfn.to_file("wfn.180")
+        e, wfn_o = psi4.energy("scf", molecule=mol, return_wfn=True, dft_functional=get_hfx_functional(functional, hfx))
+        wfn_o.to_file("wfn.180")
+        # os.remove(wfn)
     except:
         print("This calculation does not converge.")
     success = check_sucess()
@@ -383,6 +397,38 @@ def write_jobscript(psi4_config):
                 fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup2.out\n")
                 fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup3.out\n")
             fo.write("mv * $SGE_O_WORKDIR\n")
+    elif psi4_config["cluster"] == "supercloud":
+        mem = int(psi4_config['memory'].split(" ")[0])/1000
+        with open("./jobscript.sh", "w") as fo:
+            fo.write("#!/bin/bash\n")
+            fo.write("#SBATCH --job-name=psi4_multiDFA\n")
+            fo.write("#SBATCH --nodes=1\n")
+            fo.write("#SBATCH --ntasks-per-node=%d\n"%psi4_config['num_threads'])
+            if "queue" in psi4_config and psi4_config["queue"] == "normal":
+                fo.write("#SBATCH --partition=normal\n")
+            fo.write("#SBATCH --mem=%dG\n\n"%mem)
+
+            fo.write("source /etc/profile\n")
+            fo.write("source ~/.profile\n")
+            fo.write("source ~/.bashrc\n")
+            fo.write("conda activate mols\n")
+            fo.write("export PSI_SCRATCH='./'\n\n")
+            fo.write("subdir=$PWD\n")
+            fo.write("echo subdir: $subdir\n")
+            fo.write("echo tmpdir: $TMPDIR\n")
+            fo.write("cp -rf * $TMPDIR\n")
+            fo.write("cd $TMPDIR\n\n")
+
+            fo.write("python -u loop_run.py  > $subdir/nohup1.out\n")
+            fo.write("python -u loop_run.py  > $subdir/nohup2.out\n")
+            fo.write("python -u loop_run.py  > $subdir/nohup3.out\n")
+            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                fo.write("echo rescuing...\n")
+                fo.write("python -u loop_rescue.py > $subdir/rescue_nohup1.out\n")
+                fo.write("python -u loop_rescue.py > $subdir/rescue_nohup2.out\n")
+                fo.write("python -u loop_rescue.py > $subdir/rescue_nohup3.out\n")
+            fo.write("rm */psi.* */dfh.* *-*/*.npy b3lyp/*.molden b3lyp/*1step*\n")
+            fo.write("cp -rf * $subdir\n")
     elif psi4_config["cluster"] == "expanse":
         mem = int(psi4_config['memory'].split(" ")[0])/psi4_config['num_threads']/1000
         with open("./jobscript.sh", "w") as fo:

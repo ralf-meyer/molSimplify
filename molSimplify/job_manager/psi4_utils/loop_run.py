@@ -36,22 +36,22 @@ else:
             success_count += 1
 for ii, functional in enumerate(psi4_config["functional"]):
     print("===%d: %s===" % (ii, functional))
-    if not os.path.isdir(functional):
-        os.makedirs(functional)
+    if not os.path.isdir(functional.replace("(", "l-").replace(")", "-r")):
+        os.makedirs(functional.replace("(", "l-").replace(")", "-r"))
         success = run_general(psi4_config, functional)
         print("success: ", success)
         if success:
             success_count += 1
     else:
         print("folder exists.")
-        files = os.listdir(functional)
+        files = os.listdir(functional.replace("(", "l-").replace(")", "-r"))
         resubed = False
-        if not os.path.isfile(functional + "/output.dat"):
+        if not os.path.isfile(functional.replace("(", "l-").replace(")", "-r") + "/output.dat"):
             resubed = True
         else:
-            with open(functional + "/output.dat", "r") as fo:
+            with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
-            if not "==> Iterations <==" in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt))):
+            if not "==> Iterations <==" in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt) or ("@DF-UHF iter" in txt) or ("@DF-RHF iter" in txt))):
                 resubed = True
         if resubed:
             print("previous errored out. resubmitting...")
@@ -60,7 +60,7 @@ for ii, functional in enumerate(psi4_config["functional"]):
             if success:
                 success_count += 1
         else:
-            with open(functional + "/output.dat", "r") as fo:
+            with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
             if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(functional + "/wfn.180.npy"):
                 print("success: ", True)
