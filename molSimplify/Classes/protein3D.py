@@ -25,6 +25,7 @@ import shlex
 import ast
 import time
 from scipy.spatial import ConvexHull
+#from pymol import cmd, stored
 
 # no GUI support for now
 
@@ -85,6 +86,7 @@ class protein3D:
     
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
+
         Parameters
         ----------
             aas : dictionary
@@ -175,6 +177,7 @@ class protein3D:
         """ Automatically choose the conformation of a protein3D class
         instance based first on what the greatest occupancy level is and then
         the first conformation ihe alphabet with all else equal.
+        
         """
         for c in self.conf:
             c_ids = []
@@ -236,19 +239,39 @@ class protein3D:
             
     def getMissingAtoms(self):
         """ Get missing atoms of a protein3D class.
-
+        
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()  
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> for symbol_list in pdb_system.getMissingAtoms(): 
+        >>>     for symbol in symbol_list:      
+        >>>         print(symbol.sym) # Prints the symbol of missing atom
+        >>>         print(symbol.coords()) # Prints the coordinates of the missing atom - they are all the 
+        >>>                         # coordinates of origin by default (0.0,0.0,0.0) for missing atoms
         """
         return self.missing_atoms.values()
     
     def getMissingAAs(self):
         """ Get missing amino acid residues of a protein3D class.
 
+        Example demonstration of this method:
+            
+        >>> pdb_system = protein3D()    
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getMissingAAs()   # This gives a list of AA3D objects
+        >>> [pdb_system.getMissingAAs()[x].three_lc for x in range(len(val.getMissingAAs()))] # This returns
+        >>>                     # the list of missing AAs by their 3-letter codes
         """
         return self.missing_aas
     
     def countAAs(self):
         """ Return the number of amino acid residues in a protein3D class.
 
+        Example demonstration of this method:
+        
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.countAAs() # This return the number of AAs in the PDB for all the chains.
         """
         return self.naas
 
@@ -269,6 +292,12 @@ class protein3D:
         ----------
             inds: list
                 a list of atom indices with the specified symbol.
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.findAtom(sym="S", aa=True) # Returns indices of sulphur atoms present in amino acids
+        >>> pdb_system.findAtom(sym="S", aa=False) # Returns indices of sulphur atoms present in heteromolecules
         """
         inds = []
         if aa:
@@ -300,11 +329,17 @@ class protein3D:
         -------
             inds: set
                 a set of amino acid indices with the specified symbol.
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.findAA(three_lc = 'MET') # Returns a set of pairs where each pair is a combination of the chain name
+        >>>                              # and the index of the amino acid specified (in this case, 'MET')
         """
         inds = set()
-        for aa in self.aas:
-            if aa.three_lc == three_lc:
-                inds.add((aa.chain, aa.id))
+        for aa in self.aas.values():
+            if aa[0].three_lc == three_lc:
+                inds.add((aa[0].chain, aa[0].id))
         return inds
 
     def getChain(self, chain_id):
@@ -320,6 +355,11 @@ class protein3D:
         -------
             p : protein3D
                 A protein3D instance consisting of just the chain of interest
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getChain('A') # Get chain A of the PDB
         """
         p = protein3D()
         p.setChains({chain_id: self.chains[chain_id]})
@@ -367,11 +407,25 @@ class protein3D:
         ----------
             a_id : int
                 the index of the desired atom whose molecule we want to find
+            aas_only : boolean
+                True if we want ito find atoms contained in amino acids only.
+                False if we want atoms contained in all molecules. Default is False.
 
         Returns
         -------
             mol : AA3D or mol3D
                 the amino acid residue or heteromolecule containing the atom
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getMolecule(a_id=2166) # This returns an molSimplify.Classes.AA3D.AA3D obejct indicating 
+        >>>                                   # we that the atom is part of an amino acid
+        >>> pdb_system.getMolecule(a_id=2166).three_lc() # This prints the three letter code of the amino acid of which
+        >>>                                              # atom 2166 is a part of
+        >>> pdb_system.getMolecule(a_id=9164) # This returns a mol3D object indicating that the atom is part of a molecule
+        >>>                                   # that is not an amino acid
+        >>> pdb_system.getMolecule(a_id=9164).name # This prints the name of the molecule, in this case, it is 'TAU'
         """
         for s in self.aas.values():
             for mol in s: # mol is AA3D
@@ -394,6 +448,12 @@ class protein3D:
         ----------
             atoms_stripped : list
                 list of atom3D indices that should be removed
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.stripAtoms([2166, 4442, 6733, 2165]) # This removes the list of atoms with 
+        >>>                                                # indices listedin the code
         """
         atoms = self.atoms
         a_ids = self.a_ids
@@ -416,15 +476,20 @@ class protein3D:
                     if a_id in atoms_stripped:
                         if (a_id, atom) in elt.atoms:
                             elt.atoms.remove((a_id, atom))
+                            if atom in elt.c:
+                                elt.c.remove(atom)
+                            elif atom in elt.n:
+                                elt.n.remove(atom)
                         elif atom in elt.atoms:
                             elt.atoms.remove(atom)
                         atoms_stripped.remove(a_id)
                         if atom in self.bonds.keys():
                             for at in self.bonds[atom]:
-                                temp = self.bonds[at].copy()
-                                if atom in temp:
-                                    temp.remove(atom)
-                                self.bonds[at] = temp
+                                if at in self.bonds.keys():
+                                    temp = self.bonds[at].copy()
+                                    if atom in temp:
+                                        temp.remove(atom)
+                                    self.bonds[at] = temp
                             del self.bonds[atom]
                         del atoms[a_id]
                         del a_ids[atom]
@@ -439,8 +504,10 @@ class protein3D:
                             del self.hetmols[tup]
         while len(atoms_stripped) != 0:
             a_id = atoms_stripped[0]
-            atom = atoms[a_id]
             atoms_stripped.pop(0)
+            if a_id not in atoms.keys():
+                continue
+            atom = atoms[a_id]
             if atom in self.bonds.keys():
                 for at in self.bonds[atom]:
                     temp = self.bonds[at].copy()
@@ -462,12 +529,22 @@ class protein3D:
             hetmol : str
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D() 
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.stripHetMol()
         """
-        h = list(self.hetmols.keys()).copy()
-        for k in h:
-            for m in h[k]:
+        hets = self.hetmols.copy()
+        for k in hets.keys():
+            if k not in self.hetmols.keys():
+                continue
+            for m in hets[k]:
                 if m.name == hetmol:
-                    self.stripAtoms(m.atoms)
+                    ids = []
+                    for a in m.atoms:
+                        ids.append(self.a_ids[a])
+                    self.stripAtoms(ids)
                     del self.hetmols[k]
                 
     def findMetal(self, transition_metals_only=True):
@@ -481,15 +558,20 @@ class protein3D:
         -------
             metal_list : list
                 List of indices of metal atoms in protein3D.
+
+        Example of fetching a PDB file:
+  
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7')
         """
         if not self.metals:
             metal_list = []
-            for l in self.hetmols.keys(): # no metals in AAs
+            for l in self.hetmols.values(): # no metals in AAs
                 for m in l:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
                             if a.occup == 1 or a in self.bonds.keys():
-                                metal_list.append(i)
+                                metal_list.append(self.getIndex(a))
             self.metals = metal_list
         return (self.metals)
 
@@ -555,7 +637,7 @@ class protein3D:
         return idx
     
     def getBoundMols(self, h_id, aas_only=False):
-        """Get a list of moleculess bound to a heteroatom, usually a metal.
+        """Get a list of molecules bound to a heteroatom, usually a metal.
 
         Parameters
         ----------
@@ -610,7 +692,7 @@ class protein3D:
         missing_aas = []
         conf = []
         bonds = {}
-
+        
         # get R and Rfree values (text is full file)
         if "R VALUE            (WORKING SET)" in text:
             temp = text.split("R VALUE            (WORKING SET)")
@@ -623,7 +705,8 @@ class protein3D:
                 Rfree = float(temp2[8])
             else:
                 Rfree = 100
-        else:
+            temp = temp[1].split(enter)
+        elif "R VALUE          (WORKING SET, NO CUTOFF)" in text:
             temp = text.split("R VALUE          (WORKING SET, NO CUTOFF)")
             temp2 = temp[-1].split()
             if temp2[1] != 'NULL':
@@ -634,8 +717,11 @@ class protein3D:
                 Rfree = float(temp2[10])
             else:
                 Rfree = 100
-        temp = temp[1].split(enter)
-
+            temp = temp[1].split(enter)
+        else:
+            R = -100
+            Rfree = 100
+        
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
             text = text.split("M RES C SSSEQI")

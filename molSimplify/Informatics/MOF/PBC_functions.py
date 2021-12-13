@@ -177,6 +177,16 @@ def writeXYZandGraph(filename,atoms,cell,fcoords,molgraph):
     np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
 
 
+def returnXYZandGraph(filename,atoms,cell,fcoords,molgraph):
+    coord_list = []
+    for i,fcoord in enumerate(fcoords):
+        cart_coord=np.dot(fcoord,cell)
+        coord_list.append([cart_coord[0],cart_coord[1],cart_coord[2]])
+    tmpstr=",".join([at for at in atoms])
+    if filename != None: 
+        np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
+    return coord_list, molgraph
+
 def writeXYZcoords(filename,atoms,coords):
     with open(filename,"w") as fo:
         fo.write("%i\n\n"%len(atoms))

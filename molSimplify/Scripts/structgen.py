@@ -74,7 +74,7 @@ def getbackbcombsall(nums):
     Returns
     -------
         bbcombs : list
-            List of possible backbone atom combinations
+            List of possible backbone atom combinations.
 
     """
     bbcombs = []
@@ -178,6 +178,8 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 if globs.testTF():
                     # new RACs-ANN
                     from molSimplify.Scripts.tf_nn_prep import tf_ANN_preproc
+                    if args.debug:
+                        print('Using tf_ANN_preproc')
                     ANN_flag, ANN_reason, ANN_attributes, catalysis_flag = tf_ANN_preproc(
                         args, ligands, occs, dents, batslist, tcats, licores)
                 else:
@@ -196,7 +198,10 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 ANN_bondl = len(
                     [item for items in batslist for item in items])*[False]
                 if args.debug:
-                    print(("ANN called failed with reason: " + ANN_reason))
+                    if ANN_reason == 'found incorrect ligand symmetry': # This is a workaround so as to not have to change report files checked by Travis CI when running test cases, which would require everyone using molSimplify from source to have to git pull the new files before any new commits
+                        print(("ANN call failed with reason: either found incorrect ligand symmetry, or see ANN messages above"))
+                    else:
+                        print(("ANN call failed with reason: " + ANN_reason))
         #except:
         else:
             print("ANN call rejected")
@@ -499,7 +504,7 @@ def modifybackbonep(backb, pangles):
     Returns
     -------
         backb : list
-            List of distorted backbone points
+            List of distorted backbone points.
             
     """
     for i, ll in enumerate(pangles):
@@ -523,7 +528,7 @@ def distortbackbone(backb, distort):
     Returns
     -------
         backb : list
-            List of distorted backbone points
+            List of distorted backbone points.
         
     """
     for i in range(1, len(backb)):
@@ -621,7 +626,7 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
     ffav = 'mmff94, uff, ghemical, gaff, mmff94s'  # force fields
 
     if ff.lower() not in ffav:
-        print('Requested force field not available. Defaulting to MMFF94')
+        print('Requested force field not available. Defaulting to UFF')
         ff = 'uff'
     if debug:
         print(('using ff: ' + ff))
@@ -681,10 +686,20 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
                         deleted_bonds += 1
                 print(('FFopt deleted ' + str(deleted_bonds) + ' bonds'))
                 # then add back one metal-ligand bond for FF
-                if OBMol.GetAtom(m+1).GetValence() == 0:
+                try:
+                    numNeighbors = OBMol.GetAtom(m+1).GetValence()
+                except AttributeError:
+                    # quick workaround for openbabel 3.1.0 compatibility
+                    numNeighbors = OBMol.GetAtom(m + 1).GetExplicitDegree()
+                if numNeighbors == 0:
                     # getBondedAtomsOct(m,deleted_bonds+len(bridgingatoms)):
                     for i in mol.getBondedAtoms(m):
-                        if OBMol.GetAtom(m+1).GetValence() < 1 and i not in bridgingatoms:
+                        # quick workaround for openbabel 3.1.0 compatibility
+                        try:
+                            _numNeighbors = OBMol.GetAtom(m+1).GetValence()
+                        except AttributeError:
+                            _numNeighbors = OBMol.GetAtom(m + 1).GetExplicitDegree()
+                        if _numNeighbors < 1 and i not in bridgingatoms:
                             OBMol.AddBond(m+1, i+1, 1)
         # freeze small ligands
         for cat in frozenats:
@@ -808,7 +823,7 @@ def findsmarts(lig3D, smarts, catom):
         smarts : list
             List of SMARTS patterns (strings).
         catom : int
-            onnecting atom of lig3D (zero based numbering).
+            connecting atom of lig3D (zero based numbering).
 
     Returns
     -------
@@ -847,7 +862,7 @@ def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBen
         core3D : mol3D
             mol3D instance of partially built complex.
         EnableAutoLinearBend : bool
-            Flag for enabling automatic bending of linear ligands (e.g. superoxo)
+            Flag for enabling automatic bending of linear ligands (e.g. superoxo).
 
     Returns
     -------
@@ -1235,7 +1250,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
         args : Namespace
             Namespace of arguments.
         lig3D : mol3D
-            mol3D class instance of the ligand
+            mol3D class instance of the ligand.
         atom0 : int
             Ligand connecting atom index.
         ligand : str
@@ -1243,7 +1258,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
         metal : atom3D
             atom3D class instance of the first atom (usually a metal).
         MLb : float
-            Custom M-L bond length (if any)
+            Custom M-L bond length (if any).
         i : int
             Ligand index number.
         ANN_flag : bool
@@ -1301,7 +1316,7 @@ def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
         metal : atom3D
             atom3D class instance of the first atom (usually a metal).
         lig3D : mol3D
-            mol3D class instance of the ligand
+            mol3D class instance of the ligand.
         atom0 : int
             Ligand connecting atom index.
         ligand : str
@@ -1360,7 +1375,7 @@ def get_batoms(args, batslist, ligsused):
         batslist : list
             List of backbone connecting atoms for each ligand.
         ligsused : int
-            Number of ligands placed
+            Number of ligands placed.
 
     Returns
     -------
@@ -1384,11 +1399,11 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
         args : Namespace
             Namespace of arguments.
         lig3D : mol3D
-            mol3D class instance of the ligand
+            mol3D class instance of the ligand.
         core3D : mol3D
-            mol3D class instance of partially build complex
+            mol3D class instance of partially built complex.
         catoms : list
-            List of ligand connecting atom indices
+            List of ligand connecting atom indices.
         r1 : list
             Coordinates of ligand first connecting atom.
         r0 : list
@@ -1398,7 +1413,7 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
         batoms : list
             List of backbone atom indices.
         corerefcoords : list
-            Coordinates of core reference atom
+            Coordinates of core reference atom.
 
     Returns
     -------
@@ -1488,7 +1503,7 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     return lig3D_aligned, r1b
 
 def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarget, coreref, MLoptbds):
-    """Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.. 
+    """Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.
 
     Parameters
     ----------
@@ -1505,7 +1520,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
         r0 : list
             Coordinates of core reference point.
         core3D : mol3D
-            mol3D class instance of partially build complex.
+            mol3D class instance of partially built complex.
         rtarget : list
             Coordinates of target point for second connecting atom.
         coreref : atom3D
@@ -1621,7 +1636,7 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=
         i : int, optional
             Ligand serial number. Default is 0.
         EnableAutoLinearBend : bool, optional
-            Flag for enabling automatic bending of linear ligands (e.g. superoxo)
+            Flag for enabling automatic bending of linear ligands (e.g. superoxo).
 
     Returns
     -------
@@ -1672,9 +1687,9 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         cpoint : atom3D
             atom3D class instance containing backbone connecting point.
         batoms : list
-            List of backbone atom indices
+            List of backbone atom indices.
         m3D : mol3D
-            mol3D of backbone template
+            mol3D of backbone template.
         core3D : mol3D
             mol3D class instance of partially built complex.
         coreref : atom3D
@@ -1686,7 +1701,7 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         catoms : list
             List of ligand connecting atom indices.
         MLb : list
-            Custom M-L bond length (if any)
+            Custom M-L bond length (if any).
         ANN_flag : bool
             Flag for ANN activation.
         ANN_bondl : list
@@ -1759,9 +1774,9 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         cpoint : atom3D
             atom3D class instance containing backbone connecting point.
         batoms : list
-            List of backbone atom indices
+            List of backbone atom indices.
         m3D : mol3D
-            mol3D of backbone template
+            mol3D of backbone template.
         core3D : mol3D
             mol3D class instance of partially built complex.
         coreref : atom3D
@@ -1773,7 +1788,7 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
         catoms : list
             List of ligand connecting atom indices.
         MLb : list
-            Custom M-L bond length (if any)
+            Custom M-L bond length (if any).
         ANN_flag : bool
             Flag for ANN activation.
         ANN_bondl : list
@@ -1991,7 +2006,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
     # if using decorations, make repeatable list
     if args.decoration:
         if not args.decoration_index:
-            print('Warning, no deocoration index given, assuming first ligand')
+            print('Warning, no decoration index given, assuming first ligand')
             args.decoration_index = [[0]]
         if len(args.decoration_index) != len(ligs):
             new_decoration_index = []
