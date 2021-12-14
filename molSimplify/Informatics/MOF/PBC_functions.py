@@ -295,6 +295,18 @@ def compute_distance_matrix2(cell,cart_coords):
 
     return distance_matrix
 
+def compute_distance_matrix3(cell, cart_coords, num_cells = 1):
+    pos = np.arange(-num_cells, num_cells+1, 1)
+    combos = np.array(np.meshgrid(pos, pos, pos)).T.reshape(-1,3)
+    shifts = np.sum(np.expand_dims(cell, axis=0)*np.expand_dims(combos, axis=-1), axis=1)
+    # NxNxCells distance array
+    shifted = np.expand_dims(cart_coords, axis=1) + np.expand_dims(shifts, axis=0)
+    dist = np.expand_dims(np.expand_dims(cart_coords, axis=1), axis=1) - np.expand_dims(shifted,axis=0)
+    dist = np.sqrt(np.sum(np.square(dist), axis=-1))
+    # But we want only min
+    distance_matrix = np.min(dist, axis=-1)
+    return distance_matrix
+
 
 def make_graph_from_nodes_edges(nodes,edges,attribs):
     gr = nx.Graph()
