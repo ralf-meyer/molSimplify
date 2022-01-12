@@ -13,30 +13,21 @@ from molSimplify.Scripts.distgeom import (GetConf)
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.mol3D import (mol3D)
 from molSimplify.Scripts.geometry import (PointTranslateSph,
-                                          PointTranslateSphgivenr,
-                                          PointTranslatetoPSph,
-                                          aligntoaxis,
                                           aligntoaxis2,
                                           checkcolinear,
-                                          checkplanar,
                                           distance,
                                           getPointu,
                                           kabsch,
                                           midpt,
-                                          protate,
                                           norm,
-                                          protateref,
                                           reflect_through_plane,
-                                          rotateRef,
                                           rotate_around_axis,
                                           rotate_mat,
                                           rotation_params,
                                           setPdistance,
-                                          setPdistanceu,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.molSimplify_io import (bind_load,
-                                                core_load,
+from molSimplify.Scripts.molSimplify_io import (core_load,
                                                 getgeoms,
                                                 getinputargs,
                                                 getlicores,
@@ -44,17 +35,13 @@ from molSimplify.Scripts.molSimplify_io import (bind_load,
                                                 lig_load,
                                                 loadcoord,
                                                 loaddata,
-                                                loaddata_ts,
-                                                name_complex,
-                                                name_ts_complex,
-                                                substr_load)
+                                                name_complex)
 
 if not sys.version_info >= (3,0):
     from molSimplify.Scripts.nn_prep import (ANN_preproc)
-from molSimplify.Classes.globalvars import (amassdict,
-                                            elementsbynum,
+from molSimplify.Classes.globalvars import (elementsbynum,
                                             romans)
-from molSimplify.Classes.rundiag import ( run_diag )
+from molSimplify.Classes.rundiag import (run_diag)
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts)
 from molSimplify.Classes.ligand import ligand

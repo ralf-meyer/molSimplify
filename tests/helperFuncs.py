@@ -1,17 +1,11 @@
-import pytest
-import argparse
 import json
 import os
-import openbabel as ob
 import numpy as np
-from molSimplify.Scripts.inparse import *
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.generator import *
-from molSimplify.Classes.globalvars import *
+from molSimplify.Scripts.geometry import kabsch, distance
+from molSimplify.Scripts.generator import startgen
+from molSimplify.Classes.globalvars import (dict_oneempty_check_st,
+                                            oneempty_angle_ref)
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.globalvars import *
-import shutil
 from pkg_resources import resource_filename, Requirement
 
 
