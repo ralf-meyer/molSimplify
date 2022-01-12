@@ -893,7 +893,7 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
         # Run xtb using the cmdl args and capture the stdout
         output = subprocess.run(
             ['xtb', '--opt', 'tight', '--input', 'xtb.inp', 'tmp.xyz'],
-            cwd=tmpdir, capture_output=True)
+            cwd=tmpdir, stdout=subprocess.PIPE)
         if output.returncode != 0:
             print(output)
             raise Exception('XTB calculation failed')
