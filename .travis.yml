@@ -33,6 +33,7 @@ install:
   - conda install keras=2.3.1
   - conda install pandas
   - conda install scikit-learn=0.20.3
+  - conda install xtb
   - conda install -c hjkgroup openbabel
   # - conda build conda-recipe -c hjkgroup
   - conda install molsimplify --use-local
