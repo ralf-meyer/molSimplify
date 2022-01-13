@@ -1068,7 +1068,7 @@ def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=
     allowed_strings = ['electronegativity',
                        'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_autocorrelation(
             mol, properties, depth, atomIdx, oct=oct)
@@ -1099,7 +1099,7 @@ def generate_atomonly_ratiometrics(mol, atomIdx, loud, depth=4, oct=True):
     # labels_strings_den = ['S']
     allowed_strings_den = ['electronegativity', 'nuclear_charge', 'size']
     labels_strings_den = ['chi', 'Z', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for iii, properties_num in enumerate(allowed_strings_num):
         for iv, properties_den in enumerate(allowed_strings_den):
             atom_only_ac = atom_only_ratiometric(
@@ -1128,7 +1128,7 @@ def generate_atomonly_summetrics(mol, atomIdx, loud, depth=4, oct=True):
     allowed_strings = ['electronegativity',
                        'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_summetric(
             mol, properties, depth, atomIdx, oct=oct)
@@ -1155,7 +1155,7 @@ def generate_revised_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True
     allowed_strings = ['electronegativity',
                        'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_deltametric(
             mol, properties, depth, atomIdx, oct=oct)

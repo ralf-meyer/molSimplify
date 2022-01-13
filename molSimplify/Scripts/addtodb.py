@@ -93,7 +93,7 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
             obConversion.SetOutFormat("smi")
             red = obConversion.Read(lig.OBMol)
             obConversion.WriteFile(lig.OBMol, ligands_folder + sminame+'.smi')
-            #lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
+            # lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
             snew = str(sminame)+':'+str(sminame)+'.smi,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
         else:
             # write xyz file in Ligands directory

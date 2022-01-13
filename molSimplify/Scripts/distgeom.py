@@ -228,7 +228,7 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
         numpy.random.seed(seed)
     D = np.zeros((natoms, natoms))
     LB, UB = Triangle(LB, UB, natoms)
-    #First generate a random distance for all atom pairings not involving the metal
+    # First generate a random distance for all atom pairings not involving the metal
     for i in range(natoms-1):
         for j in range(i, natoms-1):
             # ~ if Full:
@@ -238,8 +238,8 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
             D[i][j] = np.random.uniform(LB[i][j], UB[i][j])
             D[j][i] = D[i][j]
     
-    #For pairs involving the metal, set the distance to 100 Angstroms regardless of the triangle rule
-    #This encourages the algorithm to select conformations which don't crowd the metal, as these often lead to failure
+    # For pairs involving the metal, set the distance to 100 Angstroms regardless of the triangle rule
+    # This encourages the algorithm to select conformations which don't crowd the metal, as these often lead to failure
     for j in range(natoms):
         if UB[natoms-1][j] < LB[natoms-1][j]:  # ensure that the upper bound is larger than the lower bound
             UB[natoms-1][j] = LB[natoms-1][j]
@@ -324,8 +324,8 @@ def Get3Eigs(G, natoms):
     V = np.zeros((natoms, 3))
     l, v = np.linalg.eigh(G)
     for i in [0, 1, 2]:
-        #print('natoms is '+ str(natoms))
-        #print('l is '+ str(l))
+        # print('natoms is '+ str(natoms))
+        # print('l is '+ str(l))
         L[i][i] = sqrt(max(l[natoms-1-i], 0))
         V[:, i] = v[:, natoms-1-i]
     return L, V
@@ -426,7 +426,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     for i, atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
         atom.SetVector(X[i, 0], X[i, 1], X[i, 2])
     
-    #First stage of cleaning takes place with the metal still present
+    # First stage of cleaning takes place with the metal still present
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('UFF')
         s = ff.Setup(OBMol)
@@ -560,18 +560,18 @@ def GetConf(mol, args, catoms=[]):
 
 # for testing
 #
-#n4py
-#molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True -geometry oct -rprompt True -ffoption A
-#heptacoordinate water oxidation catalyst
-#molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
-#same water oxidation catalyst in a hexacoordinate binding pattern
-#molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
-#tetrahedral with 2 bidentates
-#molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1 -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
-#mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
-#mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
-#catoms = [7,10,18,19]
-#catoms = [0,4,9,13]
+# n4py
+# molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True -geometry oct -rprompt True -ffoption A
+# heptacoordinate water oxidation catalyst
+# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
+# same water oxidation catalyst in a hexacoordinate binding pattern
+# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
+# tetrahedral with 2 bidentates
+# molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1 -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
+# mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
+# mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
+# catoms = [7,10,18,19]
+# catoms = [0,4,9,13]
 # mol.convert2mol3D()
-#conf = GetConf(mol,catoms)
+# conf = GetConf(mol,catoms)
 # conf.writexyz('conf')

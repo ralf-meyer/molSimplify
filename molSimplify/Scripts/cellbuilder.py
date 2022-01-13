@@ -84,9 +84,9 @@ def cut_cell_to_index(unit_cell, cell_vector, miller_index):
     cut_cell = mol3D()
     cut_cell.copymol3D(unit_cell)
     h, k, l = miller_index
-    #print('h,k,l',str(h) + ' ' + str(k) +  ' ' +  str(l))
+    # print('h,k,l',str(h) + ' ' + str(k) +  ' ' +  str(l))
     disc, p, q = xgcd(k, l)
-    #print('p,q',str(p) + ' ' + str(q))
+    # print('p,q',str(p) + ' ' + str(q))
     cell_vector = numpy.array(cell_vector)
     k1 = numpy.dot(p*(k*cell_vector[0]-h*cell_vector[1]) + q*(
         l*cell_vector[0] - h*cell_vector[2]), l*cell_vector[1] - k*cell_vector[2])
@@ -214,8 +214,8 @@ def multialign_objective_function(payload, surface_coord_list, cand_list, bind_d
     #   - cost: float, sum of squared error, the difference between
     #           the actual distance and the target
     cost = 0
-    #print('cand list is ' + str(cand_list))
-    #print('surface_coord_list  ' + str(surface_coord_list))
+    # print('cand list is ' + str(cand_list))
+    # print('surface_coord_list  ' + str(surface_coord_list))
     for indices in enumerate(cand_list):
         v1 = (surface_coord_list[indices[0]])
         v2 = payload.getAtom(int(indices[1])).coords()
@@ -371,7 +371,7 @@ def choose_best_site(avail_sites_dict, occupied_sites_dict, centroid, super_cell
         print(('weight = ' + str(weight)))
     if (len(avail_sites_list) > 1):  # more than 1 option, pick closest to center of plane
         for indices in avail_sites_list:
-            #distance_to_center =  distance_2d_torus(centroid,avail_sites_dict[indices],extents)
+            # distance_to_center =  distance_2d_torus(centroid,avail_sites_dict[indices],extents)
             distance_to_center = distance(centroid, avail_sites_dict[indices])
 
             distance_to_nearest_occupied = 1000
@@ -422,7 +422,7 @@ def align_payload_to_multi_site(payload, surface_coord_list, cand_list, bind_dis
     #                  align_coord. )Does NOT change height
 
     # Get all atoms on the top surface - NB, this will not handle complex surfaces, split calls by atom type
-    #print('align symbol is ' + payload.getAtom(cand_ind).symbol())
+    # print('align symbol is ' + payload.getAtom(cand_ind).symbol())
     new_payload = mol3D()
     new_payload.copymol3D(payload)
     payload_coord = center_of_sym(
@@ -458,7 +458,7 @@ def align_payload_to_multi_site(payload, surface_coord_list, cand_list, bind_dis
         ), new_payload.getAtom(cand_list[1]).coords(), new_payload.getAtom(cand_list[2]).coords())
     elif len(cand_list) == 4:
         pass
-        #coplanar_flag = checkplanar(new_payload.getAtom(cand_list[0]),new_payload.getAtom(cand_list[1]),new_payload.getAtom(cand_list[2]),new_payload.getAtom(cand_list[3]).coords())
+        # coplanar_flag = checkplanar(new_payload.getAtom(cand_list[0]),new_payload.getAtom(cand_list[1]),new_payload.getAtom(cand_list[2]),new_payload.getAtom(cand_list[3]).coords())
     if collinear_flag:  # there is a single line defining the axis - align this with
         line_slope = vecdiff(new_payload.getAtom(
             cand_list[0]).coords(), new_payload.getAtom(cand_list[1]).coords())
@@ -486,7 +486,7 @@ def align_payload_to_multi_site(payload, surface_coord_list, cand_list, bind_dis
             this_cost = multialign_objective_function(
                 this_payload, surface_coord_list, cand_list, bind_dist)
             if (this_cost < (cost)):
-                #print('current cost = ' + str(this_cost) + ', the max is ' + str(cost))
+                # print('current cost = ' + str(this_cost) + ', the max is ' + str(cost))
                 if debug:
                     print(('accepting rotate at theta  = ' + str(rotate_angle)))
                 cost = this_cost
@@ -754,7 +754,7 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
                 v1 = (surface_coord_list[indices[0]])
                 v2 = distorted_payload.getAtom(int(indices[1])).coords()
                 distances_list.append((distance(v1, v2) - bind_dist))
-            #print(str((abs(ens[-1] - ens[0]) < 5.0)) + str((this_cost < cost)) + str((this_dist >= (min_dist - 0.1))))
+            # print(str((abs(ens[-1] - ens[0]) < 5.0)) + str((this_cost < cost)) + str((this_dist >= (min_dist - 0.1))))
 
             if (abs(ens[-1] - ens[0]) < 5.0) and (this_cost < cost) and (this_dist >= (min_dist - 0.1)):
                 final_payload = distorted_payload
@@ -935,7 +935,7 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
             if debug:
                 print(('cand _ind = ' + str(cand_ind)))
             cand_list = [cand_ind]
-            #[(int(i)-1) for i in cand_ind]
+            # [(int(i)-1) for i in cand_ind]
         else:
             cand_ind = target_atom_type
             print('loading from TAT')

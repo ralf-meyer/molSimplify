@@ -88,7 +88,7 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     emsg = False
     # check for configuration file
     homedir = os.path.expanduser("~")
-    #configfile = False if not glob.glob(homedir+'/.molSimplify') else True
+    # configfile = False if not glob.glob(homedir+'/.molSimplify') else True
     # if not configfile:
     #    print "It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file."
     #    instdir = raw_input("Please select the full path of the top installation directory for the program: ")
@@ -105,7 +105,7 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     ### end set-up configuration file ###
     ############ GLOBALS DEFINITION ############
     globs = globalvars()
-    #installdir = globs.installdir
+    # installdir = globs.installdir
     rundir = globs.rundir
     PROGRAM = globs.PROGRAM
     ###### END GLOBALS DEFINITION ##############

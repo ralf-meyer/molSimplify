@@ -280,8 +280,8 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     metal_index = mol.findMetal()[0]
     bondedatoms = mol.getBondedAtomsSmart(metal_index, oct=True)
     # print('!!!!!boundatoms', bondedatoms)
-    #	print('from get oct' + str(bondedatoms))
-    #	print('***\n')
+    # print('from get oct' + str(bondedatoms))
+    # print('***\n')
     bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]
     if not silent:
         print(('result of ligand ligand_breakdown', bonded_atom_symbols))

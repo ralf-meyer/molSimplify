@@ -204,7 +204,7 @@ def tcgen(args, strfiles, method):
                 output.write('%s %s\n' % (keys, jobparams[keys]))
             if jobparams['run'] == 'minimize':
                 output.write('new_minimizer yes\n')
-                #output.write('min_coordinates cartesian\n')
+                # output.write('min_coordinates cartesian\n')
             if args.tc_fix_dihedral:
                 temp = mol3D()
                 temp.readfromxyz(strfiles[i])
@@ -232,7 +232,7 @@ def tcgen(args, strfiles, method):
                 output.write('%s %s\n' % (keys, jobparams[keys]))
             if jobparams['run'] == 'minimize':
                 output.write('new_minimizer yes\n')
-                #output.write('min_coordinates cartesian\n')
+                # output.write('min_coordinates cartesian\n')
             if args.tc_fix_dihedral:
                 temp = mol3D()
                 temp.readfromxyz(strfiles[i])

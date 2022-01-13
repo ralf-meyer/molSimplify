@@ -20,7 +20,7 @@ import shlex
 import ast
 import time
 from scipy.spatial import ConvexHull
-#from pymol import cmd, stored
+# from pymol import cmd, stored
 
 # no GUI support for now
 
@@ -194,7 +194,7 @@ class protein3D:
                                 c_ids.append(j[0])
                             elif not in_more_confs:
                                 c_ids.append(self.getIndex(j))
-                        #print(c_ids)
+                        # print(c_ids)
                         self.stripAtoms(c_ids)
                         if type(l) == AA3D and l in self.aas[c]:
                             self.aas[c].remove(l)
@@ -800,7 +800,7 @@ class protein3D:
                                     else:
                                         bonds[atoms[int(i)]].add(atoms[int(l[0]) + j])
                     except:
-                        #if "  " not in i and i != " ":
+                        # if "  " not in i and i != " ":
                         #    print("likely OXT")
                         continue
         # deal with conformations in chains

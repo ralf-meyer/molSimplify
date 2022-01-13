@@ -523,7 +523,7 @@ class mGUI():
         self.grid.addWidget(self.etplacemax, 11, 22, 1, 1)
         # mask for atom/center of mass reference
         ctip = 'Reference atoms in extra molecules to be used for placement(e.g. 1,2 or 1-6 or COM or Fe) Default COM (center mass)'
-        #self.rtmaskbind = mQLabel('Reference:',ctip,'r',14)
+        # self.rtmaskbind = mQLabel('Reference:',ctip,'r',14)
         self.etmaskbind = mQLineEdit('COM', ctip, 'l', 12)
         # self.rtmaskbind.setDisabled(True)
         self.etmaskbind.setDisabled(True)
@@ -1248,8 +1248,8 @@ class mGUI():
         self.pnbo = mQCheckBox('NBO', ctip, 16)
         self.pgrid.addWidget(self.pnbo, 5, 2, 1, 1)
         # d-orbital information
-        #ctip = 'd-orbital information'
-        #self.pdorbs = mCheck(self.pWindow,0.55,0.525,0.2,0.1,'d-orbitals',ctip,16)
+        # ctip = 'd-orbital information'
+        # self.pdorbs = mCheck(self.pWindow,0.55,0.525,0.2,0.1,'d-orbitals',ctip,16)
         # delocalization indices
         ctip = 'Localization and delocalization indices'
         self.pdeloc = mQCheckBox('Deloc', ctip, 16)
@@ -1264,12 +1264,12 @@ class mGUI():
         self.butpret = mQPushButton('Return', ctip, 16)
         self.butpret.clicked.connect(self.qretmain)
         self.pgrid.addWidget(self.butpret, 7, 3, 1, 2)
-        #c1p = mPic(self.pWindow,globs.installdir+'/icons/wft1.png',0.04,0.7,0.2)
+        # c1p = mPic(self.pWindow,globs.installdir+'/icons/wft1.png',0.04,0.7,0.2)
         f = resource_filename(Requirement.parse(
             "molSimplify"), "molSimplify/icons/wft3.png")
         c3p = mQPixmap(f)
         self.pgrid.addWidget(c3p, 3, 0, 4, 1)
-        #c2p = mPic(self.pWindow,globs.installdir+'/icons/wft2.png',0.04,0.035,0.2)
+        # c2p = mPic(self.pWindow,globs.installdir+'/icons/wft2.png',0.04,0.035,0.2)
         ##################################
         ### create add geometry window ###
         ##################################
@@ -1571,7 +1571,7 @@ class mGUI():
                 if len(new_path) > 0:
                     globs.add_custom_path(new_path)
                     copy_to_custom_path()  # this funciton lives in scripts/io.py
-        #instdir = globs.installdir
+        # instdir = globs.installdir
         if self.lFFb.getState() and self.lFFa.getState():
             ffopt = 'BA'
         elif self.lFFb.getState() and not self.lFFa.getState():
@@ -1856,7 +1856,7 @@ class mGUI():
         self.cDBWindow.setWindowModality(2)
         self.cDBWindow.show()
         writef = False
-        #instdir = globs.installdir
+        # instdir = globs.installdir
         mwfn = globs.multiwfn
         cdbdir = globs.chemdbdir
         if not os.path.isdir(globs.chemdbdir):

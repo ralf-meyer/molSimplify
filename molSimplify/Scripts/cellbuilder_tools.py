@@ -606,7 +606,7 @@ def fractionate_points_by_plane(super_cell, n, tol=1E-8):
             these_dists = [abs(this_frac-j) for j in vals]
             if min(these_dists) < tol:
                 pass
-                #print('have this point')
+                # print('have this point')
             else:
                 vals.append(this_frac)
                 print(('new point at ' + str(this_frac)))

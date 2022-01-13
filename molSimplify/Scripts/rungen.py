@@ -509,8 +509,8 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
                 else:
                     flagdir = 'replace'
             else:
-                #qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
-                #flagdir = qqb.getaction()
+                # qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootcheck+' already exists. What do you want to do?')
+                # flagdir = qqb.getaction()
                 flagdir = 'replace'
                 # replace existing directory
             if (flagdir == 'replace'):
@@ -548,8 +548,8 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
                 else:
                     flagdir = 'replace'
             else:
-                #qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
-                #flagdir = qqb.getaction()
+                # qqb = qBoxFolder(args.gui.wmain,'Folder exists','Directory '+rootdir+' already exists. What do you want to do?')
+                # flagdir = qqb.getaction()
                 flagdir = 'replace'
             # replace existing directory
             if (flagdir == 'replace'):

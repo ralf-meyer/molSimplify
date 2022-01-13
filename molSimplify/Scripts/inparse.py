@@ -666,7 +666,7 @@ def parseinputfile(args, inputfile_str=None):
                 args.ff = l[1].lower()
             if (l[0] == '-ffoption' and len(l[1:]) > 0):
                 args.ffoption = l[1:]
-                #print('setting ffoption ' + str(args.ffoption))
+                # print('setting ffoption ' + str(args.ffoption))
             if (l[0] == '-place' and len(l[1:]) > 0):
                 args.place = l[1]
             if (l[0] == '-sminame' and len(l[1:]) > 0):
@@ -699,7 +699,7 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-nconfs' and len(l[1:]) > 0):
                 args.nconfs = l[1]
             # if (l[0]=='-maxconfs' and len(l[1:]) > 0):
-                #args.maxconfs = l[1]
+                # args.maxconfs = l[1]
             if (l[0] == '-scoreconfs'):
                 args.scoreconfs = True
             if '-pangles' in line:
@@ -728,7 +728,7 @@ def parseinputfile(args, inputfile_str=None):
                 local_list = list()
                 if not isinstance(list_to_parse, str):
                     for decor in list_to_parse:
-                        #print('correcting string')
+                        # print('correcting string')
                         decor = str(decor).strip().strip('[]').split(',')
                         # print(decor)
                         local_list = local_list + [str(i) for i in decor]
@@ -896,11 +896,11 @@ def parseinputfile(args, inputfile_str=None):
                 args.dbvdent = l[1]
             if (l[0] == '-dbvconns'):
                 ll = [x for x in l[1:]]
-                #ll = filter(None,re.split(' |,|\t',l[1]))
+                # ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvconns = ll
             if (l[0] == '-dbvhyb'):
                 ll = [x for x in l[1:]]
-                #ll = filter(None,re.split(' |,|\t',l[1]))
+                # ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvhyb = ll
             if (l[0] == '-dbvlinks'):
                 args.dbvlinks = l[1]
@@ -1157,7 +1157,7 @@ def parseinputs_advanced(*p):
         "-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default='1')
     parser.add_argument(
         "-scoreconfs", help="Attempt to filter out identical conformers and rank them by rmsd to the desired template, default false", default=False)
-    #parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
+    # parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
     parser.add_argument(
         "-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument(

@@ -27,7 +27,7 @@ def sgejobgen(args, jobdirs):
         # form jobscript identifier
         if args.jname:
             jobname = args.jname+str(args.jid)
-            #jobname = jobname[:8]
+            # jobname = jobname[:8]
         else:
             jobname = 'job'+str(args.jid)
         args.jid += 1

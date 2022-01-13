@@ -490,7 +490,7 @@ def core_load(usercore, mcores=None):
     core = mol3D()  # initialize core molecule
     # check if core exists in dictionary
     if usercore.lower() in list(mcores.keys()):
-        #print('loading core from dictionary')
+        # print('loading core from dictionary')
         dbentry = mcores[usercore.lower()]
         # load core mol file (with hydrogens
         if globs.custom_path:
@@ -820,7 +820,7 @@ def lig_load(userligand, licores=None):
 
     # load from file
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
-        #flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
+        # flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
         if glob.glob(userligand):
             ftype = userligand.split('.')[-1]
             # try and catch error if conversion doesn't work
@@ -977,28 +977,28 @@ def plugin_defs():
     # and chooses an appropriate name
     # bind_ident is used to pass binding
     # species information
-    #print('the root directory for this calc is '+ (rootdir))
+    # print('the root directory for this calc is '+ (rootdir))
     # check if smiles string in binding species
     # if args.bind:
     # if bsmi:
     # if args.nambsmi: # if name specified use it in file
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
     # if args.name:
-    #fname = rootdir+'/'+args.name+args.nambsmi[0:2]
+    # fname = rootdir+'/'+args.name+args.nambsmi[0:2]
     # else: # else use default
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm'
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm'
     # if args.name:
-    #fname = rootdir+'/'+args.name+'bsm'
+    # fname = rootdir+'/'+args.name+'bsm'
     # else: # else use name from binding in dictionary
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
     # if args.name:
-    #fname = rootdir+'/'+args.name + bind.ident[0:2]
+    # fname = rootdir+'/'+args.name + bind.ident[0:2]
     # else:
     # if globs.debug:
-    #print('the root calculation directory is' + str(rootdir))
-    #fname = rootdir+'/'+core.ident[0:3]+ligname
+    # print('the root calculation directory is' + str(rootdir))
+    # fname = rootdir+'/'+core.ident[0:3]+ligname
     # if args.name:
-    #fname = rootdir+'/'+args.name
+    # fname = rootdir+'/'+args.name
 
     # return fname
 

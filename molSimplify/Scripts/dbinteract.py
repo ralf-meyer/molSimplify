@@ -185,13 +185,13 @@ def getsimilar(smi, nmols, dbselect, finger, squery, args):
         print(('number of lines in simres.smi: ' +
                str(mybash('cat simres.smi | wc -l'))))
 
-    #		com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
-    #		rint('running:  '+ str(com))
+    # com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
+    # print('running:  '+ str(com))
 
-    #		res = mybash(com)
-    #		print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
+    # res = mybash(com)
+    # print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
 
-    #		print res
+    # print res
     shutil.copy('simres.smi', 'afterfilteringsmarts.smi')
     # check output and print error if nothing was found
     if ('errors' in res):

@@ -85,11 +85,11 @@ def accquire_file(path):
                     y_value = ll[1]
                     # check if path exists:
                     this_path = '/'+ll[2].strip('/') + '/'+name+'.xyz'
-                    #print('name = '+str(name))
+                    # print('name = '+str(name))
                     this_obs = dft_observation(name, this_path)
                     this_obs.sety(y_value)
                     if os.path.isfile(this_path):
-                        #print('path exists')
+                        # print('path exists')
                         this_obs.obtain_mol3d()
                         if this_obs.health:
                             counter += 1
@@ -131,7 +131,7 @@ def correlation_supervisor(path, rootdir, simple=False, lig_only=False, max_desc
     for i, keyv in enumerate(file_dict.keys()):
         file_dict[keyv].get_descriptor_vector(
             lig_only, simple, name=False, loud=False)
-        #print('i = ',str(i))
+        # print('i = ',str(i))
         if i == 0:
             col_names = file_dict[keyv].descriptor_names
         # reorganize the data
@@ -278,14 +278,14 @@ def correlation_supervisor(path, rootdir, simple=False, lig_only=False, max_desc
             count += 1
 # with open('y_full_all.csv','w') as f:
     # for items in Ypred_all_all:
-        #f.write(str(items) + '\n')
+        # f.write(str(items) + '\n')
 # with open('rfe_r.csv','w') as f:
     # for items in r_reduce:
-        #f.write(str(items) + '\n')
+        # f.write(str(items) + '\n')
 
 # with open('select_mse.csv','w') as f:
     # for items in select_mse:
-        #f.write(str(items) + '\n')
+        # f.write(str(items) + '\n')
 # with open('errors.csv','w') as f:
     # for items in errors:
-        #f.write(str(items) + '\n')
+        # f.write(str(items) + '\n')

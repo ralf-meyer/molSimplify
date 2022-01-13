@@ -158,7 +158,7 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
         ANN_reason = 'ANN skipped by user'
     else:
 
-        #try:
+        # try:
         if True:
             if args.oldANN:
                 print('using old ANN by request')
@@ -1070,7 +1070,7 @@ def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
         lig3D_tmp.copymol3D(lig3D)
         lig3D_tmp = rotate_around_axis(
             lig3D_tmp, lig3D_tmp.getAtom(atom0).coords(), u, theta)
-        #objfunc = abs(vecangle(vecdiff(lig3D_tmp.getAtom(atom0).coords(),corerefcoords),vecdiff(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),lig3D_tmp.getAtom(ligpiatoms[1]).coords()))-90)
+        # objfunc = abs(vecangle(vecdiff(lig3D_tmp.getAtom(atom0).coords(),corerefcoords),vecdiff(lig3D_tmp.getAtom(ligpiatoms[0]).coords(),lig3D_tmp.getAtom(ligpiatoms[1]).coords()))-90)
         objfunc = abs(distance(lig3D_tmp.getAtom(ligpiatoms[0]).coords(
         ), corerefcoords) - distance(lig3D_tmp.getAtom(ligpiatoms[1]).coords(), corerefcoords))
         if objfunc < objfuncopt:
@@ -1093,7 +1093,7 @@ def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
         lig3D_tmpb, lig3D_tmpb.getAtom(atom0).coords(), u, -90)
     d1 = distance(corerefcoords, lig3D_tmpa.centermass())
     d2 = distance(corerefcoords, lig3D_tmpb.centermass())
-    #lig3D = lig3D if (d1 < d2)  else lig3Db
+    # lig3D = lig3D if (d1 < d2)  else lig3Db
     # pick the better structure
     lig3D = lig3D_tmpa if (d1 > d2) else lig3D_tmpb
     lig3D_aligned = mol3D()
@@ -1311,9 +1311,9 @@ def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
                             # pass
                 # in future, compare multiple local maxima
                 # if localmaxs == []:
-                    #localmaxs = [0]
+                #     localmaxs = [0]
                 confrag3D = rotate_around_axis(confrag3D, refpt, u, thetaopt)
-                #confrag3D = rotate_around_axis(confrag3D,refpt,u,localmaxs[0])
+                # confrag3D = rotate_around_axis(confrag3D,refpt,u,localmaxs[0])
             # non-terminal connecting atom
             elif len(anchoratoms) == 2:
                 refpt = confrag3D.getAtomCoords(0)

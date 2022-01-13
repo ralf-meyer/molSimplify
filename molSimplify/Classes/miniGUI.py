@@ -32,7 +32,7 @@ class miniGUI(QApplication):
     def addsvg(self, filename):
         self.svgwidget = mSvgWidget(filename)
         self.lgrid.addWidget(self.svgwidget, 0, 1)
-        #self.lwclose = QPushButton('Close')
+        # self.lwclose = QPushButton('Close')
         # self.lwclose.clicked.connect(self.qcloseligs)
         # self.lgrid.addWidget(self.lwclose,1,0)
 

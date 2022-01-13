@@ -270,7 +270,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         # check decoration index
         if newdecs:
             if newdecs[axial_ind_list[0]]:
-                #print('decorating ' + str(axial_ligs[0]) + ' with ' +str(newdecs[axial_ind_list[0]]) + ' at sites '  + str(newdec_inds[axial_ind_list[0]]))
+                # print('decorating ' + str(axial_ligs[0]) + ' with ' +str(newdecs[axial_ind_list[0]]) + ' at sites '  + str(newdec_inds[axial_ind_list[0]]))
                 ax_lig3D = decorate_ligand(
                     args, axial_ligs[0], newdecs[axial_ind_list[0]], newdec_inds[axial_ind_list[0]])
 
@@ -279,7 +279,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         eq_lig3D, r_emsg = lig_load(equatorial_ligs[0], licores)  # load ligand
         if newdecs:
             if newdecs[equatorial_ind_list[0]]:
-                #print('decorating ' + str(equatorial_ligs[0]) + ' with ' +str(newdecs[equatorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equatorial_ind_list[0]]))
+                # print('decorating ' + str(equatorial_ligs[0]) + ' with ' +str(newdecs[equatorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equatorial_ind_list[0]]))
                 eq_lig3D = decorate_ligand(
                     args, equatorial_ligs[0], newdecs[equatorial_ind_list[0]], newdec_inds[equatorial_ind_list[0]])
         if r_emsg:
@@ -496,7 +496,7 @@ def ax_lig_corrector(excitation, con_atom_type):
 
 
 def eq_lig_corrector(excitation, con_atom_type):
-    #print('in eliq cor, excitation 1;5'  + str(excitation[1:5]))
+    # print('in eliq cor, excitation 1;5'  + str(excitation[1:5]))
     eq_lig_index_dictionary = {'Cl': 15, 'F': 15, 'N': 16, 'O': 17, 'S': 18}
     try:
         if not con_atom_type == "C":
@@ -504,14 +504,14 @@ def eq_lig_corrector(excitation, con_atom_type):
         valid = True
     except:
         valid = False
-    #print('end eliq cor, excitation 1;5'  + str(excitation[1:5]))
+    # print('end eliq cor, excitation 1;5'  + str(excitation[1:5]))
     return valid, excitation
 
 
 def metal_corrector(excitation, metal):
     metal_index_dictionary = {'co': 0, 'cr': 1, 'fe': 2, 'mn': 3, 'ni': 4}
     # print(excitation)
-    #print('metal is ' + str(metal) +' setting slot ' +str(metal_index_dictionary[metal]) + ' to 1' )
+    # print('metal is ' + str(metal) +' setting slot ' +str(metal_index_dictionary[metal]) + ' to 1' )
     try:
         excitation[metal_index_dictionary[metal]] += 1
         valid = True
@@ -519,7 +519,7 @@ def metal_corrector(excitation, metal):
         valid = False
 
     return valid, excitation
-#n = network_builder([25,50,51],"nn_split")
+# n = network_builder([25,50,51],"nn_split")
 
 
 def spin_classify(metal, spin, ox):
