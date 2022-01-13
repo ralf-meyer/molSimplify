@@ -12,7 +12,7 @@ import shutil
 import string
 try:
     import pymol
-except:
+except ImportError:
     pass
 import openbabel
 

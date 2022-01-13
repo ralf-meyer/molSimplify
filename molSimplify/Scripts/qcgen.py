@@ -44,12 +44,12 @@ def multitcgen(args, strfiles):
             try:
                 os.remove(xyzf+'.molinp')
                 os.remove(xyzf+'.report')
-            except:
+            except FileNotFoundError:
                 pass
             if not args.reportonly:
                 try:
                     os.remove(xyzf+'.xyz')
-                except:
+                except FileNotFoundError:
                     pass
     return jobdirs
 
@@ -755,7 +755,7 @@ def multiogen(args, strfiles):
                 os.remove(xyzf+'.xyz')
                 os.remove(xyzf+'.molinp')
                 os.remove(xyzf + '.report')
-            except:
+            except FileNotFoundError:
                 pass
     return jobdirs
 
@@ -821,7 +821,7 @@ def ogen(args, strfiles, method):
             if not os.path.exists(mdir):
                 try:
                     os.mkdirs(mdir)
-                except:
+                except FileExistsError:
                     pass
         if not args.jobdir:
             jobdirs.append(mdir)
@@ -1072,7 +1072,7 @@ def molcgen(args, strfiles, method):
             if not os.path.exists(mdir):
                 try:
                     os.mkdirs(mdir)
-                except:
+                except FileExistsError:
                     pass
         if not args.jobdir:
             jobdirs.append(mdir)
@@ -1250,7 +1250,7 @@ def multimolcgen(args, strfiles):
                 os.remove(xyzf+'.xyz')
                 os.remove(xyzf+'.molinp')
                 os.remove(xyzf + '.report')
-            except:
+            except FileNotFoundError:
                 pass
     return jobdirs
 

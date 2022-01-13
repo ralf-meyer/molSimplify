@@ -534,7 +534,7 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
             args.checkdirt = True
             try:
                 os.mkdir(rootcheck)
-            except:
+            except FileExistsError:
                 print(('Directory '+rootcheck+' can not be created. Exiting..\n'))
                 return
             # check for actual directory
@@ -656,12 +656,8 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
                     print('SGE jobscripts generated!')
 
             elif multidx != -1:  # if ligand input was a list of smiles strings, write good smiles strings to separate list
-                try:
-                    f = open(ligfilename+'-good.smi', 'a')
+                with open(ligfilename+'-good.smi', 'a') as f:
                     f.write(args.lig[0])
-                    f.close()
-                except:
-                    0
         elif not emsg:
             if args.gui:
                 qq = mQDialogInf('Folder skipped', 'Folder ' +

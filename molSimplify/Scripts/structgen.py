@@ -761,7 +761,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
                     break
                 i += 1
         elif nsteps != 0:
-            try:
+            try:  # TODO: why would this ever fail?
                 n = nsteps
             except:
                 n = 100

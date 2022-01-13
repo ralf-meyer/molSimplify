@@ -376,7 +376,7 @@ def loadcdxml(cdxml):
     # try importing pybel
     try:
         import pybel
-    except:
+    except ImportError:  # Why execept and then raise?
         raise
     fname = re.sub(r'.cdxml', '', cdxml)  # file name for the new xyz
     # check cdxml file for Dashed bonds
