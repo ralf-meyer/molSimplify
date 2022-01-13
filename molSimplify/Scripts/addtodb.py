@@ -73,7 +73,7 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
         print("smimol is "+str(smimol))
         print("sminame is "+str(sminame))
         # sanitize ff options:
-        if not ffopt in ["A", "B", "BA", "N"]:
+        if ffopt not in ["A", "B", "BA", "N"]:
             print('warning: incompatible ffopt choice. Options are ' +
                   str(["A", "B", "BA", "N"]))
             sys.exit(1)

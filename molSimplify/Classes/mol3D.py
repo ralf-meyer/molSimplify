@@ -916,13 +916,13 @@ class mol3D:
                         A[i, j] = 1
             if metal_ind is not None:
                 for i in index_set:
-                    if not i in catoms_metal:
+                    if i not in catoms_metal:
                         A[i, metal_ind] = 0
                         A[metal_ind, i] = 0
             if catom_list is not None:
                 geo_based_catoms = self.get_fcs(strict_cutoff=strict_cutoff)
                 for ind in geo_based_catoms:
-                    if not ind in catom_list:
+                    if ind not in catom_list:
                         A[ind, metal_ind] = 0
                         A[metal_ind, ind] = 0
             self.graph = A

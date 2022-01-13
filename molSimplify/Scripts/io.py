@@ -1047,7 +1047,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if not lig in licores:
+            if lig not in licores:
                 lig = lig.split('\t')[0]
                 sminum += 1
                 name += '_smi' + str(int(sernum)+int(sminum)
@@ -1106,7 +1106,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if not lig in licores:
+            if lig not in licores:
                 lig = lig.split('\t')[0]
                 sminum += 1
                 name += '_smi' + str(int(sernum)+int(sminum)
