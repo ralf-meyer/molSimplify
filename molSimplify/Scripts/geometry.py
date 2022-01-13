@@ -9,11 +9,10 @@
 
 import sys
 import copy
-from numpy import arccos, cross, dot, pi, transpose
-from numpy import sin, cos, mat, array, arctan2
+from numpy import (arccos, cross, dot, pi, transpose,
+                   sin, cos, mat, array, arctan2, sqrt)
 from numpy.linalg import det, svd
 import numpy as np
-from math import pi, sin, cos, sqrt
 
 def norm(u):
     """Get euclidean norm of vector.

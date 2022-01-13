@@ -1054,31 +1054,6 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
     return descriptor_names, descriptors
 
 
-def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
-    # this function gets autocorrelations for a molecule starting
-    # in one single atom only
-    # Inputs:
-    #       mol - mol3D class
-    #       atomIdx - int, index of atom3D class
-    #       loud - bool, print output
-    result = list()
-    colnames = []
-    allowed_strings = ['electronegativity',
-                       'nuclear_charge', 'ident', 'topology', 'size']
-    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
-    for ii, properties in enumerate(allowed_strings):
-        atom_only_ac = atom_only_autocorrelation(
-            mol, properties, depth, atomIdx, oct=oct)
-        this_colnames = []
-        for i in range(0, depth + 1):
-            this_colnames.append(labels_strings[ii] + '-' + str(i))
-        colnames.append(this_colnames)
-        result.append(atom_only_ac)
-    results_dictionary = {'colnames': colnames, 'results': result}
-    return results_dictionary
-
-
 def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
     # this function gets autocorrelations for a molecule starting
     # in one single atom only

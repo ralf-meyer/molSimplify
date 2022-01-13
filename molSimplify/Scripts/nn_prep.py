@@ -154,13 +154,6 @@ def check_metal(metal, oxidation_state):
     return outcome, oxidation_state
 
 
-def get_truncated_kier(ligand, connection_atoms):
-        # three hop truncation
-    trunc_mol = obtain_truncation(ligand, connection_atoms, 3)
-    this_kier = kier(trunc_mol)
-    return this_kier
-
-
 def get_con_at_type(mol, connection_atoms):
     this_type = ""
     been_set = False
