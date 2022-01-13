@@ -145,11 +145,11 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     if aa:
         m.setBonds()
         bonds.update(m.bonds)
-        if m.prev == None and (a_dict['ChainID'], a_dict['ResSeq'] - 1) in mols.keys():
+        if m.prev is None and (a_dict['ChainID'], a_dict['ResSeq'] - 1) in mols.keys():
             m.setPrev(mols[(a_dict['ChainID'], a_dict['ResSeq'] - 1)][0])
         prev_mol = m.prev
-        if prev_mol != None:
-            if prev_mol.next == None:
+        if prev_mol is not None:
+            if prev_mol.next is None:
                 prev_mol.setNext(m)
             for n in m.n:
                 for c in prev_mol.c:

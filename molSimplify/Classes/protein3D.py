@@ -380,7 +380,7 @@ class protein3D:
         atoms = {}
         for a_id in self.atoms:
             aa = self.getResidue(a_id)
-            if aa != None:
+            if aa is not None:
                 if aa.chain == chain_id:
                     atoms[a_id] = self.atoms[a_id]
             else:
@@ -657,7 +657,7 @@ class protein3D:
             if self.atoms[h_id] not in self.bonds.keys():
                 return None
             elif b in self.bonds[self.atoms[h_id]]:
-                if self.getMolecule(b_id, aas_only) != None:
+                if self.getMolecule(b_id, aas_only) is not None:
                     bound_mols.append(self.getMolecule(b_id, aas_only))
         return bound_mols
     

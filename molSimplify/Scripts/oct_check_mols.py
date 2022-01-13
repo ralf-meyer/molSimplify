@@ -463,7 +463,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
     # metal_ind = my_mol.findMetal()[0]
     metal_coord = my_mol.getAtomCoords(my_mol.findMetal()[0])
     catom_coord = []
-    if not catoms_arr == None:
+    if catoms_arr is not None:
         catoms = catoms_arr
         num_coord_metal = len(catoms_arr)
     theta_arr, oct_dist = [], []
@@ -568,7 +568,7 @@ def dict_check_processing(dict_info, dict_check, std_not_use,
 def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict_oct_check_st,
                    std_not_use=[], angle_ref=oct_angle_ref, flag_loose=True, flag_lbd=False,
                    dict_check_loose=dict_oct_check_loose, BondedOct=True, debug=False):
-    if catoms_arr == None:
+    if catoms_arr is None:
         print('Error, must have ctoms! If not, please use IsOct.')
         quit()
     elif len(catoms_arr) != 6:
@@ -579,7 +579,7 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
                                                           -1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
     dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
-    if not file_init_geo == None:
+    if file_init_geo is not None:
         # print('!!!Inspection,flag_loose:', flag_loose)
         # _start = time.clock()
         rmsd_max, atom_dist_max = ligand_comp_org(file_in, file_init_geo,
@@ -639,7 +639,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
           std_not_use=[], angle_ref=oct_angle_ref, flag_catoms=False,
           catoms_arr=None, debug=False):
     num_coord_metal, catoms = get_num_coord_metal(file_in, debug=debug)
-    if not catoms_arr == None:
+    if catoms_arr is not None:
         catoms = catoms_arr
         num_coord_metal = len(catoms_arr)
 
@@ -653,7 +653,7 @@ def IsOct(file_in, file_init_geo=None, dict_check=dict_oct_check_st,
             num_coord_metal = 6
             oct_angle_devi, oct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                    catoms_arr, debug=debug)
-        if not file_init_geo == None:
+        if file_init_geo is not None:
             rmsd_max, atom_dist_max = ligand_comp_org(
                 file_in, file_init_geo, catoms_arr, debug=debug)
         else:
@@ -697,7 +697,7 @@ def IsStructure(file_in, file_init_geo=None, dict_check=dict_oneempty_check_st,
     if num_coord_metal >= num_coord:
         struct_angle_devi, struct_dist_del, max_del_sig_angle, catoms_arr = oct_comp(file_in, angle_ref,
                                                                                      debug=debug)
-        if file_init_geo != None:
+        if file_init_geo is not None:
             rmsd_max, atom_dist_max = ligand_comp_org(
                 file_in, file_init_geo, catoms_arr, debug=debug)
         else:

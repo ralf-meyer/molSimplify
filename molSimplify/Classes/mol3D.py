@@ -231,14 +231,14 @@ class mol3D:
         >>> complex_mol.addAtom(C_atom) # Add carbon atom at cartesian position 1, 1, 1 to mol3D object. 
         """
 
-        if index == None:
+        if index is None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.insert(index, atom)
         # If partial charge list exists, add partial charge:
         if len(self.partialcharges) == self.natoms:
             partialcharge = atom.partialcharge
-            if partialcharge == None:
+            if partialcharge is None:
                 partialcharge = 0.0
             self.partialcharges.insert(index, partialcharge)
         if atom.frozen:
@@ -914,12 +914,12 @@ class mol3D:
                 for j in index_set:
                     if j in this_bonded_atoms:
                         A[i, j] = 1
-            if not metal_ind == None:
+            if metal_ind is not None:
                 for i in index_set:
                     if not i in catoms_metal:
                         A[i, metal_ind] = 0
                         A[metal_ind, i] = 0
-            if not catom_list == None:
+            if catom_list is not None:
                 geo_based_catoms = self.get_fcs(strict_cutoff=strict_cutoff)
                 for ind in geo_based_catoms:
                     if not ind in catom_list:

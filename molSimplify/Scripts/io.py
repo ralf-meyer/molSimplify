@@ -480,7 +480,7 @@ def loadcoord(coord):
 
 
 def core_load(usercore, mcores=None):
-    if mcores == None:
+    if mcores is None:
         mcores = getmcores()
     globs = globalvars()
     if '~' in usercore:
@@ -561,7 +561,7 @@ def core_load(usercore, mcores=None):
 
 def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
     # if not using a user-defined substrate dictionary
-    if subcores == None:
+    if subcores is None:
         subcores = getsubcores()
     # load global variables
     globs = globalvars()
@@ -748,7 +748,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
 
 def lig_load(userligand, licores=None):
 
-    if licores == None:
+    if licores is None:
         licores = getlicores()
         # @licores.pop("x", None)
     globs = globalvars()

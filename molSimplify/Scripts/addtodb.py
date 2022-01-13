@@ -78,7 +78,7 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
                   str(["A", "B", "BA", "N"]))
             sys.exit(1)
 
-        if smichg != None:
+        if smichg is not None:
             lig.charge = smichg
         # new entry for dictionary
         if '.mol' in smimol:

@@ -236,7 +236,7 @@ class AA3D:
         >>> complex_mol.addAtom(C_atom) # Add carbon atom at cartesian position 1, 1, 1 to mol3D object. 
         """
 
-        if index == None:
+        if index is None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.append((index, atom))
