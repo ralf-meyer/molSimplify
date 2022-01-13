@@ -142,7 +142,7 @@ class AA3D:
                 centroid[1] += xyz[1]
                 centroid[2] += xyz[2]
         else:
-            centroid= False
+            centroid = False
             print(
                 'ERROR: Centroid calculation failed. Structure will be inaccurate.\n')
         return centroid

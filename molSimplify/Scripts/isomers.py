@@ -300,11 +300,11 @@ def getadjacency(geo):
         return thd_adjacency
     elif geo == 'sqp':
         return sqp_adjacency
-    elif geo =='tbp':
+    elif geo == 'tbp':
         return tbp_adjacency
-    elif geo =='spy':
+    elif geo == 'spy':
         return spy_adjacency
-    elif geo =='pbp':
+    elif geo == 'pbp':
         return pbp_adjacency
     else:
         print('****************************************************')

@@ -50,7 +50,7 @@ class ligand:
                 raise ValueError('Not Recognized Structure Type!')
             self.master_mol = thismol
             met = thismol.findMetal()[0] # Pull out metal
-            self.index_list = [x for x in range(thismol.natoms) if x!=met]
+            self.index_list = [x for x in range(thismol.natoms) if x != met]
             self.dent = len(thismol.getBondedAtomsSmart(met))
             self.ext_int_dict = {i: j for i, j in enumerate(self.index_list)}
             self.mol2string = thismol.writemol2('ligand', writestring=True)
@@ -220,7 +220,7 @@ class ligand:
                 else: # Else take in Newer definition of vdw radii
                     radvect.append(vdwrad[sym]*bondiscale)
             radiusvect = np.array(radvect)
-            inds = np.array([x for x in range(natoms) if x!=met])
+            inds = np.array([x for x in range(natoms) if x != met])
             coords = coords[inds] # Get rid of metal location from coords
             x_ = np.arange(-radius, radius, gridspec)
             y_ = np.arange(-radius, radius, gridspec)

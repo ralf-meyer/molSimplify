@@ -1138,18 +1138,18 @@ class mol3D:
         formula = self.my_mol_trunc.OBMol.GetFormula()
         if 'H' in formula:
             hs_tmp = formula.split('H')[1]
-            nh_obmol=''
-            if len(hs_tmp)>0:
+            nh_obmol = ''
+            if len(hs_tmp) > 0:
                 if hs_tmp[0].isnumeric():
                     for x in hs_tmp:
                         if x.isnumeric():
-                            nh_obmol+=x
+                            nh_obmol += x
                         else:
                             break
                 else:
-                    nh_obmol+='1'
+                    nh_obmol += '1'
             else:
-                nh_obmol+='1'
+                nh_obmol += '1'
         else:
             nh_obmol = '0'
         nh_obmol = int(nh_obmol)
@@ -1189,12 +1189,12 @@ class mol3D:
             try:
                 if sym in ["N", "P", "As", "Sb"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
-                elif (sym in ["N", "P", "As", "Sb"]) and (np.count_nonzero(self.bo_graph_trunc[ii] == 2)>=1) and \
+                elif (sym in ["N", "P", "As", "Sb"]) and (np.count_nonzero(self.bo_graph_trunc[ii] == 2) >= 1) and \
                      ("O" in [self.getAtom(x).symbol() for x in np.where(self.bo_graph_trunc[ii] == 2)[0]]) and \
                      (np.sum(self.bo_graph_trunc[ii]) == 4):
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
                 # Double Bonds == 3, Double bonded atom is O or N, Total BO == 6
-                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2)==3 and \
+                elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2) == 3 and \
                      (self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"]) and \
                      np.sum(self.bo_graph_trunc[ii]) == 6:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 4)
