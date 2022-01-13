@@ -292,7 +292,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     lin = 7
     # optimize hyperparameters
     cycle_i = 0
-    while gamma == 1 or alpha == 1 or signal == False:
+    while gamma == 1 or alpha == 1 or not signal:
         gammas = np.linspace(gamma_lower, gamma_higher, lin)
         alphas = np.linspace(alpha_lower, alpha_higher, lin)
         tuned_parameters = [
@@ -445,7 +445,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
         lin = 7
         # optimize hyperparameters
         cycle_i = 0
-        while gamma == 1 or alpha == 1 or signal == False:
+        while gamma == 1 or alpha == 1 or not signal:
             gammas = np.linspace(gamma_lower, gamma_higher, lin)
             alphas = np.linspace(alpha_lower, alpha_higher, lin)
             tuned_parameters = [

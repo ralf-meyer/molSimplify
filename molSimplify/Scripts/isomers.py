@@ -383,7 +383,7 @@ def checksymmetric(lig):
         used_atoms = {index}
 
         finding_atoms = True
-        while finding_atoms == True:
+        while finding_atoms:
             current_sphere = coordination_spheres[-1]
             length = len(coordination_spheres)
 

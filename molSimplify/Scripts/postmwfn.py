@@ -631,9 +631,9 @@ def deloc(molf, folder, gui, flog):
         # get indices of heavy elements
         found = False
         for met in metals:
-            if (found == False):
+            if not found:
                 ml = [line for line in sm if met in line]
-            if len(ml) > 0 and found == False:
+            if len(ml) > 0 and not found:
                 if 'Title' in ml[0] and len(ml) > 1:
                     mlll = ml[1].split(None)
                 else:
