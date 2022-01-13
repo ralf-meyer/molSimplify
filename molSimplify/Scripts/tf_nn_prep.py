@@ -801,7 +801,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             current_time = time.time()
             split_ANN_time = current_time - last_time
             last_time = current_time
-        oxo_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo",latent_oxo,args.debug)
+        oxo_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo",latent_oxo,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -820,7 +820,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(
                 ('HAT ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds'))
 
-        hat_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("hat",latent_hat,args.debug)
+        hat_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("hat",latent_hat,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -840,7 +840,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('oxo20 ANN took ' +
                   "{0:.2f}".format(oxo20_ANN_time) + ' seconds'))
         # oxo20_dist = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
-        oxo20_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
+        oxo20_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -861,7 +861,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('homo_empty ANN took ' +
                   "{0:.2f}".format(homo_empty_ANN_time) + ' seconds'))
         # homo_empty_dist = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
-        homo_empty_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
+        homo_empty_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time

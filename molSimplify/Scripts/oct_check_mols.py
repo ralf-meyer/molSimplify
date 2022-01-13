@@ -339,8 +339,7 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                                                                      BondedOct=BondedOct)
         # _elapsed = (time.clock() - _start)
         # print('time on lig_breakdoen:', _elapsed)
-        liglist, ligdents, ligcons = liglist_init[:
-                                     ], ligdents_init[:], ligcons_init[:]
+        liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
         liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
                         for ele in liglist]
         liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
@@ -398,10 +397,10 @@ def is_linear_ligand(mol, ind):
             flag = True
         elif len(_catoms) == 2:
             ind_next2 = find_the_other_ind(_catoms[:], ind)
-            vec1 = np.array(mol.getAtomCoords(ind)) - \
-                   np.array(mol.getAtomCoords(ind_next))
-            vec2 = np.array(mol.getAtomCoords(ind_next2)) - \
-                   np.array(mol.getAtomCoords(ind_next))
+            vec1 = (np.array(mol.getAtomCoords(ind))
+                    - np.array(mol.getAtomCoords(ind_next)))
+            vec2 = (np.array(mol.getAtomCoords(ind_next2))
+                    - np.array(mol.getAtomCoords(ind_next)))
             ang = vecangle(vec1, vec2)
             if ang > 170:
                 flag = True

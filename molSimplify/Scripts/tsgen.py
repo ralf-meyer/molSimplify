@@ -198,7 +198,7 @@ def tsgen(mode, args, rootdir, core, substr, compreact, substreact, globs):
         emsg = 'Sorry, this mode is not supported yet. Exiting...'
         return strfiles, emsg, this_diag
     elif mode == 1:  # oxidative addition of a single group
-                # get first connecting point
+        # get first connecting point
         MXBL = MXdistcoeff*(core.getAtom(compreact).rad +
                             substr.getAtom(substreact).rad)
         cpoint = getconnection(core, compreact, MXBL)

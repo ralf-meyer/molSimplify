@@ -510,7 +510,7 @@ class mol3D:
             d : float
                 Bond distance in angstroms.
             ff : str
-            	Name of force field to be used from openbabel.
+                Name of force field to be used from openbabel.
         """    
         self.convert2OBMol()
         OBMol = self.OBMol

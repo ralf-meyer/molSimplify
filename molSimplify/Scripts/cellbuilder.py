@@ -118,15 +118,15 @@ def cut_cell_to_index(unit_cell, cell_vector, miller_index):
         zint = 1/(miller_index[2]*cell_vector[2][2])
         yint = 1/(miller_index[1]*cell_vector[1][1])
         xint = 1/(miller_index[0]*cell_vector[0][0])
-        #w = [0,0,0]
+        # w = [0,0,0]
         # w[2] = zint
-        #w[1] = -w[2]/yint
-        #w[0] = -w[2]/xint
+        # w[1] = -w[2]/yint
+        # w[0] = -w[2]/xint
         plane_normal = numpy.cross(v1, v2)
     elif len(non_zero_indices) == 2:
-      #      print('\n\n\n\n')
-       #     print(cell_vector)
-       #     print("\n\n")
+        # print('\n\n\n\n')
+        # print(cell_vector)
+        # print("\n\n")
         vec1 = [0, 0, 0]
         vec1[non_zero_indices[0]] = cell_vector[non_zero_indices[0]
                                                 ][non_zero_indices[0]]
@@ -135,9 +135,9 @@ def cut_cell_to_index(unit_cell, cell_vector, miller_index):
                                                 ][non_zero_indices[1]]
         vec3 = [0, 0, 0]
         vec3[zero_indices[0]] = cell_vector[zero_indices[0]][zero_indices[0]]
-     #   print('vec1',vec1)
-     #   print('vec2',vec2)
-     #   print('vec3',vec3)
+        # print('vec1',vec1)
+        # print('vec2',vec2)
+        # print('vec3',vec3)
         plane_normal = numpy.cross(v1, v2)
     elif len(non_zero_indices) == 1:
 
@@ -301,7 +301,7 @@ def choose_nearest_neighbour(target_site, avail_sites_dict, occupied_sites_dict,
     # OUPUT
     #   - nn_site: index of nearest neighbour  site, a key for avail_sites_dict
     extents = find_extents_cv(super_cell_vector)
- #   print('extents = ' + str(extents))
+    # print('extents = ' + str(extents))
     weight = 0  # favours adjaceny to point over distance from other occupied sites
     # get the nearest site to target
     score = 100000  # weighted assessment, lower is better
@@ -498,17 +498,17 @@ def align_payload_to_multi_site(payload, surface_coord_list, cand_list, bind_dis
 
 
 def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, payload, cand_list, surface_coord_list, bind_dist, duplicate=False, control_angle=False, align_axis=False,align_ind=False, debug=False):
-     #   This function does final lowering, rotate and merge of previously aligned molecule with surface
-     #   Precede all calls to this funciton with allign_payload_to_Site to avoid strange behaviour
-     # INPUT
-     #   - super_cell: mol3D class that contains the super cell
-     #   - payload: mol3D class that contains that target molecule
-     #   - payload_ind: int, index of atom in payload that will bind to the surface
-     #   - align_coord: list of float, coordinates of the target surface site
-     #   - bind_dist: float, binding distance in A
-     #   - duplicate: logical, create a negative-z reflection as well?
-     # OUPUT
-     #   - combined_cel: mol3D class, loaded cell
+    #   This function does final lowering, rotate and merge of previously aligned molecule with surface
+    #   Precede all calls to this funciton with allign_payload_to_Site to avoid strange behaviour
+    # INPUT
+    #   - super_cell: mol3D class that contains the super cell
+    #   - payload: mol3D class that contains that target molecule
+    #   - payload_ind: int, index of atom in payload that will bind to the surface
+    #   - align_coord: list of float, coordinates of the target surface site
+    #   - bind_dist: float, binding distance in A
+    #   - duplicate: logical, create a negative-z reflection as well?
+    # OUPUT
+    #   - combined_cel: mol3D class, loaded cell
     combined_cell = mol3D()
     combined_cell.copymol3D(super_cell)
     new_payload = mol3D()
@@ -565,8 +565,8 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
         this_cost = multialign_objective_function(
             this_payload, surface_coord_list, cand_list, bind_dist)
         if (this_cost < (cost)):
-                cost = this_cost
-                final_payload = this_payload
+            cost = this_cost
+            final_payload = this_payload
     if debug:
         print(('cost after rotation =' + str(cost)))
     distances_list = []
@@ -658,7 +658,7 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
         print((' Target distance was  ' + str(bind_dist) +
                ', achieved ' + str(distances_list)))
     min_dist = final_payload.mindist(combined_cell)
-   # now, rotate to maximize spacing, based on mask length
+    # now, rotate to maximize spacing, based on mask length
     rotate_on = False
     if len(cand_list) == 1:
         rotate_on = True
@@ -688,40 +688,36 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
                     print(('accepting rotate at theta  = ' + str(rotate_angle)))
                 min_dist = this_dist
                 final_payload = this_payload
-                
-                
-                
 
     if control_angle:
-            
-            print('inner control angle loop')
-            if not len(cand_list) == 1:
-                print('Warning! Using control angle with more than one payload,  reference will only use the FIRST payload reference ')
+        print('inner control angle loop')
+        if not len(cand_list) == 1:
+            print('Warning! Using control angle with more than one payload,  reference will only use the FIRST payload reference ')
 
-                print(('begining controlled rotation, targeting angle ' +
-                       str(control_angle) + ' to  line ' + str(align_axis)))
-                print(('aligning payload  index ' +
-                       str(cand_list[0]) + ' and indicies ' + str(align_ind-1) + ' with slab axes '))
-                this_payload = mol3D()
-                this_payload.copymol3D(final_payload)
-                
-                if debug:
-                    debug_cell = mol3D()
-                    debug_cell.copymol3D(combined_cell)
-                    debug_cell.combine(this_payload)
-                    this_payload.writexyz('aligned-payload-before-angle-control.xyz')
-                    debug_cell.writexyz('cell-before-angle-control.xyz')
+            print(('begining controlled rotation, targeting angle ' +
+                   str(control_angle) + ' to  line ' + str(align_axis)))
+            print(('aligning payload  index ' +
+                   str(cand_list[0]) + ' and indicies ' + str(align_ind-1) + ' with slab axes '))
+            this_payload = mol3D()
+            this_payload.copymol3D(final_payload)
 
-                this_payload = axes_angle_align(
-                    this_payload, cand_list[0], align_ind-1, align_axis, control_angle)
-                if debug:
-                    debug_cell = mol3D()
-                    debug_cell.copymol3D(combined_cell)
-                    debug_cell.combine(this_payload)
-                    this_payload.writexyz('aligned-payload-after-angle-control.xyz')
-                    debug_cell.writexyz('cell-before-after-control.xyz')
-                final_payload = this_payload
-                
+            if debug:
+                debug_cell = mol3D()
+                debug_cell.copymol3D(combined_cell)
+                debug_cell.combine(this_payload)
+                this_payload.writexyz('aligned-payload-before-angle-control.xyz')
+                debug_cell.writexyz('cell-before-angle-control.xyz')
+
+            this_payload = axes_angle_align(
+                this_payload, cand_list[0], align_ind-1, align_axis, control_angle)
+            if debug:
+                debug_cell = mol3D()
+                debug_cell.copymol3D(combined_cell)
+                debug_cell.combine(this_payload)
+                this_payload.writexyz('aligned-payload-after-angle-control.xyz')
+                debug_cell.writexyz('cell-before-after-control.xyz')
+            final_payload = this_payload
+
     if len(cand_list) > 1:
         # now, distort molecule based on FF to optimize bond length
         print('\n begining distortion ')

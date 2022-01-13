@@ -380,16 +380,16 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         valid, nn_excitation = ax_lig_corrector(nn_excitation, ax_type)
         valid, slope_excitation = ax_lig_corrector(slope_excitation, ax_type)
 
-   # print('ax_cor',valid)
-  #  print('start eq check')
+    # print('ax_cor',valid)
+    # print('start eq check')
     if valid:
         valid, nn_excitation = eq_lig_corrector(nn_excitation, eq_type)
         valid, slope_excitation = eq_lig_corrector(slope_excitation, eq_type)
 
-  #  print('eq_cor',valid)
+    # print('eq_cor',valid)
     #
     # print(slope_excitation)
-    #print('excitations: ')
+    # print('excitations: ')
     # print(nn_excitation)
     # print(slope_excitation)
 

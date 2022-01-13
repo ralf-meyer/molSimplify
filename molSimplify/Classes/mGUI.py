@@ -78,7 +78,7 @@ class mGUI():
         if not os.path.exists(globs.rundir):
             os.makedirs(globs.rundir)
         # overX = True if 'localhost' in os.environ['DISPLAY'].lower() else False # detect running over X
- #       configfile = False if not glob.glob(homedir+'/.molSimplify') else True
+#        configfile = False if not glob.glob(homedir+'/.molSimplify') else True
 #        if not configfile:
 #            self.wwindow = mQMainWindow()
 #            self.wwindow.resize(0.5,0.5)

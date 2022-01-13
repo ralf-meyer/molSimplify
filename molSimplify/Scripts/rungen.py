@@ -502,8 +502,8 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
         if rootcheck and os.path.isdir(rootcheck) and not args.checkdirt and not skip:
             args.checkdirt = True
             if not args.rprompt:
-                flagdir = get_input('\nDirectory '+rootcheck +
-                                ' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
+                flagdir = get_input('\nDirectory ' + rootcheck +
+                                    ' already exists. Keep both (k), replace (r) or skip (s) k/r/s: ')
                 if 'k' in flagdir.lower():
                     flagdir = 'keep'
                 elif 's' in flagdir.lower():

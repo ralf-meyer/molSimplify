@@ -758,8 +758,8 @@ class protein3D:
                     missing_atoms[(l[1],l[2])] = []
                     for atom in l[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
-                                                           greek=atom))
+                            missing_atoms[(l[1],l[2])].append(
+                                atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids and heteroatoms
         pa_dict = {'AltLoc': ""}
         if "ENDMDL" in text:

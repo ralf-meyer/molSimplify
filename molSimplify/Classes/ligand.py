@@ -128,7 +128,7 @@ class ligand:
         this_mol2_inds = sorted(this_mol2_inds)
 
         if (not bimetal):
-        # # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
+            # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
             catoms_indices = self.master_mol.getBondedAtomsSmart(metal_ind)
             catom_selector = np.zeros(self.master_mol.natoms)
             catom_selector[catoms_indices] = 1
@@ -171,12 +171,8 @@ class ligand:
         else:
             return lig_mol_graph_det, lig_mol2_string, catoms_indices
 
-    def percent_buried_vol(self,
-                    radius=3.5,
-                    gridspec=0.1, 
-                    bondiscale=1.17, 
-                    hydrogens=True 
-                    ):
+    def percent_buried_vol(self, radius=3.5, gridspec=0.1,
+                           bondiscale=1.17, hydrogens=True):
         """Calculate the percent buried volume as described in https://doi.org/10.1039/B922984A,
         and https://chemistry-europe.onlinelibrary.wiley.com/doi/abs/10.1002/ejic.200801160.
         Bondi VDW radii are used where possible

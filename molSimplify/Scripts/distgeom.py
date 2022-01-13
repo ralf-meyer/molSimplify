@@ -232,7 +232,7 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
     for i in range(natoms-1):
         for j in range(i, natoms-1):
             # ~ if Full:
-                # ~ LB, UB = Triangle(LB, UB, natoms)
+            # ~ LB, UB = Triangle(LB, UB, natoms)
             if UB[i][j] < LB[i][j]:  # ensure that the upper bound is larger than the lower bound
                 UB[i][j] = LB[i][j]
             D[i][j] = np.random.uniform(LB[i][j], UB[i][j])

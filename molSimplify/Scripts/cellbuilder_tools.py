@@ -45,8 +45,8 @@ def cell_ffopt(ff, mol, frozenats):
     # convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
     backup_mol = mol3D()
     backup_mol.copymol3D(mol)
- #   print('bck ' + str(backup_mol.getAtom(0).coords()))
- #   print('mol_ibf ' + str(mol.getAtom(0).coords()))
+    # print('bck ' + str(backup_mol.getAtom(0).coords()))
+    # print('mol_ibf ' + str(mol.getAtom(0).coords()))
     mol.convert2OBMol()
     # initialize constraints
     constr = openbabel.OBFFConstraints()
@@ -342,7 +342,7 @@ def distance_2d_torus_next_only(R1, R2, dim):
     dx = abs(R1[0] - R2[0])
     dy = abs(R1[1] - R2[1])
     dz = abs((R1[2] - R2[2]))
-  #  print('dx,dy,dz'+str([dx,dy,dz]))
+    # print('dx,dy,dz'+str([dx,dy,dz]))
     d1 = sqrt(numpy.power(dim[0] - dx, 2)
               + numpy.power(dim[1] - dy, 2)
               + numpy.power(dz, 2))
@@ -352,7 +352,7 @@ def distance_2d_torus_next_only(R1, R2, dim):
     d3 = sqrt(numpy.power(dx, 2)
               + numpy.power(dim[1] - dy, 2)
               + numpy.power(dz, 2))
- #   print('d1,d2,d3'+str([dx,dy,dz]))
+    # print('d1,d2,d3'+str([dx,dy,dz]))
 
     d = min(d1, d2, d3)
     return d
@@ -468,8 +468,8 @@ def check_top_layer_correct(super_cell, atom_type):
 
 
 def shave_surface_layer(super_cell, TOL=1e-1):
-  #  dlist = fractionate_points_by_plane(super_cell,n)
- #   points_below_plane(point,n,refd)
+    # dlist = fractionate_points_by_plane(super_cell,n)
+    # points_below_plane(point,n,refd)
 
     shaved_cell = mol3D()
     shaved_cell.copymol3D(super_cell)
@@ -652,7 +652,7 @@ def freeze_under_layer(super_cell):
             if (coords[2] < zmin):
                 zmin = coords[2]
     freeze_list = list()
- #   print('lowest  ' + str(zmin))
+    # print('lowest  ' + str(zmin))
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
         if not atoms.frozen:

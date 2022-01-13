@@ -467,7 +467,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
                 # Note that only one hydrogen atom is removed at the most under the current implementation.
                 for _i, connecting_index in enumerate(lig.cat):
                     if connecting_index > Hs[0]:
-                      lig.cat[_i] -= 1
+                        lig.cat[_i] -= 1
                 lig3D.deleteatom(Hs[0])
                 lig3D.charge = lig3D.charge - 1
     # Conformer search for multidentate SMILES ligands

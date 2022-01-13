@@ -170,7 +170,8 @@ groups_dict = {'group_1': group_1, 'group_2': group_2, 'group_3': group_3,
                'lanthanides': lanthanides, 'actinides': actinides, 'hydrogen': hydrogen}
 
 # Metals (includes alkali, alkaline earth, and transition metals)
-alkali_and_alkaline_earth = ['Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
+alkali_and_alkaline_earth = [
+    'Li', 'li', 'LI', 'lithium', 'Be', 'be', 'BE', 'beryllium',
     'Na', 'na', 'NA', 'sodium', 'Mg', 'mg', 'MG', 'magnesium',
     'K', 'k', 'potassium', 'Ca', 'ca', 'CA', 'calcium',
     'Rb', 'rb', 'RB', 'rubidium', 'Sr', 'sr', 'SR', 'strontium',

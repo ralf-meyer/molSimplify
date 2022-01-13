@@ -79,7 +79,7 @@ def checkinput(args, calctype="base"):
                         'WARNING: No spin multiplicity specified. Defaulting to singlet (1)')
                 args.spin = defaultspinstate
 
-             # check coordination number and geometry from ligands if given
+            # check coordination number and geometry from ligands if given
             if (not args.coord) and (not args.geometry) and args.lig:
                 if not args.gui:
                     # calculate occurrences, denticities etc for all ligands

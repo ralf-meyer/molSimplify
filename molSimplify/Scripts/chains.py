@@ -63,13 +63,13 @@ def find_term_heavy(mol, reference_point):
     min_ind = 0
     print(('reference_point', reference_point))
     for inds, atoms in enumerate(mol.getAtoms()):
-         #           print('inds,atoms')
-          #          print('this ind is ',inds)
-          #          print('this atom ',atoms.symbol())
+        # print('inds,atoms')
+        # print('this ind is ',inds)
+        # print('this atom ',atoms.symbol())
         if not atoms.symbol() == "H":
             this_coord = atoms.coords()
             this_dist = distance(this_coord, reference_point)
-    #                print(atoms.symbol(),inds,this_coord,this_dist)
+            # print(atoms.symbol(),inds,this_coord,this_dist)
             if this_dist < min_dist:
                 min_dist = this_dist
                 min_ind = inds

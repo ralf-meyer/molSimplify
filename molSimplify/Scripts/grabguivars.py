@@ -507,7 +507,7 @@ def loadfrominputgam(gui, fname):
     ### general structure generation options ###
     for ss in s:
         st = ss.split(None, 1)
-      ### Quantum Chemistry options ###
+        ### Quantum Chemistry options ###
         if '-charge' == st[0]:
             gui.etqcgch.setText(st[-1])
         if '-spin' == st[0]:
@@ -547,7 +547,7 @@ def loadfrominputqch(gui, fname):
     ### general structure generation options ###
     for ss in s:
         st = ss.split(None, 1)
-      ### Quantum Chemistry options ###
+        ### Quantum Chemistry options ###
         if '-basis' == st[0]:
             gui.etqcQbasis.setText(st[-1])
         if '-charge' == st[0]:
