@@ -188,11 +188,11 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 ANN_bondl = len(
                     [item for items in batslist for item in items])*[False]
                 if args.debug:
-                    if ANN_reason == 'found incorrect ligand symmetry': # This is a workaround so as to not have to change report files checked by Travis CI when running test cases, which would require everyone using molSimplify from source to have to git pull the new files before any new commits
+                    if ANN_reason == 'found incorrect ligand symmetry':  # This is a workaround so as to not have to change report files checked by Travis CI when running test cases, which would require everyone using molSimplify from source to have to git pull the new files before any new commits
                         print(("ANN call failed with reason: either found incorrect ligand symmetry, or see ANN messages above"))
                     else:
                         print(("ANN call failed with reason: " + ANN_reason))
-        #except:
+        # except:
         else:
             print("ANN call rejected")
             ANN_reason = 'uncaught exception'
@@ -453,7 +453,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
                 else:
                     keepHs[i][j] = True
         # remove one hydrogen from each connecting atom with keepH false
-        for j, cat in enumerate(lig.cat): # lig.cat are the connecting atoms
+        for j, cat in enumerate(lig.cat):  # lig.cat are the connecting atoms
             Hs = lig3D.getHsbyIndex(cat)
             if len(Hs) > 0 and not keepHs[i][j]:
                 if args.debug:
@@ -743,7 +743,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
             #     print((' atom '+str(iiat)+' atomic num '+str(atom.GetAtomicNum())+' valence ' +
             #            str(atom.GetValence()) + ' is fixed ' + str(constr.IsFixed(iiat+1))))
         
-            print('Commented out') # Commented out the preceding for loop because it was throwing the following error -> AttributeError: 'OBAtom' object has no attribute 'GetValence'
+            print('Commented out')  # Commented out the preceding for loop because it was throwing the following error -> AttributeError: 'OBAtom' object has no attribute 'GetValence'
         # set up forcefield
         s = forcefield.Setup(OBMol, constr)
         if not s:

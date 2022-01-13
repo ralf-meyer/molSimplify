@@ -943,7 +943,7 @@ class mol3D:
             raise Exception('mol3D object cannot delete atom '+str(atomIdx) +
                             ' because it only has '+str(self.natoms)+' atoms!')
         if self.getAtom(atomIdx).sym == 'X':
-            self.atoms[atomIdx].sym = 'Fe' # Switch to Iron temporarily
+            self.atoms[atomIdx].sym = 'Fe'  # Switch to Iron temporarily
             self.atoms[atomIdx].name = 'Fe'
         if self.bo_dict:
             self.convert2OBMol2()
@@ -981,7 +981,7 @@ class mol3D:
         Alist = [self.natoms+i if i < 0 else i for i in Alist]
         for atomIdx in Alist:
             if self.getAtom(atomIdx).sym == 'X':
-                self.atoms[atomIdx].sym = 'Fe' # Switch to Iron temporarily
+                self.atoms[atomIdx].sym = 'Fe'  # Switch to Iron temporarily
                 self.atoms[atomIdx].name = 'Fe' 
         if self.bo_dict:
             self.convert2OBMol2()
@@ -1131,7 +1131,7 @@ class mol3D:
         """
         # Use this as dummy mol3D class. Shouldn't interfere with other functionality.
         self.my_mol_trunc = mol3D()
-        nh = len([x for x in self.symvect() if x == 'H']) # Get initial hydrogens count.
+        nh = len([x for x in self.symvect() if x == 'H'])  # Get initial hydrogens count.
         smi = self.get_smiles(use_mol2=True, canonicalize=True)
         self.my_mol_trunc.read_smiles(smi, steps=0, ff=False)
         charge = self.my_mol_trunc.OBMol.GetTotalCharge()

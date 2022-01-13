@@ -476,7 +476,7 @@ def cleaninput(args):
     if not args.keepHs:
         args.keepHs = [keepHs_default]
     if args.keepHs and args.lig:
-        while len(args.keepHs) < len(args.lig): # user should specify as many booleans for keepHs as there are kinds of ligands if she wants to avoid default assignment
+        while len(args.keepHs) < len(args.lig):  # user should specify as many booleans for keepHs as there are kinds of ligands if she wants to avoid default assignment
             args.keepHs.append(keepHs_default)
         for i, s in enumerate(args.keepHs):
             if args.keepHs[i].lower() != 'auto':

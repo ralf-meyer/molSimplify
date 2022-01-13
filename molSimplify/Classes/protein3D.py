@@ -423,18 +423,18 @@ class protein3D:
         >>> pdb_system.getMolecule(a_id=9164).name # This prints the name of the molecule, in this case, it is 'TAU'
         """
         for s in self.aas.values():
-            for mol in s: # mol is AA3D
+            for mol in s:  # mol is AA3D
                 if (a_id, self.atoms[a_id]) in mol.atoms:
                     return mol
-        for mol in self.missing_atoms.keys(): # mol is incomplete AA3D
+        for mol in self.missing_atoms.keys():  # mol is incomplete AA3D
             if (a_id, self.atoms[a_id]) in self.missing_atoms[mol]:
                 return mol
         if not aas_only:
             for s in self.hetmols.values():
-                for mol in s: # mol is mol3D
+                for mol in s:  # mol is mol3D
                     if self.atoms[a_id] in mol.atoms:
                         return mol
-        return None # something is wrong
+        return None  # something is wrong
 
     def stripAtoms(self, atoms_stripped):
         """ Removes certain atoms from the protein3D class instance.
@@ -561,7 +561,7 @@ class protein3D:
         """
         if not self.metals:
             metal_list = []
-            for l in self.hetmols.values(): # no metals in AAs
+            for l in self.hetmols.values():  # no metals in AAs
                 for m in l:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
@@ -667,7 +667,7 @@ class protein3D:
         """
 
         # read in PDB file
-        if '.pdb' in text: # means this is a filename
+        if '.pdb' in text:  # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
             f = open(fname + '.pdb', 'r')
@@ -775,13 +775,13 @@ class protein3D:
                 if a_dict['ResName'] in globalvars().getAllAAs() or "ATOM" in l_type:
                     # have an amino acid or biomolecule monomer
                     a, aas, conf, chains, pa_dict, bonds = makeMol(a_dict, aas, conf, chains, pa_dict, bonds)
-                else: # have a normal heteromolecule
+                else:  # have a normal heteromolecule
                     a, hetmols, conf, chains, pa_dict, bonds = makeMol(a_dict, hetmols, conf, chains, pa_dict, bonds, False)
                 atoms[a_dict['SerialNum']] = a
                 a_ids[a] = a_dict['SerialNum']
 
-            elif "CONECT" in l_type: # get extra connections
-                line = line[6:] # remove type
+            elif "CONECT" in l_type:  # get extra connections
+                line = line[6:]  # remove type
                 l = [line[i:i+5] for i in range(0, len(line), 5)]
                 if int(l[0]) in atoms.keys() and atoms[int(l[0])] not in bonds.keys():
                     bonds[atoms[int(l[0])]] = set()

@@ -289,15 +289,15 @@ def dihedral(mol, idx1, idx2, idx3, idx4):
     r3 = mol.getAtom(idx3).coords()
     r4 = mol.getAtom(idx4).coords()
 
-    v1 = np.array(r2)-np.array(r1) # vector formed between atoms 1 and 2
-    v2 = np.array(r3)-np.array(r2) # vector formed between atoms 2 and 3
-    v3 = np.array(r4)-np.array(r3) # vector formed between atoms 3 and 4
+    v1 = np.array(r2)-np.array(r1)  # vector formed between atoms 1 and 2
+    v2 = np.array(r3)-np.array(r2)  # vector formed between atoms 2 and 3
+    v3 = np.array(r4)-np.array(r3)  # vector formed between atoms 3 and 4
     
-    v1_x_v2 = np.cross(v1, v2) # cross product of v1 and v2
-    v2_x_v3 = np.cross(v2, v3) # cross product of v2 and v3
+    v1_x_v2 = np.cross(v1, v2)  # cross product of v1 and v2
+    v2_x_v3 = np.cross(v2, v3)  # cross product of v2 and v3
     
-    normal_1 = v1_x_v2/(np.linalg.norm(v1_x_v2)) # normal to the plane formed by 1,2,3
-    normal_2 = v2_x_v3/(np.linalg.norm(v2_x_v3)) # normal to the plane formed by 2,3,4
+    normal_1 = v1_x_v2/(np.linalg.norm(v1_x_v2))  # normal to the plane formed by 1,2,3
+    normal_2 = v2_x_v3/(np.linalg.norm(v2_x_v3))  # normal to the plane formed by 2,3,4
     
     unit_1 = v2/(np.linalg.norm(v2))
     unit_2 = np.cross(unit_1, normal_2)

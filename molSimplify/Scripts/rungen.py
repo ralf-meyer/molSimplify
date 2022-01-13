@@ -664,6 +664,6 @@ def rungen(rundir, args, chspfname, globs, write_files=True):
             else:
                 print(('Folder '+rootdir+' was skipped..\n'))
     if write_files:
-        return emsg # Default behavior
+        return emsg  # Default behavior
     else:
-        return strfiles, emsg, this_diag # Assume that user wants these if they're not writing files
+        return strfiles, emsg, this_diag  # Assume that user wants these if they're not writing files

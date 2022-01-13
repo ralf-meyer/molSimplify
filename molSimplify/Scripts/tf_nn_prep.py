@@ -397,7 +397,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         if catalysis:
             valid = False
     if (not valid) and (not catalysis):
-        ANN_reason = 'found incorrect ligand symmetry' # or, an invalid metal, oxidation state, spin state combination was used
+        ANN_reason = 'found incorrect ligand symmetry'  # or, an invalid metal, oxidation state, spin state combination was used
     elif not valid and catalysis:
         if args.debug:
             print('tf_nn detects catalytic')

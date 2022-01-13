@@ -17,7 +17,7 @@ class AA3D:
         # Number of atoms
         self.natoms = 0
         # 3-letter code of amino acid (in all caps)
-        self.three_lc = three_lc # if no name is specified, defaults to glycine
+        self.three_lc = three_lc  # if no name is specified, defaults to glycine
         # Mass of molecule
         self.mass = 0
         # Size of molecule

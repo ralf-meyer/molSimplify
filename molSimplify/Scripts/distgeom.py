@@ -438,12 +438,12 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
             ff.ConjugateGradients(10)
         ff.GetCoordinates(OBMol)
 
-    last_atom_index = OBMol.NumAtoms() #Delete the dummy metal atom that we added earlier
+    last_atom_index = OBMol.NumAtoms()  # Delete the dummy metal atom that we added earlier
     metal_atom = OBMol.GetAtom(last_atom_index)
     OBMol.DeleteAtom(metal_atom)
     
-    #Second stage of cleaning removes the metal, but uses constraints on the bonding atoms to ensure a binding conformer is maintained
-    #This stage is critical for getting planar aromatic ligands like porphyrin and correct. Not really sure why though...
+    # Second stage of cleaning removes the metal, but uses constraints on the bonding atoms to ensure a binding conformer is maintained
+    # This stage is critical for getting planar aromatic ligands like porphyrin and correct. Not really sure why though...
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
@@ -532,8 +532,8 @@ def GetConf(mol, args, catoms=[]):
     # Create a mol3D copy with a dummy metal metal
     Conf3D = mol3D()
     Conf3D.copymol3D(mol)
-    Conf3D.addAtom(atom3D('Fe', [0, 0, 0])) #Add dummy metal to the mol3D
-    dummy_metal = openbabel.OBAtom() #And add the dummy metal to the OBmol
+    Conf3D.addAtom(atom3D('Fe', [0, 0, 0]))  # Add dummy metal to the mol3D
+    dummy_metal = openbabel.OBAtom()  # And add the dummy metal to the OBmol
     dummy_metal.SetAtomicNum(26)
     Conf3D.OBMol.AddAtom(dummy_metal)
     for i in catoms:

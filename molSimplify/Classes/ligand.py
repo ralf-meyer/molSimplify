@@ -49,7 +49,7 @@ class ligand:
             else:
                 raise ValueError('Not Recognized Structure Type!')
             self.master_mol = thismol
-            met = thismol.findMetal()[0] # Pull out metal
+            met = thismol.findMetal()[0]  # Pull out metal
             self.index_list = [x for x in range(thismol.natoms) if x != met]
             self.dent = len(thismol.getBondedAtomsSmart(met))
             self.ext_int_dict = {i: j for i, j in enumerate(self.index_list)}
@@ -81,7 +81,7 @@ class ligand:
             this_ext_int_dict.update({i: j})
             j += 1  # keep count of how many are added
         self.mol = this_mol
-        if len(self.master_mol.graph): # Save graph to ligand mol3D object
+        if len(self.master_mol.graph):  # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in self.index_list]
             self.mol.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
         if self.master_mol.bo_dict:
@@ -143,7 +143,7 @@ class ligand:
                 new_metal_inds.append(j)
             else:
                 this_mol2.addAtom(self.master_mol.getAtom(i))
-        if len(self.master_mol.graph): # Save graph to ligand mol3D object
+        if len(self.master_mol.graph):  # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
             if (not bimetal):
@@ -211,24 +211,24 @@ class ligand:
             percent_buried = 0.0
         else:
             met = thismol.findMetal()[0]
-            coords = thismol.coordsvect() - thismol.coordsvect()[met] # Center coordinates to the metal
+            coords = thismol.coordsvect() - thismol.coordsvect()[met]  # Center coordinates to the metal
             syms = [x for i, x in enumerate(thismol.symvect()) if i != met]
             radvect = []
             for sym in syms:
-                if sym in bondivdw: # Take in the bondivdw radii reccomeneded in paper
+                if sym in bondivdw:  # Take in the bondivdw radii reccomeneded in paper
                     radvect.append(bondivdw[sym]*bondiscale)
-                else: # Else take in Newer definition of vdw radii
+                else:  # Else take in Newer definition of vdw radii
                     radvect.append(vdwrad[sym]*bondiscale)
             radiusvect = np.array(radvect)
             inds = np.array([x for x in range(natoms) if x != met])
-            coords = coords[inds] # Get rid of metal location from coords
+            coords = coords[inds]  # Get rid of metal location from coords
             x_ = np.arange(-radius, radius, gridspec)
             y_ = np.arange(-radius, radius, gridspec)
             z_ = np.arange(-radius, radius, gridspec)
             grid = np.meshgrid(x_, y_, z_, indexing='ij')
             mgrid = list(map(np.ravel, grid))
-            combined = np.vstack(mgrid).T # Flatten meshgrid to nx3
-            init_coords = np.array([[0, 0, 0]]) # We have set metal to (0,0,0)
+            combined = np.vstack(mgrid).T  # Flatten meshgrid to nx3
+            init_coords = np.array([[0, 0, 0]])  # We have set metal to (0,0,0)
             # Get distance of all gridpoints from (0,0,0) -> Filter out gridpoints further
             init_dists = np.linalg.norm(init_coords[:, None, :]-combined[None, :, :], axis=-1)
             # Get rid of gridpoints further away than radius and metal

@@ -108,7 +108,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         mols[key][0].temp_list = mols[key][0].atoms.copy()
     prev_a_dict = a_dict
     if a_dict['ChainID'] not in chains.keys():
-        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+        chains[a_dict['ChainID']] = []  # initialize key of chain dictionary
     if m != 0 and key not in conf and loc != '' and float(a_dict['Occupancy']) < 1:
         conf.append(key)
     if m != 0 and m not in chains[a_dict['ChainID']] and key not in conf:
@@ -134,7 +134,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         for i in mols[key]:
             i.addAtom(atom, a_dict['SerialNum'])
     else:
-        m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+        m.addAtom(atom, a_dict['SerialNum'])  # terminal Os may be missing
         if aa:
             if atom.greek == "C":
                 m.c.append(atom)
