@@ -5,12 +5,6 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import argparse
-import glob
-import sys
-import os
-import subprocess
-
 # Generates jobscripts for SGE queueing system
 #  @param args Namespace of arguments
 #  @param jobdirs Subdirectories for jobscript placement

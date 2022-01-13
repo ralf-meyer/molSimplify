@@ -5,7 +5,6 @@
 #
 #  Department of Chemical Engineering, MIT
 
-from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
 
 class run_diag:

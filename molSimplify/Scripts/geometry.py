@@ -7,8 +7,6 @@
 #
 #  Department of Chemical Engineering, MIT
 
-import sys
-import copy
 from numpy import (arccos, cross, dot, pi, transpose,
                    sin, cos, mat, array, arctan2, sqrt)
 from numpy.linalg import det, svd

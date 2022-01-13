@@ -5,9 +5,6 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-# imports
-import os
-from math import sqrt
 
 class AA3D:
     """Holds information about an amino acid, used to do manipulations.  Reads information from structure file (pdb, cif) or is directly built from molsimplify.

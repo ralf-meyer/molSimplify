@@ -6,20 +6,15 @@
 #  Dpt of Chemical Engineering, MIT
 
 # imports
-from math import sqrt
-import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom, makeMol
 from molSimplify.Classes.globalvars import globalvars
-import gzip
-from itertools import chain
 import urllib.request as urllib
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import string
 import subprocess
 import shlex
 import ast

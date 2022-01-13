@@ -405,9 +405,7 @@ def draw_supervisor(args, rundir):
 
 def rungen(rundir, args, chspfname, globs, write_files=True):
     try:
-        from Classes.mWidgets import qBoxFolder
         from Classes.mWidgets import mQDialogInf
-        from Classes.mWidgets import mQDialogErr
     except ImportError:
         args.gui = False
     emsg = False

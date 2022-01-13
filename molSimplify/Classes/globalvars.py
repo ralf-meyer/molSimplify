@@ -12,7 +12,6 @@ import glob
 import platform
 import sys
 import subprocess
-from math import sqrt
 
 # Dictionary containing atomic mass, atomic number, covalent radius, num valence electrons
 # Data from http://www.webelements.com/ (last accessed May 13th 2015)

@@ -8,9 +8,7 @@
 from molSimplify.Scripts.molSimplify_io import (lig_load)
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.graph_analyze import (get_lig_EN,
-                                                   get_truncated_kier,
-                                                   kier,
-                                                   obtain_truncation)
+                                                   get_truncated_kier)
 from molSimplify.python_nn.ANN import (find_eu_dist,
                                        simple_hs_ann,
                                        simple_ls_ann,
