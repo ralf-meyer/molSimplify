@@ -7,7 +7,7 @@
 import numpy as np
 from itertools import combinations
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.globalvars import bondivdw,vdwrad
+from molSimplify.Classes.globalvars import bondivdw, vdwrad
 
 
 # Ligand class for postprocessing DFT results by measuring ligand properties
@@ -30,10 +30,10 @@ class ligand:
         If read_ligand type is unknown.
     """
     def __init__(self, master_mol, index_list, dent, read_lig=False):
-        if isinstance(read_lig,str):
+        if isinstance(read_lig, str):
             thismol = mol3D()
             if 'TRIPOS' in read_lig:
-                thismol.readfrommol2(read_lig,readstring=True)
+                thismol.readfrommol2(read_lig, readstring=True)
             # Xyz filename
             elif read_lig[-4:] == '.xyz':
                 thismol.readfromxyz(read_lig)
@@ -41,7 +41,7 @@ class ligand:
             elif read_lig[-5:] == '.mol2':
                 thismol.readfrommol2(read_lig)
             # checking for number at start of string -> indicates xyz string
-            elif (len(read_lig.split('\n')) > 3) & (read_lig.split('\n')[0].replace(' ','').isnumeric()):
+            elif (len(read_lig.split('\n')) > 3) & (read_lig.split('\n')[0].replace(' ', '').isnumeric()):
                 thismol.readfromstring(read_lig)
             # checking for similar file without header
             elif (len(read_lig.split('\n')[0].split()) == 4) and read_lig.split('\n')[0].split()[0]:
@@ -52,8 +52,8 @@ class ligand:
             met = thismol.findMetal()[0] # Pull out metal
             self.index_list = [x for x in range(thismol.natoms) if x!=met]
             self.dent = len(thismol.getBondedAtomsSmart(met))
-            self.ext_int_dict = {i:j for i,j in enumerate(self.index_list)}
-            self.mol2string = thismol.writemol2('ligand',writestring=True)
+            self.ext_int_dict = {i: j for i, j in enumerate(self.index_list)}
+            self.mol2string = thismol.writemol2('ligand', writestring=True)
             self.lig_mol_graph_det = thismol.get_mol_graph_det()
             self.percent_buried_volume = False
         else:
@@ -135,7 +135,7 @@ class ligand:
 
         # Add the metal with symbol = 'M'
         new_metal_inds = []
-        for j,i in enumerate(this_mol2_inds):
+        for j, i in enumerate(this_mol2_inds):
             if i in metal_ind:
                 atom = self.master_mol.getAtom(i)
                 atom.mutate('X')
@@ -162,7 +162,7 @@ class ligand:
             save_bo_dict = self.master_mol.get_bo_dict_from_inds(this_mol2_inds)
             this_mol2.bo_dict = save_bo_dict
         lig_mol_graph_det = this_mol2.get_mol_graph_det()
-        lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
+        lig_mol2_string = this_mol2.writemol2('ligand', writestring=True)
         self.mol2string = lig_mol2_string
         self.lig_mol_graph_det = lig_mol_graph_det
 
@@ -199,9 +199,9 @@ class ligand:
             Represents bulkiness of the ligand around the metal center.
         """
         if not self.mol2string:
-            _,_ = self.get_lig_mol2()
+            _, _ = self.get_lig_mol2()
         thismol = mol3D()
-        thismol.readfrommol2(self.mol2string,readstring=True)
+        thismol.readfrommol2(self.mol2string, readstring=True)
         # Accounting for hydrogens by default - otherwise deleting.
         if not hydrogens:
             thismol.deleteHs()
@@ -212,7 +212,7 @@ class ligand:
         else:
             met = thismol.findMetal()[0]
             coords = thismol.coordsvect() - thismol.coordsvect()[met] # Center coordinates to the metal
-            syms = [x for i,x in enumerate(thismol.symvect()) if i != met]
+            syms = [x for i, x in enumerate(thismol.symvect()) if i != met]
             radvect = []
             for sym in syms:
                 if sym in bondivdw: # Take in the bondivdw radii reccomeneded in paper
@@ -222,27 +222,27 @@ class ligand:
             radiusvect = np.array(radvect)
             inds = np.array([x for x in range(natoms) if x!=met])
             coords = coords[inds] # Get rid of metal location from coords
-            x_ = np.arange(-radius,radius,gridspec)
-            y_ = np.arange(-radius,radius,gridspec)
-            z_ = np.arange(-radius,radius,gridspec)
-            grid = np.meshgrid(x_,y_,z_, indexing='ij')
-            mgrid = list(map(np.ravel,grid))
+            x_ = np.arange(-radius, radius, gridspec)
+            y_ = np.arange(-radius, radius, gridspec)
+            z_ = np.arange(-radius, radius, gridspec)
+            grid = np.meshgrid(x_, y_, z_, indexing='ij')
+            mgrid = list(map(np.ravel, grid))
             combined = np.vstack(mgrid).T # Flatten meshgrid to nx3
-            init_coords = np.array([[0,0,0]]) # We have set metal to (0,0,0)
+            init_coords = np.array([[0, 0, 0]]) # We have set metal to (0,0,0)
             # Get distance of all gridpoints from (0,0,0) -> Filter out gridpoints further
-            init_dists = np.linalg.norm(init_coords[:,None,:]-combined[None,:,:],axis=-1)
+            init_dists = np.linalg.norm(init_coords[:, None, :]-combined[None, :, :], axis=-1)
             # Get rid of gridpoints further away than radius and metal
-            combined = combined[np.where(init_dists[0,:] <= radius)[0]]
+            combined = combined[np.where(init_dists[0, :] <= radius)[0]]
             # Get rid of ligand atoms that won't interact at all
-            met_ds = np.linalg.norm(init_coords[:,None,:]-coords[None,:,:],axis=-1)
+            met_ds = np.linalg.norm(init_coords[:, None, :]-coords[None, :, :], axis=-1)
             met_ds = met_ds - radius - radiusvect
             mfilter = np.where(met_ds[0] < 0)
             coords = coords[mfilter]
             radiusvect = radiusvect[mfilter]
             # Calc distance of all remaining atomic coords to all grid points
-            ds = np.linalg.norm(coords[:,None,:]-combined[None,:,:],axis=-1)
+            ds = np.linalg.norm(coords[:, None, :]-combined[None, :, :], axis=-1)
             # Compare distances to radii of atoms, flag any less than than or equal to the radii as buried
-            buried = len(np.where(np.any(np.less_equal(ds[:,:],radiusvect[:,None]),axis=0))[0])
+            buried = len(np.where(np.any(np.less_equal(ds[:, :], radiusvect[:, None]), axis=0))[0])
             total = ds.shape[1]
             # Percent buried volume 
             percent_buried = float(buried)/total*100
@@ -296,8 +296,8 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
         fragment = mol.findsubMol(atom, metal_index)
         this_cons = [x for x in fragment if (x in bondedatoms)]
         if not silent:
-            print(('fragment',fragment))
-            print(('this_cons',this_cons))
+            print(('fragment', fragment))
+            print(('this_cons', this_cons))
         unique = True
         for i, unique_ligands in enumerate(liglist):
             if sorted(fragment) == sorted(unique_ligands):

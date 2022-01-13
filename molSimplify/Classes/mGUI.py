@@ -58,7 +58,7 @@ class mGUI():
         self.initGUI(app)
         cwd = os.getcwd()
         globs = globalvars()  # global variables
-        globs.rundir = os.path.join(cwd,'Runs')
+        globs.rundir = os.path.join(cwd, 'Runs')
         if not os.path.exists(globs.rundir):
             print((globs.rundir))
             os.makedirs(globs.rundir)
@@ -74,7 +74,7 @@ class mGUI():
         homedir = os.path.expanduser("~")
         cwd = os.getcwd()
         globs = globalvars()  # global variables
-        globs.rundir = os.path.join(cwd,'Runs')
+        globs.rundir = os.path.join(cwd, 'Runs')
         if not os.path.exists(globs.rundir):
             os.makedirs(globs.rundir)
         # overX = True if 'localhost' in os.environ['DISPLAY'].lower() else False # detect running over X
@@ -354,7 +354,7 @@ class mGUI():
         self.rtliggrp = mQLabel('Ligand\ngroup:', ctip, 'Cr', 12)
         cwd = os.getcwd()
         globs = globalvars()
-        globs.rundir = os.path.join(cwd,'Runs')
+        globs.rundir = os.path.join(cwd, 'Runs')
         if globs.custom_path:
             f = globs.custom_path + "/Ligands/ligands.dict"
         else:

@@ -497,7 +497,7 @@ def align_payload_to_multi_site(payload, surface_coord_list, cand_list, bind_dis
 ##################################
 
 
-def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, payload, cand_list, surface_coord_list, bind_dist, duplicate=False, control_angle=False, align_axis=False,align_ind=False, debug=False):
+def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, payload, cand_list, surface_coord_list, bind_dist, duplicate=False, control_angle=False, align_axis=False, align_ind=False, debug=False):
     #   This function does final lowering, rotate and merge of previously aligned molecule with surface
     #   Precede all calls to this funciton with allign_payload_to_Site to avoid strange behaviour
     # INPUT

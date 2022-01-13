@@ -34,7 +34,7 @@ from molSimplify.Scripts.structgen import (structgen)
 ### define input for cross-compatibility between python 2 and 3 ###
 ###################################################################
 get_input = input
-if sys.version_info[:2] <= (2,7):
+if sys.version_info[:2] <= (2, 7):
     get_input = raw_input
 
 #####################################

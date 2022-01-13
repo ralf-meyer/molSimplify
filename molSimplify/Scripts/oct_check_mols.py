@@ -106,7 +106,7 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked_inds):
     _angs = input_angle[1][:]
     angs = copy.copy(_angs)
     picked_angles = [angs[x] for x in picked_inds]
-    picked_inds_rev = [x for _,x in sorted(zip(picked_angles,picked_inds), reverse=True)]
+    picked_inds_rev = [x for _, x in sorted(zip(picked_angles, picked_inds), reverse=True)]
     _target_angle = copy.copy(target_angle)
     # print("_angs: ", _angs)
     # print('target_angle', target_angle)

@@ -170,7 +170,7 @@ def checkinput(args, calctype="base"):
                     args.ligocc.append(0)
     elif calctype == "tsgen":
         # load substrate for reference
-        print(args.substrate[0],0, args.subcatoms)
+        print(args.substrate[0], 0, args.subcatoms)
         sub, subcatoms, emsg = substr_load(
             args.substrate[0], 0, args.subcatoms)
         # check core
@@ -1069,7 +1069,7 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-max_descriptors'):
                 args.max_descriptors = [str(i) for i in l[1:]]
     if not set_rundir:
-        args.rundir = os.path.join(os.path.abspath('.'),'Runs')
+        args.rundir = os.path.join(os.path.abspath('.'), 'Runs')
 # Parses command line arguments and prints help information
 #  @param parser Parser object
 #  @return Namespace of arguments
@@ -1121,9 +1121,9 @@ def parseinputs_basic(*p):
     parser.add_argument("-lig", help="ligands to be included in complex")
     parser.add_argument(
         "-ligocc", help="number of corresponding ligands", action="store_true")  # e.g. 1,2,1
-    parser.add_argument("-spin",help="Spin multiplicity (e.g., 1 for singlet)")
-    parser.add_argument("-spinmultiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
-    parser.add_argument("-multiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spin", help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spinmultiplicity", help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-multiplicity", help="Spin multiplicity (e.g., 1 for singlet)")
     # specified in cleaninput
     parser.add_argument(
         "-keepHs", help="force keep hydrogens, default auto for each ligand")

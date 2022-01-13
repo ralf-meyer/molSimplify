@@ -37,7 +37,7 @@ from molSimplify.Scripts.molSimplify_io import (core_load,
                                                 loaddata,
                                                 name_complex)
 
-if not sys.version_info >= (3,0):
+if not sys.version_info >= (3, 0):
     from molSimplify.Scripts.nn_prep import (ANN_preproc)
 from molSimplify.Classes.globalvars import (elementsbynum,
                                             romans)

@@ -1055,7 +1055,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
             else:
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
-        print([nconf,args.nconfs])
+        print([nconf, args.nconfs])
         if nconf and int(args.nconfs) >= 1:
             name += "_conf_"+str(nconf)
         if args.bind:

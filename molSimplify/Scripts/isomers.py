@@ -11,9 +11,9 @@ oct_adjacency = {0: (1, 3, 4, 5), 1: (0, 2, 4, 5), 2: (1, 3, 4, 5), 3: (0, 2, 4,
                  4: (0, 1, 2, 3), 5: (0, 1, 2, 3)}
 thd_adjacency = {0: (1, 2, 3), 1: (0, 2, 3), 2: (0, 1, 3), 3: (0, 1, 2)}
 sqp_adjacency = {0: (1, 3), 1: (0, 2), 2: (1, 3), 3: (0, 2)}
-tbp_adjacency = {0: (2,3,4), 1: (2,3,4), 2: (0,1), 3: (0,1), 4: (0,1)}
-spy_adjacency = {0: (1,3,4), 1: (0,2,4), 2: (1,3,4), 3: (0,2,4), 4: (0,1,2,3)}
-pbp_adjacency = {0: (1,4), 1: (0,2), 2: (1,3), 3: (2,4), 4: (3,0), 5: (0,1,2,3,4), 6: (0,1,2,3,4)}
+tbp_adjacency = {0: (2, 3, 4), 1: (2, 3, 4), 2: (0, 1), 3: (0, 1), 4: (0, 1)}
+spy_adjacency = {0: (1, 3, 4), 1: (0, 2, 4), 2: (1, 3, 4), 3: (0, 2, 4), 4: (0, 1, 2, 3)}
+pbp_adjacency = {0: (1, 4), 1: (0, 2), 2: (1, 3), 3: (2, 4), 4: (3, 0), 5: (0, 1, 2, 3, 4), 6: (0, 1, 2, 3, 4)}
 
 # Core functionality of isomers.py
 #  @param args A class containing the user specified input
@@ -118,7 +118,7 @@ def checkunique(args, permutations):
 
             geometry.append([permutation[index]] + visible_ligands)
 
-        if checkallowedbidentates(permutation,args.geometry):
+        if checkallowedbidentates(permutation, args.geometry):
             geometry.sort()
             if checkincluded(geometry, unique_representations):
                 unique_representations.append(geometry)
@@ -233,12 +233,12 @@ def generatestereo(collapsed_representation):
 #
 #  @param simple_geometry A lig list in expanded form.
 #  @return allowed Returns a boolean. True if the bidentates are in allowed positions.
-def checkallowedbidentates(simple_geometry,geometry):
+def checkallowedbidentates(simple_geometry, geometry):
     simple_geometry_tmp = copy(simple_geometry)
     
     #Check if bidentate is in a position where there's nothing to coordinate to
     
-    if geometry in ['oct','pbp']:
+    if geometry in ['oct', 'pbp']:
         if simple_geometry[-1].endswith('_alphabond') or simple_geometry[-1].endswith('_betabond'):
             return False
     if geometry in ['tbp']:

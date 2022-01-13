@@ -448,8 +448,8 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
         ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
         for atom in catoms:
-            constr.AddAtomConstraint(atom+1) 
-        s = ff.Setup(OBMol,constr)
+            constr.AddAtomConstraint(atom+1)
+        s = ff.Setup(OBMol, constr)
         if not s:
             print('FF setup failed')
             

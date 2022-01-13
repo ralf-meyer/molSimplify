@@ -139,7 +139,7 @@ def import_from_cif(fst, return_extra_cif_info=False):
                     gamma = float(
                         ''.join(c for c in linesplit[1] if c not in '()').rstrip('.'))
     # create cell vectors
-    print(('cell vectors: ','alpha, beta, gamma = ' + str(alpha) +
+    print(('cell vectors: ', 'alpha, beta, gamma = ' + str(alpha) +
            ', ' + str(beta) + ' ,' + str(gamma)))
     try:
         cell_vector.append([A, 0, 0])

@@ -295,8 +295,8 @@ def dihedral(mol, idx1, idx2, idx3, idx4):
     v2 = np.array(r3)-np.array(r2) # vector formed between atoms 2 and 3
     v3 = np.array(r4)-np.array(r3) # vector formed between atoms 3 and 4
     
-    v1_x_v2 = np.cross(v1,v2) # cross product of v1 and v2
-    v2_x_v3 = np.cross(v2,v3) # cross product of v2 and v3
+    v1_x_v2 = np.cross(v1, v2) # cross product of v1 and v2
+    v2_x_v3 = np.cross(v2, v3) # cross product of v2 and v3
     
     normal_1 = v1_x_v2/(np.linalg.norm(v1_x_v2)) # normal to the plane formed by 1,2,3
     normal_2 = v2_x_v3/(np.linalg.norm(v2_x_v3)) # normal to the plane formed by 2,3,4
@@ -307,7 +307,7 @@ def dihedral(mol, idx1, idx2, idx3, idx4):
     cos_angle = np.dot(normal_1, normal_2)
     sine_angle = np.dot(normal_1, unit_2)
     
-    dihedral_angle = round(np.degrees(-np.arctan2(sine_angle,cos_angle)),3)
+    dihedral_angle = round(np.degrees(-np.arctan2(sine_angle, cos_angle)), 3)
     return dihedral_angle
 
 def kabsch(mol0, mol1):

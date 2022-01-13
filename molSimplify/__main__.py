@@ -202,7 +202,7 @@ def main(args=None):
         gui = False
         # create input file from commandline
         infile = parseCLI([_f for _f in args if _f])
-        args = ['main.py','-i',infile]
-        emsg = startgen(args,False,gui)
+        args = ['main.py', '-i', infile]
+        emsg = startgen(args, False, gui)
 if __name__ == '__main__':
     main()

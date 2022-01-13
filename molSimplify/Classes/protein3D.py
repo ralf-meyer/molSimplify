@@ -748,17 +748,17 @@ class protein3D:
             split = text[-1]
             want = want.split(split)
             for line in want:
-                if line == want[-1]: 
+                if line == want[-1]:
                     text = line
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
                 l = line.split()
                 if len(l) > 2:
-                    missing_atoms[(l[1],l[2])] = []
+                    missing_atoms[(l[1], l[2])] = []
                     for atom in l[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[(l[1],l[2])].append(
+                            missing_atoms[(l[1], l[2])].append(
                                 atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids and heteroatoms
         pa_dict = {'AltLoc': ""}

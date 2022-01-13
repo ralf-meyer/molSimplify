@@ -298,8 +298,8 @@ class mol3D:
             graph: np.array
                 a numpy array containing the unattributed molecular graph
         """
-        with open(path_to_net,'r') as f:
-            strgraph = f.readlines() 
+        with open(path_to_net, 'r') as f:
+            strgraph = f.readlines()
             graph = []
             for i, line in enumerate(strgraph):
                 if i == 0:
@@ -354,16 +354,16 @@ class mol3D:
 
         if not (isinstance(idx1, int) and isinstance(idx2, int) and isinstance(bond_type, int)):
             print('Incorrect input!')
-            return 0 # Error handling. The user gave input of the wrong type to the add_bond function.
+            return 0  # Error handling. The user gave input of the wrong type to the add_bond function.
 
         # Keys in bo_dict must be sorted tuples, where the first index is smaller than the second.
         if idx1 < idx2:
-            self.bo_dict[(idx1,idx2)] = bond_type
+            self.bo_dict[(idx1, idx2)] = bond_type
         elif idx2 < idx1:
-            self.bo_dict[(idx2,idx1)] = bond_type
+            self.bo_dict[(idx2, idx1)] = bond_type
         else:
             print('Indices should be different!')
-            return 0 # can't have an atom bond to itself
+            return 0  # can't have an atom bond to itself
 
         # Adjusting the graph as well.
         self.graph[idx1][idx2] = float(bond_type)
@@ -386,7 +386,7 @@ class mol3D:
                 count += 1
         return count
 
-    def count_atoms(self, exclude=['H','h','x','X']):
+    def count_atoms(self, exclude=['H', 'h', 'x', 'X']):
         """
         Count the number of atoms, excluding certain atoms.
 
@@ -406,7 +406,7 @@ class mol3D:
                 count += 1
         return count
 
-    def count_specific_atoms(self, atom_types=['x','X']):
+    def count_specific_atoms(self, atom_types=['x', 'X']):
         """
         Count the number of atoms, excluding certain atoms.
 
