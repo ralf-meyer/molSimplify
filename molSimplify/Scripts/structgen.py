@@ -6,34 +6,28 @@
 #  Department of Chemical Engineering, MIT
 
 import sys
+import os
+import subprocess
+import tempfile
 from molSimplify.Scripts.distgeom import (GetConf)
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.mol3D import (mol3D)
 from molSimplify.Scripts.geometry import (PointTranslateSph,
-                                          PointTranslateSphgivenr,
-                                          PointTranslatetoPSph,
-                                          aligntoaxis,
                                           aligntoaxis2,
                                           checkcolinear,
-                                          checkplanar,
                                           distance,
                                           getPointu,
                                           kabsch,
                                           midpt,
-                                          protate,
                                           norm,
-                                          protateref,
                                           reflect_through_plane,
-                                          rotateRef,
                                           rotate_around_axis,
                                           rotate_mat,
                                           rotation_params,
                                           setPdistance,
-                                          setPdistanceu,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.molSimplify_io import (bind_load,
-                                                core_load,
+from molSimplify.Scripts.molSimplify_io import (core_load,
                                                 getgeoms,
                                                 getinputargs,
                                                 getlicores,
@@ -41,17 +35,13 @@ from molSimplify.Scripts.molSimplify_io import (bind_load,
                                                 lig_load,
                                                 loadcoord,
                                                 loaddata,
-                                                loaddata_ts,
-                                                name_complex,
-                                                name_ts_complex,
-                                                substr_load)
+                                                name_complex)
 
 if not sys.version_info >= (3,0):
     from molSimplify.Scripts.nn_prep import (ANN_preproc)
-from molSimplify.Classes.globalvars import (amassdict,
-                                            elementsbynum,
+from molSimplify.Classes.globalvars import (elementsbynum,
                                             romans)
-from molSimplify.Classes.rundiag import ( run_diag )
+from molSimplify.Classes.rundiag import (run_diag)
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts)
 from molSimplify.Classes.ligand import ligand
@@ -586,9 +576,58 @@ def smartreorderligs(args, ligs, dentl, licores):
     return indcs
 
 def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps, debug=False):
-    """Main constrained FF opt routine. To optimize metal-containing complexes with MMFF94, an 
-    intricate procedure of masking the metal atoms and manually editing their valences is applied.
-    OpenBabel's implementation of MMFF94 may run extremely slowly on some systems. 
+    """Main constrained FF opt routine.
+
+    Parameters
+    ----------
+        ff : str
+            Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF, XTB. (XTB only works if the xtb command-line utility is installed.)
+        mol : mol3D
+            mol3D instance of molecule to be optimized.
+        connected : list
+            List of indices of connection atoms to metal.
+        constopt : int
+            Flag for constrained optimization - 0: unconstrained, 1: fixed connecting atom positions, 2: fixed connecting atom distances.
+        frozenats : list
+            List of frozen atom indices.
+        frozenangles : bool
+            Flag for frozen angles, equivalent to constopt==1.
+        mlbonds : list
+            List of M-L bonds for distance constraints.
+        nsteps : int
+            Number of steps to take.
+        debug : bool
+            Flag to print extra info to debug.
+
+    Returns
+    -------
+        mol : mol3D
+            Optimized molecule mol3D instance.
+        en : float
+            Forcefield energy of optimized molecule.
+
+    """
+    # check requested force field
+    ffav = 'mmff94, uff, ghemical, gaff, mmff94s, xtb'  # force fields
+
+    if ff.lower() not in ffav:
+        print('Requested force field not available. Defaulting to UFF')
+        ff = 'uff'
+    if debug:
+        print(('using ff: ' + ff))
+    if ff.lower() == 'xtb':
+        return xtb_opt(ff, mol, connected, constopt, frozenats,
+                       frozenangles, mlbonds, nsteps, debug)
+    return openbabel_ffopt(ff, mol, connected, constopt, frozenats,
+                           frozenangles, mlbonds, nsteps, debug)
+
+
+def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
+                    frozenangles, mlbonds, nsteps, debug=False):
+    """ OpenBabel constraint optimization. To optimize metal-containing 
+    complexes with MMFF94, an intricate procedure of masking the metal 
+    atoms and manually editing their valences is applied. OpenBabel's 
+    implementation of MMFF94 may run extremely slowly on some systems.
     If so, consider switching to UFF.
 
     Parameters
@@ -618,18 +657,9 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
             Optimized molecule mol3D instance.
         en : float
             Forcefield energy of optimized molecule.
-            
-    """
-    globs = globalvars()
-    metals = list(range(21, 31))+list(range(39, 49))+list(range(72, 81))
-    # check requested force field
-    ffav = 'mmff94, uff, ghemical, gaff, mmff94s'  # force fields
 
-    if ff.lower() not in ffav:
-        print('Requested force field not available. Defaulting to UFF')
-        ff = 'uff'
-    if debug:
-        print(('using ff: ' + ff))
+    """
+    metals = list(range(21, 31))+list(range(39, 49))+list(range(72, 81))
     # perform constrained ff optimization if requested after #
     if (constopt > 0):
         # get metal
@@ -659,14 +689,16 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
             if constopt == 1 or frozenangles:
                 constr.AddAtomConstraint(catom+1)  # indexing babel
                 if debug:
-                    print(('using connnected opt to freeze atom number: ' + str(catom)))
+                    print('using connnected opt to freeze atom number: '
+                          + str(catom))
             else:
                 constr.AddDistanceConstraint(
                     midx+1, catom+1, mlbonds[ii])  # indexing babel
-        #print('ff is '+ str(ff))
+        # print('ff is '+ str(ff))
         if not ff.lower() == "uff":
             bridgingatoms = []
-            # identify bridging atoms in the case of bimetallic cores, as well as single-atom ligands (oxo, nitrido)
+            # identify bridging atoms in the case of bimetallic cores,
+            # as well as single-atom ligands (oxo, nitrido)
             # these are immune to deletion
             for i in range(mol.natoms):
                 nbondedmetals = len([idx for idx in range(len(mol.getBondedAtoms(
@@ -682,7 +714,7 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
                     if OBMol.GetBond(m+1, mol.getBondedAtoms(m)[i]+1) is not None and mol.getBondedAtoms(m)[i] not in bridgingatoms:
                         OBMol.DeleteBond(OBMol.GetBond(
                             m+1, mol.getBondedAtoms(m)[i]+1))
-                        #print('FFopt deleting bond')
+                        # print('FFopt deleting bond')
                         deleted_bonds += 1
                 print(('FFopt deleted ' + str(deleted_bonds) + ' bonds'))
                 # then add back one metal-ligand bond for FF
@@ -714,7 +746,7 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
             print('Commented out') # Commented out the preceding for loop because it was throwing the following error -> AttributeError: 'OBAtom' object has no attribute 'GetValence'
         # set up forcefield
         s = forcefield.Setup(OBMol, constr)
-        if s == False:
+        if not s:
             print('FF setup failed')
         # force field optimize structure
         elif nsteps == 'Adaptive':
@@ -775,7 +807,108 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
         mol.convert2mol3D()
         del forcefield, constr, OBMol
     return mol, en
-    
+
+
+def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
+            mlbonds, nsteps, debug=False):
+    """ XTB optimization. Writes an input file (xtb.in) containing
+    all the constraints and parameters to a temporary folder,
+    executes the XTB program using the subprocess module and parses
+    the output.
+
+    Parameters
+    ----------
+        ff : str
+            Name force field to use. Only option for now is XTB.
+        mol : mol3D
+            mol3D instance of molecule to be optimized.
+        connected : list
+            List of indices of connection atoms to metal.
+        constopt : int
+            Flag for constrained optimization -
+            0: unconstrained,
+            1: fixed connecting atom positions,
+            2: fixed connecting atom distances.
+        frozenats : list
+            List of frozen atom indices.
+        frozenangles : bool
+            Flag for frozen angles, equivalent to constopt==1.
+        mlbonds : list
+            List of M-L bonds for distance constraints.
+        nsteps : int
+            Number of steps to take.
+        debug : bool
+            Flag to print extra info to debug.
+
+    Returns
+    -------
+        mol : mol3D
+            Optimized molecule mol3D instance.
+        en : float
+            Forcefield energy of optimized molecule.
+
+    """
+    if debug:
+        print(f'==== xtbopt() called ==== with {mol.natoms} atoms '
+              f'constopt:{constopt} and nsteps:{nsteps}')
+    if nsteps == 'Adaptive':
+        nsteps = 0  # corresponds to "automatic" mode in xtb
+    # Initialize defailed input file with optimization parameters.
+    # engine=inertial is selected as the generation of approximate
+    # Hessian coordinates (AHC) can fail for highly symmetric systems.
+    input_lines = ['$opt\n', f'maxcycle={nsteps}\n',
+                   'engine=inertial\n']
+
+    # Extract charge (and spin)
+    # PROBLEM: mol object does not contain information about spin...
+    if mol.charge != 0:
+        input_lines.append(f'$chrg {mol.charge}\n')
+
+    if constopt > 0:  # constrained optimization:
+        # List of user selected frozen atoms
+        frozen_atoms = frozenats
+        # Add all metal atoms
+        for i, atom in enumerate(mol.getAtoms()):
+            if atom.ismetal():
+                frozen_atoms.append(i)
+
+        if constopt == 1 or frozenangles:  # Freeze connecting atoms
+            frozen_atoms += connected
+        else:  # Contrain bond lengths
+            raise NotImplementedError(
+                'Bond length constraint XTB optimization '
+                'not yet implemented')
+        input_lines.append('$fix\n')
+        # xtb uses indices starting from 1
+        ids = ','.join([str(i+1) for i in frozen_atoms])
+        input_lines.append(f'atoms: {ids}\n')
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Write detailed input file
+        with open(os.path.join(tmpdir, 'xtb.inp'), 'w') as fout:
+            fout.writelines(input_lines)
+            fout.write('$end\n')
+        # Write .xyz file
+        mol.writexyz(os.path.join(tmpdir, 'tmp.xyz'))
+        # Run xtb using the cmdl args and capture the stdout
+        output = subprocess.run(
+            ['xtb', '--opt', 'tight', '--input', 'xtb.inp', 'tmp.xyz'],
+            cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if output.returncode != 0:
+            print(output)
+            raise Exception('XTB calculation failed')
+        # Parse geometry, inspired by mol3D.convert2mol3D()
+        original_graph = mol.graph
+        mol.initialize()
+        mol.graph = original_graph
+        mol.readfromxyz(os.path.join(tmpdir, 'xtbopt.xyz'))
+        # Parse energy from .xyz file comment line
+        with open(os.path.join(tmpdir, 'xtbopt.xyz'), 'r') as fout:
+            output_lines = fout.readlines()
+        en = float(output_lines[1].split()[1])
+    return mol, en
+
+
 def getconnection(core, cidx, BL):
     """Finds the optimum attachment point for an atom/group to a central atom given the desired bond length.
     Objective function maximizes the minimum distance between attachment point and other groups bonded to the central atom.
