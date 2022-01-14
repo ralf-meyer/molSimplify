@@ -581,7 +581,7 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
     Parameters
     ----------
         ff : str
-            Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF, XTB.
+            Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF, XTB. (XTB only works if the xtb command-line utility is installed.)
         mol : mol3D
             mol3D instance of molecule to be optimized.
         connected : list
