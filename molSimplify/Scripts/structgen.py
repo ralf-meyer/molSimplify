@@ -441,7 +441,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
                 print('FF optimizing ligand')
             lig3D.convert2mol3D()
             lig3D, enl = ffopt(args.ff, lig3D, lig3D.cat, 0,
-                               [], False, [], 100, args.debug)
+                               [], False, [], 100, debug=args.debug)
     # skip hydrogen removal for pi-coordinating ligands
     if not rempi:
         # check smarts match
@@ -575,7 +575,9 @@ def smartreorderligs(args, ligs, dentl, licores):
             indcs.append(ligdentsidcs[ii][l])
     return indcs
 
-def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps, debug=False):
+
+def ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
+          mlbonds, nsteps, spin=1, debug=False):
     """Main constrained FF opt routine.
 
     Parameters
@@ -596,6 +598,8 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
             List of M-L bonds for distance constraints.
         nsteps : int
             Number of steps to take.
+        spin: int
+            Spin multiplicity
         debug : bool
             Flag to print extra info to debug.
 
@@ -617,13 +621,13 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
         print(('using ff: ' + ff))
     if ff.lower() == 'xtb':
         return xtb_opt(ff, mol, connected, constopt, frozenats,
-                       frozenangles, mlbonds, nsteps, debug)
+                       frozenangles, mlbonds, nsteps, spin=spin, debug=debug)
     return openbabel_ffopt(ff, mol, connected, constopt, frozenats,
-                           frozenangles, mlbonds, nsteps, debug)
+                           frozenangles, mlbonds, nsteps, debug=debug)
 
 
-def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
-                    frozenangles, mlbonds, nsteps, debug=False):
+def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
+                    mlbonds, nsteps, debug=False):
     """ OpenBabel constraint optimization. To optimize metal-containing 
     complexes with MMFF94, an intricate procedure of masking the metal 
     atoms and manually editing their valences is applied. OpenBabel's 
@@ -810,7 +814,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
 
 
 def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
-            mlbonds, nsteps, debug=False):
+            mlbonds, nsteps, spin=1, debug=False):
     """ XTB optimization. Writes an input file (xtb.in) containing
     all the constraints and parameters to a temporary folder,
     executes the XTB program using the subprocess module and parses
@@ -837,6 +841,8 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
             List of M-L bonds for distance constraints.
         nsteps : int
             Number of steps to take.
+        spin: int
+            Spin multiplicity
         debug : bool
             Flag to print extra info to debug.
 
@@ -860,9 +866,11 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
                    'engine=inertial\n']
 
     # Extract charge (and spin)
-    # PROBLEM: mol object does not contain information about spin...
     if mol.charge != 0:
         input_lines.append(f'$chrg {mol.charge}\n')
+        # xtb uses number of unpaired electrons (Nalpha - Nbeta) instead
+        # of multiplicity to define the spin state.
+        input_lines.append(f'$spin {spin-1}\n')
 
     if constopt > 0:  # constrained optimization:
         # List of user selected frozen atoms
@@ -1674,7 +1682,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     lig3Dtmp = mol3D()
     lig3Dtmp.copymol3D(lig3D)
     lig3Dtmp, en_start = ffopt(
-        args.ff, lig3Dtmp, [], 1, [], False, [], 200, args.debug)
+        args.ff, lig3Dtmp, [], 1, [], False, [], 200, debug=args.debug)
     # take steps between current ligand position and ideal position on backbone
     nsteps = 20
     ddr = [di/nsteps for di in dr]
@@ -1686,7 +1694,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
         lig3Dtmp.copymol3D(lig3D)
         for ii in range(0, nsteps):
             lig3Dtmp, enl = ffopt(args.ff, lig3Dtmp, [], 1, [
-                                  catoms[0], catoms[1]], False, [], 'Adaptive', args.debug)
+                                  catoms[0], catoms[1]], False, [], 'Adaptive', debug=args.debug)
             ens.append(enl)
             lig3Dtmp.getAtom(catoms[1]).translate(ddr)
             # once the ligand strain energy becomes too high, stop and accept ligand position
@@ -1722,10 +1730,10 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     if relax:
         # Relax the ligand
         lig3Dtmp, enl = ffopt(args.ff, lig3Dtmp, [catoms[1]], 2, [
-                              catoms[0]], False, MLoptbds[-2:-1], 200, args.debug)
+                              catoms[0]], False, MLoptbds[-2:-1], 200, debug=args.debug)
         lig3Dtmp.deleteatom(lig3Dtmp.natoms-1)
     lig3Dtmp, en_final = ffopt(
-        args.ff, lig3Dtmp, [], 1, [], False, [], 0, args.debug)
+        args.ff, lig3Dtmp, [], 1, [], False, [], 0, debug=args.debug)
     if en_final - en_start > 20:
         print(('Warning: Complex may be strained. Ligand strain energy (kcal/mol) = ' +
               str(en_final - en_start)))
@@ -2499,6 +2507,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                                         frozenangles=freezeangles,
                                         mlbonds=MLoptbds,
                                         nsteps='Adaptive',
+                                        spin=int(args.spin),
                                         debug=args.debug)
                     if args.debug:
                         print(
@@ -2524,6 +2533,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                             frozenangles=freezeangles,
                             mlbonds=MLoptbds,
                             nsteps='Adaptive',
+                            spin=int(args.spin),
                             debug=args.debug)
 
         if args.debug:
