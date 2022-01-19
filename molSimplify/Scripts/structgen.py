@@ -583,13 +583,17 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
     Parameters
     ----------
         ff : str
-            Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF, XTB.
+            Name force field to use. Available options are MMFF94, UFF,
+            Ghemical, GAFF, XTB, GNFFF.
         mol : mol3D
             mol3D instance of molecule to be optimized.
         connected : list
             List of indices of connection atoms to metal.
         constopt : int
-            Flag for constrained optimization - 0: unconstrained, 1: fixed connecting atom positions, 2: fixed connecting atom distances.
+            Flag for constrained optimization -
+            0: unconstrained,
+            1: fixed connecting atom positions,
+            2: fixed connecting atom distances.
         frozenats : list
             List of frozen atom indices.
         frozenangles : bool
@@ -612,14 +616,14 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
 
     """
     # check requested force field
-    ffav = 'mmff94, uff, ghemical, gaff, mmff94s, xtb'  # force fields
+    ffav = 'mmff94, uff, ghemical, gaff, mmff94s, xtb, gfnff'  # force fields
 
     if ff.lower() not in ffav:
         print('Requested force field not available. Defaulting to UFF')
         ff = 'uff'
     if debug:
         print(('using ff: ' + ff))
-    if ff.lower() == 'xtb':
+    if ff.lower() in ['xtb', 'gfnff']:
         return xtb_opt(ff, mol, connected, constopt, frozenats,
                        frozenangles, mlbonds, nsteps, spin=spin, debug=debug)
     return openbabel_ffopt(ff, mol, connected, constopt, frozenats,
@@ -864,6 +868,10 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
     # Hessian coordinates (AHC) can fail for highly symmetric systems.
     input_lines = ['$opt\n', f'maxcycle={nsteps}\n',
                    'engine=inertial\n']
+    # Arguments for the commandline call of the xtb program
+    cmdl_args = ['--opt', 'tight', '--input', 'xtb.inp']
+    if ff.lower == 'gfnff':
+        cmdl_args.append('--gfnff')
 
     # Extract charge (and spin)
     if mol.charge != 0:
@@ -900,7 +908,7 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
         mol.writexyz(os.path.join(tmpdir, 'tmp.xyz'))
         # Run xtb using the cmdl args and capture the stdout
         output = subprocess.run(
-            ['xtb', '--opt', 'tight', '--input', 'xtb.inp', 'tmp.xyz'],
+            ['xtb'] + cmdl_args + ['tmp.xyz'],
             cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if output.returncode != 0:
             print(output)

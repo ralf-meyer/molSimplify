@@ -47,3 +47,19 @@ def test_xtb_high_spin(tmpdir):
     assert passOG
     assert pass_report
     assert pass_qcin
+
+
+def test_gfnff(tmpdir):
+    testName = "gfnff_NH3_BA"
+    threshMLBL = 0.01
+    threshLG = 0.01
+    threshOG = 2.0
+    (passNumAtoms, passMLBL, passLG,
+     passOG, pass_report, pass_qcin) = hp.runtest(
+        tmpdir, testName, threshMLBL, threshLG, threshOG)
+    assert passNumAtoms
+    assert passMLBL
+    assert passLG
+    assert passOG
+    assert pass_report
+    assert pass_qcin
