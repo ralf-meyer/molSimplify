@@ -908,12 +908,16 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
         # Write .xyz file
         mol.writexyz(os.path.join(tmpdir, 'tmp.xyz'))
         # Run xtb using the cmdl args and capture the stdout
-        output = subprocess.run(
-            ['xtb'] + cmdl_args + ['tmp.xyz'],
-            cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        try:
+            output = subprocess.run(
+                ['xtb'] + cmdl_args + ['tmp.xyz'],
+                cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except FileNotFoundError:
+            raise ChildProcessError('Could not find subprocess xtb. Ensure xtb'
+                                    ' is installed and properly configured.')
         if output.returncode != 0:
             print(output)
-            raise Exception('XTB calculation failed')
+            raise ChildProcessError('XTB calculation failed')
         # Parse geometry, inspired by mol3D.convert2mol3D()
         original_graph = mol.graph
         mol.initialize()
