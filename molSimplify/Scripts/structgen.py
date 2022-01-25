@@ -859,8 +859,9 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
 
     """
     if debug:
-        print(f'==== xtbopt() called ==== with {mol.natoms} atoms '
-              f'constopt:{constopt} and nsteps:{nsteps}')
+        print(f'xtbopt() called with {mol.natoms} atoms '
+              f'constopt: {constopt}, frozenats: {frozenats}, '
+              f'frozenangles: {frozenangles}, and nsteps: {nsteps}')
     if nsteps == 'Adaptive':
         nsteps = 0  # corresponds to "automatic" mode in xtb
     # Initialize defailed input file with optimization parameters.
