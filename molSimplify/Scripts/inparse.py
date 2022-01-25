@@ -483,7 +483,7 @@ def cleaninput(args):
                 args.keepHs[i] = checkTrue(s)
     # parse FF settings:
     # if no FF opt is requested, turn off
-    if args.ffoption[0].lower() == ('n' or 'no'):
+    if args.ffoption[0].lower() in ['n', 'no']:
         args.ff = False
     # if FF opt is desired, parse FF choice
     else:
