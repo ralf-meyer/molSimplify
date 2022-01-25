@@ -870,7 +870,7 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
                    'engine=inertial\n']
     # Arguments for the commandline call of the xtb program
     cmdl_args = ['--opt', 'tight', '--input', 'xtb.inp']
-    if ff.lower == 'gfnff':
+    if ff.lower() == 'gfnff':
         cmdl_args.append('--gfnff')
 
     # Extract charge (and spin)
