@@ -328,7 +328,7 @@ def checkinput(args, calctype="base"):
             # check mlig connecting point if the ligand has more than one atom
             if args.mlig and not args.mligcatoms:
                 sub, subcatoms, emsg = substr_load(args.mlig[0], 0, subcatoms)
-                if sub.natoms is 1:
+                if sub.natoms == 1:
                     args.mligcatoms = [0]
                 else:
                     print('WARNING: A ligand in the metal complex is specified to connect with the substrate for TS generation without the specification of a connection point in the ligand. Defaulting to atom index 0.')
