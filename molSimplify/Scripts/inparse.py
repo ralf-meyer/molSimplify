@@ -667,6 +667,8 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-ffoption' and len(l[1:]) > 0):
                 args.ffoption = l[1:]
                 #print('setting ffoption ' + str(args.ffoption))
+            if (l[0] == '-ff_final_opt' and len(l[1:]) > 0):
+                args.ff_final_opt = l[1].lower()
             if (l[0] == '-place' and len(l[1:]) > 0):
                 args.place = l[1]
             if (l[0] == '-sminame' and len(l[1:]) > 0):
@@ -1135,9 +1137,14 @@ def parseinputs_basic(*p):
     parser.add_argument(
         "-ligloc", help="force location of ligands in the structure generation (default False)", default=False)
     parser.add_argument(
-        "-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical", default='uff')
+        "-ff", help="select force field for FF optimization. Available: (default) MMFF94, UFF, GAFF, Ghemical, XTB, GFNFF", default='uff')
     parser.add_argument(
         "-ffoption", help="select when to perform FF optimization. Options: B(Before),A(After), (default) BA, N(No)", default='BA')
+    parser.add_argument(
+        "-ff_final_opt", help="optionally select different force field for "
+        "final FF optimization after structure generation (defaults to option"
+        " used in -ff). Available: MMFF94, UFF, GAFF, Ghemical, XTB, GFNFF",
+        default=None)
     if len(p) == 1:  # only one input, printing help only
         args = parser.parse_args()
         return args

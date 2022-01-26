@@ -2533,12 +2533,14 @@ def mcomplex(args, ligs, ligoc, licores, globs):
             totlig += denticity
             ligsused += 1
     # perform FF optimization if requested
-    if 'a' in args.ffoption:
+    if 'a' in args.ffoption or args.ff_final_opt:
         if args.debug:
             print('Performing final FF opt')
         # idxes
         midx = core3D.findMetal()[0]
-        core3D, enc = ffopt(ff=args.ff,
+        # If args.ff_final_opt is None (default) use args.ff
+        ff = args.ff_final_opt or args.ff
+        core3D, enc = ffopt(ff=ff,
                             mol=core3D,
                             connected=connected,
                             constopt=1,
