@@ -5271,7 +5271,7 @@ class mol3D:
 
     def get_features(self, lac=True, force_generate=False, eq_sym=False, 
                      use_dist=False, NumB=False, Gval=False, size_normalize=False,
-                     alleq=False, strict_cutoff=False, catom_list=None, MRdiag_dict={}):
+                     alleq=False, strict_cutoff=False, catom_list=None, MRdiag_dict={}, depth=3):
         """Get geo-based RAC features for this complex (if octahedral)
 
         Parameters
@@ -5297,7 +5297,7 @@ class mol3D:
             geo_type = self.get_geometry_type()
         if force_generate or geo_type['geometry'] == 'octahedral':
             names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Gval=Gval, 
-                                                size_normalize=size_normalize, alleq=alleq, MRdiag_dict=MRdiag_dict)
+                                                size_normalize=size_normalize, alleq=alleq, MRdiag_dict=MRdiag_dict, depth=depth)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
