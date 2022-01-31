@@ -210,8 +210,6 @@ def parse4test(infile, tmpdir, isMulti=False, external={}):
     print('&&&&&&&&&')
     data = open(infile).readlines()
     newdata = ""
-    hasJobdir = False
-    hasName = False
     for line in data:
         if line.split()[0] in external.keys():
             newdata += line.split()[0]+' '+str(os.path.dirname(infile))+'/'+str(external[line.split()[0]])+'\n'
@@ -230,7 +228,7 @@ def parse4test(infile, tmpdir, isMulti=False, external={}):
     newdata += "-jobdir " + name + "\n"
     print('=====')
     print(newdata)
-    if isMulti == False:
+    if not isMulti:
         newdata += "-name " + name + "\n"
     print(newdata)
     f.write(newdata)
@@ -246,8 +244,6 @@ def parse4testNoFF(infile, tmpdir):
     fullnewname = f.dirname + "/" + newinfile
     data = open(infile).readlines()
     newdata = ""
-    hasJobdir = False
-    hasName = False
     hasFF = False
     for line in data:
         if ("-ff " in line):
@@ -275,13 +271,13 @@ def report_to_dict(lines):
     separated files
     """
     d = dict()
-    for l in lines:
-        key, val = l.strip().split(',')[0:2]
+    for line in lines:
+        key, val = line.strip().split(',')[0:2]
         try:
             d[key] = float(val.strip('[]'))
-        except:
+        except ValueError:
             d[key] = str(val.strip('[]'))
-    ## extra proc for ANN_bond list:
+    # extra proc for ANN_bond list:
     if 'ANN_bondl' in d.keys():
         d['ANN_bondl'] = [float(i.strip('[]')) for i in d['ANN_bondl'].split()]
     return (d)
@@ -310,7 +306,7 @@ def compare_report_new(report1, report2):
         for k in dict1.keys():
             if Equal:
                 val1 = dict1[k]
-                if not k in dict2.keys():
+                if k not in dict2.keys():
                     Equal = False
                     print("Report compare failed for ", report1, report2)
                     print("keys " + str(k) + " not present in " + str(report2))
@@ -457,6 +453,7 @@ def runtest_slab(tmpdir, name, threshOG):
     [passNumAtoms, passOG] = pass_xyz
     return [passNumAtoms, passOG]
 
+
 def runtest_molecule_on_slab(tmpdir, name, threshOG):
     """
     Performs test for slab builder with a CO molecule adsorbed.
@@ -472,7 +469,8 @@ def runtest_molecule_on_slab(tmpdir, name, threshOG):
     """
     infile = resource_filename(Requirement.parse(
         "molSimplify"), "tests/inputs/" + name + ".in")
-    newinfile = parse4test(infile, tmpdir, external={'-unit_cell':'slab.xyz','-target_molecule':'co.xyz'})
+    newinfile = parse4test(infile, tmpdir, external={
+        '-unit_cell': 'slab.xyz', '-target_molecule': 'co.xyz'})
     args = ['main.py', '-i', newinfile]
     startgen(args, False, False)
     myjobdir = os.path.split(jobdir(infile))[0] + "/loaded_slab/"
@@ -483,6 +481,7 @@ def runtest_molecule_on_slab(tmpdir, name, threshOG):
     pass_xyz = compareGeo(output_xyz, ref_xyz, threshMLBL=0, threshLG=0, threshOG=threshOG, slab=True)
     [passNumAtoms, passOG] = pass_xyz
     return [passNumAtoms, passOG]
+
 
 def runtestgeo(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
     initgeo = resource_filename(Requirement.parse(
@@ -589,7 +588,7 @@ def runtestMulti(tmpdir, name, threshMLBL, threshLG, threshOG):
         "molSimplify"), "tests/refs/" + name + "/")
     [passMultiFileCheck, myfiles] = checkMultiFileGen(myjobdir, refdir)
     pass_structures = []
-    if passMultiFileCheck == False:
+    if not passMultiFileCheck:
         print("Test failed for checking number and names of generated files. Test ends")
     else:
         print("Checking each generated structure...")
