@@ -3,12 +3,12 @@ import helperFuncs as hp
 
 def test_xtb_before(tmpdir):
     testName = "xtb_H2O_before"
-    threshMLBL = 0.01
+    threshMLBL = 1e-3
     threshLG = 1e-3
     threshOG = 2.0
     (passNumAtoms, passMLBL, passLG,
      passOG, pass_report, pass_qcin) = hp.runtest(
-        tmpdir, testName, threshMLBL, threshLG, threshOG)
+        tmpdir, testName, threshMLBL, threshLG, threshOG, seed=31415)
     assert passNumAtoms
     assert passMLBL
     assert passLG
@@ -18,13 +18,29 @@ def test_xtb_before(tmpdir):
 
 
 def test_xtb_before_after(tmpdir):
-    testName = "xtb_CO_before_after"
+    testName = "xtb_imidazole_BA"
+    threshMLBL = 1e-3
+    threshLG = 1e-3
+    threshOG = 0.02
+    (passNumAtoms, passMLBL, passLG,
+     passOG, pass_report, pass_qcin) = hp.runtest(
+        tmpdir, testName, threshMLBL, threshLG, threshOG, seed=31415)
+    assert passNumAtoms
+    assert passMLBL
+    assert passLG
+    assert passOG
+    assert pass_report
+    assert pass_qcin
+
+
+def test_xtb_ANC_fail(tmpdir):
+    testName = "xtb_ANC_fail"
     threshMLBL = 0.01
     threshLG = 1e-3
     threshOG = 1e-3
     (passNumAtoms, passMLBL, passLG,
      passOG, pass_report, pass_qcin) = hp.runtest(
-        tmpdir, testName, threshMLBL, threshLG, threshOG)
+        tmpdir, testName, threshMLBL, threshLG, threshOG, seed=31415)
     assert passNumAtoms
     assert passMLBL
     assert passLG
@@ -40,7 +56,23 @@ def test_xtb_high_spin(tmpdir):
     threshOG = 0.01
     (passNumAtoms, passMLBL, passLG,
      passOG, pass_report, pass_qcin) = hp.runtest(
-        tmpdir, testName, threshMLBL, threshLG, threshOG)
+        tmpdir, testName, threshMLBL, threshLG, threshOG, seed=31415)
+    assert passNumAtoms
+    assert passMLBL
+    assert passLG
+    assert passOG
+    assert pass_report
+    assert pass_qcin
+
+
+def test_xtb_final_opt(tmpdir):
+    testName = "xtb_trifluoromethyl_final_opt"
+    threshMLBL = 1e-3
+    threshLG = 1e-3
+    threshOG = 0.02
+    (passNumAtoms, passMLBL, passLG,
+     passOG, pass_report, pass_qcin) = hp.runtest(
+        tmpdir, testName, threshMLBL, threshLG, threshOG, seed=31415)
     assert passNumAtoms
     assert passMLBL
     assert passLG
@@ -56,7 +88,7 @@ def test_gfnff(tmpdir):
     threshOG = 2.0
     (passNumAtoms, passMLBL, passLG,
      passOG, pass_report, pass_qcin) = hp.runtest(
-        tmpdir, testName, threshMLBL, threshLG, threshOG)
+        tmpdir, testName, threshMLBL, threshLG, threshOG, seed=31415)
     assert passNumAtoms
     assert passMLBL
     assert passLG
