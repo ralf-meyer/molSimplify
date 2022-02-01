@@ -5,7 +5,7 @@
 -qccode terachem
 -distort 0
 -coord 6
--ff mmff94
+-ff UFF
 -method b3lyp
 -checkdirb True
 -core ferrcore

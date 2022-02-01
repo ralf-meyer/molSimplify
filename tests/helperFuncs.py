@@ -131,7 +131,7 @@ def compareLG(xyz1, xyz2, thresh):
     ligs1 = getAllLigands(xyz1)
     ligs2 = getAllLigands(xyz2)
     if len(ligs1) != len(ligs2):
-        pssLG = False
+        passLG = False
         return passLG
     for i in range(0, len(ligs1)):
         print("Checking geometry for ligand # ", i)
