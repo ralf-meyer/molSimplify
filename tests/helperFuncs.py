@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import numpy as np
 from molSimplify.Scripts.geometry import kabsch, distance
 from molSimplify.Scripts.generator import startgen
@@ -396,7 +397,10 @@ def compare_qc_input(inp, inp_ref):
     return passQcInputCheck
 
 
-def runtest(tmpdir, name, threshMLBL, threshLG, threshOG):
+def runtest(tmpdir, name, threshMLBL, threshLG, threshOG, seed=None):
+    # Set seeds to eliminate randomness from test results
+    random.seed(seed)
+    np.random.seed(seed)
     infile = resource_filename(Requirement.parse(
         "molSimplify"), "tests/inputs/" + name + ".in")
     newinfile = parse4test(infile, tmpdir)
