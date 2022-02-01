@@ -208,15 +208,18 @@ def parse4test(infile, tmpdir, isMulti=False, external={}):
     newname = f.dirname + "/" + os.path.basename(infile)
     print(newname)
     print('&&&&&&&&&')
-    data = open(infile).readlines()
+    with open(infile, 'r') as f_in:
+        data = f_in.readlines()
     newdata = ""
     for line in data:
         if line.split()[0] in external.keys():
-            newdata += line.split()[0]+' '+str(os.path.dirname(infile))+'/'+str(external[line.split()[0]])+'\n'
+            newdata += (line.split()[0] + ' ' + str(os.path.dirname(infile))
+                        + '/' + str(external[line.split()[0]]) + '\n')
             continue
         if not (("-jobdir" in line) or ("-name" in line)):
             newdata += line
-        if ("-lig " in line) and (".smi" in line):  # Need to parse the dir of smi file
+        # Check if we need to parse the dir of smi file
+        if ("-lig " in line) and (".smi" in line):
             smi = line.strip('\n').split()[1]
             abs_smi = os.path.dirname(infile) + '/' + smi
             newdata += "-lig " + abs_smi + "\n"
@@ -242,7 +245,8 @@ def parse4testNoFF(infile, tmpdir):
     newinfile = name + "_noff.in"
     f = tmpdir.join(newinfile)
     fullnewname = f.dirname + "/" + newinfile
-    data = open(infile).readlines()
+    with open(infile, 'r') as f_in:
+        data = f_in.readlines()
     newdata = ""
     hasFF = False
     for line in data:
@@ -250,12 +254,15 @@ def parse4testNoFF(infile, tmpdir):
             hasFF = True
             break
     if not hasFF:
-        print("No FF optimization used in original input file. No need to do further test.")
+        print("No FF optimization used in original input file. "
+              "No need to do further test.")
         fullnewname = ""
     else:
-        print("FF optimization used in original input file. Now test for no FF result.")
+        print("FF optimization used in original input file. "
+              "Now test for no FF result.")
         for line in data:
-            if not (("-jobdir" in line) or ("-name" in line) or ("-ff " in line)):
+            if not (("-jobdir" in line) or ("-name" in line)
+                    or ("-ff " in line)):
                 newdata += line
         newdata += "-jobdir " + newname + "\n"
         newdata += "-name " + newname + "\n"
@@ -288,8 +295,10 @@ def report_to_dict(lines):
 
 
 def compare_report_new(report1, report2):
-    data1 = open(report1, 'r').readlines()
-    data2 = open(report2, 'r').readlines()
+    with open(report1, 'r') as f_in:
+        data1 = f_in.readlines()
+    with open(report2, 'r') as f_in:
+        data2 = f_in.readlines()
     if data1 and data2:
         Equal = True
         dict1 = report_to_dict(data1)
@@ -320,7 +329,8 @@ def compare_report_new(report1, report2):
                         else:
                             Equal = (val1 == val2)
                         if not Equal:
-                            print("Report compare failed for ", report1, report2)
+                            print("Report compare failed for ",
+                                  report1, report2)
                             print("Values don't match for key", k)
                             print([val1, val2])
                     else:
@@ -329,7 +339,8 @@ def compare_report_new(report1, report2):
                         for ii, v in enumerate(val1):
                             Equal = fuzzy_equal(v, val2[ii], 1e-4)
                         if not Equal:
-                            print("Report compare failed for ", report1, report2)
+                            print("Report compare failed for ",
+                                  report1, report2)
                             print("Values don't match for key", k)
                             print([val1, val2])
             else:
@@ -371,8 +382,10 @@ def compare_qc_input(inp, inp_ref):
         print(inp + "not found")
         return passQcInputCheck
 
-    data1 = open(inp, 'r').read()
-    data_ref = open(inp_ref, 'r').read()
+    with open(inp, 'r') as f_in:
+        data1 = f_in.read()
+    with open(inp_ref, 'r') as f_in:
+        data_ref = f_in.read()
     if len(data1) != len(data_ref):
         passQcInputCheck = False
         return passQcInputCheck
@@ -393,7 +406,8 @@ def runtest(tmpdir, name, threshMLBL, threshLG, threshOG):
     output_xyz = myjobdir + '/' + name + '.xyz'
     output_report = myjobdir + '/' + name + '.report'
     output_qcin = myjobdir + '/terachem_input'
-    molsim_data = open(newinfile).read()
+    with open(newinfile, 'r') as f_in:
+        molsim_data = f_in.read()
     if 'orca' in molsim_data.lower():
         # if not '-name' in molsim_data.lower():
         output_qcin = myjobdir + '/orca.in'
@@ -449,7 +463,8 @@ def runtest_slab(tmpdir, name, threshOG):
     ref_xyz = resource_filename(Requirement.parse(
         "molSimplify"), "tests/refs/" + name + ".xyz")
     print("Output xyz file: ", output_xyz)
-    pass_xyz = compareGeo(output_xyz, ref_xyz, threshMLBL=0, threshLG=0, threshOG=threshOG, slab=True)
+    pass_xyz = compareGeo(output_xyz, ref_xyz, threshMLBL=0, threshLG=0,
+                          threshOG=threshOG, slab=True)
     [passNumAtoms, passOG] = pass_xyz
     return [passNumAtoms, passOG]
 
@@ -478,7 +493,8 @@ def runtest_molecule_on_slab(tmpdir, name, threshOG):
     ref_xyz = resource_filename(Requirement.parse(
         "molSimplify"), "tests/refs/" + name + ".xyz")
     print("Output xyz file: ", output_xyz)
-    pass_xyz = compareGeo(output_xyz, ref_xyz, threshMLBL=0, threshLG=0, threshOG=threshOG, slab=True)
+    pass_xyz = compareGeo(output_xyz, ref_xyz, threshMLBL=0, threshLG=0,
+                          threshOG=threshOG, slab=True)
     [passNumAtoms, passOG] = pass_xyz
     return [passNumAtoms, passOG]
 
@@ -499,12 +515,10 @@ def runtestgeo(tmpdir, name, thresh, deleteH=True, geo_type="oct"):
                                              debug=False,
                                              flag_deleteH=deleteH)
     elif geo_type == "one_empty":
-        _, _, dict_struct_info = mymol.IsStructure(init_mol=init_mol,
-                                                   dict_check=dict_oneempty_check_st,
-                                                   angle_ref=oneempty_angle_ref,
-                                                   num_coord=5,
-                                                   debug=False,
-                                                   flag_deleteH=deleteH)
+        _, _, dict_struct_info = mymol.IsStructure(
+            init_mol=init_mol, dict_check=dict_oneempty_check_st,
+            angle_ref=oneempty_angle_ref, num_coord=5, debug=False,
+            flag_deleteH=deleteH)
     with open(refjson, "r") as fo:
         dict_ref = json.load(fo)
     # passGeo = (sorted(dict_ref.items()) == sorted(dict_struct_info.items()))
@@ -543,7 +557,8 @@ def runtestNoFF(tmpdir, name, threshMLBL, threshLG, threshOG):
         myjobdir = jobdir(newinfile)
         output_xyz = myjobdir + '/' + newname + '.xyz'
         output_report = myjobdir + '/' + newname + '.report'
-        molsim_data = open(newinfile).read()
+        with open(newinfile, 'r') as f_in:
+            molsim_data = f_in.read()
         output_qcin = myjobdir + '/terachem_input'
         if 'orca' in molsim_data.lower():
             output_qcin = myjobdir + '/orca.in'
@@ -589,7 +604,8 @@ def runtestMulti(tmpdir, name, threshMLBL, threshLG, threshOG):
     [passMultiFileCheck, myfiles] = checkMultiFileGen(myjobdir, refdir)
     pass_structures = []
     if not passMultiFileCheck:
-        print("Test failed for checking number and names of generated files. Test ends")
+        print("Test failed for checking number and names of generated files. "
+              "Test ends")
     else:
         print("Checking each generated structure...")
         for f in myfiles:
