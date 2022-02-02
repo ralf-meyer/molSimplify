@@ -175,6 +175,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
         print("Warning: no Molden file is used to initialize this calculation!")
         psi4.set_options({
             "maxiter": 250 if "maxiter" not in psi4_config else psi4_config["maxiter"],
+            # "guess": "GWH",
             "D_CONVERGENCE": 3e-5,
             "E_CONVERGENCE": 3e-5,
             "fail_on_maxiter": True})
@@ -231,14 +232,15 @@ def run_general(psi4_config, functional):
     ## Copy wfn file to the right place with a right name---
     pid = str(os.getpid())
     targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
-    shutil.copyfile(psi4_config["wfnfile"], targetfile)
+    if os.path.isfile(psi4_config["wfnfile"]):
+        shutil.copyfile(psi4_config["wfnfile"], targetfile)
     ## Final scf---
     psi4.set_options({
         "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
-    if not "ccsd" in functional:
+    if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
         try:
             if (not functional in b3lyp_d) and (not "hfx_" in functional) and (not "ccsd" in functional):
                 e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
@@ -246,10 +248,6 @@ def run_general(psi4_config, functional):
                 basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
                 print("HFX sampling: ", basefunc, hfx)
                 e, wfn = psi4.energy("scf", dft_functional=get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
-            elif "ccsd" in functional:
-                print("running CC: ", functional)
-                psi4.set_options({'reference': d['ref'].replace("ks", "hf")})
-                e = psi4.energy(functional, molecule=mol)
             else:
                 print("customized b3lyp with different HFX: ", functional)
                 e, wfn = psi4.energy("scf", dft_functional=b3lyp_d[functional],  molecule=mol, return_wfn=True)
@@ -260,10 +258,18 @@ def run_general(psi4_config, functional):
         print("running CC: ", functional)
         psi4.set_options({
             'reference': d['ref'].replace("ks", "hf"),
-            # 'R_CONVERGENCE': 1e-5, 
-            # "GUESS": "GWH",
+            'R_CONVERGENCE': 1e-5,
+            'E_CONVERGENCE': 5e-5,
+            'D_CONVERGENCE': 5e-5,
+            "mp2_type": "df",
+            "cc_type": "conv",
+            "scf_type": "df",
+            'nat_orbs': True,
+            'FREEZE_CORE': True,
+            "GUESS": "SAD",
             })
-        e = psi4.energy(functional, molecule=mol)
+        e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+        wfn.to_file("wfn.180")
     success = check_sucess()
     for filename in os.listdir("./"):
         if ("psi." in filename) or ("default" in filename):
@@ -403,6 +409,7 @@ def write_jobscript(psi4_config):
             fo.write("#!/bin/bash\n")
             fo.write("#SBATCH --job-name=psi4_multiDFA\n")
             fo.write("#SBATCH --nodes=1\n")
+            fo.write("#SBATCH --time=96:00:00\n")
             fo.write("#SBATCH --ntasks-per-node=%d\n"%psi4_config['num_threads'])
             if "queue" in psi4_config and psi4_config["queue"] == "normal":
                 fo.write("#SBATCH --partition=normal\n")
@@ -411,7 +418,7 @@ def write_jobscript(psi4_config):
             fo.write("source /etc/profile\n")
             fo.write("source ~/.profile\n")
             fo.write("source ~/.bashrc\n")
-            fo.write("conda activate mols\n")
+            fo.write("conda activate mols_py37\n")
             fo.write("export PSI_SCRATCH='./'\n\n")
             fo.write("subdir=$PWD\n")
             fo.write("echo subdir: $subdir\n")
