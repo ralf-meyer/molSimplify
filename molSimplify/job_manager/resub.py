@@ -285,22 +285,33 @@ def resub(directory='in place'):
 
 def resub_psi4(psi4_config):
     basedir = os.getcwd()
-    for path in os.listdir(basedir):
-        if os.path.isdir(basedir + "/" + path):
-            print("at: ", basedir + "/" + path)
-            os.chdir(basedir + "/" + path)
-            with open("psi4_config.json", "w") as fo:
-                json.dump(psi4_config, fo)
-            write_jobscript(psi4_config)
-            os.chdir(basedir)
-            if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
-                cmd = "qsub jobscript.sh"
-            else:
-                cmd = "sbatch jobscript.sh"
-            run_bash(cmd=cmd,
-                     basedir=basedir,
-                     rundir=basedir + "/" + path)
-            time.sleep(3)
+    if "trigger" in psi4_config:
+        write_jobscript(psi4_config)
+        if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
+            cmd = "qsub jobscript.sh"
+        else:
+            cmd = "sbatch jobscript.sh"
+        run_bash(cmd=cmd,
+                    basedir=basedir,
+                    rundir=basedir)
+        time.sleep(3)
+    else:
+        for path in os.listdir(basedir):
+            if os.path.isdir(basedir + "/" + path):
+                print("at: ", basedir + "/" + path)
+                os.chdir(basedir + "/" + path)
+                with open("psi4_config.json", "w") as fo:
+                    json.dump(psi4_config, fo)
+                write_jobscript(psi4_config)
+                os.chdir(basedir)
+                if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
+                    cmd = "qsub jobscript.sh"
+                else:
+                    cmd = "sbatch jobscript.sh"
+                run_bash(cmd=cmd,
+                        basedir=basedir,
+                        rundir=basedir + "/" + path)
+                time.sleep(3)
 
 
 def main():
