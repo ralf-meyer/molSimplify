@@ -817,7 +817,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
 
 
 def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
-            mlbonds, nsteps, spin=1, debug=False):
+            mlbonds, nsteps, spin=1, inertial=False, debug=False):
     """ XTB optimization. Writes an input file (xtb.in) containing
     all the constraints and parameters to a temporary folder,
     executes the XTB program using the subprocess module and parses
@@ -846,6 +846,8 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
             Number of steps to take.
         spin: int
             Spin multiplicity
+        inertial: bool
+            Flag for the fast inertial relaxation engine (FIRE)
         debug : bool
             Flag to print extra info to debug.
 
@@ -864,10 +866,11 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
     if nsteps == 'Adaptive':
         nsteps = 0  # corresponds to "automatic" mode in xtb
     # Initialize defailed input file with optimization parameters.
-    # engine=inertial is selected as the generation of approximate
-    # Hessian coordinates (AHC) can fail for highly symmetric systems.
-    input_lines = ['$opt\n', f'maxcycle={nsteps}\n',
-                   'engine=inertial\n']
+    input_lines = ['$opt\n', f'maxcycle={nsteps}\n']
+    if inertial:
+        # engine=inertial is selected in cases if the generation of approximate
+        # Hessian coordinates (AHC) fails e.g.: for highly symmetric systems.
+        input_lines.append('engine=inertial\n')
     # Arguments for the commandline call of the xtb program
     cmdl_args = ['--opt', 'tight', '--input', 'xtb.inp']
     if ff.lower() == 'gfnff':
@@ -915,8 +918,14 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
             raise ChildProcessError('Could not find subprocess xtb. Ensure xtb'
                                     ' is installed and properly configured.')
         if output.returncode != 0:
-            print(output)
-            raise ChildProcessError('XTB calculation failed')
+            if b'ANC generation failed!' in output.stdout:
+                print('Switching xtb_opt to inertial engine.')
+                return xtb_opt(ff, mol, connected, constopt, frozenats,
+                               frozenangles, mlbonds, nsteps, spin=spin,
+                               inertial=True, debug=debug)
+            else:
+                print(output)
+                raise ChildProcessError('XTB calculation failed')
         # Parse geometry, inspired by mol3D.convert2mol3D()
         original_graph = mol.graph
         mol.initialize()
