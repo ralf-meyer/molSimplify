@@ -43,7 +43,7 @@ def zero_linear_variance_model(dist, theta):
     '''
 
     :param dist: latent space distance (or other uq metric)
-    :param theta: parameters for the condition Gaussian distribution err(d) ~ N(0, theta_0^2 + d* theta_1^2)
+    :param theta: parameters for the condition Gaussian distribution err(d) ~ N(0, d* theta_0^2)
     :return: std for the conditional Gaussian distribution
     '''
     return (theta[0] ** 2) * dist
