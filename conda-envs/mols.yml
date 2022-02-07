@@ -8,8 +8,9 @@ channels:
      - theochem
      - defaults
 dependencies:
-     - python=3.7
+     - python=3.7.12
      - openbabel
+     - xtb
      - tensorflow
      - keras
      - pytorch
