@@ -78,6 +78,7 @@ def ensemble_maker_inner(train_mat,labels,model_gen_function, info_dict,num=10):
         model_list.append(current_model)
     return(model_list)
 
+
 def ensemble_maker(predictor, num=10):
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
     mat = load_training_data(predictor)
@@ -90,9 +91,9 @@ def ensemble_maker(predictor, num=10):
     info_dict = load_train_info(predictor)
     model_list = ensemble_maker_inner(train_mat=train_mat,
                                       labels=labels,
-                                      model_gen_function = lambda : load_keras_ann(predictor),
-                                      info_dict = info_dict,num=num)
-    for ii,current_model in enumerate(model_list):
+                                      model_gen_function=lambda: load_keras_ann(predictor),
+                                      info_dict=info_dict, num=num)
+    for ii, current_model in enumerate(model_list):
         save_model(current_model, predictor, ii)
 
 
