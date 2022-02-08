@@ -31,8 +31,8 @@ def read_molecule(terachem_file):
     for line in lines:
         if line.startswith('coordinates'):
             xyz_path = terachem_file.parent.joinpath(line.split()[1])
-            charge = 0
-            spin = 0
+            charge = 0.0
+            spin = 1.0
         elif line.startswith('charge'):
             charge = float(line.split()[1])
         elif line.startswith('spinmult'):
