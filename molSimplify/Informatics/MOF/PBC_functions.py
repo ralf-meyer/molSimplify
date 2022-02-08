@@ -11,7 +11,7 @@ from molSimplify.Informatics.MOF.atomic import METALS, MASS, COVALENT_RADII
 
 deg2rad = np.pi/180.0
 def readcif(name):
-    with open (name , 'r') as fi:
+    with open(name , 'r') as fi:
         EIF = fi.readlines()
         cond=True
         cond2=False
