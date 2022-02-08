@@ -9,7 +9,7 @@ def compute_guess_hessian(atoms, guess_hessian):
         return numerical_hessian(atoms)
 
 
-def numerical_hessian(atoms, step=1e-5):
+def numerical_hessian(atoms, step=1e-5, symmetrize=True):
     x0 = atoms.get_positions()
 
     def fun(x):
@@ -17,4 +17,6 @@ def numerical_hessian(atoms, step=1e-5):
         return -atoms.get_forces().flatten()
     H = nd.Jacobian(fun, step=step)(x0.flatten())
     atoms.set_positions(x0)
-    return 0.5*(H + H.T)
+    if symmetrize:
+        return 0.5*(H + H.T)
+    return H
