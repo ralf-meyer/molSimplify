@@ -763,10 +763,10 @@ def save_model(model, predictor, num=None, suffix=False):
 def initialize_model_weights(model):
     session = K.get_session()
     for layer in model.layers: 
-         for v in layer.__dict__:
-             v_arg = getattr(layer,v)
-             if hasattr(v_arg,'initializer'):
-                 initializer_method = getattr(v_arg, 'initializer')
-                 initializer_method.run(session=session)
-                 # print('reinitializing layer {}.{}'.format(layer.name, v))
+        for v in layer.__dict__:
+            v_arg = getattr(layer,v)
+            if hasattr(v_arg,'initializer'):
+                initializer_method = getattr(v_arg, 'initializer')
+                initializer_method.run(session=session)
+                # print('reinitializing layer {}.{}'.format(layer.name, v))
     return model

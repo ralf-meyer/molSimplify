@@ -645,9 +645,9 @@ class globalvars:
                 List of available metals.
         """
         if not transition_metals_only:
-          return metalslist + alkali_and_alkaline_earth + heavy_metals_and_metalloids
+            return metalslist + alkali_and_alkaline_earth + heavy_metals_and_metalloids
         else:
-          return metalslist
+            return metalslist
 
     def groups(self):
         """Returns dict of elements by groups.
