@@ -3,7 +3,10 @@ import numpy as np
 import ase.io
 import ase.units
 import ase.calculators.calculator as ase_calculator
-from openbabel import openbabel
+try:  # For compatibility with openbabel < 3.0
+    from openbabel import openbabel
+except ImportError:
+    import openbabel
 
 
 _available_calculators = ['uff', 'mmff94', 'gaff', 'xtb']
