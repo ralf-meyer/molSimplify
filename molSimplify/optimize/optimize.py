@@ -60,7 +60,7 @@ def run_preprocessing(args):
     if len(metal_ind) > 1:
         raise NotImplementedError('Currently only systems with a single metal '
                                   'atom can be handled.')
-    logger.info(f'Found single metal atom with index {metal_ind[0]}')
+    logger.info(f'Metal indices {metal_ind}')
     # Find graph
     connectivity = find_connectivity(atoms)
     preopt = args.get('preopt', False)
