@@ -61,8 +61,11 @@ def lig_assign_bisdithiolene(inmol,liglist, ligdents, ligcons):
     return ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list
 
 
-def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Gval=False, \
-    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False):
+def get_descriptor_vector(this_complex, custom_ligand_dict=False,
+                          ox_modifier=False, NumB=False, Gval=False,
+                          lacRACs=True, loud=False, metal_ind=None,
+                          smiles_charge=False, eq_sym=False,
+                          use_dist=False, size_normalize=False):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters

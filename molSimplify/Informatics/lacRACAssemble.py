@@ -15,9 +15,13 @@ from molSimplify.Classes.globalvars import globalvars
 
 globs = globalvars()
 
-def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Gval=False, \
-    lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False,
-    alleq=False, MRdiag_dict={}, depth=3):
+
+def get_descriptor_vector(this_complex, custom_ligand_dict=False,
+                          ox_modifier=False, NumB=False, Gval=False,
+                          lacRACs=True, loud=False, metal_ind=None,
+                          smiles_charge=False, eq_sym=False,
+                          use_dist=False, size_normalize=False,
+                          alleq=False, MRdiag_dict={}, depth=3):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters
