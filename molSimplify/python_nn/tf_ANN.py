@@ -467,9 +467,8 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     ## get variable names
     target_names = load_ANN_variables(predictor)
     if len(target_names) > len(descriptors):
-        print((
-                'Error: preparing features for ' + str(predictor) + ', recieved ' + str(
-            len(descriptors)) + ' descriptors'))
+        print('Error: preparing features for ' + str(predictor) + ', recieved '
+              + str(len(descriptors)) + ' descriptors')
         print(('model requires ' + str(len(target_names)) + ' descriptors, attempting match'))
     excitation = []
     valid = True
