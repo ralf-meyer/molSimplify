@@ -44,7 +44,7 @@ from molSimplify.Classes.globalvars import (elementsbynum,
 from molSimplify.Classes.rundiag import (run_diag)
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts)
-from molSimplify.Classes.ligand import ligand
+from molSimplify.Classes.ligand import ligand as ligand_class
 from molSimplify.Classes.globalvars import globalvars
 import openbabel
 import random
@@ -2640,7 +2640,7 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
             for i, name in enumerate(ligands):
                 this_mol, emsg = lig_load(name)
                 this_mol.convert2mol3D()
-                this_lig = ligand(mol3D(), [], this_mol.denticity)
+                this_lig = ligand_class(mol3D(), [], this_mol.denticity)
                 this_lig.mol = this_mol
                 this_con = this_mol.cat
                 ligs.append(this_lig)
