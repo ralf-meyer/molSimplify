@@ -53,29 +53,26 @@ def read_molecule(terachem_file):
 
 def run_preprocessing(args):
     atoms, xyz_path = read_molecule(args.get('input'))
-    # Find metal center
+    # Find metal indices
     metal_ind = [i for i in range(len(atoms))
                  if atoms[i].get('symbol') in metalslist]
     # raise error if more than one metal
     if len(metal_ind) > 1:
         raise NotImplementedError('Currently only systems with a single metal '
                                   'atom can be handled.')
-    else:
-        metal_ind = metal_ind[0]
-        logger.info(f'Found single metal atom with index {metal_ind}')
+    logger.info(f'Found single metal atom with index {metal_ind[0]}')
     # Find graph
     connectivity = find_connectivity(atoms)
     preopt = args.get('preopt', False)
     if preopt:
-        # Collect indices of frozen atoms starting with metal center
-        frozen_inds = [metal_ind]
+        # Collect indices of frozen atoms starting with a copy of metal_ind
+        frozen_inds = [i for i in metal_ind]
         # Freeze connecting atoms
         for bond in connectivity:
-            if metal_ind in bond:
-                if bond[0] == metal_ind:
-                    frozen_inds.append(bond[1])
-                else:
-                    frozen_inds.append(bond[0])
+            if bond[0] in metal_ind:
+                frozen_inds.append(bond[1])
+            elif bond[1] in metal_ind:
+                frozen_inds.append(bond[0])
         logger.info('Freezing the following atom positions during '
                     f'preoptimization: {frozen_inds}')
         atoms.set_constraint(ase.constraints.FixAtoms(indices=frozen_inds))
