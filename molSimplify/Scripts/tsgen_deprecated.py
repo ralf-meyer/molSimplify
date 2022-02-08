@@ -1,6 +1,6 @@
 #### This section comes from the structgen_one section of the code, must 
 #### be reformatted to reproduce structgen behavior
- # generate ts
+def generate_ts(args):
     if (args.tsgen):
         substrate = []
         for i in args.substrate:
