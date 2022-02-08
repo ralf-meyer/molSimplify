@@ -245,8 +245,8 @@ def get_descriptor_derivatives(this_complex,custom_ligand_dict=False,ox_modifier
 def create_OHE(descriptor_names,descriptors, metal,oxidation_state):
     # fucntion to append OHE encoding of oxidation state
     # and d-electron countst
-    OHE_names = ['ox2','ox3','d3','d4','d5','d6','d7','d8']
-    OHE_values = [   0,    0,   0,   0,   0,   0,    0, 0]
+    OHE_names = ['ox2', 'ox3', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8']
+    OHE_values = [0] * len(OHE_names)
     #print(OHE_values)
     if int(oxidation_state) == 2:
         OHE_values[0]+=1

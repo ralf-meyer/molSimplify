@@ -131,7 +131,7 @@ def ligand_detect(cell,cart_coords,adj_mat,anchorlist):
     while len(connected_components) < len(cart_coords):
         current_node = connected_components[counter]
         for j,v in enumerate(adj_mat[current_node]):
-            if v==1 and ( j not in checked ) and ( j not in connected_components):
+            if v==1 and (j not in checked) and (j not in connected_components):
                 image_flag =compute_image_flag(cell,fcoords[current_node],fcoords[j]) 
                 fcoords[j]+= image_flag
                 connected_components.append(j)
@@ -346,7 +346,7 @@ def make_supercell(cell,atoms,fcoords,exp_coeff):
 
 
 def compute_adj_matrix(distance_mat,allatomtypes):
-    adj_matrix=np.zeros( distance_mat.shape)
+    adj_matrix=np.zeros(distance_mat.shape)
     for i,e1 in enumerate(allatomtypes[:-1]):
         for j,e2 in enumerate(allatomtypes[i+1:]):
             elements = set([e1, e2])

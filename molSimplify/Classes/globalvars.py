@@ -160,13 +160,14 @@ lanthanides = ['La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy',
 actinides = ['Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf',
              'Es', 'Fm', 'Md', 'No', 'Lr']
 
-groups_dict = {'group_1': group_1, 'group_2': group_2, 'group_3': group_3,
-               'group_4': group_4, 'group_5': group_5, 'group_6': group_6,
-               'group_7': group_7, 'group_8': group_8, 'group_9': group_9,
-               'group_10': group_10, 'group_11': group_11, 'group_12': group_12,
-               'group_13': group_13, 'group_14': group_14, 'group_15': group_15,
-               'group_16': group_16, 'group_17': group_17, 'group_18': group_18,
-               'lanthanides': lanthanides, 'actinides': actinides, 'hydrogen': hydrogen}
+groups_dict = {
+    'group_1': group_1, 'group_2': group_2, 'group_3': group_3,
+    'group_4': group_4, 'group_5': group_5, 'group_6': group_6,
+    'group_7': group_7, 'group_8': group_8, 'group_9': group_9,
+    'group_10': group_10, 'group_11': group_11, 'group_12': group_12,
+    'group_13': group_13, 'group_14': group_14, 'group_15': group_15,
+    'group_16': group_16, 'group_17': group_17, 'group_18': group_18,
+    'lanthanides': lanthanides, 'actinides': actinides, 'hydrogen': hydrogen}
 
 # Metals (includes alkali, alkaline earth, and transition metals)
 alkali_and_alkaline_earth = [
@@ -177,28 +178,30 @@ alkali_and_alkaline_earth = [
     'Cs', 'cs', 'CS', 'cesium', 'Ba', 'ba', 'BA', 'barium',
     'Fr', 'fr', 'FR', 'francium', 'Ra', 'ra', 'RA', 'radium']
 
-heavy_metals_and_metalloids = [ 'Al', 'al', 'AL', 'aluminum', 'aluminium',
-                                'Ga', 'ga', 'GA', 'gallium', 'Ge', 'ge', 'GE', 'germanium', 'As', 'as', 'AS', 'arsenic',
-                                'In', 'in', 'IN', 'indium', 'Sn', 'sn', 'SN', 'tin',
-                                'Sb', 'sb', 'SB', 'antimony', 'Te', 'te', 'TE', 'tellurium'
-                                'Tl', 'tl', 'TL', 'thallium', 'Pb', 'pb', 'PB', 'lead',
-                                'Bi', 'bi', 'BI', 'bismuth', 'Po', 'po', 'PO', 'polonium', 'At', 'at', 'AT', 'astatine',
-                                'La', 'la', 'LA', 'lanthanum',
-                                'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
-                                'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
-                                'Sm', 'sm', 'SM', 'samarium', 'Eu', 'eu', 'EU', 'europium',
-                                'Gd', 'gd', 'GD', 'gadolinium', 'Tb', 'tb', 'TB', 'terbium',
-                                'Dy', 'dy', 'DY', 'dysprosium', 'Ho', 'ho', 'HO', 'holmium',
-                                'Er', 'er', 'ER', 'erbium', 'Tm', 'tm', 'TM', 'thulium',
-                                'Yb', 'yb', 'YB', 'ytterbium', 'Lu', 'lu', 'LU', 'lutetium',
-                                'Ac', 'ac', 'AC', 'actinium', 'Th', 'th', 'TH', 'thorium',
-                                'Pa', 'pa', 'PA', 'proactinium', 'U', 'u', 'uranium',
-                                'Np', 'np', 'NP', 'neptunium', 'Pu', 'pu', 'PU', 'plutonium',
-                                'Am', 'am', 'AM', 'americium', 'Cu', 'cu', 'CU', 'curium',
-                                'Bk', 'bk', 'BK', 'berkelium', 'Cf', 'cf', 'CF', 'californium',
-                                'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
-                                'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
-                                'Lr', 'lr', 'LR', 'lawrencium']
+heavy_metals_and_metalloids = [
+    'Al', 'al', 'AL', 'aluminum', 'aluminium',
+    'Ga', 'ga', 'GA', 'gallium', 'Ge', 'ge', 'GE', 'germanium',
+    'As', 'as', 'AS', 'arsenic', 'In', 'in', 'IN', 'indium',
+    'Sn', 'sn', 'SN', 'tin', 'Sb', 'sb', 'SB', 'antimony',
+    'Te', 'te', 'TE', 'tellurium', 'Tl', 'tl', 'TL', 'thallium',
+    'Pb', 'pb', 'PB', 'lead', 'Bi', 'bi', 'BI', 'bismuth',
+    'Po', 'po', 'PO', 'polonium', 'At', 'at', 'AT', 'astatine',
+    'La', 'la', 'LA', 'lanthanum',
+    'Ce', 'ce', 'CE', 'cerium', 'Pr', 'pr', 'PR', 'praseodymium',
+    'Nd', 'nd', 'ND', 'neodymium', 'Pm', 'pm', 'PM', 'promethium',
+    'Sm', 'sm', 'SM', 'samarium', 'Eu', 'eu', 'EU', 'europium',
+    'Gd', 'gd', 'GD', 'gadolinium', 'Tb', 'tb', 'TB', 'terbium',
+    'Dy', 'dy', 'DY', 'dysprosium', 'Ho', 'ho', 'HO', 'holmium',
+    'Er', 'er', 'ER', 'erbium', 'Tm', 'tm', 'TM', 'thulium',
+    'Yb', 'yb', 'YB', 'ytterbium', 'Lu', 'lu', 'LU', 'lutetium',
+    'Ac', 'ac', 'AC', 'actinium', 'Th', 'th', 'TH', 'thorium',
+    'Pa', 'pa', 'PA', 'proactinium', 'U', 'u', 'uranium',
+    'Np', 'np', 'NP', 'neptunium', 'Pu', 'pu', 'PU', 'plutonium',
+    'Am', 'am', 'AM', 'americium', 'Cu', 'cu', 'CU', 'curium',
+    'Bk', 'bk', 'BK', 'berkelium', 'Cf', 'cf', 'CF', 'californium',
+    'Es', 'es', 'ES', 'einsteinium', 'Fm', 'fm', 'FM', 'fermium',
+    'Md', 'md', 'MD', 'mendelevium', 'No', 'no', 'NO', 'nobelium',
+    'Lr', 'lr', 'LR', 'lawrencium']
 
 ### The metals list below contains only TMs. See metalslist function for logic.
 metalslist = [
@@ -219,15 +222,15 @@ metalslist = [
     'Hg', 'hg', 'HG', 'mercury', 'X',
 ]
 
-metals_conv = {'scandium': 'Sc', 'titanium': 'Ti', 'vanadium': 'V', 'chromium': 'Cr', 'manganese': 'Mn',
-               'iron': 'Fe', 'cobalt': 'Co', 'nickel': 'Ni', 'copper': 'Cu', 'zinc': 'Zn',
-               'yttrium': 'Y', 'zirconium': 'Zr', 'niobium': 'Nb', 'molybdenum': 'Mo', 'technetium': 'Tc',
-               'ruthenium': 'Ru', 'rhodium': 'Rh', 'palladium': 'Pd', 'silver': 'Ag', 'cadmium': 'Cd',
-               'lanthanum': 'La', 'hafnium': 'Hf',
-               'tantalum': 'Ta', 'tungsten': 'W',
-               'rhenium': 'Re', 'osmium': 'Os',
-               'iridium': 'Ir', 'platinum': 'Pt',
-               'gold': 'Au', 'mercury': 'Hg'}
+metals_conv = {
+    'scandium': 'Sc', 'titanium': 'Ti', 'vanadium': 'V', 'chromium': 'Cr',
+    'manganese': 'Mn', 'iron': 'Fe', 'cobalt': 'Co', 'nickel': 'Ni',
+    'copper': 'Cu', 'zinc': 'Zn', 'yttrium': 'Y', 'zirconium': 'Zr',
+    'niobium': 'Nb', 'molybdenum': 'Mo', 'technetium': 'Tc',
+    'ruthenium': 'Ru', 'rhodium': 'Rh', 'palladium': 'Pd', 'silver': 'Ag',
+    'cadmium': 'Cd', 'lanthanum': 'La', 'hafnium': 'Hf', 'tantalum': 'Ta',
+    'tungsten': 'W', 'rhenium': 'Re', 'osmium': 'Os', 'iridium': 'Ir',
+    'platinum': 'Pt', 'gold': 'Au', 'mercury': 'Hg'}
 
 # d-electron counts of transition metals
 mtlsdlist = {'sc': 1, 'ti': 2, 'v': 3, 'cr': 4, 'mn': 5, 'fe': 6, 'co': 7, 'ni': 8, 'cu': 9, 'zn': 10,
