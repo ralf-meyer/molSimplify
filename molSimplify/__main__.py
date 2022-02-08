@@ -82,6 +82,7 @@ DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
 
+
 def tensorflow_silence():
     ## thanks to
     # stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints
@@ -204,5 +205,7 @@ def main(args=None):
         infile = parseCLI([_f for _f in args if _f])
         args = ['main.py', '-i', infile]
         emsg = startgen(args, False, gui)
+
+
 if __name__ == '__main__':
     main()

@@ -26,10 +26,14 @@ import networkx as nx
 # Pymatgen is used to get the primitive cell.                                           #
 #########################################################################################
 from pymatgen.io.cif import CifParser
+
+
 def get_primitive(datapath, writepath):
     s = CifParser(datapath, occupancy_tolerance=1).get_structures()[0]
     sprim = s.get_primitive_structure()
-    sprim.to("cif",writepath)
+    sprim.to("cif", writepath)
+
+
 '''<<<< END OF CODE TO COMPUTE PRIMITIVE UNIT CELLS >>>>'''
 
 #########################################################################################
