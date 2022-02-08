@@ -1,4 +1,6 @@
-import os,glob,sys
+import os
+import glob
+import sys
 import copy
 import numpy as np
 import subprocess
