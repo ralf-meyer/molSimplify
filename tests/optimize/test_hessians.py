@@ -1,4 +1,5 @@
 import pytest
+import ase.atoms
 import ase.build
 import numpy as np
 import numdifftools as nd
@@ -18,18 +19,6 @@ def ref_hessian(atoms, step=None):
 
 
 @pytest.mark.parametrize('method', _available_calculators)
-def test_numerical_hessian_water(method):
-    atoms = ase.build.molecule('H2O')
-    atoms.calc = get_calculator(method)
-    x0 = atoms.get_positions()
-    H = numerical_hessian(atoms)
-    np.testing.assert_allclose(atoms.get_positions(), x0)
-    np.testing.assert_allclose(H, H.T, atol=1e-8)
-    H_ref = ref_hessian(atoms)
-    np.testing.assert_allclose(H, H_ref, atol=1e-8)
-
-
-@pytest.mark.parametrize('method', _available_calculators)
 def test_numerical_hessian_H2(method):
     h2 = ase.build.molecule('H2')
     h2.calc = get_calculator(method)
@@ -40,8 +29,60 @@ def test_numerical_hessian_H2(method):
             h2.get_potential_energy()
     else:
         x0 = h2.get_positions()
-        H = numerical_hessian(h2)
+        H = numerical_hessian(h2, symmetrize=False)
         np.testing.assert_allclose(h2.get_positions(), x0)
         np.testing.assert_allclose(H, H.T, atol=1e-8)
         H_ref = ref_hessian(h2)
-        np.testing.assert_allclose(H, H_ref, atol=1e-8)
+        # Symmetrize
+        H = 0.5*(H + H.T)
+        np.testing.assert_allclose(H, H_ref, atol=1e-4)
+
+
+@pytest.mark.parametrize('method', _available_calculators)
+def test_numerical_hessian_water(method):
+    atoms = ase.build.molecule('H2O')
+    atoms.calc = get_calculator(method)
+    x0 = atoms.get_positions()
+    H = numerical_hessian(atoms, symmetrize=False)
+    np.testing.assert_allclose(atoms.get_positions(), x0)
+    np.testing.assert_allclose(H, H.T, atol=1e-8)
+    H_ref = ref_hessian(atoms)
+    # Symmetrize
+    H = 0.5*(H + H.T)
+    np.testing.assert_allclose(H, H_ref, atol=1e-4)
+
+
+@pytest.mark.parametrize('method', _available_calculators)
+def test_numerical_hessian_benzene(method):
+    atoms = ase.build.molecule('C6H6')
+    atoms.calc = get_calculator(method)
+    x0 = atoms.get_positions()
+    H = numerical_hessian(atoms, symmetrize=False)
+    np.testing.assert_allclose(atoms.get_positions(), x0)
+    np.testing.assert_allclose(H, H.T, atol=1e-8)
+    H_ref = ref_hessian(atoms, step=1e-5)
+    # Symmetrize
+    H = 0.5*(H + H.T)
+    np.testing.assert_allclose(H, H_ref, atol=1e-4)
+
+
+@pytest.mark.parametrize('method', _available_calculators)
+def test_numerical_hessian_Fe_CO_6(method):
+    atoms = ase.atoms.Atoms(['Fe']+['C', 'O']*6,
+                            positions=[[0., 0., 0.],
+                                       [2.3, 0., 0.], [3.4, 0., 0.],
+                                       [0., 2.3, 0.], [0., 3.4, 0.],
+                                       [-2.3, 0., 0.], [-3.4, 0., 0.],
+                                       [0., -2.3, 0.], [0., -3.4, 0.],
+                                       [0., 0., 2.3], [0., 0., 3.4],
+                                       [0., 0., -2.3], [0., 0., -3.4]],
+                            charges=[2]+[0, 0]*6)
+    atoms.calc = get_calculator(method)
+    x0 = atoms.get_positions()
+    H = numerical_hessian(atoms, symmetrize=False)
+    np.testing.assert_allclose(atoms.get_positions(), x0)
+    np.testing.assert_allclose(H, H.T, atol=1e-8)
+    H_ref = ref_hessian(atoms, step=1e-5)
+    # Symmetrize
+    H = 0.5*(H + H.T)
+    np.testing.assert_allclose(H, H_ref, atol=1e-4)
