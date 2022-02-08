@@ -35,7 +35,8 @@ def read_molecule(terachem_file):
             charge = float(line.split()[1])
         elif line.startswith('spinmult'):
             spin = float(line.split()[1])
-    logger.debug(f'Read terachem file with {xyz_path=}, {charge=}, {spin=}')
+    logger.debug(f'Read terachem file with xyz: {xyz_path}, '
+                 f'charge: {charge}, spin: {spin}')
     atoms = ase.io.read(xyz_path)
     # Assign spin and charge to first atom
     q = np.zeros_like(atoms.get_initial_charges())
