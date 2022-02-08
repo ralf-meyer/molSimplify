@@ -298,7 +298,7 @@ def slope_sign_check(X, y, name, prop, num_points):
     diff_points = abs(neg_count-pos_count)
     remove_counter = 0
     if ((neg_count == pos_count) or (diff_points>=1 and len(X)<num_points) or 
-        ((len(X)-num_points-min(neg_count,pos_count)-1)<0 and (not min(neg_count,pos_count)<=1)) or ((sign_flag>0.4) and (sign_flag<0.6)) or (num_changes_first>0 and num_changes_second>0)):
+            ((len(X)-num_points-min(neg_count,pos_count)-1)<0 and (not min(neg_count,pos_count)<=1)) or ((sign_flag>0.4) and (sign_flag<0.6)) or (num_changes_first>0 and num_changes_second>0)):
         for j, val in enumerate(elim_points_X):
             removed_dict_list.append({'complex_no_HFX':name,'alpha':int(np.squeeze(val)), str(prop):float(np.squeeze(elim_points_y[j])),'reason':'identified_slope_sign_change','elim_type':'point'})
         return kept_points_X, kept_points_y, removed_dict_list
