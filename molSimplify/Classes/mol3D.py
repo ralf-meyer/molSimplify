@@ -1763,7 +1763,7 @@ class mol3D:
                                         print(allowed_idxs)
                                         print(('CN is ' + str(CN)))
 
-                                    if not i in allowed_idxs:
+                                    if i not in allowed_idxs:
                                         valid = False
                                         if debug:
                                             print(('bond rejected based on atom: ' + str(i) + ' not in ' + str(allowed_idxs)))
@@ -1782,7 +1782,7 @@ class mol3D:
                                         print(('metal prox:' + str(metal_prox)))
                                         print(('trimmed to ' + str(allowed_idxs)))
                                         print(allowed_idxs)
-                                    if not ind in allowed_idxs:
+                                    if ind not in allowed_idxs:
                                         valid = False
                                         if debug:
                                             print(('bond rejected based on ratom ' + str(
@@ -3339,7 +3339,7 @@ class mol3D:
 
         for atom in self.atoms:
             this_sym = atom.symbol()
-            if not this_sym in list(unique_types.keys()):
+            if this_sym not in list(unique_types.keys()):
                 unique_types.update({this_sym: 1})
             else:
                 unique_types.update({this_sym: unique_types[this_sym] + 1})
@@ -4269,7 +4269,7 @@ class mol3D:
                 # if not rmsd_max == 'lig_mismatch':
                 if True:
                     self.num_coord_metal = 6
-                    if not 'FCS' in skip:
+                    if 'FCS' not in skip:
                         dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref,
                                                                       catoms_arr,
                                                                       debug=debug,
@@ -4281,7 +4281,7 @@ class mol3D:
                             "The ordering of atoms in the initial and final geometry is different.")
                         init_mol = mol3D()
                         init_mol.copymol3D(self)
-                    if not 'lig_distort' in skip:
+                    if 'lig_distort' not in skip:
                         dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
                                                                 flag_loose=flag_loose,
                                                                 flag_lbd=flag_lbd,
@@ -4289,7 +4289,7 @@ class mol3D:
                                                                 BondedOct=BondedOct,
                                                                 flag_deleteH=flag_deleteH,
                                                                 angle_ref=angle_ref,)
-                if not 'lig_linear' in skip:
+                if 'lig_linear' not in skip:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
                     self.print_geo_dict()
@@ -4399,10 +4399,10 @@ class mol3D:
                             "The ordering of atoms in the initial and final geometry is different.")
                         init_mol = mol3D()
                         init_mol.copymol3D(self)
-                    if not 'lig_distort' in skip:
+                    if 'lig_distort' not in skip:
                         dict_lig_distort = self.ligand_comp_org(
                             init_mol, flag_deleteH=flag_deleteH, debug=debug, angle_ref=angle_ref)
-                if not 'lig_linear' in skip:
+                if 'lig_linear' not in skip:
                     dict_angle_linear, dict_orientation = self.check_angle_linear()
                 if debug:
                     self.print_geo_dict()

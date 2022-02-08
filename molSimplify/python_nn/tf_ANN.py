@@ -408,7 +408,7 @@ def load_keras_ann(predictor, suffix='model'):
     # disable TF output text to reduce console spam
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     key = get_key(predictor, suffix)
-    if not "clf" in predictor:
+    if "clf" not in predictor:
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
         json_file = open(path_to_file, 'r')
         loaded_model_json = json_file.read()
@@ -508,7 +508,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
     ## fetch ANN
     loaded_model = load_keras_ann(predictor)
     result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y, debug = debug)
-    if not "clf" in predictor:
+    if "clf" not in predictor:
         if debug:
             print(('LOADED MODEL HAS ' + str(
                 len(loaded_model.layers)) + ' layers, so latent space measure will be from first ' + str(

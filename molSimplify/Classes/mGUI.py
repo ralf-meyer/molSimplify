@@ -2442,7 +2442,7 @@ class mGUI():
         com = newglobs.multiwfn
         tt = mybash(com + '< input1')
         os.remove('input1')
-        if not 'Multifunctional Wavefunction Analyzer' in tt:
+        if 'Multifunctional Wavefunction Analyzer' not in tt:
             self.pch.setDisabled(True)
             self.pwfnav.setDisabled(True)
             self.pcub.setDisabled(True)

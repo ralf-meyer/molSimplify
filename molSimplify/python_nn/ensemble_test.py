@@ -85,7 +85,7 @@ def ensemble_maker(predictor, num=10):
     mat = np.array(mat, dtype='float64')
     train_mat = data_normalize(mat, train_mean_x, train_var_x)
     labels = load_training_labels(predictor)
-    if not "clf" in predictor:
+    if "clf" not in predictor:
         labels = np.array(labels, dtype='float64')
         labels = data_normalize(labels, train_mean_y, train_var_y)
     info_dict = load_train_info(predictor)
@@ -108,7 +108,7 @@ def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=Fal
     model_list = glob.glob(base_path + '/*.h5')
 
     labels = load_test_labels(predictor)
-    if not 'clf' in predictor:
+    if 'clf' not in predictor:
         labels = np.array(labels, dtype='float64')
     else:
         labels = np.array(labels, dtype='int')
@@ -136,7 +136,7 @@ def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=Fal
         # complile model
         loaded_model.compile(loss="mse", optimizer='adam',
                              metrics=['mse', 'mae', 'mape'])
-        if not 'clf' in predictor:
+        if 'clf' not in predictor:
             result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y)
         else:
             result = loaded_model.predict(excitation)
@@ -153,7 +153,7 @@ def ensemble_uq(predictor, descriptors=False, descriptor_names=False, suffix=Fal
 
 def mc_dropout_uq(predictor, descriptors=False, descriptor_names=False, num=500):
     labels = load_test_labels(predictor)
-    if not 'clf' in predictor:
+    if 'clf' not in predictor:
         labels = np.array(labels, dtype='float64')
     else:
         labels = np.array(labels, dtype='int')
@@ -178,7 +178,7 @@ def mc_dropout_uq(predictor, descriptors=False, descriptor_names=False, num=500)
     for ii in range(num):
         if not np.mod(ii, int(num / 10)):
             print(('%d / %d' % (ii, num)))
-        if not 'clf' in predictor:
+        if 'clf' not in predictor:
             results = data_rescale(np.array(get_outputs([excitation, 1])), train_mean_y,
                                    train_var_y)[0]
         else:
@@ -229,7 +229,7 @@ def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_nam
         excitation_test = np.array(test_mat)
     labels = load_test_labels(predictor)
     labels_train = load_training_labels(predictor)
-    if not 'clf' in predictor:
+    if 'clf' not in predictor:
         labels = np.array(labels, dtype='float64')
         labels_train = np.array(labels_train, dtype='float64')
     else:
@@ -253,7 +253,7 @@ def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_nam
                                 [loaded_model.layers[layer_index].output])
         print(('NOTE: you are choosing:', loaded_model.layers[layer_index], loaded_model.layers[layer_index].name,
               'for the latence space!'))
-        if not 'clf' in predictor:
+        if 'clf' not in predictor:
             results = data_rescale(np.array(get_outputs([excitation_test, 0])), train_mean_y,
                                    train_var_y)[0]
         else:
