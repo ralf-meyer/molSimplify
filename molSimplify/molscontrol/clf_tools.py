@@ -59,7 +59,7 @@ def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):
     return dist_avrg, dist_mat, labels_list
 
 
-def get_entropy(dists, neighbor_targets):
+def _get_entropy(dists, neighbor_targets):
     entropies = []
     _sum = 0
     for ii, _neighbor_targets in enumerate(neighbor_targets):
@@ -85,6 +85,23 @@ def get_entropy(dists, neighbor_targets):
             entropies.append(0)
         else:
             entropies.append(-(p0 * np.log(p0) + p1 * np.log(p1)))
+    return np.array(entropies)
+
+
+def get_entropy(dists, neighbor_targets, nclasses=2):
+    entropies = []
+    for ii, _neighbor_targets in enumerate(neighbor_targets):
+        p = [dist_penalty(2) for ii in range(nclasses)]
+        for idx, tar in enumerate(_neighbor_targets):
+            tar = int(tar)
+            d = dists[ii][idx]
+            if d <= 10:
+                p[tar] += dist_penalty(d) if d > 1e-6 else 100
+        p = [x/np.sum(p) for x in p]
+        _entropy = 0
+        for ii in range(nclasses):
+            _entropy += -p[ii] * np.log(p[ii])
+        entropies.append(_entropy)
     return np.array(entropies)
 
 

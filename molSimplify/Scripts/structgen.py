@@ -441,7 +441,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
                 print('FF optimizing ligand')
             lig3D.convert2mol3D()
             lig3D, enl = ffopt(args.ff, lig3D, lig3D.cat, 0,
-                               [], False, [], 100, args.debug)
+                               [], False, [], 100, debug=args.debug)
     # skip hydrogen removal for pi-coordinating ligands
     if not rempi:
         # check smarts match
@@ -575,19 +575,24 @@ def smartreorderligs(args, ligs, dentl, licores):
             indcs.append(ligdentsidcs[ii][l])
     return indcs
 
-def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps, debug=False):
+
+def ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
+          mlbonds, nsteps, spin=1, debug=False):
     """Main constrained FF opt routine.
 
     Parameters
     ----------
         ff : str
-            Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF, XTB.
+            Name force field to use. Available options are MMFF94, UFF, Ghemical, GAFF, XTB. (XTB only works if the xtb command-line utility is installed.)
         mol : mol3D
             mol3D instance of molecule to be optimized.
         connected : list
             List of indices of connection atoms to metal.
         constopt : int
-            Flag for constrained optimization - 0: unconstrained, 1: fixed connecting atom positions, 2: fixed connecting atom distances.
+            Flag for constrained optimization -
+            0: unconstrained,
+            1: fixed connecting atom positions,
+            2: fixed connecting atom distances.
         frozenats : list
             List of frozen atom indices.
         frozenangles : bool
@@ -596,6 +601,8 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
             List of M-L bonds for distance constraints.
         nsteps : int
             Number of steps to take.
+        spin: int
+            Spin multiplicity
         debug : bool
             Flag to print extra info to debug.
 
@@ -608,22 +615,22 @@ def ffopt(ff, mol, connected, constopt, frozenats, frozenangles, mlbonds, nsteps
 
     """
     # check requested force field
-    ffav = 'mmff94, uff, ghemical, gaff, mmff94s, xtb'  # force fields
+    ffav = 'mmff94, uff, ghemical, gaff, mmff94s, xtb, gfnff'  # force fields
 
     if ff.lower() not in ffav:
         print('Requested force field not available. Defaulting to UFF')
         ff = 'uff'
     if debug:
         print(('using ff: ' + ff))
-    if ff.lower() == 'xtb':
+    if ff.lower() in ['xtb', 'gfnff']:
         return xtb_opt(ff, mol, connected, constopt, frozenats,
-                       frozenangles, mlbonds, nsteps, debug)
+                       frozenangles, mlbonds, nsteps, spin=spin, debug=debug)
     return openbabel_ffopt(ff, mol, connected, constopt, frozenats,
-                           frozenangles, mlbonds, nsteps, debug)
+                           frozenangles, mlbonds, nsteps, debug=debug)
 
 
-def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
-                    frozenangles, mlbonds, nsteps, debug=False):
+def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
+                    mlbonds, nsteps, debug=False):
     """ OpenBabel constraint optimization. To optimize metal-containing 
     complexes with MMFF94, an intricate procedure of masking the metal 
     atoms and manually editing their valences is applied. OpenBabel's 
@@ -810,7 +817,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats,
 
 
 def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
-            mlbonds, nsteps, debug=False):
+            mlbonds, nsteps, spin=1, inertial=False, debug=False):
     """ XTB optimization. Writes an input file (xtb.in) containing
     all the constraints and parameters to a temporary folder,
     executes the XTB program using the subprocess module and parses
@@ -837,6 +844,10 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
             List of M-L bonds for distance constraints.
         nsteps : int
             Number of steps to take.
+        spin: int
+            Spin multiplicity
+        inertial: bool
+            Flag for the fast inertial relaxation engine (FIRE)
         debug : bool
             Flag to print extra info to debug.
 
@@ -849,20 +860,28 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
 
     """
     if debug:
-        print(f'==== xtbopt() called ==== with {mol.natoms} atoms '
-              f'constopt:{constopt} and nsteps:{nsteps}')
+        print(f'xtbopt() called with {mol.natoms} atoms '
+              f'constopt: {constopt}, frozenats: {frozenats}, '
+              f'frozenangles: {frozenangles}, and nsteps: {nsteps}')
     if nsteps == 'Adaptive':
         nsteps = 0  # corresponds to "automatic" mode in xtb
     # Initialize defailed input file with optimization parameters.
-    # engine=inertial is selected as the generation of approximate
-    # Hessian coordinates (AHC) can fail for highly symmetric systems.
-    input_lines = ['$opt\n', f'maxcycle={nsteps}\n',
-                   'engine=inertial\n']
+    input_lines = ['$opt\n', f'maxcycle={nsteps}\n']
+    if inertial:
+        # engine=inertial is selected in cases if the generation of approximate
+        # Hessian coordinates (AHC) fails e.g.: for highly symmetric systems.
+        input_lines.append('engine=inertial\n')
+    # Arguments for the commandline call of the xtb program
+    cmdl_args = ['--opt', 'tight', '--input', 'xtb.inp']
+    if ff.lower() == 'gfnff':
+        cmdl_args.append('--gfnff')
 
     # Extract charge (and spin)
-    # PROBLEM: mol object does not contain information about spin...
     if mol.charge != 0:
         input_lines.append(f'$chrg {mol.charge}\n')
+        # xtb uses number of unpaired electrons (Nalpha - Nbeta) instead
+        # of multiplicity to define the spin state.
+        input_lines.append(f'$spin {spin-1}\n')
 
     if constopt > 0:  # constrained optimization:
         # List of user selected frozen atoms
@@ -891,12 +910,22 @@ def xtb_opt(ff, mol, connected, constopt, frozenats, frozenangles,
         # Write .xyz file
         mol.writexyz(os.path.join(tmpdir, 'tmp.xyz'))
         # Run xtb using the cmdl args and capture the stdout
-        output = subprocess.run(
-            ['xtb', '--opt', 'tight', '--input', 'xtb.inp', 'tmp.xyz'],
-            cwd=tmpdir, stdout=subprocess.PIPE)
+        try:
+            output = subprocess.run(
+                ['xtb'] + cmdl_args + ['tmp.xyz'],
+                cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except FileNotFoundError:
+            raise ChildProcessError('Could not find subprocess xtb. Ensure xtb'
+                                    ' is installed and properly configured.')
         if output.returncode != 0:
-            print(output)
-            raise Exception('XTB calculation failed')
+            if b'ANC generation failed!' in output.stdout:
+                print('Switching xtb_opt to inertial engine.')
+                return xtb_opt(ff, mol, connected, constopt, frozenats,
+                               frozenangles, mlbonds, nsteps, spin=spin,
+                               inertial=True, debug=debug)
+            else:
+                print(output)
+                raise ChildProcessError('XTB calculation failed')
         # Parse geometry, inspired by mol3D.convert2mol3D()
         original_graph = mol.graph
         mol.initialize()
@@ -1674,7 +1703,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     lig3Dtmp = mol3D()
     lig3Dtmp.copymol3D(lig3D)
     lig3Dtmp, en_start = ffopt(
-        args.ff, lig3Dtmp, [], 1, [], False, [], 200, args.debug)
+        args.ff, lig3Dtmp, [], 1, [], False, [], 200, debug=args.debug)
     # take steps between current ligand position and ideal position on backbone
     nsteps = 20
     ddr = [di/nsteps for di in dr]
@@ -1686,7 +1715,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
         lig3Dtmp.copymol3D(lig3D)
         for ii in range(0, nsteps):
             lig3Dtmp, enl = ffopt(args.ff, lig3Dtmp, [], 1, [
-                                  catoms[0], catoms[1]], False, [], 'Adaptive', args.debug)
+                                  catoms[0], catoms[1]], False, [], 'Adaptive', debug=args.debug)
             ens.append(enl)
             lig3Dtmp.getAtom(catoms[1]).translate(ddr)
             # once the ligand strain energy becomes too high, stop and accept ligand position
@@ -1722,10 +1751,10 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     if relax:
         # Relax the ligand
         lig3Dtmp, enl = ffopt(args.ff, lig3Dtmp, [catoms[1]], 2, [
-                              catoms[0]], False, MLoptbds[-2:-1], 200, args.debug)
+                              catoms[0]], False, MLoptbds[-2:-1], 200, debug=args.debug)
         lig3Dtmp.deleteatom(lig3Dtmp.natoms-1)
     lig3Dtmp, en_final = ffopt(
-        args.ff, lig3Dtmp, [], 1, [], False, [], 0, args.debug)
+        args.ff, lig3Dtmp, [], 1, [], False, [], 0, debug=args.debug)
     if en_final - en_start > 20:
         print(('Warning: Complex may be strained. Ligand strain energy (kcal/mol) = ' +
               str(en_final - en_start)))
@@ -2499,6 +2528,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                                         frozenangles=freezeangles,
                                         mlbonds=MLoptbds,
                                         nsteps='Adaptive',
+                                        spin=int(args.spin),
                                         debug=args.debug)
                     if args.debug:
                         print(
@@ -2511,12 +2541,14 @@ def mcomplex(args, ligs, ligoc, licores, globs):
             totlig += denticity
             ligsused += 1
     # perform FF optimization if requested
-    if 'a' in args.ffoption:
+    if 'a' in args.ffoption or args.ff_final_opt:
         if args.debug:
             print('Performing final FF opt')
         # idxes
         midx = core3D.findMetal()[0]
-        core3D, enc = ffopt(ff=args.ff,
+        # If args.ff_final_opt is None (default) use args.ff
+        ff = args.ff_final_opt or args.ff
+        core3D, enc = ffopt(ff=ff,
                             mol=core3D,
                             connected=connected,
                             constopt=1,
@@ -2524,6 +2556,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                             frozenangles=freezeangles,
                             mlbonds=MLoptbds,
                             nsteps='Adaptive',
+                            spin=int(args.spin),
                             debug=args.debug)
 
         if args.debug:

@@ -112,7 +112,7 @@ def b3lyp_hfx():
     return b3lyp_d
 
 
-def run_b3lyp(psi4_config, rundir="./b3lyp"):
+def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     b3lyp_d = b3lyp_hfx()
     home = expanduser("~")
     psi4_scr = './'
@@ -175,6 +175,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
         print("Warning: no Molden file is used to initialize this calculation!")
         psi4.set_options({
             "maxiter": 250 if "maxiter" not in psi4_config else psi4_config["maxiter"],
+            # "guess": "GWH",
             "D_CONVERGENCE": 3e-5,
             "E_CONVERGENCE": 3e-5,
             "fail_on_maxiter": True})
@@ -213,7 +214,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp"):
     return success
 
 
-def run_general(psi4_config, functional):
+def run_general(psi4_config, functional="b3lyp", return_wfn=False):
     b3lyp_d = b3lyp_hfx()
     psi4_scr = './'
     filename = "output"
@@ -221,8 +222,8 @@ def run_general(psi4_config, functional):
     rundir = "./" + functional.replace("(", "l-").replace(")", "-r")
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
-    shutil.copyfile("geo.xyz", functional.replace("(", "l-").replace(")", "-r") + '/geo.xyz')
     ensure_dir(rundir)
+    shutil.copyfile("geo.xyz", functional.replace("(", "l-").replace(")", "-r") + '/geo.xyz')
     os.chdir(rundir)
     psi4.core.set_output_file(filename + '.dat', False)
     sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
@@ -231,14 +232,15 @@ def run_general(psi4_config, functional):
     ## Copy wfn file to the right place with a right name---
     pid = str(os.getpid())
     targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
-    shutil.copyfile(psi4_config["wfnfile"], targetfile)
+    if os.path.isfile(psi4_config["wfnfile"]):
+        shutil.copyfile(psi4_config["wfnfile"], targetfile)
     ## Final scf---
     psi4.set_options({
         "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
         "D_CONVERGENCE": 3e-5,
         "E_CONVERGENCE": 3e-5,
         "fail_on_maxiter": True})
-    if not "ccsd" in functional:
+    if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
         try:
             if (not functional in b3lyp_d) and (not "hfx_" in functional) and (not "ccsd" in functional):
                 e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
@@ -246,24 +248,29 @@ def run_general(psi4_config, functional):
                 basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
                 print("HFX sampling: ", basefunc, hfx)
                 e, wfn = psi4.energy("scf", dft_functional=get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
-            elif "ccsd" in functional:
-                print("running CC: ", functional)
-                psi4.set_options({'reference': d['ref'].replace("ks", "hf")})
-                e = psi4.energy(functional, molecule=mol)
             else:
                 print("customized b3lyp with different HFX: ", functional)
                 e, wfn = psi4.energy("scf", dft_functional=b3lyp_d[functional],  molecule=mol, return_wfn=True)
-            # wfn.to_file("wfn.180")
+            if return_wfn:
+                wfn.to_file("wfn.180")
         except:
             print("This calculation does not converge.")
     else:
         print("running CC: ", functional)
         psi4.set_options({
             'reference': d['ref'].replace("ks", "hf"),
-            # 'R_CONVERGENCE': 1e-5, 
-            # "GUESS": "GWH",
+            'R_CONVERGENCE': 1e-5,
+            'E_CONVERGENCE': 5e-5,
+            'D_CONVERGENCE': 5e-5,
+            "mp2_type": "df",
+            "cc_type": "conv",
+            "scf_type": "df",
+            'nat_orbs': True,
+            'FREEZE_CORE': True,
+            "GUESS": "SAD",
             })
-        e = psi4.energy(functional, molecule=mol)
+        e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+        wfn.to_file("wfn.180")
     success = check_sucess()
     for filename in os.listdir("./"):
         if ("psi." in filename) or ("default" in filename):
@@ -377,32 +384,32 @@ def write_jobscript(psi4_config):
             fo.write("#$ -q cpus\n")
             fo.write("#$ -l cpus=1\n")
             fo.write("#$ -pe smp %d\n"%psi4_config['num_threads'])
-            fo.write("# -fin *.py\n")
-            fo.write("# -fin b3lyp\n")
-            fo.write("# -fin *.xyz\n")
-            fo.write("# -fin *.molden\n")
-            fo.write("# -fin *.json\n")
             fo.write("# -fin *\n")
 
             fo.write("source /home/crduan/.bashrc\n")
             fo.write("conda activate /home/crduan/miniconda/envs/mols_py36\n")
             fo.write("export PSI_SCRATCH='./'\n")
             fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
-            fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out\n")
-            fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out\n")
-            fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out\n")
-            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
-                fo.write("echo rescuing...\n")
-                fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup1.out\n")
-                fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup2.out\n")
-                fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup3.out\n")
-            fo.write("mv * $SGE_O_WORKDIR\n")
+            
+            if "trigger" in psi4_config:
+                fo.write("python -u loop_derivative_jobs.py  > $SGE_O_WORKDIR/deriv_nohup1.out\n")
+            else:
+                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out\n")
+                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out\n")
+                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out\n")
+                if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                    fo.write("echo rescuing...\n")
+                    fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup1.out\n")
+                    fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup2.out\n")
+                    fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup3.out\n")
+            fo.write("cp -rf * $SGE_O_WORKDIR\n")
     elif psi4_config["cluster"] == "supercloud":
         mem = int(psi4_config['memory'].split(" ")[0])/1000
         with open("./jobscript.sh", "w") as fo:
             fo.write("#!/bin/bash\n")
             fo.write("#SBATCH --job-name=psi4_multiDFA\n")
             fo.write("#SBATCH --nodes=1\n")
+            fo.write("#SBATCH --time=96:00:00\n")
             fo.write("#SBATCH --ntasks-per-node=%d\n"%psi4_config['num_threads'])
             if "queue" in psi4_config and psi4_config["queue"] == "normal":
                 fo.write("#SBATCH --partition=normal\n")
@@ -411,23 +418,27 @@ def write_jobscript(psi4_config):
             fo.write("source /etc/profile\n")
             fo.write("source ~/.profile\n")
             fo.write("source ~/.bashrc\n")
-            fo.write("conda activate mols\n")
+            fo.write("conda activate mols_py37\n")
             fo.write("export PSI_SCRATCH='./'\n\n")
             fo.write("subdir=$PWD\n")
             fo.write("echo subdir: $subdir\n")
             fo.write("echo tmpdir: $TMPDIR\n")
             fo.write("cp -rf * $TMPDIR\n")
             fo.write("cd $TMPDIR\n\n")
-
-            fo.write("python -u loop_run.py  > $subdir/nohup1.out\n")
-            fo.write("python -u loop_run.py  > $subdir/nohup2.out\n")
-            fo.write("python -u loop_run.py  > $subdir/nohup3.out\n")
-            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
-                fo.write("echo rescuing...\n")
-                fo.write("python -u loop_rescue.py > $subdir/rescue_nohup1.out\n")
-                fo.write("python -u loop_rescue.py > $subdir/rescue_nohup2.out\n")
-                fo.write("python -u loop_rescue.py > $subdir/rescue_nohup3.out\n")
-            fo.write("rm */psi.* */dfh.* *-*/*.npy b3lyp/*.molden b3lyp/*1step*\n")
+            
+            if "trigger" in psi4_config:
+                fo.write("python -u loop_derivative_jobs.py  > $subdir/deriv_nohup1.out\n")
+                fo.write("rm */*/psi.* */*/dfh.* */*-*/*.npy */b3lyp/*.molden */b3lyp/*1step*\n")
+            else:
+                fo.write("python -u loop_run.py  > $subdir/nohup1.out\n")
+                fo.write("python -u loop_run.py  > $subdir/nohup2.out\n")
+                fo.write("python -u loop_run.py  > $subdir/nohup3.out\n")
+                if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                    fo.write("echo rescuing...\n")
+                    fo.write("python -u loop_rescue.py > $subdir/rescue_nohup1.out\n")
+                    fo.write("python -u loop_rescue.py > $subdir/rescue_nohup2.out\n")
+                    fo.write("python -u loop_rescue.py > $subdir/rescue_nohup3.out\n")
+                fo.write("rm */psi.* */dfh.* *-*/*.npy b3lyp/*.molden b3lyp/*1step*\n")
             fo.write("cp -rf * $subdir\n")
     elif psi4_config["cluster"] == "expanse":
         mem = int(psi4_config['memory'].split(" ")[0])/psi4_config['num_threads']/1000
@@ -448,14 +459,18 @@ def write_jobscript(psi4_config):
             fo.write("conda activate mols_psi4\n")
             fo.write("export PSI_SCRATCH='./'\n")
             fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
-            fo.write("python -u loop_run.py  > nohup1.out\n")
-            fo.write("python -u loop_run.py  > nohup2.out\n")
-            fo.write("python -u loop_run.py  > nohup3.out\n")
-            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
-                fo.write("echo rescuing...\n")
-                fo.write("python -u loop_rescue.py > rescue_nohup1.out\n")
-                fo.write("python -u loop_rescue.py > rescue_nohup2.out\n")
-                fo.write("python -u loop_rescue.py > rescue_nohup3.out\n")
+            
+            if "trigger" in psi4_config:
+                fo.write("python -u loop_derivative_jobs.py  > deriv_nohup1.out\n")
+            else:
+                fo.write("python -u loop_run.py  > nohup1.out\n")
+                fo.write("python -u loop_run.py  > nohup2.out\n")
+                fo.write("python -u loop_run.py  > nohup3.out\n")
+                if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                    fo.write("echo rescuing...\n")
+                    fo.write("python -u loop_rescue.py > rescue_nohup1.out\n")
+                    fo.write("python -u loop_rescue.py > rescue_nohup2.out\n")
+                    fo.write("python -u loop_rescue.py > rescue_nohup3.out\n")
     elif psi4_config["cluster"] == "mustang":
         with open("./jobscript.sh", "w") as fo:
             fo.write("#!/bin/bash\n")
@@ -507,6 +522,8 @@ def run_bash(cmd, basedir, rundir):
     shutil.copy(infile, "./")
     infile_rescue = resource_filename(Requirement.parse("molSimplify"), "molSimplify/job_manager/psi4_utils/loop_rescue.py")
     shutil.copy(infile_rescue, "./")
+    infile_deriv = resource_filename(Requirement.parse("molSimplify"), "molSimplify/job_manager/psi4_utils/loop_derivative_jobs.py")
+    shutil.copy(infile_deriv, "./")
     print("Executing: ", cmd, "at: ", rundir)
     subprocess.call(cmd, shell=True)
     os.chdir(basedir)

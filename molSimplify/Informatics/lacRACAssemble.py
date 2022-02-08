@@ -17,7 +17,7 @@ globs = globalvars()
 
 def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=False, NumB=False, Gval=False, \
     lacRACs = True, loud = False, metal_ind=None, smiles_charge=False, eq_sym=False, use_dist=False, size_normalize=False,
-    alleq=False, MRdiag_dict={}):
+    alleq=False, MRdiag_dict={}, depth=3):
     """ Calculate and return all geo-based RACs for a given octahedral complex (featurize).
 
     Parameters
@@ -88,7 +88,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
                                                         results_dictionary['colnames'],results_dictionary['result_eq'],'misc','eq')
 
     ## full ACs
-    results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=3,loud=False,flag_name=False,
+    results_dictionary = generate_full_complex_autocorrelations(this_complex,depth=depth,loud=False,flag_name=False,
                                                                 modifier=ox_modifier, NumB=NumB, Gval=Gval,
                                                                 use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
@@ -96,7 +96,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     # print("f-racs: ", results_dictionary)
     ## ligand ACs
     #print('get ligand ACs')
-    results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=3,loud=False,
+    results_dictionary = generate_all_ligand_autocorrelations(this_complex,depth=depth,loud=False,
                                                                 flag_name=False,
                                                                 custom_ligand_dict=custom_ligand_dict,
                                                                 NumB=NumB, Gval=Gval, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
@@ -112,7 +112,7 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
 
-    results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=3,loud=False,
+    results_dictionary = generate_all_ligand_deltametrics(this_complex,depth=depth,loud=False,
                                                             custom_ligand_dict=custom_ligand_dict,
                                                             NumB=NumB, Gval=Gval, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     if not alleq:
@@ -123,13 +123,13 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     ## metal ACs
     #print('getting metal ACs')
-    results_dictionary = generate_metal_autocorrelations(this_complex,depth=3,loud=False,
+    results_dictionary = generate_metal_autocorrelations(this_complex,depth=depth,loud=False,
                                                             modifier=ox_modifier,
                                                             NumB=NumB,Gval=Gval, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
 
-    results_dictionary = generate_metal_deltametrics(this_complex,depth=3,loud=False,
+    results_dictionary = generate_metal_deltametrics(this_complex,depth=depth,loud=False,
                                                         modifier=ox_modifier,
                                                         NumB=NumB,Gval=Gval, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
@@ -137,10 +137,10 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
 
     # ## ox-metal ACs, if ox available
     if ox_modifier:
-        results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=3,loud=False, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+        results_dictionary = generate_metal_ox_autocorrelations(ox_modifier, this_complex,depth=depth,loud=False, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-        results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=3,loud=False, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
+        results_dictionary = generate_metal_ox_deltametrics(ox_modifier,this_complex,depth=depth,loud=False, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,
                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
     return descriptor_names, descriptors
@@ -198,14 +198,14 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
     descriptor_derivative_names = []
     descriptor_derivatives = None
     ## full ACs
-    results_dictionary = generate_full_complex_autocorrelation_derivatives(this_complex,depth=3,
+    results_dictionary = generate_full_complex_autocorrelation_derivatives(this_complex,depth=depth,
                                                                            loud=False,flag_name=False,
                                                                            modifier=ox_modifier)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['results'],'f','all')
     ## ligand ACs
     #print('getting ligand AC derivatives')
-    results_dictionary = generate_all_ligand_autocorrelation_derivatives(this_complex,depth=3,loud=False, custom_ligand_dict=custom_ligand_dict)
+    results_dictionary = generate_all_ligand_autocorrelation_derivatives(this_complex,depth=depth,loud=False, custom_ligand_dict=custom_ligand_dict)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
@@ -214,26 +214,26 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
                                                                                         results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
-    results_dictionary = generate_all_ligand_deltametric_derivatives(this_complex,depth=3,loud=False, custom_ligand_dict=custom_ligand_dict)
+    results_dictionary = generate_all_ligand_deltametric_derivatives(this_complex,depth=depth,loud=False, custom_ligand_dict=custom_ligand_dict)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
     ## metal ACs
     #print('getting metal AC derivatives')
-    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
+    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex,depth=depth,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-    results_dictionary = generate_metal_deltametric_derivatives(this_complex,depth=3,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
+    results_dictionary = generate_metal_deltametric_derivatives(this_complex,depth=depth,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
     descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                         results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
     # ## ox-metal ACs
     if ox_modifier:
-        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex,depth=3,loud=False, metal_ind=metal_ind)
+        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex,depth=depth,loud=False, metal_ind=metal_ind)
         descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                             results_dictionary['colnames'],results_dictionary['results'],'mc','all')
 
-        results_dictionary =  generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex,depth=3,loud=False, metal_ind=metal_ind)
+        results_dictionary =  generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex,depth=depth,loud=False, metal_ind=metal_ind)
         descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
                                                                                             results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
 

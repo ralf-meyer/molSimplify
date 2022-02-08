@@ -228,7 +228,9 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
         numpy.random.seed(seed)
     D = np.zeros((natoms, natoms))
     LB, UB = Triangle(LB, UB, natoms)
-    # First generate a random distance for all atom pairings not involving the metal
+    # First generate a random distance for all atom pairings not involving
+    # the metal. TODO: j should start from i+1 to ensure the diagonal is
+    # zero.
     for i in range(natoms-1):
         for j in range(i, natoms-1):
             # ~ if Full:
@@ -237,9 +239,12 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
                 UB[i][j] = LB[i][j]
             D[i][j] = np.random.uniform(LB[i][j], UB[i][j])
             D[j][i] = D[i][j]
-    
-    # For pairs involving the metal, set the distance to 100 Angstroms regardless of the triangle rule
-    # This encourages the algorithm to select conformations which don't crowd the metal, as these often lead to failure
+
+    # For pairs involving the metal, set the distance to 100 Angstroms
+    # regardless of the triangle rule. This encourages the algorithm to
+    # select conformations which don't crowd the metal, as these often lead
+    # to failure. TODO: loop over j should only run to natoms - 1 to avoid
+    # writing to the diagonal.
     for j in range(natoms):
         if UB[natoms-1][j] < LB[natoms-1][j]:  # ensure that the upper bound is larger than the lower bound
             UB[natoms-1][j] = LB[natoms-1][j]
@@ -267,15 +272,19 @@ def GetCMDists(D, natoms):
 
     """
     D0 = np.zeros(natoms)
-    status = True
     for i in range(natoms):
         for j in range(natoms):
             D0[i] += D[i][j]**2/natoms
         for j in range(natoms):
             for k in range(j, natoms):
                 D0[i] -= (D[j][k])**2/natoms**2
-        D0[i] = sqrt(D0[i])
-    return D0, status
+        try:
+            D0[i] = sqrt(D0[i])
+        except ValueError:
+            # If the triangle inequality is not sastisfied D0[i]
+            # is negative and sqrt raises a value error.
+            return D0, False
+    return D0, True
 
 def GetMetricMatrix(D, D0, natoms):
     """Get metric matrix from distance matrix and CM distances 

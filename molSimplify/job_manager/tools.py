@@ -136,6 +136,7 @@ def get_machine():
     """
     # Gets the identity of the machine job_manager is being run on!
     hostname = call_bash('hostname')[0]
+    print("hostname: ", hostname)
     if 'bridges.psc' in hostname:
         machine = 'bridges'
     elif 'gibraltar' in hostname:
@@ -146,7 +147,7 @@ def get_machine():
         machine = 'gibraltar'
     elif "mustang" in hostname:
         machine = "mustang"
-    elif "gridsan" in hostname:
+    elif "gridsan" in hostname or "login-" in hostname:
         machine = "supercloud"
     else:
         raise ValueError('Machine Unknown to Job Manager')

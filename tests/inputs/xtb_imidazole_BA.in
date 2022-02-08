@@ -2,10 +2,11 @@
 -oxstate II
 -geometry oct
 -coord 6
--lig [OH2]
+-lig imidazole
 -ligocc 6
+-ligloc true
 -keepHs true
 -spin 1
 -ff XTB
--ffoption B
+-ffoption BA
 -jobdir gen
