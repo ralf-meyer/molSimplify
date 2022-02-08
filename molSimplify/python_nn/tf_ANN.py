@@ -473,12 +473,9 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     excitation = []
     valid = True
     for var_name in target_names:
-
         try:
-#        if True:
             excitation.append(descriptors[descriptor_names.index(var_name)])
         except:
-#        if False:
             print(('looking for  ' + str(var_name)))
             print(('Error! variable  ' + str(var_name) + ' not found!'))
             valid = False

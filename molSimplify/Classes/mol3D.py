@@ -3834,7 +3834,6 @@ class mol3D:
             for ii, ele in enumerate(liglist_init_atom):
                 liginds_init = liglist_init[ii]
                 try:
-                # if True:
                     _flag = False
                     for idx, _ele in enumerate(liglist_atom):
                         if set(ele) == set(_ele) and len(ele) == len(_ele):
@@ -3862,7 +3861,6 @@ class mol3D:
                             print('Ligands cannot match!')
                         flag_match = False
                 except:
-                # else:
                     print("here2, try, excepted.")
                     print('Ligands cannot match!')
                     flag_match = False
