@@ -188,7 +188,9 @@ def mc_dropout_uq(predictor, descriptors=False, descriptor_names=False, num=500)
         results_list.append(results)
         err_list.append(err)
     results_list = np.transpose(np.array(results_list))
-    f = lambda tau: mc_dropout_logp(tau, np.array(err_list))
+
+    def f(tau):
+        return mc_dropout_logp(tau, np.array(err_list))
     tau = sp.optimize.minimize(f, 10).x
     result_mean, result_std = np.mean(results_list, axis=1), np.std(results_list, axis=1)
     result_std = np.sqrt(1 / tau + result_std ** 2)
