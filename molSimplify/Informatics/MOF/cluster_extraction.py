@@ -196,7 +196,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
 
     for comp in range(n_components):
         inds_in_comp = [i for i in range(len(labels_components)) if labels_components[i]==comp]
-        if not set(inds_in_comp)&metal_list:
+        if not set(inds_in_comp) & metal_list:
             tmpstr = "Failed to featurize %s: solvent molecules\n"%(name)
             write2file(path,"/FailedStructures.log",tmpstr)
             return None, None
