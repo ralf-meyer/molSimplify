@@ -156,5 +156,3 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
                     bonds[n].add(c)
                     bonds[c].add(n)
     return atom, mols, conf, chains, prev_a_dict, bonds
-            
-            

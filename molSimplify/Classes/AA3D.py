@@ -250,5 +250,3 @@ class AA3D:
                 a one-character string representing the conformation
         """
         self.loc = loc
-            
-

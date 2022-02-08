@@ -1636,4 +1636,3 @@ def args_parser_retrain():
     parser.add_argument('-infile')
     args = parser.parse_args()
     return args
-

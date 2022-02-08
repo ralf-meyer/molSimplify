@@ -223,4 +223,3 @@ class atom3D:
                 Desired EDIA score of atom
         """
         self.EDIA = score
-
