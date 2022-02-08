@@ -10,8 +10,7 @@ from tensorflow.keras import backend as K
 
 from pkg_resources import resource_filename, Requirement
 from sklearn.utils import shuffle
-from molSimplify.python_nn.clf_analysis_tool import (array_stack,
-                                                     dist_neighbor,
+from molSimplify.python_nn.clf_analysis_tool import (dist_neighbor,
                                                      get_entropy)
 from molSimplify.python_nn.tf_ANN import (data_normalize,
                                           data_rescale,
