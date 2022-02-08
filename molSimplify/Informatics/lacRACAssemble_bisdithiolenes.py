@@ -114,10 +114,11 @@ def get_descriptor_vector(this_complex,custom_ligand_dict=False,ox_modifier=Fals
             from molSimplify.Classes.ligand import ligand_assign as ligand_assign
         liglist, ligdents, ligcons = ligand_breakdown(this_complex)
         if sum(ligdents) == 6:
-            ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
-                ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
-                    built_ligand_list = ligand_assign(
-                    this_complex, liglist, ligdents, ligcons, loud, eq_sym_match=eq_sym)
+            (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list,
+             ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list,
+             built_ligand_list) = ligand_assign(this_complex, liglist,
+                                                ligdents, ligcons, loud,
+                                                eq_sym_match=eq_sym)
             custom_ligand_dict = {'ax_ligand_list':ax_ligand_list, 'eq_ligand_list':eq_ligand_list,
                                 'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
         elif sum(ligdents) == 5:
