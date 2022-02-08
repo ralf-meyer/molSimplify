@@ -82,9 +82,8 @@ def run_preprocessing(args):
         atoms.set_constraint()
     guess_hessian = args.get('guess_hessian', False)
     if guess_hessian:
-        compute_guess_hessian(atoms, guess_hessian)
-        # Additonal arguments for geometric
-        # TODO
+        H = compute_guess_hessian(atoms, guess_hessian)
+        np.savetxt('hessian.txt', H)
 
 
 def main():
@@ -98,8 +97,10 @@ def main():
     args['input'] = geometric_args['input']
 
     run_preprocessing(args)
+    if args.get('guess_hessian', False):
+        geometric_args['hessian'] = 'file:./hessian.txt'
     # Call external program
-    # geometric.optimize.run_optimizer(**geometric_args)
+    geometric.optimize.run_optimizer(**geometric_args)
 
 
 if __name__ == '__main__':
