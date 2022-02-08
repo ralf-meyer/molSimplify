@@ -1181,7 +1181,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if (sym_list == temp_unique) and (sl_ligcon == temp_ligsym_unique) and \
-                                (ligand_count == 4) and len(four_repeats) < 4:
+                                    (ligand_count == 4) and len(four_repeats) < 4:
                                 four_repeats.append(j)
                     if loud:
                         print(('this is four repeats',four_repeats))

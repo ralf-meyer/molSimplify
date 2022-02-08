@@ -712,7 +712,7 @@ def resub_thermo(outfile_path):
             shutil.copy(os.path.join(ultratight_dir, 'scr', 'c0'), os.path.join(directory, 'c0'))
         elif infile_dict['spinmult'] != 1 and os.path.exists(
                 os.path.join(ultratight_dir, 'scr', 'ca0')) and os.path.exists(
-            os.path.join(ultratight_dir, 'scr', 'cb0')):
+                os.path.join(ultratight_dir, 'scr', 'cb0')):
             shutil.copy(os.path.join(ultratight_dir, 'scr', 'ca0'), os.path.join(directory, 'ca0'))
             shutil.copy(os.path.join(ultratight_dir, 'scr', 'cb0'), os.path.join(directory, 'cb0'))
         else:
