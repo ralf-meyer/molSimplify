@@ -90,8 +90,8 @@ def run_preprocessing(args):
 def main():
     args, unknown_args = parse_args(sys.argv[1:])
     logging.basicConfig(level=logging.DEBUG)
-    logger.info(f'{sys.argv[1:]=}')
-    logger.info(f'{unknown_args=}')
+    logger.info(f'sys.argv[1:]: {sys.argv[1:]}')
+    logger.info(f'unknown_args: {unknown_args}')
     # Parse geometric arguments
     geometric_args = geometric.params.parse_optimizer_args(unknown_args)
     # Copy the terachem input file to our args
