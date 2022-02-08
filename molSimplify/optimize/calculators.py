@@ -63,7 +63,6 @@ class OpenbabelFF(ase_calculator.Calculator):
             grad[i, :] = (grad_i.GetX(), grad_i.GetY(), grad_i.GetZ())
         # Note, GetGradient() returns the negative gradient, so no sign
         # inversion needed here.
-        print(atoms.get_positions())
         self.results['forces'] = grad * self.energy_unit/ase.units.Ang
 
     @staticmethod
