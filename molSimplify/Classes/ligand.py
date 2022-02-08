@@ -1757,7 +1757,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             pent_lig=0
         pentadentate_coord_list = np.array([mol.getAtom(
                     ii).coords() for ii in ligcons[pent_lig]])
-            ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
+        ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
         m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
         p1 = np.array(mol.getAtom(top_con[0]).coords())
         angle_list = []
