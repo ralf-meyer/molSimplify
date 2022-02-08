@@ -1123,7 +1123,6 @@ class mol3D:
         else:
             return 0
 
-
     def get_smilesOBmol_charge(self):
         """
         Get the charge of a mol3D object through adjusted OBmol hydrogen/smiles conversion
@@ -1155,7 +1154,6 @@ class mol3D:
         nh_obmol = int(nh_obmol)
         charge = charge - nh_obmol + nh
         return charge
-
 
     def get_octetrule_charge(self, debug=False):
         '''
@@ -4437,7 +4435,6 @@ class mol3D:
         else:
             return flag_oct, flag_list, dict_oct_info, catoms_arr
 
-
     def Oct_inspection(self, init_mol=None, catoms_arr=None, dict_check=False,
                        std_not_use=[], angle_ref=False, flag_loose=True, flag_lbd=False,
                        dict_check_loose=False, BondedOct=True, debug=False):
@@ -5365,7 +5362,6 @@ class mol3D:
             print(
                 'ERROR: Convex hull calculation failed. Structure will be inaccurate.\n')
         self.hull = hull
-            
 
     def numRings(self, index):
         """Computes the number of simple rings an atom is in.

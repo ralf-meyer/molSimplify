@@ -555,7 +555,6 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
         print(('\n\n Target distance was  ' + str(bind_dist) +
                ', achieved ' + str(distances_list)))
 
-    
     print('starting align rotation')
     for rotate_angle in range(0, 360):
         this_payload = mol3D()
@@ -762,8 +761,7 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
                 min_dist = this_dist
                 if debug:
                     print('accepting distort')
-                
-            
+
     distances_list = []
     for indices in enumerate(cand_list):
         v1 = (surface_coord_list[indices[0]])
@@ -948,11 +946,10 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
             payload, sites_list, cand_list, align_dist, debug)  # align
         if debug:
             payload.writexyz('aligned-payload-before-angle-control.xyz')
-        
-                
+
         if debug:
             print(('payload cysm ' + str(payload.centersym())))
-            
+
         #######################################
         temp_pay2 = mol3D()
         temp_pay2.copymol3D(payload)
@@ -1564,8 +1561,7 @@ def slab_module_supervisor(args, rootdir):
             print(angle_surface_axis)
             angle_surface_axis.append(0)
             print(angle_surface_axis)
-            
-            
+
         print(('object_align ' + str(object_align)))
         loaded_cell = molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule,
                                                     align_method, object_align, align_dist, surface_atom_type,

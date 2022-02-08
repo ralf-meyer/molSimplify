@@ -65,7 +65,6 @@ class ligand:
             self.lig_mol_graph_det = False
             self.percent_buried_volume = False
 
-
     def obtain_mol3d(self):
         """Getting the mol3D of the ligand. Deprecated. Map between int and ext indcies. Obtain the ligand from the complex mol3D object.
         """
