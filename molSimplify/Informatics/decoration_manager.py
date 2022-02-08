@@ -161,11 +161,11 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         if args.debug:
             dec.writexyz('dec_aligned' + str(i) + '.xyz')
             print(('natoms before delete ' + str(merged_ligand.natoms)))
-            print(('obmol before delete at  ' + str(decoration_index[i]) + ' is '  + str(merged_ligand.OBMol.NumAtoms())))
+            print(('obmol before delete at  ' + str(decoration_index[i]) + ' is ' + str(merged_ligand.OBMol.NumAtoms())))
         ## store connectivity for deleted H
         BO_mat = merged_ligand.populateBOMatrix()
         row_deleted = BO_mat[decoration_index[i]]
-        bonds_to_add  = []
+        bonds_to_add = []
         
         # find where to put the new bonds ->>> Issue here.
         for j,els in enumerate(row_deleted):

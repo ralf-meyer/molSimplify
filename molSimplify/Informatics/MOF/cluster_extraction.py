@@ -259,7 +259,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     anc_atoms = set()
     for linker in linker_list:
         for atom_linker in linker:
-            bonded2atom  = np.nonzero(adj_matrix[atom_linker,:])[1] 
+            bonded2atom = np.nonzero(adj_matrix[atom_linker,:])[1] 
             if set(bonded2atom) & metal_list:
                 anc_atoms.add(atom_linker)
     """""""""
