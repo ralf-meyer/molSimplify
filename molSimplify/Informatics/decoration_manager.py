@@ -109,7 +109,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
                 decb.writexyz('dec_ARB' + str(i) + '.xyz')
             d1 = distance(dec.centermass(),merged_ligand.centermass())
             d2 = distance(decb.centermass(),merged_ligand.centermass())
-            dec = dec if (d2 < d1)  else decb # pick best one
+            dec = dec if (d2 < d1) else decb # pick best one
         #####################################
         # check for linear molecule
         auxm = mol3D()
