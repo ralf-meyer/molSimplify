@@ -1450,8 +1450,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 tri_ax_ligcon = list(set(tridentate_cons).difference(
                                       set(tri_eq_ligcons)))
                 ax_con_list = [tri_ax_ligcon,
-                                      list(set(flat_ligcons).difference(
-                                          set(mono_eq_ligcons+tri_ax_ligcon+tri_eq_ligcons)))]
+                               list(set(flat_ligcons).difference(
+                                   set(mono_eq_ligcons+tri_ax_ligcon+tri_eq_ligcons)))]
         elif max(ligdents) == 2:
             #### Need to handle case with both equatorial and triple-bidentate style.
             if loud:

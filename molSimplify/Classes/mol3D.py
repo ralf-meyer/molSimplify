@@ -1195,8 +1195,8 @@ class mol3D:
                     _c = int(np.sum(self.bo_graph_trunc[ii]) - 5)
                 # Double Bonds == 3, Double bonded atom is O or N, Total BO == 6
                 elif sym in ["O", "S", "Se", "Te"] and np.count_nonzero(self.bo_graph_trunc[ii] == 2) == 3 and \
-                     (self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"]) and \
-                     np.sum(self.bo_graph_trunc[ii]) == 6:
+                        (self.getAtom(np.where(self.bo_graph_trunc[ii] == 2)[0][0]).symbol() in ["O", "N"]) and \
+                        np.sum(self.bo_graph_trunc[ii]) == 6:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 4)
                 elif sym in ["O", "S", "Se", "Te"] and np.sum(self.bo_graph_trunc[ii]) >= 5:
                     _c = -int(np.sum(self.bo_graph_trunc[ii]) - 6)
@@ -1215,7 +1215,7 @@ class mol3D:
                 return np.nan, np.nan
         return charge, arom_charge
 
-    def apply_ffopt(self, constraints = False, ff='uff'):
+    def apply_ffopt(self, constraints=False, ff='uff'):
         """Apply forcefield optimization to a given mol3D class.
 
         Parameters

@@ -973,7 +973,7 @@ class protein3D:
         dict_str = out.decode("UTF-8")
         int_dict = ast.literal_eval(dict_str)
         res2 = subprocess.Popen(['curl', int_dict['location']],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
