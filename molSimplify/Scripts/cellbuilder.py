@@ -1148,7 +1148,7 @@ def slab_module_supervisor(args, rootdir):
         except:
             emsg.append('Unable to import unit cell at  ' +
                         str(args.unit_cell))
-            import_success == False
+            import_success = False
     if (args.cell_vector):  # 2
         cell_vector = args.cell_vector
     if (args.cif_path):  # 3
