@@ -688,7 +688,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
 
 
 def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False,  debug = False):
-    if modelname == False:
+    if modelname is False:
         modelname = "spectro"
         if predictor == "geo_static_clf":
             avrg_latent_dist = 33.21736244173539

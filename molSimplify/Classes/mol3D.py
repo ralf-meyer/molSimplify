@@ -634,11 +634,11 @@ class mol3D:
         # get BO matrix if exits:
         repop = False
 
-        if not (self.OBMol == False) and not force_clean:
+        if not (self.OBMol is False) and not force_clean:
             BO_mat = self.populateBOMatrix()
 
             repop = True
-        elif not (self.BO_mat == False) and not force_clean:
+        elif not (self.BO_mat is False) and not force_clean:
             BO_mat = self.BO_mat
             repop = True
             # write temp xyz
@@ -2475,7 +2475,7 @@ class mol3D:
         >>>             # 180 degrees to 90 degrees in intervals of 0.5 degrees, and the generated 
         >>>             # geometries will not be written to a directory.
         """
-        if writegeo==True:
+        if writegeo:
             struc_directory = os.mkdir(dir_name)
             temp_list = []
             for ang_val in np.arange(anglei, anglef+angleint, angleint):
@@ -2520,7 +2520,7 @@ class mol3D:
         >>>             # the generated geometries will not be written to a directory.
         """
 
-        if writegeo==True:
+        if writegeo:
             struc_directory = os.mkdir(dir_name)
             temp_list = []
             for dist_val in np.arange(disti, distf+distint, distint):
@@ -4799,7 +4799,7 @@ class mol3D:
         if ff:
             forcefield = openbabel.OBForceField.FindForceField(ff)
             s = forcefield.Setup(OBMol)
-            if s == False:
+            if not s:
                 print('FF setup failed')
             forcefield.ConjugateGradients(steps)
             forcefield.GetCoordinates(OBMol)
@@ -4829,7 +4829,7 @@ class mol3D:
         conv.SetOutFormat('smi')
         if canonicalize:
             conv.SetOutFormat('can')
-        if self.OBMol == False:
+        if self.OBMol is False:
             if use_mol2:
                 # Produces a smiles with the enforced BO matrix,
                 # which is needed for correct behavior for fingerprints

@@ -534,7 +534,7 @@ def find(key, directory='in place', maxdepth=False):
     #  @return A list of paths
     if directory == 'in place':
         directory = os.getcwd()
-    if maxdepth != False:
+    if maxdepth:
         bash = 'find ' + directory + ' -name ' + key + ' -maxdepth '+str(maxdepth)
     else:
         bash = 'find ' + directory + ' -name ' + key

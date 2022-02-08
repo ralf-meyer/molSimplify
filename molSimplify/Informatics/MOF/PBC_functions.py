@@ -51,7 +51,7 @@ def readcif(name):
                 temp = temp.replace('(','')
                 cell_gamma=float(temp)
                 cell_parameter_boundary[1]=counter+1
-            if cond2==True and line_stripped.startswith("loop_"):
+            if cond2 and line_stripped.startswith("loop_"):
                 break
             else:
                 if line_stripped.startswith("_atom") :
@@ -68,7 +68,7 @@ def readcif(name):
                         charge_index=atom_props_count-1
         
                     cond2=True
-                elif cond2==True:
+                elif cond2:
                     if len(line_splitted)==atom_props_count:
                         atomlines.append(line)
         

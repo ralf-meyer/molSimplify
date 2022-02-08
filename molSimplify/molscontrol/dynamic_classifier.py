@@ -437,7 +437,7 @@ class dft_control:
                 filepath = self.get_file_path(filename)
                 if os.path.isfile(filepath):
                     self.file_updated[self.mode].update({filename: True})
-            existed = all(value == True for value in list(
+            existed = all(value is True for value in list(
                 self.file_updated[self.mode].values()))
         for filename in self.files_track[self.mode]:
             filepath = self.get_file_path(filename)
@@ -462,7 +462,7 @@ class dft_control:
             filepath = self.get_file_path(filename)
             if os.path.getmtime(filepath) - val > 3:
                 self.file_updated[self.mode].update({filename: True})
-        updated = all(value == True for value in list(
+        updated = all(value is True for value in list(
             self.file_updated[self.mode].values()))
         if self.debug:
             updated = True

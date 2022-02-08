@@ -27,7 +27,7 @@ requiring at least 4 points, and prioritizing lines with R2 of 0.99.
 def measure_sensitivity(path_to_csv, path_to_write=False, R2_cutoff=0.99, CV_tolerance=5, num_points=4):
     if path_to_csv[0] != '/':
         path_to_csv = os.getcwd()+'/'+path_to_csv
-    if path_to_write == False:
+    if path_to_write is False:
         path_to_write = os.getcwd()+'/'+os.path.split(path_to_csv)[1].replace('.csv','')
     raw_data = pd.read_csv(path_to_csv)
     raw_data = raw_data.sort_values(by=['name'])
