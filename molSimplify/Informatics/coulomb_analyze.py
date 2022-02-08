@@ -50,7 +50,7 @@ def pad_mol(mol,target_atoms):
     blank_atom = atom3D(Sym='X') # placeholder type
     blank_atom.frozen=False
     safe_stop = False
-    counter = 0;
+    counter = 0
     while this_natoms < target_atoms and not safe_stop:
         mol.addAtom(blank_atom)
         this_natoms = mol.natoms
