@@ -4389,7 +4389,7 @@ class mol3D:
             if self.num_coord_metal >= num_coord:
                 if True:
                     self.num_coord_metal = num_coord
-                    if not 'FCS' in skip:
+                    if 'FCS' not in skip:
                         dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                                       debug=debug)
                 if not init_mol == None:
