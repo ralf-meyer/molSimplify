@@ -819,6 +819,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     max_dent = max(ligdents)
     min_dent = min(ligdents)
     ###### Utility functions for ligand MW and Angles
+
     def getMW(lig): # Get total MW of ligand mol3d object
         mol = lig.master_mol
         lig_idx = lig.index_list
@@ -828,6 +829,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 mw += atom.mass
         return mw
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
+
     def getAngle(coord_list, pair, m_coord): # Get Angle of atom pair through metal center (stored at coord_list[0])
         # print("coord_list: ", coord_list)
         # print("pair: ", pair)
@@ -1952,6 +1954,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
     min_dent = min(ligdents)
     flat_ligcons = [item for sublist in ligcons for item in sublist]
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
+
     def compare_ligs(ligs):
         unique_ligands = list()
         unique_ligcons = list()
