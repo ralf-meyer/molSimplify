@@ -850,17 +850,17 @@ class protein3D:
                 'https://files.rcsb.org/view/' + remoteCode +
                 '.pdb').read()
         except:
-            print("warning: %s not found.\n"%pdbCode)
+            print("warning: %s not found.\n" % pdbCode)
         else:
             try:
                 self.readfrompdb(str(data))
                 self.setPDBCode(pdbCode)
-                print("fetched: %s"%(pdbCode))
+                print("fetched: %s" % (pdbCode))
             except IOError:
                 print('aborted')
             else:
                 if len(data) == 0:
-                    print("warning: %s not valid.\n"%pdbCode)
+                    print("warning: %s not valid.\n" % pdbCode)
 
     def setBonds(self, bonds):
         """Sets the bonded atoms in the protein.
@@ -889,7 +889,7 @@ class protein3D:
             link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
             xml_doc = requests.get(link)
         except:
-            print("warning: %s not found.\n"%pdbCode)
+            print("warning: %s not found.\n" % pdbCode)
         else:
             try:
                 ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
@@ -901,21 +901,21 @@ class protein3D:
                 entry = body[0].find_all("Entry")
                 if "DataCompleteness" not in entry[0].attrs.keys():
                     self.setDataCompleteness(0)
-                    print("warning: %s has no DataCompleteness."%pdbCode)
+                    print("warning: %s has no DataCompleteness." % pdbCode)
                 else:
                     self.setDataCompleteness(float(entry[0].attrs["DataCompleteness"]))
                 if "percent-RSRZ-outliers" not in entry[0].attrs.keys():
                     self.setRSRZ(100)
-                    print("warning: %s has no RSRZ.\n"%pdbCode)
+                    print("warning: %s has no RSRZ.\n" % pdbCode)
                 else:
                     self.setRSRZ(float(entry[0].attrs["percent-RSRZ-outliers"]))
                 if "TwinL" not in entry[0].attrs.keys():
-                    print("warning: %s has no TwinL."%pdbCode)
+                    print("warning: %s has no TwinL." % pdbCode)
                     self.setTwinL(0)
                 else:
                     self.setTwinL(float(entry[0].attrs["TwinL"]))
                 if "TwinL2" not in entry[0].attrs.keys():
-                    print("warning: %s has no TwinL2."%pdbCode)
+                    print("warning: %s has no TwinL2." % pdbCode)
                     self.setTwinL2(0)
                 else:
                     self.setTwinL2(float(entry[0].attrs["TwinL2"]))
@@ -923,7 +923,7 @@ class protein3D:
                 print('aborted')
             else:
                 if xml_doc == None:
-                    print("warning: %s not valid.\n"%pdbCode)
+                    print("warning: %s not valid.\n" % pdbCode)
 
     def setDataCompleteness(self, DataCompleteness):
         """ Set DataCompleteness value of protein3D class.
