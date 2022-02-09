@@ -116,7 +116,7 @@ def matrix_loader(path, rownames=False):
     else:
         path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
         with open(path_to_file, 'r') as csvfile:
-            csv_lines = csv.reader(csvfile, delimiter = ',')
+            csv_lines = csv.reader(csvfile, delimiter=',')
             mat = [a for a in csv_lines]
         return mat
 
@@ -441,10 +441,10 @@ def load_keras_ann(predictor, suffix='model'):
                                                         beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'homo_empty':
-        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.006677578283098809, beta_1 = 0.8556594887870226, 
-                                                        beta_2 = 0.9463468021275508, decay = 0.0006621877134674607),
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.006677578283098809, beta_1=0.8556594887870226, 
+                                                        beta_2=0.9463468021275508, decay=0.0006621877134674607),
                              metrics=['mse', 'mae', 'mape'])
-        
+
     elif predictor in ['geo_static_clf', 'sc_static_clf']:
         loaded_model.compile(loss='binary_crossentropy',
                              optimizer=Adam(lr=0.00005,
@@ -485,7 +485,7 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
     return excitation
 
 
-def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
+def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     if debug:
         print(('ANN activated for ' + str(predictor)))    
 
@@ -499,11 +499,11 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
     if debug:
         print('rescaling input excitation...')
 
-    excitation = data_normalize(excitation, train_mean_x, train_var_x, debug = debug)
+    excitation = data_normalize(excitation, train_mean_x, train_var_x, debug=debug)
 
     ## fetch ANN
     loaded_model = load_keras_ann(predictor)
-    result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y, debug = debug)
+    result = data_rescale(loaded_model.predict(excitation), train_mean_y, train_var_y, debug=debug)
     if "clf" not in predictor:
         if debug:
             print(('LOADED MODEL HAS ' + str(
@@ -520,11 +520,11 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug = False):
             print('calling ANN model...')
     else:
         latent_space_vector = find_clf_lse(predictor, excitation, loaded_model=loaded_model, ensemble=False,
-                                           modelname=False, debug = debug)
+                                           modelname=False, debug=debug)
     return result, latent_space_vector
 
 
-def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = False):
+def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -532,7 +532,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = Fals
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
     excitation = excitation.astype(float)  # ensure that the excitation is a float, and not strings
-    scaled_excitation = data_normalize(excitation, train_mean_x, train_var_x,  debug = debug)  # normalize the excitation
+    scaled_excitation = data_normalize(excitation, train_mean_x, train_var_x,  debug=debug)  # normalize the excitation
     ## getting train matrix info
     mat = load_training_data(predictor)
     train_mat = np.array(mat, dtype='float64')
@@ -541,7 +541,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug = Fals
     min_ind = 0
     for i, rows in enumerate(train_mat):
         scaled_row = np.squeeze(
-            data_normalize(rows, train_mean_x.T, train_var_x.T, debug = debug))  # Normalizing the row before finding the distance
+            data_normalize(rows, train_mean_x.T, train_var_x.T, debug=debug))  # Normalizing the row before finding the distance
         this_dist = np.linalg.norm(np.subtract(scaled_row, np.array(scaled_excitation)))
         if this_dist < min_dist:
             min_dist = this_dist
@@ -630,7 +630,7 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
     norm_avg_10_NN_dist = avg_10_NN_dist/avg_traintrain
     return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain 
 
-def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
+def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -654,7 +654,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
                                  [loaded_model.layers[len(loaded_model.layers) - 2].output])
     for i, rows in enumerate(train_mat):
         scaled_row = np.squeeze(
-            data_normalize(rows, train_mean_x.T, train_var_x.T, debug = debug))  # Normalizing the row before finding the distance
+            data_normalize(rows, train_mean_x.T, train_var_x.T, debug=debug))  # Normalizing the row before finding the distance
         if not tf.__version__ >= '2.0.0':
             latent_train_row = get_outputs([np.array([scaled_row]), 0])
         else:
@@ -683,7 +683,7 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug = False):
     return (min_dist)
 
 
-def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False,  debug = False):
+def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False,  debug=False):
     if modelname is False:
         modelname = "spectro"
         if predictor == "geo_static_clf":
@@ -699,7 +699,7 @@ def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=
     fmat_train = load_training_data(predictor)
     labels_train = np.array(load_training_labels(predictor), dtype='int')
     fmat_train = np.array(fmat_train, dtype='float64')
-    fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x,  debug = debug)
+    fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x,  debug=debug)
     fmat_train = np.array(fmat_train)
     if not ensemble:
         # model = base_path + 'model.h5'

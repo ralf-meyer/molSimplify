@@ -4804,7 +4804,7 @@ class mol3D:
         self.OBMol = OBMol
         self.convert2mol3D()
 
-    def get_smiles(self, canonicalize=False, use_mol2 = False):
+    def get_smiles(self, canonicalize=False, use_mol2=False):
         """ Read a smiles string and convert it to a mol3D class instance.
         
         Parameters
