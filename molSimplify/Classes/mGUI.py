@@ -1887,7 +1887,7 @@ class mGUI():
         # callback for database search
 
     def qaddcDB(self):
-             ### collects all the info and passes it to molSimplify ###
+        """Collects all the info and passes it to molSimplify."""
         rdir = self.etrdir.text()
         if rdir[-1] == '/':
             rdir = rdir[:-1]

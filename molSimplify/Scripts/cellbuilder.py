@@ -1025,15 +1025,27 @@ def staggered2_align_coord(super_cell):
 
 
 def axes_angle_align(payload, cand_ind, align_ind, align_target, angle):
-     #   This function rotates a given payload molecule such that the X-Y projection of
-     #   the cord joining the two atoms in cand_ind and  align_ind is aligned with the vector given in align_target
-     # INPUT
-     #   - payload: mol3D class that contains that target molecule
-     #   - cand_ind: int, index of atom in payload that is used as reference
-     #   - align_ind: int, index of atom in payload that define the cord to align
-     #   - align_target: list of 3 float, vector on the cell surface to align. Normally z=0
-     # OUPUT
-     #   - new_payload: mol3D class, rotation of payload
+    """This function rotates a given payload molecule such that the X-Y
+    projection of the cord joining the two atoms in cand_ind and align_ind
+    is aligned with the vector given in align_target.
+
+    Parameters
+    ----------
+    payload : mol3D
+        mol3D class that contains that target molecule
+    cand_ind : int
+        index of atom in payload that is used as reference
+    align_ind : int
+        index of atom in payload that define the cord to align
+    align_target : list of 3 float
+        vector on the cell surface to align. Normally z=0
+    angle : float
+        rotation angle
+    Returns
+    -------
+    new_payload: mol3D
+        mol3D class, rotation of payload.
+    """
     new_payload = mol3D()
     new_payload.copymol3D(payload)
     align_chord = vecdiff(new_payload.getAtom(
