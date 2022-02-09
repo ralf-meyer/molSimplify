@@ -83,7 +83,7 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
         results_dict['%s_latent_vector' % predictor_name] = query_latent[i]
         results_dict['%s_min_latent_distance' % predictor_name] = min_latent_distance
         output_value = rescaled_output[i]
-        if len(output_value) == 1: # squash array of length 1 to the value it contains
+        if len(output_value) == 1:  # squash array of length 1 to the value it contains
             output_value = output_value[0]
         results_dict['%s_prediction' % predictor_name] = output_value
         results_allocation[i] = results_dict

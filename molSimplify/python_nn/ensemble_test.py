@@ -71,7 +71,7 @@ def ensemble_maker_inner(train_mat, labels, model_gen_function, info_dict,
     for ii in range(num):
         train_feature = array_stack(train_mat, ii)
         train_labels = array_stack(labels, ii)
-        loaded_model = model_gen_function() # note the call to gen new model
+        loaded_model = model_gen_function()  # note the call to gen new model
         current_model = reset_weights(loaded_model)
         history = current_model.fit(train_feature, train_labels,
                                     epochs=info_dict['epochs'], verbose=0,

@@ -1554,9 +1554,9 @@ class mol3D:
 
         distance_max = 1.15 * (atom.rad + ratom.rad)
         if atom.symbol() == "C" and not ratom.symbol() == "H":
-            distance_max = min(2.75, distance_max) # 2.75 by 07/22/2021
+            distance_max = min(2.75, distance_max)  # 2.75 by 07/22/2021
         if ratom.symbol() == "C" and not atom.symbol() == "H":
-            distance_max = min(2.75, distance_max) # 2.75 by 07/22/2021
+            distance_max = min(2.75, distance_max)  # 2.75 by 07/22/2021
         if ratom.symbol() == "H" and atom.ismetal:
             # tight cutoff for metal-H bonds
             distance_max = 1.1 * (atom.rad + ratom.rad)
@@ -1721,7 +1721,7 @@ class mol3D:
                     elif strict_cutoff:
                         distance_max = 1.2 * (atom.rad + ratom.rad)
                     else:
-                        distance_max = 1.37 * (atom.rad + ratom.rad) # 1.37 by 07/22/2021
+                        distance_max = 1.37 * (atom.rad + ratom.rad)  # 1.37 by 07/22/2021
                     if debug:
                         print(('metal in  cat ' + str(atom.symbol()) +
                                ' and rat ' + str(ratom.symbol())))
@@ -5307,20 +5307,20 @@ class mol3D:
             ml_bls : dictionary
                 keyed by ID of metal M and valued by dictionary of M-L bond lengths and relative bond lengths
         """
-        metals = self.findMetal() # get the metals in the complex
-        bls = {} # initialize empty dictionary of metal-ligand bond lengths
+        metals = self.findMetal()  # get the metals in the complex
+        bls = {}  # initialize empty dictionary of metal-ligand bond lengths
         if len(metals) == 0:
-            return {} # we don't have a metal, so there are no M-L bonds
+            return {}  # we don't have a metal, so there are no M-L bonds
         for m_id in metals:
-            m = self.getAtom(m_id) # get the actual metal
-            ligands = self.getBondedAtomsSmart(m_id) # gets all atoms/ligands bound to metal
-            ml_bls = [] # normal bond lengths
-            rel_bls = [] # relative bond lengths
+            m = self.getAtom(m_id)  # get the actual metal
+            ligands = self.getBondedAtomsSmart(m_id)  # gets all atoms/ligands bound to metal
+            ml_bls = []  # normal bond lengths
+            rel_bls = []  # relative bond lengths
             for l_id in ligands:
-                l = self.getAtom(l_id) # get the ligand from its ID
-                bl = m.distance(l) # normal bond length
+                l = self.getAtom(l_id)  # get the ligand from its ID
+                bl = m.distance(l)  # normal bond length
                 ml_bls.append(bl)
-                rel_bls.append(bl / (m.rad + l.rad)) # append the relative bond length
+                rel_bls.append(bl / (m.rad + l.rad))  # append the relative bond length
             bls[m_id] = {"M-L bond lengths": ml_bls, "relative bond lengths": rel_bls}
         return bls
 
@@ -5378,20 +5378,20 @@ class mol3D:
                 The number of rings the atom is in.
         """
 
-        self.convert2OBMol() # Need to populate the self.OBMol field
-        ringlist = self.OBMol.GetSSSR() # Get the smallest set of simple rings for a molecule. 
+        self.convert2OBMol()  # Need to populate the self.OBMol field
+        ringlist = self.OBMol.GetSSSR()  # Get the smallest set of simple rings for a molecule. 
         ringinds = []
-        for obmol_ring in ringlist: # loop through the simple rings
+        for obmol_ring in ringlist:  # loop through the simple rings
             _inds = []
-            for ii in range(1, self.natoms+1): # loop through all atoms in the mol3D object
-                if obmol_ring.IsInRing(ii): # check if a given atom is in the current ring
+            for ii in range(1, self.natoms+1):  # loop through all atoms in the mol3D object
+                if obmol_ring.IsInRing(ii):  # check if a given atom is in the current ring
                     _inds.append(ii-1)
             ringinds.append(_inds)
 
         # ringinds is an array of arrays, where each inner array contains the atom indices of the atoms in a simple ring
         # The length of ringinds is the number of simple rings in the mol3D object calling numRings
 
-        myNumRings = 0 # running tally
+        myNumRings = 0  # running tally
 
         for idx_list in ringinds:
             if index in idx_list:

@@ -997,7 +997,7 @@ class protein3D:
             if index in self.atoms.keys():
                 a = self.atoms[index]
                 a.setEDIA(EDIA)
-                if a.occup < 1: # more than one conformation
+                if a.occup < 1:  # more than one conformation
                     subdf = df[df["Infile id"] == index+1]
                     if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
                         self.atoms[index+1].setEDIA(EDIA)
@@ -1021,7 +1021,7 @@ class protein3D:
         
         """
 
-        center_of_mass = [0, 0, 0] # coordinates of center of mass (X, Y, Z)
+        center_of_mass = [0, 0, 0]  # coordinates of center of mass (X, Y, Z)
         mmass = 0
         # loop over atoms in molecule
         if len(self.atoms.keys()) > 0:
@@ -1047,7 +1047,7 @@ class protein3D:
         
         """
 
-        centroid = [0, 0, 0] # coordinates of centroid (X, Y, Z)
+        centroid = [0, 0, 0]  # coordinates of centroid (X, Y, Z)
         # loop over atoms in protein
         if len(self.atoms.keys()) > 0:
             for atom in self.atoms.values():

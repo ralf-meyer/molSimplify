@@ -2828,7 +2828,7 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
     core3D_copy.copymol3D(core3D)
     this_diag.set_mol(core3D_copy)
 
-    del core3D # Legacy code, unsure if needed
+    del core3D  # Legacy code, unsure if needed
 
     pfold = rootdir.split('/', 1)[-1]
     if args.gui:
