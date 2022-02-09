@@ -1209,7 +1209,7 @@ class mol3D:
                 if debug:
                     print(ii, sym, _c)
                 charge += _c
-            except:
+            except ValueError:
                 return np.nan, np.nan
         return charge, arom_charge
 
@@ -2706,8 +2706,8 @@ class mol3D:
         self.graph = []
         s = xyzstring.split('\n')
         try:
-            s.remove('')
-        except:
+            s.remove('')  # TODO: Pretty sure str does not have a remove method
+        except AttributeError:
             pass
         s = [str(val) + '\n' for val in s]
         for line in s[0:]:
@@ -3417,7 +3417,7 @@ class mol3D:
         atom_types_mol2 = []
         try:
             metal_ind = self.findMetal()[0]
-        except:
+        except IndexError:
             metal_ind = 0
         if len(self.partialcharges):
             charges = self.partialcharges
@@ -3987,7 +3987,7 @@ class mol3D:
         try:
             dict_lig_distort = {'rmsd_max': float(
                 rmsd_max), 'atom_dist_max': float(atom_dist_max)}
-        except:
+        except ValueError:
             dict_lig_distort = {'rmsd_max': rmsd_max,
                                 'atom_dist_max': atom_dist_max}
         self.dict_lig_distort = dict_lig_distort
@@ -4965,7 +4965,7 @@ class mol3D:
         with np.errstate(over='raise'):
             try:
                 det = np.linalg.det(tmpgraph)
-            except:
+            except:  # Probably np.linalg.LinAlgError
                 (sign, det) = np.linalg.slogdet(tmpgraph)
                 if sign != 0:
                     det = sign*det

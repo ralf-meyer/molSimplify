@@ -12,6 +12,7 @@ from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom, makeMol
 from molSimplify.Classes.globalvars import globalvars
 import urllib.request as urllib
+import urllib.error
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -849,7 +850,7 @@ class protein3D:
             data = urllib.urlopen(
                 'https://files.rcsb.org/view/' + remoteCode +
                 '.pdb').read()
-        except:
+        except urllib.error.URLError:
             print("warning: %s not found.\n" % pdbCode)
         else:
             try:
@@ -888,7 +889,7 @@ class protein3D:
             start = 'https://files.rcsb.org/pub/pdb/validation_reports/' + pdbCode[1] + pdbCode[2]
             link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
             xml_doc = requests.get(link)
-        except:
+        except urllib.error.URLError:
             print("warning: %s not found.\n" % pdbCode)
         else:
             try:

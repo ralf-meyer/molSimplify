@@ -52,7 +52,7 @@ def checkinput(args, calctype="base"):
                     print(('WARNING: No oxidation state specified. Defaulting to ' +
                           globs.defaultoxstate[args.core[0].lower()]))
                     args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-                except:
+                except KeyError:
                     print('WARNING: No oxidation state specified. Defaulting to 2')
                     args.oxstate = '2'
             # check spin state (doesn't work for custom cores)
@@ -157,7 +157,7 @@ def checkinput(args, calctype="base"):
                 else:
                     try:
                         args.coord = coords[geomnames.index(args.geometry)]
-                    except:
+                    except IndexError:
                         args.coord = coords[geomshorts.index(args.geometry)]
                     print((
                         'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
@@ -187,7 +187,7 @@ def checkinput(args, calctype="base"):
                     print(('WARNING: No oxidation state specified. Defaulting to ' +
                           globs.defaultoxstate[args.core[0].lower()]))
                     args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-                except:
+                except KeyError:
                     print('WARNING: No oxidation state specified. Defaulting to 2')
                     args.oxstate = '2'
             # check spin state (doesn't work for custom cores)
@@ -302,7 +302,7 @@ def checkinput(args, calctype="base"):
                 else:
                     try:
                         args.coord = coords[geomnames.index(args.geometry)]
-                    except:
+                    except IndexError:
                         args.coord = coords[geomshorts.index(args.geometry)]
                     print((
                         'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
@@ -984,7 +984,7 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-freeze'):  # 7
                 try:
                     args.freeze = int(l[1].strip('(){}<>[],.'))
-                except:
+                except ValueError:
                     args.freeze = True
             if (l[0] == '-debug'):  # 8
                 args.debug = True

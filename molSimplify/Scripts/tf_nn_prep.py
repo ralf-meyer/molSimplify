@@ -550,7 +550,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange) / 100  # if given as %
                 elif float(args.exchange) <= 1:
                     alpha = float(args.exchange)
-            except:
+            except ValueError:
                 print('cannot cast exchange argument as a float, using 20%')
         descriptor_names += ['alpha']
         descriptors += [alpha]
@@ -785,8 +785,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange) * 100  # if given as %
                 elif float(args.exchange) >= 1:
                     alpha = float(args.exchange)
-            except:
-                print('cannot case exchange argument as a float, using 20%')
+            except ValueError:
+                print('cannot cast exchange argument to float, using 20%')
         descriptor_names += ['alpha', 'ox', 'spin', 'charge_lig']
         descriptors += [alpha, ox, spin, net_lig_charge]
         if args.debug:

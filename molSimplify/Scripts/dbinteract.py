@@ -354,7 +354,7 @@ def dissim(outf, n):
                 for k in a:
                     try:
                         aa.append(float(k))
-                    except:
+                    except ValueError:
                         pass
                 a = aa
                 simsum = [x + y for x, y in zip(simsum, a)]
@@ -563,7 +563,7 @@ def dbsearch(rundir, args, globs):
             smistr, nmols, args.dbbase, finger, squery, args)
         try:
             shutil.copy('simres.smi', outf)
-        except:
+        except:  # shutil.copy() raises an auditing event
             pass
 
     if args.debug:

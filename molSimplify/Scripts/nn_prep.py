@@ -331,8 +331,8 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange)/100  # if given as %
                 elif float(args.exchange) <= 1:
                     alpha = float(args.exchange)
-            except:
-                print('cannot case exchange argument as a float, using 20%')
+            except ValueError:
+                print('cannot cast exchange argument to float, using 20%')
 
         if args.debug:
             print(('ax_bo', ax_bo))
@@ -490,7 +490,7 @@ def ax_lig_corrector(excitation, con_atom_type):
         if not con_atom_type == "C":
             excitation[ax_lig_index_dictionary[con_atom_type]] = 1
         valid = True
-    except:
+    except KeyError:
         valid = False
     return valid, excitation
 
@@ -502,7 +502,7 @@ def eq_lig_corrector(excitation, con_atom_type):
         if not con_atom_type == "C":
             excitation[eq_lig_index_dictionary[con_atom_type]] = 1
         valid = True
-    except:
+    except KeyError:
         valid = False
     # print('end eliq cor, excitation 1;5'  + str(excitation[1:5]))
     return valid, excitation
@@ -515,7 +515,7 @@ def metal_corrector(excitation, metal):
     try:
         excitation[metal_index_dictionary[metal]] += 1
         valid = True
-    except:
+    except KeyError:
         valid = False
 
     return valid, excitation
