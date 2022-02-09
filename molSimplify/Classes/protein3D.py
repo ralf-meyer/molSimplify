@@ -894,7 +894,7 @@ class protein3D:
         else:
             try:
                 ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
-                soup = BeautifulSoup(xml_doc.content,'lxml-xml')
+                soup = BeautifulSoup(xml_doc.content, 'lxml-xml')
                 
                 ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections. 
                 ### This is an example of getting everything with a "sec" tag.

@@ -61,7 +61,7 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
         if any(RAC_dataframe.alpha > 1):
             raise ValueError('Alpha is too large - should be between 0 and 1.')
 
-    RAC_subset_for_ANN = RAC_dataframe.loc[:,train_vars].astype(float)
+    RAC_subset_for_ANN = RAC_dataframe.loc[:, train_vars].astype(float)
     normalized_input = data_normalize(RAC_subset_for_ANN, train_mean_x, train_var_x)
     ANN_prediction = my_ANN.predict(normalized_input)
     rescaled_output = data_rescale(ANN_prediction, train_mean_y, train_var_y)
@@ -101,20 +101,20 @@ def get_error_params(latent_distances, errors):
         a = params[0]
         b = params[1]
         return -np.nansum(scipy.stats.norm.logpdf(errors, loc=0, scale=a+latent_distances*b))
-    results = scipy.optimize.minimize(log_likelihood, np.array([0.2, 0.01]), bounds=[(1e-9,None), (1e-9, None)])
+    results = scipy.optimize.minimize(log_likelihood, np.array([0.2, 0.01]), bounds=[(1e-9, None), (1e-9, None)])
     return results.x
 
 def matrix_loader(path, rownames=False):
     ## loads matrix with rowname option
     if rownames:
-        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
             row_names = [row[0] for row in csv_lines]
             mat = [row[1:] for row in csv_lines]
         return mat, row_names
     else:
-        path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
+        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
         with open(path_to_file, 'r') as csvfile:
             csv_lines = csv.reader(csvfile, delimiter=',')
             mat = [a for a in csv_lines]
@@ -129,7 +129,7 @@ def get_key(predictor, suffix=False):
             key = 'homolumo/' + predictor + '_%s' % suffix
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/' + predictor + '_%s' % suffix
-        elif predictor in ['oxo20','homo_empty']:
+        elif predictor in ['oxo20', 'homo_empty']:
             key = 'oxoandhomo/' + predictor + '_%s' % suffix
         elif predictor in ['geo_static_clf', 'sc_static_clf']:
             key = predictor + '/' + predictor + '_%s' % suffix
@@ -433,11 +433,11 @@ def load_keras_ann(predictor, suffix='model'):
         # loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
         #                                                 decay=0.0006651401379502965, lr=0.0007727366541920176),
         #                      metrics=['mse', 'mae', 'mape']) #decomissioned on 06/20/2019 by Aditya. Using hyperparams from oxo20.
-        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084, beta_1=0.9811686522122317, 
                                                         beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'oxo20':
-        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084,beta_1=0.9811686522122317, 
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084, beta_1=0.9811686522122317, 
                                                         beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'homo_empty':
@@ -580,11 +580,11 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
     # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
     return (min_dist)
 
-def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=False):
+def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
 
-    average_train_train_10NN = {'homo_empty':0.43517572, 'oxo20':0.068675719}
+    average_train_train_10NN = {'homo_empty': 0.43517572, 'oxo20': 0.068675719}
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
 
     ## getting train matrix info
@@ -615,10 +615,10 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector,debug=F
         latent_space_train = get_layer_outputs(loaded_model, len(loaded_model.layers) - 2,
                                                norm_train_mat, training_flag=False)
         latent_space_train = np.squeeze(np.array(latent_space_train))
-    dist_array = np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_vector)),axis=1)
+    dist_array = np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_vector)), axis=1)
     # train_dist_array =  np.linalg.norm(np.subtract(np.squeeze(latent_space_train), np.squeeze(latent_space_train)),axis=1)
     from scipy.spatial import distance_matrix
-    train_dist_array = distance_matrix(latent_space_train,latent_space_train)
+    train_dist_array = distance_matrix(latent_space_train, latent_space_train)
     nearest_10_NN_train = []
     for j, train_row in enumerate(train_dist_array):
         nearest_10_NN_train.append(np.sort(np.squeeze(train_row))[0:10])
@@ -764,8 +764,8 @@ def initialize_model_weights(model):
     session = K.get_session()
     for layer in model.layers: 
         for v in layer.__dict__:
-            v_arg = getattr(layer,v)
-            if hasattr(v_arg,'initializer'):
+            v_arg = getattr(layer, v)
+            if hasattr(v_arg, 'initializer'):
                 initializer_method = getattr(v_arg, 'initializer')
                 initializer_method.run(session=session)
                 # print('reinitializing layer {}.{}'.format(layer.name, v))

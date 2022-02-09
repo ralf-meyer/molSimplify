@@ -51,8 +51,9 @@ def mc_dropout_logp(tau, err):
     logp -= 0.5 * np.log(np.power(tau, -1))
     logp -= 0.5 * np.log(2 * math.pi)
     return (logp)
-    
-def ensemble_maker_inner(train_mat,labels,model_gen_function, info_dict,num=10):
+
+def ensemble_maker_inner(train_mat, labels, model_gen_function, info_dict,
+                         num=10):
     ## contains core functions to make ensemble models
     ## from training data and labels
     ## model_gen_function is a functiont that takes NO arguments and returns a keras model
@@ -60,7 +61,8 @@ def ensemble_maker_inner(train_mat,labels,model_gen_function, info_dict,num=10):
     train_mat, labels = shuffle(train_mat, labels)
     train_mat = np.array_split(train_mat, num, axis=0)
     labels = np.array_split(labels, num, axis=0)
-    earlystop = EarlyStopping(monitor=info_dict['monitor'], min_delta=info_dict['min_delta'],
+    earlystop = EarlyStopping(monitor=info_dict['monitor'],
+                              min_delta=info_dict['min_delta'],
                               patience=info_dict['patience'],
                               verbose=0,
                               mode='auto')

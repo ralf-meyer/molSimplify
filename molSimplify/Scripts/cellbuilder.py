@@ -959,7 +959,8 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
             debug_cell.writexyz('db2.xyz')
         # lower payload to distance, rotate to avoid conflicr
         loaded_cell = combine_multi_aligned_payload_with_cell(
-            loaded_cell, super_cell_vector, payload, cand_list, sites_list, align_dist, duplicate, control_angle, align_axis,align_ind, debug)
+            loaded_cell, super_cell_vector, payload, cand_list, sites_list,
+            align_dist, duplicate, control_angle, align_axis, align_ind, debug)
 
         ########################
         temp_pay3 = mol3D()

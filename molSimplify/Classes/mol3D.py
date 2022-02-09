@@ -1236,7 +1236,7 @@ class mol3D:
                 # Openbabel uses a 1 index instead of a 0 index.
                 constr.AddAtomConstraint(catom+1) 
         self.convert2OBMol()
-        forcefield.Setup(self.OBMol,constr)
+        forcefield.Setup(self.OBMol, constr)
         if self.OBMol.NumHvyAtoms() > 10:
             forcefield.ConjugateGradients(200)
         else:
@@ -3271,9 +3271,9 @@ class mol3D:
         if withgraph:
             from scipy.sparse import csgraph
             csg = csgraph.csgraph_from_dense(self.graph)
-            x,y = csg.nonzero()
+            x, y = csg.nonzero()
             tempstr = ''
-            for row1, row2 in zip(x,y):
+            for row1, row2 in zip(x, y):
                 if row1 >= 100:
                     tempstr += ' '+str(row1)
                 elif row1 >= 10:
