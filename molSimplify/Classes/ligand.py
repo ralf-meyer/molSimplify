@@ -583,7 +583,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
                 not_ax_points = combo_list[np.argmin(error_list)]
                 if len(set(not_ax_points)) != 4:
                     print('The equatorial plane is not being assigned correctly. Please check.')
-                    sardines
+                    # sardines
                 else:
                     bot_idx = list(set(range(5)) - set(not_ax_points))[0]
                     if loud:
@@ -690,7 +690,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
             not_ax_points = combo_list[perpcombo[np.argmax(np.array(perpdist))]]
             if len(set(not_ax_points)) != 4:
                 print('The equatorial plane is not being assigned correctly. Please check.')
-                sardines
+                # sardines
             else:
                 bot_idx = list(set(range(6)) - set(not_ax_points))[0]
                 top_idx = list(set(range(6)) - set(not_ax_points))[1]

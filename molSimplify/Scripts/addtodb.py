@@ -259,7 +259,7 @@ def removefromDB(sminame, ropt):
     li_path = globs.custom_path + "/Ligands/ligands.dict"
     li_folder = globs.custom_path + "/Ligands/"
     core_path = globs.custom_path + "/Cores/cores.dict"
-    core_dir = globs.custom_path + "/Cores/"
+    core_folder = globs.custom_path + "/Cores/"
     bind_path = globs.custom_path + "/Bind/bind.dict"
     bind_folder = globs.custom_path + "/Bind/"
 

@@ -256,6 +256,7 @@ def init_template(args, cpoints_required, globs):
             emsg = "Requested geometry not available." + \
                 "Defaulting to "+geomgroups[coord-1][0]
             if args.gui:
+                from Classes.mWidgets import mQDialogWarn
                 qqb = mQDialogWarn('Warning', emsg)
                 qqb.setParent(args.gui.wmain)
             print(emsg)
@@ -295,6 +296,7 @@ def init_template(args, cpoints_required, globs):
             emsg = 'Connection atoms for custom core not specified. Defaulting to 1!\n'
             print(emsg)
             if args.gui:
+                from Classes.mWidgets import mQDialogWarn
                 qqb = mQDialogWarn('Warning', emsg)
                 qqb.setParent(args.gui.wmain)
         ccatoms = args.ccatoms if args.ccatoms else [0]
@@ -1549,6 +1551,7 @@ def get_batoms(args, batslist, ligsused):
     if len(batoms) < 1:
         emsg = 'Connecting all ligands is not possible. Check your input!'
         if args.gui:
+            from Classes.mWidgets import mQDialogWarn
             qqb = mQDialogWarn('Warning', emsg)
             qqb.setParent(args.gui.wmain)
     return batoms

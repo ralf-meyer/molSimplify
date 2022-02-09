@@ -984,7 +984,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     if False:
         # test Euclidean norm to training data distance
-        train_dist, best_row = find_eu_dist(nn_excitation)
+        train_dist, best_row = find_eu_dist(nn_excitation)  # noqa: F821 (line unreachable)
         ANN_trust = max(0.01, 1.0 - train_dist)
 
         ANN_attributes.update({'ANN_closest_train': best_row})
@@ -994,7 +994,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         # use ANN to predict fucntional sensitivty
         HFX_slope = 0
-        HFX_slope = get_slope(slope_excitation)
+        HFX_slope = get_slope(slope_excitation)  # noqa: F821 (line unreachable)
         print(('Predicted HFX exchange sensitivity is : ' +
                "{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX'))
         ANN_attributes.update({'ANN_slope': HFX_slope})

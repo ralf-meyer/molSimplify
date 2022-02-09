@@ -370,14 +370,14 @@ def periodic_2d_distance(R1, R2, cell_vector):
         for v1shifts in [-1, 0, 1]:
             for yshifts in [-1, 0, 0]:
                 pass
-    d1 = sqrt(numpy.power(dim[0] - dx, 2)
-              + numpy.power(dim[1] - dy, 2)
+    d1 = sqrt(numpy.power(dim[0] - dx, 2)  # noqa: F821 (under construction)
+              + numpy.power(dim[1] - dy, 2)  # noqa: F821 (under construction)
               + numpy.power(dz, 2))
-    d2 = sqrt(numpy.power(dim[0] - dx, 2)
+    d2 = sqrt(numpy.power(dim[0] - dx, 2)  # noqa: F821 (under construction)
               + numpy.power(dy, 2)
               + numpy.power(dz, 2))
     d3 = sqrt(numpy.power(dx, 2)
-              + numpy.power(dim[1] - dy, 2)
+              + numpy.power(dim[1] - dy, 2)  # noqa: F821 (under construction)
               + numpy.power(dz, 2))
     d = min(d1, d2, d3)
     return d
@@ -617,10 +617,10 @@ def fractionate_points_by_plane(super_cell, n, tol=1E-8):
 
 
 def points_below_plane(point, n, refd):
-    dplane = apply_plane_to_point(point, n)
-    if abs(d-refd) < 1E-6:
+    dplane = apply_plane_to_point(point, n)  # noqa: F841 (under construction)
+    if abs(d-refd) < 1E-6:  # noqa: F821 (under construction)
         outcome = False
-    elif d < dref:
+    elif d < dref:  # noqa: F821 (under construction)
         outcome = True
     else:
         outcome = False

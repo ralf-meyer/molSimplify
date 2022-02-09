@@ -179,6 +179,7 @@ def getlicores(flip=True):
 
 def getsimpleligs():
     slicores = getslicores()
+    a = []
     for key in slicores:
         a.append(key)
     a = sorted(a)
@@ -469,8 +470,8 @@ def loadcoord(coord):
     f.close()
     b = []
     for line in txt:
-        l = [_f for _f in line.split(None) if _f]
-        b.append([float(l[0]), float(l[1]), float(l[2])])
+        s = [_f for _f in line.split(None) if _f]
+        b.append([float(s[0]), float(s[1]), float(s[2])])
     return b
 
 # Load core and convert to mol3D
@@ -509,7 +510,7 @@ def core_load(usercore, mcores=None):
             core.OBMol = core.getOBMol(fcore, 'molf')
         elif ('.smi' in fcore):
             core.OBMol = core.getOBMol(fcore, 'smif')
-        core.cat = [int(l) for l in [_f for _f in dbentry[1] if _f]]
+        core.cat = [int(i) for i in [_f for _f in dbentry[1] if _f]]
         core.denticity = dbentry[2]
         core.ident = usercore
     # load from file
@@ -592,7 +593,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 "molSimplify"), "molSimplify/Substrates/" + var_list_sub_i[0])
         # check if substrate xyz/mol file exists
         if not glob.glob(fsubst):
-            emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
+            emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fsubst
             print(emsg)
             return False, emsg
         if ('.xyz' in fsubst):
@@ -657,8 +658,8 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 usersubstrate, 'smistring', True)  # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
-            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
-            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
+            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usersubstrate
+            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print(emsg)
             return False, emsg

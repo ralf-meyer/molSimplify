@@ -183,6 +183,7 @@ def getlicores(flip=True):
 
 def getsimpleligs():
     slicores = getslicores()
+    a = []
     for key in slicores:
         a.append(key)
     a = sorted(a)
@@ -661,8 +662,8 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 usersubstrate, 'smistring', True)  # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
-            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
-            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
+            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usersubstrate
+            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print(emsg)
             return False, emsg

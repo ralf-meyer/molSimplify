@@ -500,7 +500,7 @@ def multiqgen(args, strfiles):
     if args.method and len(args.method) > 1:
         methods = args.exchange
         for method in methods:
-            jobdirs.append(qen(args, strfiles, method))
+            jobdirs.append(qgen(args, strfiles, method))
     else:
         jobdirs.append(qgen(args, strfiles, method))
     # remove original files
@@ -1429,6 +1429,6 @@ def molcfrozens(strfiles):
                 frozen += 9  # 1s2s2p3s3p
             elif atno > 54:
                 print('Warning! Automatic assignment of "frozen"is not available')
-                print(('for heavy atom like ' + temp.getAtom(ind).symbol()+'yet'))
+                print(('for heavy atom like ' + atom.symbol()+'yet'))
         frozens.append(frozen)
     return frozens

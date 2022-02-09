@@ -35,7 +35,7 @@ from molSimplify.Scripts.structgen import (structgen)
 ###################################################################
 get_input = input
 if sys.version_info[:2] <= (2, 7):
-    get_input = raw_input
+    get_input = raw_input  # noqa: F821
 
 #####################################
 ### constrained random generation ###
