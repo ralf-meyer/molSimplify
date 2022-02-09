@@ -33,6 +33,7 @@ except ImportError:
     qtflag = False
     pass
 
+
 class mol3D:
     """Holds information about a molecule, used to do manipulations.
     Reads information from structure file (XYZ, mol2) or is directly 

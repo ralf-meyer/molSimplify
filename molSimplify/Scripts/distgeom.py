@@ -28,6 +28,7 @@ from molSimplify.Scripts.geometry import (distance,
 from molSimplify.Scripts.molSimplify_io import (lig_load,
                                                 loadcoord)
 
+
 def CosRule(AB, BC, theta):
     """Applies the cosine rule to get the length of AC given lengths of AB, BC and angle ABC
         
@@ -49,6 +50,7 @@ def CosRule(AB, BC, theta):
     theta = np.pi*theta/180
     AC = sqrt(AB**2+BC**2-2*AB*BC*cos(theta))
     return AC
+
 
 def inverseCosRule(A, B, C):
     """Apply the cosine rule to find the angle ABC given points A,B, and C.
@@ -73,6 +75,7 @@ def inverseCosRule(A, B, C):
     AC = np.linalg.norm(np.array(C)-np.array(A))
     theta = np.arccos((BA**2+BC**2-AC**2)/(2*BA*BC))
     return np.rad2deg(theta)
+
 
 def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
     """Generate distance bounds matrices. The basic idea is outlined in ref [1].
@@ -163,6 +166,7 @@ def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
                 UB[j][i] = 100
     return LB, UB
 
+
 def Triangle(LB, UB, natoms):
     """Triangle inequality bounds smoothing. Copied from ref [2], pp. 252-253.
     Scales O(N^3). 
@@ -200,6 +204,7 @@ def Triangle(LB, UB, natoms):
                         LL[i][j] = LL[j][k] - UL[k][i]
                         LL[j][i] = LL[j][k] - UL[k][i]
     return LL, UL
+
 
 def Metrize(LB, UB, natoms, Full=False, seed=False):
     """Metrization to select random in-range distances. Copied from ref [2], pp. 253-254.
@@ -252,6 +257,7 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
         D[j][natoms-1] = D[natoms-1][j]
     return D
 
+
 def GetCMDists(D, natoms):
     """Get distances of each atom to center of mass given the distance matrix. 
     Copied from ref [2], pp. 309.
@@ -286,6 +292,7 @@ def GetCMDists(D, natoms):
             return D0, False
     return D0, True
 
+
 def GetMetricMatrix(D, D0, natoms):
     """Get metric matrix from distance matrix and CM distances 
     Copied from ref [2], pp. 306.
@@ -310,6 +317,7 @@ def GetMetricMatrix(D, D0, natoms):
         for j in range(natoms):
             G[i][j] = (D0[i]**2 + D0[j]**2 - D[i][j]**2)/2
     return G
+
 
 def Get3Eigs(G, natoms):
     """Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix
@@ -338,6 +346,7 @@ def Get3Eigs(G, natoms):
         L[i][i] = sqrt(max(l[natoms-1-i], 0))
         V[:, i] = v[:, natoms-1-i]
     return L, V
+
 
 def DistErr(x, *args):
     """Computes distance error function for scipy optimization. 
@@ -368,6 +377,7 @@ def DistErr(x, *args):
             E += (dij**2/(uij**2) - 1)**2
             E += (2*lij**2/(lij**2 + dij**2) - 1)**2
     return np.asarray(E)
+
 
 def DistErrGrad(x, *args):
     """Computes gradient of distance error function for scipy optimization.
@@ -404,6 +414,7 @@ def DistErrGrad(x, *args):
             g[3*i+2] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2 /
                                                                       (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+2]-x[3*j+2])  # zi
     return g
+
 
 def SaveConf(X, mol, ffclean=True, catoms=[]):
     """Further cleans up with OB FF and saves to a new mol3D object.
@@ -471,6 +482,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     conf3D.convert2mol3D()
     return conf3D
 
+
 def findshape(args, master_ligand):
     """Determines the relative positioning of different ligating atoms
         
@@ -519,6 +531,7 @@ def findshape(args, master_ligand):
             angles_dict[str(i)+'-'+str(j)] = inverseCosRule(ligating_coords[i],
                                                             metal_coords, ligating_coords[j])
     return angles_dict
+
 
 def GetConf(mol, args, catoms=[]):
     """Uses distance geometry to get a random conformer.

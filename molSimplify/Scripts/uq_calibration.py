@@ -39,6 +39,7 @@ def linear_variance_model(dist, theta):
     '''
     return theta[0] ** 2 + (theta[1] ** 2) * dist
 
+
 def zero_linear_variance_model(dist, theta):
     '''
 

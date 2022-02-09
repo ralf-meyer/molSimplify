@@ -26,6 +26,7 @@ from molSimplify.Scripts.rungen import (constrgen,
                                         multigenruns,
                                         draw_supervisor)
 
+
 def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                       argv=['main.py', '-i', 'asdfasdfasdfasdf'],
                       flag=True,
@@ -57,6 +58,7 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
     inputfile_str = '\n'.join([k + ' ' + v for k, v in list(input_dict.items())])
     strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=False)
     return (strfiles, emsg, this_diag)
+
 
 # Coordinates subroutines
 #  @param argv Argument list

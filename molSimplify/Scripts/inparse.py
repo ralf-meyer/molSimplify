@@ -1623,10 +1623,12 @@ def parseinputs_naming(*p):
         parser.parse_args(namespace=args)
     return 0
 
+
 def deserialize_json(filein):
     with open(filein, "r") as fo:
         args_dict = yaml.safe_load(fo)
     return args_dict
+
 
 def args_parser_retrain():
     parser = argparse.ArgumentParser()

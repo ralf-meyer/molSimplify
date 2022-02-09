@@ -15,6 +15,7 @@ import unicodedata
 import openbabel
 import shutil
 
+
 # Add molecule to ligand database
 #  @param smimol SMILES string or molecule file to be added
 #  @param sminame Name of ligand for key in dictionary
@@ -24,7 +25,6 @@ import shutil
 #  @param smictg Ligand category
 #  @param ffopt Flag for ligand FF optimization
 #  @return Error messages
-
 def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=None):
     emsg = False
     globs = globalvars()
@@ -114,12 +114,12 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
         f.close()
     return emsg
 
+
 # Add molecule to cores database
 #  @param smimol SMILES string or molecule file to be added
 #  @param sminame Name of core for key in dictionary
 #  @param smicat Core connecting atoms
 #  @return Error messages
-
 def addtocdb(smimol, sminame, smicat):
     emsg = False
     globs = globalvars()
@@ -178,11 +178,11 @@ def addtocdb(smimol, sminame, smicat):
         f.close()
     return emsg
 
+
 # Add molecule to binding species database
 #  @param smimol SMILES string or molecule file to be added
 #  @param sminame Name of binding species for key in dictionary
 #  @return Error messages
-
 def addtobdb(smimol, sminame):
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
@@ -243,11 +243,11 @@ def addtobdb(smimol, sminame):
         f.close()
     return emsg
 
+
 # Remove molecule from database
 #  @param sminame Name of molecule for key in dictionary
 #  @param ropt Flag for molecule type (0 for core, 1 for ligand, 2 for binding species)
 #  @return Error messages
-
 def removefromDB(sminame, ropt):
     emsg = False
     globs = globalvars()

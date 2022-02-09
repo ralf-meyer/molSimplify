@@ -9,6 +9,7 @@ from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 
+
 def read_atom(line):
     """ Reads a line of a pdb into an atom dictionary.
 
@@ -34,6 +35,7 @@ def read_atom(line):
     atom_dict = dict(zip(labels, data))
     atom_dict['Element'] = atom_dict['Element'][0] + atom_dict['Element'][1:].lower()
     return atom_dict
+
 
 def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     """ Creates an AA3D from a_dicts and adds it to the appropriate places.

@@ -749,6 +749,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
+
 ### DISCLAIMER!!! Please be careful while modifying any part of 'ligand_assign_consistent' as that could affect everything else ###
 def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                              name=False, use_z=False, eq_sym_match=False):

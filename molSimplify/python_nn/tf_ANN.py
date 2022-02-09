@@ -91,6 +91,7 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
     RAC_dataframe_with_results = RAC_dataframe.join(results_df)
     return RAC_dataframe_with_results
 
+
 def get_error_params(latent_distances, errors):
     '''
     Get the maximum-likelihood parameters for an error model N(a+b*(latent_distance)).
@@ -103,6 +104,7 @@ def get_error_params(latent_distances, errors):
         return -np.nansum(scipy.stats.norm.logpdf(errors, loc=0, scale=a+latent_distances*b))
     results = scipy.optimize.minimize(log_likelihood, np.array([0.2, 0.01]), bounds=[(1e-9, None), (1e-9, None)])
     return results.x
+
 
 def matrix_loader(path, rownames=False):
     ## loads matrix with rowname option
@@ -301,6 +303,7 @@ def load_training_data(predictor):
         # row_names = [row[0] for row in csv_lines]
         mat = [row for row in csv_lines[1:]]
     return mat
+
 
 def load_latent_training_data(predictor):
     ##### CURRENTLY LATENT TRAINING DATA NOT AVAIL
@@ -580,6 +583,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
     # min_dist = np.linalg.norm(np.subtract(scaled_row,(scaled_excitation)))
     return (min_dist)
 
+
 def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=False):
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
@@ -629,6 +633,7 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=
     avg_10_NN_dist = np.mean(sorted_dist[0:10])
     norm_avg_10_NN_dist = avg_10_NN_dist/avg_traintrain
     return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain 
+
 
 def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     # returns scaled euclidean distance to nearest trainning 

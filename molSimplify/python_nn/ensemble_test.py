@@ -52,6 +52,7 @@ def mc_dropout_logp(tau, err):
     logp -= 0.5 * np.log(2 * math.pi)
     return (logp)
 
+
 def ensemble_maker_inner(train_mat, labels, model_gen_function, info_dict,
                          num=10):
     ## contains core functions to make ensemble models

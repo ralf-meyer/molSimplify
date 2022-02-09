@@ -12,6 +12,7 @@ from numpy import (arccos, cross, dot, pi, transpose,
 from numpy.linalg import det, svd
 import numpy as np
 
+
 def norm(u):
     """Get euclidean norm of vector.
         
@@ -32,6 +33,7 @@ def norm(u):
     d = sqrt(d)
     return d
 
+
 def normalize(u):
     """Normalize a vector.
         
@@ -51,6 +53,7 @@ def normalize(u):
     if d > 1.0e-13:
         [un.append(ui / d) for ui in u]
     return un
+
 
 def distance(r1, r2):
     """Euclidean distance between points.
@@ -74,6 +77,7 @@ def distance(r1, r2):
     d = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
     return d
 
+
 def vecdiff(r1, r2):
     """Element-wise vector difference
         
@@ -93,6 +97,7 @@ def vecdiff(r1, r2):
     dr = [a - b for a, b in zip(r1, r2)]
     return dr
 
+
 def midpt(r1, r2):
     """Vector midpoint.
         
@@ -111,6 +116,7 @@ def midpt(r1, r2):
     """
     m = [0.5 * (a + b) for a, b in zip(r1, r2)]
     return m
+
 
 def checkcolinear(r1, r2, r3):
     """Checks if three points are collinear.
@@ -137,6 +143,7 @@ def checkcolinear(r1, r2, r3):
         return True
     else:
         return False
+
 
 def checkplanar(r1, r2, r3, r4):
     """Checks if four points are coplanar.
@@ -168,6 +175,7 @@ def checkplanar(r1, r2, r3, r4):
     else:
         return False
 
+
 def vecangle(r1, r2):
     """Computes angle between two vectors.
         
@@ -190,6 +198,7 @@ def vecangle(r1, r2):
     else:
         theta = 0.0
     return theta
+
 
 def getPointu(Rr, dist, u):
     """Gets point given reference point, direction vector and distance.
@@ -219,6 +228,7 @@ def getPointu(Rr, dist, u):
     P[1] = t * u[1] + Rr[1]
     P[2] = t * u[2] + Rr[2]
     return P
+
 
 def rotation_params(r0, r1, r2):
     """Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points.
@@ -267,6 +277,7 @@ def rotation_params(r0, r1, r2):
             u = [1, 1, (-r21[0] - r21[1]) / r21[2]]
     return theta, u
 
+
 def dihedral(mol, idx1, idx2, idx3, idx4):
     """Computes dihedral angle for a set of four atom indices.
     
@@ -307,6 +318,7 @@ def dihedral(mol, idx1, idx2, idx3, idx4):
     
     dihedral_angle = round(np.degrees(-np.arctan2(sine_angle, cos_angle)), 3)
     return dihedral_angle
+
 
 def kabsch(mol0, mol1):
     """Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
@@ -361,6 +373,7 @@ def kabsch(mol0, mol1):
         atom.setcoords(P[i])
     return mol0, U.tolist(), d0, d1
 
+
 def ReflectPlane(u, r, Rp):
     """Reflects point about plane defined by its normal vector and a point on the plane
 
@@ -407,6 +420,7 @@ def ReflectPlane(u, r, Rp):
     rn[1] = R[1][0] * r[0] + R[1][1] * r[1] + R[1][2] * r[2] + R[1][3]
     rn[2] = R[2][0] * r[0] + R[2][1] * r[1] + R[2][2] * r[2] + R[2][3]
     return rn
+
 
 def PointRotateAxis(u, rp, r, theta):
     """Rotates point about axis defined by direction vector and point on axis. Theta units in radians.
@@ -459,6 +473,7 @@ def PointRotateAxis(u, rp, r, theta):
     rn[2] = R[2][0] * r[0] + R[2][1] * r[1] + R[2][2] * r[2] + R[2][3]
     return rn
 
+
 def PointRotateMat(r, R):
     """Rotates point using arbitrary 3x3 rotation matrix
 
@@ -480,6 +495,7 @@ def PointRotateMat(r, R):
     rn[1] = R[0][1] * r[0] + R[1][1] * r[1] + R[2][1] * r[2]
     rn[2] = R[0][2] * r[0] + R[1][2] * r[1] + R[2][2] * r[2]
     return rn
+
 
 def PointTranslateSph(Rp, p0, D):
     """Translates point in spherical coordinates.
@@ -519,6 +535,7 @@ def PointTranslateSph(Rp, p0, D):
     p[2] = (D[0]) * cos(phi0 + D[2]) + Rp[2]
     return p
 
+
 def PointTranslateSphgivenphi(Rp, p0, D):
     """Translates point in spherical coordinates. Redundant with PointTranslateSph. Will be deprecated.
 
@@ -556,6 +573,7 @@ def PointTranslateSphgivenphi(Rp, p0, D):
     p[1] = (D[0]) * sin(phi0 + D[1]) * sin(theta0) + Rp[1]
     p[2] = (D[0]) * cos(phi0 + D[1]) + Rp[2]
     return p
+
 
 def PointTranslateSphgivenr(Rp, p0, D, pref, r):
     """Translates point in spherical coordinates given R.
@@ -604,6 +622,7 @@ def PointTranslateSphgivenr(Rp, p0, D, pref, r):
         theta0 += 0.01
     return p
 
+
 def PointTranslatetoPSph(Rp, p0, D):
     """Converts spherical translation vector into Cartesian translation vector
 
@@ -642,6 +661,7 @@ def PointTranslatetoPSph(Rp, p0, D):
     p[2] = D[0] * cos(phi0 + D[2])
     return p
 
+
 def PointRotateSph(Rp, p0, D):
     """Rotates point about Cartesian axes defined relative to given origin.
 
@@ -678,6 +698,7 @@ def PointRotateSph(Rp, p0, D):
     p[2] = M[2][0] * ps[0] + M[2][1] * ps[1] + M[2][2] * ps[2] + Rp[2]
     return p
 
+
 def reflect_through_plane(mol, u, Rp):
     """Reflects molecule about plane defined by its normal vector and a point on the plane.
     Loops over ReflectPlane().
@@ -707,6 +728,7 @@ def reflect_through_plane(mol, u, Rp):
         Rt = ReflectPlane(u, atom.coords(), Rp)
         atom.setcoords(Rt)
     return mol
+
 
 def rotate_around_axis(mol, Rp, u, theta):
     """Rotates molecule about axis defined by direction vector and point on axis.
@@ -741,6 +763,7 @@ def rotate_around_axis(mol, Rp, u, theta):
         atom.setcoords(Rt)
     return mol
 
+
 def rotate_mat(mol, R):
     """Rotates molecule using arbitrary rotation matrix.
     Loops over PointRotateMat().
@@ -763,6 +786,7 @@ def rotate_mat(mol, R):
         Rt = PointRotateMat(atom.coords(), R)
         atom.setcoords(Rt)
     return mol
+
 
 def setPdistance(mol, Rr, Rp, bond):
     """Translates molecule such that a given point in the molecule is at a given distance from a reference point.
@@ -803,6 +827,7 @@ def setPdistance(mol, Rr, Rp, bond):
     mol.translate(dxyz)
     return mol, dxyz
 
+
 def setPdistanceu(mol, Rr, Rp, bond, u):
     """Translates molecule such that a given point in the molecule is at a given distance from a reference point.
     The molecule is moved along an arbitrary axis.
@@ -839,6 +864,7 @@ def setPdistanceu(mol, Rr, Rp, bond, u):
     mol.translate(dxyz)
     return mol
 
+
 def setcmdistance(mol, Rp, bond):
     """Translates molecule such that its center of mass is at a given distance from a reference point.
     The molecule is moved along the axis given by the two points.
@@ -874,6 +900,7 @@ def setcmdistance(mol, Rp, bond):
     mol.translate(dxyz)
     return mol
 
+
 def protate(mol, Rr, D):
     """Translates molecule in spherical coordinates based on center of mass reference.
     Loops over PointTranslateSph().
@@ -905,6 +932,7 @@ def protate(mol, Rr, D):
     # translate molecule
     mol.translate(Rt)
     return mol
+
 
 def protateref(mol, Rr, Rref, D):
     """Translates molecule in spherical coordinates based on arbitrary reference.
@@ -939,6 +967,7 @@ def protateref(mol, Rr, Rref, D):
     mol.translate(Rt)
     return mol
 
+
 def cmrotate(mol, D):
     """Rotates molecule about its center of mass
     Loops over PointRotateSph().
@@ -967,6 +996,7 @@ def cmrotate(mol, D):
         Rt = PointRotateSph(pmc, atom.coords(), D)
         atom.setcoords(Rt)
     return mol
+
 
 def rotateRef(mol, Ref, D):
     """Rotates molecule about an arbitrary point
@@ -998,6 +1028,7 @@ def rotateRef(mol, Ref, D):
         Rt = PointRotateSph(Ref, atom.coords(), D)
         atom.setcoords(Rt)
     return mol
+
 
 def aligntoaxis(mol, Rr, Rp, u):
     """Translates molecule to align point to axis at constant distance.
@@ -1032,6 +1063,7 @@ def aligntoaxis(mol, Rr, Rp, u):
     mol.translate(dxyz)
     return mol
 
+
 def aligntoaxis2(mol, Rr, Rp, u, d):
     """Translates molecule to align point to axis at arbitrary distance
 
@@ -1065,6 +1097,7 @@ def aligntoaxis2(mol, Rr, Rp, u, d):
     mol.translate(dxyz)
     return mol
 
+
 def alignPtoaxis(Rr, Rp, u, d):
     """Translates point and aligns to axis
 
@@ -1093,6 +1126,7 @@ def alignPtoaxis(Rr, Rp, u, d):
     dxyz[1] = Rp[1] + t * u[1]
     dxyz[2] = Rp[2] + t * u[2]
     return dxyz
+
 
 def pmrotate(mol, Rp, D):
     """Rotates molecule about Cartesian axes defined relative to given origin.
@@ -1123,6 +1157,7 @@ def pmrotate(mol, Rp, D):
         Rt = PointRotateSph(Rp, atom.coords(), D)
         atom.setcoords(Rt)
     return mol
+
 
 def connectivity_match(inds1, inds2, mol1, mol2):
     """Check whether the connectivity of two fragments of mols match.

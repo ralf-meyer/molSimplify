@@ -672,6 +672,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         sub.ident = 'substrate'
     return sub, subcatoms, emsg
 
+
 def lig_load(userligand, licores=None):
 
     if licores is None:

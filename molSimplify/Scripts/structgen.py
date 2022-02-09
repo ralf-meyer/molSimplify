@@ -53,6 +53,7 @@ import numpy
 from numpy import log, arccos, cross, dot, pi
 numpy.seterr(all='raise')
 
+
 def getbackbcombsall(nums):
     """Gets all possible combinations for connection atoms in geometry in the case of forced order or unknown geometry.
         
@@ -73,6 +74,7 @@ def getbackbcombsall(nums):
     for i, tup in enumerate(bbcombs):
         bbcombs[i] = list(tup)
     return bbcombs
+
 
 def getnupdateb(backbatoms, denticity):
     """Gets a combination of backbone points that satisfies denticity and updates possible combinations.
@@ -111,6 +113,7 @@ def getnupdateb(backbatoms, denticity):
     if len(batoms) < 1:
         print('No more connecting points available..')
     return batoms, backbatoms
+
 
 def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
     """Initializes ANN.
@@ -200,6 +203,7 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
             ANN_bondl = len(
                 [item for items in batslist for item in items])*[False]
     return ANN_flag, ANN_bondl, ANN_reason, ANN_attributes, catalysis_flag
+
 
 def init_template(args, cpoints_required, globs):
     """Initializes core and template mol3Ds and properties.
@@ -388,6 +392,7 @@ def init_template(args, cpoints_required, globs):
                 core3D.charge = int(args.oxstate)
     return m3D, core3D, geom, backbatoms, coord, corerefatoms
 
+
 def init_ligand(args, lig, tcats, keepHs, i):
     """Initializes ligand 3D geometry and properties.
 
@@ -483,6 +488,7 @@ def init_ligand(args, lig, tcats, keepHs, i):
         lig3D = GetConf(lig3D, args, lig.cat)
     return lig3D, rempi, ligpiatoms
 
+
 def modifybackbonep(backb, pangles):
     """Distorts backbone according to user specified angles.
 
@@ -507,6 +513,7 @@ def modifybackbonep(backb, pangles):
                                            [distance(backb[0], backb[i+1]), theta, phi])
     return backb
 
+
 def distortbackbone(backb, distort):
     """Randomly distorts backbone.
 
@@ -529,6 +536,7 @@ def distortbackbone(backb, distort):
         backb[i] = PointTranslateSph(
             backb[0], backb[i], [distance(backb[0], backb[i]), theta, phi])
     return backb
+
 
 def smartreorderligs(args, ligs, dentl, licores):
     """Smart reorder ligands by denticity (-ligalign True)
@@ -977,6 +985,7 @@ def getconnection(core, cidx, BL):
                 cpoint = P
     return cpoint
 
+
 def findsmarts(lig3D, smarts, catom):
     """Checks if connecting atom of lig3D is part of SMARTS pattern.
 
@@ -1011,6 +1020,7 @@ def findsmarts(lig3D, smarts, catom):
         return True
     else:
         return False
+
 
 def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBend):
     """Aligns a ligand's center of symmetry along the metal-connecting atom axis
@@ -1068,6 +1078,7 @@ def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBen
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
+
 
 def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
     """Aligns a linear pi ligand's connecting point to the metal-ligand axis
@@ -1131,6 +1142,7 @@ def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
+
 def check_rotate_linear_lig(corerefcoords, lig3D, atom0):
     """Checks if ligand has a linear coordination environment (e.g., OCO) and ensures perpendicularity to M-L axis
 
@@ -1164,6 +1176,7 @@ def check_rotate_linear_lig(corerefcoords, lig3D, atom0):
             lig3D = rotate_around_axis(lig3D, r0, urot, theta)
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
+
 
 def check_rotate_symm_lig(corerefcoords, lig3D, atom0, core3D):
     """Aligns a ligand's center of symmetry along the metal-connecting atom axis
@@ -1205,6 +1218,7 @@ def check_rotate_symm_lig(corerefcoords, lig3D, atom0, core3D):
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
+
 
 def rotate_MLaxis_minimize_steric(corerefcoords, lig3D, atom0, core3D):
     """Rotates aligned ligand about M-L axis to minimize steric clashes with rest of complex
@@ -1248,6 +1262,7 @@ def rotate_MLaxis_minimize_steric(corerefcoords, lig3D, atom0, core3D):
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
+
 
 def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
     """Rotates a connecting atom of a multidentate ligand to improve H atom placement.
@@ -1377,6 +1392,7 @@ def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
 
+
 def rotate_catoms_fix_Hs(lig3D, catoms, mcoords, core3D):
     """Rotates connecting atoms of multidentate ligands to improve H atom placement.
     Loops over rotate_catom_fix_Hs().
@@ -1404,6 +1420,7 @@ def rotate_catoms_fix_Hs(lig3D, catoms, mcoords, core3D):
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned
+
 
 def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds):
     """Gets target M-L distance from desired source (custom, sum cov rad or ANN). 
@@ -1469,6 +1486,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
             print(('using DB distance of '+str(bondl)))
     return bondl
 
+
 def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
     """Gets target M-L distance from desired source (custom, sum cov rad or ANN). 
     Aligns a monodentate ligand to core connecting atom coordinates.
@@ -1529,6 +1547,7 @@ def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
         print(('ms default distance is  ' + str(bondl)))
     return bondl, exact_match
 
+
 def get_batoms(args, batslist, ligsused):
     """Get backbone atoms from template.
 
@@ -1555,6 +1574,7 @@ def get_batoms(args, batslist, ligsused):
             qqb = mQDialogWarn('Warning', emsg)
             qqb.setParent(args.gui.wmain)
     return batoms
+
 
 def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, corerefcoords):
     """Crude rotations to improve alignment of the 2nd connecting atom of a bidentate substrate. 
@@ -1667,6 +1687,7 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, r1b
 
+
 def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarget, coreref, MLoptbds):
     """Aligns second connecting atom of a bidentate ligand to balance ligand strain and the desired coordination environment.
 
@@ -1765,6 +1786,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     lig3D_aligned.copymol3D(lig3Dtmp)
     return lig3D_aligned
 
+
 def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=False, ligpiatoms=[], MLb=[], ANN_flag=False, ANN_bondl=[], this_diag=0, MLbonds=dict(), MLoptbds=[], i=0, EnableAutoLinearBend=True):
     """Aligns a monodentate ligand to core connecting atom coordinates.
 
@@ -1841,6 +1863,7 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, MLoptbds
+
 
 def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, catoms, MLb, ANN_flag, ANN_bondl, this_diag, MLbonds, MLoptbds, frozenats, i):
     """Aligns a bidentate ligand to core connecting atom coordinates.
@@ -1928,6 +1951,7 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, frozenats, MLoptbds
+
 
 def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, catoms, MLb, ANN_flag, ANN_bondl, this_diag, MLbonds, MLoptbds, frozenats, i):
     """Aligns a tridentate ligand to core connecting atom coordinates
@@ -2069,6 +2093,7 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, frozenats, MLoptbds
+
 
 def mcomplex(args, ligs, ligoc, licores, globs):
     """Main ligand placement routine
@@ -2568,6 +2593,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
             core3D.writexyz('complex_after_final_ff.xyz')
         # core3D,enc = ffopt(args.ff,core3D,connected,1,frozenats,freezeangles,MLoptbds,'Adaptive',args.debug)
     return core3D, complex3D, emsg, this_diag, subcatoms_ext, mligcatoms_ext
+
 
 def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
     """Main structure generation routine - multiple structures

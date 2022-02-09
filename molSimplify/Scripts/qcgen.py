@@ -53,6 +53,7 @@ def multitcgen(args, strfiles):
                     pass
     return jobdirs
 
+
 def tcgen(args, strfiles, method):
     """Generate a single terachem input file.
 
@@ -249,6 +250,7 @@ def tcgen(args, strfiles, method):
             output.close()
     return jobdirs
 
+
 def xyz2gxyz(filename):
     """Turn an XYZ file into a GAMESS XYZ file.
 
@@ -269,6 +271,7 @@ def xyz2gxyz(filename):
     gfilename = filename.replace('.xyz', '.gxyz')  # new file name
     mol.writegxyz(gfilename)  # write gamess formatted xyz file
     return gfilename.split('.gxyz')[0]
+
 
 def multigamgen(args, strfiles):
     """Generate multiple GAMESS files, loops over methods.
@@ -300,6 +303,7 @@ def multigamgen(args, strfiles):
         os.remove(xyzf+'.gxyz')
         os.remove(xyzf+'.molinp')
     return jobdirs
+
 
 def gamgen(args, strfiles, method):
     """Generate a single GAMESS input file.
@@ -479,6 +483,7 @@ def gamgen(args, strfiles, method):
         output.close()
     return jobdirs
 
+
 def multiqgen(args, strfiles):
     """Generate multiple QChem input files at once.
         
@@ -509,6 +514,7 @@ def multiqgen(args, strfiles):
         os.remove(xyzf+'.molinp')
         os.remove(xyzf + '.report')
     return jobdirs
+
 
 def qgen(args, strfiles, method):
     """Generate a single QChem input file.
@@ -635,6 +641,7 @@ def qgen(args, strfiles, method):
         output.close()
     return jobdirs
 
+
 def mlpgen(args, strfiles, rootdir):
     """Generate MOPAC input files.
 
@@ -723,6 +730,7 @@ def mlpgen(args, strfiles, rootdir):
         output.close()
     return jobdirs
 
+
 def multiogen(args, strfiles):
     """Generate ORCA input files.
 
@@ -758,6 +766,7 @@ def multiogen(args, strfiles):
             except FileNotFoundError:
                 pass
     return jobdirs
+
 
 def ogen(args, strfiles, method):
     """Generate a single ORCA input file.
@@ -950,6 +959,7 @@ def ogen(args, strfiles, method):
             output.close()
     return jobdirs
 
+
 def ogenwrt(output, jobparams, xyzf):
     """Generate a single ORCA input file with custom parameters.
 
@@ -1006,6 +1016,7 @@ def ogenwrt(output, jobparams, xyzf):
     output.write(
         '*xyzfile '+str(jobparams['charge'])+' '+str(jobparams['spinmult'])+' '+xyzf+'\n')
     # output.write(''.join(s0)+'*\n')
+
 
 def molcgen(args, strfiles, method):
     """Generate a single MOLCAS input file.
@@ -1169,6 +1180,7 @@ def molcgen(args, strfiles, method):
             output.close()
     return jobdirs
 
+
 def molcwrt(output, jobparams, xyzf, xyzind):
     """Generate a single MOLCAS input file with custom parameters.
 
@@ -1219,6 +1231,7 @@ def molcwrt(output, jobparams, xyzf, xyzind):
         output.write(jobparams['gridtype']+'\n')
         output.write('NPOINTS\n'+jobparams['NPOINTS']+'\n')
 
+
 def multimolcgen(args, strfiles):
     """Generate MOLCAS input files.
 
@@ -1253,6 +1266,7 @@ def multimolcgen(args, strfiles):
             except FileNotFoundError:
                 pass
     return jobdirs
+
 
 def molcbasis(strfiles, basistyp):
     """Generate MOLCAS basis keyword for a given mol3D.
@@ -1333,6 +1347,7 @@ def molcbasis(strfiles, basistyp):
         other than ANO-rcc is not supported yet''')
     return basis
 
+
 def molcras2s(strfiles):
     """Determine MOLCAS CASSCF active space for a given mol3D.
 
@@ -1363,6 +1378,7 @@ def molcras2s(strfiles):
                 ras2 += 7  # single d shell + bonding
         ras2s.append(ras2)
     return ras2s
+
 
 def molcnactels(strfiles, oxnum):
     """Determine MOLCAS CASSCF active electrons for a given mol3D.
@@ -1397,6 +1413,7 @@ def molcnactels(strfiles, oxnum):
                 print(('for heavy atom like ' + temp.getAtom(ind).symbol()+'yet'))
         nactels.append(nactel)
     return nactels
+
 
 def molcfrozens(strfiles):
     """Determine MOLCAS CASSCF frozen orbitals for a given mol3D

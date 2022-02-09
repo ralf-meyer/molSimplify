@@ -7,6 +7,7 @@
 
 from molSimplify.Classes.globalvars import globalvars
 
+
 class run_diag:
     """Class of run diagnostic information to automated decision making and property prediction
     """

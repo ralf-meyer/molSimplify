@@ -25,6 +25,7 @@ from scipy.spatial import ConvexHull
 
 # no GUI support for now
 
+
 class protein3D:
     """Holds information about a protein, used to do manipulations.  Reads
     information from structure file (pdb, cif) or is directly built from
