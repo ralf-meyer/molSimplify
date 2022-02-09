@@ -1743,8 +1743,8 @@ class mGUI():
             dent = int(snew[0])-1
             xyzl = ''
             for ii in range(0, dent+1):
-                l = [_f for _f in re.split(' |\t', snew[2+ii]) if _f]
-                xyzl += l[1]+' '+l[2]+' '+l[3]+'\n'
+                li = [_f for _f in re.split(' |\t', snew[2+ii]) if _f]
+                xyzl += li[1]+' '+li[2]+' '+li[3]+'\n'
             # write new entry in coordinations.dict
             s.append(str(dent)+': '+gname+' '+gshort)
             ssort = [_f for _f in list(sorted(s[1:])) if _f]
@@ -1990,26 +1990,26 @@ class mGUI():
             lls = args['-lig'].split(',')
             liglist = []
             # check if multiple ligands in .smi file
-            for l in lls:
-                if '.smi' in l:
-                    f = open(l, 'r')
+            for li in lls:
+                if '.smi' in li:
+                    f = open(li, 'r')
                     smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
-                    liglist.append(l)
+                    liglist.append(li)
             # Get known ligand dictionaries
             licores = getlicores()
             simpleligs = getslicores()
             ligs = []
-            for l in liglist:
+            for li in liglist:
                 # check in simple dictionary
-                if l in list(simpleligs.keys()):
-                    l = simpleligs[l][0]
-                if isinstance(l, str):
+                if li in list(simpleligs.keys()):
+                    li = simpleligs[li][0]
+                if isinstance(li, str):
                     ll = unicodedata.normalize(
-                        'NFKD', l).encode('ascii', 'ignore')
+                        'NFKD', li).encode('ascii', 'ignore')
                 else:
-                    ll = l
+                    ll = li
                 # load ligands as molecules
                 lig, emsg = lig_load(ll, licores)
                 if emsg:
@@ -2096,22 +2096,22 @@ class mGUI():
             lls = [outf]
             liglist = []
             # check if multiple ligands in .smi file
-            for l in lls:
-                if '.smi' in l:
-                    f = open(l, 'r')
+            for li in lls:
+                if '.smi' in li:
+                    f = open(li, 'r')
                     smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
-                    liglist.append(l)
+                    liglist.append(li)
             globs = globalvars()
             licores = getlicores()
             ligs = []
-            for l in liglist:
-                if isinstance(l, str):
+            for li in liglist:
+                if isinstance(li, str):
                     ll = unicodedata.normalize(
-                        'NFKD', l).encode('ascii', 'ignore')
+                        'NFKD', li).encode('ascii', 'ignore')
                 else:
-                    ll = l
+                    ll = li
 
                 lig, emsg = lig_load(ll, licores)
                 if not emsg:

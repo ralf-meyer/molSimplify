@@ -581,8 +581,8 @@ def smartreorderligs(args, ligs, dentl, licores):
     for ii, dd in enumerate(ligdentsidcs):
         locs = [lsizes[i] for i in dd]
         locind = [i[0] for i in sorted(enumerate(locs), key=lambda x:x[1])]
-        for l in locind:
-            indcs.append(ligdentsidcs[ii][l])
+        for li in locind:
+            indcs.append(ligdentsidcs[ii][li])
     return indcs
 
 
@@ -2751,11 +2751,11 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
     # generate file name parts
     ligname = ''
     nosmiles = 0
-    for l in ligands:
-        if l not in list(licores.keys()):
-            if '.xyz' in l or '.mol' in l:
-                l = l.split('.')[-1]
-                l = l.rsplit('/')[-1]
+    for li in ligands:
+        if li not in list(licores.keys()):
+            if '.xyz' in li or '.mol' in li:
+                li = li.split('.')[-1]
+                li = li.rsplit('/')[-1]
             else:
                 if args.sminame:
                     if globs.nosmiles > 1:
@@ -2763,13 +2763,13 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
                     else:
                         ismidx = 0
                     if len(args.sminame) > ismidx:
-                        l = args.sminame[ismidx][0:2]
+                        li = args.sminame[ismidx][0:2]
                     else:
-                        l = l = 'smi'+str(nosmiles)
+                        li = 'smi'+str(nosmiles)
                 else:
-                    l = 'smi'+str(nosmiles)
+                    li = 'smi'+str(nosmiles)
                 nosmiles += 1
-        ligname += ''.join("%s" % l[0:2])
+        ligname += ''.join("%s" % li[0:2])
     if args.calccharge:
         args.charge = core3D.charge
         if args.debug:

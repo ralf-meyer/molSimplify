@@ -5318,10 +5318,10 @@ class mol3D:
             ml_bls = []  # normal bond lengths
             rel_bls = []  # relative bond lengths
             for l_id in ligands:
-                l = self.getAtom(l_id)  # get the ligand from its ID
-                bl = m.distance(l)  # normal bond length
+                a = self.getAtom(l_id)  # get the ligand from its ID
+                bl = m.distance(a)  # normal bond length
                 ml_bls.append(bl)
-                rel_bls.append(bl / (m.rad + l.rad))  # append the relative bond length
+                rel_bls.append(bl / (m.rad + a.rad))  # append the relative bond length
             bls[m_id] = {"M-L bond lengths": ml_bls, "relative bond lengths": rel_bls}
         return bls
 

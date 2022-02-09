@@ -174,7 +174,7 @@ class protein3D:
         """ Automatically choose the conformation of a protein3D class
         instance based first on what the greatest occupancy level is and then
         the first conformation ihe alphabet with all else equal.
-        
+
         """
         for c in self.conf:
             c_ids = []
@@ -185,12 +185,12 @@ class protein3D:
             if len(lst) == 1:
                 self.chains[c[0]].insert(c[1]-1, lst[0])
             else:
-                for l in lst:
-                    if l not in self.chains[c[0]]:
-                        for j in l.atoms:
+                for li in lst:
+                    if li not in self.chains[c[0]]:
+                        for j in li.atoms:
                             in_more_confs = False
                             for m in lst:
-                                if m != l and j in m.atoms:
+                                if m != li and j in m.atoms:
                                     in_more_confs = True
                             if type(j) != atom3D and not in_more_confs:
                                 c_ids.append(j[0])
@@ -198,12 +198,12 @@ class protein3D:
                                 c_ids.append(self.getIndex(j))
                         # print(c_ids)
                         self.stripAtoms(c_ids)
-                        if type(l) == AA3D and l in self.aas[c]:
-                            self.aas[c].remove(l)
-                        elif type(l) == mol3D and l in self.hetmols[c]:
-                            self.hetmols[c].remove(l)
+                        if type(li) == AA3D and li in self.aas[c]:
+                            self.aas[c].remove(li)
+                        elif type(li) == mol3D and li in self.hetmols[c]:
+                            self.hetmols[c].remove(li)
         self.setConf([])
-            
+
     def setR(self, R):
         """ Set R value of protein3D class.
 
@@ -563,8 +563,8 @@ class protein3D:
         """
         if not self.metals:
             metal_list = []
-            for l in self.hetmols.values():  # no metals in AAs
-                for m in l:
+            for li in self.hetmols.values():  # no metals in AAs
+                for m in li:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
                             if a.occup == 1 or a in self.bonds.keys():
@@ -732,9 +732,9 @@ class protein3D:
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
-                l = line.split()
-                if len(l) > 2:
-                    a = AA3D(l[0], l[1], l[2])
+                sp = line.split()
+                if len(sp) > 2:
+                    a = AA3D(sp[0], sp[1], sp[2])
                     missing_aas.append(a)
 
         # start getting missing atoms
@@ -750,12 +750,12 @@ class protein3D:
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
-                l = line.split()
-                if len(l) > 2:
-                    missing_atoms[(l[1], l[2])] = []
-                    for atom in l[3:]:
+                sp = line.split()
+                if len(sp) > 2:
+                    missing_atoms[(sp[1], sp[2])] = []
+                    for atom in sp[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[(l[1], l[2])].append(
+                            missing_atoms[(sp[1], sp[2])].append(
                                 atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids and heteroatoms
         pa_dict = {'AltLoc': ""}
@@ -784,23 +784,23 @@ class protein3D:
 
             elif "CONECT" in l_type:  # get extra connections
                 line = line[6:]  # remove type
-                l = [line[i:i+5] for i in range(0, len(line), 5)]
-                if int(l[0]) in atoms.keys() and atoms[int(l[0])] not in bonds.keys():
-                    bonds[atoms[int(l[0])]] = set()
-                for i in l[1:]:
+                li = [line[i:i+5] for i in range(0, len(line), 5)]
+                if int(li[0]) in atoms.keys() and atoms[int(li[0])] not in bonds.keys():
+                    bonds[atoms[int(li[0])]] = set()
+                for i in li[1:]:
                     try:
-                        bonds[atoms[int(l[0])]].add(atoms[int(i)])
-                        if atoms[int(l[0])].loc != '':
+                        bonds[atoms[int(li[0])]].add(atoms[int(i)])
+                        if atoms[int(li[0])].loc != '':
                             for j in {1, -1}:
-                                if atoms[int(l[0]) + j].greek == atoms[int(l[0])].greek:
-                                    if atoms[int(l[0]) + j] not in bonds.keys():
-                                        bonds[atoms[int(l[0]) + j]] = {atoms[int(i)]}
+                                if atoms[int(li[0]) + j].greek == atoms[int(li[0])].greek:
+                                    if atoms[int(li[0]) + j] not in bonds.keys():
+                                        bonds[atoms[int(li[0]) + j]] = {atoms[int(i)]}
                                     else:
-                                        bonds[atoms[int(l[0]) + j]].add(atoms[int(i)])
+                                        bonds[atoms[int(li[0]) + j]].add(atoms[int(i)])
                                     if atoms[int(i)] not in bonds.keys():
-                                        bonds[atoms[int(i)]] = {atoms[int(l[0]) + j]}
+                                        bonds[atoms[int(i)]] = {atoms[int(li[0]) + j]}
                                     else:
-                                        bonds[atoms[int(i)]].add(atoms[int(l[0]) + j])
+                                        bonds[atoms[int(i)]].add(atoms[int(li[0]) + j])
                     except:
                         # if "  " not in i and i != " ":
                         #    print("likely OXT")

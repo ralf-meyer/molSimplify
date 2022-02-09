@@ -226,9 +226,9 @@ def stripsalts(fname):
             if r in ss:
                 ss = ss.replace(r, '')
         ls = ss.split('[')
-        for l in ls:
-            if ']' in l:
-                lq = l.split(']')[0]
+        for li in ls:
+            if ']' in li:
+                lq = li.split(']')[0]
                 if lq not in accepted:
                     lq0 = '.[' + lq + ']'
                     lq1 = '[' + lq + '].'

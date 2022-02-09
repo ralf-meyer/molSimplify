@@ -70,13 +70,13 @@ def radial(v):
 def calc(den, dV):
     bohr_to_angstrom = 0.529177249
     totpts = len(den)
-    I = 0  # initialize integral
+    integral = 0  # initialize integral
     # loop over all integrating cubes
     for dval in den:
         # Sum values
-        I += dval[0]
-    I = I*dV
-    return I
+        integral += dval[0]
+    integral = integral*dV
+    return integral
 
 # Calculate spreads and averages of density and ELF
 #  @param den Array of densities
@@ -133,14 +133,14 @@ def calcHELP(den, ELF, dV):
     totpts = len(den)
     if len(den) != len(ELF):
         exit('ELF and den cube files have not the same dimensions..Exiting.')
-    I = 0  # initialize integral
+    integral = 0  # initialize integral
     # loop over all integrating cubes
     for i, dval in enumerate(den):
         if (dval[0] > 0.001 and ELF[i][0] >= 0.5):
             # Summ values
-            I += dval[0]
-    I = I*dV
-    return I
+            integral += dval[0]
+    integral = integral*dV
+    return integral
 
 # Parse cube file
 #  @param cubef Name of cube file
@@ -205,8 +205,8 @@ def parsecube(cubef):
     fmax = 0
     # get wfc values
     sv = ''
-    for l in range(offset, len(s)):
-        sv += '  '.join(s[l].split('\n'))
+    for li in range(offset, len(s)):
+        sv += '  '.join(s[li].split('\n'))
     val = [_f for _f in sv.split(' ') if _f]
     for i in range(0, n1):
         for j in range(0, n2):
@@ -322,8 +322,8 @@ def readden(inputf):
         pre += s[i] + '\n'
     # get wfc values
     sv = ''
-    for l in range(offset, len(s)):
-        sv += '  '.join(s[l].split('\n'))
+    for li in range(offset, len(s)):
+        sv += '  '.join(s[li].split('\n'))
     val = [_f for _f in sv.split(' ') if _f]
     for i in range(0, n1):
         for j in range(0, n2):

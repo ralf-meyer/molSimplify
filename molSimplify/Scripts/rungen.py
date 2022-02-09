@@ -56,9 +56,9 @@ def constrgen(rundir, args, globs):
                                'Random generation started\nGenerating ligand combinations.\n\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
     if args.lig:
-        for i, l in enumerate(args.lig):
-            ligs0.append(l)
-            ligentry, emsg = lig_load(l)  # check ligand
+        for i, li in enumerate(args.lig):
+            ligs0.append(li)
+            ligentry, emsg = lig_load(li)  # check ligand
             # update ligand
             if ligentry:
                 args.lig[i] = ligentry.name
@@ -86,7 +86,7 @@ def constrgen(rundir, args, globs):
                     ligentry.denticity = 1
             if coord:
                 coord -= int(args.ligocc[i])*ligentry.denticity
-            licores.pop(l, None)  # remove from dictionary
+            licores.pop(li, None)  # remove from dictionary
     # check for ligand groups
     licoresnew = dict()
     if args.liggrp and 'all' != args.liggrp.lower():
@@ -142,7 +142,7 @@ def constrgen(rundir, args, globs):
                 args.keepHs = [opt]
         emsg = rungen(rundir, args, False, globs)  # run structure generation
     return args, emsg
-    
+
 
 ###############################################
 ### get sample aggreeing to the constraints ###
@@ -166,9 +166,9 @@ def getconstsample(no_rgen, args, licores, coord):
         # get total denticity
         totdent = 0
         dents = []
-        for l in combo:
-            totdent += int(len(licores[list(licores.keys())[l]][2]))
-            dents.append(int(len(licores[list(licores.keys())[l]][2])))
+        for li in combo:
+            totdent += int(len(licores[list(licores.keys())[li]][2]))
+            dents.append(int(len(licores[list(licores.keys())[li]][2])))
         # check for multiple multidentate ligands
         dsorted = sorted(dents)
         if not coord or (coord and totdent == coord):
@@ -374,9 +374,9 @@ def draw_supervisor(args, rundir):
     if args.lig:
         print('Due to technical limitations, we will draw only the first ligand.')
         print('To view multiple ligands at once, consider using the GUI instead.')
-        l = args.lig[0]
-        lig, emsg = lig_load(l)
-        lig.draw_svg(l)
+        li = args.lig[0]
+        lig, emsg = lig_load(li)
+        lig.draw_svg(li)
     elif args.core:
         if len(args.core) > 1:
             print('Due to technical limitations, we will draw only the first core.')

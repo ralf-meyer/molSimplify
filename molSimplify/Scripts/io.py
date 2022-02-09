@@ -337,8 +337,8 @@ def loaddata(path):
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
-            l = [_f for _f in line.split(None) if _f]
-            d[(l[0], l[1], l[2], l[3], l[4])] = l[5]  # read dictionary
+            s = [_f for _f in line.split(None) if _f]
+            d[(s[0], s[1], s[2], s[3], s[4])] = s[5]  # read dictionary
     f.close()
     return d
 
@@ -363,8 +363,8 @@ def loaddata_ts(path):
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
-            l = [_f for _f in line.split(None) if _f]
-            d[(l[0], l[1], l[2], l[3])] = l[4:]  # read dictionary
+            s = [_f for _f in line.split(None) if _f]
+            d[(s[0], s[1], s[2], s[3])] = s[4:]  # read dictionary
     f.close()
     return d
 
@@ -617,14 +617,14 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         # Parsing substrate connection atoms
         if 'pi' in var_list_sub_i[2]:
             sub.denticity = 1
-            sub.cat = [int(l) for l in var_list_sub_i[2][:-1]]
+            sub.cat = [int(li) for li in var_list_sub_i[2][:-1]]
             sub.cat.append('pi')
         else:
-            sub.cat = [int(l) for l in var_list_sub_i[2]]
+            sub.cat = [int(li) for li in var_list_sub_i[2]]
         if not subcatoms:
             subcatoms = sub.cat
         # Parsing substrate group
-        sub.grps = [l for l in var_list_sub_i[3]]
+        sub.grps = [li for li in var_list_sub_i[3]]
         if len(var_list_sub_i[4]) > 0:
             sub.ffopt = var_list_sub_i[4]
     # load from file
@@ -805,13 +805,13 @@ def lig_load(userligand, licores=None):
         lig.ident = dbentry[1]
         lig.charge = lig.OBMol.GetTotalCharge()
         if 'pi' in dbentry[2]:
-            lig.cat = [int(l) for l in dbentry[2][:-1]]
+            lig.cat = [int(li) for li in dbentry[2][:-1]]
             lig.cat.append('pi')
         else:
             if lig.denticity == 1:
                 lig.cat = [int(dbentry[2])]
             else:
-                lig.cat = [int(l) for l in dbentry[2]]
+                lig.cat = [int(li) for li in dbentry[2]]
         if lig.denticity > 1:
             lig.grps = dbentry[3]
         else:

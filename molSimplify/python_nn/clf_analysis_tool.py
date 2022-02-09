@@ -26,7 +26,7 @@ def get_acc(pred_std, pred_err, stds):
     return stds, np.array(acc), np.array(ratio)
 
 
-def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
+def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):  # noqa: E741
     dist_mat = pairwise_distances(fmat1, fmat2, 'manhattan')
     dist_mat = dist_mat * 1.0 / dist_ref
     dist_avrg, dist_list, labels_list = [], [], []

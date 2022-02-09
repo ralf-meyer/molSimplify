@@ -555,15 +555,15 @@ def parseinputfile(args, inputfile_str=None):
         line = line.replace('\n', '')
         if not li.startswith("#") and len(li) > 0:  # ignore comments/empty lines
             # split arguments on whitespace, commas (this breaks smarts)
-            l = [_f for _f in re.split(' |\t|,|&', li) if _f]
+            l = [_f for _f in re.split(' |\t|,|&', li) if _f]  # noqa: E741
             # parse general arguments
             if (l[0] == '-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
             if (l[0] == '-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = []
-                l = line.split('ccatoms', 1)[1]
-                l = l.strip(' ')
-                l = l.split(',')
+                l = line.split('ccatoms', 1)[1]  # noqa: E741
+                l = l.strip(' ')  # noqa: E741
+                l = l.split(',')  # noqa: E741
                 args.ccatoms = [int(ll)-1 for ll in l]
             if (l[0] == '-rundir'):
                 set_rundir = True
@@ -590,11 +590,11 @@ def parseinputfile(args, inputfile_str=None):
                     args.jobdirblank = True
             ### parse structure generation arguments ###
             if (l[0] == '-bind' and len(l[1:]) > 0):
-                l = [_f for _f in re.split(' |,|\t', line) if _f]
+                l = [_f for _f in re.split(' |,|\t', line) if _f]  # noqa: E741
                 # discard comments
                 for ibind, lbind in enumerate(l):
                     if lbind == '#':
-                        l = l[:ibind]
+                        l = l[:ibind]  # noqa: E741
                         break
                 args.bind = l[1]
             if (l[0] == '-nbind' and len(l[1:]) > 0):
@@ -678,9 +678,9 @@ def parseinputfile(args, inputfile_str=None):
                     args.sminame = l[1:]
             if '-smicat' in line:
                 args.smicat = []
-                l = line.split('smicat', 1)[1]
-                l = l.replace(' ', '')
-                l = l.split('],[')
+                l = line.split('smicat', 1)[1]  # noqa: E741
+                l = l.replace(' ', '')  # noqa: E741
+                l = l.split('],[')  # noqa: E741
                 for smicats in l:
                     smicats = smicats.strip('[]')
                     smicats = smicats.split(',')
@@ -706,9 +706,9 @@ def parseinputfile(args, inputfile_str=None):
                 args.scoreconfs = True
             if '-pangles' in line:
                 args.pangles = []
-                l = [_f for _f in line.split('pangles', 1)[1] if _f]
-                l = l.replace(' ', '')
-                l = re.split(',|\t|&|\n', l)
+                l = [_f for _f in line.split('pangles', 1)[1] if _f]  # noqa: E741
+                l = l.replace(' ', '')  # noqa: E741
+                l = re.split(',|\t|&|\n', l)  # noqa: E741
                 for ll in l:
                     args.pangles.append(
                         ll) if ll != '' else args.pangles.append(False)

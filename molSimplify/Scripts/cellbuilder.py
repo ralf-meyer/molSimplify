@@ -83,7 +83,7 @@ def cut_cell_to_index(unit_cell, cell_vector, miller_index):
     # determine the plane:
     cut_cell = mol3D()
     cut_cell.copymol3D(unit_cell)
-    h, k, l = miller_index
+    h, k, l = miller_index  # noqa: E741
     # print('h,k,l',str(h) + ' ' + str(k) +  ' ' +  str(l))
     disc, p, q = xgcd(k, l)
     # print('p,q',str(p) + ' ' + str(q))

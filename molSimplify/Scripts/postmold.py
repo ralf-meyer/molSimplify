@@ -115,7 +115,7 @@ def parse(folder, molf):
     for noatom in range(0, natoms):  # loop over atoms
         # skip first line
         while(True):
-            l = [_f for _f in sgto[cl].split(None) if _f]
+            l = [_f for _f in sgto[cl].split(None) if _f]  # noqa: E741
             if len(l) > 0:
                 if (l[0] == 's' or l[0] == 'S'):  # get shell type
                     atoms[noatom].ns = int(l[1])  # number of primitives
@@ -257,12 +257,12 @@ def parsed(orbf):
     elumo = 10000.0
     ens0 = 0.0
     for line in s:
-        l = [_f for _f in line.split(None) if _f]
-        occ = int(l[3])
-        en = float(l[1])
-        sc = float(l[-4].split('%')[0])
-        dc = float(l[-2].split('%')[0])
-        avocc = float(l[-1])
+        li = [_f for _f in line.split(None) if _f]
+        occ = int(li[3])
+        en = float(li[1])
+        sc = float(li[-4].split('%')[0])
+        dc = float(li[-2].split('%')[0])
+        avocc = float(li[-1])
         dbandc += occ*dc*en
         totcoefs += dc
         if (sc > 99.5):

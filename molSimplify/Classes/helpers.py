@@ -75,8 +75,8 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
             m = mol3D(a_dict['ResName'], loc)
         mols[key] = [m]
     elif loc != '' and ploc != '':
-        l = ord(ploc)
-        if loc > chr(l) and len(mols[key]) <= l-64:
+        li = ord(ploc)
+        if loc > chr(li) and len(mols[key]) <= li-64:
             if aa:
                 m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                          a_dict['ResSeq'], a_dict['Occupancy'], loc)
