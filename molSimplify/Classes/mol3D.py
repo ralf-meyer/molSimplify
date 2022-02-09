@@ -1751,7 +1751,8 @@ class mol3D:
                                 if debug:
                                     print(('poss inds are' + str(possible_idxs)))
                                 if len(possible_idxs) > CN:
-                                    metal_prox = sorted(possible_idxs, 
+                                    metal_prox = sorted(
+                                        possible_idxs, 
                                         key=lambda x: self.getDistToMetal(x, ind))
                                     allowed_idxs = metal_prox[0:CN]
                                     if debug:

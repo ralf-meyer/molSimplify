@@ -1046,8 +1046,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in 
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
@@ -1079,8 +1080,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
@@ -1177,8 +1179,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if (sym_list == temp_unique) and (sl_ligcon == temp_ligsym_unique) and \
@@ -1230,8 +1233,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
@@ -1648,7 +1652,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 eq_con_list = [eq_con_bidentate_list[0], eq_con_bidentate_list[1], eq_con_bidentate_list[2]]
                 eq_lig_list = allowed
                 ax_con_list = [list(set(ligcons[i]) - set(eq_con_bidentate_list[i])) for i in allowed if
-                            (len(eq_con_bidentate_list[i]) == 1)]
+                               (len(eq_con_bidentate_list[i]) == 1)]
                 ax_lig_list = [i for i in allowed if (len(eq_con_bidentate_list[i]) == 1)]
     elif (n_ligs == 2 and not pentadentate):  # 4+2 or 3+3
         if ((max(ligdents) == 4) and (min(ligdents) == 2)): # 4+2
@@ -1817,8 +1821,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             for pair in pair_combos:
                 pair_list.append(list(pair))
             point_combos = [pair_list[argsort_angle_list[0]] + pair_list[argsort_angle_list[1]],
-                    pair_list[argsort_angle_list[1]] + pair_list[argsort_angle_list[2]],
-                    pair_list[argsort_angle_list[2]] + pair_list[argsort_angle_list[0]]]
+                            pair_list[argsort_angle_list[1]] + pair_list[argsort_angle_list[2]],
+                            pair_list[argsort_angle_list[2]] + pair_list[argsort_angle_list[0]]]
             symbols_combos = list()
             for combo in point_combos:
                 tmp_sym_combos = set()
@@ -2170,8 +2174,8 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         else:
             outstring = 'Error21111'
     elif max_dent == 1:
-        trans_pairs = [ax_ligand_list,[eq_ligand_list[0],eq_ligand_list[2]],
-                      [eq_ligand_list[1],eq_ligand_list[3]]]
+        trans_pairs = [ax_ligand_list, [eq_ligand_list[0], eq_ligand_list[2]],
+                       [eq_ligand_list[1], eq_ligand_list[3]]]
         if n_unique_ligs == 6:
             outstring = '111111'
         elif n_unique_ligs == 5:
