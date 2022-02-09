@@ -997,7 +997,7 @@ class protein3D:
                 a = self.atoms[index]
                 a.setEDIA(EDIA)
                 if a.occup < 1: # more than one conformation
-                    subdf = df[df["Infile id"]==index+1]
+                    subdf = df[df["Infile id"] == index+1]
                     if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
                         self.atoms[index+1].setEDIA(EDIA)
                     elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():

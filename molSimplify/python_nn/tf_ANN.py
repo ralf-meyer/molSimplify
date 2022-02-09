@@ -104,7 +104,7 @@ def get_error_params(latent_distances, errors):
     results = scipy.optimize.minimize(log_likelihood, np.array([0.2, 0.01]), bounds=[(1e-9,None), (1e-9, None)])
     return results.x
 
-def matrix_loader(path,rownames=False):
+def matrix_loader(path, rownames=False):
     ## loads matrix with rowname option
     if rownames:
         path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
@@ -112,11 +112,11 @@ def matrix_loader(path,rownames=False):
             csv_lines = list(csv.reader(f))
             row_names = [row[0] for row in csv_lines]
             mat = [row[1:] for row in csv_lines]
-        return mat,row_names
+        return mat, row_names
     else:
         path_to_file = resource_filename(Requirement.parse("molSimplify"),"molSimplify/python_nn/" + path)
-        with open(path_to_file,'r') as csvfile:
-            csv_lines = csv.reader(csvfile,delimiter= ',')
+        with open(path_to_file, 'r') as csvfile:
+            csv_lines = csv.reader(csvfile, delimiter = ',')
             mat = [a for a in csv_lines]
         return mat
 
@@ -142,7 +142,7 @@ def get_key(predictor, suffix=False):
             key = 'homolumo/'
         elif predictor in ['oxo', 'hat']:
             key = 'oxocatalysis/'
-        elif predictor in ['oxo20','homo_empty']:
+        elif predictor in ['oxo20', 'homo_empty']:
             key = 'oxoandhomo/'
         elif predictor in ['geo_static_clf', 'sc_static_clf']:
             key = predictor + '/' + predictor + '_%s' % suffix
@@ -151,19 +151,19 @@ def get_key(predictor, suffix=False):
     return key
 
 
-def data_rescale(scaled_dat, train_mean, train_var, debug = False):
+def data_rescale(scaled_dat, train_mean, train_var, debug=False):
     d = np.shape(train_mean)[0]
     if debug:
-        print(('unnormalizing with number of dimensions = ' +str(d)))
+        print(('unnormalizing with number of dimensions = ' + str(d)))
     dat = (np.multiply(scaled_dat.T, np.sqrt(train_var), ) + train_mean).T
     return (dat)
 
 
-def data_normalize(data, train_mean, train_var, debug = False):
+def data_normalize(data, train_mean, train_var, debug=False):
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
     if debug:
-        print(('normalizing with number of dimensions = ' +str(d)))
+        print(('normalizing with number of dimensions = ' + str(d)))
     ### double check the variance in the training data
     delete_ind = list()
     

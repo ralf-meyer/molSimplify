@@ -1350,7 +1350,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         # Reorder equatorial plane
         eq_con_list = [eq_con_list[x] for x in eq_order]
         eq_lig_list = [eq_lig_list[x] for x in eq_order]
-    elif (n_ligs ==5): # 2+1+1+1+1 
+    elif (n_ligs == 5):  # 2+1+1+1+1 
         allowed = list(range(0, 5))
         if loud:
             print('bidentate 2+1+1+1+1 case')
@@ -1498,14 +1498,18 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ax_lig_list = [j for j, val in enumerate(ligcons) if flat_ax_con_list[0] in val] + \
                               [j for j, val in enumerate(ligcons) if flat_ax_con_list[1] in val]
                 eq_ligcons = set(flat_ligcons) - set(flat_ax_con_list)
-                eq_con_bidentate_list = [list(set(ligcons[0]).intersection(eq_ligcons)),
-                                         list(set(ligcons[1]).intersection(eq_ligcons)),
-                                         list(set(ligcons[2]).intersection(eq_ligcons)),
-                                         list(set(ligcons[3]).intersection(eq_ligcons))]
-                eq_con_bidentate_list = [val for val in eq_con_bidentate_list if len(val)>0]
+                eq_con_bidentate_list = [
+                    list(set(ligcons[0]).intersection(eq_ligcons)),
+                    list(set(ligcons[1]).intersection(eq_ligcons)),
+                    list(set(ligcons[2]).intersection(eq_ligcons)),
+                    list(set(ligcons[3]).intersection(eq_ligcons))]
+                eq_con_bidentate_list = [val for val in eq_con_bidentate_list
+                                         if len(val) > 0]
                 eq_con_list = eq_con_bidentate_list
                 flat_eq_con_list = [item for sublist in eq_con_list for item in sublist]
-                eq_lig_list = [j for j, val in enumerate(ligcons) if len(set(val).intersection(set(flat_eq_con_list)))>0]
+                eq_lig_list = [
+                    j for j, val in enumerate(ligcons) if 
+                    len(set(val).intersection(set(flat_eq_con_list))) > 0]
     elif (n_ligs == 3):  # 2+2+2 or 4+1+1, can be seesaw/planar or 3+2+1, seesaw/planar
         if max(ligdents) == 4: # 4+1+1
             if loud:
@@ -1642,9 +1646,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                                      list(set(bidentate_cons_3).intersection(eq_ligcons))]
             #### all 3 ligands classified as equatorial because at least one atom connects to the equatorial plane for all
             #### axial only has two, where the axial connection is defined
-            if any([len(x)<1 for x in eq_con_bidentate_list]):
-                eq_con_list = [x for x in eq_con_bidentate_list if len(x)>0]
-                eq_lig_list = [i for i,x in enumerate(eq_con_bidentate_list) if len(x)>0]
+            if any([len(x) < 1 for x in eq_con_bidentate_list]):
+                eq_con_list = [x for x in eq_con_bidentate_list if len(x) > 0]
+                eq_lig_list = [i for i, x in enumerate(eq_con_bidentate_list)
+                               if len(x) > 0]
                 ax_lig = list(set(allowed)-set(eq_lig_list))[0]
                 ax_lig_list = [ax_lig,ax_lig]
                 ax_con_list = [[val] for val in ligcons[ax_lig]]
@@ -1754,12 +1759,12 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             top_lig = 0
             top_con = ligcons[0]
             not_eq.append(top_lig)
-            pent_lig=1
+            pent_lig = 1
         else:
             top_lig = 1
             top_con = ligcons[1]
             not_eq.append(top_lig)
-            pent_lig=0
+            pent_lig = 0
         pentadentate_coord_list = np.array([mol.getAtom(
                     ii).coords() for ii in ligcons[pent_lig]])
         ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
@@ -2081,22 +2086,22 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         # 3m|111|, 3f|111|
         if n_unique_ligs == 4:
             if max_eq_count == 2:
-                outstring='3f111'
+                outstring = '3f111'
             else:
-                outstring='3m111'
+                outstring = '3m111'
         elif n_unique_ligs == 3:
             if max_eq_count == 2:
-                outstring='3f|11|1'
+                outstring = '3f|11|1'
             else:
                 if compare_ligs(ax_ligand_list):
-                    outstring ='3m|11|t1'
+                    outstring = '3m|11|t1'
                 else:
-                    outstring='3m|11|c1'
+                    outstring = '3m|11|c1'
         elif n_unique_ligs == 2:
             if max_eq_count == 2:
-                outstring='3f|111|'
+                outstring = '3f|111|'
             else:
-                outstring='3m|111|'
+                outstring = '3m|111|'
         else:
             outstring = 'Error3111'
     elif max_dent == 2 and min_dent == 2:
@@ -2108,7 +2113,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         elif n_unique_ligs == 2:
             outstring = '|22|2'
         elif n_unique_ligs == 1:
-            outstring='|222|'
+            outstring = '|222|'
         else:
             outstring = 'Error222'
     elif max_dent == 2 and len(ligdents) == 4:
@@ -2281,7 +2286,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
                 trans_count = 0
                 for pair in trans_pairs:
                     if compare_ligs(pair):
-                        trans_count +=1
+                        trans_count += 1
                 if trans_count == 3:
                     outstring = '|1111||11|t'
                 elif trans_count == 1:
@@ -2292,7 +2297,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
                 trans_count = 0
                 for pair in trans_pairs:
                     if compare_ligs(pair):
-                        trans_count +=1
+                        trans_count += 1
                 if trans_count == 2:
                     outstring = '|111|m|111|'
                 elif trans_count == 0:
