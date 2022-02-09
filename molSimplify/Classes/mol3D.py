@@ -3553,7 +3553,7 @@ class mol3D:
         metal_coord = self.getAtomCoords(metal_ind)
         if len(self.graph):
             catoms = self.getBondedAtomsSmart(metal_ind)
-        elif not catom_list == None:
+        elif catom_list is not None:
             catoms = catom_list
         elif len(metal_list) > 0:
             _catoms = self.getBondedAtomsOct(ind=metal_ind, strict_cutoff=strict_cutoff)
@@ -3635,7 +3635,7 @@ class mol3D:
         catom_coord = []
         # Note that use this only when you wanna specify the metal connecting atoms.
         # This will change the attributes of mol3D.
-        if not catoms_arr == None:
+        if catoms_arr is not None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
         else:
@@ -3809,7 +3809,7 @@ class mol3D:
                             for ele in liglist]
             liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
                                  for ele in liglist_init]
-        if not catoms_arr == None:
+        if catoms_arr is not None:
             catoms, catoms_init = catoms_arr, catoms_arr
         else:
             self.my_mol_trunc.writexyz("final_trunc.xyz")
@@ -3836,7 +3836,7 @@ class mol3D:
                     for idx, _ele in enumerate(liglist_atom):
                         if set(ele) == set(_ele) and len(ele) == len(_ele):
                             liginds = liglist[idx]
-                            if not catoms_arr == None:
+                            if catoms_arr is not None:
                                 match = True
                             else:
                                 match = connectivity_match(liginds_init, liginds, self.init_mol_trunc,
@@ -3868,7 +3868,7 @@ class mol3D:
             flag_match = False
         if debug:
             print(('returning: ', liglist_shifted, liglist_init))
-        if not catoms_arr == None:  # Force as matching in inspection mode.
+        if catoms_arr is not None:  # Force as matching in inspection mode.
             flag_match = True
         return liglist_shifted, liglist_init, flag_match
 
@@ -4085,7 +4085,7 @@ class mol3D:
         
         """
         dict_angle_linear = {}
-        if not catoms_arr == None:
+        if catoms_arr is not None:
             pass
         else:
             catoms_arr = self.catoms
@@ -4251,10 +4251,10 @@ class mol3D:
         self.get_num_coord_metal(debug=debug)
         # Note that use this only when you wanna specify the metal connecting atoms.
         # This will change the attributes of mol3D.
-        if not catoms_arr == None:
+        if catoms_arr is not None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
-        if not init_mol == None:
+        if init_mol is not None:
             init_mol.get_num_coord_metal(debug=debug)
             catoms_init = init_mol.catoms
         else:
@@ -4270,7 +4270,7 @@ class mol3D:
                                                                       catoms_arr,
                                                                       debug=debug,
                                                                       )
-                if not init_mol == None:
+                if init_mol is not None:
                     init_mol.use_atom_specific_cutoffs = True
                     if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
                         print(
@@ -4371,10 +4371,10 @@ class mol3D:
             print("Warning: your are skipping following geometry checks:")
             print(skip)
         self.get_num_coord_metal(debug=debug)
-        if not catoms_arr == None:
+        if catoms_arr is not None:
             self.catoms = catoms_arr
             self.num_coord_metal = len(catoms_arr)
-        if not init_mol == None:
+        if init_mol is not None:
             init_mol.get_num_coord_metal(debug=debug)
             catoms_init = init_mol.catoms
         else:
@@ -4388,7 +4388,7 @@ class mol3D:
                     if 'FCS' not in skip:
                         dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
                                                                       debug=debug)
-                if not init_mol == None:
+                if init_mol is not None:
                     init_mol.use_atom_specific_cutoffs = True
                     if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
                         print(
@@ -4487,7 +4487,7 @@ class mol3D:
         if not dict_check_loose:
             dict_check_loose = self.dict_oct_check_loose
 
-        if catoms_arr == None:
+        if catoms_arr is None:
             init_mol.get_num_coord_metal(debug=debug)
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > 6:
@@ -4507,7 +4507,7 @@ class mol3D:
         else:
             self.num_coord_metal = 6
             self.geo_dict_initialization()
-            if not init_mol == None:
+            if init_mol is not None:
                 init_mol.use_atom_specific_cutoffs = True
                 if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
                     raise ValueError(
@@ -4593,7 +4593,7 @@ class mol3D:
         if not dict_check_loose:
             dict_check_loose = self.dict_oneempty_check_loose
 
-        if catoms_arr == None:
+        if catoms_arr is None:
             init_mol.get_num_coord_metal(debug=debug)
             catoms_arr = init_mol.catoms
             if len(catoms_arr) > num_coord:
@@ -4615,7 +4615,7 @@ class mol3D:
         else:
             self.num_coord_metal = num_coord
             self.geo_dict_initialization()
-            if not init_mol == None:
+            if init_mol is not None:
                 init_mol.use_atom_specific_cutoffs = True
                 if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
                     raise ValueError(

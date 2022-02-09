@@ -922,7 +922,7 @@ class protein3D:
             except IOError:
                 print('aborted')
             else:
-                if xml_doc == None:
+                if xml_doc is None:
                     print("warning: %s not valid.\n" % pdbCode)
 
     def setDataCompleteness(self, DataCompleteness):

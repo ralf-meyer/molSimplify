@@ -747,7 +747,7 @@ def save_model(model, predictor, num=None, suffix=False):
     base_path = base_path + 'ensemble_models'
     if not os.path.exists(base_path):
         os.makedirs(base_path)
-    if not num == None:
+    if num is not None:
         name = '%s/%s_%d' % (base_path, predictor, num)
     else:
         name = '%s/%s' % (base_path, predictor)
