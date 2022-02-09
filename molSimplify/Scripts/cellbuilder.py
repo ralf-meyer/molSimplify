@@ -1093,7 +1093,7 @@ def slab_module_supervisor(args, rootdir):
     # optional_input
     miller_index = False
     # Required Input: placement
-    #target_molecule =  False
+    # target_molecule =  False
     align_distance_method = False
     # options are "physisorption","chemisorption","custom"
     align_dist = False  # use in conjunction with "custom" above
@@ -1406,7 +1406,7 @@ def slab_module_supervisor(args, rootdir):
         if miller_index:
             print(('rotating angle ' + str(angle) + ' around ' + str(u)))
             super_cell = rotate_around_axis(super_cell, [0, 0, 0], u, angle)
-            #decoy = rotate_around_axis(decoy,[0,0,0],u,angle)##
+            # decoy = rotate_around_axis(decoy,[0,0,0],u,angle)##
             cell_vector = [PointRotateAxis(u, [0, 0, 0], list(
                 i), numpy.pi*angle/(180)) for i in cell_vector]
             ext_duplication_vector = [PointRotateAxis(u, [0, 0, 0], list(
@@ -1509,7 +1509,7 @@ def slab_module_supervisor(args, rootdir):
         #    super_cell_vector[0] = [-1*i for i in super_cell_vector[0]]
         point_coefficients = [get_basis_coefficients(
             at.coords(), super_cell_vector) for at in super_cell.getAtoms()]
-        #print('coords in final slab:' )
+        # print('coords in final slab:' )
         # print(point_coefficients)
         point_coefficients = threshold_basis(point_coefficients, 1E-6)
         # for i in range(0,len(point_coefficients)):
@@ -1524,11 +1524,11 @@ def slab_module_supervisor(args, rootdir):
         # for j,points in enumerate(point_coefficients):
         # if min(new_coords[i])<0:
         # try shift one cv in each direction:
-        #potential_new_point = []
+        # potential_new_point = []
 
         for i, coords in enumerate(new_coords):
             super_cell.getAtom(i).setcoords(coords)
-        #point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
+        # point_coefficients = [get_basis_coefficients(at.coords(),super_cell_vector) for at in super_cell.getAtoms()]
         print('coords in final slab:')
         print(point_coefficients)
         ######

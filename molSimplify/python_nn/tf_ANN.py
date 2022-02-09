@@ -455,7 +455,7 @@ def load_keras_ann(predictor, suffix='model'):
     else:
         loaded_model.compile(loss="mse", optimizer='adam',
                              metrics=['mse', 'mae', 'mape'])
-    #print("Keras/tf model loaded for " + str(predictor) + " from disk")
+    # print("Keras/tf model loaded for " + str(predictor) + " from disk")
     return (loaded_model)
 
 
@@ -494,7 +494,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     if debug:
         print(('excitation is ' + str(excitation.shape)))
         print('fetching non-dimensionalization data... ')
-    #sardines
+    # sardines
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
     if debug:
         print('rescaling input excitation...')

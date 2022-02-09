@@ -1615,12 +1615,12 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     r1l = lig3D.getAtom(catoms[1]).coords()
     rm = lig3D.centermass()
     urot = vecdiff(r1l, r0l)
-    #theta,ub = rotation_params(corerefcoords,r0b,r1b)
-    #theta,ul = rotation_params(rm,r0l,r1l)
+    # theta,ub = rotation_params(corerefcoords,r0b,r1b)
+    # theta,ul = rotation_params(rm,r0l,r1l)
     # if (norm(ub)*norm(ul)) > 1e-8:
-    #theta = 180*arccos(dot(ub,ul)/(norm(ub)*norm(ul)))/pi-180.0
+    #     theta = 180*arccos(dot(ub,ul)/(norm(ub)*norm(ul)))/pi-180.0
     # else:
-    #theta = 0.0
+    #     theta = 0.0
     # rotate around axis
     objopt = 0
     for theta in range(0, 360, 5):
@@ -1643,10 +1643,10 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     tmp3D.copymol3D(m3D)
     tmp3D.combine(lig3D)
     # tmp3D.writexyz('new')
-    #lig3Db = mol3D()
+    # lig3Db = mol3D()
     # lig3Db.copymol3D(lig3D)
-    #lig3D = rotate_around_axis(lig3D,r1,urot,theta)
-    #lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
+    # lig3D = rotate_around_axis(lig3D,r1,urot,theta)
+    # lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
     # select best
 
     try:
@@ -1892,7 +1892,7 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D, c
     corerefcoords = coreref.coords()
     r0 = corerefcoords
     # get cis conformer by rotating rotatable bonds
-    #lig3D = find_rotate_rotatable_bond(lig3D,catoms)
+    # lig3D = find_rotate_rotatable_bond(lig3D,catoms)
     # connection atom
     atom0 = catoms[0]
     # translate ligand to match first connecting atom to backbone connecting point
@@ -2381,7 +2381,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                     avg_MLdists = sum_MLdists/4
                     # scale template by average M-L distance
                     auxmol_m3D.addAtom(m3D.getAtom(0))
-                    #! TODO BCM definition slightly modified. Keep an eye for unexpected structures
+                    # TODO BCM definition slightly modified. Keep an eye for unexpected structures
                     for iiax in range(0, 4):
                         auxmol_m3D.BCM(iiax, 4, avg_MLdists)
                     auxmol_m3D.deleteatom(4)

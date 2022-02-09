@@ -61,7 +61,7 @@ def simple_network_builder(layers, partial_path):
 
 
 def csv_loader(path):
-    #print('in csv loader')
+    # print('in csv loader')
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
     with open(path_to_file, 'r') as csvfile:
         csv_lines = csv.reader(csvfile, delimiter=',')
@@ -89,38 +89,38 @@ def matrix_loader(path, rownames=False):
         return mat
 
 
-#n = network_builder([25,50,51],"nn_split")
+# n = network_builder([25,50,51],"nn_split")
 def simple_splitting_ann(excitation):
     globs = globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_split")
-    #print('path to ANN data: ',path_to_file)
+    # print('path to ANN data: ',path_to_file)
     n = simple_network_builder([25, 50, 50], "ms_split")
     excitation, sp_center, sp_shift = excitation_standardizer(excitation, 'split')
-    #print(excitation)
-    #print('center is ' + str(sp_center))
-    #print('scale is '+ str(sp_shift))
-    #print(excitation)
+    # print(excitation)
+    # print('center is ' + str(sp_center))
+    # print('scale is '+ str(sp_shift))
+    # print(excitation)
     result = n.activate(excitation)
 
-    #print('result is ' + str(result))
+    # print('result is ' + str(result))
     result = (result*sp_shift) + sp_center
-    #print('result is ' + str(result))
+    # print('result is ' + str(result))
     return result, excitation
 
 
 def simple_slope_ann(slope_excitation):
     globs = globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_slope")
-    #print('path to ANN data: ',path_to_file)
+    # print('path to ANN data: ',path_to_file)
     n = simple_network_builder([24, 50, 50], "ms_slope")  # no alpha value
-    #print(slope_excitation)
+    # print(slope_excitation)
     slope_excitation, sl_center, sl_shift = excitation_standardizer(slope_excitation, 'slope')
-    #print(slope_excitation)
+    # print(slope_excitation)
     result = n.activate(slope_excitation)
     # print('result is ' + str(result))
     # print('center is ' + str(sl_center) + ' shift  '+ str(sl_shift))
     result = (result*sl_shift) + sl_center
-    #print('result is ' + str(result))
+    # print('result is ' + str(result))
     return result
 
 
@@ -178,5 +178,5 @@ def find_eu_dist(excitation):
             min_dist = this_dist
             best_row = rownames[i]
             min_row = rows
-    #print('min dist is ' +str(min_dist))
+    # print('min dist is ' +str(min_dist))
     return min_dist, best_row

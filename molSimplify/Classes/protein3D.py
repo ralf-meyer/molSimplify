@@ -978,12 +978,12 @@ class protein3D:
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
-        t = 5 # can change depending on how frequently to loop
+        t = 5  # can change depending on how frequently to loop
         while dictionary["status_code"] == 202:
             res2 = subprocess.Popen(['curl', int_dict['location']],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            #print('sleeping', t)
+            # print('sleeping', t)
             time.sleep(t)
             res2.wait()
             out2, err2 = res2.communicate()

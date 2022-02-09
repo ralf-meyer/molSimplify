@@ -666,7 +666,7 @@ def parseinputfile(args, inputfile_str=None):
                 args.ff = l[1].lower()
             if (l[0] == '-ffoption' and len(l[1:]) > 0):
                 args.ffoption = l[1:]
-                #print('setting ffoption ' + str(args.ffoption))
+                # print('setting ffoption ' + str(args.ffoption))
             if (l[0] == '-ff_final_opt' and len(l[1:]) > 0):
                 args.ff_final_opt = l[1].lower()
             if (l[0] == '-place' and len(l[1:]) > 0):

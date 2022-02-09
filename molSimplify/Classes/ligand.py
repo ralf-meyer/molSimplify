@@ -2038,7 +2038,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
     elif max_dent == 4 and min_dent == 1:
         # 411c, 411t, 4|11|c, 4|11|t
         if n_unique_ligs == 2:
-            #4|11|c, 4|11|t
+            # 4|11|c, 4|11|t
             if max_eq_count == 4:
                 outstring = '4|11|t'
             elif max_eq_count == 2:
