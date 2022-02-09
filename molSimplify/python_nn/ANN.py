@@ -112,7 +112,7 @@ def simple_slope_ann(slope_excitation):
     globs = globalvars()
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_slope")
     #print('path to ANN data: ',path_to_file)
-    n = simple_network_builder([24, 50, 50], "ms_slope") ## no alpha value
+    n = simple_network_builder([24, 50, 50], "ms_slope")  # no alpha value
     #print(slope_excitation)
     slope_excitation, sl_center, sl_shift = excitation_standardizer(slope_excitation, 'slope')
     #print(slope_excitation)
