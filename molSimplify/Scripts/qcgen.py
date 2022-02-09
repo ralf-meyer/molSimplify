@@ -829,7 +829,7 @@ def ogen(args, strfiles, method):
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
                 try:
-                    os.mkdirs(mdir)
+                    os.makedirs(mdir)
                 except FileExistsError:
                     pass
         if not args.jobdir:
@@ -1082,7 +1082,7 @@ def molcgen(args, strfiles, method):
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
                 try:
-                    os.mkdirs(mdir)
+                    os.makedirs(mdir)
                 except FileExistsError:
                     pass
         if not args.jobdir:
