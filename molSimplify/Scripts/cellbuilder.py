@@ -1177,7 +1177,7 @@ def slab_module_supervisor(args, rootdir):
         expose_type = args.expose_type
     if (args.shave_extra_layers):  # 10
         shave_extra_layers = args.shave_extra_layers
-     # ## parse placement options
+    # parse placement options
     if (args.place_on_slab):  # 0
         place_on_slab = True
     if (args.target_molecule):  # 1
@@ -1309,10 +1309,10 @@ def slab_module_supervisor(args, rootdir):
             if debug:
                 print('cell vector from cif is')
                 print(cell_vector)
-      #  except:
-      #      emsg.append('unable to import cif at ' + str(cif_path))
-      #      print(emsg)
-      #      return emsg
+            # except:
+            #     emsg.append('unable to import cif at ' + str(cif_path))
+            #     print(emsg)
+            #     return emsg
 
         # testing
         unit_cell.writexyz(rootdir + 'slab/before_COB.xyz')
