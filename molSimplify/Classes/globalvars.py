@@ -774,10 +774,10 @@ class globalvars:
         """
         try:
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-            from tensorflow.keras.models import Model
-            from tensorflow.keras.models import Sequential
+            from tensorflow.keras.models import Model  # noqa: F401
+            from tensorflow.keras.models import Sequential  # noqa: F401
             return True
-        except:
+        except ImportError:
             return False
 
     def testmatplotlib(self):
@@ -790,10 +790,10 @@ class globalvars:
         """
         try:
             # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-            import matplotlib.pyplot as plt
-            import matplotlib.ticker as ticker
+            import matplotlib.pyplot as plt  # noqa: F401
+            import matplotlib.ticker as ticker  # noqa: F401
             return True
-        except:
+        except ImportError:
             return False
 
     def getAllAAs(self):

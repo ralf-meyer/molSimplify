@@ -1,3 +1,4 @@
+# flake8: noqa
 #### This section comes from the structgen_one section of the code, must 
 #### be reformatted to reproduce structgen behavior
 def generate_ts(args):

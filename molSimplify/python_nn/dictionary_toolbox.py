@@ -1,6 +1,3 @@
-import os
-import shutil
-
 
 def write_dictionary(dictionary, path):
     emsg = False
@@ -17,7 +14,7 @@ def read_dictionary(path):
     emsg = False
     dictionary = dict()
     try:
-        with open(path,'r') as f:
+        with open(path, 'r') as f:
             for lines in f:
                 ll = lines.split(",")
                 key = ll[0]

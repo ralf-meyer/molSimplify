@@ -24,7 +24,7 @@ from molSimplify.Scripts.geometry import (distance, connectivity_match,
 from molSimplify.Scripts.rmsd import rigorous_rmsd
 
 try:
-    import PyQt5
+    import PyQt5  # noqa: F401
     from molSimplify.Classes.miniGUI import miniGUI
 
     # PyQt5 flag
