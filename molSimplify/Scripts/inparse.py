@@ -157,7 +157,7 @@ def checkinput(args, calctype="base"):
                 else:
                     try:
                         args.coord = coords[geomnames.index(args.geometry)]
-                    except IndexError:
+                    except ValueError:
                         args.coord = coords[geomshorts.index(args.geometry)]
                     print((
                         'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
@@ -302,7 +302,7 @@ def checkinput(args, calctype="base"):
                 else:
                     try:
                         args.coord = coords[geomnames.index(args.geometry)]
-                    except IndexError:
+                    except ValueError:
                         args.coord = coords[geomshorts.index(args.geometry)]
                     print((
                         'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
