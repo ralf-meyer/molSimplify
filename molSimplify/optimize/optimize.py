@@ -2,6 +2,7 @@ import sys
 import ase.io
 import ase.optimize
 import ase.constraints
+import ase.units
 import geometric
 import logging
 import numpy as np
@@ -83,6 +84,8 @@ def run_preprocessing(args):
     guess_hessian = args.get('guess_hessian', False)
     if guess_hessian:
         H = compute_guess_hessian(atoms, guess_hessian)
+        # Transform to Hartree/bohr^2 for geometric
+        H = H * ase.units.Bohr**2/ase.units.Hartree
         # Filter small and negative eigenvalues
         H = filter_hessian(H)
         np.savetxt('hessian.txt', H)
