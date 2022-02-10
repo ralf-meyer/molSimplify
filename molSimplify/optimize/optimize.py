@@ -8,7 +8,7 @@ import numpy as np
 import pathlib
 from molSimplify.optimize.calculators import get_calculator
 from molSimplify.optimize.params import parse_args
-from molSimplify.optimize.hessians import compute_guess_hessian
+from molSimplify.optimize.hessians import compute_guess_hessian, filter_hessian
 from molSimplify.optimize.coordinates import find_connectivity
 from molSimplify.Classes.globalvars import metalslist
 
@@ -83,6 +83,8 @@ def run_preprocessing(args):
     guess_hessian = args.get('guess_hessian', False)
     if guess_hessian:
         H = compute_guess_hessian(atoms, guess_hessian)
+        # Filter small and negative eigenvalues
+        H = filter_hessian(H)
         np.savetxt('hessian.txt', H)
 
 

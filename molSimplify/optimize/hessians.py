@@ -1,3 +1,4 @@
+import numpy as np
 import numdifftools as nd
 from molSimplify.optimize.calculators import (_available_calculators,
                                               get_calculator)
@@ -19,4 +20,28 @@ def numerical_hessian(atoms, step=1e-5, symmetrize=True):
     atoms.set_positions(x0)
     if symmetrize:
         return 0.5*(H + H.T)
+    return H
+
+
+def filter_hessian(H, thresh=1e-5):
+    """GeomeTRIC resets calculations if Hessian eigenvalues below
+    a threshold of 1e-5 are encountered. This method is used to
+    construct a new Hessian matrix where all eigenvalues smaller
+    than the threshold are set exactly to the threshold value.
+
+    Parameters
+    ----------
+    H : np.array
+        input Hessian
+    thresh : float
+        filter threshold
+
+    Returns
+    -------
+    H : np.array
+        filtered Hessian
+    """
+    vals, vecs = np.linalg.eigh(H)
+    vals[vals < thresh] = thresh
+    H = np.einsum('ji,i,ki->jk', vecs, vals, vecs)
     return H
