@@ -23,18 +23,19 @@ def numerical_hessian(atoms, step=1e-5, symmetrize=True):
     return H
 
 
-def filter_hessian(H, thresh=1e-5):
+def filter_hessian(H, thresh=1.1e-5):
     """GeomeTRIC resets calculations if Hessian eigenvalues below
     a threshold of 1e-5 are encountered. This method is used to
     construct a new Hessian matrix where all eigenvalues smaller
-    than the threshold are set exactly to the threshold value.
+    than the threshold are set exactly to the threshold value
+    which by default is slightly above geomeTRICs cutoff.
 
     Parameters
     ----------
     H : np.array
         input Hessian
     thresh : float
-        filter threshold
+        filter threshold. Default 1.1e-5
 
     Returns
     -------
