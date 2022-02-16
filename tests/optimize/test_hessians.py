@@ -78,14 +78,20 @@ def test_numerical_hessian_Fe_CO_6(method):
                                        [0., 0., -2.3], [0., 0., -3.4]],
                             charges=[2]+[0, 0]*6)
     atoms.calc = get_calculator(method)
-    x0 = atoms.get_positions()
-    H = numerical_hessian(atoms, symmetrize=False)
-    np.testing.assert_allclose(atoms.get_positions(), x0)
-    np.testing.assert_allclose(H, H.T, atol=1e-8)
-    H_ref = ref_hessian(atoms, step=1e-5)
-    # Symmetrize
-    H = 0.5*(H + H.T)
-    np.testing.assert_allclose(H, H_ref, atol=1e-4)
+    if method == 'mmff94':
+        # MMFF94 does not have parameters for Fe and is
+        # therefore expected to fail.
+        with pytest.raises(RuntimeError):
+            atoms.get_potential_energy()
+    else:
+        x0 = atoms.get_positions()
+        H = numerical_hessian(atoms, symmetrize=False)
+        np.testing.assert_allclose(atoms.get_positions(), x0)
+        np.testing.assert_allclose(H, H.T, atol=1e-8)
+        H_ref = ref_hessian(atoms, step=1e-5)
+        # Symmetrize
+        H = 0.5*(H + H.T)
+        np.testing.assert_allclose(H, H_ref, atol=1e-4)
 
 
 def test_filter_hessian():
