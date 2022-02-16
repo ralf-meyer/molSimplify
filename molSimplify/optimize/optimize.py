@@ -10,7 +10,7 @@ import pathlib
 from molSimplify.optimize.calculators import get_calculator
 from molSimplify.optimize.params import parse_args
 from molSimplify.optimize.hessians import compute_guess_hessian, filter_hessian
-from molSimplify.optimize.coordinates import find_connectivity
+from molSimplify.optimize.connectivity import find_connectivity
 from molSimplify.Classes.globalvars import metalslist
 
 
