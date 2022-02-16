@@ -91,7 +91,7 @@ def test_numerical_hessian_Fe_CO_6(method):
 def test_filter_hessian():
     H = np.diag([-1., 0., 1., 2., 3., 4.])
     H = filter_hessian(H)
-    np.testing.assert_allclose(H, np.diag([1e-5, 1e-5, 1., 2., 3., 4.]))
+    np.testing.assert_allclose(H, np.diag([1.1e-5, 1.1e-5, 1., 2., 3., 4.]))
 
     # Build random matrix with eigenvalue above 0.1
     A = np.array([[0.7432, 0.4965, 0.2700, 0.0742, -0.0800, -0.1814],
