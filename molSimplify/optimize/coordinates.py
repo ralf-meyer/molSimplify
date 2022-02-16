@@ -6,11 +6,11 @@ from abc import abstractmethod
 class Primitive():
 
     @abstractmethod
-    def q(self, xyzs):
+    def value(self, xyzs):
         ...
 
     @abstractmethod
-    def dq_dx(self, xyzs):
+    def derivative(self, xyzs):
         ...
 
 
@@ -19,25 +19,25 @@ class Distance(Primitive):
     def __init__(self, i, j):
         self.i, self.j = i, j
 
-    def q(self, xyzs):
+    def value(self, xyzs):
         rij = xyzs[self.i, :] - xyzs[self.j, :]
         return np.linalg.norm(rij)
 
-    def dq_dx(self, xyzs):
+    def derivative(self, xyzs):
         rij = xyzs[self.i, :] - xyzs[self.j, :]
         r = np.linalg.norm(rij)
-        dr_dx = np.zeros(xyzs.size)
-        dr_dx[3*self.i:3*(self.i+1)] = rij/r
-        dr_dx[3*self.j:3*(self.j+1)] = -rij/r
-        return dr_dx
+        dr = np.zeros(xyzs.size)
+        dr[3*self.i:3*(self.i+1)] = rij/r
+        dr[3*self.j:3*(self.j+1)] = -rij/r
+        return dr
 
 
 class InverseDistance(Distance):
 
-    def q(self, xyzs):
+    def value(self, xyzs):
         return 1./Distance.q(self, xyzs)
 
-    def dq_dx(self, xyzs):
+    def derivative(self, xyzs):
         rij = xyzs[self.i, :] - xyzs[self.j, :]
         q = 1.0/np.linalg.norm(rij)
         dq = np.zeros(len(xyzs)*3)
@@ -55,7 +55,7 @@ class Angle(Primitive):
         """
         self.i, self.j, self.k = i, j, k
 
-    def q(self, xyzs):
+    def value(self, xyzs):
         rji = xyzs[self.i, :] - xyzs[self.j, :]
         rjk = xyzs[self.k, :] - xyzs[self.j, :]
         norm_rji = np.linalg.norm(rji)
@@ -67,7 +67,7 @@ class Angle(Primitive):
             norm_rji*norm_rjk + np.dot(rji, rjk))
         return t
 
-    def dq_dx(self, xyzs):
+    def derivative(self, xyzs):
         rji = xyzs[self.i, :] - xyzs[self.j, :]
         rjk = xyzs[self.k, :] - xyzs[self.j, :]
         norm_rji = np.linalg.norm(rji)
@@ -90,7 +90,7 @@ class Dihedral(Primitive):
         """
         self.i, self.j, self.k, self.l = i, j, k, l  # noqa
 
-    def q(self, xyzs):
+    def value(self, xyzs):
         f = xyzs[self.i, :] - xyzs[self.j, :]
         g = xyzs[self.j, :] - xyzs[self.k, :]
         h = xyzs[self.l, :] - xyzs[self.k, :]
@@ -102,7 +102,7 @@ class Dihedral(Primitive):
                 np.dot(a, b))
         return w
 
-    def dq_dx(self, xyzs):
+    def derivative(self, xyzs):
         """Formula 27 (i,j,k,l)"""
         f = xyzs[self.i, :] - xyzs[self.j, :]
         g = xyzs[self.j, :] - xyzs[self.k, :]
@@ -125,6 +125,9 @@ class Dihedral(Primitive):
 
 
 def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
+    """Follows the algorithm outlined in Section II A of
+    Billeter et al. Phys. Chem. Chem. Phys., 2000, 2, 2177-2186
+    """
     bonds = []
     N = len(atoms)
     xyzs = atoms.get_positions()
@@ -137,30 +140,31 @@ def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
     for i in range(N):
         for j in range(i+1, N):
             r2[i, j] = r2[j, i] = np.sum((xyzs[i, :] - xyzs[j, :])**2)
+            # The paper clearly states that squared distances are compared
+            # without squaring the threshold:
             if (r2[i, j] < threshold * (
                     ase.data.covalent_radii[types[i]]
                     + ase.data.covalent_radii[types[j]])**2):
-                # The bonds are sorted by default here:
                 bonds.append((i, j))
                 neighbors_per_atom[i].append(j)
                 neighbors_per_atom[j].append(i)
 
     if connect_fragments:
         # Check for disconnected fragments
-        def DepthFirstSearch(fragment, i, visited):
+        def depth_first_search(fragment, i, visited):
             visited[i] = True
             fragment.append(i)
             for j in neighbors_per_atom[i]:
                 if not visited[j]:
-                    fragment = DepthFirstSearch(fragment, j, visited)
+                    fragment = depth_first_search(fragment, j, visited)
             return fragment
 
-        visited = [False]*N
+        visited = [False] * N
         fragments = []
         for i in range(N):
             if not visited[i]:
                 fragment = []
-                fragments.append(DepthFirstSearch(fragment, i, visited))
+                fragments.append(depth_first_search(fragment, i, visited))
 
         # If there are more than 1 fragment connect shortest distance atoms
         while len(fragments) > 1:
