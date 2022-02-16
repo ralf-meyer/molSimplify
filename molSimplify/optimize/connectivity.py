@@ -8,11 +8,14 @@ def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
     Follows the algorithm outlined in Section II A of
     Billeter et al. Phys. Chem. Chem. Phys., 2000, 2, 2177-2186
     """
-    bonds = []
     N = len(atoms)
     xyzs = atoms.get_positions()
     types = atoms.get_atomic_numbers()
 
+    bonds = []
+    # Array used to save the squared distances. The diagonal is set to
+    # np.inf to avoid bonding atoms to themselves. TODO: There should be
+    # a "nicer" way of avoiding this problem.
     r2 = np.zeros((N, N))
     np.fill_diagonal(r2, np.inf)
     neighbors_per_atom = [[] for _ in range(N)]
@@ -20,8 +23,9 @@ def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
     for i in range(N):
         for j in range(i+1, N):
             r2[i, j] = r2[j, i] = np.sum((xyzs[i, :] - xyzs[j, :])**2)
-            # The paper clearly states that squared distances are compared
-            # without squaring the threshold:
+            # "A connection is made whenever the square of the interatomic
+            # distance is less than 1.25 times the square of the sum of the
+            # corresponding covalent atomic radii."
             if (r2[i, j] < threshold * (
                     ase.data.covalent_radii[types[i]]
                     + ase.data.covalent_radii[types[j]])**2):
@@ -30,7 +34,9 @@ def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
                 neighbors_per_atom[j].append(i)
 
     if connect_fragments:
-        # Check for disconnected fragments
+        # "This procedure may lead to insulated fragments which are avoided
+        # by inserting the missing connections from the shortest-distance
+        # branched path."
         def depth_first_search(fragment, i, visited):
             visited[i] = True
             fragment.append(i)
@@ -162,10 +168,14 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
                 n2 /= np.linalg.norm(n2)
                 n3 = np.cross(r_ak, r_ai)
                 n3 /= np.linalg.norm(n3)
+                # Not sure if actually all three possible values need to be
+                # checked. For an actual planar case the angles are dependent
+                # since they add to 360 degrees.
                 if (np.abs(n1.dot(n2)) > planar_threshold
                         or np.abs(n2.dot(n3)) > planar_threshold
                         or np.abs(n3.dot(n1)) > planar_threshold):
                     # Remove bend
+                    # TODO: Better heuristic of which bend to remove
                     bends.remove((ai, a, aj))
                     # Try to find an improper (b, a, c, d)
                     # such neither the angle t1 between (b, a, c)
