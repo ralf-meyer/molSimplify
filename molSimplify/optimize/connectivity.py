@@ -176,7 +176,7 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
                         r_cd = xyzs[d, :] - xyzs[c, :]
                         cos_t1 = cos_angle(r_ab, r_ac)
                         cos_t2 = cos_angle(r_ac, r_cd)
-                        if np.abs(cos_t1) < 0.95 and np.abs(cos_t2 < 0.95):
+                        if np.abs(cos_t1) < 0.95 and np.abs(cos_t2) < 0.95:
                             planars.append((a, b, c, d))
                             break
                     # Break after one improper has been added
