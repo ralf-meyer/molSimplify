@@ -34,7 +34,7 @@ class Distance(Primitive):
 class InverseDistance(Distance):
 
     def value(self, xyzs):
-        return 1./Distance.q(self, xyzs)
+        return 1./Distance.value(self, xyzs)
 
     def derivative(self, xyzs):
         rij = xyzs[self.i, :] - xyzs[self.j, :]
