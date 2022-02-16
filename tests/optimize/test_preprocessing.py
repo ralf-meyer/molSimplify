@@ -8,5 +8,5 @@ def test_read_molecule():
         'tests/optimize/inputs/acac/acac.inp')
     atoms, xyz_file = read_molecule(in_file)
     assert xyz_file.name == 'fe_oct_2_acac_3_s_5_conf_1.xyz'
-    assert atoms.get_initial_magnetic_moments().sum() == 4
-    assert atoms.get_initial_charges().sum() == -1
+    assert atoms.get_initial_magnetic_moments().sum() == 4.
+    assert atoms.get_initial_charges().sum() == -1.
