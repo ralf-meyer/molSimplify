@@ -4,14 +4,29 @@ import numpy as np
 import numdifftools as nd
 
 
+def test_distances(atol=1e-10):
+    e = np.array([1., 2., 3.])
+    e /= np.linalg.norm(e)
+
+    d = Distance(0, 1)
+    d_inv = InverseDistance(0, 1)
+    xyzs = np.zeros((2, 3))
+    for r in np.linspace(0.1, 100, 21):
+        xyzs[0, :] = 0.5*r*e
+        xyzs[1, :] = -0.5*r*e
+        assert np.abs(d.value(xyzs) - r) < atol
+        assert np.abs(d_inv.value(xyzs) - 1/r) < atol
+
+
 def test_angle(atol=1e-10):
     a = Angle(1, 0, 2)
 
+    xyzs = np.array([[0., 0., 0.],
+                     [1.2, 0., 0.],
+                     [0.7, 0., 0.]])
     for theta in [0.01, np.pi/3, np.pi/2, 2*np.pi/3, np.pi - 0.01]:
-        xyzs = np.array([[0., 0., 0.],
-                        [1.2, 0., 0.],
-                        [0.7*np.cos(theta), 0., 0.7*np.sin(theta)]])
-        assert np.abs(theta - a.value(xyzs)) < atol
+        xyzs[2, :] = 0.7*np.cos(theta), 0., 0.7*np.sin(theta)
+        assert np.abs(a.value(xyzs) - theta) < atol
 
 
 def test_primitive_derivatives(atol=1e-10):
