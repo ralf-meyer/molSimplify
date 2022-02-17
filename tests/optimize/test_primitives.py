@@ -1,5 +1,5 @@
 from molSimplify.optimize.coordinates import (Distance, InverseDistance,
-                                              Angle, Dihedral)
+                                              Angle, Dihedral, LinearAngle)
 import numpy as np
 import numdifftools as nd
 
@@ -50,6 +50,14 @@ def test_primitive_derivatives(atol=1e-10):
     a = Angle(1, 0, 2)
     da_ref = nd.Gradient(lambda x: a.value(x.reshape((-1, 3))))
     np.testing.assert_allclose(a.derivative(xyzs), da_ref(xyzs), atol=atol)
+
+    t1 = LinearAngle(1, 0, 3, 0)
+    dt1_ref = nd.Gradient(lambda x: t1.value(x.reshape((-1, 3))))
+    np.testing.assert_allclose(t1.derivative(xyzs), dt1_ref(xyzs), atol=atol)
+
+    t2 = LinearAngle(1, 0, 3, 1)
+    dt2_ref = nd.Gradient(lambda x: t2.value(x.reshape((-1, 3))))
+    np.testing.assert_allclose(t2.derivative(xyzs), dt2_ref(xyzs), atol=atol)
 
     w = Dihedral(1, 0, 2, 4)
     dw_ref = nd.Gradient(lambda x: w.value(x.reshape((-1, 3))))

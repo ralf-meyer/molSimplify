@@ -39,7 +39,7 @@ class InverseDistance(Distance):
     def derivative(self, xyzs):
         rij = xyzs[self.i, :] - xyzs[self.j, :]
         q = 1.0/np.linalg.norm(rij)
-        dq = np.zeros(len(xyzs)*3)
+        dq = np.zeros(xyzs.size)
         dq[3*self.i:3*(self.i+1)] = -rij * q**3
         dq[3*self.j:3*(self.j+1)] = rij * q**3
         return dq
@@ -78,6 +78,106 @@ class Angle(Primitive):
         dt[3*self.k:3*(self.k+1)] = - np.cross(rjk, z)/norm_rjk**2
         dt[3*self.j:3*(self.j+1)] = (- dt[3*self.i:3*(self.i+1)]
                                      - dt[3*self.k:3*(self.k+1)])
+        return dt
+
+
+class LinearAngle(Primitive):
+    def __init__(self, i, j, k, axis):
+        """Closely follows the implementation in geomeTRIC
+
+        Parameters
+        ----------
+        i : int
+            Index of the first atom
+        j : int
+            Index of the center atom
+        k : int
+            Index of the last atom
+        axis : int
+            Projection axis. Can take values 0 or 1.
+        """
+        self.i, self.j, self.k = i, j, k
+        self.axis = axis
+        self.eref = None
+
+    def _calc_reference(self, xyzs):
+        rik = xyzs[self.k, :] - xyzs[self.i, :]
+        # Cartesian axes.
+        cart_vecs = np.eye(3)
+        # Select Cartesian axis with the least overlap with rik as
+        # reference direction.
+        ind = np.argmin([np.dot(ei, rik)**2 for ei in cart_vecs])
+        self.eref = cart_vecs[ind]
+
+    def value(self, xyzs):
+        # Unit vector pointing from i to k.
+        rik = xyzs[self.k, :] - xyzs[self.i, :]
+        eik = rik / np.linalg.norm(rik)
+        if self.eref is None:
+            self._calc_reference(xyzs)
+        # Define two directions perpendicular to rik using the reference vector
+        u = np.cross(eik, self.eref)
+        u /= np.linalg.norm(u)
+        w = np.cross(eik, u)
+        w /= np.linalg.norm(w)
+
+        rji = xyzs[self.i, :] - xyzs[self.j, :]
+        eji = rji / np.linalg.norm(rji)
+        rjk = xyzs[self.k, :] - xyzs[self.j, :]
+        ejk = rjk / np.linalg.norm(rjk)
+        if self.axis == 0:
+            return np.dot(eji, u) + np.dot(ejk, u)
+        else:
+            return np.dot(eji, w) + np.dot(ejk, w)
+
+    def derivative(self, xyzs):
+        def d_unit_vector(a):
+            term1 = np.eye(3)/np.linalg.norm(a)
+            term2 = np.outer(a, a)/(np.linalg.norm(a)**3)
+            answer = term1-term2
+            return answer
+
+        def d_cross_ab(a, b, da, db):
+            answer = np.zeros((da.shape[0], 3), dtype=float)
+            for i in range(da.shape[0]):
+                answer[i] = np.cross(a, db[i]) + np.cross(da[i], b)
+            return answer
+
+        dt = np.zeros(xyzs.size)
+        rik = xyzs[self.k, :] - xyzs[self.i, :]
+        eik = rik / np.linalg.norm(rik)
+        if self.eref is None:
+            self._calc_reference(xyzs)
+        c1 = np.cross(eik, self.eref)
+        e1 = c1 / np.linalg.norm(c1)
+        c2 = np.cross(eik, e1)
+        e2 = c2 / np.linalg.norm(c2)
+        rji = xyzs[self.i, :] - xyzs[self.j, :]
+        eji = rji / np.linalg.norm(rji)
+        rjk = xyzs[self.k, :] - xyzs[self.j, :]
+        ejk = rjk / np.linalg.norm(rjk)
+        # Derivative terms
+        # Derivative of reference vector is zero:
+        deref = np.zeros((3, 3))
+        drik = d_unit_vector(rik)
+        dc1 = d_cross_ab(eik, self.eref, drik, deref)
+        de1 = np.dot(dc1, d_unit_vector(c1))
+        dc2 = d_cross_ab(eik, e1, drik, de1)
+        de2 = np.dot(dc2, d_unit_vector(c2))
+        deji = d_unit_vector(rji)
+        dejk = d_unit_vector(rjk)
+        if self.axis == 0:
+            dt[3*self.i:3*(self.i+1)] = (np.dot(deji, e1) + np.dot(-de1, eji)
+                                         + np.dot(-de1, ejk))
+            dt[3*self.j:3*(self.j+1)] = np.dot(-deji, e1) + np.dot(-dejk, e1)
+            dt[3*self.k:3*(self.k+1)] = (np.dot(de1, eji) + np.dot(de1, ejk)
+                                         + np.dot(dejk, e1))
+        else:
+            dt[3*self.i:3*(self.i+1)] = (np.dot(deji, e2) + np.dot(-de2, eji)
+                                         + np.dot(-de2, ejk))
+            dt[3*self.j:3*(self.j+1)] = np.dot(-deji, e2) + np.dot(-dejk, e2)
+            dt[3*self.k:3*(self.k+1)] = (np.dot(de2, eji) + np.dot(de2, ejk)
+                                         + np.dot(dejk, e2))
         return dt
 
 
