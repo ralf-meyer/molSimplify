@@ -283,3 +283,24 @@ class InternalCoordinates():
             dq[i] = prim.diff(xyzs1, xyzs2)
         return dq
 
+
+class DelocalizedCoordinates(InternalCoordinates):
+
+    def __init__(self, primitives, xyzs, threshold=1e-10):
+        InternalCoordinates.__init__(self, primitives)
+        self.threshold = threshold
+        self.delocalize(xyzs)
+
+    def delocalize(self, xyzs):
+        B = InternalCoordinates.B(self, xyzs)
+        # G matrix without mass weighting
+        G = B @ B.T
+        w, v = np.linalg.eigh(G)
+        # Set of nonredundant eigenvectors (eigenvalue =/= 0)
+        self.U = v[:, w > self.threshold]
+
+    def B(self, xyzs):
+        return self.U.T @ InternalCoordinates.B(self, xyzs)
+
+    def to_internals(self, xyzs):
+        return self.U.T @ InternalCoordinates.to_internals(self, xyzs)
