@@ -5,6 +5,7 @@ import ase.build
 import ase.collections
 import geometric.molecule
 import geometric.internal
+from molSimplify.Scripts.rmsd import kabsch_rmsd
 from molSimplify.optimize.coordinates import (Distance, Angle,
                                               LinearAngle, Dihedral,
                                               InternalCoordinates)
@@ -73,17 +74,11 @@ def test_redundant_internals(tmpdir, name):
         return
     xyzs2 = coords.to_cartesians(dq, xyzs_dist, maxstep=0.1, tol=1e-6)
 
-    # Build atoms objects for Kabsch algorithm
-    atoms2_ref = atoms.copy()
-    atoms2_ref.set_positions(xyzs2_ref)
-
-    atoms2 = atoms.copy()
-    atoms2.set_positions(xyzs2)
-    # Align using Kabsch algorithm
-    ase.build.minimize_rotation_and_translation(atoms2_ref, atoms2)
-    np.testing.assert_allclose(atoms2.get_positions(),
-                               atoms2_ref.get_positions(), atol=1e-5)
-
+    assert kabsch_rmsd(xyzs2, xyzs2_ref, translate=True) < 1e-5
     # Test that final geometry is close to original
-    ase.build.minimize_rotation_and_translation(atoms, atoms2)
-    np.testing.assert_allclose(atoms2.get_positions(), xyzs, atol=1e-5)
+    assert kabsch_rmsd(xyzs2, xyzs, translate=True) < 1e-5
+
+
+
+
+
