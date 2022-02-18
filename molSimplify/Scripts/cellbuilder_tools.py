@@ -104,14 +104,12 @@ def import_from_cif(fst, return_extra_cif_info=False):
     obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats("cif", "xyz")
     mol = openbabel.OBMol()
-    try:
-        obConversion.ReadFile(mol, fst)
-        fillUC = openbabel.OBOp.FindType("fillUC")
+    if obConversion.ReadFile(mol, fst):
         fillUC = openbabel.OBOp.FindType("fillUC")
         fillUC.Do(mol, "strict")
         unit_cell.OBMol = mol
         unit_cell.convert2mol3D()
-    except:
+    else:
         emsg.append("Error in reading of cif file by openbabel")
         exit_status = 1
     with open(fst) as f:
@@ -150,7 +148,7 @@ def import_from_cif(fst, return_extra_cif_info=False):
                 numpy.cos((gamma*pi/180)))/numpy.sin((gamma*pi)/180)
         cz = sqrt(C*C - cx*cx - cy*cy)
         cell_vector.append([cx, cy, cz])
-    except:
+    except ValueError:  # Negative number in sqrt
         emsg = emsg.append('Error in creating unit cell from cif informtation')
         exit_status = 2
     for i, rows in enumerate(cell_vector):

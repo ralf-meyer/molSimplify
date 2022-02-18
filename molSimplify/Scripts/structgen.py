@@ -468,7 +468,9 @@ def init_ligand(args, lig, tcats, keepHs, i):
                     try:
                         print(f'Debug keepHs check\nRemoving? {keepHs} \ni = {i}, j = {j}\nlig = \n{lig.coords()}\nkeepHs[i]: {keepHs[i]}\n'
                               f'length of keepHs list : {len(keepHs)}')
-                    except:
+                    except (AttributeError, IndexError):
+                        # Could fail because lig has no Attribute coords
+                        # or because keepHs has no element with Index i
                         pass
                 # Need to shift all connecting atom indices if they are greater than Hs[0], i.e. the index of the hydrogen atom that is connected to the current connecting atom and is to be removed.
                 # Note that only one hydrogen atom is removed at the most under the current implementation.
@@ -778,9 +780,12 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
                     break
                 i += 1
         elif nsteps != 0:
-            try:  # TODO: why would this ever fail?
+            try:
                 n = nsteps
-            except:
+            except AssertionError:
+                # To whoever encounters this: Please replace AssertionError
+                # with whatever we are actually trying to except. Really
+                # do not know what could raise an Exception here. RM 2022/02/17
                 n = 100
             if debug:
                 print(('running ' + str(n) + ' steps'))
@@ -1471,7 +1476,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
             args, metal, lig3D, atom0, ligand, MLbonds)
         try:
             this_diag.set_dict_bl(bondl)
-        except:
+        except AttributeError:
             pass
         if not exact_match and ANN_flag:
             # if no exact match found and ANN enabled, use it
@@ -1672,17 +1677,21 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     # lig3Db = rotate_around_axis(lig3Db,r1,urot,-theta)
     # select best
 
-    try:
-        rm0, rm1 = lig3D.centermass(), lig3Db.centermass()
-        theta, ul0 = rotation_params(rm0, r0l, r1l)
-        theta, ul1 = rotation_params(rm1, r0l, r1l)
-        th0 = 180*arccos(dot(ub, ul0)/(norm(ub)*norm(ul0)))/pi
-        th0 = min(abs(th0), abs(180-th0))
-        th1 = 180*arccos(dot(ub, ul1)/(norm(ub)*norm(ul1)))/pi
-        th1 = min(abs(th1), abs(180-th1))
-        lig3D = lig3D if th0 < th1 else lig3Db
-    except:
-        pass
+    # The following block was commented because ub is undefinded after
+    # someone previously commented out other parts of this function.
+    # Note: this is not a "fix" of the problem and just the simplest
+    # solution to stay consistent with previous behavior.
+    # try:
+    #     rm0, rm1 = lig3D.centermass(), lig3Db.centermass()
+    #     theta, ul0 = rotation_params(rm0, r0l, r1l)
+    #     theta, ul1 = rotation_params(rm1, r0l, r1l)
+    #     th0 = 180*arccos(dot(ub, ul0)/(norm(ub)*norm(ul0)))/pi
+    #     th0 = min(abs(th0), abs(180-th0))
+    #     th1 = 180*arccos(dot(ub, ul1)/(norm(ub)*norm(ul1)))/pi
+    #     th1 = min(abs(th1), abs(180-th1))
+    #     lig3D = lig3D if th0 < th1 else lig3Db
+    # except:
+    #     pass
     lig3D_aligned = mol3D()
     lig3D_aligned.copymol3D(lig3D)
     return lig3D_aligned, r1b
@@ -1749,9 +1758,14 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
                     catoms[0]), lig3Dtmp.getAtomCoords(catoms[1])
                 r01 = distance(r0, r1)
                 try:
-                    # but if ligand still cannot be aligned, instead force alignment with a huge cutoff and then relax later
+                    # but if ligand still cannot be aligned, instead force
+                    # alignment with a huge cutoff and then relax later
                     theta1 = 180*arccos(0.5*r01/bondl)/pi
-                except:
+                except AssertionError:
+                    # To whoever encounters this: Please replace AssertionError
+                    # with whatever we are actually trying to except. I am
+                    # pretty sure that np.arccos does not raise Exceptions.
+                    # RM 2022/02/17
                     print('Forcing alignment...')
                     cutoff += 5000000
                     relax = True

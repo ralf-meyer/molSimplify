@@ -691,7 +691,7 @@ def parseinputfile(args, inputfile_str=None):
                                 lloc.append(int(ll)-1)
                             else:
                                 lloc.append(ll.lower())
-                        except:
+                        except ValueError:
                             print(('ERROR: smicat processing failed at ' + str(ll)))
                             print(
                                 'Please use integers or  "pi" and divide by smiles ligand using [],[]')

@@ -123,7 +123,7 @@ def tcgen(args, strfiles, method):
             try:
                 shutil.copy2(xyzf.replace('.xyz', '.report'),
                              mdir.replace('.xyz', '.report'))
-            except:  # shutil.copy2() raises an auditing event
+            except FileNotFoundError:
                 pass
         elif args.jobdir:
             jobdirs.append(rdir)
@@ -369,7 +369,7 @@ def gamgen(args, strfiles, method):
         try:
             shutil.copy2(xyzf.replace('.xyz', '.report'),
                          mdir.replace('.xyz', '.report'))
-        except:  # shutil.copy2() raises an auditing event
+        except FileNotFoundError:
             pass
 
     if method:
@@ -579,7 +579,7 @@ def qgen(args, strfiles, method):
         try:
             shutil.copy2(xyzf.replace('.xyz', '.report'),
                          mdir.replace('.xyz', '.report'))
-        except:  # shutil.copy2() raises an auditing event
+        except FileNotFoundError:
             pass
     # Check for existence of basis and sanitize name
     if args.basis and len(args.basis) > 1:
@@ -840,7 +840,7 @@ def ogen(args, strfiles, method):
             try:
                 shutil.copy2(xyzf.replace('.xyz', '.report'),
                              mdir.replace('.xyz', '.report'))
-            except:  # shutil.copy2() raises an auditing event
+            except FileNotFoundError:
                 pass
         elif args.jobdir:
             jobdirs.append(rdir)
@@ -1093,7 +1093,7 @@ def molcgen(args, strfiles, method):
             try:
                 shutil.copy2(xyzf.replace('.xyz', '.report'),
                              mdir.replace('.xyz', '.report'))
-            except:  # shutil.copy2() raises an auditing event
+            except FileNotFoundError:
                 pass
         elif args.jobdir:
             jobdirs.append(rdir)

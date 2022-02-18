@@ -563,7 +563,7 @@ def dbsearch(rundir, args, globs):
             smistr, nmols, args.dbbase, finger, squery, args)
         try:
             shutil.copy('simres.smi', outf)
-        except:  # shutil.copy() raises an auditing event
+        except FileNotFoundError:
             pass
 
     if args.debug:

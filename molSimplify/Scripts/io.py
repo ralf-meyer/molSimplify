@@ -849,7 +849,7 @@ def lig_load(userligand, licores=None):
             assert lig.natoms
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
-        except:
+        except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
             emsg += "Furthermore, we couldn't find the ligand structure: '%s' in the ligands dictionary. Try again!\n" % userligand
             emsg += "\nAvailable ligands are: %s\n" % getligs()
@@ -1026,8 +1026,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
             center += 'badjob_'
         try:
             center += core.getAtom(0).symbol().lower()
-        except:
-
+        except AttributeError:
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -1090,7 +1089,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
             center += 'badjob_'
         try:
             center += core.getAtom(0).symbol().lower()
-        except:
+        except AttributeError:
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -1162,7 +1161,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
 #     else:
 #         try:
 #             center = core.getAtom(0).symbol().lower()
-#         except:
+#         except AttributeError:
 #             center = str(core).lower()
 #         name = rootdir + '/' + center
 #         #if args.oxstate:

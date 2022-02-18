@@ -127,5 +127,5 @@ def write_descriptor_csv(list_of_runs):
                 for properties in runs.descriptors:
                     f.write(','+str(properties))
                 f.write('\n')
-            except:
+            except AttributeError:
                 pass

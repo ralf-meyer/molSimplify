@@ -1929,7 +1929,7 @@ class mGUI():
         if not os.path.isdir(rdir):
             try:
                 os.mkdir(rdir)
-            except:
+            except FileExistsError:
                 emsg = 'Directory '+rdir+' could not be created. Check your input.\n'
                 QMessageBox.critical(self.wmain, 'Problem', emsg)
                 return

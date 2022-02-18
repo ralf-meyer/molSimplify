@@ -573,7 +573,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
                         errors = np.squeeze(np.array(mat_b - mat_A * fit))
                         error_var = np.var(errors)
                         error_list.append(error_var)
-                    except:
+                    except np.linalg.LinAlgError:
                         error_list.append(0)
                 if loud:
                     print('combos below')
@@ -967,7 +967,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
             errors = np.squeeze(np.array(mat_b - mat_A * fit))
             error_var = np.var(errors)
             error_list.append(error_var)
-        except:
+        except np.linalg.LinAlgError:
             error_list.append(0)  # perfect fit plane may suffer matrix singularity issues.
     # Print errors if loud
     if loud:

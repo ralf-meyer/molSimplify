@@ -493,7 +493,7 @@ class globalvars:
                 runfromcmd = True
             else:
                 runfromcmd = False
-        except:
+        except AttributeError:  # if sys.stdin does not have an isatty method
             runfromcmd = True
         ### get running os ###
         if platform.system().lower() in 'linux':
@@ -527,7 +527,7 @@ class globalvars:
                 sp = [_f for _f in ss.split('=') if _f]
                 try:
                     d[sp[0]] = sp[1]
-                except:
+                except IndexError:
                     pass
             if 'CHEMDBDIR' in list(d.keys()):
                 self.chemdbdir = d['CHEMDBDIR']

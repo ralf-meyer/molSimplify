@@ -5,7 +5,7 @@ def write_dictionary(dictionary, path):
         with open(path, 'w') as f:
             for keys in list(dictionary.keys()):
                 f.write(str(keys).strip("\n") + ',' + str(dictionary[keys]) + '\n')
-    except:
+    except FileNotFoundError:
         emsg = "Error, could not write dictionary space: " + path
     return emsg
 
@@ -20,7 +20,7 @@ def read_dictionary(path):
                 key = ll[0]
                 value = ll[1].rstrip("\n")
                 dictionary[key] = value
-    except:
+    except (FileNotFoundError, IndexError):
         emsg = "Error, could not read dictionary space: " + path
     return emsg, dictionary
 

@@ -801,7 +801,7 @@ class protein3D:
                                         bonds[atoms[int(i)]] = {atoms[int(li[0]) + j]}
                                     else:
                                         bonds[atoms[int(i)]].add(atoms[int(li[0]) + j])
-                    except:
+                    except ValueError:
                         # if "  " not in i and i != " ":
                         #    print("likely OXT")
                         continue

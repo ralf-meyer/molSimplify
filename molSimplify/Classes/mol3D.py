@@ -3860,7 +3860,8 @@ class mol3D:
                             print("here1")
                             print('Ligands cannot match!')
                         flag_match = False
-                except:
+                except UnboundLocalError:  
+                    # If there is no match the variable posi is never assigned
                     print("here2, try, excepted.")
                     print('Ligands cannot match!')
                     flag_match = False
@@ -4966,7 +4967,7 @@ class mol3D:
         with np.errstate(over='raise'):
             try:
                 det = np.linalg.det(tmpgraph)
-            except:  # Probably np.linalg.LinAlgError
+            except np.linalg.LinAlgError:
                 (sign, det) = np.linalg.slogdet(tmpgraph)
                 if sign != 0:
                     det = sign*det
@@ -5014,7 +5015,10 @@ class mol3D:
                 assigned = True
             else:
                 assigned = False
-        except:
+        except ValueError:
+            # Excepts the case where ligdents is empty and the call to
+            # max(ligdents) in ligand_assign_consistent raises a ValueError. 
+            # There needs to be a better way to check this! RM 2022/02/17
             assigned = False
         if ligdents:
             maxdent = max(ligdents)

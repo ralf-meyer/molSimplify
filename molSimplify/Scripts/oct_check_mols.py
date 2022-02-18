@@ -369,7 +369,9 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                 if debug:
                     print('Ligands cannot match!')
                 flag_match = False
-        except:
+        except AssertionError:
+            # To whoever encounters this: Please replace AssertionError
+            # with whatever we are actually trying to except. RM 2022/02/17
             print('Ligands cannot match!')
             flag_match = False
     if debug:

@@ -1155,7 +1155,7 @@ def slab_module_supervisor(args, rootdir):
             elif (ext == '.mol'):
                 unit_cell.OBmol = unit_cell.getOBmol(args.unit_cell)
                 unit_cell.convert2mol3D()
-        except:
+        except FileNotFoundError:
             emsg.append('Unable to import unit cell at  ' +
                         str(args.unit_cell))
             import_success = False
@@ -1193,7 +1193,7 @@ def slab_module_supervisor(args, rootdir):
                 target_molecule.OBmol = unit_cell.getOBmol(
                     args.target_molecule)
                 target_molecule.convert2mol3D()
-        except:
+        except FileNotFoundError:
             emsg.append('Unable to import target at  ' +
                         str(args.target_molecule))
             import_success = False
