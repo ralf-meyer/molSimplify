@@ -297,10 +297,14 @@ class DelocalizedCoordinates(InternalCoordinates):
         G = B @ B.T
         w, v = np.linalg.eigh(G)
         # Set of nonredundant eigenvectors (eigenvalue =/= 0)
-        self.U = v[:, w > self.threshold]
+        self.U = v[:, np.abs(w) > self.threshold]
 
     def B(self, xyzs):
         return self.U.T @ InternalCoordinates.B(self, xyzs)
 
     def to_internals(self, xyzs):
         return self.U.T @ InternalCoordinates.to_internals(self, xyzs)
+
+    def diff_internals(self, xyzs1, xyzs2):
+        return self.U.T @ InternalCoordinates.diff_internals(self, xyzs1,
+                                                             xyzs2)
