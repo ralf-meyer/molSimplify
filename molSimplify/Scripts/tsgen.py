@@ -273,7 +273,7 @@ def tsgen(mode, args, rootdir, core, substr, compreact, substreact, globs):
                 print('FF optimized remainder of substrate')
     ts3D.charge += substr.charge
     # END FUNCTIONALIZING
-    fname = name_TS(rootdir, args.core, substr, args,
+    fname = name_TS(rootdir, args.core, substr, args,  # noqa F821 function deprecated
                     bind=args.bind, bsmi=args.nambsmi)
     ts3D.writexyz(fname)
     strfiles.append(fname)

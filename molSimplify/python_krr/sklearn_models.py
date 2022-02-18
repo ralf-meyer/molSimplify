@@ -1,5 +1,5 @@
 import numpy as np
-# from sklearn.externals import joblib
+from sklearn.externals import joblib
 from pkg_resources import resource_filename, Requirement
 from molSimplify.python_nn.tf_ANN import (tf_ANN_excitation_prepare,
                                           load_normalization_data,
@@ -10,7 +10,7 @@ from molSimplify.python_nn.tf_ANN import (tf_ANN_excitation_prepare,
 def load_sklearn_model(predictor):
     key = get_key(predictor, suffix="model")
     modelfile = resource_filename(Requirement.parse("molSimplify"), "molSimplify/sklearn_models/" + key + '.h5')
-    # loaded_model = joblib.load(modelfile)
+    loaded_model = joblib.load(modelfile)
     return loaded_model
 
 

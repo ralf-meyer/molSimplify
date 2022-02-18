@@ -1257,15 +1257,17 @@ def default_plot(x, y, name=False):
     plt.plot(x, y, 'o', markeredgecolor='k')
     plt.plot([x_min, x_max], [x_min, x_max], linestyle='dashed', color='k')
     # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
-    plt.hlines(a['mean_y'], x_min, x_max, linestyle='dashed', color='k')
-    texts = []
-    for key in sorted(e.keys()):
-        text = key + ': ' + str(format(e[key], '.2g'))
-        texts.append(text)
-    textstr = '\n'.join(texts)
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
-            verticalalignment='top', bbox=props)
+    # Commented out the next block since variables a and e are not defined
+    # RM 2022/02/17
+    # plt.hlines(a['mean_y'], x_min, x_max, linestyle='dashed', color='k')
+    # texts = []
+    # for key in sorted(e.keys()):
+    #     text = key + ': ' + str(format(e[key], '.2g'))
+    #     texts.append(text)
+    # textstr = '\n'.join(texts)
+    # props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+    #         verticalalignment='top', bbox=props)
     # plt.show()
     if name:
         fpath = os.getcwd()
