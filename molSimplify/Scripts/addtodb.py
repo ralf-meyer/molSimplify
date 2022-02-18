@@ -91,7 +91,7 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
             # write smiles file in Ligands directory
             obConversion = openbabel.OBConversion()
             obConversion.SetOutFormat("smi")
-            red = obConversion.Read(lig.OBMol)
+            obConversion.Read(lig.OBMol)
             obConversion.WriteFile(lig.OBMol, ligands_folder + sminame+'.smi')
             # lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
             snew = str(sminame)+':'+str(sminame)+'.smi,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
@@ -282,7 +282,6 @@ def removefromDB(sminame, ropt):
                 os.remove(li_folder + sss[1].split(',')[0])
         f.close()
     elif ropt == 0:
-        mcores = readdict(core_path)
         # update dictionary
         f = open(core_path, 'r')
         ss = f.read().splitlines()
@@ -298,7 +297,6 @@ def removefromDB(sminame, ropt):
                 os.remove(core_folder+sss[1].split(',')[0])
         f.close()
     elif ropt == 2:
-        bindcores = readdict(bind_path)
         # update dictionary
         f = open(bind_path, 'r')
         ss = f.read().splitlines()

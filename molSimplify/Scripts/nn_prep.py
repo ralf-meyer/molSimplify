@@ -60,14 +60,12 @@ def check_ligands(ligs, batlist, dents, tcats):
     # of connection atoms
 
     n_ligs = len(ligs)
-    unique_ligands = []
     axial_ind_list = []
     equatorial_ind_list = []
     axial_ligs = []
     equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
-    eq_ligs = []
     eq_tcat = False
     ax_tcat = False
     valid = True

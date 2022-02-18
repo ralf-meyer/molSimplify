@@ -71,7 +71,6 @@ class mGUI():
         ######################
         '''
         ### check for configuration file ###
-        homedir = os.path.expanduser("~")
         cwd = os.getcwd()
         globs = globalvars()  # global variables
         globs.rundir = os.path.join(cwd, 'Runs')
@@ -1672,7 +1671,7 @@ class mGUI():
         self.sgrid.setCurrentWidget(self.iWind)
         emsg = startgen(defaultparams, True, self)
         if not emsg:
-            choice = QMessageBox.information(
+            QMessageBox.information(
                 self.pWindow, 'DONE', 'Your results are ready..')
         #############################
         #### Add geometry window ####
@@ -1894,11 +1893,11 @@ class mGUI():
         # create running dir if not existing
         if not os.path.isdir(rdir):
             os.mkdir(rdir)
-        args = grabdbguivars(self)
+        grabdbguivars(self)
         defaultparams = ['main.py', '-i', rdir+'/dbinput.inp']
         emsg = startgen(defaultparams, True, self)
         if not emsg:
-            choice = QMessageBox.information(
+            QMessageBox.information(
                 self.cDBWindow, 'DONE', 'Search is done..')
         self.sgrid.setCurrentWidget(self.cDBWindow)
         # db type change
@@ -1938,7 +1937,7 @@ class mGUI():
             emsg = 'You checked the extra molecule box but specified\nno extra molecule. No extra molecule will be generated.\n'
             QMessageBox.warning(self.wmain, 'Warning', emsg)
         # get parameters
-        args = grabguivars(self)
+        grabguivars(self)
         defaultparams = ['main.py', '-i', rdir+'/geninput.inp']
         self.iWind.hide()
         self.sgrid.setCurrentWidget(self.iWind)
@@ -1961,7 +1960,6 @@ class mGUI():
         # list molecules
 
     def listmols(self):
-        globs = globalvars()
         coreslist = getcores()
         liglist = getligs()
         bindlist = getbinds()
@@ -1977,7 +1975,7 @@ class mGUI():
         args = grabguivars(self)
         # processes ligand arguments
         if len(args['-lig']) < 1:
-            qm = mQDialogWarn('Warning', 'No ligands are specified.')
+            mQDialogWarn('Warning', 'No ligands are specified.')
             return False
         else:
             rows = self.lgrid.rowCount()
@@ -2045,7 +2043,6 @@ class mGUI():
                     os.close(filedes)
                     os.remove(filename)
                 # Build close button
-                ctip = 'Close current window'
                 self.lwindow.setWindowTitle('Ligands 2D')
                 self.lwclose = QPushButton('Close')
                 self.lwclose.clicked.connect(self.qcloseligs)
@@ -2054,7 +2051,6 @@ class mGUI():
                 self.lwindow.show()
 
     def viewgeom(self):
-        globs = globalvars()
         # get geometry
         geom = self.dcoordg.currentText()
         gfname = resource_filename(Requirement.parse(
@@ -2103,7 +2099,6 @@ class mGUI():
                     liglist += smis
                 else:
                     liglist.append(li)
-            globs = globalvars()
             licores = getlicores()
             ligs = []
             for li in liglist:
@@ -2145,7 +2140,6 @@ class mGUI():
                     os.close(filedes)
                     os.remove(filename)
                 # Build close button
-                ctip = 'Close current window'
                 self.lwindow.setWindowTitle('Ligands 2D')
                 self.lwclose = QPushButton('Close')
                 self.lwclose.clicked.connect(self.qcloseligs)
@@ -2239,7 +2233,6 @@ class mGUI():
     # match index with coordination
 
     def matchgeomcoord(self):
-        globs = globalvars()
         # get current index
         dc = self.dcoord.currentIndex()
         coords, geomnames, geomshorts, geomgroups = getgeoms()
@@ -2251,7 +2244,8 @@ class mGUI():
         qc = qcav[dc]
         # add to box
         for i, t in enumerate(qc):
-            f = resource_filename(Requirement.parse(
+            # File f is never actually used? RM 2022/02/17
+            f = resource_filename(Requirement.parse(  # noqa F841
                 "molSimplify"), "molSimplify/icons/geoms/" + t + ".png")
             self.dcoordg.addItem(QIcon(t), t)
         self.dcoordg.setIconSize(QSize(60, 60))

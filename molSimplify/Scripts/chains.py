@@ -100,7 +100,6 @@ def zero_dim(mol, dim):
 def zero_z(mol):
     zeroed_mol = mol3D()
     zeroed_mol.copymol3D(mol)
-    TOL = 1e-1
     zmin = 1000
     for i, atoms in enumerate(mol.getAtoms()):
         coords = atoms.coords()
@@ -113,7 +112,6 @@ def zero_z(mol):
 def zero_x(mol):
     zeroed_mol = mol3D()
     zeroed_mol.copymol3D(mol)
-    TOL = 1e-1
     xmin = 1000
     for i, atoms in enumerate(mol.getAtoms()):
         coords = atoms.coords()
@@ -126,7 +124,6 @@ def zero_x(mol):
 def zero_y(mol):
     zeroed_mol = mol3D()
     zeroed_mol.copymol3D(mol)
-    TOL = 1e-1
     ymin = 1000
     for i, atoms in enumerate(mol.getAtoms()):
         coords = atoms.coords()
@@ -271,12 +268,6 @@ def chain_builder_supervisor(args, rundir):
 #                my_dim.writexyz('prestart.xyz')
 
     my_dim = trim_H(my_dim, monomer.getAtom(len(args.chain)-1).coords())
-
-    basic_lengths = find_extents(my_dim)
-
-    basic_x = basic_lengths[0]
-    basic_y = basic_lengths[1]
-
 
 #                my_dim.writexyz('start.xyz')
 

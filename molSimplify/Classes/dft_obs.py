@@ -32,7 +32,6 @@ class dft_observation:
         self.yvalue = y_value
 
     def obtain_mol3d(self):
-        new_mol = mol3D()
         this_mol = mol3D()
         this_mol.readfromxyz(self.geopath)
         if this_mol.natoms > 0:

@@ -157,7 +157,6 @@ def getsimilar(smi, nmols, dbselect, finger, squery, args):
     # get database files
     [dbsdf, dbfs] = setupdb(dbselect)
     print(('database set up :' + str(dbsdf) + ' || ' + str(dbfs)))
-    globs = globalvars()
     print(('Finding results similar, comparing to ' + smi))
 
     obab = 'babel'
@@ -308,8 +307,6 @@ def checkels(fname, allowedels):
 #  @param outf Filename containing SMILES strings to be processed
 #  @param n Number of dissimilar molecules required
 def dissim(outf, n):
-    globs = globalvars()
-
     obab = 'babel'
 
     # clone hitlist file
@@ -493,8 +490,6 @@ def dbsearch(rundir, args, globs):
                 return 1
         elif ('.mol' in args.dbsmarts or '.xyz' in args.dbsmarts):
             if glob.glob(args.dbsmarts):
-                ftype = args.dbsmarts.split('.')[-1]
-
                 smistr = pymol.write("smi")
             else:
                 print(('File ' + args.dbsmarts +
@@ -590,7 +585,7 @@ def dbsearch(rundir, args, globs):
         cmd = obab + " -ismi " + outf + " -osmi -O " + outf + " --unique"
         # print('running:' + str(cmd))
         shutil.copy(outf, 'afterstrippingsalts.smi')
-        t = mybash(cmd)
+        _ = mybash(cmd)
         print(('number of smiles strings AFTER unique: ' +
                mybash("cat " + outf + '| wc -l')))
 
@@ -618,7 +613,7 @@ def dbsearch(rundir, args, globs):
     else:
         catoms = [1]
     # do pattern matching
-    nres = 50 if not args.dbresults else int(args.dbresults)
+    # nres = 50 if not args.dbresults else int(args.dbresults)
     if args.dbsmarts or args.dbhuman:
         print(('number of smiles strings BEFORE SMARTS filter: ' +
                mybash("cat " + outf + '| wc -l')))

@@ -47,7 +47,7 @@ def analysis_supervisor(args, rootdir):
         print('using simple autocorrelation descriptors only')
     if args.max_descriptors:
         print(('using a max of '+str(args.max_descriptors)+' only'))
-    res = correlation_supervisor(
+    correlation_supervisor(
         args.correlate, rootdir, args.simple, args.lig_only, args.max_descriptors)
 
 
@@ -71,9 +71,9 @@ def accquire_file(path):
                     # this is the first line
                     ll = lines.strip('\n\r').split(",")
                     name = ll[0]
-                    y_value_name = ll[1]
+                    # y_value_name = ll[1]
                     # check if path exists:
-                    paths_name = ll[2].strip('/') + '/'+name+'.xyz'
+                    # paths_name = ll[2].strip('/') + '/'+name+'.xyz'
                     if len(ll) > 3:
                         print('custom descriptors found!')
                         custom_names = [ll[i] for i in range(4, len(ll))]
@@ -198,7 +198,6 @@ def correlation_supervisor(path, rootdir, simple=False, lig_only=False, max_desc
                    str(n_opt) + ' varibles as optimal'))
             print(('discarding an additional ' + str(n_max-n_opt) + ' variables'))
             new_variables = list()
-            new_mask = np.zeros(n_tot)
             for i in range(0, n_max):
                 new_variables.append(ranked_features[i])
     # report results to user
@@ -214,7 +213,6 @@ def correlation_supervisor(path, rootdir, simple=False, lig_only=False, max_desc
     reg_red = linear_model.LinearRegression()
     reg_red.fit(X_r, Y)
     Ypred_r = reg_red.predict(X_r)
-    errors = [Y[i] - Ypred_r[i] for i in range(0, n_obs)]
     coefs = reg_red.coef_
     intercept = reg_red.intercept_
     mse_all = metrics.mean_squared_error(Y, Ypred_all_all)

@@ -153,8 +153,6 @@ def getconstsample(no_rgen, args, licores, coord):
     samp = []
     # 4 types of constraints: ligand, ligocc, coord, lignum
     # get ligand and ligocc
-    get = False
-    occup = []
     combos = []
     generated = 0
     if not coord:

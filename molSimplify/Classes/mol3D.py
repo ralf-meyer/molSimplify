@@ -207,7 +207,6 @@ class mol3D:
             submol_anchor.addAtom(atom)
         mol = mol3D()
         mol.copymol3D(submol_anchor)
-        r0 = self.getAtom(idx1).coords()
         r1 = self.getAtom(idx2).coords()
         submol_to_move = rotate_around_axis(submol_to_move, r1, axis, angle)
         for i, atidx in enumerate(atidxs_to_move):
@@ -488,7 +487,6 @@ class mol3D:
         for u0 in bondv:
             u += (u0 * u0)
         u = sqrt(u)
-        dl = d - u  # dl > 0: stretch, dl < 0: shrink
         dR = [i * (d / u - 1) for i in bondv]
         submolidxes = self.findsubMol(idx1, idx2)
         for submolidx in submolidxes:
@@ -587,10 +585,8 @@ class mol3D:
         """Removes all stored openbabel bond order information.
         """
         obiter = openbabel.OBMolBondIter(self.OBMol)
-        n = self.natoms
         bonds_to_del = []
         for bond in obiter:
-            these_inds = [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]
             bonds_to_del.append(bond)
         for i in bonds_to_del:
             self.OBMol.DeleteBond(i)
@@ -1502,7 +1498,6 @@ class mol3D:
                 List of indices of bonded atoms.
 
         """
-        ratom = self.getAtom(idx)
         self.convert2OBMol()
         OBMatrix = self.populateBOMatrix()
         # calculates adjacent number of atoms
@@ -1526,7 +1521,6 @@ class mol3D:
                 List of indices of bonded atoms.
 
         """
-        ratom = self.getAtom(idx)
         self.convert2OBMol()
         OBMatrix = self.populateBOMatrixAug()
         # calculates adjacent number of atoms
@@ -1657,7 +1651,6 @@ class mol3D:
 
         """
 
-        ratom = self.getAtom(idx)
         # calculates adjacent number of atoms
         nats = []
         thresholds = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
@@ -2476,7 +2469,7 @@ class mol3D:
         >>>             # geometries will not be written to a directory.
         """
         if writegeo:
-            struc_directory = os.mkdir(dir_name)
+            os.mkdir(dir_name)
             temp_list = []
             for ang_val in np.arange(anglei, anglef+angleint, angleint):
                 temp_angle = mol3D() 
@@ -2521,7 +2514,7 @@ class mol3D:
         """
 
         if writegeo:
-            struc_directory = os.mkdir(dir_name)
+            os.mkdir(dir_name)
             temp_list = []
             for dist_val in np.arange(disti, distf+distint, distint):
                 temp_dist = mol3D() 
@@ -2577,7 +2570,7 @@ class mol3D:
                         line_split[2]), float(line_split[3])])
                 elif lm is not None:
                     symb = re.sub(r'\d+', '', line_split[0])
-                    number = lm.group()
+                    # number = lm.group()
                     # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
@@ -2719,7 +2712,7 @@ class mol3D:
                 # if the string ends in digits m will be a Match object, or None otherwise.
                 if lm is not None:
                     symb = re.sub(r'\d+', '', line_split[0])
-                    number = lm.group()
+                    # number = lm.group()
                     # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
@@ -4281,18 +4274,18 @@ class mol3D:
                         init_mol = mol3D()
                         init_mol.copymol3D(self)
                     if 'lig_distort' not in skip:
-                        dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
-                                                                flag_loose=flag_loose,
-                                                                flag_lbd=flag_lbd,
-                                                                debug=debug,
-                                                                BondedOct=BondedOct,
-                                                                flag_deleteH=flag_deleteH,
-                                                                angle_ref=angle_ref,)
+                        self.ligand_comp_org(init_mol=init_mol,
+                                             flag_loose=flag_loose,
+                                             flag_lbd=flag_lbd,
+                                             debug=debug,
+                                             BondedOct=BondedOct,
+                                             flag_deleteH=flag_deleteH,
+                                             angle_ref=angle_ref)
                 if 'lig_linear' not in skip:
-                    dict_angle_linear, dict_orientation = self.check_angle_linear()
+                    self.check_angle_linear()
                 if debug:
                     self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic, ligsymmetry, eq_catoms = self.get_symmetry_denticity(
+            eqsym, maxdent, _, _, _, eq_catoms = self.get_symmetry_denticity(
                 return_eq_catoms=True)
             if eqsym:
                 metal_coord = self.getAtomCoords(self.findMetal()[0])
@@ -4399,13 +4392,13 @@ class mol3D:
                         init_mol = mol3D()
                         init_mol.copymol3D(self)
                     if 'lig_distort' not in skip:
-                        dict_lig_distort = self.ligand_comp_org(
+                        self.ligand_comp_org(
                             init_mol, flag_deleteH=flag_deleteH, debug=debug, angle_ref=angle_ref)
                 if 'lig_linear' not in skip:
-                    dict_angle_linear, dict_orientation = self.check_angle_linear()
+                    self.check_angle_linear()
                 if debug:
                     self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic, ligsymmetry, eq_catoms = self.get_symmetry_denticity(
+            eqsym, maxdent, _, _, _, eq_catoms = self.get_symmetry_denticity(
                 return_eq_catoms=True)
             if eqsym:
                 metal_coord = self.getAtomCoords(self.findMetal()[0])
@@ -4856,7 +4849,6 @@ class mol3D:
                 Path to a bond order file.
 
         """
-        globs = globalvars()
         bonds_organic = {'H': 1, 'C': 4, 'N': 3,
                          'O': 2, 'F': 1, 'P': 3, 'S': 2}
         self.bv_dict = {}

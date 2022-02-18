@@ -71,10 +71,8 @@ def parse(folder, molf):
                     mlll = ml[0].split(None)
                 if len(mlll) > 2:
                     found = True
-                    fmet = met
     if len(ml) == 0:
         print('WARNING:No metal found, defaulting to 1st atom for relative properties..')
-        skipm = True
         ml = [sm[4]]
         mlll = [_f for _f in ml[0].split(None) if _f]
     atidx = int(mlll[1])-1
@@ -157,15 +155,6 @@ def parse(folder, molf):
     txt = ''
     header = 'MO   Energy  Spin Occup S-char  P-char  D-char Av-orb\n'
     eldic = {'Alpha': 0, 'Beta': 0}
-    totAocc = 0.0
-    totBocc = 0.0
-    coreel = 8.9  # 9 a and 9 b core electrons
-    totscoeffs = 0.0
-    totpcoeffs = 0.0
-    totdcoeffs = 0.0
-    scenter = 0.0
-    pcenter = 0.0
-    dcenter = 0.0
     ehomo = -999.0
     elumo = 10000.0
     e0 = 10000.0

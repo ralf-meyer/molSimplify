@@ -2,7 +2,7 @@ import copy
 import os
 import re
 import sys
-import time
+# import time
 import numpy as np
 
 from molSimplify.Classes.atom3D import (atom3D,
@@ -257,7 +257,7 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
                 print(('ligand is:', lig, lig_init))
             posi_shift = 2
             # Create mol3D without a tmp file.
-            _start = time.clock()
+            # _start = time.clock()
             with open(mymol_xyz, 'r') as fo:
                 foo = []
                 for ii, line in enumerate(fo):
@@ -276,7 +276,7 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
                         foo.append(line)
             tmp_org_mol = mol3D()
             tmp_org_mol = readfromtxt(tmp_org_mol, foo)
-            _elapsed = (time.clock() - _start)
+            # _elapsed = (time.clock() - _start)
             # print('-reading txt:', _elapsed)
             if debug:
                 print(('# atoms: %d, init: %d' %
@@ -339,7 +339,7 @@ def match_lig_list(file_in, file_init_geo, catoms_arr,
                                                                      BondedOct=BondedOct)
         # _elapsed = (time.clock() - _start)
         # print('time on lig_breakdoen:', _elapsed)
-        liglist, ligdents, ligcons = liglist_init[:], ligdents_init[:], ligcons_init[:]
+        liglist = liglist_init[:]
         liglist_atom = [[my_mol.getAtom(x).symbol() for x in ele]
                         for ele in liglist]
         liglist_init_atom = [[init_mol.getAtom(x).symbol() for x in ele]
@@ -466,7 +466,6 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
     catom_coord = []
     if catoms_arr is not None:
         catoms = catoms_arr
-        num_coord_metal = len(catoms_arr)
     theta_arr, oct_dist = [], []
     for atom in catoms:
         coord = my_mol.getAtomCoords(atom)
@@ -781,4 +780,4 @@ def find_file_with_unique_num(_path, unique_num):
 def gen_file_with_name(path_init_geo, name_opt):
     name_opt = name_opt.split('_')
     name_opt = '_'.join(name_opt[:len(name_opt) - 1])
-    name_init = '%s/%s_mols.xyz' % (path_init_geo, name_opt)
+    name_init = '%s/%s_mols.xyz' % (path_init_geo, name_opt)  # noqa F841 (WIP)

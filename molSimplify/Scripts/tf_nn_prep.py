@@ -118,24 +118,20 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print(('occs in function  ' + str(occs)))
         print(('tcats in function  ' + str(tcats)))
 
-    unique_ligands = []
     axial_ind_list = []
     equatorial_ind_list = []
     axial_ligs = []
     equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
-    eq_ligs = []
     eq_tcat = False
     ax_tcat = False
-    triple_bidentate = False
     pentadentate = False
     ax_occs = []
     eq_occs = []
     valid = True
     if (set(dents) == set([2])):
         print('triple bidentate case')
-        triple_bidentate = True
         unique_ligs = []
         ucats = []
         unique_dict = {}
@@ -146,7 +142,6 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             this_bat = batlist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
-            this_occs = occs[i]
             # mulitple points
             if not (this_lig in unique_ligs):
                 unique_ligs.append(this_lig)
@@ -534,7 +529,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                                "sc_label_trust": lse_trust(sc_lse)})
 
         # build RACs without geo
-        con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(
             this_complex, custom_ligand_dict, ox_modifier)
 
@@ -774,7 +768,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if catalysis:
         print('-----In Catalysis Mode-----')
         # build RACs without geo
-        con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(
             this_complex, custom_ligand_dict, ox_modifier)
         # get alpha

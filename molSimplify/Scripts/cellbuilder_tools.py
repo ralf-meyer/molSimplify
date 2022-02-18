@@ -539,7 +539,6 @@ def shave__type(super_cell, dim, mode):
 def zero_z(super_cell):
     zeroed_cell = mol3D()
     zeroed_cell.copymol3D(super_cell)
-    TOL = 1e-1
     zmin = 1000
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
@@ -552,7 +551,6 @@ def zero_z(super_cell):
 def zero_x(super_cell):
     zeroed_cell = mol3D()
     zeroed_cell.copymol3D(super_cell)
-    TOL = 1e-1
     xmin = 1000
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
@@ -565,7 +563,6 @@ def zero_x(super_cell):
 def zero_y(super_cell):
     zeroed_cell = mol3D()
     zeroed_cell.copymol3D(super_cell)
-    TOL = 1e-1
     ymin = 1000
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()

@@ -31,7 +31,6 @@ from molSimplify.Scripts.molSimplify_io import (core_load,
                                                 getgeoms,
                                                 getinputargs,
                                                 getlicores,
-                                                getsubcores,
                                                 lig_load,
                                                 loadcoord,
                                                 loaddata,
@@ -248,7 +247,6 @@ def init_template(args, cpoints_required, globs):
         coord = int(args.coord)
         # get available geometries
         coords, geomnames, geomshorts, geomgroups = getgeoms()
-        maxcoord = len(geomgroups)
         # get list of possible combinations for connecting points
         bbcombsdict = globs.bbcombs_mononuc()
         # get a default geometry
@@ -562,7 +560,6 @@ def smartreorderligs(args, ligs, dentl, licores):
     """
 
     # reorder ligands
-    globs = globalvars()
     if not args.ligalign:
         indcs = list(range(0, len(ligs)))
         return indcs
@@ -972,7 +969,6 @@ def getconnection(core, cidx, BL):
             Coordinates of attachment point.
             
     """
-    ncore = core.natoms
     groups = core.getBondedAtoms(cidx)
     ccoords = core.getAtom(cidx).coords()
     # brute force search
@@ -1111,7 +1107,7 @@ def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
     r2 = lig3D.getAtom(ligpiatoms[1]).coords()
     theta, u = rotation_params(r0, r1, r2)
     objfuncopt = 90
-    thetaopt = 0
+    # thetaopt = 0
     for theta in range(0, 360, 1):
         lig3D_tmp = mol3D()
         lig3D_tmp.copymol3D(lig3D)
@@ -1121,7 +1117,7 @@ def align_linear_pi_lig(corerefcoords, lig3D, atom0, ligpiatoms):
         objfunc = abs(distance(lig3D_tmp.getAtom(ligpiatoms[0]).coords(
         ), corerefcoords) - distance(lig3D_tmp.getAtom(ligpiatoms[1]).coords(), corerefcoords))
         if objfunc < objfuncopt:
-            thetaopt = theta
+            # thetaopt = theta
             objfuncopt = objfunc
             lig3Dopt = mol3D()  # lig3Dopt = lig3D_tmp DOES NOT WORK!!!
             lig3Dopt.copymol3D(lig3D_tmp)
@@ -1312,7 +1308,7 @@ def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
         if len(list(set(subm).intersection(catoms_other))) == 0:
             danglinggroup = subm
         else:
-            bridginggroup = subm
+            # bridginggroup = subm
             if list(set(subm).intersection(lig3D.getBondedAtoms(catoms[n])))[0] not in anchoratoms:
                 anchoratoms.append(list(set(subm).intersection(
                     lig3D.getBondedAtoms(catoms[n])))[0])
@@ -1637,11 +1633,11 @@ def align_dent2_catom2_coarse(args, lig3D, core3D, catoms, r1, r0, m3D, batoms, 
     if lig3D.mindist(core3D) < md:
         lig3D = rotate_around_axis(lig3D, r0l, vecdiff(r1l, r0l), 180.0)
     # correct plane
-    r0b = m3D.getAtom(batoms[0]).coords()
+    # r0b = m3D.getAtom(batoms[0]).coords()
     r1b = m3D.getAtom(batoms[1]).coords()
     r0l = lig3D.getAtom(catoms[0]).coords()
     r1l = lig3D.getAtom(catoms[1]).coords()
-    rm = lig3D.centermass()
+    # rm = lig3D.centermass()
     urot = vecdiff(r1l, r0l)
     # theta,ub = rotation_params(corerefcoords,r0b,r1b)
     # theta,ul = rotation_params(rm,r0l,r1l)
@@ -2155,7 +2151,6 @@ def mcomplex(args, ligs, ligoc, licores, globs):
     emsg, complex3D = False, []
     occs0 = []      # occurrences of each ligand
     toccs = 0       # total occurrence count (number of ligands)
-    catsmi = []     # SMILES ligands connection atoms
     smilesligs = 0  # count how many smiles strings
     cats0 = []      # connection atoms for ligands
     dentl = []      # denticity of ligands
@@ -2304,7 +2299,6 @@ def mcomplex(args, ligs, ligoc, licores, globs):
     # loop over ligands
     totlig = 0  # total number of ligands added
     ligsused = 0  # total number of ligands used
-    loopcount = 0  # this counts the site occupations (I think?)
     subcatoms_ext = []
     mligcatoms_ext = []
     if args.mligcatoms:
@@ -2362,7 +2356,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                 # initialize variables
                 # metal coordinates in backbone
                 mcoords = core3D.getAtom(0).coords()
-                atom0, r0, r1, r2, r3 = 0, mcoords, 0, 0, 0  # initialize variables
+                atom0 = 0  # initialize variables
                 coreref = corerefatoms.getAtom(totlig)
                 # connecting point in backbone to align ligand to
                 batoms = get_batoms(args, batslist, ligsused)
@@ -2648,7 +2642,6 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
     strfiles = []
     # load ligand dictionary
     licores = getlicores()
-    subcores = getsubcores()
     # build structure
     sanity = False
     this_diag = run_diag()
@@ -2656,23 +2649,24 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
         if args.reportonly:
             ligs = []
             cons = []
-            mono_inds = []
-            bi_inds = []
-            tri_inds = []
-            tetra_inds = []
-            penta_inds = []
+            # Bunch of unused variables?? RM 2022/02/17
+            # mono_inds = []
+            # bi_inds = []
+            # tri_inds = []
+            # tetra_inds = []
+            # penta_inds = []
             emsg, complex3D = False, []
             occs0 = []      # occurrences of each ligand
             toccs = 0       # total occurrence count (number of ligands)
-            catsmi = []     # SMILES ligands connection atoms
+            # catsmi = []     # SMILES ligands connection atoms
             smilesligs = 0  # count how many smiles strings
             cats0 = []      # connection atoms for ligands
             dentl = []      # denticity of ligands
-            connected = []  # indices in core3D of ligand atoms connected to metal
-            frozenats = []  # atoms to be frozen in optimization
-            freezeangles = False  # custom angles imposed
-            MLoptbds = []   # list of bond lengths
-            rempi = False   # remove dummy pi orbital center of mass atom
+            # connected = []  # indices in core3D of ligand atoms connected to metal
+            # frozenats = []  # atoms to be frozen in optimization
+            # freezeangles = False  # custom angles imposed
+            # MLoptbds = []   # list of bond lengths
+            # rempi = False   # remove dummy pi orbital center of mass atom
             backbatoms = []
             batslist = []
             bats = []

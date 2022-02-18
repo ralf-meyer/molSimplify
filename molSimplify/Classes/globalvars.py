@@ -497,13 +497,13 @@ class globalvars:
             runfromcmd = True
         ### get running os ###
         if platform.system().lower() in 'linux':
-            Linux = True
+            Linux = True  # noqa F481 variable never used!
         elif platform.system().lower() in 'darwin':
             OSX = True
         self.osx = OSX
         # get cwd
         # script filename (usually with path)
-        cfile = inspect.getfile(inspect.currentframe())
+        _ = inspect.getfile(inspect.currentframe())
         cdir2 = os.path.dirname(os.path.abspath(
             inspect.getfile(inspect.currentframe())))  # script directory
         cdir = cdir2.rsplit('/', 1)[0]

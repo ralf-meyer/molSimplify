@@ -169,7 +169,7 @@ def tcgen(args, strfiles, method):
         jobparams['charge'] = args.charge
     # Check for existence of basis and sanitize name
     if args.basis:
-        ecp = False  # Flag not currently used, for deciding gpus_ecp code or not later. Can always specify with 'extra' command
+        # ecp = False  # Flag not currently used, for deciding gpus_ecp code or not later. Can always specify with 'extra' command
         if '*' in args.basis:
             jobparams['basis'] = args.basis.replace('*', 's')
         else:
@@ -534,8 +534,6 @@ def qgen(args, strfiles, method):
                 List of job directory with QChem input file.
 
     """
-    # get global variables
-    globs = globalvars()
     jobdirs = []
     coordfs = []
     # Initialize the jobparams dictionary with mandatory/useful keywords.
@@ -660,8 +658,6 @@ def mlpgen(args, strfiles, rootdir):
                 List of job directory with MOPAC input file.
 
     """
-    # get global variables
-    globs = globalvars()
     jobdirs = []
     coordfs = []
     # Initialize the jobparams dictionary with mandatory/useful keywords.
@@ -1123,7 +1119,6 @@ def molcgen(args, strfiles, method):
     if args.basis and args.basis != 'lacvps_ecp':
         jobparams['basis'] = args.basis
     elif (not args.basis) or args.basis == 'lacvps_ecp':
-        temp = mol3D()
         jobparams['basis'] = molcbasis(strfiles, 'ANO-rcc')
     # Overwrite plus add any new dictionary keys from commandline input.
     if args.qoption:

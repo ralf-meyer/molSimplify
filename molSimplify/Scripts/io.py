@@ -967,7 +967,6 @@ def getinputargs(args, fname):
 
 
 def plugin_defs():
-    globs = globalvars()
     plugin_path = resource_filename(Requirement.parse(
         "molSimplify"), "molSimplify/plugindefines_reference.txt")
     return plugin_path

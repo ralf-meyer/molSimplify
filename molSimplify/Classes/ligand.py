@@ -275,7 +275,6 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     """
     # this function takes an octahedral
     # complex and returns ligands
-    loud = False
     metal_index = mol.findMetal()[0]
     bondedatoms = mol.getBondedAtomsSmart(metal_index, oct=True)
     # print('!!!!!boundatoms', bondedatoms)
@@ -284,7 +283,6 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]
     if not silent:
         print(('result of ligand ligand_breakdown', bonded_atom_symbols))
-    counter = 0
     liglist = []
     ligdents = []
     ligcons = []
@@ -357,7 +355,6 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
     valid = True
     # loud = False
     pentadentate = False
-    metal_index = mol.findMetal()[0]
     built_ligand_list = list()
     lig_natoms_list = list()
     unique_ligands = list()
@@ -2001,7 +1998,6 @@ def get_lig_symmetry(mol, loud=False, htol=3):
     ### Obtain coordinates for the connecting atoms. Flat coord list ends up being used for comparisons.
     # Bin and sort ligands as Unique
     unique_ligands = list()
-    lig_con_symbols_list = list()
     unique_ligcons = list()
     unique_counts = list()
     unique_hs = list()
@@ -2175,7 +2171,7 @@ def get_lig_symmetry(mol, loud=False, htol=3):
                 else:
                     outstring = '2|11|c|11|c'
             else:
-                outsrting = 'Error21111'
+                outstring = 'Error21111'
         elif n_unique_ligs == 2:
             outstring = '2|1111|'
         else:

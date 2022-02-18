@@ -385,7 +385,6 @@ def is_number(s):
 
 
 def cleaninput(args):
-    globs = globalvars()
     # check ligands
     if args.lig:
         ls = []
@@ -487,9 +486,6 @@ def cleaninput(args):
         args.ff = False
     # if FF opt is desired, parse FF choice
     else:
-        b = False
-        a = False
-        e = False
         opts = args.ffoption
         if 'ba' in opts[0].lower():
             args.ffoption = 'ba'
@@ -1078,7 +1074,6 @@ def parseinputfile(args, inputfile_str=None):
 
 
 def parseall(parser):
-    globs = globalvars()
     parser.add_argument("-i", help="input file")
     # hidden (non-user) arguments for GUI
     parser.add_argument("-rprompt", help=argparse.SUPPRESS,

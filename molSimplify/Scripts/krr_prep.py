@@ -53,7 +53,6 @@ def feature_prep(mol, idx):
     satno_list = []
     ref_list = []
     fd_list = []
-    fa_list = []
     idx_list = [0] * 6
     exit_signal = True
     # getting bond-order matrix
@@ -145,7 +144,6 @@ def feature_prep(mol, idx):
     # get distance
     # idx = np.argsort(np.array(fpriority_list))[-1]
     sidx_list = mol.getBondedAtomsByCoordNo(fidx_list[0][0], 6)
-    refcoord = mol.getAtom(sidx_list[idx]).coords()
     mcoord = mol.getAtom(fidx_list[0][0]).coords()
     vMLs = [vecdiff(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
     rMLs = [distance(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
@@ -384,14 +382,6 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
     std_X = np.std(X, axis=0)
     mean_y = np.mean(y, axis=0)
     std_y = np.std(y, axis=0)
-    X_norm = normalize(X, mean_X, std_X)
-    y_norm = normalize(y, mean_y, std_y)
-    # stats
-    mean_X_dict = dict(list(zip(headers, mean_X)))
-    std_X_dict = dict(list(zip(headers, std_X)))
-    stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
-    stats = [mean_X_dict, std_X_dict, mean_y, std_y]
-    stat_dict = dict(list(zip(stat_names, stats)))
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
     # split to train and test
@@ -667,7 +657,7 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
             desc_dict = dict(list(zip(desc_names, descs)))
             descs = []
             Xs_train_sel = []
-            d2s = [0] * len(list(Xs_train.values())[0])
+            # d2s = [0] * len(list(Xs_train.values())[0])
             for key in list(impt_dict.keys()):
                 desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
                     desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
@@ -759,13 +749,13 @@ def krr_model_predict(core3D, spin, mligcatom):
     f_stats = fpath + '/hat2_X_mean_std.csv'
     f = open(f_stats, 'r')
     fcsv = csv.reader(f)
-    for i, line in enumerate(fcsv):
-        if i == 0:
-            feature2_names = line
-        if i == 1:
-            mean_X2 = [float(ele) for ele in line]
-        if i == 2:
-            std_X2 = [float(ele) for ele in line]
+    # for i, line in enumerate(fcsv):
+    #     if i == 0:
+    #         feature2_names = line
+    #     if i == 1:
+    #         mean_X2 = [float(ele) for ele in line]
+    #     if i == 2:
+    #         std_X2 = [float(ele) for ele in line]
     mean_X2_dict = dict(list(zip(feature_names, mean_X)))
     std_X2_dict = dict(list(zip(feature_names, std_X)))
     # load feature2 names
@@ -812,8 +802,8 @@ def krr_model_predict(core3D, spin, mligcatom):
                 descs += descriptors
             desc_dict = dict(list(zip(desc_names, descs)))
             descs = []
-            Xs_train_sel = []
-            d2s = [0] * len(Xs_train[0])
+            # Xs_train_sel = []
+            # d2s = [0] * len(Xs_train[0])
             for key in keys:
                 desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
                     desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
@@ -831,7 +821,7 @@ def krr_model_predict(core3D, spin, mligcatom):
             bondls.append(bondl)
             if fidx == mligcatom:
                 descs = []
-                d2s = [0] * len(X2s_train[0])
+                # d2s = [0] * len(X2s_train[0])
                 for key in keys2:
                     desc = np.divide((desc_dict[key] - mean_X2_dict[key]), std_X2_dict[key],
                                      out=np.zeros_like(desc_dict[key] - mean_X2_dict[key]), where=std_X2_dict[key] != 0)
@@ -1215,8 +1205,8 @@ def default_plot(x, y, name=False):
     # defs for plt
     xlabel = r'distance / ${\rm \AA}$'
     ylabel = r'distance / ${\rm \AA}$'
-    colors = ['r', 'g', 'b', '.75', 'orange', 'k']
-    markers = ['o', 's', 'D', 'v', '^', '<', '>']
+    # colors = ['r', 'g', 'b', '.75', 'orange', 'k']
+    # markers = ['o', 's', 'D', 'v', '^', '<', '>']
     font = {'family': 'sans-serif',
             # 'weight' : 'bold',
             'size': 22}

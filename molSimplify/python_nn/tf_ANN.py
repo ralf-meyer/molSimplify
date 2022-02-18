@@ -474,14 +474,12 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
               + str(len(descriptors)) + ' descriptors')
         print(('model requires ' + str(len(target_names)) + ' descriptors, attempting match'))
     excitation = []
-    valid = True
     for var_name in target_names:
         try:
             excitation.append(descriptors[descriptor_names.index(var_name)])
         except ValueError:
             print(('looking for  ' + str(var_name)))
             print(('Error! variable  ' + str(var_name) + ' not found!'))
-            valid = False
             break
     excitation = np.array(excitation)
     excitation = np.reshape(excitation, (1, len(target_names)))
@@ -588,15 +586,12 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=
     # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
 
-    average_train_train_10NN = {'homo_empty': 0.43517572, 'oxo20': 0.068675719}
+    # average_train_train_10NN = {'homo_empty': 0.43517572, 'oxo20': 0.068675719}
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
 
     ## getting train matrix info
     mat = load_training_data(predictor)
     train_mat = np.array(mat, dtype='float64')
-    ## loop over rows
-    min_dist = 100000000
-    min_ind = 0
 
     loaded_model = load_keras_ann(predictor)
     if debug:
@@ -629,7 +624,6 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=
     nearest_10_NN_train = np.array(nearest_10_NN_train)
     avg_traintrain = np.mean(nearest_10_NN_train)
     sorted_dist = np.sort(np.squeeze(dist_array))
-    sorted_indices = np.argsort(np.squeeze(dist_array))
     avg_10_NN_dist = np.mean(sorted_dist[0:10])
     norm_avg_10_NN_dist = avg_10_NN_dist/avg_traintrain
     return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain 
@@ -669,7 +663,6 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
         if this_dist < min_dist:
             min_dist = this_dist
             min_ind = i
-            min_row = rows
 
     # flatten min row
     if debug:

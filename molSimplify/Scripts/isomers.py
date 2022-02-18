@@ -136,7 +136,6 @@ def checkunique(args, permutations):
 
 
 def collapserepresentation(args, permutations):
-    collapsed = {}
 
     # First, relabel symmetric ligands
     permutations_tmp = deepcopy(permutations)

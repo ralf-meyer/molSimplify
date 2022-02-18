@@ -132,7 +132,6 @@ def main(args=None):
     ### run GUI by default ###
     args = sys.argv[1:]
     gui = True
-    cmd = False
     if len(args) == 0 and not qtflag:
         print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")
         exit()
@@ -195,7 +194,7 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # run from commandline
-        emsg = startgen(sys.argv, False, gui)
+        startgen(sys.argv, False, gui)
     ### grab from commandline arguments ###
     else:
         print('No input file detected, reading arguments from commandline')
@@ -204,7 +203,7 @@ def main(args=None):
         # create input file from commandline
         infile = parseCLI([_f for _f in args if _f])
         args = ['main.py', '-i', infile]
-        emsg = startgen(args, False, gui)
+        startgen(args, False, gui)
 
 
 if __name__ == '__main__':

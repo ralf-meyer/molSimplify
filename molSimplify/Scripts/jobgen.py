@@ -20,7 +20,6 @@ def sgejobgen(args, jobdirs):
         else:
             jd.append(s)
     jobdirs = jd
-    gpus = '1'  # initialize gpus
     cpus = '1'  # initialize cpus
     # loop over job directories
     for job in jobdirs:
@@ -52,7 +51,6 @@ def sgejobgen(args, jobdirs):
                 output.write('#$ -q gpus\n')
                 if args.gpus:
                     output.write('#$ -l gpus='+args.gpus+'\n')
-                    gpus = args.gpus
                 else:
                     output.write('#$ -l gpus=1\n')
             else:
@@ -69,7 +67,6 @@ def sgejobgen(args, jobdirs):
                 cpus = args.cpus
             elif args.gpus:
                 output.write('#$ -l gpus='+args.gpus+'\n')
-                gpus = args.gpus
             else:
                 output.write('#$ -l gpus=1\n')
         if args.gpus:
@@ -148,7 +145,6 @@ def slurmjobgen(args, jobdirs):
         else:
             jd.append(s)
     jobdirs = jd
-    gpus = '1'  # initialize gpus
     cpus = '1'  # initialize cpus
     # loop over job directories
     for job in jobdirs:

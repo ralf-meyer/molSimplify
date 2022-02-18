@@ -14,7 +14,7 @@ def get_acc(pred_std, pred_err, stds):
             if _std < target_std:
                 _pred_err.append(pred_err[idx])
         pred_err_arr.append(_pred_err)
-    acc, auc, ratio = [], [], []
+    acc, ratio = [], []
     for idx, _ in enumerate(pred_err_arr):
         pred_err_now = pred_err_arr[idx]
         acc_arr = [1 if pred_err_now[ii] < 0.5 else 0 for ii in range(len(pred_err_now))]

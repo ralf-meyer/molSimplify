@@ -1022,7 +1022,6 @@ def rotateRef(mol, Ref, D):
     D[1] = (float(D[1]) / 180.0) * pi
     D[2] = (float(D[2]) / 180.0) * pi
     # perform rotation
-    pmc = mol.centermass()
     for atom in mol.atoms:
         # Get new point after rotation
         Rt = PointRotateSph(Ref, atom.coords(), D)

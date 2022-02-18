@@ -173,7 +173,6 @@ def nbo_parser_restricted(s):
 
 def spinnbo(s, metal):
     sNBO = []
-    sLV = []
     # get molecular orbitals containing metal
     ss = s.split('NATURAL BOND ORBITAL')[1]
     ss2 = ss.split('DIRECTIONALITY')

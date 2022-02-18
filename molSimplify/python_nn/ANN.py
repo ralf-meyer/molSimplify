@@ -13,7 +13,6 @@ import csv
 import numpy as np
 from pkg_resources import resource_filename, Requirement
 
-from molSimplify.Classes.globalvars import (globalvars)
 from pybrain.structure import FeedForwardNetwork, TanhLayer, LinearLayer, BiasUnit, FullConnection
 
 
@@ -91,8 +90,7 @@ def matrix_loader(path, rownames=False):
 
 # n = network_builder([25,50,51],"nn_split")
 def simple_splitting_ann(excitation):
-    globs = globalvars()
-    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_split")
+    # path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_split")
     # print('path to ANN data: ',path_to_file)
     n = simple_network_builder([25, 50, 50], "ms_split")
     excitation, sp_center, sp_shift = excitation_standardizer(excitation, 'split')
@@ -109,8 +107,7 @@ def simple_splitting_ann(excitation):
 
 
 def simple_slope_ann(slope_excitation):
-    globs = globalvars()
-    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_slope")
+    # path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + "ms_slope")
     # print('path to ANN data: ',path_to_file)
     n = simple_network_builder([24, 50, 50], "ms_slope")  # no alpha value
     # print(slope_excitation)
@@ -155,12 +152,8 @@ def excitation_standardizer(excitation, tag):
     sp_center = centers[0]
     sp_shift = shifts[0]
     excitation = np.array(excitation)
-    mean = np.mean(excitation)
-    sd = np.std(excitation, ddof=0)
     excitation = (excitation - descriptor_centers)
     excitation = np.divide(excitation, descriptor_shifts)
-    mean = np.mean(excitation)
-    sd = np.std(excitation, ddof=0)
     return(excitation, sp_center, sp_shift)
 
 
@@ -170,13 +163,12 @@ def find_eu_dist(excitation):
     mat, rownames = matrix_loader('train_data.csv', rownames=True)
     train_mat = np.array(mat, dtype='float64')
     min_dist = 1000
-    excitation, sp_center, sp_shift = excitation_standardizer(excitation, 'split')
+    excitation, _, _ = excitation_standardizer(excitation, 'split')
     for i, rows in enumerate(train_mat):
         np.subtract(rows, np.array(excitation))
         this_dist = np.linalg.norm(np.subtract(rows, np.array(excitation)))/3
         if this_dist < min_dist:
             min_dist = this_dist
             best_row = rownames[i]
-            min_row = rows
     # print('min dist is ' +str(min_dist))
     return min_dist, best_row

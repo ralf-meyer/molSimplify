@@ -5,8 +5,6 @@
 #
 #  Department of Chemical Engineering, MIT
 
-from molSimplify.Classes.globalvars import globalvars
-
 
 class run_diag:
     """Class of run diagnostic information to automated decision making and property prediction
@@ -15,7 +13,6 @@ class run_diag:
     # Constructor
     #  @param self The object pointer
     def __init__(self):
-        globs = globalvars()
         self.sanity_is_set = False  # flag to indicate if properties
         # have been written to this file
         self.ANN_is_set = False

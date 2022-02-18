@@ -647,7 +647,7 @@ def loadfrominputfile(gui, fname):
             if checkTrue(st[-1]):
                 gui.chkgenall.setChecked(True)
         if '-MLbonds' == st[0]:
-            Mlb = st[-1]
+            Mlb = st[-1]  # noqa F841 variable never used
         if '-distort' == st[0]:
             gui.sdist.setValue(int(st[-1]))
         if '-pangles' == st[0]:
@@ -708,15 +708,15 @@ def loadfrominputfile(gui, fname):
         if '-bref' == st[0]:
             gui.etmaskbind.setText(st[-1])
         ### force field optimization ###
-        ff = False
+        ff = False  # noqa F841 variable never used
         if '-ff' == st[0]:
             gui.chkFF.setChecked(True)
             gui.enableffinput()
             gui.dff.setCurrentText(st[-1])
-            ff = True
+            ff = True  # noqa F841 variable never used
         if '-ffoption' == st[0]:
             sopt = st[-1].split('&')
-            b, a, e = False, False, False
+            b, a = False, False
             for sopts in sopt:
                 ssopt = sopts.replace(' ', '')
                 if ssopt[0].lower() == 'b':

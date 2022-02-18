@@ -89,7 +89,7 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     """
     emsg = False
     # check for configuration file
-    homedir = os.path.expanduser("~")
+    # homedir = os.path.expanduser("~")
     # configfile = False if not glob.glob(homedir+'/.molSimplify') else True
     # if not configfile:
     #    print "It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file."

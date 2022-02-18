@@ -74,10 +74,10 @@ def ensemble_maker_inner(train_mat, labels, model_gen_function, info_dict,
         train_labels = array_stack(labels, ii)
         loaded_model = model_gen_function()  # note the call to gen new model
         current_model = reset_weights(loaded_model)
-        history = current_model.fit(train_feature, train_labels,
-                                    epochs=info_dict['epochs'], verbose=0,
-                                    batch_size=info_dict['batch_size'],
-                                    callbacks=callbacks_list)
+        current_model.fit(train_feature, train_labels,
+                          epochs=info_dict['epochs'], verbose=0,
+                          batch_size=info_dict['batch_size'],
+                          callbacks=callbacks_list)
         model_list.append(current_model)
     return(model_list)
 
@@ -286,7 +286,7 @@ def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_nam
         err_list.append(err)
     dist_list = np.transpose(np.array(dist_list))
     results_list = np.transpose(np.array(results_list))
-    result_mean, result_std = np.mean(results_list, axis=1), np.std(results_list, axis=1)
+    result_mean = np.mean(results_list, axis=1)
     latent_dist = np.mean(dist_list, axis=1)
     labels = np.squeeze(labels, axis=1)
     error_for_mean = np.abs(labels - result_mean)

@@ -63,9 +63,6 @@ def d_fix(unit_cell, cell_vector):
             minind = i
             print('this was saved')
         print("\n\n")
-    a = cell_vector[0]
-
-    b = cell_vector[1]
     c = cell_vector[2]
     dx = c[0]
     dy = c[1]
@@ -115,9 +112,9 @@ def cut_cell_to_index(unit_cell, cell_vector, miller_index):
 
     print(('nz ind', non_zero_indices))
     if len(non_zero_indices) == 3:
-        zint = 1/(miller_index[2]*cell_vector[2][2])
-        yint = 1/(miller_index[1]*cell_vector[1][1])
-        xint = 1/(miller_index[0]*cell_vector[0][0])
+        # zint = 1/(miller_index[2]*cell_vector[2][2])
+        # yint = 1/(miller_index[1]*cell_vector[1][1])
+        # xint = 1/(miller_index[0]*cell_vector[0][0])
         # w = [0,0,0]
         # w[2] = zint
         # w[1] = -w[2]/yint
@@ -158,8 +155,8 @@ def concave_hull(points, alpha):
     # points should be tuples
     de = Delaunay(points)
     for i in de.simplices:
-        tmp = []
-        j = [points[c] for c in i]
+        tmp = []  # noqa F841 WIP
+        j = [points[c] for c in i]  # noqa F841 WIP
     #    print(i)
     #    print(j)
     # print(de)
@@ -357,7 +354,6 @@ def choose_best_site(avail_sites_dict, occupied_sites_dict, centroid, super_cell
     #   - target_site: index of target site, a key for avail_sites_dict
     extents = find_extents_cv(super_cell_vector)
     centroid = surface_center(super_cell)
-    skipalign = 0
     score = 100000  # weighted assessment, lower is better
     avail_sites_list = list(avail_sites_dict.keys())
     random.shuffle(avail_sites_list)
@@ -731,7 +727,6 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
             trans_vec_list.append(normalize_vector(vecdiff(v2, v1)))
             distances_list.append(distance(v1, v2) - bind_dist)
         ens = []
-        cutoff = 5.0  # kcal/mol
         distorted_payload = mol3D()
         distorted_payload.copymol3D(final_payload)
         for ii in range(0, nsteps+1):
@@ -973,13 +968,11 @@ def molecule_placement_supervisor(super_cell, super_cell_vector, target_molecule
         # print("\n")
     # run tests
     overlap_flag = loaded_cell.sanitycheck(0)
-    min_dist = loaded_cell.mindistmol()
     if (number_of_placements > 1):
         print(('preparing ' + str(number_of_placements) + ' placements '))
         effectvie_coverage = float(number_of_placements)/float(max_sites)
         print(('giving effectvie coverage of ' + str(effectvie_coverage) + '\n'))
     print(('Is there overalp? ' + str(overlap_flag)))
-    min_intercell_d = closest_torus_point(payload, extents)
 
     return loaded_cell
 
@@ -1107,14 +1100,11 @@ def slab_module_supervisor(args, rootdir):
     num_surface_atoms = 1
     num_placements = 1
     coverage = False
-    multi_placement_centering = 0.95
+    # multi_placement_centering = 0.95
     # for surface rotation:
     control_angle = False
     angle_control_partner = False
     angle_surface_axis = False
-
-    # for non-orthogonal unit cells
-    ortho_cell = False
 
     # duplication
     duplicate = False
@@ -1140,7 +1130,7 @@ def slab_module_supervisor(args, rootdir):
     ###### Now attempt input ####
     import_success = True
     emsg = list()
-    multi_placement_centering_overide = False
+    # multi_placement_centering_overide = False
     miller_flag = False
     if (args.slab_gen):  # 0
         slab_gen = True
@@ -1216,9 +1206,9 @@ def slab_module_supervisor(args, rootdir):
         num_placements = args.num_placements
     if (args.coverage):  # 10
         coverage = args.coverage
-    if (args.multi_placement_centering):  # 12
-        multi_placement_centering = args.multi_placement_centering
-        multi_placement_centering_overide = True
+    # if (args.multi_placement_centering):  # 12
+    #     multi_placement_centering = args.multi_placement_centering
+    #     multi_placement_centering_overide = True
     if (args.control_angle):  # 13
         control_angle = args.control_angle
     if (args.angle_control_partner):  # 14
@@ -1241,8 +1231,8 @@ def slab_module_supervisor(args, rootdir):
     if not import_success:
         print(emsg)
         return emsg
-    if num_placements > 1 and not multi_placement_centering_overide:
-        multi_placement_centering = 1  # reccomended for multiple placments
+    # if num_placements > 1 and not multi_placement_centering_overide:
+    #     multi_placement_centering = 1  # reccomended for multiple placments
     if not slab_gen and not place_on_slab:
         emsg.append(
             'Slab builder module not enabled, placement mode not enabled - no action taken ')
@@ -1317,7 +1307,6 @@ def slab_module_supervisor(args, rootdir):
 
         # testing
         unit_cell.writexyz(rootdir + 'slab/before_COB.xyz')
-        old_basis = cell_vector
         print('loaded')
 
         if miller_flag:
@@ -1416,8 +1405,6 @@ def slab_module_supervisor(args, rootdir):
             cell_vector = threshold_basis(cell_vector, 1E-6)
             ext_duplication_vector = threshold_basis(
                 ext_duplication_vector, 1E-6)
-            u_keep = 0 + u
-            angle_keep = 0+angle
         #############################################################
 
         if debug:
@@ -1483,7 +1470,6 @@ def slab_module_supervisor(args, rootdir):
         if debug:
             super_cell.writexyz(rootdir + 'slab/after_size_control.xyz')
         # measure and recored slab vectors
-        super_cell_dim = find_extents(super_cell)
         super_cell_vector = copy.copy(ext_duplication_vector)
 
         # check if passivation needed
