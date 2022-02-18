@@ -1,25 +1,22 @@
-import os
 import pytest
 import numpy as np
-import ase.build
-import ase.collections
-import geometric.molecule
 import geometric.internal
+from utils import g2_molecules
 from molSimplify.Scripts.rmsd import kabsch_rmsd
 from molSimplify.optimize.coordinates import (Distance, Angle,
                                               LinearAngle, Dihedral,
-                                              InternalCoordinates)
+                                              InternalCoordinates,
+                                              DelocalizedCoordinates)
 
 
-@pytest.mark.parametrize('name', ase.collections.g2.names)
-def test_redundant_internals(tmpdir, name):
-    atoms = ase.build.molecule(name)
-    if len(atoms) == 1 or name == 'Si2H6':
-        # Skip single atom systems and Si2H6 because of a 0 != 2 pi error
+@pytest.mark.parametrize('system', g2_molecules)
+def test_redundant_internals(system):
+    name = system['name']
+    if name == 'Si2H6':
+        # Skip Si2H6 because of a 0 != 2 pi error
         return
-    path = os.path.join(tmpdir, 'tmp.xyz')
-    ase.io.write(path, atoms, plain=True)
-    mol = geometric.molecule.Molecule(path)
+    atoms = system['atoms']
+    mol = system['mol']
     coords_ref = geometric.internal.PrimitiveInternalCoordinates(
         mol, connect=True)
 

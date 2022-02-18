@@ -1,40 +1,35 @@
-import os
 import pytest
 import numpy as np
-import ase.build
-import ase.io
-import ase.collections
-import geometric.molecule
 import geometric.internal
+from utils import g2_molecules
 from molSimplify.optimize.connectivity import (find_connectivity,
                                                find_primitives)
 
 
-@pytest.mark.parametrize('name', ase.collections.g2.names)
-def test_connectivity(tmpdir, name):
+@pytest.mark.parametrize('system', g2_molecules)
+def test_connectivity(system):
     # For some reason the current verion of geomeTRIC uses a covalent radius
     # of zero for Na. Therefore, Na containing molecules have to be skipped.
+    name = system['name']
     if 'Na' in name:
         return
-    atoms = ase.build.molecule(name)
-    path = os.path.join(tmpdir, 'tmp.xyz')
-    ase.io.write(path, atoms, plain=True)
+    atoms = system['atoms']
+    mol = system['mol']
+    mol.build_topology()
     # geomeTRIC uses a threshold of 1.2 on the unsquared distances.
     # This correspondes to using 1.2^2 in the Billeter et al. alogrithm.
     bonds = find_connectivity(atoms, threshold=1.2**2, connect_fragments=False)
-    mol = geometric.molecule.Molecule(path)
-    mol.build_topology()
+
     bonds_ref = list(mol.topology.edges())
     assert bonds == bonds_ref
 
 
-@pytest.mark.parametrize('name', ase.collections.g2.names)
-def test_find_primitives(tmpdir, name):
-    atoms = ase.build.molecule(name)
-    # from ase.visualize import view
-    # view(atoms)
-    path = os.path.join(tmpdir, 'tmp.xyz')
-    ase.io.write(path, atoms, plain=True)
+@pytest.mark.parametrize('system', g2_molecules)
+def test_find_primitives(system):
+    name = system['name']
+    atoms = system['atoms']
+    mol = system['mol']
+    mol.build_topology()
     # geomeTRIC uses a threshold of 1.2 on the unsquared distances.
     # This correspondes to using 1.2^2 in the Billeter et al. alogrithm.
     bonds = find_connectivity(atoms, threshold=1.2**2, connect_fragments=True)
@@ -44,8 +39,6 @@ def test_find_primitives(tmpdir, name):
         atoms.get_positions(), bonds, linear_threshold=linear_threshold,
         planar_threshold=0.95)
 
-    mol = geometric.molecule.Molecule(path)
-    mol.build_topology()
     coords_ref = geometric.internal.PrimitiveInternalCoordinates(
         mol, connect=True)
     # Compare bonds
