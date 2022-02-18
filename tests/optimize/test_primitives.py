@@ -29,6 +29,28 @@ def test_angle(atol=1e-10):
         assert np.abs(a.value(xyzs) - theta) < atol
 
 
+def test_linear_angle(atol=1e-10):
+    au = LinearAngle(2, 0, 1, 0)
+    aw = LinearAngle(2, 0, 1, 1)
+
+    # The y coordinates are not exactly equal to force a consistent
+    # reference direction (z-axis).
+    x1 = 0.7
+    x2 = 1.2
+    xyzs = np.array([[0., 0., 0.],
+                     [x1, 0., 0.],
+                     [-x2, 1e-10, 0.]])
+    for y in [0.0, 0.5, 1.0, 2.5, 18.]:
+        xyzs[0, 1] = y
+        ref = np.cos(np.arctan2(x1, y)) + np.cos(np.arctan2(x2, y))
+        assert np.abs(au.value(xyzs) - ref) < atol
+        # Due to the orientation the second component should be zero
+        assert np.abs(aw.value(xyzs)) < atol
+    # Reference vector should be the z axis:
+    np.testing.assert_allclose(au.eref, [0., 0., 1.])
+    np.testing.assert_allclose(aw.eref, [0., 0., 1.])
+
+
 def test_primitive_derivatives(atol=1e-10):
     xyzs = np.array([[0., 0., 0.],
                      [1.3, 0., 0.],
