@@ -24,7 +24,7 @@ from molSimplify.Scripts.molSimplify_io import (plugin_defs)
 
 
 def float_from_str(txt):
-    numeric_const_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+    numeric_const_pattern = r'[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
     rx = re.compile(numeric_const_pattern, re.VERBOSE)
     float_arr = rx.findall(txt)
     if not len(float_arr):

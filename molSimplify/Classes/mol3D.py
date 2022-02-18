@@ -2576,7 +2576,7 @@ class mol3D:
                     atom = atom3D(line_split[0], [float(line_split[1]), float(
                         line_split[2]), float(line_split[3])])
                 elif lm is not None:
-                    symb = re.sub('\d+', '', line_split[0])
+                    symb = re.sub(r'\d+', '', line_split[0])
                     number = lm.group()
                     # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
@@ -2718,7 +2718,7 @@ class mol3D:
                 lm = re.search(r'\d+$', line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
                 if lm is not None:
-                    symb = re.sub('\d+', '', line_split[0])
+                    symb = re.sub(r'\d+', '', line_split[0])
                     number = lm.group()
                     # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
@@ -2751,7 +2751,7 @@ class mol3D:
                 lm = re.search(r'\d+$', line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
                 if lm is not None:
-                    symb = re.sub('\d+', '', line_split[0])
+                    symb = re.sub(r'\d+', '', line_split[0])
                     # number = lm.group()
                     # # print('sym and number ' +str(symb) + ' ' + str(number))
                     # globs = globalvars()
