@@ -78,7 +78,8 @@ def test_primitive_derivatives(atol=1e-10):
     np.testing.assert_allclose(t1.derivative(xyzs), dt1_ref(xyzs), atol=atol)
 
     t2 = LinearAngle(1, 0, 3, 1)
-    dt2_ref = nd.Gradient(lambda x: t2.value(x.reshape((-1, 3))))
+    # Step size needed here to avoid underflow error
+    dt2_ref = nd.Gradient(lambda x: t2.value(x.reshape((-1, 3))), step=1e-4)
     np.testing.assert_allclose(t2.derivative(xyzs), dt2_ref(xyzs), atol=atol)
 
     w = Dihedral(1, 0, 2, 4)

@@ -121,8 +121,9 @@ class LinearAngle(Primitive):
         # Define two directions perpendicular to rik using the reference vector
         u = np.cross(eik, self.eref)
         u /= np.linalg.norm(u)
+        # Since eik and u are perpendicular and normalized w is normalized by
+        # construction.
         w = np.cross(eik, u)
-        w /= np.linalg.norm(w)
 
         rji = xyzs[self.i, :] - xyzs[self.j, :]
         eji = rji / np.linalg.norm(rji)
@@ -130,8 +131,8 @@ class LinearAngle(Primitive):
         ejk = rjk / np.linalg.norm(rjk)
         if self.axis == 0:
             return np.dot(eji, u) + np.dot(ejk, u)
-        else:
-            return np.dot(eji, w) + np.dot(ejk, w)
+        # Else use w as projection axis
+        return np.dot(eji, w) + np.dot(ejk, w)
 
     def derivative(self, xyzs):
         def d_unit_vector(a):
@@ -152,9 +153,8 @@ class LinearAngle(Primitive):
         if self.eref is None:
             self._calc_reference(xyzs)
         c1 = np.cross(eik, self.eref)
-        e1 = c1 / np.linalg.norm(c1)
-        c2 = np.cross(eik, e1)
-        e2 = c2 / np.linalg.norm(c2)
+        u = c1 / np.linalg.norm(c1)
+        w = np.cross(eik, u)
         rji = xyzs[self.i, :] - xyzs[self.j, :]
         eji = rji / np.linalg.norm(rji)
         rjk = xyzs[self.k, :] - xyzs[self.j, :]
@@ -162,25 +162,24 @@ class LinearAngle(Primitive):
         # Derivative terms
         # Derivative of reference vector is zero:
         deref = np.zeros((3, 3))
-        drik = d_unit_vector(rik)
-        dc1 = d_cross_ab(eik, self.eref, drik, deref)
-        de1 = np.dot(dc1, d_unit_vector(c1))
-        dc2 = d_cross_ab(eik, e1, drik, de1)
-        de2 = np.dot(dc2, d_unit_vector(c2))
+        deik = d_unit_vector(rik)
+        dc1 = d_cross_ab(eik, self.eref, deik, deref)
+        du = np.dot(dc1, d_unit_vector(c1))
+        dw = d_cross_ab(eik, u, deik, du)
         deji = d_unit_vector(rji)
         dejk = d_unit_vector(rjk)
         if self.axis == 0:
-            dt[3*self.i:3*(self.i+1)] = (np.dot(deji, e1) + np.dot(-de1, eji)
-                                         + np.dot(-de1, ejk))
-            dt[3*self.j:3*(self.j+1)] = np.dot(-deji, e1) + np.dot(-dejk, e1)
-            dt[3*self.k:3*(self.k+1)] = (np.dot(de1, eji) + np.dot(de1, ejk)
-                                         + np.dot(dejk, e1))
+            dt[3*self.i:3*(self.i+1)] = (np.dot(deji, u) + np.dot(-du, eji)
+                                         + np.dot(-du, ejk))
+            dt[3*self.j:3*(self.j+1)] = np.dot(-deji, u) + np.dot(-dejk, u)
+            dt[3*self.k:3*(self.k+1)] = (np.dot(du, eji) + np.dot(du, ejk)
+                                         + np.dot(dejk, u))
         else:
-            dt[3*self.i:3*(self.i+1)] = (np.dot(deji, e2) + np.dot(-de2, eji)
-                                         + np.dot(-de2, ejk))
-            dt[3*self.j:3*(self.j+1)] = np.dot(-deji, e2) + np.dot(-dejk, e2)
-            dt[3*self.k:3*(self.k+1)] = (np.dot(de2, eji) + np.dot(de2, ejk)
-                                         + np.dot(dejk, e2))
+            dt[3*self.i:3*(self.i+1)] = (np.dot(deji, w) + np.dot(-dw, eji)
+                                         + np.dot(-dw, ejk))
+            dt[3*self.j:3*(self.j+1)] = np.dot(-deji, w) + np.dot(-dejk, w)
+            dt[3*self.k:3*(self.k+1)] = (np.dot(dw, eji) + np.dot(dw, ejk)
+                                         + np.dot(dejk, w))
         return dt
 
 
