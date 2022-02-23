@@ -9,6 +9,8 @@ from molSimplify.optimize.calculators import (_xtb_methods,
                                               get_calculator)
 from molSimplify.optimize.connectivity import (find_connectivity,
                                                find_primitives)
+from molSimplify.optimize.coordinates import (Distance, Angle,
+                                              LinearAngle, Dihedral)
 
 
 def compute_guess_hessian(atoms, method):
@@ -22,7 +24,7 @@ def compute_guess_hessian(atoms, method):
         return H
 
 
-def schlegel_hessian(atoms):
+def schlegel_hessian(atoms, threshold=1.35):
     """
     Schlegel, Theoret. Chim. Acta 66, 333-340 (1984).
     https://doi.org/10.1007/BF00554788
@@ -31,11 +33,15 @@ def schlegel_hessian(atoms):
     ----------
     atoms : ase.atoms.Atoms
         Arrangement of atoms.
+    threshold : float
+        Atoms closed than this threshold times the sum of their covalent radii
+        are considered bound. Default value suggested by Schlegel is 1.35.
     Returns
     -------
     H : np.ndarray
         Guess Hessian in cartesian coordinates and ase units (eV, Ang)
     """
+    N = len(atoms)
     atomic_numbers = atoms.get_atomic_numbers()
     xyzs = atoms.get_positions()
     # Calculate the covalent bond distances as they are needed later
@@ -43,11 +49,16 @@ def schlegel_hessian(atoms):
     r_cov = cov[:, np.newaxis] + cov[np.newaxis, :]
     # "Atoms are considered bonded if their internuclear distance is less than
     # 1.35 times the sum of the covalentradii"
-    bonds = find_connectivity(atoms, threshold=1.35**2, connect_fragments=True)
+    bonds = find_connectivity(atoms, threshold=threshold**2,
+                              connect_fragments=True)
     bends, linear_bends, torsions, planars = find_primitives(xyzs, bonds)
+    # Initialize Hessian in Cartesian coordinates
+    H = np.zeros((3*N, 3*N))
 
-    def get_B(num1, num2):
-        """Returns the B parameter given two atomic numbers"""
+    def get_B_str(num1, num2):
+        """Returns the B parameter for stretch coordinates given two atomic
+        numbers
+        """
         # Sort for simplicity
         num1, num2 = min(num1, num2), max(num1, num2)
         if num1 <= 2:  # First period
@@ -65,40 +76,62 @@ def schlegel_hessian(atoms):
         else:  # third+-third+
             return 2.068
 
-    F_str = []
     for b in bonds:
-        r = np.linalg.norm(xyzs[b.i] - xyzs[b.k])
-        if r < 1.35 * r_cov[b.i, b.k]:
-            B = get_B(atomic_numbers[b.i], atomic_numbers[b.j])
-            F_str.append(1.734/(r - B)**3)
+        prim = Distance(*b)
+        r = np.linalg.norm(xyzs[b[0]] - xyzs[b[1]])
+        if r < threshold * r_cov[b[0], b[1]]:
+            B = get_B_str(atomic_numbers[b[0]], atomic_numbers[b[1]])
+            F_str = (1.734 * ase.units.Hartree * ase.units.Bohr /
+                     (r - B*ase.units.Bohr)**3)
         else:
             # Not covalently bonded atoms (from fragment connection algorithm).
             # Following geomeTRIC those are assigned a fixed value:
-            F_str.append(0.1 * ase.units.Hartree)
-    F_bend = []
-    for a in bends + linear_bends:
-        if atomic_numbers[a.i] == 1 or atomic_numbers[a.k] == 1:
+            F_str = 0.1 * ase.units.Hartree / ase.units.Bohr**2
+        Bi = prim.derivative(xyzs)
+        H += np.outer(Bi, F_str * Bi)
+
+    def get_A_bend(num1, num2):
+        if atomic_numbers[num1] == 1 or atomic_numbers[num2] == 1:
             # "either or both terminal atoms hydrogen"
-            F_bend.append(0.160)
-        else:
-            # "all three heavy atom bends"
-            F_bend.append(0.250)
-    F_tors = []
+            return 0.160 * ase.units.Hartree
+        # "all three heavy atom bends"
+        return 0.250 * ase.units.Hartree
+
+    for a in bends:
+        prim = Angle(*a)
+        F_bend = get_A_bend(prim.i, prim.k)
+        Bi = prim.derivative(xyzs)
+        H += np.outer(Bi, F_bend * Bi)
+    for a in linear_bends:
+        # Primitives for both projection axes
+        prim_u = LinearAngle(*a, axis=0)
+        prim_w = LinearAngle(*a, axis=1)
+        F_bend = get_A_bend(prim_u.i, prim_u.k)
+        Bi = prim_u.derivative(xyzs)
+        H += np.outer(Bi, F_bend * Bi)
+        Bi = prim_w.derivative(xyzs)
+        H += np.outer(Bi, F_bend * Bi)
+
     for t in torsions:
-        r = np.linalg.norm(xyzs[t.j] - xyzs[t.k])
-        F_tors = 0.0023 - 0.07*(r - r_cov[t.j, t.k])
-    F_oop = []
+        prim = Dihedral(*t)
+        r = np.linalg.norm(xyzs[t[1]] - xyzs[t[2]])
+        F_tors = ase.units.Hartree * (
+            0.0023 - 0.07 / ase.units.Bohr * (r - r_cov[t[1], t[2]]))
+        Bi = prim.derivative(xyzs)
+        H += np.outer(Bi, F_tors * Bi)
+
     for p in planars:
-        r1 = xyzs[p.j] - xyzs[p.i]
-        r2 = xyzs[p.k] - xyzs[p.i]
-        r3 = xyzs[p.l] - xyzs[p.i]
+        prim = Dihedral(*p)
+        r1 = xyzs[p[1]] - xyzs[p[0]]
+        r2 = xyzs[p[2]] - xyzs[p[0]]
+        r3 = xyzs[p[3]] - xyzs[p[0]]
         # Additional np.abs() since we do not know the orientation of r1
         # with respect to r2 x r3.
         d = 1 - np.abs(np.dot(r1, np.cross(r2, r3)))/(
             np.linalg.norm(r1)*np.linalg.norm(r2)*np.linalg.norm(r3))
-        F_oop.append(0.045 * d**4)
-
-    H = np.diag(F_str + F_bend + F_tors + F_oop)
+        F_oop = 0.045 * ase.units.Hartree * d**4
+        Bi = prim.derivative(xyzs)
+        H += np.outer(Bi, F_oop * Bi)
     return H
 
 

@@ -1,15 +1,18 @@
+import os
 import pytest
 import ase.atoms
 import ase.build
 import ase.units
 import numpy as np
 import numdifftools as nd
+import geometric.internal
 from xtb.ase.calculator import XTB
 from molSimplify.optimize.calculators import (_openbabel_methods,
                                               get_calculator)
 from molSimplify.optimize.hessians import (filter_hessian,
                                            compute_guess_hessian,
-                                           numerical_hessian)
+                                           numerical_hessian,
+                                           schlegel_hessian)
 
 
 def num_hessian(atoms, step=None):
@@ -86,6 +89,25 @@ def _test_Fe_CO_6(method):
     np.testing.assert_allclose(H, H.T, atol=1e-8)
     H_ref = num_hessian(atoms, step=1e-5)
     np.testing.assert_allclose(H, H_ref, atol=1e-4)
+
+
+@pytest.mark.parametrize('system', ['H2', 'F2', 'H2O', 'CO2'])
+def test_schlegel_vs_geometric(tmpdir, system):
+    """ Only tests simple systems since geomeTRIC does not use the actual
+    Schlegel rules for dihedrals and impropers."""
+    atoms = ase.build.molecule(system)
+    tmp_file = os.path.join(tmpdir, 'tmp.xyz')
+    ase.io.write(tmp_file, atoms, plain=True)
+    mol = geometric.molecule.Molecule(tmp_file)
+    coords_ref = geometric.internal.PrimitiveInternalCoordinates(
+        mol, connect=True)
+    xyzs = atoms.get_positions()
+    H_ref = coords_ref.calcHessCart(
+        xyzs/ase.units.Bohr, np.zeros(len(coords_ref.Internals)),
+        coords_ref.guess_hessian(xyzs/ase.units.Bohr))
+    H_ref *= ase.units.Hartree/ase.units.Bohr**2
+    H = schlegel_hessian(atoms, threshold=1.2)
+    np.testing.assert_allclose(H, H_ref, atol=1e-10)
 
 
 def test_filter_hessian():
