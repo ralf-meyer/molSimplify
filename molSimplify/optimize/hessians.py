@@ -38,10 +38,11 @@ def schlegel_hessian(atoms, threshold=1.35):
     threshold : float
         Atoms closer than this threshold times the sum of their covalent radii
         are considered bound. Default value suggested by Schlegel is 1.35.
+
     Returns
     -------
-    H : np.ndarray
-        Guess Hessian in cartesian coordinates and ase units (eV, Ang)
+    H : numpy.ndarray
+        Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
     """
     N = len(atoms)
     atomic_numbers = atoms.get_atomic_numbers()
@@ -83,14 +84,14 @@ def schlegel_hessian(atoms, threshold=1.35):
         r = np.linalg.norm(xyzs[b[0]] - xyzs[b[1]])
         if r < threshold * r_cov[b[0], b[1]]:
             B = get_B_str(atomic_numbers[b[0]], atomic_numbers[b[1]])
-            F_str = (1.734 * ase.units.Hartree * ase.units.Bohr /
+            h_str = (1.734 * ase.units.Hartree * ase.units.Bohr /
                      (r - B*ase.units.Bohr)**3)
         else:
             # Not covalently bonded atoms (from fragment connection algorithm).
             # Following geomeTRIC those are assigned a fixed value:
-            F_str = 0.1 * ase.units.Hartree / ase.units.Bohr**2
+            h_str = 0.1 * ase.units.Hartree / ase.units.Bohr**2
         Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, F_str * Bi)
+        H += np.outer(Bi, h_str * Bi)
 
     def get_A_bend(num1, num2):
         if atomic_numbers[num1] == 1 or atomic_numbers[num2] == 1:
@@ -101,26 +102,26 @@ def schlegel_hessian(atoms, threshold=1.35):
 
     for a in bends:
         prim = Angle(*a)
-        F_bend = get_A_bend(prim.i, prim.k)
+        h_bend = get_A_bend(prim.i, prim.k)
         Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, F_bend * Bi)
+        H += np.outer(Bi, h_bend * Bi)
     for a in linear_bends:
         # Primitives for both projection axes
         prim_u = LinearAngle(*a, axis=0)
         prim_w = LinearAngle(*a, axis=1)
-        F_bend = get_A_bend(prim_u.i, prim_u.k)
+        h_bend = get_A_bend(prim_u.i, prim_u.k)
         Bi = prim_u.derivative(xyzs)
-        H += np.outer(Bi, F_bend * Bi)
+        H += np.outer(Bi, h_bend * Bi)
         Bi = prim_w.derivative(xyzs)
-        H += np.outer(Bi, F_bend * Bi)
+        H += np.outer(Bi, h_bend * Bi)
 
     for t in torsions:
         prim = Dihedral(*t)
         r = np.linalg.norm(xyzs[t[1]] - xyzs[t[2]])
-        F_tors = ase.units.Hartree * (
+        h_tors = ase.units.Hartree * (
             0.0023 - 0.07 / ase.units.Bohr * (r - r_cov[t[1], t[2]]))
         Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, F_tors * Bi)
+        H += np.outer(Bi, h_tors * Bi)
 
     for p in planars:
         prim = Dihedral(*p)
@@ -131,9 +132,29 @@ def schlegel_hessian(atoms, threshold=1.35):
         # with respect to r2 x r3.
         d = 1 - np.abs(np.dot(r1, np.cross(r2, r3)))/(
             np.linalg.norm(r1)*np.linalg.norm(r2)*np.linalg.norm(r3))
-        F_oop = 0.045 * ase.units.Hartree * d**4
+        h_oop = 0.045 * ase.units.Hartree * d**4
         Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, F_oop * Bi)
+        H += np.outer(Bi, h_oop * Bi)
+    return H
+
+
+def fischer_almloef_hessian(atoms):
+    """
+    Fischer and Almloef, J. Phys. Chem. 1992, 96, 24, 9768-9774
+    https://doi.org/10.1021/j100203a036
+
+    Parameters
+    ----------
+    atoms : ase.atoms.Atoms
+        Arrangement of atoms.
+
+    Returns
+    -------
+    H : numpy.ndarray
+        Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
+    """
+    N = len(atoms)
+    H = np.zeros((3*N, 3*N))
     return H
 
 
