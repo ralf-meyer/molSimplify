@@ -116,22 +116,23 @@ class LinearAngle(Primitive):
         # Unit vector pointing from i to k.
         rik = xyzs[self.k, :] - xyzs[self.i, :]
         eik = rik / np.linalg.norm(rik)
-        if self.eref is None:
-            self._calc_reference(xyzs)
-        # Define two directions perpendicular to rik using the reference vector
-        u = np.cross(eik, self.eref)
-        u /= np.linalg.norm(u)
-        # Since eik and u are perpendicular and normalized w is normalized by
-        # construction.
-        w = np.cross(eik, u)
-
         rji = xyzs[self.i, :] - xyzs[self.j, :]
         eji = rji / np.linalg.norm(rji)
         rjk = xyzs[self.k, :] - xyzs[self.j, :]
         ejk = rjk / np.linalg.norm(rjk)
+
+        if self.eref is None:
+            self._calc_reference(xyzs)
+        # Define the vector u perpendicular to rik using the reference vector
+        u = np.cross(eik, self.eref)
+        u /= np.linalg.norm(u)
+
         if self.axis == 0:
             return np.dot(eji, u) + np.dot(ejk, u)
-        # Else use w as projection axis
+        # Else use a vector w perpendicular to rik and u  as projection axis.
+        # Since eik and u are perpendicular and normalized w is normalized by
+        # construction.
+        w = np.cross(eik, u)
         return np.dot(eji, w) + np.dot(ejk, w)
 
     def derivative(self, xyzs):
@@ -150,24 +151,26 @@ class LinearAngle(Primitive):
         dt = np.zeros(xyzs.size)
         rik = xyzs[self.k, :] - xyzs[self.i, :]
         eik = rik / np.linalg.norm(rik)
-        if self.eref is None:
-            self._calc_reference(xyzs)
-        c1 = np.cross(eik, self.eref)
-        u = c1 / np.linalg.norm(c1)
-        w = np.cross(eik, u)
         rji = xyzs[self.i, :] - xyzs[self.j, :]
         eji = rji / np.linalg.norm(rji)
         rjk = xyzs[self.k, :] - xyzs[self.j, :]
         ejk = rjk / np.linalg.norm(rjk)
+
+        # Setup first projection axis
+        if self.eref is None:
+            self._calc_reference(xyzs)
+        c1 = np.cross(eik, self.eref)
+        u = c1 / np.linalg.norm(c1)
+
         # Derivative terms
-        # Derivative of reference vector is zero:
-        deref = np.zeros((3, 3))
         deik = d_unit_vector(rik)
-        dc1 = d_cross_ab(eik, self.eref, deik, deref)
-        du = np.dot(dc1, d_unit_vector(c1))
-        dw = d_cross_ab(eik, u, deik, du)
         deji = d_unit_vector(rji)
         dejk = d_unit_vector(rjk)
+        # Derivative of reference vector is zero:
+        deref = np.zeros((3, 3))
+        dc1 = d_cross_ab(eik, self.eref, deik, deref)
+        du = np.dot(dc1, d_unit_vector(c1))
+
         if self.axis == 0:
             dt[3*self.i:3*(self.i+1)] = (np.dot(deji, u) + np.dot(-du, eji)
                                          + np.dot(-du, ejk))
@@ -175,6 +178,9 @@ class LinearAngle(Primitive):
             dt[3*self.k:3*(self.k+1)] = (np.dot(du, eji) + np.dot(du, ejk)
                                          + np.dot(dejk, u))
         else:
+            # Setup second projection axis
+            w = np.cross(eik, u)
+            dw = d_cross_ab(eik, u, deik, du)
             dt[3*self.i:3*(self.i+1)] = (np.dot(deji, w) + np.dot(-dw, eji)
                                          + np.dot(-dw, ejk))
             dt[3*self.j:3*(self.j+1)] = np.dot(-deji, w) + np.dot(-dejk, w)
