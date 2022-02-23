@@ -12,7 +12,7 @@ from molSimplify.optimize.hessians import (filter_hessian,
                                            numerical_hessian)
 
 
-def ref_hessian(atoms, step=None):
+def num_hessian(atoms, step=None):
     x0 = atoms.get_positions()
 
     def fun(x):
@@ -37,7 +37,7 @@ def test_numerical_hessian(method, system):
         H = numerical_hessian(atoms, symmetrize=False)
         np.testing.assert_allclose(atoms.get_positions(), x0)
         np.testing.assert_allclose(H, H.T, atol=1e-8)
-        H_ref = ref_hessian(atoms, step=1e-5)
+        H_ref = num_hessian(atoms, step=1e-5)
         # Symmetrize
         H = 0.5*(H + H.T)
         np.testing.assert_allclose(H, H_ref, atol=1e-4)
@@ -84,7 +84,7 @@ def _test_Fe_CO_6(method):
     H = compute_guess_hessian(atoms, method)
     np.testing.assert_allclose(atoms.get_positions(), x0)
     np.testing.assert_allclose(H, H.T, atol=1e-8)
-    H_ref = ref_hessian(atoms, step=1e-5)
+    H_ref = num_hessian(atoms, step=1e-5)
     np.testing.assert_allclose(H, H_ref, atol=1e-4)
 
 
