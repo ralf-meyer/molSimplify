@@ -3,11 +3,11 @@ import ase.constraints
 import pytest
 import numpy as np
 from molSimplify.optimize.optimize import run_preoptimization
-from molSimplify.optimize.calculators import _available_calculators
+from molSimplify.optimize.calculators import _available_methods
 from pkg_resources import resource_filename, Requirement
 
 
-@pytest.mark.parametrize('method', _available_calculators)
+@pytest.mark.parametrize('method', _available_methods)
 def test_acac(method):
     in_file = resource_filename(
         Requirement.parse('molSimplify'),
