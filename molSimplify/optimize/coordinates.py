@@ -233,6 +233,22 @@ class Dihedral(Primitive):
         return dw
 
 
+class Octahedral(Primitive):
+
+    def __init__(self, a0, a1, a2, a3, a4, a5, a6):
+        """ Geometry:
+               a5  a4
+                | /
+                |/
+        a1 - - a0 - - a3
+               /|
+              / |
+            a2  a6
+        """
+        self.a0, self.a1, self.a2, self.a3, self.a4, self.a5, self.a6 = (
+            a0, a1, a2, a3, a4, a5, a6)
+
+
 class InternalCoordinates():
 
     def __init__(self, primitives):
