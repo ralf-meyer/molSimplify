@@ -22,6 +22,8 @@ def compute_guess_hessian(atoms, method):
         H = numerical_hessian(atoms)
         atoms.calc = old_calc
         return H
+    elif method.lower() == 'schlegel':
+        return schlegel_hessian(atoms)
 
 
 def schlegel_hessian(atoms, threshold=1.35):
@@ -34,7 +36,7 @@ def schlegel_hessian(atoms, threshold=1.35):
     atoms : ase.atoms.Atoms
         Arrangement of atoms.
     threshold : float
-        Atoms closed than this threshold times the sum of their covalent radii
+        Atoms closer than this threshold times the sum of their covalent radii
         are considered bound. Default value suggested by Schlegel is 1.35.
     Returns
     -------
