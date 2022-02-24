@@ -239,6 +239,11 @@ class Dihedral(Primitive):
         return dw
 
 
+class Improper(Dihedral):
+    """Alias for Dihedral since it is often necessary to distinguish between
+    actual dihedrals and improper (out-of-plane) bends."""
+
+
 class Octahedral(Primitive):
 
     def __init__(self, a0, a1, a2, a3, a4, a5, a6):

@@ -1,6 +1,8 @@
 import numpy as np
 import ase.data
 import itertools
+from molSimplify.optimize.coordinates import (Distance, Angle, LinearAngle,
+                                              Dihedral, Improper)
 
 
 def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
@@ -192,3 +194,18 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
                     # Break after one improper has been added
                     break
     return bends, linear_bends, torsions, planars
+
+
+def get_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
+
+    bends, linear_bends, torsions, planars = find_primitives(
+        xyzs, bonds, linear_threshold=linear_threshold,
+        planar_threshold=planar_threshold)
+
+    primitives = ([Distance(*b) for b in bonds]
+                  + [Angle(*a) for a in bends]
+                  + [LinearAngle(*a, axis=axis)
+                     for a in linear_bends for axis in (0, 1)]
+                  + [Dihedral(*d) for d in torsions]
+                  + [Improper(*p) for p in planars])
+    return primitives

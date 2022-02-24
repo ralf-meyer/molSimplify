@@ -8,9 +8,9 @@ from molSimplify.optimize.calculators import (_xtb_methods,
                                               _openbabel_methods,
                                               get_calculator)
 from molSimplify.optimize.connectivity import (find_connectivity,
-                                               find_primitives)
-from molSimplify.optimize.coordinates import (Distance, Angle,
-                                              LinearAngle, Dihedral)
+                                               get_primitives)
+from molSimplify.optimize.coordinates import (Distance, Angle, LinearAngle,
+                                              Dihedral, Improper)
 
 
 def compute_guess_hessian(atoms, method):
@@ -54,7 +54,7 @@ def schlegel_hessian(atoms, threshold=1.35):
     # 1.35 times the sum of the covalentradii"
     bonds = find_connectivity(atoms, threshold=threshold**2,
                               connect_fragments=True)
-    bends, linear_bends, torsions, planars = find_primitives(xyzs, bonds)
+    primitives = get_primitives(xyzs, bonds)
     # Initialize Hessian in Cartesian coordinates
     H = np.zeros((3*N, 3*N))
 
@@ -79,62 +79,40 @@ def schlegel_hessian(atoms, threshold=1.35):
         else:  # third+-third+
             return 2.068
 
-    for b in bonds:
-        prim = Distance(*b)
-        r = np.linalg.norm(xyzs[b[0]] - xyzs[b[1]])
-        if r < threshold * r_cov[b[0], b[1]]:
-            B = get_B_str(atomic_numbers[b[0]], atomic_numbers[b[1]])
-            h_str = (1.734 * ase.units.Hartree * ase.units.Bohr /
-                     (r - B*ase.units.Bohr)**3)
-        else:
-            # Not covalently bonded atoms (from fragment connection algorithm).
-            # Following geomeTRIC those are assigned a fixed value:
-            h_str = 0.1 * ase.units.Hartree / ase.units.Bohr**2
-        Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_str * Bi)
-
     def get_A_bend(num1, num2):
         if atomic_numbers[num1] == 1 or atomic_numbers[num2] == 1:
             # "either or both terminal atoms hydrogen"
-            return 0.160 * ase.units.Hartree
+            return 0.160
         # "all three heavy atom bends"
-        return 0.250 * ase.units.Hartree
+        return 0.250
 
-    for a in bends:
-        prim = Angle(*a)
-        h_bend = get_A_bend(prim.i, prim.k)
+    for prim in primitives:
+        if type(prim) is Distance:
+            r = prim.value(xyzs)
+            if r < threshold * r_cov[prim.i, prim.j]:
+                B = get_B_str(atomic_numbers[prim.i], atomic_numbers[prim.j])
+                h_ii = (1.734 * ase.units.Bohr /
+                        (r - B*ase.units.Bohr)**3)
+            else:
+                # Not covalently bonded atoms (from fragment connection).
+                # Following geomeTRIC those are assigned a fixed value:
+                h_ii = 0.1 / ase.units.Bohr**2
+        elif type(prim) in [Angle, LinearAngle]:
+            h_ii = get_A_bend(prim.i, prim.k)
+        elif type(prim) is Dihedral:
+            r = np.linalg.norm(xyzs[prim.j] - xyzs[prim.k])
+            h_ii = 0.0023 - 0.07 / ase.units.Bohr * (r - r_cov[prim.j, prim.k])
+        elif type(prim) is Improper:
+            r1 = xyzs[prim.j] - xyzs[prim.i]
+            r2 = xyzs[prim.k] - xyzs[prim.i]
+            r3 = xyzs[prim.l] - xyzs[prim.i]
+            # Additional np.abs() since we do not know the orientation of r1
+            # with respect to r2 x r3.
+            d = 1 - np.abs(np.dot(r1, np.cross(r2, r3)))/(
+                np.linalg.norm(r1)*np.linalg.norm(r2)*np.linalg.norm(r3))
+            h_ii = 0.045 * d**4
         Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_bend * Bi)
-    for a in linear_bends:
-        # Primitives for both projection axes
-        prim_u = LinearAngle(*a, axis=0)
-        prim_w = LinearAngle(*a, axis=1)
-        h_bend = get_A_bend(prim_u.i, prim_u.k)
-        Bi = prim_u.derivative(xyzs)
-        H += np.outer(Bi, h_bend * Bi)
-        Bi = prim_w.derivative(xyzs)
-        H += np.outer(Bi, h_bend * Bi)
-
-    for t in torsions:
-        prim = Dihedral(*t)
-        r = np.linalg.norm(xyzs[t[1]] - xyzs[t[2]])
-        h_tors = ase.units.Hartree * (
-            0.0023 - 0.07 / ase.units.Bohr * (r - r_cov[t[1], t[2]]))
-        Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_tors * Bi)
-
-    for p in planars:
-        prim = Dihedral(*p)
-        r1 = xyzs[p[1]] - xyzs[p[0]]
-        r2 = xyzs[p[2]] - xyzs[p[0]]
-        r3 = xyzs[p[3]] - xyzs[p[0]]
-        # Additional np.abs() since we do not know the orientation of r1
-        # with respect to r2 x r3.
-        d = 1 - np.abs(np.dot(r1, np.cross(r2, r3)))/(
-            np.linalg.norm(r1)*np.linalg.norm(r2)*np.linalg.norm(r3))
-        h_oop = 0.045 * ase.units.Hartree * d**4
-        Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_oop * Bi)
+        H += np.outer(Bi, h_ii * ase.units.Hartree * Bi)
     return H
 
 
