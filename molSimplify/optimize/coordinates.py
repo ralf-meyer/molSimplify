@@ -129,61 +129,68 @@ class LinearAngle(Primitive):
 
         if self.axis == 0:
             return np.dot(eji, u) + np.dot(ejk, u)
-        # Else use a vector w perpendicular to rik and u  as projection axis.
+        # Else use a vector w perpendicular to rik and u as projection axis.
         # Since eik and u are perpendicular and normalized w is normalized by
         # construction.
         w = np.cross(eik, u)
         return np.dot(eji, w) + np.dot(ejk, w)
 
     def derivative(self, xyzs):
-        def d_unit_vector(a):
-            term1 = np.eye(3)/np.linalg.norm(a)
-            term2 = np.outer(a, a)/(np.linalg.norm(a)**3)
-            answer = term1-term2
-            return answer
-
-        def d_cross_ab(a, b, da, db):
-            answer = np.zeros((da.shape[0], 3), dtype=float)
-            for i in range(da.shape[0]):
-                answer[i] = np.cross(a, db[i]) + np.cross(da[i], b)
-            return answer
-
+        # Initialize return array
         dt = np.zeros(xyzs.size)
-        rik = xyzs[self.k, :] - xyzs[self.i, :]
-        eik = rik / np.linalg.norm(rik)
-        rji = xyzs[self.i, :] - xyzs[self.j, :]
-        eji = rji / np.linalg.norm(rji)
-        rjk = xyzs[self.k, :] - xyzs[self.j, :]
-        ejk = rjk / np.linalg.norm(rjk)
 
-        # Setup first projection axis
+        rik = xyzs[self.k, :] - xyzs[self.i, :]
+        norm_ik = np.linalg.norm(rik)
+        eik = rik / norm_ik
+        # deik/drik
+        deik = np.eye(3) / norm_ik - np.outer(rik, rik) / norm_ik**3
+
+        rji = xyzs[self.i, :] - xyzs[self.j, :]
+        norm_ji = np.linalg.norm(rji)
+        eji = rji / norm_ji
+        # deji/drji
+        deji = np.eye(3) / norm_ji - np.outer(rji, rji) / norm_ji**3
+
+        rjk = xyzs[self.k, :] - xyzs[self.j, :]
+        norm_jk = np.linalg.norm(rjk)
+        ejk = rjk / norm_jk
+        # dejk/drjk
+        dejk = np.eye(3) / norm_jk - np.outer(rjk, rjk) / norm_jk**3
+
+        # Setup first projection axis u
         if self.eref is None:
             self._calc_reference(xyzs)
-        c1 = np.cross(eik, self.eref)
-        u = c1 / np.linalg.norm(c1)
-
-        # Derivative terms
-        deik = d_unit_vector(rik)
-        deji = d_unit_vector(rji)
-        dejk = d_unit_vector(rjk)
-        # Derivative of reference vector is zero:
-        deref = np.zeros((3, 3))
-        dc1 = d_cross_ab(eik, self.eref, deik, deref)
-        du = np.dot(dc1, d_unit_vector(c1))
+        u_raw = np.cross(eik, self.eref)
+        # Since eref is constant: deref/drik = 0
+        du_raw = np.cross(deik, self.eref)
+        # Normalization
+        norm_u = np.linalg.norm(u_raw)
+        u = u_raw / norm_u
+        # Inner derivative of norm_u in the second term is again du_raw
+        du = du_raw / norm_u - du_raw @ np.outer(u_raw, u_raw) / norm_u**3
 
         if self.axis == 0:
+            # derivative w.r.t. atom i: drji/dri = 1, drik/dri = -1
             dt[3*self.i:3*(self.i+1)] = (np.dot(deji, u) + np.dot(-du, eji)
                                          + np.dot(-du, ejk))
+            # derivative w.r.t. atom j: drji/drj = -1, drjk/drj = -1
+            # u is independent of atom j : du/drj = 0
             dt[3*self.j:3*(self.j+1)] = np.dot(-deji, u) + np.dot(-dejk, u)
-            dt[3*self.k:3*(self.k+1)] = (np.dot(du, eji) + np.dot(du, ejk)
-                                         + np.dot(dejk, u))
+            # derivative w.r.t atom k: drik/drk = 1, drjk/drk = 1
+            dt[3*self.k:3*(self.k+1)] = (np.dot(dejk, u) + np.dot(du, eji)
+                                         + np.dot(du, ejk))
         else:
             # Setup second projection axis
             w = np.cross(eik, u)
-            dw = d_cross_ab(eik, u, deik, du)
+            # Derivative w.r.t rik
+            dw = np.cross(deik, u) + np.cross(eik, du)
+            # derivative w.r.t. atom i: drji/dri = 1, drik/dri = -1
             dt[3*self.i:3*(self.i+1)] = (np.dot(deji, w) + np.dot(-dw, eji)
                                          + np.dot(-dw, ejk))
+            # derivative w.r.t. atom j: drji/drj = -1, drjk/drj = -1
+            # w is independent of the atom j: dw/drj = 0
             dt[3*self.j:3*(self.j+1)] = np.dot(-deji, w) + np.dot(-dejk, w)
+            # derivative w.r.t atom k: drik/drk = 1, drjk/drk = 1
             dt[3*self.k:3*(self.k+1)] = (np.dot(dw, eji) + np.dot(dw, ejk)
                                          + np.dot(dejk, w))
         return dt

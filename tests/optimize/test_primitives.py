@@ -69,9 +69,13 @@ def test_primitive_derivatives(atol=1e-10):
             np.testing.assert_allclose(
                 r_inv.derivative(xyzs), dr_inv_ref(xyzs), atol=atol)
 
-    a = Angle(1, 0, 2)
-    da_ref = nd.Gradient(lambda x: a.value(x.reshape((-1, 3))))
-    np.testing.assert_allclose(a.derivative(xyzs), da_ref(xyzs), atol=atol)
+    a1 = Angle(1, 0, 2)
+    da1_ref = nd.Gradient(lambda x: a1.value(x.reshape((-1, 3))))
+    np.testing.assert_allclose(a1.derivative(xyzs), da1_ref(xyzs), atol=atol)
+
+    a2 = Angle(1, 0, 4)
+    da2_ref = nd.Gradient(lambda x: a2.value(x.reshape((-1, 3))))
+    np.testing.assert_allclose(a2.derivative(xyzs), da2_ref(xyzs), atol=atol)
 
     t1 = LinearAngle(1, 0, 3, 0)
     dt1_ref = nd.Gradient(lambda x: t1.value(x.reshape((-1, 3))))
@@ -81,6 +85,15 @@ def test_primitive_derivatives(atol=1e-10):
     # Step size needed here to avoid underflow error
     dt2_ref = nd.Gradient(lambda x: t2.value(x.reshape((-1, 3))), step=1e-4)
     np.testing.assert_allclose(t2.derivative(xyzs), dt2_ref(xyzs), atol=atol)
+
+    t3 = LinearAngle(1, 0, 4, 0)
+    dt3_ref = nd.Gradient(lambda x: t3.value(x.reshape((-1, 3))))
+    np.testing.assert_allclose(t3.derivative(xyzs), dt3_ref(xyzs), atol=atol)
+
+    t4 = LinearAngle(1, 0, 4, 1)
+    # Step size needed here to avoid underflow error
+    dt4_ref = nd.Gradient(lambda x: t4.value(x.reshape((-1, 3))), step=1e-4)
+    np.testing.assert_allclose(t4.derivative(xyzs), dt4_ref(xyzs), atol=atol)
 
     w = Dihedral(1, 0, 2, 4)
     dw_ref = nd.Gradient(lambda x: w.value(x.reshape((-1, 3))))
