@@ -1,12 +1,15 @@
-from rdkit import Chem
 import argparse, subprocess, shutil
-from rdkit.Chem import AllChem
 from molSimplify.Classes.mol3D import *
 import os
 from molSimplify.Informatics.fragment_classes import fragment, bridge, tetradentate
 import json
 import itertools
 import pandas as pd
+
+### Below is RDKit dependency that this code uses 
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
+####
 
 def cyclic_equiv(u, v):
     n, i, j = len(u), 0, 0
