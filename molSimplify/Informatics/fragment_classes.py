@@ -1,9 +1,8 @@
-from rdkit import Chem
-from rdkit import RDLogger
-from rdkit.Chem.rdMolDescriptors import CalcMolFormula
-RDLogger.DisableLog('rdApp.*')
-
-# This part is dependent on RDKit. Requires RDkit dependency.
+### This part is dependent on RDKit. Requires RDkit dependency. Uncomment this section
+# from rdkit import Chem
+# from rdkit import RDLogger
+# from rdkit.Chem.rdMolDescriptors import CalcMolFormula
+# RDLogger.DisableLog('rdApp.*')
 
 class fragment:
     '''
