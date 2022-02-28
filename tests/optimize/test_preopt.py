@@ -25,13 +25,7 @@ def test_acac(method):
     # Number of unpaired electrons is multiplicity - 1
     s[0] = 4
     atoms.set_initial_magnetic_moments(s)
-    if method == 'mmff94':
-        # MMFF94 does not have parameters for Fe and is
-        # therefore expected to fail.
-        with pytest.raises(RuntimeError):
-            run_preoptimization(atoms, method)
-    else:
-        run_preoptimization(atoms, method)
+    run_preoptimization(atoms, method)
     atoms_ref = ase.io.read(ref_file)
     ase.build.minimize_rotation_and_translation(atoms, atoms_ref)
     rmsd = np.sqrt(np.mean((atoms.positions - atoms_ref.positions)**2))

@@ -8,6 +8,13 @@ def ob_minimize(path, method, frozen_inds):
     obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats('xyz', 'xyz')
 
+    if method in ['MMFF94']:
+        with open(path, 'r') as fin:
+            lines = fin.read()
+        lines = lines.replace('Fe', 'Si')
+        with open(path, 'w') as fout:
+            fout.write(lines)
+
     mol = openbabel.OBMol()
     obConversion.ReadFile(mol, path)
 
@@ -18,14 +25,22 @@ def ob_minimize(path, method, frozen_inds):
     for i in frozen_inds:
         constr.AddAtomConstraint(i+1)
 
-    forcefield.Setup(mol, constr)
+    print('Forcefield setup successful:', forcefield.Setup(mol, constr))
     print('Energy prior to optimization',
           forcefield.Energy(), forcefield.GetUnit())
-    forcefield.ConjugateGradients(5000)
+    forcefield.SteepestDescent(10000, 1e-8)
+    forcefield.ConjugateGradients(10000, 1e-8)
     print('Success in copying:', forcefield.GetCoordinates(mol))
     print('Energy after optimization',
           forcefield.Energy(), forcefield.GetUnit())
     print('Success in writing:', obConversion.WriteFile(mol, path))
+
+    if method in ['MMFF94']:
+        with open(path, 'r') as fin:
+            lines = fin.read()
+        lines = lines.replace('Si', 'Fe')
+        with open(path, 'w') as fout:
+            fout.write(lines)
 
 
 def main():

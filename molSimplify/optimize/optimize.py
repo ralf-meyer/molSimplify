@@ -19,9 +19,18 @@ logger = logging.getLogger(__name__)
 
 def run_preoptimization(atoms, method, optimizer=ase.optimize.LBFGS):
     method = method.lower()
+    symbols = atoms.get_chemical_symbols()
+    if method in ['mmff94']:
+        new_symbols = symbols.copy()
+        for i, sym in enumerate(symbols):
+            if sym in metalslist:
+                new_symbols[i] = 'Si'
+        atoms.set_chemical_symbols(new_symbols)
     atoms.calc = get_calculator(method)
     opt = optimizer(atoms)
     opt.run(fmax=0.01)
+    # Reset atom types
+    atoms.set_chemical_symbols(symbols)
 
 
 def read_molecule(terachem_file):
