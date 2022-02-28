@@ -26,6 +26,7 @@ from molSimplify.Scripts.rungen import (constrgen,
                                         multigenruns,
                                         draw_supervisor)
 
+
 def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                       argv=['main.py', '-i', 'asdfasdfasdfasdf'],
                       flag=True,
@@ -58,6 +59,7 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
     strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=False)
     return (strfiles, emsg, this_diag)
 
+
 # Coordinates subroutines
 #  @param argv Argument list
 #  @param flag Flag for printing information
@@ -87,8 +89,8 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     """
     emsg = False
     # check for configuration file
-    homedir = os.path.expanduser("~")
-    #configfile = False if not glob.glob(homedir+'/.molSimplify') else True
+    # homedir = os.path.expanduser("~")
+    # configfile = False if not glob.glob(homedir+'/.molSimplify') else True
     # if not configfile:
     #    print "It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file."
     #    instdir = raw_input("Please select the full path of the top installation directory for the program: ")
@@ -105,7 +107,7 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     ### end set-up configuration file ###
     ############ GLOBALS DEFINITION ############
     globs = globalvars()
-    #installdir = globs.installdir
+    # installdir = globs.installdir
     rundir = globs.rundir
     PROGRAM = globs.PROGRAM
     ###### END GLOBALS DEFINITION ##############
@@ -204,7 +206,7 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
                 del args
                 return emsg
     elif args.drawmode:
-        emsg = draw_supervisor(args,rundir)
+        emsg = draw_supervisor(args, rundir)
     # slab/place on slab?
     elif (args.slab_gen or args.place_on_slab):
         emsg = slab_module_supervisor(args, rundir)

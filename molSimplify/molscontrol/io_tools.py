@@ -348,7 +348,7 @@ def get_feature_type(feature_dict):
 
 def check_pid(pid):
     # print("PID: ", pid)
-    if pid == False:
+    if not pid:
         pid = 000000
     try:
         os.kill(int(pid), 0)

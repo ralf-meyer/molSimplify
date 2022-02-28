@@ -5,12 +5,13 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Informatics.lacRACAssemble import (generate_all_ligand_autocorrelations,
-                                                     generate_all_ligand_deltametrics,
-                                                     generate_full_complex_autocorrelations,
-                                                     generate_metal_autocorrelations,
-                                                     generate_metal_deltametrics,
-                                                     generate_all_ligand_misc)
+from molSimplify.Informatics.lacRACAssemble import (
+    generate_all_ligand_autocorrelations,
+    generate_all_ligand_deltametrics,
+    generate_full_complex_autocorrelations,
+    generate_metal_autocorrelations,
+    generate_metal_deltametrics,
+    generate_all_ligand_misc)
 from molSimplify.Classes.mol3D import mol3D
 
 # DFT observations used to postprocess DFT results by measuring ligand properties
@@ -31,7 +32,6 @@ class dft_observation:
         self.yvalue = y_value
 
     def obtain_mol3d(self):
-        new_mol = mol3D()
         this_mol = mol3D()
         this_mol.readfromxyz(self.geopath)
         if this_mol.natoms > 0:
@@ -126,5 +126,5 @@ def write_descriptor_csv(list_of_runs):
                 for properties in runs.descriptors:
                     f.write(','+str(properties))
                 f.write('\n')
-            except:
+            except AttributeError:
                 pass

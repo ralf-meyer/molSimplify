@@ -1,4 +1,6 @@
-import os,glob,sys
+import os
+import glob
+import sys
 import copy
 import numpy as np
 import subprocess
@@ -532,7 +534,7 @@ def find(key, directory='in place', maxdepth=False):
     #  @return A list of paths
     if directory == 'in place':
         directory = os.getcwd()
-    if maxdepth != False:
+    if maxdepth:
         bash = 'find ' + directory + ' -name ' + key + ' -maxdepth '+str(maxdepth)
     else:
         bash = 'find ' + directory + ' -name ' + key

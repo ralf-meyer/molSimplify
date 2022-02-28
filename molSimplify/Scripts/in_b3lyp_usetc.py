@@ -56,7 +56,7 @@ home = expanduser("~")
 psi4_scr = './'
 if not os.path.isdir(psi4_scr):
     os.makedirs(psi4_scr)
-#---argument parsing---
+# ---argument parsing---
 parser = argparse.ArgumentParser(description='psi4 dft calculations.')
 parser.add_argument('-c', action="store", type=int, dest='charge')
 parser.add_argument('-spin', action="store", type=int, dest='spin')
@@ -72,7 +72,7 @@ charge, spin = args.charge, args.spin
 psi4.set_memory(args.memory)
 psi4.set_num_threads(args.num_threads)
 
-#---basic setup---
+# ---basic setup---
 filename = "output"
 psi4.core.set_output_file(filename + '.dat', False)
 psi4.qcdb.libmintsbasisset.basishorde['LACVPS'] = lacvps

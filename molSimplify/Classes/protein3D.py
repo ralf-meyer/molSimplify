@@ -6,28 +6,25 @@
 #  Dpt of Chemical Engineering, MIT
 
 # imports
-from math import sqrt
-import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom, makeMol
 from molSimplify.Classes.globalvars import globalvars
-import gzip
-from itertools import chain
 import urllib.request as urllib
+import urllib.error
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import string
 import subprocess
 import shlex
 import ast
 import time
 from scipy.spatial import ConvexHull
-#from pymol import cmd, stored
+# from pymol import cmd, stored
 
 # no GUI support for now
+
 
 class protein3D:
     """Holds information about a protein, used to do manipulations.  Reads
@@ -177,7 +174,7 @@ class protein3D:
         """ Automatically choose the conformation of a protein3D class
         instance based first on what the greatest occupancy level is and then
         the first conformation ihe alphabet with all else equal.
-        
+
         """
         for c in self.conf:
             c_ids = []
@@ -188,25 +185,25 @@ class protein3D:
             if len(lst) == 1:
                 self.chains[c[0]].insert(c[1]-1, lst[0])
             else:
-                for l in lst:
-                    if l not in self.chains[c[0]]:
-                        for j in l.atoms:
+                for li in lst:
+                    if li not in self.chains[c[0]]:
+                        for j in li.atoms:
                             in_more_confs = False
                             for m in lst:
-                                if m != l and j in m.atoms:
+                                if m != li and j in m.atoms:
                                     in_more_confs = True
                             if type(j) != atom3D and not in_more_confs:
                                 c_ids.append(j[0])
                             elif not in_more_confs:
                                 c_ids.append(self.getIndex(j))
-                        #print(c_ids)
+                        # print(c_ids)
                         self.stripAtoms(c_ids)
-                        if type(l) == AA3D and l in self.aas[c]:
-                            self.aas[c].remove(l)
-                        elif type(l) == mol3D and l in self.hetmols[c]:
-                            self.hetmols[c].remove(l)
+                        if type(li) == AA3D and li in self.aas[c]:
+                            self.aas[c].remove(li)
+                        elif type(li) == mol3D and li in self.hetmols[c]:
+                            self.hetmols[c].remove(li)
         self.setConf([])
-            
+
     def setR(self, R):
         """ Set R value of protein3D class.
 
@@ -380,7 +377,7 @@ class protein3D:
         atoms = {}
         for a_id in self.atoms:
             aa = self.getResidue(a_id)
-            if aa != None:
+            if aa is not None:
                 if aa.chain == chain_id:
                     atoms[a_id] = self.atoms[a_id]
             else:
@@ -428,18 +425,18 @@ class protein3D:
         >>> pdb_system.getMolecule(a_id=9164).name # This prints the name of the molecule, in this case, it is 'TAU'
         """
         for s in self.aas.values():
-            for mol in s: # mol is AA3D
+            for mol in s:  # mol is AA3D
                 if (a_id, self.atoms[a_id]) in mol.atoms:
                     return mol
-        for mol in self.missing_atoms.keys(): # mol is incomplete AA3D
+        for mol in self.missing_atoms.keys():  # mol is incomplete AA3D
             if (a_id, self.atoms[a_id]) in self.missing_atoms[mol]:
                 return mol
         if not aas_only:
             for s in self.hetmols.values():
-                for mol in s: # mol is mol3D
+                for mol in s:  # mol is mol3D
                     if self.atoms[a_id] in mol.atoms:
                         return mol
-        return None # something is wrong
+        return None  # something is wrong
 
     def stripAtoms(self, atoms_stripped):
         """ Removes certain atoms from the protein3D class instance.
@@ -566,8 +563,8 @@ class protein3D:
         """
         if not self.metals:
             metal_list = []
-            for l in self.hetmols.values(): # no metals in AAs
-                for m in l:
+            for li in self.hetmols.values():  # no metals in AAs
+                for m in li:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
                             if a.occup == 1 or a in self.bonds.keys():
@@ -657,7 +654,7 @@ class protein3D:
             if self.atoms[h_id] not in self.bonds.keys():
                 return None
             elif b in self.bonds[self.atoms[h_id]]:
-                if self.getMolecule(b_id, aas_only) != None:
+                if self.getMolecule(b_id, aas_only) is not None:
                     bound_mols.append(self.getMolecule(b_id, aas_only))
         return bound_mols
     
@@ -672,7 +669,7 @@ class protein3D:
         """
 
         # read in PDB file
-        if '.pdb' in text: # means this is a filename
+        if '.pdb' in text:  # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
             f = open(fname + '.pdb', 'r')
@@ -735,9 +732,9 @@ class protein3D:
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
-                l = line.split()
-                if len(l) > 2:
-                    a = AA3D(l[0], l[1], l[2])
+                sp = line.split()
+                if len(sp) > 2:
+                    a = AA3D(sp[0], sp[1], sp[2])
                     missing_aas.append(a)
 
         # start getting missing atoms
@@ -748,18 +745,18 @@ class protein3D:
             split = text[-1]
             want = want.split(split)
             for line in want:
-                if line == want[-1]: 
+                if line == want[-1]:
                     text = line
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
-                l = line.split()
-                if len(l) > 2:
-                    missing_atoms[(l[1],l[2])] = []
-                    for atom in l[3:]:
+                sp = line.split()
+                if len(sp) > 2:
+                    missing_atoms[(sp[1], sp[2])] = []
+                    for atom in sp[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
-                                                           greek=atom))
+                            missing_atoms[(sp[1], sp[2])].append(
+                                atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids and heteroatoms
         pa_dict = {'AltLoc': ""}
         if "ENDMDL" in text:
@@ -780,32 +777,32 @@ class protein3D:
                 if a_dict['ResName'] in globalvars().getAllAAs() or "ATOM" in l_type:
                     # have an amino acid or biomolecule monomer
                     a, aas, conf, chains, pa_dict, bonds = makeMol(a_dict, aas, conf, chains, pa_dict, bonds)
-                else: # have a normal heteromolecule
+                else:  # have a normal heteromolecule
                     a, hetmols, conf, chains, pa_dict, bonds = makeMol(a_dict, hetmols, conf, chains, pa_dict, bonds, False)
                 atoms[a_dict['SerialNum']] = a
                 a_ids[a] = a_dict['SerialNum']
 
-            elif "CONECT" in l_type: # get extra connections
-                line = line[6:] # remove type
-                l = [line[i:i+5] for i in range(0, len(line), 5)]
-                if int(l[0]) in atoms.keys() and atoms[int(l[0])] not in bonds.keys():
-                    bonds[atoms[int(l[0])]] = set()
-                for i in l[1:]:
+            elif "CONECT" in l_type:  # get extra connections
+                line = line[6:]  # remove type
+                li = [line[i:i+5] for i in range(0, len(line), 5)]
+                if int(li[0]) in atoms.keys() and atoms[int(li[0])] not in bonds.keys():
+                    bonds[atoms[int(li[0])]] = set()
+                for i in li[1:]:
                     try:
-                        bonds[atoms[int(l[0])]].add(atoms[int(i)])
-                        if atoms[int(l[0])].loc != '':
+                        bonds[atoms[int(li[0])]].add(atoms[int(i)])
+                        if atoms[int(li[0])].loc != '':
                             for j in {1, -1}:
-                                if atoms[int(l[0]) + j].greek == atoms[int(l[0])].greek:
-                                    if atoms[int(l[0]) + j] not in bonds.keys():
-                                        bonds[atoms[int(l[0]) + j]] = {atoms[int(i)]}
+                                if atoms[int(li[0]) + j].greek == atoms[int(li[0])].greek:
+                                    if atoms[int(li[0]) + j] not in bonds.keys():
+                                        bonds[atoms[int(li[0]) + j]] = {atoms[int(i)]}
                                     else:
-                                        bonds[atoms[int(l[0]) + j]].add(atoms[int(i)])
+                                        bonds[atoms[int(li[0]) + j]].add(atoms[int(i)])
                                     if atoms[int(i)] not in bonds.keys():
-                                        bonds[atoms[int(i)]] = {atoms[int(l[0]) + j]}
+                                        bonds[atoms[int(i)]] = {atoms[int(li[0]) + j]}
                                     else:
-                                        bonds[atoms[int(i)]].add(atoms[int(l[0]) + j])
-                    except:
-                        #if "  " not in i and i != " ":
+                                        bonds[atoms[int(i)]].add(atoms[int(li[0]) + j])
+                    except ValueError:
+                        # if "  " not in i and i != " ":
                         #    print("likely OXT")
                         continue
         # deal with conformations in chains
@@ -854,18 +851,18 @@ class protein3D:
             data = urllib.urlopen(
                 'https://files.rcsb.org/view/' + remoteCode +
                 '.pdb').read()
-        except:
-            print("warning: %s not found.\n"%pdbCode)
+        except urllib.error.URLError:
+            print("warning: %s not found.\n" % pdbCode)
         else:
             try:
                 self.readfrompdb(str(data))
                 self.setPDBCode(pdbCode)
-                print("fetched: %s"%(pdbCode))
+                print("fetched: %s" % (pdbCode))
             except IOError:
                 print('aborted')
             else:
                 if len(data) == 0:
-                    print("warning: %s not valid.\n"%pdbCode)
+                    print("warning: %s not valid.\n" % pdbCode)
 
     def setBonds(self, bonds):
         """Sets the bonded atoms in the protein.
@@ -893,12 +890,12 @@ class protein3D:
             start = 'https://files.rcsb.org/pub/pdb/validation_reports/' + pdbCode[1] + pdbCode[2]
             link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
             xml_doc = requests.get(link)
-        except:
-            print("warning: %s not found.\n"%pdbCode)
+        except urllib.error.URLError:
+            print("warning: %s not found.\n" % pdbCode)
         else:
             try:
                 ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
-                soup = BeautifulSoup(xml_doc.content,'lxml-xml')
+                soup = BeautifulSoup(xml_doc.content, 'lxml-xml')
                 
                 ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections. 
                 ### This is an example of getting everything with a "sec" tag.
@@ -906,29 +903,29 @@ class protein3D:
                 entry = body[0].find_all("Entry")
                 if "DataCompleteness" not in entry[0].attrs.keys():
                     self.setDataCompleteness(0)
-                    print("warning: %s has no DataCompleteness."%pdbCode)
+                    print("warning: %s has no DataCompleteness." % pdbCode)
                 else:
                     self.setDataCompleteness(float(entry[0].attrs["DataCompleteness"]))
                 if "percent-RSRZ-outliers" not in entry[0].attrs.keys():
                     self.setRSRZ(100)
-                    print("warning: %s has no RSRZ.\n"%pdbCode)
+                    print("warning: %s has no RSRZ.\n" % pdbCode)
                 else:
                     self.setRSRZ(float(entry[0].attrs["percent-RSRZ-outliers"]))
                 if "TwinL" not in entry[0].attrs.keys():
-                    print("warning: %s has no TwinL."%pdbCode)
+                    print("warning: %s has no TwinL." % pdbCode)
                     self.setTwinL(0)
                 else:
                     self.setTwinL(float(entry[0].attrs["TwinL"]))
                 if "TwinL2" not in entry[0].attrs.keys():
-                    print("warning: %s has no TwinL2."%pdbCode)
+                    print("warning: %s has no TwinL2." % pdbCode)
                     self.setTwinL2(0)
                 else:
                     self.setTwinL2(float(entry[0].attrs["TwinL2"]))
             except IOError:
                 print('aborted')
             else:
-                if xml_doc == None:
-                    print("warning: %s not valid.\n"%pdbCode)
+                if xml_doc is None:
+                    print("warning: %s not valid.\n" % pdbCode)
 
     def setDataCompleteness(self, DataCompleteness):
         """ Set DataCompleteness value of protein3D class.
@@ -978,16 +975,16 @@ class protein3D:
         dict_str = out.decode("UTF-8")
         int_dict = ast.literal_eval(dict_str)
         res2 = subprocess.Popen(['curl', int_dict['location']],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
-        t = 5 # can change depending on how frequently to loop
+        t = 5  # can change depending on how frequently to loop
         while dictionary["status_code"] == 202:
             res2 = subprocess.Popen(['curl', int_dict['location']],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            #print('sleeping', t)
+            # print('sleeping', t)
             time.sleep(t)
             res2.wait()
             out2, err2 = res2.communicate()
@@ -1001,8 +998,8 @@ class protein3D:
             if index in self.atoms.keys():
                 a = self.atoms[index]
                 a.setEDIA(EDIA)
-                if a.occup < 1: # more than one conformation
-                    subdf = df[df["Infile id"]==index+1]
+                if a.occup < 1:  # more than one conformation
+                    subdf = df[df["Infile id"] == index+1]
                     if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
                         self.atoms[index+1].setEDIA(EDIA)
                     elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
@@ -1025,7 +1022,7 @@ class protein3D:
         
         """
 
-        center_of_mass = [0, 0, 0] # coordinates of center of mass (X, Y, Z)
+        center_of_mass = [0, 0, 0]  # coordinates of center of mass (X, Y, Z)
         mmass = 0
         # loop over atoms in molecule
         if len(self.atoms.keys()) > 0:
@@ -1051,7 +1048,7 @@ class protein3D:
         
         """
 
-        centroid = [0, 0, 0] # coordinates of centroid (X, Y, Z)
+        centroid = [0, 0, 0]  # coordinates of centroid (X, Y, Z)
         # loop over atoms in protein
         if len(self.atoms.keys()) > 0:
             for atom in self.atoms.values():

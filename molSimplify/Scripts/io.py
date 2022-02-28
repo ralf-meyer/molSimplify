@@ -179,6 +179,7 @@ def getlicores(flip=True):
 
 def getsimpleligs():
     slicores = getslicores()
+    a = []
     for key in slicores:
         a.append(key)
     a = sorted(a)
@@ -336,8 +337,8 @@ def loaddata(path):
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
-            l = [_f for _f in line.split(None) if _f]
-            d[(l[0], l[1], l[2], l[3], l[4])] = l[5]  # read dictionary
+            s = [_f for _f in line.split(None) if _f]
+            d[(s[0], s[1], s[2], s[3], s[4])] = s[5]  # read dictionary
     f.close()
     return d
 
@@ -362,8 +363,8 @@ def loaddata_ts(path):
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
-            l = [_f for _f in line.split(None) if _f]
-            d[(l[0], l[1], l[2], l[3])] = l[4:]  # read dictionary
+            s = [_f for _f in line.split(None) if _f]
+            d[(s[0], s[1], s[2], s[3])] = s[4:]  # read dictionary
     f.close()
     return d
 
@@ -376,7 +377,7 @@ def loadcdxml(cdxml):
     # try importing pybel
     try:
         import pybel
-    except:
+    except ImportError:  # Why execept and then raise?
         raise
     fname = re.sub(r'.cdxml', '', cdxml)  # file name for the new xyz
     # check cdxml file for Dashed bonds
@@ -469,8 +470,8 @@ def loadcoord(coord):
     f.close()
     b = []
     for line in txt:
-        l = [_f for _f in line.split(None) if _f]
-        b.append([float(l[0]), float(l[1]), float(l[2])])
+        s = [_f for _f in line.split(None) if _f]
+        b.append([float(s[0]), float(s[1]), float(s[2])])
     return b
 
 # Load core and convert to mol3D
@@ -480,7 +481,7 @@ def loadcoord(coord):
 
 
 def core_load(usercore, mcores=None):
-    if mcores == None:
+    if mcores is None:
         mcores = getmcores()
     globs = globalvars()
     if '~' in usercore:
@@ -490,7 +491,7 @@ def core_load(usercore, mcores=None):
     core = mol3D()  # initialize core molecule
     # check if core exists in dictionary
     if usercore.lower() in list(mcores.keys()):
-        #print('loading core from dictionary')
+        # print('loading core from dictionary')
         dbentry = mcores[usercore.lower()]
         # load core mol file (with hydrogens
         if globs.custom_path:
@@ -509,7 +510,7 @@ def core_load(usercore, mcores=None):
             core.OBMol = core.getOBMol(fcore, 'molf')
         elif ('.smi' in fcore):
             core.OBMol = core.getOBMol(fcore, 'smif')
-        core.cat = [int(l) for l in [_f for _f in dbentry[1] if _f]]
+        core.cat = [int(i) for i in [_f for _f in dbentry[1] if _f]]
         core.denticity = dbentry[2]
         core.ident = usercore
     # load from file
@@ -561,7 +562,7 @@ def core_load(usercore, mcores=None):
 
 def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
     # if not using a user-defined substrate dictionary
-    if subcores == None:
+    if subcores is None:
         subcores = getsubcores()
     # load global variables
     globs = globalvars()
@@ -592,7 +593,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 "molSimplify"), "molSimplify/Substrates/" + var_list_sub_i[0])
         # check if substrate xyz/mol file exists
         if not glob.glob(fsubst):
-            emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
+            emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fsubst
             print(emsg)
             return False, emsg
         if ('.xyz' in fsubst):
@@ -616,14 +617,14 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         # Parsing substrate connection atoms
         if 'pi' in var_list_sub_i[2]:
             sub.denticity = 1
-            sub.cat = [int(l) for l in var_list_sub_i[2][:-1]]
+            sub.cat = [int(li) for li in var_list_sub_i[2][:-1]]
             sub.cat.append('pi')
         else:
-            sub.cat = [int(l) for l in var_list_sub_i[2]]
+            sub.cat = [int(li) for li in var_list_sub_i[2]]
         if not subcatoms:
             subcatoms = sub.cat
         # Parsing substrate group
-        sub.grps = [l for l in var_list_sub_i[3]]
+        sub.grps = [li for li in var_list_sub_i[3]]
         if len(var_list_sub_i[4]) > 0:
             sub.ffopt = var_list_sub_i[4]
     # load from file
@@ -657,8 +658,8 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 usersubstrate, 'smistring', True)  # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
-            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
-            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
+            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usersubstrate
+            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print(emsg)
             return False, emsg
@@ -748,7 +749,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
 
 def lig_load(userligand, licores=None):
 
-    if licores == None:
+    if licores is None:
         licores = getlicores()
         # @licores.pop("x", None)
     globs = globalvars()
@@ -804,13 +805,13 @@ def lig_load(userligand, licores=None):
         lig.ident = dbentry[1]
         lig.charge = lig.OBMol.GetTotalCharge()
         if 'pi' in dbentry[2]:
-            lig.cat = [int(l) for l in dbentry[2][:-1]]
+            lig.cat = [int(li) for li in dbentry[2][:-1]]
             lig.cat.append('pi')
         else:
             if lig.denticity == 1:
                 lig.cat = [int(dbentry[2])]
             else:
-                lig.cat = [int(l) for l in dbentry[2]]
+                lig.cat = [int(li) for li in dbentry[2]]
         if lig.denticity > 1:
             lig.grps = dbentry[3]
         else:
@@ -820,7 +821,7 @@ def lig_load(userligand, licores=None):
 
     # load from file
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
-        #flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
+        # flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
         if glob.glob(userligand):
             ftype = userligand.split('.')[-1]
             # try and catch error if conversion doesn't work
@@ -848,7 +849,7 @@ def lig_load(userligand, licores=None):
             assert lig.natoms
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
-        except:
+        except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
             emsg += "Furthermore, we couldn't find the ligand structure: '%s' in the ligands dictionary. Try again!\n" % userligand
             emsg += "\nAvailable ligands are: %s\n" % getligs()
@@ -966,7 +967,6 @@ def getinputargs(args, fname):
 
 
 def plugin_defs():
-    globs = globalvars()
     plugin_path = resource_filename(Requirement.parse(
         "molSimplify"), "molSimplify/plugindefines_reference.txt")
     return plugin_path
@@ -977,28 +977,28 @@ def plugin_defs():
     # and chooses an appropriate name
     # bind_ident is used to pass binding
     # species information
-    #print('the root directory for this calc is '+ (rootdir))
+    # print('the root directory for this calc is '+ (rootdir))
     # check if smiles string in binding species
     # if args.bind:
     # if bsmi:
     # if args.nambsmi: # if name specified use it in file
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
     # if args.name:
-    #fname = rootdir+'/'+args.name+args.nambsmi[0:2]
+    # fname = rootdir+'/'+args.name+args.nambsmi[0:2]
     # else: # else use default
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm'
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm'
     # if args.name:
-    #fname = rootdir+'/'+args.name+'bsm'
+    # fname = rootdir+'/'+args.name+'bsm'
     # else: # else use name from binding in dictionary
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
     # if args.name:
-    #fname = rootdir+'/'+args.name + bind.ident[0:2]
+    # fname = rootdir+'/'+args.name + bind.ident[0:2]
     # else:
     # if globs.debug:
-    #print('the root calculation directory is' + str(rootdir))
-    #fname = rootdir+'/'+core.ident[0:3]+ligname
+    # print('the root calculation directory is' + str(rootdir))
+    # fname = rootdir+'/'+core.ident[0:3]+ligname
     # if args.name:
-    #fname = rootdir+'/'+args.name
+    # fname = rootdir+'/'+args.name
 
     # return fname
 
@@ -1025,8 +1025,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
             center += 'badjob_'
         try:
             center += core.getAtom(0).symbol().lower()
-        except:
-
+        except AttributeError:
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -1047,7 +1046,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if not lig in licores:
+            if lig not in licores:
                 lig = lig.split('\t')[0]
                 sminum += 1
                 name += '_smi' + str(int(sernum)+int(sminum)
@@ -1055,7 +1054,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
             else:
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
-        print([nconf,args.nconfs])
+        print([nconf, args.nconfs])
         if nconf and int(args.nconfs) >= 1:
             name += "_conf_"+str(nconf)
         if args.bind:
@@ -1089,7 +1088,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
             center += 'badjob_'
         try:
             center += core.getAtom(0).symbol().lower()
-        except:
+        except AttributeError:
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -1106,7 +1105,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if not lig in licores:
+            if lig not in licores:
                 lig = lig.split('\t')[0]
                 sminum += 1
                 name += '_smi' + str(int(sernum)+int(sminum)
@@ -1161,7 +1160,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
 #     else:
 #         try:
 #             center = core.getAtom(0).symbol().lower()
-#         except:
+#         except AttributeError:
 #             center = str(core).lower()
 #         name = rootdir + '/' + center
 #         #if args.oxstate:

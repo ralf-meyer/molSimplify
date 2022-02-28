@@ -12,7 +12,7 @@ import shutil
 import string
 try:
     import pymol
-except:
+except ImportError:
     pass
 import openbabel
 
@@ -24,7 +24,7 @@ from molSimplify.Scripts.molSimplify_io import (plugin_defs)
 
 
 def float_from_str(txt):
-    numeric_const_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+    numeric_const_pattern = r'[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
     rx = re.compile(numeric_const_pattern, re.VERBOSE)
     float_arr = rx.findall(txt)
     if not len(float_arr):
@@ -157,7 +157,6 @@ def getsimilar(smi, nmols, dbselect, finger, squery, args):
     # get database files
     [dbsdf, dbfs] = setupdb(dbselect)
     print(('database set up :' + str(dbsdf) + ' || ' + str(dbfs)))
-    globs = globalvars()
     print(('Finding results similar, comparing to ' + smi))
 
     obab = 'babel'
@@ -185,13 +184,13 @@ def getsimilar(smi, nmols, dbselect, finger, squery, args):
         print(('number of lines in simres.smi: ' +
                str(mybash('cat simres.smi | wc -l'))))
 
-    #		com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
-    #		rint('running:  '+ str(com))
+    # com = obab+" -ismi simres.smi -osmi -O simres.smi -d --filter 'nsmartsmatches<="+args.dbmaxsmartsmatches+"'"
+    # print('running:  '+ str(com))
 
-    #		res = mybash(com)
-    #		print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
+    # res = mybash(com)
+    # print('number of lines in simres.smi after dxbsmartmatches: '+str(mybash('cat simres.smi | wc -l')))
 
-    #		print res
+    # print res
     shutil.copy('simres.smi', 'afterfilteringsmarts.smi')
     # check output and print error if nothing was found
     if ('errors' in res):
@@ -226,9 +225,9 @@ def stripsalts(fname):
             if r in ss:
                 ss = ss.replace(r, '')
         ls = ss.split('[')
-        for l in ls:
-            if ']' in l:
-                lq = l.split(']')[0]
+        for li in ls:
+            if ']' in li:
+                lq = li.split(']')[0]
                 if lq not in accepted:
                     lq0 = '.[' + lq + ']'
                     lq1 = '[' + lq + '].'
@@ -308,8 +307,6 @@ def checkels(fname, allowedels):
 #  @param outf Filename containing SMILES strings to be processed
 #  @param n Number of dissimilar molecules required
 def dissim(outf, n):
-    globs = globalvars()
-
     obab = 'babel'
 
     # clone hitlist file
@@ -354,7 +351,7 @@ def dissim(outf, n):
                 for k in a:
                     try:
                         aa.append(float(k))
-                    except:
+                    except ValueError:
                         pass
                 a = aa
                 simsum = [x + y for x, y in zip(simsum, a)]
@@ -493,8 +490,6 @@ def dbsearch(rundir, args, globs):
                 return 1
         elif ('.mol' in args.dbsmarts or '.xyz' in args.dbsmarts):
             if glob.glob(args.dbsmarts):
-                ftype = args.dbsmarts.split('.')[-1]
-
                 smistr = pymol.write("smi")
             else:
                 print(('File ' + args.dbsmarts +
@@ -563,7 +558,7 @@ def dbsearch(rundir, args, globs):
             smistr, nmols, args.dbbase, finger, squery, args)
         try:
             shutil.copy('simres.smi', outf)
-        except:
+        except FileNotFoundError:
             pass
 
     if args.debug:
@@ -590,7 +585,7 @@ def dbsearch(rundir, args, globs):
         cmd = obab + " -ismi " + outf + " -osmi -O " + outf + " --unique"
         # print('running:' + str(cmd))
         shutil.copy(outf, 'afterstrippingsalts.smi')
-        t = mybash(cmd)
+        _ = mybash(cmd)
         print(('number of smiles strings AFTER unique: ' +
                mybash("cat " + outf + '| wc -l')))
 
@@ -618,7 +613,7 @@ def dbsearch(rundir, args, globs):
     else:
         catoms = [1]
     # do pattern matching
-    nres = 50 if not args.dbresults else int(args.dbresults)
+    # nres = 50 if not args.dbresults else int(args.dbresults)
     if args.dbsmarts or args.dbhuman:
         print(('number of smiles strings BEFORE SMARTS filter: ' +
                mybash("cat " + outf + '| wc -l')))

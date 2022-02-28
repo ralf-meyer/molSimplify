@@ -28,6 +28,7 @@ from molSimplify.Scripts.geometry import (distance,
 from molSimplify.Scripts.molSimplify_io import (lig_load,
                                                 loadcoord)
 
+
 def CosRule(AB, BC, theta):
     """Applies the cosine rule to get the length of AC given lengths of AB, BC and angle ABC
         
@@ -49,6 +50,7 @@ def CosRule(AB, BC, theta):
     theta = np.pi*theta/180
     AC = sqrt(AB**2+BC**2-2*AB*BC*cos(theta))
     return AC
+
 
 def inverseCosRule(A, B, C):
     """Apply the cosine rule to find the angle ABC given points A,B, and C.
@@ -73,6 +75,7 @@ def inverseCosRule(A, B, C):
     AC = np.linalg.norm(np.array(C)-np.array(A))
     theta = np.arccos((BA**2+BC**2-AC**2)/(2*BA*BC))
     return np.rad2deg(theta)
+
 
 def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
     """Generate distance bounds matrices. The basic idea is outlined in ref [1].
@@ -163,6 +166,7 @@ def GetBoundsMatrices(mol, natoms, catoms=[], shape=[], A=[]):
                 UB[j][i] = 100
     return LB, UB
 
+
 def Triangle(LB, UB, natoms):
     """Triangle inequality bounds smoothing. Copied from ref [2], pp. 252-253.
     Scales O(N^3). 
@@ -201,6 +205,7 @@ def Triangle(LB, UB, natoms):
                         LL[j][i] = LL[j][k] - UL[k][i]
     return LL, UL
 
+
 def Metrize(LB, UB, natoms, Full=False, seed=False):
     """Metrization to select random in-range distances. Copied from ref [2], pp. 253-254.
     Scales O(N^3). 
@@ -234,7 +239,7 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
     for i in range(natoms-1):
         for j in range(i, natoms-1):
             # ~ if Full:
-                # ~ LB, UB = Triangle(LB, UB, natoms)
+            # ~ LB, UB = Triangle(LB, UB, natoms)
             if UB[i][j] < LB[i][j]:  # ensure that the upper bound is larger than the lower bound
                 UB[i][j] = LB[i][j]
             D[i][j] = np.random.uniform(LB[i][j], UB[i][j])
@@ -251,6 +256,7 @@ def Metrize(LB, UB, natoms, Full=False, seed=False):
         D[natoms-1][j] = 100
         D[j][natoms-1] = D[natoms-1][j]
     return D
+
 
 def GetCMDists(D, natoms):
     """Get distances of each atom to center of mass given the distance matrix. 
@@ -286,6 +292,7 @@ def GetCMDists(D, natoms):
             return D0, False
     return D0, True
 
+
 def GetMetricMatrix(D, D0, natoms):
     """Get metric matrix from distance matrix and CM distances 
     Copied from ref [2], pp. 306.
@@ -311,6 +318,7 @@ def GetMetricMatrix(D, D0, natoms):
             G[i][j] = (D0[i]**2 + D0[j]**2 - D[i][j]**2)/2
     return G
 
+
 def Get3Eigs(G, natoms):
     """Gets 3 largest eigenvalues and corresponding eigenvectors of metric matrix
         
@@ -333,11 +341,12 @@ def Get3Eigs(G, natoms):
     V = np.zeros((natoms, 3))
     l, v = np.linalg.eigh(G)
     for i in [0, 1, 2]:
-        #print('natoms is '+ str(natoms))
-        #print('l is '+ str(l))
+        # print('natoms is '+ str(natoms))
+        # print('l is '+ str(l))
         L[i][i] = sqrt(max(l[natoms-1-i], 0))
         V[:, i] = v[:, natoms-1-i]
     return L, V
+
 
 def DistErr(x, *args):
     """Computes distance error function for scipy optimization. 
@@ -368,6 +377,7 @@ def DistErr(x, *args):
             E += (dij**2/(uij**2) - 1)**2
             E += (2*lij**2/(lij**2 + dij**2) - 1)**2
     return np.asarray(E)
+
 
 def DistErrGrad(x, *args):
     """Computes gradient of distance error function for scipy optimization.
@@ -405,6 +415,7 @@ def DistErrGrad(x, *args):
                                                                       (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+2]-x[3*j+2])  # zi
     return g
 
+
 def SaveConf(X, mol, ffclean=True, catoms=[]):
     """Further cleans up with OB FF and saves to a new mol3D object.
     Note that distance geometry tends to produce puckered aromatic rings because of the 
@@ -435,7 +446,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     for i, atom in enumerate(openbabel.OBMolAtomIter(OBMol)):
         atom.SetVector(X[i, 0], X[i, 1], X[i, 2])
     
-    #First stage of cleaning takes place with the metal still present
+    # First stage of cleaning takes place with the metal still present
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('UFF')
         s = ff.Setup(OBMol)
@@ -447,18 +458,18 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
             ff.ConjugateGradients(10)
         ff.GetCoordinates(OBMol)
 
-    last_atom_index = OBMol.NumAtoms() #Delete the dummy metal atom that we added earlier
+    last_atom_index = OBMol.NumAtoms()  # Delete the dummy metal atom that we added earlier
     metal_atom = OBMol.GetAtom(last_atom_index)
     OBMol.DeleteAtom(metal_atom)
     
-    #Second stage of cleaning removes the metal, but uses constraints on the bonding atoms to ensure a binding conformer is maintained
-    #This stage is critical for getting planar aromatic ligands like porphyrin and correct. Not really sure why though...
+    # Second stage of cleaning removes the metal, but uses constraints on the bonding atoms to ensure a binding conformer is maintained
+    # This stage is critical for getting planar aromatic ligands like porphyrin and correct. Not really sure why though...
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
         for atom in catoms:
-            constr.AddAtomConstraint(atom+1) 
-        s = ff.Setup(OBMol,constr)
+            constr.AddAtomConstraint(atom+1)
+        s = ff.Setup(OBMol, constr)
         if not s:
             print('FF setup failed')
             
@@ -470,6 +481,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     conf3D.OBMol = OBMol
     conf3D.convert2mol3D()
     return conf3D
+
 
 def findshape(args, master_ligand):
     """Determines the relative positioning of different ligating atoms
@@ -520,6 +532,7 @@ def findshape(args, master_ligand):
                                                             metal_coords, ligating_coords[j])
     return angles_dict
 
+
 def GetConf(mol, args, catoms=[]):
     """Uses distance geometry to get a random conformer.
         
@@ -541,8 +554,8 @@ def GetConf(mol, args, catoms=[]):
     # Create a mol3D copy with a dummy metal metal
     Conf3D = mol3D()
     Conf3D.copymol3D(mol)
-    Conf3D.addAtom(atom3D('Fe', [0, 0, 0])) #Add dummy metal to the mol3D
-    dummy_metal = openbabel.OBAtom() #And add the dummy metal to the OBmol
+    Conf3D.addAtom(atom3D('Fe', [0, 0, 0]))  # Add dummy metal to the mol3D
+    dummy_metal = openbabel.OBAtom()  # And add the dummy metal to the OBmol
     dummy_metal.SetAtomicNum(26)
     Conf3D.OBMol.AddAtom(dummy_metal)
     for i in catoms:
@@ -569,18 +582,18 @@ def GetConf(mol, args, catoms=[]):
 
 # for testing
 #
-#n4py
-#molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True -geometry oct -rprompt True -ffoption A
-#heptacoordinate water oxidation catalyst
-#molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
-#same water oxidation catalyst in a hexacoordinate binding pattern
-#molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
-#tetrahedral with 2 bidentates
-#molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1 -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
-#mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
-#mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
-#catoms = [7,10,18,19]
-#catoms = [0,4,9,13]
+# n4py
+# molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True -geometry oct -rprompt True -ffoption A
+# heptacoordinate water oxidation catalyst
+# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
+# same water oxidation catalyst in a hexacoordinate binding pattern
+# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
+# tetrahedral with 2 bidentates
+# molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1 -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
+# mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
+# mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
+# catoms = [7,10,18,19]
+# catoms = [0,4,9,13]
 # mol.convert2mol3D()
-#conf = GetConf(mol,catoms)
+# conf = GetConf(mol,catoms)
 # conf.writexyz('conf')

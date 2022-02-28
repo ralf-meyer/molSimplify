@@ -7,7 +7,7 @@
 import numpy as np
 from itertools import combinations
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.globalvars import bondivdw,vdwrad
+from molSimplify.Classes.globalvars import bondivdw, vdwrad
 
 
 # Ligand class for postprocessing DFT results by measuring ligand properties
@@ -30,10 +30,10 @@ class ligand:
         If read_ligand type is unknown.
     """
     def __init__(self, master_mol, index_list, dent, read_lig=False):
-        if isinstance(read_lig,str):
+        if isinstance(read_lig, str):
             thismol = mol3D()
             if 'TRIPOS' in read_lig:
-                thismol.readfrommol2(read_lig,readstring=True)
+                thismol.readfrommol2(read_lig, readstring=True)
             # Xyz filename
             elif read_lig[-4:] == '.xyz':
                 thismol.readfromxyz(read_lig)
@@ -41,7 +41,7 @@ class ligand:
             elif read_lig[-5:] == '.mol2':
                 thismol.readfrommol2(read_lig)
             # checking for number at start of string -> indicates xyz string
-            elif (len(read_lig.split('\n')) > 3) & (read_lig.split('\n')[0].replace(' ','').isnumeric()):
+            elif (len(read_lig.split('\n')) > 3) & (read_lig.split('\n')[0].replace(' ', '').isnumeric()):
                 thismol.readfromstring(read_lig)
             # checking for similar file without header
             elif (len(read_lig.split('\n')[0].split()) == 4) and read_lig.split('\n')[0].split()[0]:
@@ -49,11 +49,11 @@ class ligand:
             else:
                 raise ValueError('Not Recognized Structure Type!')
             self.master_mol = thismol
-            met = thismol.findMetal()[0] # Pull out metal
-            self.index_list = [x for x in range(thismol.natoms) if x!=met]
+            met = thismol.findMetal()[0]  # Pull out metal
+            self.index_list = [x for x in range(thismol.natoms) if x != met]
             self.dent = len(thismol.getBondedAtomsSmart(met))
-            self.ext_int_dict = {i:j for i,j in enumerate(self.index_list)}
-            self.mol2string = thismol.writemol2('ligand',writestring=True)
+            self.ext_int_dict = {i: j for i, j in enumerate(self.index_list)}
+            self.mol2string = thismol.writemol2('ligand', writestring=True)
             self.lig_mol_graph_det = thismol.get_mol_graph_det()
             self.percent_buried_volume = False
         else:
@@ -64,7 +64,6 @@ class ligand:
             self.mol2string = False
             self.lig_mol_graph_det = False
             self.percent_buried_volume = False
-
 
     def obtain_mol3d(self):
         """Getting the mol3D of the ligand. Deprecated. Map between int and ext indcies. Obtain the ligand from the complex mol3D object.
@@ -81,7 +80,7 @@ class ligand:
             this_ext_int_dict.update({i: j})
             j += 1  # keep count of how many are added
         self.mol = this_mol
-        if len(self.master_mol.graph): # Save graph to ligand mol3D object
+        if len(self.master_mol.graph):  # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in self.index_list]
             self.mol.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
         if self.master_mol.bo_dict:
@@ -128,14 +127,14 @@ class ligand:
         this_mol2_inds = sorted(this_mol2_inds)
 
         if (not bimetal):
-        # # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
+            # Set up a binary vector indicating whether each atom is a connecting atom (1) or not (0)
             catoms_indices = self.master_mol.getBondedAtomsSmart(metal_ind)
             catom_selector = np.zeros(self.master_mol.natoms)
             catom_selector[catoms_indices] = 1
 
         # Add the metal with symbol = 'M'
         new_metal_inds = []
-        for j,i in enumerate(this_mol2_inds):
+        for j, i in enumerate(this_mol2_inds):
             if i in metal_ind:
                 atom = self.master_mol.getAtom(i)
                 atom.mutate('X')
@@ -143,7 +142,7 @@ class ligand:
                 new_metal_inds.append(j)
             else:
                 this_mol2.addAtom(self.master_mol.getAtom(i))
-        if len(self.master_mol.graph): # Save graph to ligand mol3D object
+        if len(self.master_mol.graph):  # Save graph to ligand mol3D object
             delete_inds = [x for x in range(self.master_mol.natoms) if x not in this_mol2_inds]
             this_mol2.graph = np.delete(np.delete(self.master_mol.graph, delete_inds, 0), delete_inds, 1)
             if (not bimetal):
@@ -162,7 +161,7 @@ class ligand:
             save_bo_dict = self.master_mol.get_bo_dict_from_inds(this_mol2_inds)
             this_mol2.bo_dict = save_bo_dict
         lig_mol_graph_det = this_mol2.get_mol_graph_det()
-        lig_mol2_string = this_mol2.writemol2('ligand',writestring=True)
+        lig_mol2_string = this_mol2.writemol2('ligand', writestring=True)
         self.mol2string = lig_mol2_string
         self.lig_mol_graph_det = lig_mol_graph_det
 
@@ -171,12 +170,8 @@ class ligand:
         else:
             return lig_mol_graph_det, lig_mol2_string, catoms_indices
 
-    def percent_buried_vol(self,
-                    radius=3.5,
-                    gridspec=0.1, 
-                    bondiscale=1.17, 
-                    hydrogens=True 
-                    ):
+    def percent_buried_vol(self, radius=3.5, gridspec=0.1,
+                           bondiscale=1.17, hydrogens=True):
         """Calculate the percent buried volume as described in https://doi.org/10.1039/B922984A,
         and https://chemistry-europe.onlinelibrary.wiley.com/doi/abs/10.1002/ejic.200801160.
         Bondi VDW radii are used where possible
@@ -203,9 +198,9 @@ class ligand:
             Represents bulkiness of the ligand around the metal center.
         """
         if not self.mol2string:
-            _,_ = self.get_lig_mol2()
+            _, _ = self.get_lig_mol2()
         thismol = mol3D()
-        thismol.readfrommol2(self.mol2string,readstring=True)
+        thismol.readfrommol2(self.mol2string, readstring=True)
         # Accounting for hydrogens by default - otherwise deleting.
         if not hydrogens:
             thismol.deleteHs()
@@ -215,38 +210,38 @@ class ligand:
             percent_buried = 0.0
         else:
             met = thismol.findMetal()[0]
-            coords = thismol.coordsvect() - thismol.coordsvect()[met] # Center coordinates to the metal
-            syms = [x for i,x in enumerate(thismol.symvect()) if i != met]
+            coords = thismol.coordsvect() - thismol.coordsvect()[met]  # Center coordinates to the metal
+            syms = [x for i, x in enumerate(thismol.symvect()) if i != met]
             radvect = []
             for sym in syms:
-                if sym in bondivdw: # Take in the bondivdw radii reccomeneded in paper
+                if sym in bondivdw:  # Take in the bondivdw radii reccomeneded in paper
                     radvect.append(bondivdw[sym]*bondiscale)
-                else: # Else take in Newer definition of vdw radii
+                else:  # Else take in Newer definition of vdw radii
                     radvect.append(vdwrad[sym]*bondiscale)
             radiusvect = np.array(radvect)
-            inds = np.array([x for x in range(natoms) if x!=met])
-            coords = coords[inds] # Get rid of metal location from coords
-            x_ = np.arange(-radius,radius,gridspec)
-            y_ = np.arange(-radius,radius,gridspec)
-            z_ = np.arange(-radius,radius,gridspec)
-            grid = np.meshgrid(x_,y_,z_, indexing='ij')
-            mgrid = list(map(np.ravel,grid))
-            combined = np.vstack(mgrid).T # Flatten meshgrid to nx3
-            init_coords = np.array([[0,0,0]]) # We have set metal to (0,0,0)
+            inds = np.array([x for x in range(natoms) if x != met])
+            coords = coords[inds]  # Get rid of metal location from coords
+            x_ = np.arange(-radius, radius, gridspec)
+            y_ = np.arange(-radius, radius, gridspec)
+            z_ = np.arange(-radius, radius, gridspec)
+            grid = np.meshgrid(x_, y_, z_, indexing='ij')
+            mgrid = list(map(np.ravel, grid))
+            combined = np.vstack(mgrid).T  # Flatten meshgrid to nx3
+            init_coords = np.array([[0, 0, 0]])  # We have set metal to (0,0,0)
             # Get distance of all gridpoints from (0,0,0) -> Filter out gridpoints further
-            init_dists = np.linalg.norm(init_coords[:,None,:]-combined[None,:,:],axis=-1)
+            init_dists = np.linalg.norm(init_coords[:, None, :]-combined[None, :, :], axis=-1)
             # Get rid of gridpoints further away than radius and metal
-            combined = combined[np.where(init_dists[0,:] <= radius)[0]]
+            combined = combined[np.where(init_dists[0, :] <= radius)[0]]
             # Get rid of ligand atoms that won't interact at all
-            met_ds = np.linalg.norm(init_coords[:,None,:]-coords[None,:,:],axis=-1)
+            met_ds = np.linalg.norm(init_coords[:, None, :]-coords[None, :, :], axis=-1)
             met_ds = met_ds - radius - radiusvect
             mfilter = np.where(met_ds[0] < 0)
             coords = coords[mfilter]
             radiusvect = radiusvect[mfilter]
             # Calc distance of all remaining atomic coords to all grid points
-            ds = np.linalg.norm(coords[:,None,:]-combined[None,:,:],axis=-1)
+            ds = np.linalg.norm(coords[:, None, :]-combined[None, :, :], axis=-1)
             # Compare distances to radii of atoms, flag any less than than or equal to the radii as buried
-            buried = len(np.where(np.any(np.less_equal(ds[:,:],radiusvect[:,None]),axis=0))[0])
+            buried = len(np.where(np.any(np.less_equal(ds[:, :], radiusvect[:, None]), axis=0))[0])
             total = ds.shape[1]
             # Percent buried volume 
             percent_buried = float(buried)/total*100
@@ -280,16 +275,14 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     """
     # this function takes an octahedral
     # complex and returns ligands
-    loud = False
     metal_index = mol.findMetal()[0]
     bondedatoms = mol.getBondedAtomsSmart(metal_index, oct=True)
     # print('!!!!!boundatoms', bondedatoms)
-    #	print('from get oct' + str(bondedatoms))
-    #	print('***\n')
+    # print('from get oct' + str(bondedatoms))
+    # print('***\n')
     bonded_atom_symbols = [mol.getAtom(i).symbol() for i in bondedatoms]
     if not silent:
         print(('result of ligand ligand_breakdown', bonded_atom_symbols))
-    counter = 0
     liglist = []
     ligdents = []
     ligcons = []
@@ -300,8 +293,8 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
         fragment = mol.findsubMol(atom, metal_index)
         this_cons = [x for x in fragment if (x in bondedatoms)]
         if not silent:
-            print(('fragment',fragment))
-            print(('this_cons',this_cons))
+            print(('fragment', fragment))
+            print(('this_cons', this_cons))
         unique = True
         for i, unique_ligands in enumerate(liglist):
             if sorted(fragment) == sorted(unique_ligands):
@@ -362,7 +355,6 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
     valid = True
     # loud = False
     pentadentate = False
-    metal_index = mol.findMetal()[0]
     built_ligand_list = list()
     lig_natoms_list = list()
     unique_ligands = list()
@@ -578,7 +570,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
                         errors = np.squeeze(np.array(mat_b - mat_A * fit))
                         error_var = np.var(errors)
                         error_list.append(error_var)
-                    except:
+                    except np.linalg.LinAlgError:
                         error_list.append(0)
                 if loud:
                     print('combos below')
@@ -588,7 +580,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
                 not_ax_points = combo_list[np.argmin(error_list)]
                 if len(set(not_ax_points)) != 4:
                     print('The equatorial plane is not being assigned correctly. Please check.')
-                    sardines
+                    # sardines
                 else:
                     bot_idx = list(set(range(5)) - set(not_ax_points))[0]
                     if loud:
@@ -695,7 +687,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
             not_ax_points = combo_list[perpcombo[np.argmax(np.array(perpdist))]]
             if len(set(not_ax_points)) != 4:
                 print('The equatorial plane is not being assigned correctly. Please check.')
-                sardines
+                # sardines
             else:
                 bot_idx = list(set(range(6)) - set(not_ax_points))[0]
                 top_idx = list(set(range(6)) - set(not_ax_points))[1]
@@ -754,8 +746,10 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
         eq_natoms_list.append(lig_natoms_list[eq_lig])
     return ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list
 
+
 ### DISCLAIMER!!! Please be careful while modifying any part of 'ligand_assign_consistent' as that could affect everything else ###
-def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=False, use_z = False, eq_sym_match=False):
+def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
+                             name=False, use_z=False, eq_sym_match=False):
     """This ligand assignment code handles octahedral complexes consistently. Assigns any octahedral complex.
     
     Parameters
@@ -802,15 +796,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     """
     ####### This ligand assignment code handles octahedral complexes consistently.
     ####### It should be able to assign any octahedral complex
-    angle_cutoff = 130 # Angle cutoff for linear
+    angle_cutoff = 130  # Angle cutoff for linear
     valid = True
     hexadentate = False
     pentadentate = False
-    metal_index = mol.findMetal()[0] # Get metal index and coords
+    metal_index = mol.findMetal()[0]  # Get metal index and coords
     m_coord = np.array(mol.getAtom(metal_index).coords())
     ligand_records = list()
-    ax_con_int_list = list() # Atom refs in for ligand mol3D objects in ax
-    eq_con_int_list = list() # Atom refs in for ligand mol3D objects in eq
+    ax_con_int_list = list()  # Atom refs in for ligand mol3D objects in ax
+    eq_con_int_list = list()  # Atom refs in for ligand mol3D objects in eq
     ax_natoms_list = list()
     eq_natoms_list = list()
     lig_con_weights = list()
@@ -823,16 +817,18 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     max_dent = max(ligdents)
     min_dent = min(ligdents)
     ###### Utility functions for ligand MW and Angles
-    def getMW(lig): # Get total MW of ligand mol3d object
+
+    def getMW(lig):  # Get total MW of ligand mol3d object
         mol = lig.master_mol
         lig_idx = lig.index_list
         mw = 0
-        for i,atom in enumerate(mol.getAtoms()):
+        for i, atom in enumerate(mol.getAtoms()):
             if i in lig_idx:
                 mw += atom.mass
         return mw
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
-    def getAngle(coord_list, pair, m_coord): # Get Angle of atom pair through metal center (stored at coord_list[0])
+
+    def getAngle(coord_list, pair, m_coord):  # Get Angle of atom pair through metal center (stored at coord_list[0])
         # print("coord_list: ", coord_list)
         # print("pair: ", pair)
         try:
@@ -854,7 +850,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         print(("ligand list is" + str(liglist)))
         print(('denticities are  ' + str(ligdents)))
     # Flag Hexa/Pentadentate, check if denticities incorrect for Octahedral Complex
-    if max(ligdents) > 4:  #### Hexa/Pentadentate ligands flagging ####
+    if max(ligdents) > 4:  # Hexa/Pentadentate ligands flagging
         print(max(ligdents))
         if max(ligdents) == 5 and min(ligdents) == 1:
             pentadentate = True
@@ -867,7 +863,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             valid = False
             print(('bad denticities: ' + str(ligdents)))
             print(('max denticities: ' + str(min(ligdents))))
-    elif n_ligs > 3 and min(ligdents) > 1: # Catch errors in ligands
+    elif n_ligs > 3 and min(ligdents) > 1:  # Catch errors in ligands
         valid = False
         print(('too many ligs ' + str((n_ligs))))
     # Build Ligands and get MWs of ligands
@@ -885,10 +881,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     flat_lig_mol_weights = list()
     flat_lig_refs = list()
     for i, item in enumerate(ligcons):
-        flat_ligcons += item # Flat ligand list
-        flat_lig_mol_weights += [lig_mol_weights[i]]*len(item) # Flat lig mws
-        flat_lig_refs += [i]*len(item) # Referred back to individual ligands
-    lig_con_weights = [atom.mass for atom in mol.getAtomwithinds(flat_ligcons)] # Use for hexadentates
+        flat_ligcons += item  # Flat ligand list
+        flat_lig_mol_weights += [lig_mol_weights[i]]*len(item)  # Flat lig mws
+        flat_lig_refs += [i]*len(item)  # Referred back to individual ligands
+    lig_con_weights = [atom.mass for atom in mol.getAtomwithinds(flat_ligcons)]  # Use for hexadentates
     ### Obtain coordinates for the connecting atoms. Flat coord list ends up being used for comparisons.
     flat_coord_list = np.array([mol.getAtom(ii).coords() for ii in flat_ligcons])
     # Bin and sort ligands as Unique
@@ -905,7 +901,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         lig_con_symbols_list.append(sl_ligcons)
         if loud:
             print(('checking lig ' + str(j) + ' : ' + str(sl)))
-        unique = 1 # Flag for detecting unique ligands
+        unique = 1  # Flag for detecting unique ligands
         for i, other_sl in enumerate(unique_ligands):
             if sl == other_sl and sl_ligcons == unique_ligcons[i]:
                 # Duplicate
@@ -917,15 +913,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             ligand_counts.append(1)
             ligand_records.append(j)
     # Pair list contains all pairs of combinations of connecting atom points
-    pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2)) # Pairs of coordinates of ligand-connecting atoms 
+    pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2))  # Pairs of coordinates of ligand-connecting atoms 
     angle_list = list()
     pair_list = list()
     for i, pair in enumerate(pair_combos):
         pair_list.append(list(pair))
-        angle = getAngle(flat_coord_list,pair_list[-1],m_coord)
+        angle = getAngle(flat_coord_list, pair_list[-1], m_coord)
         if loud:
             print(('pair of atoms, then angle', pair, angle))
-        angle_list.append(angle) # Save angle between connecting atom points thorugh metal.
+        angle_list.append(angle)  # Save angle between connecting atom points thorugh metal.
     argsort_angle_list = np.squeeze(np.array(angle_list)).argsort()[-3:][::-1]
     ### Get the 3 largest angles through the metal, which should define the x, y, and z planes of symmetry
     ### Then define those planes of symmetry with the atom indices (point_combos)
@@ -939,15 +935,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     #### In some cases, the plane must be overruled (i.e seesaw tetradentates)
     #### For special cases like the seesaw, there is consistent handling such that
     #### there is consistent behavior for the ones within the same ligand class.
-    error_list = list() # Error of planes
+    error_list = list()  # Error of planes
     combo_list = list()
-    fitlist = list() # Fit of planes
-    mw_plane_list = list() # Total ligand MW in plane for monodentates/bi/tridentates
-    mw_plane_lig_con_list = list() # LC-atom MW in plane for hexadentates / non-planar tridentates
+    fitlist = list()  # Fit of planes
+    mw_plane_list = list()  # Total ligand MW in plane for monodentates/bi/tridentates
+    mw_plane_lig_con_list = list()  # LC-atom MW in plane for hexadentates / non-planar tridentates
     for i, combo in enumerate(point_combos):
         combo_list.append(combo)
         if loud:
-            print(('combo',combo))
+            print(('combo', combo))
         A = []
         b = []
         mw_plane = 0
@@ -968,8 +964,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             errors = np.squeeze(np.array(mat_b - mat_A * fit))
             error_var = np.var(errors)
             error_list.append(error_var)
-        except:
-            error_list.append(0) ### perfect fit plane may suffer matrix singularity issues.
+        except np.linalg.LinAlgError:
+            error_list.append(0)  # perfect fit plane may suffer matrix singularity issues.
     # Print errors if loud
     if loud:
         print('combos below')
@@ -981,7 +977,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
     #### across from each other. It pulls from a list of 0, 1, 2, 3, 4, 5, and gets 
     #### which 4 are the atoms that are in the equatorial plane.
     eq_points = combo_list[np.argmin(np.array(error_list))]
-    max_mw_idx = np.argmax(np.array(mw_plane_list)) # Saved for planar 3X3 dentate cases
+    max_mw_idx = np.argmax(np.array(mw_plane_list))  # Saved for planar 3X3 dentate cases
     eq_points_max_mw = combo_list[max_mw_idx]
     eq_points_max_con_mw = combo_list[np.argmax(np.array(mw_plane_lig_con_list))]
     # If there is no difference in MW bewteen different planes, flag as symmetric compound
@@ -996,20 +992,20 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         print(('ligand records ' + str(ligand_records)))
         print((str(max(ligand_counts)) +
                ' is the max and min in  ' + str(min(ligand_counts))))
-    n_unique_ligs = len(unique_ligands) # Number of unique ligands
+    n_unique_ligs = len(unique_ligands)  # Number of unique ligands
     if (n_ligs == 6):  # All monodentate
         allowed = list(range(0, 6))
-        if n_unique_ligs == 1: # Purely Homoleptic monodentate, by best fit plane
+        if n_unique_ligs == 1:  # Purely Homoleptic monodentate, by best fit plane
             if loud:
                 print('homoleptic monodentate')
-            eq_lig_list = eq_points # Assign 4 lig_cons to equatorial plane, by best fit plane
+            eq_lig_list = eq_points  # Assign 4 lig_cons to equatorial plane, by best fit plane
             eq_con_list = [ligcons[j] for j in eq_lig_list]
-            ax_lig_list = list(set(allowed)-set(eq_lig_list)) # Last 2 lig_cons to axial positions
+            ax_lig_list = list(set(allowed)-set(eq_lig_list))  # Last 2 lig_cons to axial positions
             ax_con_list = [ligcons[j] for j in ax_lig_list]
-        elif n_unique_ligs == 2: # Mix of 2 monodentates
+        elif n_unique_ligs == 2:  # Mix of 2 monodentates
             if loud:
-                print(('monodentate {}+{} ligands'.format(max(ligand_counts),min(ligand_counts))))
-                print((ligand_counts,unique_ligands))
+                print(('monodentate {}+{} ligands'.format(max(ligand_counts), min(ligand_counts))))
+                print((ligand_counts, unique_ligands))
             eq_lig_list = list()
             if use_z:
                 minz = 500
@@ -1043,14 +1039,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ax_lig_list = [top_lig, bot_lig]
                 ax_con_list = [top_con, bot_con]
             else:
-                if max(ligand_counts) == 5: # 5+1 Monodentate
+                if max(ligand_counts) == 5:  # 5+1 Monodentate
                     five_repeats = list()
                     for i, ligand_count in enumerate(ligand_counts):
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in 
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
@@ -1064,7 +1061,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     ### Calculate which of the 5 repeats has highest angle from 1 unique
                     ### Set highest angle as axial, rest assigned as equatorial
                     coord_list = [flat_coord_list[ax_lig_list[0]]]+[flat_coord_list[x] for x in five_repeats]
-                    pair_combos = [(0,1), (0,2), (0,3), (0,4), (0,5)]
+                    pair_combos = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5)]
                     angle_list = list()
                     for pair in pair_combos:
                         angle = getAngle(coord_list, pair, m_coord)
@@ -1076,14 +1073,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     ax_con_list.append(ligcons[ax_lig])
                     eq_lig_list = list(set(five_repeats) - set(ax_lig_list))
                     eq_con_list = [ligcons[j] for j in eq_lig_list]
-                elif max(ligand_counts) == 4: ### This can be either seesaw configuration or planar configuration, 4+2 cases
+                elif max(ligand_counts) == 4:  # This can be either seesaw configuration or planar configuration, 4+2 cases
                     four_repeats = list()
                     for i, ligand_count in enumerate(ligand_counts):
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
@@ -1091,7 +1089,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                             elif (ligand_count == 4) and len(four_repeats) < 4:
                                 four_repeats.append(j)
                     if loud:
-                        print(('this is four repeats',four_repeats))
+                        print(('this is four repeats', four_repeats))
                     four_repeats_cons = [ligcons[j] for j in four_repeats]
                     pair_combos = list(combinations([0, 1, 2, 3], 2))
                     angle_list = list()
@@ -1099,7 +1097,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in four_repeats_cons])
                     for i, pair in enumerate(pair_combos):
                         pair_list.append(list(pair))
-                        angle = getAngle(coord_list,list(pair),m_coord)
+                        angle = getAngle(coord_list, list(pair), m_coord)
                         if loud:
                             print(('pair of atoms, then angle', pair, angle))
                         angle_list.append(angle)
@@ -1118,10 +1116,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         axial_pair = list(set(allowed) - set(four_repeats))
                     if not seesaw:
                         eq_lig_list = four_repeats
-                        eq_con_list = four_repeats_cons  ### ADDED
+                        eq_con_list = four_repeats_cons  # ADDED
                         ax_lig_list = axial_pair
                         ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
-                    else: # 2 points in eq plane, seesaw case
+                    else:  # 2 points in eq plane, seesaw case
                         #### In the seesaw, the two furthest apart are denoted as axial. 
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
                         eq_plane_cons = list(set(flat_ligcons) - set([val[0] for val in axial_pair]))
@@ -1129,8 +1127,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         eq_lig_list = [i for i in range(len(ligcons)) if ligcons[i] in eq_plane_cons]
                         ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_plane_cons]
                         ax_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] not in eq_plane_cons]
-                else: # 3,3 monodentate case - just use the planes to define ax vs eq by maximum MW
-                    if symmetric: # If MWs of ligands match, but connecting atoms different, choose max MW con atom
+                else:  # 3,3 monodentate case - just use the planes to define ax vs eq by maximum MW
+                    if symmetric:  # If MWs of ligands match, but connecting atoms different, choose max MW con atom
                         eq_ligcons = list(set([flat_ligcons[j] for j in eq_points_max_con_mw]))
                     else:
                         eq_ligcons = list(set([flat_ligcons[j] for j in eq_points_max_mw]))
@@ -1138,9 +1136,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     eq_con_list = [ligcons[j] for j in eq_lig_list]
                     ax_lig_list = list(set(allowed)-set(eq_points_max_mw))
                     ax_con_list = [ligcons[j] for j in ax_lig_list]
-        elif n_unique_ligs == 3: # Mix of 3 monodentates
+        elif n_unique_ligs == 3:  # Mix of 3 monodentates
             if loud:
-                print(('monodentate {}+{}+{}'.format(max(ligand_counts),min(ligand_counts),6-max(ligand_counts)-min(ligand_counts))))
+                print(('monodentate {}+{}+{}'.format(max(ligand_counts), min(ligand_counts), 6-max(ligand_counts)-min(ligand_counts))))
             #### Need to identify if in seesaw-style configuration or planar configuration
             if use_z:
                 minz = 500
@@ -1174,21 +1172,22 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ax_lig_list = [top_lig, bot_lig]
                 ax_con_list = [top_con, bot_con]
             else: 
-                if max(ligand_counts) == 4: # Seesaw vs. Planar
+                if max(ligand_counts) == 4:  # Seesaw vs. Planar
                     four_repeats = list()
                     for i, ligand_count in enumerate(ligand_counts):
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if (sym_list == temp_unique) and (sl_ligcon == temp_ligsym_unique) and \
-                                (ligand_count == 4) and len(four_repeats) < 4:
+                                    (ligand_count == 4) and len(four_repeats) < 4:
                                 four_repeats.append(j)
                     if loud:
-                        print(('this is four repeats',four_repeats))
+                        print(('this is four repeats', four_repeats))
                     four_repeats_cons = [ligcons[j] for j in four_repeats]
                     pair_combos = list(combinations([0, 1, 2, 3], 2))
                     angle_list = []
@@ -1213,9 +1212,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         seesaw = False
                         #### In the planar set, the two monodentates are axial, and tetradentate is equatorial.
                         axial_pair = list(set(allowed) - set(four_repeats))
-                    if not seesaw: # Planar
+                    if not seesaw:  # Planar
                         eq_lig_list = four_repeats
-                        eq_con_list = four_repeats_cons  ### ADDED
+                        eq_con_list = four_repeats_cons  # ADDED
                         ax_lig_list = axial_pair
                         ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
                     else:  # 2 points in eq plane, seesaw case
@@ -1226,15 +1225,16 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         eq_lig_list = [i for i in range(len(ligcons)) if ligcons[i] in eq_plane_cons]
                         ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_plane_cons]
                         ax_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] not in eq_plane_cons]
-                elif max(ligand_counts) == 3: # 3+2+1 - Planar 3 or not
+                elif max(ligand_counts) == 3:  # 3+2+1 - Planar 3 or not
                     three_repeats = list()
                     two_repeats = list()
                     for i, ligand_count in enumerate(ligand_counts):
                         temp_unique = unique_ligands[i]
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
-                            sym_list = sorted([atom.symbol() for atom in
-                                        built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
+                            sym_list = sorted([
+                                atom.symbol() for atom in
+                                built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
@@ -1244,27 +1244,27 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                             elif (ligand_count == 2) and len(two_repeats) < 2:
                                 two_repeats.append(j)
                     if loud:
-                        print(('this is three repeats',three_repeats))
+                        print(('this is three repeats', three_repeats))
                     three_repeats_cons = [ligcons[j] for j in three_repeats]
                     two_repeats_cons = [ligcons[j] for j in two_repeats]
                     pair_combos = list(combinations([0, 1, 2], 2))
                     angle_list = []
                     pair_list = []
                     coord_list = np.array([mol.getAtom(ii[0]).coords() for ii in three_repeats_cons])
-                    for i, pair in enumerate(pair_combos): # Test angle between 3 identical
+                    for i, pair in enumerate(pair_combos):  # Test angle between 3 identical
                         pair_list.append(list(pair))
-                        angle = getAngle(coord_list,pair_list[-1],m_coord)
+                        angle = getAngle(coord_list, pair_list[-1], m_coord)
                         if loud:
                             print(('pair of atoms, then angle', pair, angle))
                         angle_list.append(angle)
                     test_angle = np.sort(np.array(angle_list))[::-1][0]
-                    if test_angle < angle_cutoff: # If less than cutoff, non-planar
+                    if test_angle < angle_cutoff:  # If less than cutoff, non-planar
                         planar = False
                         coord_list_two = np.array([mol.getAtom(ii[0]).coords() for ii in two_repeats_cons])
                         coord_list_three = np.array([mol.getAtom(ii[0]).coords() for ii in three_repeats_cons])
                         angle_list = list()
                         m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
-                        pair_combos = [(0, 0),(0, 1),(0, 2),(1, 0),(1, 1),(1, 2)]
+                        pair_combos = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
                         for k, pair in enumerate(pair_combos):
                             p1 = np.squeeze(np.array(coord_list_two[pair[0]]))
                             p2 = np.squeeze(np.array(coord_list_three[pair[1]]))
@@ -1282,7 +1282,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         conlist += two_repeats_cons[first_pair[0]]+three_repeats_cons[first_pair[1]]
                         conlist += two_repeats_cons[second_pair[0]]+three_repeats_cons[second_pair[1]]
                         if loud:
-                            print(('eq points reassigned',conlist))
+                            print(('eq points reassigned', conlist))
                         eq_points_defined = [j for j in allowed if ligcons[j][0] in conlist]
                     else:
                         planar = True
@@ -1311,7 +1311,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                                 monodentate_eq_idx = mono_dentate_idx
                     if planar:
                         eq_lig_list = three_repeats+[monodentate_eq_idx]
-                        eq_con_list = three_repeats_cons+[monodentate_eq_con] ### ADDED
+                        eq_con_list = three_repeats_cons+[monodentate_eq_con]  # ADDED
                         ax_con_list = [[val] for val in mono_con_list if val not in monodentate_eq_con]
                         ax_lig_list = [i for i in range(len(ligcons)) if ligcons[i] not in eq_con_list]
                     else:
@@ -1321,12 +1321,12 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         eq_con_list = [ligcons[j] for j in eq_lig_list]
                         ax_lig_list = [val for i, val in enumerate(allowed) if val not in eq_points_defined]
                         ax_con_list = [ligcons[j] for j in ax_lig_list]
-                else: # Max mw determines eq plane (2+2+2 different monodentates)
+                else:  # Max mw determines eq plane (2+2+2 different monodentates)
                     eq_lig_list = eq_points_max_mw
                     eq_con_list = [ligcons[j] for j in eq_lig_list]
                     ax_lig_list = list(set(allowed)-set(eq_points_max_mw))
                     ax_con_list = [ligcons[j] for j in ax_lig_list]
-        else:  ### with more than 4 ligands, the ax/eq breaks down. Eq plane defined by max mw plane.
+        else:  # with more than 4 ligands, the ax/eq breaks down. Eq plane defined by max mw plane.
             if loud:
                 print('monodentate more than 3 unique')
             eq_lig_list = eq_points_max_mw
@@ -1336,7 +1336,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         ####### Find and put trans species in eq plane in order opposite
         ####### from each other [0,2],[1,3] in indicies for monodentates
         eq_con_coords = [flat_coord_list[x] for x in eq_lig_list]
-        combos = [(0,1), (0,2), (0,3)]
+        combos = [(0, 1), (0, 2), (0, 3)]
         angle_list_eq = list()
         for pair in combos:
             angle = getAngle(eq_con_coords, pair, m_coord)
@@ -1344,12 +1344,12 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 print(('pair of atoms, angle', pair, angle))
             angle_list_eq.append(angle)
         opposite_lig = combos[np.argmax(angle_list_eq)][1]
-        others = list(set([1,2,3])-set([opposite_lig]))
-        eq_order = [0,others[0],opposite_lig,others[1]]
+        others = list(set([1, 2, 3])-set([opposite_lig]))
+        eq_order = [0, others[0], opposite_lig, others[1]]
         # Reorder equatorial plane
         eq_con_list = [eq_con_list[x] for x in eq_order]
         eq_lig_list = [eq_lig_list[x] for x in eq_order]
-    elif (n_ligs ==5): # 2+1+1+1+1 
+    elif (n_ligs == 5):  # 2+1+1+1+1 
         allowed = list(range(0, 5))
         if loud:
             print('bidentate 2+1+1+1+1 case')
@@ -1377,9 +1377,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     monodentate_eq_idxs.append(mono_dentate_idx)
         if len(monodentate_eq_cons) < 2:
             bidentate_axial = True
-        if not bidentate_axial: # Normal
+        if not bidentate_axial:  # Normal
             eq_lig_list = [bidentate_ligand_idx, monodentate_eq_idxs[0], monodentate_eq_idxs[1]]
-            eq_con_list = [bidentate_cons, monodentate_eq_cons[0],monodentate_eq_cons[1]]  ### ADDED
+            eq_con_list = [bidentate_cons, monodentate_eq_cons[0], monodentate_eq_cons[1]]  # ADDED
             ax_lig_list = [val for val in mono_dentate_idx_set if val not in monodentate_eq_idxs]
             ax_con_list = [[val] for val in mono_con_list if val not in [x[0] for x in monodentate_eq_cons]]  
         else:
@@ -1387,8 +1387,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             ax_con_list = [[val] for val in bidentate_cons]
             eq_lig_list = [val for val in mono_dentate_idx_set]
             eq_con_list = [[val] for val in mono_con_list]
-    elif (n_ligs == 4): # 2+2+1+1 and 3+1+1+1 cases
-        allowed = list(range(0,4))
+    elif (n_ligs == 4):  # 2+2+1+1 and 3+1+1+1 cases
+        allowed = list(range(0, 4))
         if max(ligdents) == 3:
             if loud:
                 print('3+1+1+1 case')
@@ -1402,7 +1402,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
             for i, pair in enumerate(pair_combos):
                 pair_list.append(list(pair))
-                angle = getAngle(coord_list,pair_list[-1],m_coord)
+                angle = getAngle(coord_list, pair_list[-1], m_coord)
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
@@ -1436,24 +1436,24 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                         monodentate_eq_idx = mono_dentate_idx
             if planar:
                 eq_lig_list = [tridentate_ligand_idx, monodentate_eq_idx]
-                eq_con_list = [tridentate_cons, monodentate_eq_con]  ### ADDED
+                eq_con_list = [tridentate_cons, monodentate_eq_con]  # ADDED
                 ax_lig_list = [val for val in mono_dentate_idx_set if val not in [monodentate_eq_idx]]
                 ax_con_list = [[val] for val in mono_con_list if val not in monodentate_eq_con]
-            else: ######### WORKs
+            else:  # WORKs
                 ### any equatorial plane will have 2 of the tridentate con atoms so take the eq plane with max mw
                 tri_eq_ligcons = list(set(tridentate_cons).intersection(
                                       set([flat_ligcons[x] for x in eq_points_max_mw])))
                 mono_eq_ligcons = list(set([flat_ligcons[x] for x in eq_points_max_mw])-set(tri_eq_ligcons))
-                eq_lig_list = [tridentate_ligand_idx,flat_lig_refs[flat_ligcons.index(mono_eq_ligcons[0])], 
+                eq_lig_list = [tridentate_ligand_idx, flat_lig_refs[flat_ligcons.index(mono_eq_ligcons[0])], 
                                flat_lig_refs[flat_ligcons.index(mono_eq_ligcons[1])]]
-                eq_con_list = [tri_eq_ligcons,[mono_eq_ligcons[0]],[mono_eq_ligcons[1]]]
+                eq_con_list = [tri_eq_ligcons, [mono_eq_ligcons[0]], [mono_eq_ligcons[1]]]
                 ax_lig_list = [tridentate_ligand_idx, 
                                list(set(mono_dentate_idx_set).difference(set([x for x in eq_lig_list[1:]])))[0]]
                 tri_ax_ligcon = list(set(tridentate_cons).difference(
                                       set(tri_eq_ligcons)))
                 ax_con_list = [tri_ax_ligcon,
-                                      list(set(flat_ligcons).difference(
-                                          set(mono_eq_ligcons+tri_ax_ligcon+tri_eq_ligcons)))]
+                               list(set(flat_ligcons).difference(
+                                   set(mono_eq_ligcons+tri_ax_ligcon+tri_eq_ligcons)))]
         elif max(ligdents) == 2:
             #### Need to handle case with both equatorial and triple-bidentate style.
             if loud:
@@ -1478,7 +1478,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
             test_angle = np.sort(np.array(angle_list))[::-1][1]
             if loud:
-                print(('ANGLE LIST',angle_list, 'sorted',np.sort(np.array(angle_list))[::-1]))
+                print(('ANGLE LIST', angle_list, 'sorted', np.sort(np.array(angle_list))[::-1]))
             if test_angle < angle_cutoff:
                 seesaw = True
                 temp_cons = bidentate_cons1+bidentate_cons2
@@ -1486,10 +1486,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 axial_pair = [[temp_cons[val]] for val in list(pair_list[np.argmax(np.array(angle_list))])]
             else:
                 seesaw = False
-            if not seesaw: # Planar
-                eq_lig_list = [bidentate_ligand_idx1,bidentate_ligand_idx2]
-                eq_con_list = [bidentate_cons1,bidentate_cons2]  
-                ax_lig_list = list(set(allowed)-set([bidentate_ligand_idx1,bidentate_ligand_idx2]))
+            if not seesaw:  # Planar
+                eq_lig_list = [bidentate_ligand_idx1, bidentate_ligand_idx2]
+                eq_con_list = [bidentate_cons1, bidentate_cons2]  
+                ax_lig_list = list(set(allowed)-set([bidentate_ligand_idx1, bidentate_ligand_idx2]))
                 ax_con_list = [ligcons[j] for j in ax_lig_list] 
             else:  # 2 points in eq plane, seesaw case
                 ax_con_list = axial_pair
@@ -1497,16 +1497,20 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ax_lig_list = [j for j, val in enumerate(ligcons) if flat_ax_con_list[0] in val] + \
                               [j for j, val in enumerate(ligcons) if flat_ax_con_list[1] in val]
                 eq_ligcons = set(flat_ligcons) - set(flat_ax_con_list)
-                eq_con_bidentate_list = [list(set(ligcons[0]).intersection(eq_ligcons)),
-                                         list(set(ligcons[1]).intersection(eq_ligcons)),
-                                         list(set(ligcons[2]).intersection(eq_ligcons)),
-                                         list(set(ligcons[3]).intersection(eq_ligcons))]
-                eq_con_bidentate_list = [val for val in eq_con_bidentate_list if len(val)>0]
+                eq_con_bidentate_list = [
+                    list(set(ligcons[0]).intersection(eq_ligcons)),
+                    list(set(ligcons[1]).intersection(eq_ligcons)),
+                    list(set(ligcons[2]).intersection(eq_ligcons)),
+                    list(set(ligcons[3]).intersection(eq_ligcons))]
+                eq_con_bidentate_list = [val for val in eq_con_bidentate_list
+                                         if len(val) > 0]
                 eq_con_list = eq_con_bidentate_list
                 flat_eq_con_list = [item for sublist in eq_con_list for item in sublist]
-                eq_lig_list = [j for j, val in enumerate(ligcons) if len(set(val).intersection(set(flat_eq_con_list)))>0]
+                eq_lig_list = [
+                    j for j, val in enumerate(ligcons) if 
+                    len(set(val).intersection(set(flat_eq_con_list))) > 0]
     elif (n_ligs == 3):  # 2+2+2 or 4+1+1, can be seesaw/planar or 3+2+1, seesaw/planar
-        if max(ligdents) == 4: # 4+1+1
+        if max(ligdents) == 4:  # 4+1+1
             if loud:
                 print('4+1+1 case')
             allowed = list(range(0, 3))
@@ -1518,7 +1522,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             coord_list = np.array([mol.getAtom(ii).coords() for ii in tetradentate_cons])
             for i, pair in enumerate(pair_combos):
                 pair_list.append(list(pair))
-                angle = getAngle(coord_list,pair_list[-1],m_coord)
+                angle = getAngle(coord_list, pair_list[-1], m_coord)
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
@@ -1535,9 +1539,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 seesaw = False
                 #### In the planar set, the two monodentates are axial, and tetradentate is equatorial.
                 axial_pair = list(set(allowed) - set([tetradentate_ligand_idx]))
-            if not seesaw: # Planar
+            if not seesaw:  # Planar
                 eq_lig_list = [tetradentate_ligand_idx]
-                eq_con_list = [tetradentate_cons]  ### ADDED
+                eq_con_list = [tetradentate_cons]  # ADDED
                 ax_lig_list = axial_pair
                 ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
             else:  # 2 points in eq plane, seesaw case
@@ -1548,7 +1552,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 eq_lig_list = allowed
                 ax_lig_list = [tetradentate_ligand_idx, tetradentate_ligand_idx]
                 ax_con_list = [[axial_pair[0]], [axial_pair[1]]]
-        elif max(ligdents) == 3: # 3+2+1
+        elif max(ligdents) == 3:  # 3+2+1
             if loud:
                 print('3+2+1 case')
             allowed = list(range(0, 3))
@@ -1564,7 +1568,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
             for i, pair in enumerate(pair_combos):
                 pair_list.append(list(pair))
-                angle = getAngle(coord_list,pair_list[-1],m_coord)
+                angle = getAngle(coord_list, pair_list[-1], m_coord)
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
@@ -1588,7 +1592,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 #### If not planar, considering the plane with the bidentate to be equatorial.
                 opposite_monodentate = [tridentate_cons[np.argmax(np.array(angle_list))]]
                 tridentate_cons.remove(tridentate_cons[np.argmax(np.array(angle_list))])
-            else: # Planar
+            else:  # Planar
                 planar = True
                 coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons])
                 m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
@@ -1614,7 +1618,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                     bidentate_axial = True
             if planar and not bidentate_axial:
                 eq_lig_list = [tridentate_ligand_idx, bidentate_ligand_idx]
-                eq_con_list = [tridentate_cons, bidentate_eq_con]  ### ADDED
+                eq_con_list = [tridentate_cons, bidentate_eq_con]  # ADDED
                 ax_lig_list = [monodentate_ligand_idx, bidentate_ligand_idx]
                 ax_con_list = [monodentate_cons, bidentate_ax_con]
             elif bidentate_axial:
@@ -1624,10 +1628,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 ax_con_list = [[val] for val in bidentate_cons]
             else:
                 eq_lig_list = [tridentate_ligand_idx, bidentate_ligand_idx]
-                eq_con_list = [tridentate_cons, bidentate_cons]  ### ADDED
+                eq_con_list = [tridentate_cons, bidentate_cons]  # ADDED
                 ax_lig_list = [monodentate_ligand_idx, tridentate_ligand_idx]
                 ax_con_list = [monodentate_cons, opposite_monodentate]
-        elif (max(ligdents) == 2) and (min(ligdents) == 2): # 2+2+2
+        elif (max(ligdents) == 2) and (min(ligdents) == 2):  # 2+2+2
             if loud:
                 print('triple bidentate case')
             allowed = list(range(0, 3))
@@ -1641,20 +1645,21 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                                      list(set(bidentate_cons_3).intersection(eq_ligcons))]
             #### all 3 ligands classified as equatorial because at least one atom connects to the equatorial plane for all
             #### axial only has two, where the axial connection is defined
-            if any([len(x)<1 for x in eq_con_bidentate_list]):
-                eq_con_list = [x for x in eq_con_bidentate_list if len(x)>0]
-                eq_lig_list = [i for i,x in enumerate(eq_con_bidentate_list) if len(x)>0]
+            if any([len(x) < 1 for x in eq_con_bidentate_list]):
+                eq_con_list = [x for x in eq_con_bidentate_list if len(x) > 0]
+                eq_lig_list = [i for i, x in enumerate(eq_con_bidentate_list)
+                               if len(x) > 0]
                 ax_lig = list(set(allowed)-set(eq_lig_list))[0]
-                ax_lig_list = [ax_lig,ax_lig]
+                ax_lig_list = [ax_lig, ax_lig]
                 ax_con_list = [[val] for val in ligcons[ax_lig]]
             else: 
                 eq_con_list = [eq_con_bidentate_list[0], eq_con_bidentate_list[1], eq_con_bidentate_list[2]]
                 eq_lig_list = allowed
                 ax_con_list = [list(set(ligcons[i]) - set(eq_con_bidentate_list[i])) for i in allowed if
-                            (len(eq_con_bidentate_list[i]) == 1)]
+                               (len(eq_con_bidentate_list[i]) == 1)]
                 ax_lig_list = [i for i in allowed if (len(eq_con_bidentate_list[i]) == 1)]
     elif (n_ligs == 2 and not pentadentate):  # 4+2 or 3+3
-        if ((max(ligdents) == 4) and (min(ligdents) == 2)): # 4+2
+        if ((max(ligdents) == 4) and (min(ligdents) == 2)):  # 4+2
             if loud:
                 print('4+2 dentate case')
             #### 4+2 cases are handled in the exact same way as 4+1+1 seesaws. See above for explanation.
@@ -1670,7 +1675,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             coord_list = np.array([mol.getAtom(ii).coords() for ii in tetradentate_cons])
             for i, pair in enumerate(pair_combos):
                 pair_list.append(list(pair))
-                angle = getAngle(coord_list,pair_list[-1],m_coord)
+                angle = getAngle(coord_list, pair_list[-1], m_coord)
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
@@ -1685,12 +1690,12 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 eq_lig_list = allowed
                 ax_lig_list = [tetradentate_ligand_idx, tetradentate_ligand_idx]
                 ax_con_list = [[axial_pair[0]], [axial_pair[1]]]
-            else: # Bidentate is Axial
-                ax_lig_list = [bidentate_ligand_idx,bidentate_ligand_idx]
+            else:  # Bidentate is Axial
+                ax_lig_list = [bidentate_ligand_idx, bidentate_ligand_idx]
                 ax_con_list = [[val] for val in bidentate_cons]
                 eq_lig_list = [tetradentate_ligand_idx]
                 eq_con_list = [tetradentate_cons]
-        if ((max(ligdents) == 3) and (min(ligdents) == 3)): # 3+3
+        if ((max(ligdents) == 3) and (min(ligdents) == 3)):  # 3+3
             if loud:
                 print('3+3 dentate case')
             allowed = list(range(0, 2))
@@ -1702,7 +1707,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             coord_list = np.array([mol.getAtom(ii).coords() for ii in tridentate_cons_1])
             for i, pair in enumerate(pair_combos):
                 pair_list.append(list(pair))
-                angle = getAngle(coord_list,pair_list[-1],m_coord)
+                angle = getAngle(coord_list, pair_list[-1], m_coord)
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
@@ -1715,7 +1720,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 planar = False
             else:
                 planar = True
-            if not planar: # Seesaw
+            if not planar:  # Seesaw
                 eq_ligcons = set([flat_ligcons[j] for j in eq_points_max_con_mw])
                 eq_con_list = [list(set(tridentate_cons_1).intersection(eq_ligcons)),
                                list(set(tridentate_cons_2).intersection(eq_ligcons))]
@@ -1723,11 +1728,11 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                                list(set(tridentate_cons_2) - set(eq_con_list[1]))]
                 eq_lig_list = [0, 1]
                 ax_lig_list = [0, 1]
-            else: # Planar
+            else:  # Planar
                 eq_ligcons = set([flat_ligcons[j] for j in eq_points_max_mw])
                 eq_lig1 = list(set(tridentate_cons_1).intersection(eq_ligcons))
                 eq_lig2 = list(set(tridentate_cons_2).intersection(eq_ligcons))
-                if len(eq_lig1) == 2 or len(eq_lig2) == 2: # Catch cases where 2 + 2 planar
+                if len(eq_lig1) == 2 or len(eq_lig2) == 2:  # Catch cases where 2 + 2 planar
                     new_combo_idx = list(set([x for x in range(3)])-set([max_mw_idx]))[0]
                     eq_points_max_mw = combo_list[new_combo_idx] 
                     eq_ligcons = set([flat_ligcons[j] for j in eq_points_max_mw])
@@ -1741,7 +1746,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
                 else:
                     ax_con_list = [list(set(tridentate_cons_2) - set(eq_lig2))]
                     ax_lig_list = [1]
-    elif (n_ligs == 2 and pentadentate): # 5+1
+    elif (n_ligs == 2 and pentadentate):  # 5+1
         #### Handling for pentadentate scaffolds ####
         if loud:
             print('pentadentate case')
@@ -1753,15 +1758,15 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             top_lig = 0
             top_con = ligcons[0]
             not_eq.append(top_lig)
-            pent_lig=1
+            pent_lig = 1
         else:
             top_lig = 1
             top_con = ligcons[1]
             not_eq.append(top_lig)
-            pent_lig=0
+            pent_lig = 0
         pentadentate_coord_list = np.array([mol.getAtom(
                     ii).coords() for ii in ligcons[pent_lig]])
-            ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
+        ##### Adjusting this so that by default, any 4 within the same plane will be assigned as eq. ###
         m = np.array([mol.getAtom(mol.findMetal()[0]).coords()])
         p1 = np.array(mol.getAtom(top_con[0]).coords())
         angle_list = []
@@ -1777,7 +1782,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         not_ax_points = combo_list[np.argmin(error_list)]
         if loud:
             print(('This is bot_idx', bot_idx))
-            print((flat_ligcons,top_con,bot_con))
+            print((flat_ligcons, top_con, bot_con))
         eq_lig_list = [bot_lig]
         eq_con_list = [list(set(flat_ligcons) - set(top_con) - set(bot_con))]
         ax_lig_list = [top_lig, bot_lig]
@@ -1789,13 +1794,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         # The lc atoms are decided by the z-position. Thus the pentadentate ligand has 4 eq-lc    #
         # and 1 ax-lc. Currently should be able to check this and set that up.                    #
         ###########################################################################################
-    elif (n_ligs == 1 and hexadentate): # 6
+    elif (n_ligs == 1 and hexadentate):  # 6
         if loud:
             print('hexadentate case')
-        not_ax_points = eq_points_max_con_mw # Define by maximum mw plane for hexadentates
+        not_ax_points = eq_points_max_con_mw  # Define by maximum mw plane for hexadentates
         bot_idx = list(set(range(6)) - set(not_ax_points))[0]
         top_idx = list(set(range(6)) - set(not_ax_points))[1]
-        if lig_con_weights[top_idx] > lig_con_weights[bot_idx]: # Move heavier atom to bottom
+        if lig_con_weights[top_idx] > lig_con_weights[bot_idx]:  # Move heavier atom to bottom
             tmp_idx = top_idx
             top_idx = bot_idx
             bot_idx = tmp_idx
@@ -1805,14 +1810,14 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
         top_con = [ligcons[0][top_idx]]
         eq_lig_list = [0]
         eq_con_list = [list(set([ligcons[0][i] for i in not_ax_points]))]
-        ax_lig_list = [0,0]
+        ax_lig_list = [0, 0]
         ax_con_list = [top_con, bot_con]
         if loud:
             print(('con lists', eq_con_list, ax_con_list))
-    if eq_sym_match: # Enforce eq plane to have connecting atoms with same symbol
+    if eq_sym_match:  # Enforce eq plane to have connecting atoms with same symbol
         flat_eq_con_list = [item for sublist in eq_con_list for item in sublist]
         flat_eq_con_syms = set([mol.getAtom(item).symbol() for item in flat_eq_con_list])
-        if len(flat_eq_con_syms) != 1: # If more than 1 different type of symbol in eq plane!
+        if len(flat_eq_con_syms) != 1:  # If more than 1 different type of symbol in eq plane!
             if loud:
                 print('Correcting for eq plane with identical chemical symbols for con atoms.')
             pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2)) 
@@ -1820,14 +1825,14 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False, name=F
             for pair in pair_combos:
                 pair_list.append(list(pair))
             point_combos = [pair_list[argsort_angle_list[0]] + pair_list[argsort_angle_list[1]],
-                    pair_list[argsort_angle_list[1]] + pair_list[argsort_angle_list[2]],
-                    pair_list[argsort_angle_list[2]] + pair_list[argsort_angle_list[0]]]
+                            pair_list[argsort_angle_list[1]] + pair_list[argsort_angle_list[2]],
+                            pair_list[argsort_angle_list[2]] + pair_list[argsort_angle_list[0]]]
             symbols_combos = list()
             for combo in point_combos:
                 tmp_sym_combos = set()
                 for point_num in combo:
                     tmp_sym_combos.add(mol.getAtom(flat_ligcons[point_num]).symbol())
-                symbols_combos.append(len(tmp_sym_combos)) # Save number of distinct con_atoms
+                symbols_combos.append(len(tmp_sym_combos))  # Save number of distinct con_atoms
             # Get plane with fewest distinct types of connecting atoms
             eq_plane_min_atom_types = point_combos[np.argmin(symbols_combos)]
             eq_ligcons = [flat_ligcons[i] for i in eq_plane_min_atom_types]
@@ -1930,7 +1935,7 @@ def ligand_assign_alleq(mol, liglist, ligdents, ligcons):
     return ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list
 
 
-def get_lig_symmetry(mol,loud=False,htol=3):
+def get_lig_symmetry(mol, loud=False, htol=3):
     """Handles ligand symmetry assignment.
         
     Parameters
@@ -1948,14 +1953,15 @@ def get_lig_symmetry(mol,loud=False,htol=3):
             ligand symmetry plane
 
     """
-    liglist, ligdents, ligcons = ligand_breakdown(mol,BondedOct=True,flag_loose=True)
+    liglist, ligdents, ligcons = ligand_breakdown(mol, BondedOct=True, flag_loose=True)
     ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
         ax_con_int_list, eq_con_int_list, ax_con_list, \
-        eq_con_list, built_ligand_list = ligand_assign_consistent(mol,liglist,ligdents,ligcons,loud=loud)
+        eq_con_list, built_ligand_list = ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=loud)
     max_dent = max(ligdents)
     min_dent = min(ligdents)
     flat_ligcons = [item for sublist in ligcons for item in sublist]
     ### Below, take all combinations of two atoms, and measure their angles through the metal center
+
     def compare_ligs(ligs):
         unique_ligands = list()
         unique_ligcons = list()
@@ -1969,9 +1975,9 @@ def get_lig_symmetry(mol,loud=False,htol=3):
                 sl = ['H']
             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
-            unique = 1 # Flag for detecting unique ligands
+            unique = 1  # Flag for detecting unique ligands
             for i, other_sl in enumerate(unique_ligands):
-                if sl == other_sl and sl_ligcon == unique_ligcons[i] and np.isclose(hs,unique_hs[i],atol=float(htol)):
+                if sl == other_sl and sl_ligcon == unique_ligcons[i] and np.isclose(hs, unique_hs[i], atol=float(htol)):
                     # Duplicate
                     unique = 0
             if unique == 1:
@@ -1992,7 +1998,6 @@ def get_lig_symmetry(mol,loud=False,htol=3):
     ### Obtain coordinates for the connecting atoms. Flat coord list ends up being used for comparisons.
     # Bin and sort ligands as Unique
     unique_ligands = list()
-    lig_con_symbols_list = list()
     unique_ligcons = list()
     unique_counts = list()
     unique_hs = list()
@@ -2005,9 +2010,9 @@ def get_lig_symmetry(mol,loud=False,htol=3):
             sl = ['H']
         ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
         sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
-        unique = 1 # Flag for detecting unique ligands
+        unique = 1  # Flag for detecting unique ligands
         for i, other_sl in enumerate(unique_ligands):
-            if sl == other_sl and sl_ligcon == unique_ligcons[i] and np.isclose(hs,unique_hs[i],atol=float(htol)):
+            if sl == other_sl and sl_ligcon == unique_ligcons[i] and np.isclose(hs, unique_hs[i], atol=float(htol)):
                 # Duplicate
                 unique = 0
                 unique_counts[i] += 1
@@ -2016,8 +2021,8 @@ def get_lig_symmetry(mol,loud=False,htol=3):
             unique_ligcons.append(sl_ligcon)
             unique_counts.append(1)
             unique_hs.append(hs)
-    n_unique_ligs = len(unique_ligands) # Number of unique ligands
-    max_eq_count = max([len(x) for x in eq_con_list]) # Maximum cons of same lig in eq plane
+    n_unique_ligs = len(unique_ligands)  # Number of unique ligands
+    max_eq_count = max([len(x) for x in eq_con_list])  # Maximum cons of same lig in eq plane
     if max_dent == 6:
         outstring = '6'
     elif max_dent == 5 and min_dent == 1:
@@ -2030,7 +2035,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
     elif max_dent == 4 and min_dent == 1:
         # 411c, 411t, 4|11|c, 4|11|t
         if n_unique_ligs == 2:
-            #4|11|c, 4|11|t
+            # 4|11|c, 4|11|t
             if max_eq_count == 4:
                 outstring = '4|11|t'
             elif max_eq_count == 2:
@@ -2079,22 +2084,22 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         # 3m|111|, 3f|111|
         if n_unique_ligs == 4:
             if max_eq_count == 2:
-                outstring='3f111'
+                outstring = '3f111'
             else:
-                outstring='3m111'
+                outstring = '3m111'
         elif n_unique_ligs == 3:
             if max_eq_count == 2:
-                outstring='3f|11|1'
+                outstring = '3f|11|1'
             else:
                 if compare_ligs(ax_ligand_list):
-                    outstring ='3m|11|t1'
+                    outstring = '3m|11|t1'
                 else:
-                    outstring='3m|11|c1'
+                    outstring = '3m|11|c1'
         elif n_unique_ligs == 2:
             if max_eq_count == 2:
-                outstring='3f|111|'
+                outstring = '3f|111|'
             else:
-                outstring='3m|111|'
+                outstring = '3m|111|'
         else:
             outstring = 'Error3111'
     elif max_dent == 2 and min_dent == 2:
@@ -2106,7 +2111,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         elif n_unique_ligs == 2:
             outstring = '|22|2'
         elif n_unique_ligs == 1:
-            outstring='|222|'
+            outstring = '|222|'
         else:
             outstring = 'Error222'
     elif max_dent == 2 and len(ligdents) == 4:
@@ -2114,26 +2119,26 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         # |22||11|c, |22||11|t
         if ax_ligand_list[1].index_list == ax_ligand_list[0].index_list:
             outstring = '2t211'
-        elif max_eq_count == 2: # Must be planar bidentates, trans monodentates
-            if compare_ligs(eq_ligand_list): # Bidentates identical
-                if compare_ligs(ax_ligand_list): # Monodentates identical
+        elif max_eq_count == 2:  # Must be planar bidentates, trans monodentates
+            if compare_ligs(eq_ligand_list):  # Bidentates identical
+                if compare_ligs(ax_ligand_list):  # Monodentates identical
                     outstring = '|22||11|t'
                 else:
                     outstring = '|22|11t'
-            else: # Bidentates different
-                if compare_ligs(ax_ligand_list): # Monodentates identical
+            else:  # Bidentates different
+                if compare_ligs(ax_ligand_list):  # Monodentates identical
                     outstring = '22|11|t'
                 else:
                     outstring = '2211t'
-        elif max_eq_count == 1: # Must seesaw bidentates, cis-monodentates
-            if compare_ligs(ax_ligand_list): # Bidentates identical
-                eq_ligand_list.remove(ax_ligand_list[0]) # remove one bidentate
-                if compare_ligs(eq_ligand_list): # Monodentates identical
+        elif max_eq_count == 1:  # Must seesaw bidentates, cis-monodentates
+            if compare_ligs(ax_ligand_list):  # Bidentates identical
+                eq_ligand_list.remove(ax_ligand_list[0])  # remove one bidentate
+                if compare_ligs(eq_ligand_list):  # Monodentates identical
                     outstring = '|22||11|c'
                 else:
                     outstring = '|22|11c'
-            else: # Bidentates different
-                if compare_ligs(eq_ligand_list): # Monodentates identical
+            else:  # Bidentates different
+                if compare_ligs(eq_ligand_list):  # Monodentates identical
                     outstring = '22|11|c'
                 else:
                     outstring = '2211c'
@@ -2147,33 +2152,33 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         elif n_unique_ligs == 5:
             outstring = '21111'
         elif n_unique_ligs == 4:
-            if compare_ligs(ax_ligand_list): # trans
+            if compare_ligs(ax_ligand_list):  # trans
                 outstring = '2|11|t11'
             else:
-                if compare_ligs(eq_ligand_list): # trans different monodentates
+                if compare_ligs(eq_ligand_list):  # trans different monodentates
                     outstring = '2|11|c11t'
                 else:
                     outstring = '2|11|c11c'
         elif n_unique_ligs == 3:
             if max(unique_counts) == 3:
-                if compare_ligs(ax_ligand_list): # mer
+                if compare_ligs(ax_ligand_list):  # mer
                     outstring = '2|111|m1'
                 else:
                     outstring = '2|111|f1'
             elif max(unique_counts) == 2:
-                if compare_ligs(ax_ligand_list): # trans
+                if compare_ligs(ax_ligand_list):  # trans
                     outstring = '2|11|c|11|t'
                 else:
                     outstring = '2|11|c|11|c'
             else:
-                outsrting = 'Error21111'
+                outstring = 'Error21111'
         elif n_unique_ligs == 2:
             outstring = '2|1111|'
         else:
             outstring = 'Error21111'
     elif max_dent == 1:
-        trans_pairs = [ax_ligand_list,[eq_ligand_list[0],eq_ligand_list[2]],
-                      [eq_ligand_list[1],eq_ligand_list[3]]]
+        trans_pairs = [ax_ligand_list, [eq_ligand_list[0], eq_ligand_list[2]],
+                       [eq_ligand_list[1], eq_ligand_list[3]]]
         if n_unique_ligs == 6:
             outstring = '111111'
         elif n_unique_ligs == 5:
@@ -2191,7 +2196,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
         elif n_unique_ligs == 4:
             # |11|c|11|t11, |11|c|11|c11t, |11|c|11|c11c, |11|t|11|t11, 
             # |111|f/m111
-            if max(unique_counts) == 3: # fac/mer
+            if max(unique_counts) == 3:  # fac/mer
                 mer = False
                 for pair in trans_pairs:
                     if compare_ligs(pair):
@@ -2210,7 +2215,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
                 elif trans_count == 1:
                     outstring = '|11|c|11|t11'
                 elif trans_count == 0:
-                    planes = [eq_ligand_list,[eq_ligand_list[0]]+[eq_ligand_list[2]]+ax_ligand_list,
+                    planes = [eq_ligand_list, [eq_ligand_list[0]]+[eq_ligand_list[2]]+ax_ligand_list,
                               [eq_ligand_list[1]]+[eq_ligand_list[3]]+ax_ligand_list]
                     plane_counts = 0
                     for plane in planes:
@@ -2279,7 +2284,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
                 trans_count = 0
                 for pair in trans_pairs:
                     if compare_ligs(pair):
-                        trans_count +=1
+                        trans_count += 1
                 if trans_count == 3:
                     outstring = '|1111||11|t'
                 elif trans_count == 1:
@@ -2290,7 +2295,7 @@ def get_lig_symmetry(mol,loud=False,htol=3):
                 trans_count = 0
                 for pair in trans_pairs:
                     if compare_ligs(pair):
-                        trans_count +=1
+                        trans_count += 1
                 if trans_count == 2:
                     outstring = '|111|m|111|'
                 elif trans_count == 0:

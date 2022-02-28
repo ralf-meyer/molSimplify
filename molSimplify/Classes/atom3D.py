@@ -8,6 +8,7 @@
 from math import sqrt
 from molSimplify.Classes.globalvars import globalvars
 
+
 class atom3D:
     """ atom3D class. Base class in molSimplify for representing an element.
         
@@ -223,4 +224,3 @@ class atom3D:
                 Desired EDIA score of atom
         """
         self.EDIA = score
-

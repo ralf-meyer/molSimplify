@@ -9,6 +9,7 @@ from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 
+
 def read_atom(line):
     """ Reads a line of a pdb into an atom dictionary.
 
@@ -34,6 +35,7 @@ def read_atom(line):
     atom_dict = dict(zip(labels, data))
     atom_dict['Element'] = atom_dict['Element'][0] + atom_dict['Element'][1:].lower()
     return atom_dict
+
 
 def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     """ Creates an AA3D from a_dicts and adds it to the appropriate places.
@@ -73,8 +75,8 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
             m = mol3D(a_dict['ResName'], loc)
         mols[key] = [m]
     elif loc != '' and ploc != '':
-        l = ord(ploc)
-        if loc > chr(l) and len(mols[key]) <= l-64:
+        li = ord(ploc)
+        if loc > chr(li) and len(mols[key]) <= li-64:
             if aa:
                 m = AA3D(a_dict['ResName'], a_dict['ChainID'],
                          a_dict['ResSeq'], a_dict['Occupancy'], loc)
@@ -108,7 +110,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         mols[key][0].temp_list = mols[key][0].atoms.copy()
     prev_a_dict = a_dict
     if a_dict['ChainID'] not in chains.keys():
-        chains[a_dict['ChainID']] = [] # initialize key of chain dictionary
+        chains[a_dict['ChainID']] = []  # initialize key of chain dictionary
     if m != 0 and key not in conf and loc != '' and float(a_dict['Occupancy']) < 1:
         conf.append(key)
     if m != 0 and m not in chains[a_dict['ChainID']] and key not in conf:
@@ -134,7 +136,7 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
         for i in mols[key]:
             i.addAtom(atom, a_dict['SerialNum'])
     else:
-        m.addAtom(atom, a_dict['SerialNum']) # terminal Os may be missing
+        m.addAtom(atom, a_dict['SerialNum'])  # terminal Os may be missing
         if aa:
             if atom.greek == "C":
                 m.c.append(atom)
@@ -145,16 +147,14 @@ def makeMol(a_dict, mols, conf, chains, prev_a_dict, bonds, aa=True):
     if aa:
         m.setBonds()
         bonds.update(m.bonds)
-        if m.prev == None and (a_dict['ChainID'], a_dict['ResSeq'] - 1) in mols.keys():
+        if m.prev is None and (a_dict['ChainID'], a_dict['ResSeq'] - 1) in mols.keys():
             m.setPrev(mols[(a_dict['ChainID'], a_dict['ResSeq'] - 1)][0])
         prev_mol = m.prev
-        if prev_mol != None:
-            if prev_mol.next == None:
+        if prev_mol is not None:
+            if prev_mol.next is None:
                 prev_mol.setNext(m)
             for n in m.n:
                 for c in prev_mol.c:
                     bonds[n].add(c)
                     bonds[c].add(n)
     return atom, mols, conf, chains, prev_a_dict, bonds
-            
-            

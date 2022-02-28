@@ -45,8 +45,8 @@ def cell_ffopt(ff, mol, frozenats):
     # convert mol3D to OBMol via xyz file, because AFTER/END option have coordinates
     backup_mol = mol3D()
     backup_mol.copymol3D(mol)
- #   print('bck ' + str(backup_mol.getAtom(0).coords()))
- #   print('mol_ibf ' + str(mol.getAtom(0).coords()))
+    # print('bck ' + str(backup_mol.getAtom(0).coords()))
+    # print('mol_ibf ' + str(mol.getAtom(0).coords()))
     mol.convert2OBMol()
     # initialize constraints
     constr = openbabel.OBFFConstraints()
@@ -104,14 +104,12 @@ def import_from_cif(fst, return_extra_cif_info=False):
     obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats("cif", "xyz")
     mol = openbabel.OBMol()
-    try:
-        obConversion.ReadFile(mol, fst)
-        fillUC = openbabel.OBOp.FindType("fillUC")
+    if obConversion.ReadFile(mol, fst):
         fillUC = openbabel.OBOp.FindType("fillUC")
         fillUC.Do(mol, "strict")
         unit_cell.OBMol = mol
         unit_cell.convert2mol3D()
-    except:
+    else:
         emsg.append("Error in reading of cif file by openbabel")
         exit_status = 1
     with open(fst) as f:
@@ -139,7 +137,7 @@ def import_from_cif(fst, return_extra_cif_info=False):
                     gamma = float(
                         ''.join(c for c in linesplit[1] if c not in '()').rstrip('.'))
     # create cell vectors
-    print(('cell vectors: ','alpha, beta, gamma = ' + str(alpha) +
+    print(('cell vectors: ', 'alpha, beta, gamma = ' + str(alpha) +
            ', ' + str(beta) + ' ,' + str(gamma)))
     try:
         cell_vector.append([A, 0, 0])
@@ -150,7 +148,7 @@ def import_from_cif(fst, return_extra_cif_info=False):
                 numpy.cos((gamma*pi/180)))/numpy.sin((gamma*pi)/180)
         cz = sqrt(C*C - cx*cx - cy*cy)
         cell_vector.append([cx, cy, cz])
-    except:
+    except ValueError:  # Negative number in sqrt
         emsg = emsg.append('Error in creating unit cell from cif informtation')
         exit_status = 2
     for i, rows in enumerate(cell_vector):
@@ -342,7 +340,7 @@ def distance_2d_torus_next_only(R1, R2, dim):
     dx = abs(R1[0] - R2[0])
     dy = abs(R1[1] - R2[1])
     dz = abs((R1[2] - R2[2]))
-  #  print('dx,dy,dz'+str([dx,dy,dz]))
+    # print('dx,dy,dz'+str([dx,dy,dz]))
     d1 = sqrt(numpy.power(dim[0] - dx, 2)
               + numpy.power(dim[1] - dy, 2)
               + numpy.power(dz, 2))
@@ -352,7 +350,7 @@ def distance_2d_torus_next_only(R1, R2, dim):
     d3 = sqrt(numpy.power(dx, 2)
               + numpy.power(dim[1] - dy, 2)
               + numpy.power(dz, 2))
- #   print('d1,d2,d3'+str([dx,dy,dz]))
+    # print('d1,d2,d3'+str([dx,dy,dz]))
 
     d = min(d1, d2, d3)
     return d
@@ -370,14 +368,14 @@ def periodic_2d_distance(R1, R2, cell_vector):
         for v1shifts in [-1, 0, 1]:
             for yshifts in [-1, 0, 0]:
                 pass
-    d1 = sqrt(numpy.power(dim[0] - dx, 2)
-              + numpy.power(dim[1] - dy, 2)
+    d1 = sqrt(numpy.power(dim[0] - dx, 2)  # noqa: F821 (under construction)
+              + numpy.power(dim[1] - dy, 2)  # noqa: F821 (under construction)
               + numpy.power(dz, 2))
-    d2 = sqrt(numpy.power(dim[0] - dx, 2)
+    d2 = sqrt(numpy.power(dim[0] - dx, 2)  # noqa: F821 (under construction)
               + numpy.power(dy, 2)
               + numpy.power(dz, 2))
     d3 = sqrt(numpy.power(dx, 2)
-              + numpy.power(dim[1] - dy, 2)
+              + numpy.power(dim[1] - dy, 2)  # noqa: F821 (under construction)
               + numpy.power(dz, 2))
     d = min(d1, d2, d3)
     return d
@@ -441,7 +439,7 @@ def check_top_layer_correct(super_cell, atom_type):
     globs = globalvars()
     elements = globs.elementsbynum()
     print(('chekcing surface  for  ' + atom_type + '\n'))
-    if not atom_type in elements:
+    if atom_type not in elements:
         print("unkown surface type, unable to trim ")
         return trimmed_cell
     else:
@@ -468,8 +466,8 @@ def check_top_layer_correct(super_cell, atom_type):
 
 
 def shave_surface_layer(super_cell, TOL=1e-1):
-  #  dlist = fractionate_points_by_plane(super_cell,n)
- #   points_below_plane(point,n,refd)
+    # dlist = fractionate_points_by_plane(super_cell,n)
+    # points_below_plane(point,n,refd)
 
     shaved_cell = mol3D()
     shaved_cell.copymol3D(super_cell)
@@ -541,7 +539,6 @@ def shave__type(super_cell, dim, mode):
 def zero_z(super_cell):
     zeroed_cell = mol3D()
     zeroed_cell.copymol3D(super_cell)
-    TOL = 1e-1
     zmin = 1000
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
@@ -554,7 +551,6 @@ def zero_z(super_cell):
 def zero_x(super_cell):
     zeroed_cell = mol3D()
     zeroed_cell.copymol3D(super_cell)
-    TOL = 1e-1
     xmin = 1000
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
@@ -567,7 +563,6 @@ def zero_x(super_cell):
 def zero_y(super_cell):
     zeroed_cell = mol3D()
     zeroed_cell.copymol3D(super_cell)
-    TOL = 1e-1
     ymin = 1000
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
@@ -606,7 +601,7 @@ def fractionate_points_by_plane(super_cell, n, tol=1E-8):
             these_dists = [abs(this_frac-j) for j in vals]
             if min(these_dists) < tol:
                 pass
-                #print('have this point')
+                # print('have this point')
             else:
                 vals.append(this_frac)
                 print(('new point at ' + str(this_frac)))
@@ -617,10 +612,10 @@ def fractionate_points_by_plane(super_cell, n, tol=1E-8):
 
 
 def points_below_plane(point, n, refd):
-    dplane = apply_plane_to_point(point, n)
-    if abs(d-refd) < 1E-6:
+    dplane = apply_plane_to_point(point, n)  # noqa: F841 (under construction)
+    if abs(d-refd) < 1E-6:  # noqa: F821 (under construction)
         outcome = False
-    elif d < dref:
+    elif d < dref:  # noqa: F821 (under construction)
         outcome = True
     else:
         outcome = False
@@ -652,7 +647,7 @@ def freeze_under_layer(super_cell):
             if (coords[2] < zmin):
                 zmin = coords[2]
     freeze_list = list()
- #   print('lowest  ' + str(zmin))
+    # print('lowest  ' + str(zmin))
     for i, atoms in enumerate(super_cell.getAtoms()):
         coords = atoms.coords()
         if not atoms.frozen:

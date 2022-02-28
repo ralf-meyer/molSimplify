@@ -82,6 +82,7 @@ DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
 
+
 def tensorflow_silence():
     ## thanks to
     # stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints
@@ -104,7 +105,7 @@ def tensorflow_silence():
 
 
 try:
-    import PyQt5
+    import PyQt5  # noqa: F401
     from PyQt5.QtWidgets import QApplication
     from molSimplify.Classes.mGUI import mGUI
 
@@ -131,8 +132,7 @@ def main(args=None):
     ### run GUI by default ###
     args = sys.argv[1:]
     gui = True
-    cmd = False
-    if len(args)==0 and not qtflag:
+    if len(args) == 0 and not qtflag:
         print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")
         exit()
     ####################################
@@ -194,7 +194,7 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # run from commandline
-        emsg = startgen(sys.argv, False, gui)
+        startgen(sys.argv, False, gui)
     ### grab from commandline arguments ###
     else:
         print('No input file detected, reading arguments from commandline')
@@ -202,7 +202,9 @@ def main(args=None):
         gui = False
         # create input file from commandline
         infile = parseCLI([_f for _f in args if _f])
-        args = ['main.py','-i',infile]
-        emsg = startgen(args,False,gui)
+        args = ['main.py', '-i', infile]
+        startgen(args, False, gui)
+
+
 if __name__ == '__main__':
     main()

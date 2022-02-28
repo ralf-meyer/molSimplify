@@ -53,7 +53,6 @@ def feature_prep(mol, idx):
     satno_list = []
     ref_list = []
     fd_list = []
-    fa_list = []
     idx_list = [0] * 6
     exit_signal = True
     # getting bond-order matrix
@@ -145,7 +144,6 @@ def feature_prep(mol, idx):
     # get distance
     # idx = np.argsort(np.array(fpriority_list))[-1]
     sidx_list = mol.getBondedAtomsByCoordNo(fidx_list[0][0], 6)
-    refcoord = mol.getAtom(sidx_list[idx]).coords()
     mcoord = mol.getAtom(fidx_list[0][0]).coords()
     vMLs = [vecdiff(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
     rMLs = [distance(mcoord, mol.getAtom(i).coords()) for i in sidx_list]
@@ -292,7 +290,7 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     lin = 7
     # optimize hyperparameters
     cycle_i = 0
-    while gamma == 1 or alpha == 1 or signal == False:
+    while gamma == 1 or alpha == 1 or not signal:
         gammas = np.linspace(gamma_lower, gamma_higher, lin)
         alphas = np.linspace(alpha_lower, alpha_higher, lin)
         tuned_parameters = [
@@ -386,14 +384,6 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
     std_y = np.std(y, axis=0)
     X_norm = normalize(X, mean_X, std_X)
     y_norm = normalize(y, mean_y, std_y)
-    # stats
-    mean_X_dict = dict(list(zip(headers, mean_X)))
-    std_X_dict = dict(list(zip(headers, std_X)))
-    stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
-    stats = [mean_X_dict, std_X_dict, mean_y, std_y]
-    stat_dict = dict(list(zip(stat_names, stats)))
-    X_norm = normalize(X, mean_X, std_X)
-    y_norm = normalize(y, mean_y, std_y)
     # split to train and test
     loo = LeaveOneOut()
     total_i = len(X_norm)
@@ -445,7 +435,7 @@ def krr_model_training_loo(csvf, colnum_label, colnum_desc, feature_names=False,
         lin = 7
         # optimize hyperparameters
         cycle_i = 0
-        while gamma == 1 or alpha == 1 or signal == False:
+        while gamma == 1 or alpha == 1 or not signal:
             gammas = np.linspace(gamma_lower, gamma_higher, lin)
             alphas = np.linspace(alpha_lower, alpha_higher, lin)
             tuned_parameters = [
@@ -667,7 +657,7 @@ def ML_model_predict(core3D, spin, train_dict, stat_dict, impt_dict, regr):
             desc_dict = dict(list(zip(desc_names, descs)))
             descs = []
             Xs_train_sel = []
-            d2s = [0] * len(list(Xs_train.values())[0])
+            # d2s = [0] * len(list(Xs_train.values())[0])
             for key in list(impt_dict.keys()):
                 desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
                     desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
@@ -759,13 +749,13 @@ def krr_model_predict(core3D, spin, mligcatom):
     f_stats = fpath + '/hat2_X_mean_std.csv'
     f = open(f_stats, 'r')
     fcsv = csv.reader(f)
-    for i, line in enumerate(fcsv):
-        if i == 0:
-            feature2_names = line
-        if i == 1:
-            mean_X2 = [float(ele) for ele in line]
-        if i == 2:
-            std_X2 = [float(ele) for ele in line]
+    # for i, line in enumerate(fcsv):
+    #     if i == 0:
+    #         feature2_names = line
+    #     if i == 1:
+    #         mean_X2 = [float(ele) for ele in line]
+    #     if i == 2:
+    #         std_X2 = [float(ele) for ele in line]
     mean_X2_dict = dict(list(zip(feature_names, mean_X)))
     std_X2_dict = dict(list(zip(feature_names, std_X)))
     # load feature2 names
@@ -812,8 +802,8 @@ def krr_model_predict(core3D, spin, mligcatom):
                 descs += descriptors
             desc_dict = dict(list(zip(desc_names, descs)))
             descs = []
-            Xs_train_sel = []
-            d2s = [0] * len(Xs_train[0])
+            # Xs_train_sel = []
+            # d2s = [0] * len(Xs_train[0])
             for key in keys:
                 desc = np.divide((desc_dict[key] - mean_X_dict[key]), std_X_dict[key], out=np.zeros_like(
                     desc_dict[key] - mean_X_dict[key]), where=std_X_dict[key] != 0)
@@ -831,7 +821,7 @@ def krr_model_predict(core3D, spin, mligcatom):
             bondls.append(bondl)
             if fidx == mligcatom:
                 descs = []
-                d2s = [0] * len(X2s_train[0])
+                # d2s = [0] * len(X2s_train[0])
                 for key in keys2:
                     desc = np.divide((desc_dict[key] - mean_X2_dict[key]), std_X2_dict[key],
                                      out=np.zeros_like(desc_dict[key] - mean_X2_dict[key]), where=std_X2_dict[key] != 0)
@@ -1054,31 +1044,6 @@ def get_descriptor_vector_for_atidx(mol, atidx, depth=4, oct=False):
     return descriptor_names, descriptors
 
 
-def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
-    # this function gets autocorrelations for a molecule starting
-    # in one single atom only
-    # Inputs:
-    #       mol - mol3D class
-    #       atomIdx - int, index of atom3D class
-    #       loud - bool, print output
-    result = list()
-    colnames = []
-    allowed_strings = ['electronegativity',
-                       'nuclear_charge', 'ident', 'topology', 'size']
-    labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
-    for ii, properties in enumerate(allowed_strings):
-        atom_only_ac = atom_only_autocorrelation(
-            mol, properties, depth, atomIdx, oct=oct)
-        this_colnames = []
-        for i in range(0, depth + 1):
-            this_colnames.append(labels_strings[ii] + '-' + str(i))
-        colnames.append(this_colnames)
-        result.append(atom_only_ac)
-    results_dictionary = {'colnames': colnames, 'results': result}
-    return results_dictionary
-
-
 def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True):
     # this function gets autocorrelations for a molecule starting
     # in one single atom only
@@ -1093,7 +1058,7 @@ def generate_revised_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=
     allowed_strings = ['electronegativity',
                        'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_autocorrelation(
             mol, properties, depth, atomIdx, oct=oct)
@@ -1124,7 +1089,7 @@ def generate_atomonly_ratiometrics(mol, atomIdx, loud, depth=4, oct=True):
     # labels_strings_den = ['S']
     allowed_strings_den = ['electronegativity', 'nuclear_charge', 'size']
     labels_strings_den = ['chi', 'Z', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for iii, properties_num in enumerate(allowed_strings_num):
         for iv, properties_den in enumerate(allowed_strings_den):
             atom_only_ac = atom_only_ratiometric(
@@ -1153,7 +1118,7 @@ def generate_atomonly_summetrics(mol, atomIdx, loud, depth=4, oct=True):
     allowed_strings = ['electronegativity',
                        'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_summetric(
             mol, properties, depth, atomIdx, oct=oct)
@@ -1180,7 +1145,7 @@ def generate_revised_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True
     allowed_strings = ['electronegativity',
                        'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
-    #print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
+    # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_deltametric(
             mol, properties, depth, atomIdx, oct=oct)
@@ -1240,8 +1205,8 @@ def default_plot(x, y, name=False):
     # defs for plt
     xlabel = r'distance / ${\rm \AA}$'
     ylabel = r'distance / ${\rm \AA}$'
-    colors = ['r', 'g', 'b', '.75', 'orange', 'k']
-    markers = ['o', 's', 'D', 'v', '^', '<', '>']
+    # colors = ['r', 'g', 'b', '.75', 'orange', 'k']
+    # markers = ['o', 's', 'D', 'v', '^', '<', '>']
     font = {'family': 'sans-serif',
             # 'weight' : 'bold',
             'size': 22}
@@ -1282,15 +1247,17 @@ def default_plot(x, y, name=False):
     plt.plot(x, y, 'o', markeredgecolor='k')
     plt.plot([x_min, x_max], [x_min, x_max], linestyle='dashed', color='k')
     # plt.plot([x_min, x_max], [x_min, x_max], 'k', linestyle='dashed')
-    plt.hlines(a['mean_y'], x_min, x_max, linestyle='dashed', color='k')
-    texts = []
-    for key in sorted(e.keys()):
-        text = key + ': ' + str(format(e[key], '.2g'))
-        texts.append(text)
-    textstr = '\n'.join(texts)
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
-            verticalalignment='top', bbox=props)
+    # Commented out the next block since variables a and e are not defined
+    # RM 2022/02/17
+    # plt.hlines(a['mean_y'], x_min, x_max, linestyle='dashed', color='k')
+    # texts = []
+    # for key in sorted(e.keys()):
+    #     text = key + ': ' + str(format(e[key], '.2g'))
+    #     texts.append(text)
+    # textstr = '\n'.join(texts)
+    # props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+    #         verticalalignment='top', bbox=props)
     # plt.show()
     if name:
         fpath = os.getcwd()

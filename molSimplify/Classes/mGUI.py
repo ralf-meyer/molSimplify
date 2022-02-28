@@ -58,7 +58,7 @@ class mGUI():
         self.initGUI(app)
         cwd = os.getcwd()
         globs = globalvars()  # global variables
-        globs.rundir = os.path.join(cwd,'Runs')
+        globs.rundir = os.path.join(cwd, 'Runs')
         if not os.path.exists(globs.rundir):
             print((globs.rundir))
             os.makedirs(globs.rundir)
@@ -71,14 +71,13 @@ class mGUI():
         ######################
         '''
         ### check for configuration file ###
-        homedir = os.path.expanduser("~")
         cwd = os.getcwd()
         globs = globalvars()  # global variables
-        globs.rundir = os.path.join(cwd,'Runs')
+        globs.rundir = os.path.join(cwd, 'Runs')
         if not os.path.exists(globs.rundir):
             os.makedirs(globs.rundir)
         # overX = True if 'localhost' in os.environ['DISPLAY'].lower() else False # detect running over X
- #       configfile = False if not glob.glob(homedir+'/.molSimplify') else True
+#        configfile = False if not glob.glob(homedir+'/.molSimplify') else True
 #        if not configfile:
 #            self.wwindow = mQMainWindow()
 #            self.wwindow.resize(0.5,0.5)
@@ -354,7 +353,7 @@ class mGUI():
         self.rtliggrp = mQLabel('Ligand\ngroup:', ctip, 'Cr', 12)
         cwd = os.getcwd()
         globs = globalvars()
-        globs.rundir = os.path.join(cwd,'Runs')
+        globs.rundir = os.path.join(cwd, 'Runs')
         if globs.custom_path:
             f = globs.custom_path + "/Ligands/ligands.dict"
         else:
@@ -523,7 +522,7 @@ class mGUI():
         self.grid.addWidget(self.etplacemax, 11, 22, 1, 1)
         # mask for atom/center of mass reference
         ctip = 'Reference atoms in extra molecules to be used for placement(e.g. 1,2 or 1-6 or COM or Fe) Default COM (center mass)'
-        #self.rtmaskbind = mQLabel('Reference:',ctip,'r',14)
+        # self.rtmaskbind = mQLabel('Reference:',ctip,'r',14)
         self.etmaskbind = mQLineEdit('COM', ctip, 'l', 12)
         # self.rtmaskbind.setDisabled(True)
         self.etmaskbind.setDisabled(True)
@@ -1248,8 +1247,8 @@ class mGUI():
         self.pnbo = mQCheckBox('NBO', ctip, 16)
         self.pgrid.addWidget(self.pnbo, 5, 2, 1, 1)
         # d-orbital information
-        #ctip = 'd-orbital information'
-        #self.pdorbs = mCheck(self.pWindow,0.55,0.525,0.2,0.1,'d-orbitals',ctip,16)
+        # ctip = 'd-orbital information'
+        # self.pdorbs = mCheck(self.pWindow,0.55,0.525,0.2,0.1,'d-orbitals',ctip,16)
         # delocalization indices
         ctip = 'Localization and delocalization indices'
         self.pdeloc = mQCheckBox('Deloc', ctip, 16)
@@ -1264,12 +1263,12 @@ class mGUI():
         self.butpret = mQPushButton('Return', ctip, 16)
         self.butpret.clicked.connect(self.qretmain)
         self.pgrid.addWidget(self.butpret, 7, 3, 1, 2)
-        #c1p = mPic(self.pWindow,globs.installdir+'/icons/wft1.png',0.04,0.7,0.2)
+        # c1p = mPic(self.pWindow,globs.installdir+'/icons/wft1.png',0.04,0.7,0.2)
         f = resource_filename(Requirement.parse(
             "molSimplify"), "molSimplify/icons/wft3.png")
         c3p = mQPixmap(f)
         self.pgrid.addWidget(c3p, 3, 0, 4, 1)
-        #c2p = mPic(self.pWindow,globs.installdir+'/icons/wft2.png',0.04,0.035,0.2)
+        # c2p = mPic(self.pWindow,globs.installdir+'/icons/wft2.png',0.04,0.035,0.2)
         ##################################
         ### create add geometry window ###
         ##################################
@@ -1571,7 +1570,7 @@ class mGUI():
                 if len(new_path) > 0:
                     globs.add_custom_path(new_path)
                     copy_to_custom_path()  # this funciton lives in scripts/io.py
-        #instdir = globs.installdir
+        # instdir = globs.installdir
         if self.lFFb.getState() and self.lFFa.getState():
             ffopt = 'BA'
         elif self.lFFb.getState() and not self.lFFa.getState():
@@ -1672,7 +1671,7 @@ class mGUI():
         self.sgrid.setCurrentWidget(self.iWind)
         emsg = startgen(defaultparams, True, self)
         if not emsg:
-            choice = QMessageBox.information(
+            QMessageBox.information(
                 self.pWindow, 'DONE', 'Your results are ready..')
         #############################
         #### Add geometry window ####
@@ -1743,8 +1742,8 @@ class mGUI():
             dent = int(snew[0])-1
             xyzl = ''
             for ii in range(0, dent+1):
-                l = [_f for _f in re.split(' |\t', snew[2+ii]) if _f]
-                xyzl += l[1]+' '+l[2]+' '+l[3]+'\n'
+                li = [_f for _f in re.split(' |\t', snew[2+ii]) if _f]
+                xyzl += li[1]+' '+li[2]+' '+li[3]+'\n'
             # write new entry in coordinations.dict
             s.append(str(dent)+': '+gname+' '+gshort)
             ssort = [_f for _f in list(sorted(s[1:])) if _f]
@@ -1856,7 +1855,7 @@ class mGUI():
         self.cDBWindow.setWindowModality(2)
         self.cDBWindow.show()
         writef = False
-        #instdir = globs.installdir
+        # instdir = globs.installdir
         mwfn = globs.multiwfn
         cdbdir = globs.chemdbdir
         if not os.path.isdir(globs.chemdbdir):
@@ -1887,18 +1886,18 @@ class mGUI():
         # callback for database search
 
     def qaddcDB(self):
-             ### collects all the info and passes it to molSimplify ###
+        """Collects all the info and passes it to molSimplify."""
         rdir = self.etrdir.text()
         if rdir[-1] == '/':
             rdir = rdir[:-1]
         # create running dir if not existing
         if not os.path.isdir(rdir):
             os.mkdir(rdir)
-        args = grabdbguivars(self)
+        grabdbguivars(self)
         defaultparams = ['main.py', '-i', rdir+'/dbinput.inp']
         emsg = startgen(defaultparams, True, self)
         if not emsg:
-            choice = QMessageBox.information(
+            QMessageBox.information(
                 self.cDBWindow, 'DONE', 'Search is done..')
         self.sgrid.setCurrentWidget(self.cDBWindow)
         # db type change
@@ -1929,7 +1928,7 @@ class mGUI():
         if not os.path.isdir(rdir):
             try:
                 os.mkdir(rdir)
-            except:
+            except FileExistsError:
                 emsg = 'Directory '+rdir+' could not be created. Check your input.\n'
                 QMessageBox.critical(self.wmain, 'Problem', emsg)
                 return
@@ -1938,7 +1937,7 @@ class mGUI():
             emsg = 'You checked the extra molecule box but specified\nno extra molecule. No extra molecule will be generated.\n'
             QMessageBox.warning(self.wmain, 'Warning', emsg)
         # get parameters
-        args = grabguivars(self)
+        grabguivars(self)
         defaultparams = ['main.py', '-i', rdir+'/geninput.inp']
         self.iWind.hide()
         self.sgrid.setCurrentWidget(self.iWind)
@@ -1961,7 +1960,6 @@ class mGUI():
         # list molecules
 
     def listmols(self):
-        globs = globalvars()
         coreslist = getcores()
         liglist = getligs()
         bindlist = getbinds()
@@ -1977,7 +1975,7 @@ class mGUI():
         args = grabguivars(self)
         # processes ligand arguments
         if len(args['-lig']) < 1:
-            qm = mQDialogWarn('Warning', 'No ligands are specified.')
+            mQDialogWarn('Warning', 'No ligands are specified.')
             return False
         else:
             rows = self.lgrid.rowCount()
@@ -1990,26 +1988,26 @@ class mGUI():
             lls = args['-lig'].split(',')
             liglist = []
             # check if multiple ligands in .smi file
-            for l in lls:
-                if '.smi' in l:
-                    f = open(l, 'r')
+            for li in lls:
+                if '.smi' in li:
+                    f = open(li, 'r')
                     smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
-                    liglist.append(l)
+                    liglist.append(li)
             # Get known ligand dictionaries
             licores = getlicores()
             simpleligs = getslicores()
             ligs = []
-            for l in liglist:
+            for li in liglist:
                 # check in simple dictionary
-                if l in list(simpleligs.keys()):
-                    l = simpleligs[l][0]
-                if isinstance(l, str):
+                if li in list(simpleligs.keys()):
+                    li = simpleligs[li][0]
+                if isinstance(li, str):
                     ll = unicodedata.normalize(
-                        'NFKD', l).encode('ascii', 'ignore')
+                        'NFKD', li).encode('ascii', 'ignore')
                 else:
-                    ll = l
+                    ll = li
                 # load ligands as molecules
                 lig, emsg = lig_load(ll, licores)
                 if emsg:
@@ -2045,7 +2043,6 @@ class mGUI():
                     os.close(filedes)
                     os.remove(filename)
                 # Build close button
-                ctip = 'Close current window'
                 self.lwindow.setWindowTitle('Ligands 2D')
                 self.lwclose = QPushButton('Close')
                 self.lwclose.clicked.connect(self.qcloseligs)
@@ -2054,7 +2051,6 @@ class mGUI():
                 self.lwindow.show()
 
     def viewgeom(self):
-        globs = globalvars()
         # get geometry
         geom = self.dcoordg.currentText()
         gfname = resource_filename(Requirement.parse(
@@ -2096,22 +2092,21 @@ class mGUI():
             lls = [outf]
             liglist = []
             # check if multiple ligands in .smi file
-            for l in lls:
-                if '.smi' in l:
-                    f = open(l, 'r')
+            for li in lls:
+                if '.smi' in li:
+                    f = open(li, 'r')
                     smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
-                    liglist.append(l)
-            globs = globalvars()
+                    liglist.append(li)
             licores = getlicores()
             ligs = []
-            for l in liglist:
-                if isinstance(l, str):
+            for li in liglist:
+                if isinstance(li, str):
                     ll = unicodedata.normalize(
-                        'NFKD', l).encode('ascii', 'ignore')
+                        'NFKD', li).encode('ascii', 'ignore')
                 else:
-                    ll = l
+                    ll = li
 
                 lig, emsg = lig_load(ll, licores)
                 if not emsg:
@@ -2145,7 +2140,6 @@ class mGUI():
                     os.close(filedes)
                     os.remove(filename)
                 # Build close button
-                ctip = 'Close current window'
                 self.lwindow.setWindowTitle('Ligands 2D')
                 self.lwclose = QPushButton('Close')
                 self.lwclose.clicked.connect(self.qcloseligs)
@@ -2239,7 +2233,6 @@ class mGUI():
     # match index with coordination
 
     def matchgeomcoord(self):
-        globs = globalvars()
         # get current index
         dc = self.dcoord.currentIndex()
         coords, geomnames, geomshorts, geomgroups = getgeoms()
@@ -2251,7 +2244,8 @@ class mGUI():
         qc = qcav[dc]
         # add to box
         for i, t in enumerate(qc):
-            f = resource_filename(Requirement.parse(
+            # File f is never actually used? RM 2022/02/17
+            f = resource_filename(Requirement.parse(  # noqa F841
                 "molSimplify"), "molSimplify/icons/geoms/" + t + ".png")
             self.dcoordg.addItem(QIcon(t), t)
         self.dcoordg.setIconSize(QSize(60, 60))
@@ -2442,7 +2436,7 @@ class mGUI():
         com = newglobs.multiwfn
         tt = mybash(com + '< input1')
         os.remove('input1')
-        if not 'Multifunctional Wavefunction Analyzer' in tt:
+        if 'Multifunctional Wavefunction Analyzer' not in tt:
             self.pch.setDisabled(True)
             self.pwfnav.setDisabled(True)
             self.pcub.setDisabled(True)

@@ -5,12 +5,6 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-import argparse
-import glob
-import sys
-import os
-import subprocess
-
 # Generates jobscripts for SGE queueing system
 #  @param args Namespace of arguments
 #  @param jobdirs Subdirectories for jobscript placement
@@ -26,14 +20,13 @@ def sgejobgen(args, jobdirs):
         else:
             jd.append(s)
     jobdirs = jd
-    gpus = '1'  # initialize gpus
     cpus = '1'  # initialize cpus
     # loop over job directories
     for job in jobdirs:
         # form jobscript identifier
         if args.jname:
             jobname = args.jname+str(args.jid)
-            #jobname = jobname[:8]
+            # jobname = jobname[:8]
         else:
             jobname = 'job'+str(args.jid)
         args.jid += 1
@@ -58,7 +51,6 @@ def sgejobgen(args, jobdirs):
                 output.write('#$ -q gpus\n')
                 if args.gpus:
                     output.write('#$ -l gpus='+args.gpus+'\n')
-                    gpus = args.gpus
                 else:
                     output.write('#$ -l gpus=1\n')
             else:
@@ -75,7 +67,6 @@ def sgejobgen(args, jobdirs):
                 cpus = args.cpus
             elif args.gpus:
                 output.write('#$ -l gpus='+args.gpus+'\n')
-                gpus = args.gpus
             else:
                 output.write('#$ -l gpus=1\n')
         if args.gpus:
@@ -154,7 +145,6 @@ def slurmjobgen(args, jobdirs):
         else:
             jd.append(s)
     jobdirs = jd
-    gpus = '1'  # initialize gpus
     cpus = '1'  # initialize cpus
     # loop over job directories
     for job in jobdirs:

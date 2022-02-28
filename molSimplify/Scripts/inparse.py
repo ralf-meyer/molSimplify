@@ -52,7 +52,7 @@ def checkinput(args, calctype="base"):
                     print(('WARNING: No oxidation state specified. Defaulting to ' +
                           globs.defaultoxstate[args.core[0].lower()]))
                     args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-                except:
+                except KeyError:
                     print('WARNING: No oxidation state specified. Defaulting to 2')
                     args.oxstate = '2'
             # check spin state (doesn't work for custom cores)
@@ -79,7 +79,7 @@ def checkinput(args, calctype="base"):
                         'WARNING: No spin multiplicity specified. Defaulting to singlet (1)')
                 args.spin = defaultspinstate
 
-             # check coordination number and geometry from ligands if given
+            # check coordination number and geometry from ligands if given
             if (not args.coord) and (not args.geometry) and args.lig:
                 if not args.gui:
                     # calculate occurrences, denticities etc for all ligands
@@ -157,7 +157,7 @@ def checkinput(args, calctype="base"):
                 else:
                     try:
                         args.coord = coords[geomnames.index(args.geometry)]
-                    except:
+                    except ValueError:
                         args.coord = coords[geomshorts.index(args.geometry)]
                     print((
                         'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
@@ -170,7 +170,7 @@ def checkinput(args, calctype="base"):
                     args.ligocc.append(0)
     elif calctype == "tsgen":
         # load substrate for reference
-        print(args.substrate[0],0, args.subcatoms)
+        print(args.substrate[0], 0, args.subcatoms)
         sub, subcatoms, emsg = substr_load(
             args.substrate[0], 0, args.subcatoms)
         # check core
@@ -187,7 +187,7 @@ def checkinput(args, calctype="base"):
                     print(('WARNING: No oxidation state specified. Defaulting to ' +
                           globs.defaultoxstate[args.core[0].lower()]))
                     args.oxstate = globs.defaultoxstate[args.core[0].lower()]
-                except:
+                except KeyError:
                     print('WARNING: No oxidation state specified. Defaulting to 2')
                     args.oxstate = '2'
             # check spin state (doesn't work for custom cores)
@@ -302,7 +302,7 @@ def checkinput(args, calctype="base"):
                 else:
                     try:
                         args.coord = coords[geomnames.index(args.geometry)]
-                    except:
+                    except ValueError:
                         args.coord = coords[geomshorts.index(args.geometry)]
                     print((
                         'WARNING: No coordination number specified. Defaulting to '+str(args.coord)))
@@ -385,7 +385,6 @@ def is_number(s):
 
 
 def cleaninput(args):
-    globs = globalvars()
     # check ligands
     if args.lig:
         ls = []
@@ -476,7 +475,7 @@ def cleaninput(args):
     if not args.keepHs:
         args.keepHs = [keepHs_default]
     if args.keepHs and args.lig:
-        while len(args.keepHs) < len(args.lig): # user should specify as many booleans for keepHs as there are kinds of ligands if she wants to avoid default assignment
+        while len(args.keepHs) < len(args.lig):  # user should specify as many booleans for keepHs as there are kinds of ligands if she wants to avoid default assignment
             args.keepHs.append(keepHs_default)
         for i, s in enumerate(args.keepHs):
             if args.keepHs[i].lower() != 'auto':
@@ -487,9 +486,6 @@ def cleaninput(args):
         args.ff = False
     # if FF opt is desired, parse FF choice
     else:
-        b = False
-        a = False
-        e = False
         opts = args.ffoption
         if 'ba' in opts[0].lower():
             args.ffoption = 'ba'
@@ -555,15 +551,15 @@ def parseinputfile(args, inputfile_str=None):
         line = line.replace('\n', '')
         if not li.startswith("#") and len(li) > 0:  # ignore comments/empty lines
             # split arguments on whitespace, commas (this breaks smarts)
-            l = [_f for _f in re.split(' |\t|,|&', li) if _f]
+            l = [_f for _f in re.split(' |\t|,|&', li) if _f]  # noqa: E741
             # parse general arguments
             if (l[0] == '-core' and len(l[1:]) > 0):
                 args.core = [ll for ll in l[1:]]
             if (l[0] == '-ccatoms' and len(l[1:]) > 0):
                 args.ccatoms = []
-                l = line.split('ccatoms', 1)[1]
-                l = l.strip(' ')
-                l = l.split(',')
+                l = line.split('ccatoms', 1)[1]  # noqa: E741
+                l = l.strip(' ')  # noqa: E741
+                l = l.split(',')  # noqa: E741
                 args.ccatoms = [int(ll)-1 for ll in l]
             if (l[0] == '-rundir'):
                 set_rundir = True
@@ -590,11 +586,11 @@ def parseinputfile(args, inputfile_str=None):
                     args.jobdirblank = True
             ### parse structure generation arguments ###
             if (l[0] == '-bind' and len(l[1:]) > 0):
-                l = [_f for _f in re.split(' |,|\t', line) if _f]
+                l = [_f for _f in re.split(' |,|\t', line) if _f]  # noqa: E741
                 # discard comments
                 for ibind, lbind in enumerate(l):
                     if lbind == '#':
-                        l = l[:ibind]
+                        l = l[:ibind]  # noqa: E741
                         break
                 args.bind = l[1]
             if (l[0] == '-nbind' and len(l[1:]) > 0):
@@ -666,7 +662,7 @@ def parseinputfile(args, inputfile_str=None):
                 args.ff = l[1].lower()
             if (l[0] == '-ffoption' and len(l[1:]) > 0):
                 args.ffoption = l[1:]
-                #print('setting ffoption ' + str(args.ffoption))
+                # print('setting ffoption ' + str(args.ffoption))
             if (l[0] == '-ff_final_opt' and len(l[1:]) > 0):
                 args.ff_final_opt = l[1].lower()
             if (l[0] == '-place' and len(l[1:]) > 0):
@@ -678,9 +674,9 @@ def parseinputfile(args, inputfile_str=None):
                     args.sminame = l[1:]
             if '-smicat' in line:
                 args.smicat = []
-                l = line.split('smicat', 1)[1]
-                l = l.replace(' ', '')
-                l = l.split('],[')
+                l = line.split('smicat', 1)[1]  # noqa: E741
+                l = l.replace(' ', '')  # noqa: E741
+                l = l.split('],[')  # noqa: E741
                 for smicats in l:
                     smicats = smicats.strip('[]')
                     smicats = smicats.split(',')
@@ -691,7 +687,7 @@ def parseinputfile(args, inputfile_str=None):
                                 lloc.append(int(ll)-1)
                             else:
                                 lloc.append(ll.lower())
-                        except:
+                        except ValueError:
                             print(('ERROR: smicat processing failed at ' + str(ll)))
                             print(
                                 'Please use integers or  "pi" and divide by smiles ligand using [],[]')
@@ -701,14 +697,14 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-nconfs' and len(l[1:]) > 0):
                 args.nconfs = l[1]
             # if (l[0]=='-maxconfs' and len(l[1:]) > 0):
-                #args.maxconfs = l[1]
+                # args.maxconfs = l[1]
             if (l[0] == '-scoreconfs'):
                 args.scoreconfs = True
             if '-pangles' in line:
                 args.pangles = []
-                l = [_f for _f in line.split('pangles', 1)[1] if _f]
-                l = l.replace(' ', '')
-                l = re.split(',|\t|&|\n', l)
+                l = [_f for _f in line.split('pangles', 1)[1] if _f]  # noqa: E741
+                l = l.replace(' ', '')  # noqa: E741
+                l = re.split(',|\t|&|\n', l)  # noqa: E741
                 for ll in l:
                     args.pangles.append(
                         ll) if ll != '' else args.pangles.append(False)
@@ -730,7 +726,7 @@ def parseinputfile(args, inputfile_str=None):
                 local_list = list()
                 if not isinstance(list_to_parse, str):
                     for decor in list_to_parse:
-                        #print('correcting string')
+                        # print('correcting string')
                         decor = str(decor).strip().strip('[]').split(',')
                         # print(decor)
                         local_list = local_list + [str(i) for i in decor]
@@ -898,11 +894,11 @@ def parseinputfile(args, inputfile_str=None):
                 args.dbvdent = l[1]
             if (l[0] == '-dbvconns'):
                 ll = [x for x in l[1:]]
-                #ll = filter(None,re.split(' |,|\t',l[1]))
+                # ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvconns = ll
             if (l[0] == '-dbvhyb'):
                 ll = [x for x in l[1:]]
-                #ll = filter(None,re.split(' |,|\t',l[1]))
+                # ll = filter(None,re.split(' |,|\t',l[1]))
                 args.dbvhyb = ll
             if (l[0] == '-dbvlinks'):
                 args.dbvlinks = l[1]
@@ -984,7 +980,7 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-freeze'):  # 7
                 try:
                     args.freeze = int(l[1].strip('(){}<>[],.'))
-                except:
+                except ValueError:
                     args.freeze = True
             if (l[0] == '-debug'):  # 8
                 args.debug = True
@@ -1071,14 +1067,13 @@ def parseinputfile(args, inputfile_str=None):
             if (l[0] == '-max_descriptors'):
                 args.max_descriptors = [str(i) for i in l[1:]]
     if not set_rundir:
-        args.rundir = os.path.join(os.path.abspath('.'),'Runs')
+        args.rundir = os.path.join(os.path.abspath('.'), 'Runs')
 # Parses command line arguments and prints help information
 #  @param parser Parser object
 #  @return Namespace of arguments
 
 
 def parseall(parser):
-    globs = globalvars()
     parser.add_argument("-i", help="input file")
     # hidden (non-user) arguments for GUI
     parser.add_argument("-rprompt", help=argparse.SUPPRESS,
@@ -1123,9 +1118,9 @@ def parseinputs_basic(*p):
     parser.add_argument("-lig", help="ligands to be included in complex")
     parser.add_argument(
         "-ligocc", help="number of corresponding ligands", action="store_true")  # e.g. 1,2,1
-    parser.add_argument("-spin",help="Spin multiplicity (e.g., 1 for singlet)")
-    parser.add_argument("-spinmultiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
-    parser.add_argument("-multiplicity",help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spin", help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-spinmultiplicity", help="Spin multiplicity (e.g., 1 for singlet)")
+    parser.add_argument("-multiplicity", help="Spin multiplicity (e.g., 1 for singlet)")
     # specified in cleaninput
     parser.add_argument(
         "-keepHs", help="force keep hydrogens, default auto for each ligand")
@@ -1164,7 +1159,7 @@ def parseinputs_advanced(*p):
         "-nconfs", help="Number of conformers to generate for multidentate smiles ligands. Default 1.", default='1')
     parser.add_argument(
         "-scoreconfs", help="Attempt to filter out identical conformers and rank them by rmsd to the desired template, default false", default=False)
-    #parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
+    # parser.add_argument("-maxconfs", help="Stop generation after maxconfs unique conformers or nconfs conformers have been generated, whichever comes first, default infinite", default=10000)
     parser.add_argument(
         "-charge", help="Net complex charge. Recommended NOT to specify, by default this is calculated from the metal oxidation state and ligand charges.")
     parser.add_argument(
@@ -1623,10 +1618,12 @@ def parseinputs_naming(*p):
         parser.parse_args(namespace=args)
     return 0
 
+
 def deserialize_json(filein):
     with open(filein, "r") as fo:
         args_dict = yaml.safe_load(fo)
     return args_dict
+
 
 def args_parser_retrain():
     parser = argparse.ArgumentParser()
@@ -1636,4 +1633,3 @@ def args_parser_retrain():
     parser.add_argument('-infile')
     args = parser.parse_args()
     return args
-

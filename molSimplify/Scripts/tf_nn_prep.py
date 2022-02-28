@@ -118,24 +118,20 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print(('occs in function  ' + str(occs)))
         print(('tcats in function  ' + str(tcats)))
 
-    unique_ligands = []
     axial_ind_list = []
     equatorial_ind_list = []
     axial_ligs = []
     equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
-    eq_ligs = []
     eq_tcat = False
     ax_tcat = False
-    triple_bidentate = False
     pentadentate = False
     ax_occs = []
     eq_occs = []
     valid = True
     if (set(dents) == set([2])):
         print('triple bidentate case')
-        triple_bidentate = True
         unique_ligs = []
         ucats = []
         unique_dict = {}
@@ -146,7 +142,6 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             this_bat = batlist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
-            this_occs = occs[i]
             # mulitple points
             if not (this_lig in unique_ligs):
                 unique_ligs.append(this_lig)
@@ -397,7 +392,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         if catalysis:
             valid = False
     if (not valid) and (not catalysis):
-        ANN_reason = 'found incorrect ligand symmetry' # or, an invalid metal, oxidation state, spin state combination was used
+        ANN_reason = 'found incorrect ligand symmetry'  # or, an invalid metal, oxidation state, spin state combination was used
     elif not valid and catalysis:
         if args.debug:
             print('tf_nn detects catalytic')
@@ -534,7 +529,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                                "sc_label_trust": lse_trust(sc_lse)})
 
         # build RACs without geo
-        con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(
             this_complex, custom_ligand_dict, ox_modifier)
 
@@ -550,7 +544,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange) / 100  # if given as %
                 elif float(args.exchange) <= 1:
                     alpha = float(args.exchange)
-            except:
+            except ValueError:
                 print('cannot cast exchange argument as a float, using 20%')
         descriptor_names += ['alpha']
         descriptors += [alpha]
@@ -774,7 +768,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if catalysis:
         print('-----In Catalysis Mode-----')
         # build RACs without geo
-        con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(
             this_complex, custom_ligand_dict, ox_modifier)
         # get alpha
@@ -785,8 +778,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange) * 100  # if given as %
                 elif float(args.exchange) >= 1:
                     alpha = float(args.exchange)
-            except:
-                print('cannot case exchange argument as a float, using 20%')
+            except ValueError:
+                print('cannot cast exchange argument to float, using 20%')
         descriptor_names += ['alpha', 'ox', 'spin', 'charge_lig']
         descriptors += [alpha, ox, spin, net_lig_charge]
         if args.debug:
@@ -801,7 +794,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             current_time = time.time()
             split_ANN_time = current_time - last_time
             last_time = current_time
-        oxo_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo",latent_oxo,args.debug)
+        oxo_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo", latent_oxo, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -820,7 +813,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(
                 ('HAT ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds'))
 
-        hat_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("hat",latent_hat,args.debug)
+        hat_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("hat", latent_hat, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -840,7 +833,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('oxo20 ANN took ' +
                   "{0:.2f}".format(oxo20_ANN_time) + ' seconds'))
         # oxo20_dist = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
-        oxo20_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
+        oxo20_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo20", latent_oxo20, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -861,7 +854,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('homo_empty ANN took ' +
                   "{0:.2f}".format(homo_empty_ANN_time) + ' seconds'))
         # homo_empty_dist = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
-        homo_empty_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
+        homo_empty_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("homo_empty", latent_homo_empty, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -984,7 +977,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     if False:
         # test Euclidean norm to training data distance
-        train_dist, best_row = find_eu_dist(nn_excitation)
+        train_dist, best_row = find_eu_dist(nn_excitation)  # noqa: F821 (line unreachable)
         ANN_trust = max(0.01, 1.0 - train_dist)
 
         ANN_attributes.update({'ANN_closest_train': best_row})
@@ -994,7 +987,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         # use ANN to predict fucntional sensitivty
         HFX_slope = 0
-        HFX_slope = get_slope(slope_excitation)
+        HFX_slope = get_slope(slope_excitation)  # noqa: F821 (line unreachable)
         print(('Predicted HFX exchange sensitivity is : ' +
                "{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX'))
         ANN_attributes.update({'ANN_slope': HFX_slope})

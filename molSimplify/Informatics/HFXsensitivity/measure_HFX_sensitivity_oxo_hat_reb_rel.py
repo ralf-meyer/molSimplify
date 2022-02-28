@@ -27,7 +27,7 @@ requiring at least 4 points, and prioritizing lines with R2 of 0.99.
 def measure_sensitivity(path_to_csv, path_to_write=False, R2_cutoff=0.99, CV_tolerance=5, num_points=4):
     if path_to_csv[0] != '/':
         path_to_csv = os.getcwd()+'/'+path_to_csv
-    if path_to_write == False:
+    if path_to_write is False:
         path_to_write = os.getcwd()+'/'+os.path.split(path_to_csv)[1].replace('.csv','')
     raw_data = pd.read_csv(path_to_csv)
     raw_data = raw_data.sort_values(by=['name'])
@@ -333,7 +333,7 @@ def slope_sign_check(X, y, name, prop, num_points):
     diff_points = abs(neg_count-pos_count)
     remove_counter = 0
     if ((neg_count == pos_count) or (diff_points>=1 and len(X)<num_points) or 
-        ((len(X)-num_points-min(neg_count,pos_count)-1)<0 and (not min(neg_count,pos_count)<=1)) or ((sign_flag>0.4) and (sign_flag<0.6)) or (num_changes_first>0 and num_changes_second>0)):
+            ((len(X)-num_points-min(neg_count,pos_count)-1)<0 and (not min(neg_count,pos_count)<=1)) or ((sign_flag>0.4) and (sign_flag<0.6)) or (num_changes_first>0 and num_changes_second>0)):
         for j, val in enumerate(elim_points_X):
             removed_dict_list.append({'name':name,'alpha':int(np.squeeze(val)), str(prop):float(np.squeeze(elim_points_y[j])),'reason':'identified_slope_sign_change','elim_type':'point'})
         return kept_points_X, kept_points_y, removed_dict_list

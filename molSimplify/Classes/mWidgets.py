@@ -13,7 +13,7 @@ try:
     from PyQt5.QtGui import QFont, QFontMetrics, QPixmap
     from PyQt5.QtCore import Qt, QSortFilterProxyModel
     from PyQt5.QtSvg import QSvgWidget
-except:
+except ImportError:
     pass
 import imghdr
 import struct
