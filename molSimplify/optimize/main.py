@@ -114,8 +114,14 @@ def main():
     run_preprocessing(args)
     if args.get('guess_hessian', False):
         geometric_args['hessian'] = 'file:./hessian.txt'
-    # Call external program
-    geometric.optimize.run_optimizer(**geometric_args)
+
+    opt_method = args.get('optimizer', 'geometric')
+    if opt_method == 'geometric':
+        # Call external program
+        geometric.optimize.run_optimizer(**geometric_args)
+    else:
+        raise NotImplementedError(f'Optimization method {opt_method} not '
+                                  'implemented.')
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import ase.io
 import ase.constraints
 import pytest
 import numpy as np
-from molSimplify.optimize.optimize import run_preoptimization
+from molSimplify.optimize.main import run_preoptimization
 from molSimplify.optimize.calculators import _available_methods
 from pkg_resources import resource_filename, Requirement
 

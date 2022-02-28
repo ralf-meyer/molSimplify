@@ -1,4 +1,4 @@
-from molSimplify.optimize.optimize import read_molecule
+from molSimplify.optimize.main import read_molecule
 from pkg_resources import resource_filename, Requirement
 
 
