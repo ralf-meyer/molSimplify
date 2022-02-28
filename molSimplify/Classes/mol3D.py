@@ -353,8 +353,7 @@ class mol3D:
         """        
 
         if not (isinstance(idx1, int) and isinstance(idx2, int) and isinstance(bond_type, int)):
-            print('Incorrect input!')
-            return 0  # Error handling. The user gave input of the wrong type to the add_bond function.
+            raise TypeError('Incorrect input!')  # Error handling. The user gave input of the wrong type to the add_bond function.
 
         # Keys in bo_dict must be sorted tuples, where the first index is smaller than the second.
         if idx1 < idx2:
@@ -362,8 +361,7 @@ class mol3D:
         elif idx2 < idx1:
             self.bo_dict[(idx2, idx1)] = bond_type
         else:
-            print('Indices should be different!')
-            return 0  # can't have an atom bond to itself
+            raise IndexError('Indices should be different!')  # can't have an atom bond to itself
 
         # Adjusting the graph as well.
         self.graph[idx1][idx2] = float(bond_type)
@@ -937,8 +935,8 @@ class mol3D:
         if atomIdx < 0:
             atomIdx = self.natoms + atomIdx
         if atomIdx >= self.natoms:
-            raise Exception('mol3D object cannot delete atom '+str(atomIdx) +
-                            ' because it only has '+str(self.natoms)+' atoms!')
+            raise IndexError('mol3D object cannot delete atom '+str(atomIdx) +
+                             ' because it only has '+str(self.natoms)+' atoms!')
         if self.getAtom(atomIdx).sym == 'X':
             self.atoms[atomIdx].sym = 'Fe'  # Switch to Iron temporarily
             self.atoms[atomIdx].name = 'Fe'
@@ -972,8 +970,8 @@ class mol3D:
 
         for i in Alist:
             if i > self.natoms:
-                raise Exception('mol3D object cannot delete atom '+str(i) +
-                                ' because it only has '+str(self.natoms)+' atoms!')
+                raise IndexError('mol3D object cannot delete atom '+str(i) +
+                                 ' because it only has '+str(self.natoms)+' atoms!')
         # convert negative indexes to positive indexes
         Alist = [self.natoms+i if i < 0 else i for i in Alist]
         for atomIdx in Alist:

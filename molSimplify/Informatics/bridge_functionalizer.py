@@ -1,10 +1,12 @@
 import json
 import ast
 import sys, os
-from rdkit import Chem
-from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 import pandas as pd
 
+### Below is RDKit dependency that this code uses
+# from rdkit import Chem
+# from rdkit.Chem.rdMolDescriptors import CalcMolFormula
+###
 
 '''
 functional groups considered
