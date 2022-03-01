@@ -1,12 +1,10 @@
 channels:
      - hjkgroup
+     - schrodinger
      - conda-forge
      - anaconda
      - defaults
 dependencies:
      - openbabel=2.4.1
      - numpy==1.16.4
-     - scikit-learn=0.22.2.post1
-     - keras=2.3.1
-     - beautifulsoup4=4.7.1
-     - pandas=0.24.2
+     - pymol
