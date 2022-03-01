@@ -5,10 +5,5 @@ channels:
      - anaconda
      - defaults
 dependencies:
-     - openbabel
-     - numpy
-     - scikit-learn
-     - keras
-     - beautifulsoup4
-     - pandas
-     - pymol
+     - scipy
+     - pyyaml
