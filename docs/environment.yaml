@@ -1,6 +1,5 @@
 channels:
      - hjkgroup
-     - schrodinger
      - conda-forge
      - anaconda
      - defaults
@@ -11,4 +10,3 @@ dependencies:
      - keras=2.3.1
      - beautifulsoup4=4.7.1
      - pandas=0.24.2
-     - pymol
