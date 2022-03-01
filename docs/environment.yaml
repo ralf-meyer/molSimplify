@@ -1,10 +1,9 @@
 channels:
      - hjkgroup
-     - schrodinger
-     - conda-forge
-     - anaconda
      - defaults
 dependencies:
      - openbabel
-     - scipy
      - pyyaml
+     - scipy
+     - scikit-learn
+     - beautifulsoup4
