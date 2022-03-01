@@ -1,7 +1,11 @@
-from molSimplify.optimize.coordinates import (Distance, InverseDistance,
-                                              Angle, Dihedral, LinearAngle)
+import pytest
 import numpy as np
 import numdifftools as nd
+from molSimplify.optimize.coordinates import (Distance, InverseDistance,
+                                              Angle, Dihedral, LinearAngle,
+                                              OctahedralA1g, OctahedralEg1,
+                                              OctahedralEg2, OctahedralT1u1,
+                                              OctahedralT1u2, OctahedralT1u3)
 
 
 def test_distances(atol=1e-10):
@@ -98,3 +102,22 @@ def test_primitive_derivatives(atol=1e-10):
     w = Dihedral(1, 0, 2, 4)
     dw_ref = nd.Gradient(lambda x: w.value(x.reshape((-1, 3))))
     np.testing.assert_allclose(w.derivative(xyzs), dw_ref(xyzs), atol=atol)
+
+
+@pytest.mark.parametrize('prim', [OctahedralA1g, OctahedralEg1,
+                                  OctahedralEg2, OctahedralT1u1,
+                                  OctahedralT1u2, OctahedralT1u3])
+def test_octahedral_derivatives(prim, atol=1e-10):
+    r = 1.2
+    xyzs = np.array([[0., 0., 0.],
+                     [r, 0., 0.],
+                     [0., r, 0.],
+                     [-r, 0., 0.],
+                     [0., -r, 0.],
+                     [0., 0., r],
+                     [0., 0., -r]])
+
+    q = prim(0, 1, 2, 3, 4, 5, 6)
+    dq_ref = nd.Gradient(lambda x: q.value(x.reshape((-1, 3))), step=1e-4)
+    np.testing.assert_allclose(q.derivative(xyzs), dq_ref(xyzs),
+                               atol=atol)

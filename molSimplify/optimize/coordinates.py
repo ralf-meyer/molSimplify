@@ -253,19 +253,111 @@ class Improper(Dihedral):
 
 
 class Octahedral(Primitive):
+    """
+    Base class for the 15 octahedral coordinates.
+    Assumes the following arrangement of atoms:
+            a5  a4
+            | /
+            |/
+    a1 - - a0 - - a3
+           /|
+          / |
+        a2  a6
+    """
 
     def __init__(self, a0, a1, a2, a3, a4, a5, a6):
-        """ Geometry:
-               a5  a4
-                | /
-                |/
-        a1 - - a0 - - a3
-               /|
-              / |
-            a2  a6
-        """
         self.a0, self.a1, self.a2, self.a3, self.a4, self.a5, self.a6 = (
             a0, a1, a2, a3, a4, a5, a6)
+        self.distances = [Distance(a0, ai) for ai in [a1, a2, a3, a4, a5, a6]]
+
+
+class OctahedralA1g(Octahedral):
+    """Breathing mode"""
+
+    def value(self, xyzs):
+        return sum([d.value(xyzs) for d in self.distances])
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        for d in self.distances:
+            dq += d.derivative(xyzs)
+        return dq
+
+
+class OctahedralEg1(Octahedral):
+
+    def value(self, xyzs):
+        q = (self.distances[0].value(xyzs)
+             + self.distances[1].value(xyzs)
+             + self.distances[2].value(xyzs)
+             + self.distances[3].value(xyzs)
+             - 2 * self.distances[4].value(xyzs)
+             - 2 * self.distances[5].value(xyzs))
+        return q
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        dq += self.distances[0].derivative(xyzs)
+        dq += self.distances[1].derivative(xyzs)
+        dq += self.distances[2].derivative(xyzs)
+        dq += self.distances[3].derivative(xyzs)
+        dq += -2 * self.distances[4].derivative(xyzs)
+        dq += -2 * self.distances[5].derivative(xyzs)
+        return dq
+
+
+class OctahedralEg2(Octahedral):
+
+    def value(self, xyzs):
+        q = (self.distances[0].value(xyzs)
+             - self.distances[1].value(xyzs)
+             + self.distances[2].value(xyzs)
+             - self.distances[3].value(xyzs))
+        return q
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        dq += self.distances[0].derivative(xyzs)
+        dq += -self.distances[1].derivative(xyzs)
+        dq += self.distances[2].derivative(xyzs)
+        dq += -self.distances[3].derivative(xyzs)
+        return dq
+
+
+class OctahedralT1u1(Octahedral):
+
+    def value(self, xyzs):
+        return self.distances[0].value(xyzs) - self.distances[2].value(xyzs)
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        dq += self.distances[0].derivative(xyzs)
+        dq += -self.distances[2].derivative(xyzs)
+        return dq
+
+
+class OctahedralT1u2(Octahedral):
+
+    def value(self, xyzs):
+        return self.distances[1].value(xyzs) - self.distances[3].value(xyzs)
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        dq += self.distances[1].derivative(xyzs)
+        dq += -self.distances[3].derivative(xyzs)
+        return dq
+
+
+class OctahedralT1u3(Octahedral):
+
+    def value(self, xyzs):
+        return self.distances[4].value(xyzs) - self.distances[5].value(xyzs)
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        dq += self.distances[4].derivative(xyzs)
+        dq += -self.distances[5].derivative(xyzs)
+        return dq
 
 
 class InternalCoordinates():
