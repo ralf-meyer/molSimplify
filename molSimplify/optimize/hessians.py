@@ -24,6 +24,8 @@ def compute_guess_hessian(atoms, method):
         return H
     elif method.lower() == 'schlegel':
         return schlegel_hessian(atoms)
+    elif method.lower() == 'fischer_almloef':
+        return fischer_almloef_hessian(atoms)
 
 
 def schlegel_hessian(atoms, threshold=1.35):
