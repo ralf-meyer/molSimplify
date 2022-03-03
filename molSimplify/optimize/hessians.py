@@ -1,6 +1,7 @@
 import os
 import subprocess
 import tempfile
+import logging
 import numpy as np
 import ase.io
 import ase.units
@@ -11,6 +12,9 @@ from molSimplify.optimize.connectivity import (find_connectivity,
                                                get_primitives)
 from molSimplify.optimize.coordinates import (Distance, Angle, LinearAngle,
                                               Dihedral, Improper)
+
+
+logger = logging.getLogger(__name__)
 
 
 def compute_guess_hessian(atoms, method):
@@ -26,6 +30,8 @@ def compute_guess_hessian(atoms, method):
         return schlegel_hessian(atoms)
     elif method.lower() == 'fischer_almloef':
         return fischer_almloef_hessian(atoms)
+    else:
+        raise NotImplementedError(f'Unknown guess_hessian {method}')
 
 
 def schlegel_hessian(atoms, threshold=1.35):
@@ -244,19 +250,19 @@ def numerical_hessian(atoms, step=1e-5, symmetrize=True):
     return H
 
 
-def filter_hessian(H, thresh=1.1e-5):
+def filter_hessian(H, thresh=1.e-4):
     """GeomeTRIC resets calculations if Hessian eigenvalues below
     a threshold of 1e-5 are encountered. This method is used to
     construct a new Hessian matrix where all eigenvalues smaller
     than the threshold are set exactly to the threshold value
-    which by default is slightly above geomeTRICs cutoff.
+    which by default is an order of magnitude above geomeTRICs cutoff.
 
     Parameters
     ----------
     H : np.array
         input Hessian
     thresh : float
-        filter threshold. Default 1.1e-5
+        filter threshold. Default 1.e-4
 
     Returns
     -------
@@ -264,6 +270,8 @@ def filter_hessian(H, thresh=1.1e-5):
         filtered Hessian
     """
     vals, vecs = np.linalg.eigh(H)
+    logger.debug(f'Hessian eigenvalues:\n{vals}')
+    logger.info(f'Filtering {np.sum(vals < thresh)} Hessian eigenvalues')
     vals[vals < thresh] = thresh
     H = np.einsum('ji,i,ki->jk', vecs, vals, vecs)
     return H
