@@ -22,7 +22,7 @@ setup(name='molSimplify',
       setup_requires=['pytest-runner'],  # this may result some package conflict in local conda build. comment it out if needed.
 =======
               'jobmanager = molSimplify.job_manager.resub:main',
-              'molsimplify-optimize = molSimplify.optimize.optimize:main']
+              'molsimplify-optimize = molSimplify.optimize.main:main']
       },
       package_dir={'molSimplify': 'molSimplify'},
       package_data={
