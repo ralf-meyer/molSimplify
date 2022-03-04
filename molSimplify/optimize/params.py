@@ -8,6 +8,7 @@ def parse_args(*args):
                                         'Options for preprocessing steps.')
     preproc.add_argument('--preopt', type=str, help='')
     preproc.add_argument('--guess_hessian', type=str, help='')
+    preproc.add_argument('--hessian_thresh', type=str, help='')
     opt = parser.add_argument_group('optimization',
                                     'Options for the main geometry '
                                     'optimization procedure.')

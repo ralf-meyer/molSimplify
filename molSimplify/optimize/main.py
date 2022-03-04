@@ -97,7 +97,7 @@ def run_preprocessing(args):
         # Transform to Hartree/bohr^2 for geometric
         H = H * ase.units.Bohr**2/ase.units.Hartree
         # Filter small and negative eigenvalues
-        H = filter_hessian(H)
+        H = filter_hessian(H, thresh=args.get('hessian_thresh', 1e-4))
         np.savetxt('hessian.txt', H)
 
 
