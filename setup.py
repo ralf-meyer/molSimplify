@@ -32,9 +32,13 @@ setup(name='molSimplify',
       },
       data_files=[("molSimplify", ["molSimplify/Data/ML.dat"])],
       install_requires=['numpy', 'scipy', 'scikit-learn', 'pandas', 'keras',
-                        'tensorflow', 'pyyaml', 'ase', 'numdifftools'],
+                        'tensorflow', 'pyyaml', 'ase'],
       setup_requires=['pytest-runner'], # this may result some package conflict in local conda build. comment it out if needed.
+<<<<<<< HEAD
 >>>>>>> e11021d (Add molsimplify-optimize cmdl script)
       tests_require=['pytest'],
+=======
+      tests_require=['pytest', 'numdifftools'],
+>>>>>>> 674c6d0 (Custom implementation of numerical_hessian)
       include_package_data=True
       )

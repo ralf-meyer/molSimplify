@@ -11,12 +11,22 @@ def compute_guess_hessian(atoms, guess_hessian):
 
 
 def numerical_hessian(atoms, step=1e-5, symmetrize=True):
+    N = len(atoms)
     x0 = atoms.get_positions()
+    H = np.zeros((3*N, 3*N))
 
-    def fun(x):
-        atoms.set_positions(x.reshape(-1, 3))
-        return -atoms.get_forces().flatten()
-    H = nd.Jacobian(fun, step=step)(x0.flatten())
+    for i in range(N):
+        for c in range(3):
+            x = x0.copy()
+            x[i, c] += step
+            atoms.set_positions(x)
+            g_plus = -atoms.get_forces().flatten()
+
+            x = x0.copy()
+            x[i, c] -= step
+            atoms.set_positions(x)
+            g_minus = -atoms.get_forces().flatten()
+            H[3*i + c, :] = (g_plus - g_minus)/(2*step)
     atoms.set_positions(x0)
     if symmetrize:
         return 0.5*(H + H.T)

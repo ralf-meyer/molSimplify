@@ -13,9 +13,9 @@ def ref_hessian(atoms, step=None):
 
     def fun(x):
         atoms.set_positions(x.reshape(-1, 3))
-        return atoms.get_potential_energy()
-    atoms.set_positions(x0)
-    return nd.Hessian(fun, step=step)(x0.flatten())
+        return -atoms.get_forces().flatten()
+    H = nd.Jacobian(fun, step=step)(x0.flatten())
+    return 0.5*(H + H.T)
 
 
 @pytest.mark.parametrize('method', _available_calculators)
