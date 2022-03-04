@@ -10,7 +10,7 @@ from xtb.ase.calculator import XTB
 from molSimplify.optimize.calculators import (_openbabel_methods,
                                               get_calculator)
 from molSimplify.optimize.hessians import (filter_hessian,
-                                           compute_guess_hessian,
+                                           compute_hessian_guess,
                                            numerical_hessian,
                                            schlegel_hessian)
 
@@ -55,7 +55,7 @@ def test_xtb_hessian(system):
     atoms = ase.build.molecule(system)
     atoms.rotate(15, (1, 0, 0))
     x0 = atoms.get_positions()
-    H = compute_guess_hessian(atoms, 'xtb')
+    H = compute_hessian_guess(atoms, 'xtb')
     np.testing.assert_allclose(atoms.get_positions(), x0)
     np.testing.assert_allclose(H, H.T, atol=1e-8)
     atoms.calc = XTB(method='GFN2-xTB', accuracy=0.3)
@@ -84,7 +84,7 @@ def _test_Fe_CO_6(method):
                             charges=[2]+[0, 0]*6)
     x0 = atoms.get_positions()
     atoms.calc = get_calculator(method)
-    H = compute_guess_hessian(atoms, method)
+    H = compute_hessian_guess(atoms, method)
     np.testing.assert_allclose(atoms.get_positions(), x0)
     np.testing.assert_allclose(H, H.T, atol=1e-8)
     H_ref = num_hessian(atoms, step=1e-5)

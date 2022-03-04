@@ -9,7 +9,7 @@ import numpy as np
 import pathlib
 from molSimplify.optimize.calculators import get_calculator
 from molSimplify.optimize.params import parse_args
-from molSimplify.optimize.hessians import compute_guess_hessian, filter_hessian
+from molSimplify.optimize.hessians import compute_hessian_guess, filter_hessian
 from molSimplify.optimize.connectivity import find_connectivity
 from molSimplify.Classes.globalvars import metalslist
 
@@ -91,9 +91,9 @@ def run_preprocessing(args):
         ase.io.write(xyz_path, atoms, plain=True)
         # Remove constraints
         atoms.set_constraint()
-    guess_hessian = args.get('guess_hessian', False)
-    if guess_hessian:
-        H = compute_guess_hessian(atoms, guess_hessian)
+    hessian_guess = args.get('hessian_guess', False)
+    if hessian_guess:
+        H = compute_hessian_guess(atoms, hessian_guess)
         # Transform to Hartree/bohr^2 for geometric
         H = H * ase.units.Bohr**2/ase.units.Hartree
         # Filter small and negative eigenvalues
@@ -112,7 +112,7 @@ def main():
     args['input'] = geometric_args['input']
 
     run_preprocessing(args)
-    if args.get('guess_hessian', False):
+    if args.get('hessian_guess', False):
         geometric_args['hessian'] = 'file:./hessian.txt'
 
     opt_method = args.get('optimizer', 'geometric')
