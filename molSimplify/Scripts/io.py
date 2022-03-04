@@ -5,17 +5,21 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+import copy
+import random
+import re
+import shutil
 import glob
 import os
-import shutil
-import re
-import random
-import openbabel
-import copy
 import time
-from molSimplify.Classes.globalvars import globalvars, romans
-from molSimplify.Classes.mol3D import mol3D
+
+import openbabel
 from pkg_resources import resource_filename, Requirement
+
+from molSimplify.Classes.globalvars import (globalvars,
+                                            romans)
+from molSimplify.Classes.mol3D import mol3D
+
 
 # Print available geometries
 
@@ -126,7 +130,7 @@ def readdict_sub(fname):
         if (line[0] != '#') and line.strip():
             key = "".join([_f for _f in line.split(':')[0] if _f])
             val = "".join([_f for _f in line.split(':')[1] if _f])
-            vals = "".join([_f.strip() for _f in val.split(',') if _f])
+            vals = [_f.strip() for _f in val.split(',') if _f]
             vv = []
             for i, val in enumerate(vals):
                 vvs = ([_f for _f in val.split(' ') if _f])
@@ -377,7 +381,7 @@ def loadcdxml(cdxml):
     # try importing pybel
     try:
         import pybel
-    except ImportError:  # Why execept and then raise?
+    except ImportError:  # What is the purpose of excepting and then raising?
         raise
     fname = re.sub(r'.cdxml', '', cdxml)  # file name for the new xyz
     # check cdxml file for Dashed bonds
@@ -668,84 +672,6 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         sub.ident = 'substrate'
     return sub, subcatoms, emsg
 
-# ## Load substrate and convert to mol3D
-# #  @param usersubstrate Name of substrate
-# #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-# #  @return mol3D of substrate, error messages
-# def substr_load(usersubstrate,subcores=None):
-#     if subcores == None:
-#         subcores = getsubcores()
-#     globs = globalvars()
-#     if '~' in usersubstrate:
-#         homedir = os.path.expanduser("~")
-#         usersubstrate = usersubstrate.replace('~',homedir)
-#     emsg = False
-#     substrate = mol3D() # initialize core molecule
-#     ### check if core exists in dictionary
-#     if usersubstrate.lower() in subcores.keys():
-#         print('loading substrate from dictionary')
-#         dbentry = subcores[usersubstrate.lower()]
-#         # load substrate mol file (with hydrogens
-#         if globs.custom_path:
-#             fsubst = globs.custom_path + "/Substrates/" +dbentry[0]
-#         else:
-#             fsubst = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/" +dbentry[0])
-
-#         # check if substrate xyz/mol file exists
-#         if not glob.glob(fsubst):
-#             emsg ="We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
-#             print emsg
-#             return False,emsg
-#         if ('.xyz' in fsubst):
-#             substrate.OBMol = substrate.getOBMol(fsubst,'xyzf')
-#         elif ('.mol' in fsubst):
-#             substrate.OBMol = substrate.getOBMol(fsubst,'molf')
-#         elif ('.smi' in fsubst):
-#             substrate.OBMol = substrate.getOBMol(fsubst,'smif')
-#         substrate.ident = dbentry[1]
-#     ### load from file
-#     elif ('.mol' in usersubstrate or '.xyz' in usersubstrate or '.smi' in usersubstrate):
-#         if glob.glob(usersubstrate):
-#             ftype = usersubstrate.split('.')[-1]
-#             print('Substrate is a '+ftype+' file')
-#             # try and catch error if conversion doesn't work
-#             try:
-#                 substrate.OBMol = substrate.getOBMol(usersubstrate,ftype+'f') # convert from file
-#                 print('Substrate successfully converted to OBMol')
-#             except IOError:
-#                 emsg = 'Failed converting file ' +usersubstrate+' to molecule..Check your file.\n'
-#                 print emsg
-#                 return False,emsg
-#             substrate.ident = usersubstrate.split('.')[0]
-#             substrate.ident = substrate.ident.rsplit('/')[-1]
-#         else:
-#             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
-#             print emsg
-#             return False,emsg
-#     ### if not, try converting from SMILES
-#     else:
-#         # check for transition metals
-#         usersubstrate = checkTMsmiles(usersubstrate)
-#         # try and catch error if conversion doesn't work
-#         try:
-#             substrate.OBMol = substrate.getOBMol(usersubstrate,'smistring',True) # convert from smiles
-#             print('Substrate successfully interpreted as smiles')
-#         except IOError:
-#             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
-#             emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
-#             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
-#             print emsg
-#             return False,emsg
-#         substrate.cat = [0]
-#         substrate.denticity = 1
-#         substrate.ident = 'substrate'
-#     return substrate,emsg
-
-# Load ligand and convert to mol3D
-#  @param userligand Name of ligand
-#  @param licores Ligands dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-#  @return mol3D of ligand, error messages
-
 
 def lig_load(userligand, licores=None):
 
@@ -803,6 +729,7 @@ def lig_load(userligand, licores=None):
         else:
             lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
+        lig.convert2mol3D()
         lig.charge = lig.OBMol.GetTotalCharge()
         if 'pi' in dbentry[2]:
             lig.cat = [int(li) for li in dbentry[2][:-1]]

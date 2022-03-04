@@ -514,7 +514,7 @@ def core_load(usercore, mcores=None):
             core.OBMol = core.getOBMol(fcore, 'molf')
         elif ('.smi' in fcore):
             core.OBMol = core.getOBMol(fcore, 'smif')
-        core.cat = [int(li) for li in [_f for _f in dbentry[1] if _f]]
+        core.cat = [int(i) for i in [_f for _f in dbentry[1] if _f]]
         core.denticity = dbentry[2]
         core.ident = usercore
     # load from file
