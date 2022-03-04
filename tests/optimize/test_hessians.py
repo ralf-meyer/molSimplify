@@ -112,7 +112,7 @@ def test_schlegel_vs_geometric(tmpdir, system):
 
 def test_filter_hessian():
     H = np.diag([-1., 0., 1., 2., 3., 4.])
-    H = filter_hessian(H)
+    H = filter_hessian(H, thresh=1.1e-5)
     np.testing.assert_allclose(H, np.diag([1.1e-5, 1.1e-5, 1., 2., 3., 4.]))
 
     # Build random matrix with eigenvalue above 0.1
