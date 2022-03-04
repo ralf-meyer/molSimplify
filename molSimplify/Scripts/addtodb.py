@@ -5,8 +5,8 @@
 #  Modified by JP Janet and Aditya Nandy
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.molSimplify_io import (copy_to_custom_path, readdict,
-                                                lig_load, core_load, bind_load)
+from molSimplify.Scripts.io import (copy_to_custom_path, readdict,
+                                    lig_load, core_load, bind_load)
 from molSimplify.Classes.globalvars import globalvars
 import os
 import sys
