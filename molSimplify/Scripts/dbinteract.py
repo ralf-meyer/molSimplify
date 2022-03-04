@@ -20,7 +20,7 @@ from molSimplify.Classes.globalvars import (amassdict,
                                             glob,
                                             globalvars,
                                             mybash)
-from molSimplify.Scripts.molSimplify_io import (plugin_defs)
+from molSimplify.Scripts.io import plugin_defs
 
 
 def float_from_str(txt):

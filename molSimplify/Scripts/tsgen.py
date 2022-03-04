@@ -16,7 +16,7 @@ from molSimplify.Scripts.geometry import (alignPtoaxis,
                                           rotation_params,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.molSimplify_io import (getinputargs)
+from molSimplify.Scripts.io import getinputargs
 from molSimplify.Scripts.structgen import (PointTranslateSph,
                                            align_lig_centersym,
                                            check_rotate_linear_lig,

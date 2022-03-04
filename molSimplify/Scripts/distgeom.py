@@ -25,8 +25,7 @@ from molSimplify.Scripts.geometry import (distance,
                                           norm,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.molSimplify_io import (lig_load,
-                                                loadcoord)
+from molSimplify.Scripts.io import (lig_load, loadcoord)
 
 
 def CosRule(AB, BC, theta):

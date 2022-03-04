@@ -17,13 +17,8 @@ from molSimplify.Classes.globalvars import (defaultspins,
                                             metals_conv,
                                             romans,
                                             mtlsdlist)
-from molSimplify.Scripts.molSimplify_io import (getbinds,
-                                                getcores,
-                                                getgeoms,
-                                                getlicores,
-                                                getslicores,
-                                                printgeoms,
-                                                substr_load)
+from molSimplify.Scripts.io import (getbinds, getcores, getgeoms, getlicores,
+                                    getslicores, printgeoms, substr_load)
 
 
 # Checks input for correctness and uses defaults otherwise

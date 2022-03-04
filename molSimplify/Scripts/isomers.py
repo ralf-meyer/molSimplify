@@ -1,4 +1,4 @@
-from molSimplify.Scripts.molSimplify_io import getlicores, lig_load
+from molSimplify.Scripts.io import getlicores, lig_load
 from copy import copy, deepcopy
 
 # NOTE: -isomers does not currently support ligands with denticity > 2 or complexes with 3 bidentate molecules

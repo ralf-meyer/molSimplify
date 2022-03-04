@@ -16,12 +16,12 @@ import glob
 from molSimplify.Scripts.isomers import generateisomers
 from molSimplify.Scripts.jobgen import (sgejobgen,
                                         slurmjobgen)
-from molSimplify.Scripts.molSimplify_io import (core_load,
-                                                getlicores,
-                                                lig_load,
-                                                name_complex,
-                                                name_ts_complex,
-                                                substr_load)
+from molSimplify.Scripts.io import (core_load,
+                                    getlicores,
+                                    lig_load,
+                                    name_complex,
+                                    name_ts_complex,
+                                    substr_load)
 from molSimplify.Scripts.qcgen import (mlpgen,
                                        multigamgen,
                                        multimolcgen,
