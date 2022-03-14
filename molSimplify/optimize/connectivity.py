@@ -165,11 +165,14 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
                 r_aj = xyzs[aj, :] - xyzs[a, :]
                 r_ak = xyzs[ak, :] - xyzs[a, :]
                 n1 = np.cross(r_ai, r_aj)
-                n1 /= np.linalg.norm(n1)
+                if np.sum(n1**2) > 0:  # Linear cases lead to division by zero
+                    n1 /= np.linalg.norm(n1)
                 n2 = np.cross(r_aj, r_ak)
-                n2 /= np.linalg.norm(n2)
+                if np.sum(n2**2) > 0:  # Linear cases lead to division by zero
+                    n2 /= np.linalg.norm(n2)
                 n3 = np.cross(r_ak, r_ai)
-                n3 /= np.linalg.norm(n3)
+                if np.sum(n3**2) > 0:  # Linear cases lead to division by zero
+                    n3 /= np.linalg.norm(n3)
                 # Not sure if actually all three possible values need to be
                 # checked. For an actual planar case the angles are dependent
                 # since they add to 360 degrees.
