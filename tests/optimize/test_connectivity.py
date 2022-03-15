@@ -6,15 +6,14 @@ from molSimplify.optimize.connectivity import (find_connectivity,
                                                find_primitives)
 
 
-@pytest.mark.parametrize('system', g2_molecules)
-def test_connectivity(system):
+@pytest.mark.parametrize('name', g2_molecules.keys())
+def test_connectivity(name):
     # For some reason the current verion of geomeTRIC uses a covalent radius
     # of zero for Na. Therefore, Na containing molecules have to be skipped.
-    name = system['name']
     if 'Na' in name:
         return
-    atoms = system['atoms']
-    mol = system['mol']
+    atoms = g2_molecules[name]['atoms']
+    mol = g2_molecules[name]['mol']
     mol.build_topology()
     # geomeTRIC uses a threshold of 1.2 on the unsquared distances.
     # This correspondes to using 1.2^2 in the Billeter et al. alogrithm.
@@ -24,11 +23,10 @@ def test_connectivity(system):
     assert bonds == bonds_ref
 
 
-@pytest.mark.parametrize('system', g2_molecules)
-def test_find_primitives(system):
-    name = system['name']
-    atoms = system['atoms']
-    mol = system['mol']
+@pytest.mark.parametrize('name', g2_molecules.keys())
+def test_find_primitives(name):
+    atoms = g2_molecules[name]['atoms']
+    mol = g2_molecules[name]['mol']
     mol.build_topology()
     # geomeTRIC uses a threshold of 1.2 on the unsquared distances.
     # This correspondes to using 1.2^2 in the Billeter et al. alogrithm.

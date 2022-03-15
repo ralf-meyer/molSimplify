@@ -9,14 +9,13 @@ from molSimplify.optimize.coordinates import (Distance, Angle,
                                               DelocalizedCoordinates)
 
 
-@pytest.mark.parametrize('system', g2_molecules)
-def test_redundant_internals(system):
-    name = system['name']
+@pytest.mark.parametrize('name', g2_molecules.keys())
+def test_redundant_internals(name):
     if name == 'Si2H6':
         # Skip Si2H6 because of a 0 != 2 pi error
         return
-    atoms = system['atoms']
-    mol = system['mol']
+    atoms = g2_molecules[name]['atoms']
+    mol = g2_molecules[name]['mol']
     coords_ref = geometric.internal.PrimitiveInternalCoordinates(
         mol, connect=True)
 
@@ -76,14 +75,13 @@ def test_redundant_internals(system):
     assert kabsch_rmsd(xyzs2, xyzs, translate=True) < 1e-5
 
 
-@pytest.mark.parametrize('system', g2_molecules)
-def test_delocalized_internals(system):
-    name = system['name']
+@pytest.mark.parametrize('name', g2_molecules.keys())
+def test_delocalized_internals(name):
     if name == 'Si2H6':
         # Skip Si2H6 because of a 0 != 2 pi error
         return
-    atoms = system['atoms']
-    mol = system['mol']
+    atoms = g2_molecules[name]['atoms']
+    mol = g2_molecules[name]['mol']
     coords_ref = geometric.internal.DelocalizedInternalCoordinates(
         mol, connect=True, build=True)
 
