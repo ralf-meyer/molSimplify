@@ -72,18 +72,111 @@ def find_connectivity(atoms, threshold=1.25, connect_fragments=True):
     return bonds
 
 
-def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
+def cos_angle(r1, r2):
+    """
+    Helper function that calculates the cosine of the angle between
+    two vectors
+    """
+    return np.dot(r1, r2)/(np.linalg.norm(r1)*np.linalg.norm(r2))
+
+
+def find_planars_billeter(a, neighbors, xyzs, planar_threshold):
+    # "lies in the centre of a planar system" characterized by
+    # a central atom 'a' and the plane spanned by three neighboring
+    # atoms (ai, aj, ak)
+    for (ai, aj, ak) in itertools.combinations(neighbors[a], 3):
+        r_ai = xyzs[ai, :] - xyzs[a, :]
+        r_aj = xyzs[aj, :] - xyzs[a, :]
+        r_ak = xyzs[ak, :] - xyzs[a, :]
+        n1 = np.cross(r_ai, r_aj)
+        if np.sum(n1**2) > 0:  # Linear cases lead to division by zero
+            n1 /= np.linalg.norm(n1)
+        n2 = np.cross(r_aj, r_ak)
+        if np.sum(n2**2) > 0:  # Linear cases lead to division by zero
+            n2 /= np.linalg.norm(n2)
+        n3 = np.cross(r_ak, r_ai)
+        if np.sum(n3**2) > 0:  # Linear cases lead to division by zero
+            n3 /= np.linalg.norm(n3)
+        # Not sure if actually all three possible values need to be
+        # checked. For an actual planar case the angles are dependent
+        # since they add to 360 degrees.
+        if (np.abs(n1.dot(n2)) > planar_threshold
+                or np.abs(n2.dot(n3)) > planar_threshold
+                or np.abs(n3.dot(n1)) > planar_threshold):
+            # Try to find an improper (b, a, c, d)
+            # such neither the angle t1 between (b, a, c)
+            # nor t2 between (a, c, d) is close to linear
+            for (b, c, d) in itertools.permutations([ai, aj, ak], 3):
+                r_ab = xyzs[b, :] - xyzs[a, :]
+                r_ac = xyzs[c, :] - xyzs[a, :]
+                r_cd = xyzs[d, :] - xyzs[c, :]
+                cos_t1 = cos_angle(r_ab, r_ac)
+                cos_t2 = cos_angle(r_ac, r_cd)
+                if np.abs(cos_t1) < 0.95 and np.abs(cos_t2) < 0.95:
+                    # Remove bend (ai, a, aj)
+                    # TODO: Better heuristic of which bend to remove
+                    # Return after a first improper has been added
+                    return [(ai, a, aj)], [(a, b, c, d)]
+    # If not planar structure is found, return the empty lists
+    return [], []
+
+
+def find_planars_molsimplify(a, neighbors, xyzs, planar_threshold):
+    max_area = 0.
+    # Characterize planar systems by the fact that no parallelepiped
+    # formed by the normalized vectors to three neighbors has a volume
+    # larger than 1 - threshold.
+    for (ai, aj, ak) in itertools.combinations(neighbors[a], 3):
+        r_ai = xyzs[ai, :] - xyzs[a, :]
+        n_ai = r_ai / np.linalg.norm(r_ai)
+        r_aj = xyzs[aj, :] - xyzs[a, :]
+        n_aj = r_aj / np.linalg.norm(r_aj)
+        r_ak = xyzs[ak, :] - xyzs[a, :]
+        n_ak = r_ak / np.linalg.norm(r_ak)
+        volume = np.dot(np.cross(n_ai, n_aj), n_ak)
+        if volume > (1 - planar_threshold):
+            # If a structure is identified as non-planar return empty lists
+            return [], []
+        area = 0.5 * (np.linalg.norm(np.cross(n_ai, n_aj))
+                      + np.linalg.norm(np.cross(n_aj, n_ak))
+                      + np.linalg.norm(np.cross(n_ak, n_ai)))
+        if area > max_area:
+            max_area = area
+            planar = (a, ai, aj, ak)
+            # TODO better heuristic of which bend to remove
+            bend = (ai, a, aj)
+    return [bend], [planar]
+
+
+def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
+                    planar_method='billeter'):
     """
     Finds primitive internals given a reference geometry and connectivity list.
     Follows the algorithm outlined in Section II A of
     Billeter et al. Phys. Chem. Chem. Phys., 2000, 2, 2177-2186.
     Throughout the code literal citations of this paper appear in quotes "".
-    linear_threshold: threshold angle in degrees to determine when to replace
-                      close to linear bends with a coplanar and perpendicular
-                      bend coordinate.
-    planar_threshold: Set larger 1.0 to turn off detection of planar
-                      structures.
+
+    Parameters
+    ----------
+    xyzs : np.ndarray
+        Cartesian coordinates.
+    bonds : list of integer pairs
+        List of pairs of indices for the atoms that are considered bonded.
+    linear_threshold : float, optional
+        Threshold angle in degrees to determine when to replace
+        close to linear bends with a coplanar and perpendicular
+        bend coordinate (default 5 degrees).
+    planar_threshold : float, optional
+        Threshold value used to detect planar structures (default 0.95).
+    planar_method : str, optional
+        Method use to detect planar structures (default 'billeter').
+
+    Returns
+    -------
+    tuple of lists
+        bends, linear_bends, torsions, planars
     """
+
     neighbors = [[] for _ in range(len(xyzs))]
     for b in bonds:
         neighbors[b[0]].append(b[1])
@@ -96,13 +189,6 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
     # Transform the threshold angle to cos(angle) to avoid repeated
     # error prone calls to arccos.
     cos_lin_thresh = np.abs(np.cos(linear_threshold*np.pi/180.))
-
-    def cos_angle(r1, r2):
-        """
-        Helper function that calculates the cosine of the angle between
-        two vectors
-        """
-        return np.dot(r1, r2)/(np.linalg.norm(r1)*np.linalg.norm(r2))
 
     for a in range(len(xyzs)):
         for i, ai in enumerate(neighbors[a]):
@@ -155,55 +241,31 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
                                     if cos_t1 < 0.99 and cos_t2 < 0.99:
                                         torsions.append((ak, ai, aj, am))
         # "If an atom is connected to more than two atoms" and the threshold
-        # is small enough to be exceeded by the product of two unit vectors.
+        # is small enough to be exceeded.
         if len(neighbors[a]) > 2 and planar_threshold < 1.0:
-            # "and lies in the centre of a planar system" characterized by
-            # a central atom 'a' and the plane spanned by three neighboring
-            # atoms (ai, aj, ak)
-            for (ai, aj, ak) in itertools.combinations(neighbors[a], 3):
-                r_ai = xyzs[ai, :] - xyzs[a, :]
-                r_aj = xyzs[aj, :] - xyzs[a, :]
-                r_ak = xyzs[ak, :] - xyzs[a, :]
-                n1 = np.cross(r_ai, r_aj)
-                if np.sum(n1**2) > 0:  # Linear cases lead to division by zero
-                    n1 /= np.linalg.norm(n1)
-                n2 = np.cross(r_aj, r_ak)
-                if np.sum(n2**2) > 0:  # Linear cases lead to division by zero
-                    n2 /= np.linalg.norm(n2)
-                n3 = np.cross(r_ak, r_ai)
-                if np.sum(n3**2) > 0:  # Linear cases lead to division by zero
-                    n3 /= np.linalg.norm(n3)
-                # Not sure if actually all three possible values need to be
-                # checked. For an actual planar case the angles are dependent
-                # since they add to 360 degrees.
-                if (np.abs(n1.dot(n2)) > planar_threshold
-                        or np.abs(n2.dot(n3)) > planar_threshold
-                        or np.abs(n3.dot(n1)) > planar_threshold):
-                    # Remove bend
-                    # TODO: Better heuristic of which bend to remove
-                    bends.remove((ai, a, aj))
-                    # Try to find an improper (b, a, c, d)
-                    # such neither the angle t1 between (b, a, c)
-                    # nor t2 between (a, c, d) is close to linear
-                    for (b, c, d) in itertools.permutations([ai, aj, ak], 3):
-                        r_ab = xyzs[b, :] - xyzs[a, :]
-                        r_ac = xyzs[c, :] - xyzs[a, :]
-                        r_cd = xyzs[d, :] - xyzs[c, :]
-                        cos_t1 = cos_angle(r_ab, r_ac)
-                        cos_t2 = cos_angle(r_ac, r_cd)
-                        if np.abs(cos_t1) < 0.95 and np.abs(cos_t2) < 0.95:
-                            planars.append((a, b, c, d))
-                            break
-                    # Break after one improper has been added
-                    break
+            if planar_method.lower() == 'none':
+                bends_to_remove, planars_to_append = [], []
+            elif planar_method.lower() == 'billeter':
+                bends_to_remove, planars_to_append = find_planars_billeter(
+                    a, neighbors, xyzs, planar_threshold)
+            elif planar_method.lower() == 'molsimplify':
+                bends_to_remove, planars_to_append = find_planars_molsimplify(
+                    a, neighbors, xyzs, planar_threshold)
+            else:
+                raise NotImplementedError(
+                    f'Unknown planar_method {planar_method}')
+            for b in bends_to_remove:
+                bends.remove(b)
+            planars.extend(planars_to_append)
     return bends, linear_bends, torsions, planars
 
 
-def get_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95):
+def get_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
+                   planar_method='billeter'):
 
     bends, linear_bends, torsions, planars = find_primitives(
         xyzs, bonds, linear_threshold=linear_threshold,
-        planar_threshold=planar_threshold)
+        planar_threshold=planar_threshold, planar_method=planar_method)
 
     primitives = ([Distance(*b) for b in bonds]
                   + [Angle(*a) for a in bends]
