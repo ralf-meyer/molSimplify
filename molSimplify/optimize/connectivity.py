@@ -133,7 +133,7 @@ def find_planars_molsimplify(a, neighbors, xyzs, planar_threshold):
         n_aj = r_aj / np.linalg.norm(r_aj)
         r_ak = xyzs[ak, :] - xyzs[a, :]
         n_ak = r_ak / np.linalg.norm(r_ak)
-        volume = np.dot(np.cross(n_ai, n_aj), n_ak)
+        volume = np.abs(np.dot(np.cross(n_ai, n_aj), n_ak))
         if volume > (1 - planar_threshold):
             # If a structure is identified as non-planar return empty lists
             return [], []
