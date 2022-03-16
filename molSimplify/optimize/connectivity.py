@@ -117,7 +117,7 @@ def find_planars_billeter(a, neighbors, xyzs, planar_threshold):
                     # TODO: Better heuristic of which bend to remove
                     # Return after a first improper has been added
                     return [(ai, a, aj)], [(a, b, c, d)]
-    # If not planar structure is found, return the empty lists
+    # If no planar structure is found, return the empty lists
     return [], []
 
 
