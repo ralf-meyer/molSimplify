@@ -1,4 +1,7 @@
 import sys
+import os
+import time
+import pkg_resources
 import ase.io
 import ase.optimize
 import ase.constraints
@@ -10,7 +13,8 @@ import pathlib
 from molSimplify.optimize.calculators import get_calculator
 from molSimplify.optimize.params import parse_args
 from molSimplify.optimize.hessians import compute_hessian_guess, filter_hessian
-from molSimplify.optimize.connectivity import find_connectivity
+from molSimplify.optimize.connectivity import (find_connectivity,
+                                               find_primitives)
 from molSimplify.Classes.globalvars import metalslist
 
 
@@ -101,6 +105,217 @@ def run_preprocessing(args):
         np.savetxt('hessian.txt', H)
 
 
+def run_geometric(**kwargs):
+    """
+    Run geometry optimization, constrained optimization, or
+    constrained scan job given arguments from command line.
+    """
+    if kwargs.get('logIni') is None:
+        import geometric.optimize
+        logIni = pkg_resources.resource_filename(
+            geometric.optimize.__name__, 'config/log.ini')
+    else:
+        logIni = kwargs.get('logIni')
+    logfilename = kwargs.get('prefix')
+    # Input file for optimization; QC input file or OpenMM .xml file
+    inputf = kwargs.get('input')
+    verbose = kwargs.get('verbose', False)
+    # Get calculation prefix and temporary directory name
+    arg_prefix = kwargs.get('prefix', None)  # prefix for output file
+    prefix = (arg_prefix if arg_prefix is not None
+              else os.path.splitext(inputf)[0])
+    logfilename = prefix + ".log"
+    # Create a backup if the log file already exists
+    backed_up = geometric.nifty.bak(logfilename)
+    import logging.config
+    logging.config.fileConfig(logIni, defaults={'logfilename': logfilename},
+                              disable_existing_loggers=False)
+    # ==============================#
+    # | End log file configuration |#
+    # ==============================#
+
+    import geometric
+    logger.info('geometric-optimize called with the following command line:\n')
+    logger.info(' '.join(sys.argv)+'\n')
+    geometric.info.print_logo(logger)
+    logger.info('-=# \x1b[1;94m geomeTRIC started. '
+                'Version: %s \x1b[0m #=-\n' % geometric.__version__)
+    if backed_up:
+        logger.info('Backed up existing log file: %s -> %s\n' % (
+            logfilename, os.path.basename(backed_up)))
+
+    t0 = time.time()
+
+    # Create the params object, containing data to be passed into the optimizer
+    params = geometric.params.OptParams(**kwargs)
+    params.printInfo()
+
+    # Create "dirname" folder for writing
+    dirname = prefix+".tmp"
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    kwargs['dirname'] = dirname
+
+    # Get the Molecule and engine objects needed for optimization
+    M, engine = geometric.prepare.get_molecule_engine(**kwargs)
+
+    # Create Work Queue object
+    if kwargs.get('port', 0):
+        logger.info("Creating Work Queue object for "
+                    "distributed Hessian calculation\n")
+        geometric.nifty.createWorkQueue(kwargs['port'], debug=verbose > 1)
+
+    # Get initial coordinates in bohr
+    coords = M.xyzs[0].flatten() * geometric.nifty.ang2bohr
+
+    # Read in the constraints
+    constraints = kwargs.get('constraints', None)  # Constraint input file
+
+    if constraints is not None:
+        Cons, CVals = geometric.prepare.parse_constraints(
+            M, open(constraints).read())
+    else:
+        Cons = None
+        CVals = None
+
+    # =========================================#
+    # | Set up the internal coordinate system |#
+    # =========================================#
+    # First item in tuple: The class to be initialized
+    # Second item in tuple: Whether to connect nonbonded fragments
+    # Third item in tuple: Whether to throw in all Cartesians
+    #                      (no effect if second item is True)
+    CoordSysDict = {
+        'cart': (geometric.internal.CartesianCoordinates,
+                 False, False),
+        'prim': (geometric.internal.PrimitiveInternalCoordinates,
+                 True, False),
+        'dlc': (geometric.internal.DelocalizedInternalCoordinates,
+                True, False),
+        'dlc-new': (geometric.internal.DelocalizedInternalCoordinates,
+                    True, False),
+        'hdlc': (geometric.internal.DelocalizedInternalCoordinates,
+                 False, True),
+        'tric-p': (geometric.internal.PrimitiveInternalCoordinates,
+                   False, False),
+        'tric': (geometric.internal.DelocalizedInternalCoordinates,
+                 False, False)}
+    coordsys = kwargs.get('coordsys', 'tric')
+    CoordClass, connect, addcart = CoordSysDict[coordsys.lower()]
+
+    if coordsys == 'dlc-new':
+        atoms = ase.io.read(engine.tcin['coordinates'])
+        bonds = find_connectivity(atoms)
+        bends, linear_bends, torsions, planars = find_primitives(
+            atoms.get_positions(), bonds, planar_method='molsimplify')
+        prims = geometric.internal.PrimitiveInternalCoordinates(M)
+        prims.Internals = (
+            [geometric.internal.Distance(*b) for b in bonds]
+            + [geometric.internal.Angle(*a) for a in bends]
+            + [geometric.internal.LinearAngle(*a, axis=axis)
+               for a in linear_bends for axis in (0, 1)]
+            + [geometric.internal.Dihedral(*d) for d in torsions]
+            + [geometric.internal.OutOfPlane(*p) for p in planars])
+        IC = CoordClass(M, build=False, connect=connect, addcart=addcart,
+                        constraints=Cons,
+                        cvals=CVals[0] if CVals is not None else None,
+                        conmethod=params.conmethod)
+        IC.Prims = prims
+        xyz = M.xyzs[0].flatten() * geometric.nifty.ang2bohr
+        IC.build_dlc(xyz)
+    else:
+        IC = CoordClass(M, build=True, connect=connect, addcart=addcart,
+                        constraints=Cons,
+                        cvals=CVals[0] if CVals is not None else None,
+                        conmethod=params.conmethod)
+    # ========================================#
+    # | End internal coordinate system setup |#
+    # ========================================#
+
+    # Auxiliary functions (will not do optimization):
+    displace = kwargs.get('displace', False)  # Write out the displacements.
+    if displace:
+        geometric.ic_tools.write_displacements(coords, M, IC, dirname, verbose)
+        return
+
+    # Check internal coordinate gradients using finite difference..
+    fdcheck = kwargs.get('fdcheck', False)
+    if fdcheck:
+        IC.Prims.checkFiniteDifferenceGrad(coords)
+        IC.Prims.checkFiniteDifferenceHess(coords)
+        geometric.ic_tools.check_internal_grad(
+            coords, M, IC.Prims, engine, dirname, verbose)
+        geometric.ic_tools.check_internal_hess(
+            coords, M, IC.Prims, engine, dirname, verbose)
+        return
+
+    # Print out information about the coordinate system
+    if isinstance(IC, geometric.internal.CartesianCoordinates):
+        logger.info("%i Cartesian coordinates being used\n" % (3*M.na))
+    else:
+        logger.info(f"{len(IC.Internals)} internal coordinates being used"
+                    f" (instead of {3*M.na} Cartesians)\n")
+    logger.info(IC)
+    logger.info("\n")
+
+    if Cons is None:
+        # Run a standard geometry optimization
+        params.xyzout = prefix+"_optim.xyz"
+        progress = geometric.optimize.Optimize(
+            coords, M, IC, engine, dirname, params)
+    else:
+        # Run a single constrained geometry optimization or scan over a grid
+        if isinstance(IC, (geometric.internal.CartesianCoordinates,
+                           geometric.internal.PrimitiveInternalCoordinates)):
+            raise RuntimeError("Constraints only work with delocalized"
+                               " internal coordinates")
+        Mfinal = None
+        for ic, CVal in enumerate(CVals):
+            if len(CVals) > 1:
+                logger.info(
+                    "---=== Scan %i/%i : Constrained Optimization ===---\n" % (
+                        ic+1, len(CVals)))
+            IC = CoordClass(M, build=True, connect=connect, addcart=addcart,
+                            constraints=Cons, cvals=CVal,
+                            conmethod=params.conmethod)
+            IC.printConstraints(coords, thre=-1)
+            if len(CVals) > 1:
+                params.xyzout = prefix+"_scan-%03i.xyz" % (ic+1)
+                # In the special case of a constraint scan, we write out
+                # multiple qdata.txt files
+                if params.qdata is not None:
+                    params.qdata = 'qdata_scan-%03i.txt' % (ic+1)
+            else:
+                params.xyzout = prefix+"_optim.xyz"
+            if ic == 0:
+                progress = geometric.optimize.Optimize(
+                    coords, M, IC, engine, dirname, params)
+            else:
+                progress += geometric.optimize.Optimize(
+                    coords, M, IC, engine, dirname, params)
+            # update the structure for next optimization in SCAN (by CNH)
+            M.xyzs[0] = progress.xyzs[-1]
+            coords = progress.xyzs[-1].flatten() * geometric.nifty.ang2bohr
+            if Mfinal:
+                Mfinal += progress[-1]
+            else:
+                Mfinal = progress[-1]
+            cNames = IC.getConstraintNames()
+            cVals = IC.getConstraintTargetVals()
+            comment = ', '.join(["%s = %.2f" % (cName, cVal)
+                                 for cName, cVal in zip(cNames, cVals)])
+            Mfinal.comms[-1] = "Scan Cycle %i/%i ; %s ; %s" % (
+                ic+1, len(CVals), comment, progress.comms[-1])
+        if len(CVals) > 1:
+            Mfinal.write('scan-final.xyz')
+            if params.qdata is not None:
+                Mfinal.write('qdata-final.txt')
+    geometric.optimize.print_citation(logger)
+    logger.info("Time elapsed since start of run_optimizer: %.3f seconds\n" % (
+        time.time()-t0))
+    return progress
+
+
 def main():
     args, unknown_args = parse_args(sys.argv[1:])
     logging.basicConfig(level=logging.DEBUG)
@@ -118,7 +333,7 @@ def main():
     opt_method = args.get('optimizer', 'geometric')
     if opt_method == 'geometric':
         # Call external program
-        geometric.optimize.run_optimizer(**geometric_args)
+        run_geometric(**geometric_args)
     else:
         raise NotImplementedError(f'Optimization method {opt_method} not '
                                   'implemented.')
