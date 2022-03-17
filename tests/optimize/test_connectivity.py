@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import geometric.internal
 from utils import g2_molecules
+from ase.atoms import Atoms
 from molSimplify.optimize.connectivity import (find_connectivity,
                                                find_primitives)
 
@@ -72,3 +73,37 @@ def test_find_primitives(name):
         bends_ref = [(ic.a, ic.b, ic.c) for ic in coords_ref.Internals
                      if isinstance(ic, geometric.internal.Angle)]
         assert sorted(bends) == sorted(bends_ref)
+
+
+def test_octahedral():
+    ri = 2.8
+    atoms = Atoms(['Fe'] + ['Cl']*6,
+                  positions=np.array([[0., 0., 0.],
+                                      [ri, 0., 0.],
+                                      [0., ri, 0.],
+                                      [-ri, 0., 0.],
+                                      [0., -ri, 0.],
+                                      [0., 0., ri],
+                                      [0., 0., -ri]]))
+
+    bonds = find_connectivity(atoms)
+    assert bonds == [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)]
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds, planar_method='billeter')
+    # (1, 0, 2) is removed for a planar
+    assert bends == [(1, 0, 4), (1, 0, 5), (1, 0, 6), (2, 0, 3), (2, 0, 5),
+                     (2, 0, 6), (3, 0, 4), (3, 0, 5), (3, 0, 6), (4, 0, 5),
+                     (4, 0, 6)]
+    assert linear_bends == []
+    assert torsions == []
+    assert planars == [(0, 1, 2, 3)]
+
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds, planar_method='molsimplify')
+
+    assert bends == [(1, 0, 2), (1, 0, 4), (1, 0, 5), (1, 0, 6), (2, 0, 3),
+                     (2, 0, 5), (2, 0, 6), (3, 0, 4), (3, 0, 5), (3, 0, 6),
+                     (4, 0, 5), (4, 0, 6)]
+    assert linear_bends == []
+    assert torsions == []
+    assert planars == []
