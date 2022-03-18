@@ -23,7 +23,7 @@ class atom3D:
             partialcharge : int, optional
                 Charge assigned to atom when added to mol. Default is None.
     """
-    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None, Tfactor=0, greek='', occup=1.00):
+    def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None, Tfactor=0, greek='', occup=1.00, loc=''):
        
         # Element symbol
         self.sym = Sym
