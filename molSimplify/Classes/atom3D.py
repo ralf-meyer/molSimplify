@@ -70,6 +70,9 @@ class atom3D:
         # EDIA score (only useful for proteins)
         self.EDIA = 0
 
+        # Conformation (only useful for proteins)
+        self.loc = ""
+
     def __repr__(self):
         """Returns all bound methods of the mol3D class..
         
