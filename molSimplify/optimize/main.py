@@ -205,7 +205,9 @@ def run_geometric(**kwargs):
 
     if coordsys == 'dlc-new':
         atoms = ase.io.read(engine.tcin['coordinates'])
-        bonds = find_connectivity(atoms)
+        # geomeTRIC uses a threshold of 1.2 on the unsquared distances.
+        # This correspondes to using 1.2^2 in the Billeter et al. alogrithm.
+        bonds = find_connectivity(atoms, threshold=1.2**2)
         bends, linear_bends, torsions, planars = find_primitives(
             atoms.get_positions(), bonds, planar_method='molsimplify')
         prims = geometric.internal.PrimitiveInternalCoordinates(M)
