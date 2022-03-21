@@ -235,20 +235,50 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
                         # Add linear bend
                         linear_bends.append((ai, a, aj))
                         # Do not add torsions on linear bends, instead try
-                        # using ai and aj as center bond. TODO: This does not
-                        # detect longer linear chains
-                        for ak in neighbors[ai]:
-                            for am in neighbors[aj]:
-                                if (ak != a and am != a
-                                        and (ak, ai, aj, am) not in torsions
-                                        and (am, aj, ai, ak) not in torsions):
-                                    r_ij = xyzs[aj, :] - xyzs[ai, :]
-                                    r_ik = xyzs[ak, :] - xyzs[ai, :]
-                                    r_jm = xyzs[am, :] - xyzs[aj, :]
-                                    cos_t1 = np.abs(cos_angle(r_ij, r_ik))
-                                    cos_t2 = np.abs(cos_angle(r_ij, r_jm))
-                                    if cos_t1 < 0.99 and cos_t2 < 0.99:
-                                        torsions.append((ak, ai, aj, am))
+                        # using the ends of a linear chain as central bond.
+
+                        def find_non_linear_neighbors(o, p):
+                            # Helper function to find the ends of a linear
+                            # chain. o is the starting index and the search
+                            # is towards the direction of index p.
+                            if len(neighbors[p]) == 2:
+                                # Find the neighbor other than o
+                                q = neighbors[p][0]
+                                if q == o:
+                                    q = neighbors[p][1]
+                                # Check if the angle (o, p, q) is linear
+                                r_po = xyzs[o, :] - xyzs[p, :]
+                                r_pq = xyzs[q, :] - xyzs[p, :]
+                                cos_t = np.abs(cos_angle(r_po, r_pq))
+                                if cos_t < 0.99:
+                                    # Return p as one end of a chain and its
+                                    # single neighbor q
+                                    return p, [q]
+                                # Else: recursively call this function:
+                                return find_non_linear_neighbors(
+                                    p, q)
+                            # Return p as end of chain and all neighbors
+                            # that are not p and where the angle (o, p, q)
+                            # is not linear:
+                            neighbors_p = []
+                            for q in neighbors[p]:
+                                if q != o:
+                                    r_po = xyzs[o, :] - xyzs[p, :]
+                                    r_pq = xyzs[q, :] - xyzs[p, :]
+                                    cos_t = np.abs(cos_angle(r_po, r_pq))
+                                    if cos_t < 0.99:
+                                        neighbors_p.append(q)
+                            return p, neighbors_p
+
+                        # Use find_non_linear_neightbors to append all torsions
+                        # on the linear chain.
+                        p, neighbors_p = find_non_linear_neighbors(a, ai)
+                        q, neighbors_q = find_non_linear_neighbors(a, aj)
+                        for o in neighbors_p:
+                            for r in neighbors_q:
+                                if ((o, p, q, r) not in torsions
+                                        and (r, q, p, o) not in torsions):
+                                    torsions.append((o, p, q, r))
         # "If an atom is connected to more than two atoms" and the threshold
         # is small enough to be exceeded.
         if len(neighbors[a]) > 2 and planar_threshold < 1.0:

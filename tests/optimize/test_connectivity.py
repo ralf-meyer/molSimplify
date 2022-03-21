@@ -47,12 +47,11 @@ def test_find_primitives(name):
                  if isinstance(ic, geometric.internal.Distance)]
     assert bonds == bonds_ref
     # Compare dihedrals
-    if name != '2-butyne':  # Linear chains not yet implemented
-        torsions_ref = [(ic.a, ic.b, ic.c, ic.d) for ic in coords_ref.Internals
-                        if isinstance(ic, geometric.internal.Dihedral)]
-        assert len(torsions) == len(torsions_ref)
-        for t in torsions:
-            assert t in torsions_ref or t[::-1] in torsions_ref
+    torsions_ref = [(ic.a, ic.b, ic.c, ic.d) for ic in coords_ref.Internals
+                    if isinstance(ic, geometric.internal.Dihedral)]
+    assert len(torsions) == len(torsions_ref)
+    for t in torsions:
+        assert t in torsions_ref or t[::-1] in torsions_ref
     # Compare linear bends. Note that geomeTRIC does not use the
     # "connected to exactly two atoms" rule by Billeter et al for linear bends
     if name != 'ClF3':  # Central atom bound to three neighbors
@@ -75,6 +74,35 @@ def test_find_primitives(name):
         bends_ref = [(ic.a, ic.b, ic.c) for ic in coords_ref.Internals
                      if isinstance(ic, geometric.internal.Angle)]
         assert sorted(bends) == sorted(bends_ref)
+
+
+def test_find_primitives_on_linear_chains():
+    """
+    H(7)                            H(5)
+     \\                            //
+      C(4) - C(3) - C(0) - C(1) - C(2)
+     //                            \\
+    H(8)                            H(6)
+    """
+    ri = 1.4
+    atoms = ase.atoms.Atoms(
+        ['C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H'],
+        positions=np.array([[0., 0., 0.],
+                            [ri, 0., 0.],
+                            [2*ri, 0., 0.],
+                            [-ri, 0., 0.],
+                            [-2*ri, 0., 0.],
+                            [2.5*ri, 0.5*ri, 0.],
+                            [2.5*ri, -0.5*ri, 0.],
+                            [-2.5*ri, 0.5*ri, 0.],
+                            [-2.5*ri, -0.5*ri, 0.]]))
+    bonds = find_connectivity(atoms)
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds)
+    assert bends == [(1, 2, 6), (5, 2, 6), (3, 4, 8), (7, 4, 8)]
+    assert linear_bends == [(1, 0, 3), (0, 1, 2), (0, 3, 4)]
+    assert torsions == [(5, 2, 4, 7), (5, 2, 4, 8), (6, 2, 4, 7), (6, 2, 4, 8)]
+    assert planars == [(2, 1, 5, 6), (4, 3, 7, 8)]
 
 
 def test_find_primitives_on_simple_octahedron():
