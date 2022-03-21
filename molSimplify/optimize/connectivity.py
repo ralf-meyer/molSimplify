@@ -123,9 +123,6 @@ def find_planars_billeter(a, neighbors, xyzs, planar_threshold):
 
 def find_planars_molsimplify(a, neighbors, xyzs, planar_threshold):
     max_area = 0.
-    # Characterize planar systems by the fact that no parallelepiped
-    # formed by the normalized vectors to three neighbors has a volume
-    # larger than 1 - threshold.
     for (ai, aj, ak) in itertools.combinations(neighbors[a], 3):
         r_ai = xyzs[ai, :] - xyzs[a, :]
         n_ai = r_ai / np.linalg.norm(r_ai)
@@ -218,7 +215,9 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
                             r_ik = xyzs[ak, :] - xyzs[ai, :]
                             cos_phi = cos_angle(r_ik, r_ai)
                             if np.abs(cos_phi) < 0.99:
-                                torsions.append((ak, ai, a, aj))
+                                # Convention is to use accending index order
+                                # for the central two atoms (here a < ai).
+                                torsions.append((aj, a, ai, ak))
                     for ak in neighbors[aj]:
                         if (ak != a and ak != ai
                                 and (ak, aj, a, ai) not in torsions

@@ -158,14 +158,9 @@ def test_find_primitives_on_homoleptic_octahedrals(ligand):
                 if lin not in linear_bends:
                     if ((ic.b, ic.c) == (lin[0], lin[2])
                             or (ic.c, ic.b) == (lin[0], lin[2])):
-                        print(f'skipping {ic}')
                         skip = True
                         break
             if skip:
                 continue
             dihedrals_ref.append((ic.a, ic.b, ic.c, ic.d))
-    # Instead of sorting check that lists are the same length and that every
-    # element in dihedrals is present in dihedrals_ref
-    assert len(dihedrals) == len(dihedrals_ref)
-    for d in dihedrals:
-        assert (d in dihedrals_ref or d[::-1] in dihedrals_ref)
+    assert sorted(dihedrals) == sorted(dihedrals_ref)
