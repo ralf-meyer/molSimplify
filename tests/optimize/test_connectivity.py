@@ -1,10 +1,12 @@
 import pytest
 import numpy as np
 import geometric.internal
+import ase.atoms
+import ase.io
 from utils import g2_molecules
-from ase.atoms import Atoms
 from molSimplify.optimize.connectivity import (find_connectivity,
                                                find_primitives)
+from pkg_resources import resource_filename, Requirement
 
 
 @pytest.mark.parametrize('name', g2_molecules.keys())
@@ -75,16 +77,17 @@ def test_find_primitives(name):
         assert sorted(bends) == sorted(bends_ref)
 
 
-def test_octahedral():
+def test_find_primitives_on_simple_octahedron():
     ri = 2.8
-    atoms = Atoms(['Fe'] + ['Cl']*6,
-                  positions=np.array([[0., 0., 0.],
-                                      [ri, 0., 0.],
-                                      [0., ri, 0.],
-                                      [-ri, 0., 0.],
-                                      [0., -ri, 0.],
-                                      [0., 0., ri],
-                                      [0., 0., -ri]]))
+    atoms = ase.atoms.Atoms(
+        ['Fe'] + ['Cl']*6,
+        positions=np.array([[0., 0., 0.],
+                            [ri, 0., 0.],
+                            [0., ri, 0.],
+                            [-ri, 0., 0.],
+                            [0., -ri, 0.],
+                            [0., 0., ri],
+                            [0., 0., -ri]]))
 
     bonds = find_connectivity(atoms)
     assert bonds == [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)]
@@ -107,3 +110,62 @@ def test_octahedral():
     assert linear_bends == []
     assert torsions == []
     assert planars == []
+
+
+@pytest.mark.parametrize('ligand', ['co', 'misc', 'water', 'pyr', 'furan'])
+def test_find_primitives_on_homoleptic_octahedrals(ligand):
+    """Inspired by Janet et al. Inorg. Chem. 2019, 58, 10592-10606"""
+    xyz_file = resource_filename(
+        Requirement.parse('molSimplify'),
+        f'tests/optimize/inputs/homoleptic_octahedrals/Co_II_{ligand}.xyz')
+    atoms = ase.io.read(xyz_file)
+    mol = geometric.molecule.Molecule(xyz_file)
+
+    # False is necessary here because geometric (erroneously) connects atoms
+    # 50 and 53 (a hydrogen and a carbon atom) in the furan example.
+    coords_ref = geometric.internal.PrimitiveInternalCoordinates(
+        mol, connect=False)
+
+    # geomeTRIC uses a threshold of 1.2 on the unsquared distances.
+    # This correspondes to using 1.2^2 in the Billeter et al. alogrithm.
+    bonds = find_connectivity(atoms, threshold=1.2**2, connect_fragments=True)
+    # Compare bonds
+    bonds_ref = [(ic.a, ic.b) for ic in coords_ref.Internals
+                 if isinstance(ic, geometric.internal.Distance)]
+
+    assert bonds == bonds_ref
+
+    bends, linear_bends, dihedrals, planars = find_primitives(
+        atoms.get_positions(), bonds, planar_method='molsimplify')
+    linear_bends_ref = [(ic.a, ic.b, ic.c) for ic in coords_ref.Internals
+                        if isinstance(ic, geometric.internal.LinearAngle)]
+    # Geometric adds 6 linear bends on the octahedral core. The factor 2
+    # is to account for the two possible axes of a linear bend.
+    assert 2*len(linear_bends) == len(linear_bends_ref) - 6
+
+    planars_ref = [(ic.a, ic.b, ic.c, ic.d) for ic in coords_ref.Internals
+                   if isinstance(ic, geometric.internal.OutOfPlane)]
+    # Geometric add 12 planar bends on the octahedral core.
+    assert len(planars) == len(planars_ref) - 12
+
+    dihedrals_ref = []
+    for ic in coords_ref.Internals:
+        if isinstance(ic, geometric.internal.Dihedral):
+            # Remove the dihedrals that appear because of the additional
+            # linear bends
+            skip = False
+            for lin in linear_bends_ref:
+                if lin not in linear_bends:
+                    if ((ic.b, ic.c) == (lin[0], lin[2])
+                            or (ic.c, ic.b) == (lin[0], lin[2])):
+                        print(f'skipping {ic}')
+                        skip = True
+                        break
+            if skip:
+                continue
+            dihedrals_ref.append((ic.a, ic.b, ic.c, ic.d))
+    # Instead of sorting check that lists are the same length and that every
+    # element in dihedrals is present in dihedrals_ref
+    assert len(dihedrals) == len(dihedrals_ref)
+    for d in dihedrals:
+        assert (d in dihedrals_ref or d[::-1] in dihedrals_ref)
