@@ -73,8 +73,10 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['hfx_resample']:
             tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
-            moltools.prep_ligand_breakown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
+            moltools.prep_ligand_breakdown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
                                           dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
+        if configure_dict['mbe']:
+            moltools.prep_mbe_calc(job, metal_charge = configure_dict['metal_charge'])
         if bool(configure_dict['general_sp']):
             tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 
