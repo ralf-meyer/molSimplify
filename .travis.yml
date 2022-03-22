@@ -35,10 +35,10 @@ install:
   - conda install scikit-learn=0.20.3
   - conda install xtb
   - conda install -c hjkgroup openbabel
-  # - conda build conda-recipe -c hjkgroup
-  - conda install molsimplify --use-local
-  # Needed for testing without Pybrain
   - conda install pytest
+  # - conda build conda-recipe -c hjkgroup
+  - pip install .
+
 
 script:
   # Your test script goes here

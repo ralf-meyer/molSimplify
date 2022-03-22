@@ -18,7 +18,6 @@ setup(name='molSimplify',
       },
       data_files=[("molSimplify", ["molSimplify/Data/ML.dat"])],
       install_requires=['numpy', 'scipy', 'scikit-learn', 'pandas', 'keras',
-                        'matplotlib==3.3',
                         'tensorflow', 'pyyaml', 'ase'],
       setup_requires=['pytest-runner'],  # this may result some package conflict in local conda build. comment it out if needed.
       tests_require=['pytest', 'numdifftools'],
