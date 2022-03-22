@@ -46,4 +46,5 @@ script:
   # - molsimplify -h
 
 notifications:
-          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO  
+  slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO
+    if: branch = master
