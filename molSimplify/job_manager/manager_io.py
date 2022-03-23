@@ -124,8 +124,13 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
         min_energy = output.wordgrab('FINAL', 2, min_value=True)[0]
 
         is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
-        if is_finished:
+        if is_finished: # for full optimization
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
+                finished = True
+
+        is_finished = output.wordgrab(['processing'],'whole_line', last_line=True)[0]
+        if is_finished: # for hydrogen optimization
+            if is_finished[0] == 'Total' and is_finished[1] == 'processing':
                 finished = True
 
         is_scf_error = output.wordgrab('DIIS', 5, matching_index=True)[0]
@@ -337,7 +342,7 @@ def read_configure(home_directory, outfile_path):
         local_configure = []
 
     # Determine which derivative jobs are requested
-    solvent, vertEA, vertIP, thermo, dissociation, hfx_resample, functionalsSP = False, False, False, False, False, False, False
+    solvent, vertEA, vertIP, thermo, dissociation, hfx_resample, functionalsSP, mbe = False, False, False, False, False, False, False, False
     for line in home_configure + local_configure:
         if 'solvent' in line or 'Solvent' in line:
             solvent = [float(p) for p in line.split()[1:]]
@@ -353,6 +358,8 @@ def read_configure(home_directory, outfile_path):
             dissociation = True
         if 'hfx_resample' in line or 'HFX_resample' in line:
             hfx_resample = True
+        if 'mbe' in line or "MBE" in line:
+            mbe = True
 
     # Determine global settings for this run
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
@@ -445,7 +452,7 @@ def read_configure(home_directory, outfile_path):
             'dissociated_ligand_spinmults': dissociated_ligand_spinmults,
             'dissociated_ligand_charges': dissociated_ligand_charges,
             "use_molscontrol": use_molscontrol, "general_sp": general_sp,
-            "run_psi4": run_psi4, "psi4_config": psi4_config}
+            "run_psi4": run_psi4, "psi4_config": psi4_config, 'mbe': mbe}
 
 
 def read_charges(PATH):
@@ -603,7 +610,6 @@ def write_terachem_input(infile_dictionary):
                             'pcm_radii read\n',
                             'pcm_radii_file /home/harperd/pcm_radii\n',
                             'end']
-    
     if infile['machine'] in ['gibraltar','bridges']:
         text = text[:-1] + ['nbo yes\n', 'gpus 1\n','end']
     elif infile['machine'] in ['comet']:
