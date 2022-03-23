@@ -58,9 +58,9 @@ def prep_derivative_jobs(directory, list_of_outfiles):
                 List of output files that are read to spawn derivative jobs.
 
     """
-    print(list_of_outfiles)
     for job in list_of_outfiles:
         configure_dict = manager_io.read_configure(directory, job)
+        print(configure_dict)
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job, configure_dict['solvent'])
         if configure_dict['functionalsSP']:
