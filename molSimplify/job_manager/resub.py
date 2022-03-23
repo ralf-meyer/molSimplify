@@ -55,9 +55,10 @@ def prep_derivative_jobs(directory, list_of_outfiles):
             directory : str
                 Directory of interest to analyze.
             list_of_outfiles : list
-                List of output files that aree read to spawn derivative jobs.
+                List of output files that are read to spawn derivative jobs.
 
     """
+    print(list_of_outfiles)
     for job in list_of_outfiles:
         configure_dict = manager_io.read_configure(directory, job)
         if configure_dict['solvent']:
