@@ -453,7 +453,7 @@ def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {},dissocia
 
     return jobscripts
 
-def prep_mbe_calcs(outfile_path, metal_charge = 0):
+def prep_mbe_calc(outfile_path, metal_charge = 0):
     """Prep ligand breakdown.
 
     Parameters
@@ -515,15 +515,15 @@ def prep_mbe_calcs(outfile_path, metal_charge = 0):
     mol.writexyz(name + '_no_metal.xyz')
     infile_dict['name'] = name + "_no_metal"
     infile_dict['coordinates'] = name + '_no_metal.xyz'
-    infile_dict['charge'], local_infile_dict['spinmult'] = charge, spinmult
+    infile_dict['charge'], infile_dict['spinmult'] = charge, spinmult
     infile_dict['run_type'] = 'energy'
-    infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
+    infile_dict['constraints'], infile_dict['convergence_thresholds'] = False, False
     infile_dict['machine'] = machine
 
     manager_io.write_input(infile_dict)
     manager_io.write_jobscript(name + '_no_metal', time_limit='12:00:00', machine=machine)
     jobscripts.append(name + '_no_metal.in')
-        os.chdir('..')
+    os.chdir('..')
 
     return jobscripts
 
