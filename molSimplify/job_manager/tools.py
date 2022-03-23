@@ -564,6 +564,7 @@ def qsub(jobscript_list):
 
     stdouts = []
     for i in jobscript_list:
+        print(i)
         home = os.getcwd()
         os.chdir(os.path.split(i)[0])
         jobscript = os.path.split(i)[1]
