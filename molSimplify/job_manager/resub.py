@@ -33,15 +33,13 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
     machine = tools.get_machine()
 
     active_jobs, active_ids = tools.list_active_jobs(ids=True)
-    #active_jobs = list(zip(active_jobs, active_ids))
-    active_jobs = []
+    active_jobs = list(zip(active_jobs, active_ids))
 
     jobs_to_kill = [[name, id_] for name, id_ in active_jobs if name in kill_names]
 
     for name, id_ in jobs_to_kill:
         print(message1 + name + message2)
-        #if machine in ['gibraltar']:
-        if True:
+        if machine in ['gibraltar']:
             tools.call_bash('qdel ' + str(id_))
         elif machine in ['comet','bridges']:
             tools.call_bash('scancel '+str(id_))
