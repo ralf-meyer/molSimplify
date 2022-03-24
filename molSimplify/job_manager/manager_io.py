@@ -223,13 +223,19 @@ def read_infile(outfile_path):
         qm_code = 'terachem'
 
     if qm_code == 'terachem':
-        charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx, basis, dispersion, coordinates, guess = inp.wordgrab(
+        # account for multiple keywords for dispersion
+        disp0 = inp.wordgrab(['dispersion '], [1], last_line=True)
+        disp1 = inp.wordgrab(['dftd '], [1], last_line=True)
+        if disp0 != [None]:
+            dispersion = disp0[0]
+        else:
+            dispersion = disp1[0]
+        charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx, basis, coordinates, guess = inp.wordgrab(
             ['charge ', 'spinmult ', 'epsilon ',
              'run ', 'levelshiftvala ',
              'levelshiftvalb ', 'method ',
-             'HFX ', 'basis ', 'dispersion ',
-             'coordinates ', 'guess '],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+             'HFX ', 'basis ', 'coordinates ', 'guess '],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             last_line=True)
         charge, spinmult = int(charge), int(spinmult)
         if guess:
