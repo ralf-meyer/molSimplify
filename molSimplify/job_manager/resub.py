@@ -253,8 +253,7 @@ def resub(directory='in place'):
             (tools.get_total_queue_usage() + np.sum(resubmitted)) < hard_job_limit)):
         to_submit = []
         jobscripts = tools.find('*_jobscript')
-        #active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
-        active_jobs = []
+        active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
         for job in jobscripts:
             if not os.path.isfile(job.rsplit('_', 1)[0] + '.out') and not os.path.split(job.rsplit('_', 1)[0])[
                                                                               -1] in active_jobs:
