@@ -11,7 +11,7 @@ import molSimplify.job_manager.moltools as moltools
 import molSimplify.job_manager.recovery as recovery
 import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.job_manager.classes import resub_history
-from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
+#from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
 
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
@@ -33,13 +33,15 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
     machine = tools.get_machine()
 
     active_jobs, active_ids = tools.list_active_jobs(ids=True)
-    active_jobs = list(zip(active_jobs, active_ids))
+    #active_jobs = list(zip(active_jobs, active_ids))
+    active_jobs = []
 
     jobs_to_kill = [[name, id_] for name, id_ in active_jobs if name in kill_names]
 
     for name, id_ in jobs_to_kill:
         print(message1 + name + message2)
-        if machine in ['gibraltar']:
+        #if machine in ['gibraltar']:
+        if True:
             tools.call_bash('qdel ' + str(id_))
         elif machine in ['comet','bridges']:
             tools.call_bash('scancel '+str(id_))
@@ -60,7 +62,6 @@ def prep_derivative_jobs(directory, list_of_outfiles):
     """
     for job in list_of_outfiles:
         configure_dict = manager_io.read_configure(directory, job)
-        print(configure_dict)
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job, configure_dict['solvent'])
         if configure_dict['functionalsSP']:
