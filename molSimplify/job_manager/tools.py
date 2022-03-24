@@ -138,7 +138,6 @@ def get_machine():
     """
     # Gets the identity of the machine job_manager is being run on!
     hostname = call_bash('hostname')[0]
-    print("hostname: ", hostname)
     if 'bridges.psc' in hostname:
         machine = 'bridges'
     elif 'gibraltar' in hostname:
@@ -152,7 +151,6 @@ def get_machine():
     elif "gridsan" in hostname or "login-" in hostname:
         machine = "supercloud"
     else:
-        return ""
         raise ValueError('Machine Unknown to Job Manager')
     return machine
 
@@ -565,7 +563,6 @@ def qsub(jobscript_list):
 
     stdouts = []
     for i in jobscript_list:
-        print(i)
         home = os.getcwd()
         os.chdir(os.path.split(i)[0])
         jobscript = os.path.split(i)[1]
