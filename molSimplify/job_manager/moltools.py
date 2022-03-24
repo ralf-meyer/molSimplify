@@ -516,9 +516,10 @@ def prep_mbe_calc(outfile_path, metal_charge = 0):
     mol.writexyz(name + '_no_metal.xyz')
 
     local_infile_dict = copy.copy(infile_dict)
+    print(infile_dict, local_infile_dict)
     local_infile_dict['name'] = name + "_no_metal"
     local_infile_dict['coordinates'] = name + '_no_metal.xyz'
-    local_infile_dict['charge'], infile_dict['spinmult'] = charge, spinmult
+    local_infile_dict['charge'], local_infile_dict['spinmult'] = charge, spinmult
     local_infile_dict['run_type'] = 'energy'
     local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
     local_infile_dict['machine'] = machine
