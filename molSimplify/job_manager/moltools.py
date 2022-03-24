@@ -481,6 +481,7 @@ def prep_mbe_calc(outfile_path, metal_charge = 0):
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
     infile_dict = manager_io.read_infile(outfile_path)
+
     # special case hack for Fe test ~Freya
     fe_spin = int(infile_dict['spinmult'])
     if fe_spin == 5:
@@ -493,13 +494,13 @@ def prep_mbe_calc(outfile_path, metal_charge = 0):
     base = os.path.split(outfile_path)[0]
     name = os.path.split(outfile_path)[-1][:-4]
 
+    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    tools.extract_optimized_geo(optimxyz)
+
     breakdown_folder = os.path.join(base, name + '_mbe')
 
     if os.path.isdir(breakdown_folder):
         return ['Metal binding energy directory already exists']
-
-    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    tools.extract_optimized_geo(optimxyz)
 
     mol = mol3D()
     mol.readfromxyz(os.path.join(base, 'scr', 'optimized.xyz'))
@@ -513,18 +514,20 @@ def prep_mbe_calc(outfile_path, metal_charge = 0):
     # Create the necessary files for the metal-removed complex single point
     mol.deleteatoms(metal_indices)
     mol.writexyz(name + '_no_metal.xyz')
-    infile_dict['name'] = name + "_no_metal"
-    infile_dict['coordinates'] = name + '_no_metal.xyz'
-    infile_dict['charge'], infile_dict['spinmult'] = charge, spinmult
-    infile_dict['run_type'] = 'energy'
-    infile_dict['constraints'], infile_dict['convergence_thresholds'] = False, False
-    infile_dict['machine'] = machine
 
-    manager_io.write_input(infile_dict)
+    local_infile_dict = copy.copy(infile_dict)
+    local_infile_dict['name'] = name + "_no_metal"
+    local_infile_dict['coordinates'] = name + '_no_metal.xyz'
+    local_infile_dict['charge'], infile_dict['spinmult'] = charge, spinmult
+    local_infile_dict['run_type'] = 'energy'
+    local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
+    local_infile_dict['machine'] = machine
+
+    manager_io.write_input(local_infile_dict)
     manager_io.write_jobscript(name + '_no_metal', time_limit='12:00:00', machine=machine)
     jobscripts.append(name + '_no_metal.in')
     os.chdir('..')
-
+    os.chdir(home)
     return jobscripts
 
 
