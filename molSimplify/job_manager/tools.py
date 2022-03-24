@@ -242,8 +242,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     job_report = textfile()
     try:
-        #if get_machine() == 'gibraltar':
-        if True:
+        if get_machine() == 'gibraltar':
             job_report.lines = call_bash("qstat -r")
         elif get_machine() in ['comet','bridges']:
             job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
@@ -252,8 +251,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
             raise ValueError
     except:
         job_report.lines = []
-    #if get_machine() == 'gibraltar':
-    if True:
+    if get_machine() == 'gibraltar':
         names = job_report.wordgrab('jobname:', 2)[0]
         names = [i for i in names if i]  # filters out NoneTypes
     elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
@@ -263,15 +261,13 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
         raise ValueError
     if ids:
         job_ids = []
-        #if get_machine() == 'gibraltar':
-        if True:
+        if get_machine() == 'gibraltar':
             line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
         elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
             line_indices_of_jobnames = job_report.wordgrab(get_username(), 2, matching_index=True)[0]
         line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
         for line_index in line_indices_of_jobnames:
-            #if get_machine() == 'gibraltar':
-            if True:
+            if get_machine() == 'gibraltar':
                 job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
             elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
                 job_ids.append(int(job_report.lines[line_index].split()[0]))
@@ -352,8 +348,7 @@ def get_total_queue_usage():
 
     """
     # gets the number of jobs in the queue for this user, regardless of where they originate
-    #if get_machine() == 'gibraltar':
-    if True:
+    if get_machine() == 'gibraltar':
         jobs = call_bash("qstat -u '" + get_username() + "'", version=2)
     elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
         jobs = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u ' + get_username(),
@@ -574,8 +569,7 @@ def qsub(jobscript_list):
         home = os.getcwd()
         os.chdir(os.path.split(i)[0])
         jobscript = os.path.split(i)[1]
-        #if get_machine() in ['gibraltar']:
-        if True:
+        if get_machine() in ['gibraltar']:
             stdout, stderr = call_bash('qsub ' + jobscript, error=True)
             stdouts.append(stdout)
         elif get_machine() in ['bridges','comet']:
