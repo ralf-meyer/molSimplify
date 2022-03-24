@@ -608,8 +608,7 @@ def write_terachem_input(infile_dictionary):
                             'pcm_radii read\n',
                             'pcm_radii_file /home/harperd/pcm_radii\n',
                             'end']
-    #if infile['machine'] in ['gibraltar','bridges']:
-    if True:
+    if infile['machine'] in ['gibraltar','bridges']:
         text = text[:-1] + ['nbo yes\n', 'gpus 1\n','end']
     elif infile['machine'] in ['comet']:
         text = text[:-1] + ['gpus 2\n','end']
@@ -702,8 +701,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
     #if use_molscontrol and machine != 'gibraltar':
     #    raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
-    #if machine == 'gibraltar':
-    if True:
+    if machine == 'gibraltar':
         if not use_molscontrol:
             text = ['#$ -S /bin/bash\n',
                     '#$ -N ' + name + '\n',
