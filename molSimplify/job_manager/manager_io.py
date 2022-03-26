@@ -211,6 +211,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
 
 
 def read_infile(outfile_path):
+    print(outfile_path)
     # Takes the path to either the outfile or the infile of a job
     # Returns a dictionary of the job settings included in that infile
 
