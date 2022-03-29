@@ -138,7 +138,6 @@ def get_machine():
     """
     # Gets the identity of the machine job_manager is being run on!
     hostname = call_bash('hostname')[0]
-    print("hostname: ", hostname)
     if 'bridges.psc' in hostname:
         machine = 'bridges'
     elif 'gibraltar' in hostname:
@@ -602,7 +601,7 @@ def check_original(job):
     name = name.split('_')
 
     dependent_jobs = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
-                      'functional']
+                      'functional', 'mbe', 'metal']
     if any(j in name for j in dependent_jobs):
         return False
     else:
@@ -898,7 +897,6 @@ def prep_vertical_ip(path):
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
 
     os.chdir(home)
-
     return jobscripts
 
 def prep_vertical_ea(path):

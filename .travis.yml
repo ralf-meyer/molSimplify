@@ -47,4 +47,7 @@ script:
   # - molsimplify -h
 
 notifications:
-          slack: hjklol:tIyrsTGNRmimRH5PcbzOVpvO  
+  slack:
+    if: branch = master
+    rooms:
+      - hjklol:tIyrsTGNRmimRH5PcbzOVpvO

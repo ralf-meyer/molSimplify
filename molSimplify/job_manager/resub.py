@@ -11,7 +11,7 @@ import molSimplify.job_manager.moltools as moltools
 import molSimplify.job_manager.recovery as recovery
 import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.job_manager.classes import resub_history
-from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
+#from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
 
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
@@ -55,7 +55,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
             directory : str
                 Directory of interest to analyze.
             list_of_outfiles : list
-                List of output files that aree read to spawn derivative jobs.
+                List of output files that are read to spawn derivative jobs.
 
     """
     for job in list_of_outfiles:
@@ -73,8 +73,11 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['hfx_resample']:
             tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
-            moltools.prep_ligand_breakown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
+            moltools.prep_ligand_breakdown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
                                           dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
+        if configure_dict['mbe']:
+            moltools.prep_mbe_calc(job) # needs to be generalized, not just for Fe
+            # moltools.prep_mbe_calc(job, metal_charge = configure_dict['metal_charge'])
         if bool(configure_dict['general_sp']):
             tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 
