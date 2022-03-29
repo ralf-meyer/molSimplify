@@ -102,10 +102,16 @@ def test_schlegel_vs_geometric(tmpdir, system):
     coords_ref = geometric.internal.PrimitiveInternalCoordinates(
         mol, connect=True)
     xyzs = atoms.get_positions()
-    H_ref = coords_ref.calcHessCart(
-        xyzs/ase.units.Bohr, np.zeros(len(coords_ref.Internals)),
-        coords_ref.guess_hessian(xyzs/ase.units.Bohr))
-    H_ref *= ase.units.Hartree/ase.units.Bohr**2
+    # The following only works in the newest version of geometric:
+    # H_ref = coords_ref.calcHessCart(
+    #     xyzs/ase.units.Bohr, np.zeros(len(coords_ref.Internals)),
+    #     coords_ref.guess_hessian(xyzs/ase.units.Bohr))
+    # for now calcHessCart is replaced with a simplified function
+    # that neglects the gradient in internal coordinates:
+    Bmat = coords_ref.wilsonB(xyzs/ase.units.Bohr)
+    H_ref = np.einsum('ai,ab,bj->ij', Bmat,
+                      coords_ref.guess_hessian(xyzs/ase.units.Bohr),
+                      Bmat) * ase.units.Hartree/ase.units.Bohr**2
     H = schlegel_hessian(atoms, threshold=1.2)
     np.testing.assert_allclose(H, H_ref, atol=1e-10)
 
