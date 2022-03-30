@@ -73,7 +73,7 @@ cyclam:cyclam.mol,cyclam,17 34 36 15,build tetradentate,A,0
 cyclen:cyclen.mol,cyclen,6 9 0 3,build tetradentate,A,0
 cyclopentadienyl:cyclopentadienyl.mol,Cp,0 1 2 3 4 pi,build aromatic organometallic,N,-1
 cysteine:cysteine.mol,Cys,5,build functionalize aminoacid,BA,0
-dd:dd.smi,dd,0,all  build functionalize,BA
+dd:dd.smi,dd,0,all build functionalize,BA,0
 diaminomethyl:diaminomethyl.mol,damthyl,3 1,build bidentate,N,-1
 dicyanamide:dicyanamide.mol,dicyanamide,0,build small,N,-1
 dppe:dppe.mol,dppe,21 25, build bidentate,A,0
