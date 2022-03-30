@@ -190,5 +190,10 @@ def test_find_primitives_on_homoleptic_octahedrals(ligand):
                         break
             if skip:
                 continue
+            if ligand == 'misc':
+                # Current version of geometric also adds dihedrals stretching
+                # over the metal center. Skip those!
+                if (ic.b, ic.c) in [(3, 15), (9, 21), (27, 33)]:
+                    continue
             dihedrals_ref.append((ic.a, ic.b, ic.c, ic.d))
     assert sorted(dihedrals) == sorted(dihedrals_ref)
