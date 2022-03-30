@@ -205,9 +205,14 @@ def xtb_hessian(atoms, method):
     with tempfile.TemporaryDirectory() as tmpdir:
         # Write .xyz file
         ase.io.write(os.path.join(tmpdir, 'tmp.xyz'), atoms, plain=True)
+        with open(os.path.join(tmpdir, 'xtb.inp'), 'w') as fout:
+            fout.write('$symmetry\n')
+            fout.write('  maxat=0\n')
+            fout.write('$end\n')
+        os.path.join(tmpdir, 'tmp.xyz')
         try:
             output = subprocess.run(
-                ['xtb', '--hess', 'tmp.xyz'],
+                ['xtb', '--input', 'xtb.inp', '--hess', 'tmp.xyz'],
                 cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except FileNotFoundError:
             raise ChildProcessError('Could not find subprocess xtb. Ensure xtb'
