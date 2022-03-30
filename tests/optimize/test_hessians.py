@@ -66,8 +66,10 @@ def test_xtb_hessian(system):
     np.testing.assert_allclose(H, H_ref, atol=1e-2)
 
 
+@pytest.mark.skip('Skipping Hessian test for Fe CO as it fails for both uff '
+                  '(exploding energies) and xtb')
 @pytest.mark.parametrize('method', ['uff', 'xtb'])
-def _test_Fe_CO_6(method):
+def test_Fe_CO_6(method):
     """TODO: Fails for both uff (exploding energies) and xtb
     (see test_xtb_hessian)
     """
