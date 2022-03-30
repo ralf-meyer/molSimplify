@@ -28,6 +28,9 @@ def num_hessian(atoms, step=None):
 @pytest.mark.parametrize('method', _openbabel_methods)
 @pytest.mark.parametrize('system', ['H2', 'H2O', 'C3H8'])
 def test_numerical_hessian(method, system):
+    # check if openbabel version > 3.0. This is necessary as
+    # OBForceField.GetGradient is not public for prior versions.
+    pytest.importorskip('openbabel', minversion='3.0')
     atoms = ase.build.molecule(system)
     atoms.calc = get_calculator(method)
     if method == 'mmff94' and system == 'H2':
