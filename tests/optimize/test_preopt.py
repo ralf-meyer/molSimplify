@@ -3,12 +3,17 @@ import ase.constraints
 import pytest
 import numpy as np
 from molSimplify.optimize.main import run_preoptimization
-from molSimplify.optimize.calculators import _available_methods
+from molSimplify.optimize.calculators import (_available_methods,
+                                              _openbabel_methods)
 from pkg_resources import resource_filename, Requirement
 
 
 @pytest.mark.parametrize('method', _available_methods)
 def test_acac(method):
+    if method in _openbabel_methods:
+        # check if openbabel version > 3.0. This is necessary as
+        # OBForceField.GetGradient is not public for prior versions.
+        pytest.importorskip('openbabel', minversion='3.0')
     in_file = resource_filename(
         Requirement.parse('molSimplify'),
         'tests/optimize/inputs/acac/fe_oct_2_acac_3_s_5_conf_1.xyz')
