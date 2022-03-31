@@ -315,7 +315,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return completeness
 
 
-def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},dissociated_ligand_spinmults = {}):
+def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {},dissociated_ligand_spinmults = {}):
     """Prep ligand breakdown.
 
     Parameters
@@ -451,6 +451,83 @@ def prep_ligand_breakown(outfile_path, dissociated_ligand_charges = {},dissociat
             os.chdir('..')
     os.chdir(home)
 
+    return jobscripts
+
+def prep_mbe_calc(outfile_path, metal_charge = 0):
+    """Prep ligand breakdown.
+
+    Parameters
+    ----------
+        outfile_path : str
+            Path to output file.
+        metal_charge : int, optional
+            Charge for removed metal. Default is 0.
+
+    Returns
+    -------
+        jobscripts : list
+            List of jobscripts for metal binding energy jobs.
+    
+    """
+    # Given a path to the outfile of a finished run, this preps the files for rigid ligand dissociation energies of all ligands
+    # Returns a list of the PATH(s) to the jobscript(s) to start the rigid ligand calculations
+
+    home = os.getcwd()
+    machine = tools.get_machine()
+    outfile_path = tools.convert_to_absolute_path(outfile_path)
+
+    results = manager_io.read_outfile(outfile_path)
+    if not results['finished']:
+        raise Exception('This calculation does not appear to be complete! Aborting...')
+
+    infile_dict = manager_io.read_infile(outfile_path)
+
+    # special case hack for Fe test ~Freya
+    fe_spin = int(infile_dict['spinmult'])
+    if fe_spin == 5:
+        fe_charge = 2
+    else:
+        fe_charge = 3
+    charge = int(infile_dict['charge']) - fe_charge
+    spinmult = 1 # always have a singlet
+
+    base = os.path.split(outfile_path)[0]
+    name = os.path.split(outfile_path)[-1][:-4]
+
+    optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    tools.extract_optimized_geo(optimxyz)
+
+    breakdown_folder = os.path.join(base, name + '_mbe')
+
+    if os.path.isdir(breakdown_folder):
+        return ['Metal binding energy directory already exists']
+
+    mol = mol3D()
+    mol.readfromxyz(os.path.join(base, 'scr', 'optimized.xyz'))
+
+    if not os.path.isdir(breakdown_folder):
+        os.mkdir(breakdown_folder)
+    os.chdir(breakdown_folder)
+
+    jobscripts = []
+    metal_indices = mol.findMetal()
+    # Create the necessary files for the metal-removed complex single point
+    mol.deleteatoms(metal_indices)
+    mol.writexyz(name + '_no_metal.xyz')
+
+    local_infile_dict = copy.copy(infile_dict)
+    local_infile_dict['name'] = name + "_no_metal"
+    local_infile_dict['coordinates'] = name + '_no_metal.xyz'
+    local_infile_dict['charge'], local_infile_dict['spinmult'] = charge, spinmult
+    local_infile_dict['run_type'] = 'energy'
+    local_infile_dict['constraints'], local_infile_dict['convergence_thresholds'] = False, False
+    local_infile_dict['machine'] = machine
+
+    manager_io.write_input(local_infile_dict)
+    manager_io.write_jobscript(name + '_no_metal', time_limit='12:00:00', machine=machine)
+    jobscripts.append(name + '_no_metal.in')
+    os.chdir('..')
+    os.chdir(home)
     return jobscripts
 
 

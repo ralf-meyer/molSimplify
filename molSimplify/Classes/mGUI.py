@@ -26,11 +26,10 @@ from molSimplify.Scripts.grabguivars import (grabguivars, grabguivarsqch,
                                              loadfrominputtc, loadfrominputgam,
                                              loadfrominputqch, writeinputc,
                                              loadfrominputjob)
-from molSimplify.Scripts.molSimplify_io import (readdict, getgeoms,
-                                                getcores, getmcores, getbcores,
-                                                getlicores, getslicores,
-                                                getligs, getbinds, getligroups,
-                                                lig_load, copy_to_custom_path)
+from molSimplify.Scripts.io import (readdict, getgeoms, getcores, getmcores,
+                                    getbcores, getlicores, getslicores,
+                                    getligs, getbinds, getligroups,
+                                    lig_load, copy_to_custom_path)
 from molSimplify.Scripts.addtodb import (addtoldb, addtocdb, addtobdb,
                                          removefromDB)
 import sys

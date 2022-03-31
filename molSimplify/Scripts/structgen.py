@@ -27,14 +27,14 @@ from molSimplify.Scripts.geometry import (PointTranslateSph,
                                           setPdistance,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.molSimplify_io import (core_load,
-                                                getgeoms,
-                                                getinputargs,
-                                                getlicores,
-                                                lig_load,
-                                                loadcoord,
-                                                loaddata,
-                                                name_complex)
+from molSimplify.Scripts.io import (core_load,
+                                    getgeoms,
+                                    getinputargs,
+                                    getlicores,
+                                    lig_load,
+                                    loadcoord,
+                                    loaddata,
+                                    name_complex)
 
 if not sys.version_info >= (3, 0):
     from molSimplify.Scripts.nn_prep import (ANN_preproc)

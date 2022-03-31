@@ -14,8 +14,7 @@ from molSimplify.Scripts.geometry import (checkcolinear,
                                           rotation_params,
                                           vecangle,
                                           vecdiff)
-from molSimplify.Scripts.molSimplify_io import (getlicores,
-                                                lig_load)
+from molSimplify.Scripts.io import getlicores, lig_load
 
 ## FF dependence
 ##########################################
