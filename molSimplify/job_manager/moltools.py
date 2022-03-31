@@ -195,7 +195,7 @@ def apply_geo_check(job_outfile_path, geometry):
                 return False
 
         else:
-            raise Exception('A check has not been implemented for geometry: ' + geoemtry)
+            raise Exception('A check has not been implemented for geometry: ' + geometry)
     else:
         # print('No geomery check requested for job: '+job_outfile_path)
         # print('Passing job without a geometry check')
