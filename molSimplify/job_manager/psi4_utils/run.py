@@ -127,7 +127,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     setup_dft_parameters(psi4_config)
     pid = str(os.getpid())
     if os.path.isfile(psi4_config["moldenfile"]):
-        shutil.copyfile(psi4_config["moldenfile"], rundir + '/'+ psi4_config["moldenfile"])
+        shutil.copyfile(psi4_config["moldenfile"], rundir + '/' + psi4_config["moldenfile"])
         os.chdir(rundir)
         psi4.core.set_output_file(filename + '.dat', False)
         ## 1-step SCF
@@ -284,7 +284,7 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     psi4_scr = './'
     filename = "output"
     basedir = os.getcwd()
-    rundir = "./" + functional + "-%d"% hfx
+    rundir = "./" + functional + "-%d" % hfx
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
     shutil.copyfile("geo.xyz", rundir + '/geo.xyz')
@@ -380,7 +380,7 @@ def write_jobscript(psi4_config):
             fo.write("#$ -R y\n")
             fo.write("#$ -cwd\n")
             fo.write("#$ -l h_rt=240:00:00\n")
-            fo.write("#$ -l h_rss=%dG\n"% (mem))
+            fo.write("#$ -l h_rss=%dG\n" % (mem))
             fo.write("#$ -q cpus\n")
             fo.write("#$ -l cpus=1\n")
             fo.write("#$ -pe smp %d\n"%psi4_config['num_threads'])

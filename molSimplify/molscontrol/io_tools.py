@@ -237,7 +237,7 @@ def get_gradient(gradfile, job_info, num_sv=3, frame=-1):
                 gradtext = fo.readlines()[frame * num_lines:]
         with open(gradfile, 'r') as fo:
             if not len(gradtext):
-                gradtext = fo.readlines()[-1* num_lines:]
+                gradtext = fo.readlines()[-1 * num_lines:]
         frame += 1
         # print("gradtext: ", gradtext)
     grad_mat = np.zeros(shape=(natoms, 3))
@@ -294,7 +294,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
                 chargetext = fo.readlines()[frame * natoms:]
         with open(chargefile, 'r') as fo:
             if not len(chargetext):
-                chargetext = fo.readlines()[-1* natoms:]
+                chargetext = fo.readlines()[-1 * natoms:]
         frame += 1
         # print("chargetext: ", chargetext)
     for line in chargetext:

@@ -151,7 +151,7 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
                     recover = False
                     print("Spin contamination for singlets! (used ub3lyp)")
                 write_xyz_from_db(geodir, jobname, tmcdoc["opt_geo"])
-                wfnpath = "/home/data/wfn/"+ str(tmcdoc['unique_name'])
+                wfnpath = "/home/data/wfn/" + str(tmcdoc['unique_name'])
                 wfnfiles = os.listdir(wfnpath)
                 if not any(x in ["c0", "ca0", "cb0"] and os.stat(wfnpath+'/%s'%x).st_size > 1000 for x in wfnfiles):
                     recover = False
