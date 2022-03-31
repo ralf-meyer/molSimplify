@@ -173,7 +173,7 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
     try:
         rundir_p3 = basedir + '/' + jobname_safe
     except:
-        rundir_p3 = basedir + '/' + jobname.replace('#','3')
+        rundir_p3 = basedir + '/' + jobname.replace('#', '3')
 
     # p3 option
     if safe_filenames:
@@ -181,7 +181,7 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
         try:
             jobname = jobname_safe
         except:
-            jobname = jobname.replace('#','3')
+            jobname = jobname.replace('#', '3')
 
     populated = True
     if not os.path.isdir(rundir) and not os.path.isdir(rundir_p3) and recover:

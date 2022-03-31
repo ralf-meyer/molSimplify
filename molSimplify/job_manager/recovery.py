@@ -201,9 +201,9 @@ def reset(outfile_path):
         # remove all files for derivative jobs spawned based on this job
         derivative_types = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
                             'functional']
-        possible = [i for i in glob.glob(os.path.join(os.path.split(outfile_path)[0],'*')) if os.path.isdir(i)]
+        possible = [i for i in glob.glob(os.path.join(os.path.split(outfile_path)[0], '*')) if os.path.isdir(i)]
         for folder in possible:
-            if os.path.split(outfile_path)[1].rsplit('.',1)[0] in folder:
+            if os.path.split(outfile_path)[1].rsplit('.', 1)[0] in folder:
                 derivative = False
                 for typ in derivative_types:
                     if typ in folder:

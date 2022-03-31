@@ -143,7 +143,7 @@ class textfile:
                 Path to file to read. Default is None.
         """
         if file_name:
-            raw_file = open(file_name,'r')
+            raw_file = open(file_name, 'r')
             self.lines = raw_file.readlines()
             raw_file.close()
             self.lines = [strip_new_line(i) for i in self.lines]
@@ -151,7 +151,7 @@ class textfile:
         else:
             self.lines = None
             
-    def wordgrab(self,keywords,indices, last_line=False, first_line = False, min_value = False, matching_index=False):
+    def wordgrab(self, keywords, indices, last_line=False, first_line = False, min_value = False, matching_index=False):
         """Method to grab words from text. Takes two lists as input.
             
             Parameters
@@ -188,10 +188,10 @@ class textfile:
             indices = [indices]*len(keywords)
             
         results = dict()
-        zipped_values = list(zip(keywords,indices,list(range(len(keywords)))))
+        zipped_values = list(zip(keywords, indices, list(range(len(keywords)))))
         
-        for counter,line in enumerate(self.lines):
-            for keyword,index,keyword_number in zipped_values:
+        for counter, line in enumerate(self.lines):
+            for keyword, index, keyword_number in zipped_values:
                 if keyword in line:
                     
                     if type(index) == int:

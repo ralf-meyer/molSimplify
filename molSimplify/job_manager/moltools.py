@@ -51,7 +51,7 @@ def read_run(outfile_PATH):
         results['metal_spin'] = np.nan
 
     optim_path = os.path.join(os.path.split(outfile_PATH)[0], 'scr', 'optim.xyz')
-    initial_xyz_path = outfile_PATH.rsplit('.',1)[0]+'.xyz'
+    initial_xyz_path = outfile_PATH.rsplit('.', 1)[0]+'.xyz'
     if not os.path.isfile(initial_xyz_path):
         raise Exception('No initial xyz found at: '+initial_xyz_path)
 
@@ -315,7 +315,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return completeness
 
 
-def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {},dissociated_ligand_spinmults = {}):
+def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {}, dissociated_ligand_spinmults = {}):
     """Prep ligand breakdown.
 
     Parameters
