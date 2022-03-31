@@ -22,7 +22,7 @@ def get_layer_outputs(model, layer_index, input,
     return nn_outputs
 
 
-def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
+def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):  # noqa E741
     dist_mat = pairwise_distances(fmat1, fmat2, 'manhattan')
     dist_mat = dist_mat * 1.0 / dist_ref
     dist_avrg, dist_list, labels_list = [], [], []
@@ -50,7 +50,7 @@ def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
     return dist_avrg, dist_list, labels_list
 
 
-def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):
+def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):  # noqa E741
     tree = BallTree(fmat2, leaf_size=2, metric='cityblock')
     dist_mat, inds = tree.query(fmat1, l)
     dist_mat = dist_mat * 1.0 / dist_ref
