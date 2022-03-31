@@ -45,7 +45,7 @@ def get_molecule(xyzfile, charge, spin, sym='c1'):
             fo.readline()
             for ii in range(natoms):
                 wholetext += fo.readline()
-    wholetext += "\nsymmetry %s\nnoreorient\nnocom\n"%sym
+    wholetext += "\nsymmetry %s\nnoreorient\nnocom\n" % sym
     mol = psi4.geometry("""%s""" % wholetext)
     return mol
 
@@ -362,9 +362,9 @@ def get_hfx_functional(functional, hfx):
         mega = "" if "PBE" in functional else "M"
         hfx_func = {
             "name": "hfx_func",
-            "x_functionals": {"%sGGA_X_%s"%(mega, fmap[functional]): {"alpha": 1-hfx*0.01}},
+            "x_functionals": {"%sGGA_X_%s" % (mega, fmap[functional]): {"alpha": 1-hfx*0.01}},
             "x_hf": {"alpha": hfx*0.01},
-            "c_functionals": {"%sGGA_C_%s"%(mega, fmap[functional]): {}}
+            "c_functionals": {"%sGGA_C_%s" % (mega, fmap[functional]): {}}
         }
     else:
         raise ValueError("This functional has not been implemented with HFX resampling yet: ", functional)
@@ -383,7 +383,7 @@ def write_jobscript(psi4_config):
             fo.write("#$ -l h_rss=%dG\n" % (mem))
             fo.write("#$ -q cpus\n")
             fo.write("#$ -l cpus=1\n")
-            fo.write("#$ -pe smp %d\n"%psi4_config['num_threads'])
+            fo.write("#$ -pe smp %d\n" % psi4_config['num_threads'])
             fo.write("# -fin *\n")
 
             fo.write("source /home/crduan/.bashrc\n")
@@ -410,10 +410,10 @@ def write_jobscript(psi4_config):
             fo.write("#SBATCH --job-name=psi4_multiDFA\n")
             fo.write("#SBATCH --nodes=1\n")
             fo.write("#SBATCH --time=96:00:00\n")
-            fo.write("#SBATCH --ntasks-per-node=%d\n"%psi4_config['num_threads'])
+            fo.write("#SBATCH --ntasks-per-node=%d\n" % psi4_config['num_threads'])
             if "queue" in psi4_config and psi4_config["queue"] == "normal":
                 fo.write("#SBATCH --partition=normal\n")
-            fo.write("#SBATCH --mem=%dG\n\n"%mem)
+            fo.write("#SBATCH --mem=%dG\n\n" % mem)
 
             fo.write("source /etc/profile\n")
             fo.write("source ~/.profile\n")

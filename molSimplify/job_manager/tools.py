@@ -1194,7 +1194,7 @@ def prep_general_sp(path, general_config):
             else:
                 new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
             for calc in new_spin:
-                suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), calc)
+                suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), calc)
                 PATH = os.path.join(functional_base_path, suffix)
                 if os.path.isdir(PATH):
                     continue
@@ -1227,7 +1227,7 @@ def prep_general_sp(path, general_config):
                     fil.write('solvent:%s\n' % str(solvent))
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
         elif config['type'] == "energy":
-            suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
+            suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
             PATH = os.path.join(functional_base_path, suffix)
             if os.path.isdir(PATH):
                 continue
