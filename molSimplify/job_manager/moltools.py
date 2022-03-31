@@ -315,7 +315,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return completeness
 
 
-def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {}, dissociated_ligand_spinmults = {}):
+def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges={}, dissociated_ligand_spinmults={}):
     """Prep ligand breakdown.
 
     Parameters
@@ -453,7 +453,7 @@ def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {}, dissoci
 
     return jobscripts
 
-def prep_mbe_calc(outfile_path, metal_charge = 0):
+def prep_mbe_calc(outfile_path, metal_charge=0):
     """Prep ligand breakdown.
 
     Parameters

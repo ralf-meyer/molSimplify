@@ -151,7 +151,7 @@ class textfile:
         else:
             self.lines = None
             
-    def wordgrab(self, keywords, indices, last_line=False, first_line = False, min_value = False, matching_index=False):
+    def wordgrab(self, keywords, indices, last_line=False, first_line=False, min_value=False, matching_index=False):
         """Method to grab words from text. Takes two lists as input.
             
             Parameters

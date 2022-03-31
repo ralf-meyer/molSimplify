@@ -124,7 +124,7 @@ def generate_fake_results_from_db(rundir, jobname, tmcdoc):
     return outpath
 
 
-def populate_single_job(basedir, job, db, safe_filenames = True):
+def populate_single_job(basedir, job, db, safe_filenames=True):
     geodir = basedir + "/initial_geometry/"
     if not os.path.isdir(geodir):
         os.makedirs(geodir)

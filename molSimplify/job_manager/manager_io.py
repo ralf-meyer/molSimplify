@@ -501,7 +501,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
                 parallel_environment=4, precision='dynamic', dftgrid=1, dynamicgrid='yes',
-                machine = 'gibraltar'):
+                machine='gibraltar'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
 
@@ -685,14 +685,14 @@ def write_orca_input(infile_dictionary):
 
 
 def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
-                    machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus', 'gpusnew']):
+                    machine='gibraltar', cwd=False, use_molscontrol=False, queues=['gpus', 'gpusnew']):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
                                  machine=machine, cwd=cwd,
-                                 use_molscontrol=use_molscontrol, queues = queues)
+                                 use_molscontrol=use_molscontrol, queues=queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                              parallel_environment=parallel_environment, 
@@ -703,7 +703,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
-                             machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus', 'gpusnew']):
+                             machine='gibraltar', cwd=False, use_molscontrol=False, queues=['gpus', 'gpusnew']):
     # if use_molscontrol and machine != 'gibraltar':
     #     raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
