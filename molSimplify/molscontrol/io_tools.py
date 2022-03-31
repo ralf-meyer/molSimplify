@@ -18,7 +18,7 @@ tools for io.
 def get_num_frame(geofile):
     with open(geofile, 'r') as fo:
         num_atoms = int(fo.readline().split()[0])
-        num_lines = num_atoms + 2  ## +2 for the xyz format.
+        num_lines = num_atoms + 2  # +2 for the xyz format.
     with open(geofile, 'r') as fo:
         txt = fo.readlines()
     return int(len(txt) / num_lines)
@@ -80,7 +80,7 @@ def read_geometry_to_mol(geofile, frame=-1, txt=False):
     if not txt:
         with open(geofile, 'r') as fo:
             num_atoms = int(fo.readline().split()[0])
-        num_lines = num_atoms + 2  ## +2 for the xyz format.
+        num_lines = num_atoms + 2  # +2 for the xyz format.
         with open(geofile, 'r') as fo:
             if (frame + 1) * num_lines != 0:
                 geotext = fo.readlines()[frame * num_lines:(frame + 1) * num_lines]
