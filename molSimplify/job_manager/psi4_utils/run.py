@@ -104,8 +104,8 @@ def b3lyp_hfx():
                     },
             "x_hf": {"alpha": hfx*0.01},
             "c_functionals": {
-                "GGA_C_LYP": {"alpha": 0.81 },
-                "LDA_C_VWN_RPA": {"alpha": 0.19 }
+                "GGA_C_LYP": {"alpha": 0.81},
+                "LDA_C_VWN_RPA": {"alpha": 0.19}
             }
         }
         b3lyp_d["b3lyp_" + str(hfx)] = hfx_func
@@ -347,8 +347,8 @@ def get_hfx_functional(functional, hfx):
                     },
             "x_hf": {"alpha": hfx*0.01},
             "c_functionals": {
-                "GGA_C_LYP": {"alpha": 0.81 },
-                "LDA_C_VWN_RPA": {"alpha": 0.19 }
+                "GGA_C_LYP": {"alpha": 0.81},
+                "LDA_C_VWN_RPA": {"alpha": 0.19}
             }
         }
     elif functional == "pbe":
