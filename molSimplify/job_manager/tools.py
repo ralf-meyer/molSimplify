@@ -244,7 +244,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
             job_report.lines = call_bash("qstat -r")
         elif get_machine() in ['comet','bridges']:
             job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
-                                          version=2)
+                                         version=2)
         else:
             raise ValueError
     except:

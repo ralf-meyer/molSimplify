@@ -586,9 +586,10 @@ def write_terachem_input(infile_dictionary):
     if type(infile['convergence_thresholds']) == list:
         if infile['convergence_thresholds'][0]:
             thresholds = [line if line.endswith('\n') else line + '\n' for line in infile['convergence_thresholds']]
-            tight_thresholds = "min_converge_gmax " + thresholds[0] + "min_converge_grms " + thresholds[
-                1] + "min_converge_dmax " + thresholds[2] + "min_converge_drms " + thresholds[3] + "min_converge_e " + \
-                               thresholds[4] + "convthre " + thresholds[5]
+            tight_thresholds = ("min_converge_gmax " + thresholds[0] + "min_converge_grms " 
+                                + thresholds[1] + "min_converge_dmax " + thresholds[2] 
+                                + "min_converge_drms " + thresholds[3] + "min_converge_e "
+                                + thresholds[4] + "convthre " + thresholds[5])
             text = text[:-1] + ['\n', tight_thresholds, 'end']
 
     if infile['dispersion']:

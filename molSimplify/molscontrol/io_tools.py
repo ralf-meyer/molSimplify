@@ -150,10 +150,8 @@ def get_geo_metrics(init_mol, job_info, geofile, frame=-1):
     for key in dict_oct_info:
         if "relative" in key:
             continue
-        val = dict_oct_info[key] if (dict_oct_info[key] != -1) and (dict_oct_info[key] != "lig_mismatch") else 1.20 * \
-                                                                                                               dict_oct_check_st[
-                                                                                                                   choice][
-                                                                                                                   key]
+        val = (dict_oct_info[key] if (dict_oct_info[key] != -1) and (dict_oct_info[key] != "lig_mismatch")
+               else 1.20 * dict_oct_check_st[choice][key])
         actural_dict_geo['actural_%s' % key] = val
     for key in dict_oct:
         if "relative" in key:
