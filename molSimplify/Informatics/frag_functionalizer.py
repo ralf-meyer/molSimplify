@@ -160,8 +160,8 @@ for lignum, ligand in enumerate(temp_list):
             inds3 = temp_ligand['frag3_func']
             inds4 = temp_ligand['frag4_func']
 
-            func_inds1  = []
-            func_inds2  = []
+            func_inds1 = []
+            func_inds2 = []
             if isinstance(inds1, list) and len(inds1)>0:
                 func_inds1 += inds1
             if isinstance(inds2, list) and len(inds2)>0:
