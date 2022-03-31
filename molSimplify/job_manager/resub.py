@@ -74,8 +74,8 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['hfx_resample']:
             tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
-            moltools.prep_ligand_breakdown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
-                                          dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
+            moltools.prep_ligand_breakdown(job, dissociated_ligand_charges=configure_dict['dissociated_ligand_charges'],
+                                           dissociated_ligand_spinmults=configure_dict['dissociated_ligand_spinmults'])
         if configure_dict['mbe']:
             moltools.prep_mbe_calc(job) # needs to be generalized, not just for Fe
             # moltools.prep_mbe_calc(job, metal_charge = configure_dict['metal_charge'])
@@ -313,8 +313,8 @@ def resub_psi4(psi4_config):
                 else:
                     cmd = "sbatch jobscript.sh"
                 run_bash(cmd=cmd,
-                        basedir=basedir,
-                        rundir=basedir + "/" + path)
+                         basedir=basedir,
+                         rundir=basedir + "/" + path)
                 time.sleep(3)
 
 
