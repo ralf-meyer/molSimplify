@@ -56,7 +56,6 @@ def call_molsimplify(geodir, job, jobname):
     print(("geodir: ", geodir))
     inner_folder_path = glob.glob(os.path.join(file_name, '*'))[0]
     xyz_path = glob.glob(os.path.join(inner_folder_path, '*.xyz'))[0]
-    xyz_name = os.path.split(xyz_path)[-1]
     charge = False
     with open(inner_folder_path + '/terachem_input', "r") as fo:
         for line in fo:
@@ -143,9 +142,6 @@ def populate_single_job(basedir, job, db, safe_filenames=True):
             print(("Bingo! Optimized geometry found in db: ", query_constraints))
             try:
                 charge = int(tmcdoc["charge"])
-                spin = int(tmcdoc["spin"])
-                energy = float(tmcdoc["energy"])
-                wfn = tmcdoc['wavefunction']
                 ss_act, ss_target = float(tmcdoc["ss_act"]), float(tmcdoc["ss_target"])
                 if abs(ss_act - ss_target) > 1 and tmcdoc["ss_flag"] == 1:
                     recover = False
@@ -190,7 +186,7 @@ def populate_single_job(basedir, job, db, safe_filenames=True):
         os.chdir(rundir)
         # Add fake files etc for a smooth carry-on in job manager for further dependent jobs.
         if tmcdoc is not None:
-            outpath = generate_fake_results_from_db(rundir, jobname, tmcdoc)
+            generate_fake_results_from_db(rundir, jobname, tmcdoc)
         else:
             manager_io.write_input(name=jobname, coordinates=jobname + '.xyz', charge=charge, spinmult=int(job["spin"]), run_type='minimize', solvent=False)
             manager_io.write_jobscript(jobname)

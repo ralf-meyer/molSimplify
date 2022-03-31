@@ -106,7 +106,6 @@ def resub(directory='in place'):
     oscillating_scf_errors = completeness['oscillating_scf_errors']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
     need_resub = completeness['Needs_resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
-    active = completeness['Active']  # These are jobs which are currently running
     thermo_grad_error = completeness['Thermo_grad_error']  # These are thermo jobs encountering the thermo grad error
     waiting = completeness['Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.

@@ -114,7 +114,6 @@ def b3lyp_hfx():
 
 def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     b3lyp_d = b3lyp_hfx()
-    home = expanduser("~")
     psi4_scr = './'
     filename = "output"
     basedir = os.getcwd()
