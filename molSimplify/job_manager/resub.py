@@ -291,7 +291,7 @@ def resub_psi4(psi4_config):
     basedir = os.getcwd()
     if "trigger" in psi4_config:
         manager_io.write_jobscript(psi4_config)
-        if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
+        if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang":
             cmd = "qsub jobscript.sh"
         else:
             cmd = "sbatch jobscript.sh"
@@ -308,7 +308,7 @@ def resub_psi4(psi4_config):
                     json.dump(psi4_config, fo)
                 manager_io.write_jobscript(psi4_config)
                 os.chdir(basedir)
-                if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
+                if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang":
                     cmd = "qsub jobscript.sh"
                 else:
                     cmd = "sbatch jobscript.sh"

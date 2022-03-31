@@ -377,7 +377,7 @@ class dft_control:
 
     def calculate_lse(self, step=False):
         step = self.step_now if not step else step
-        if not self.step_now in self.step_decisions:
+        if self.step_now not in self.step_decisions:
             fmat_train = []
             for ii in range(len(self.train_data[0])):
                 # fmat_train.append(scipy.misc.imresize(self.train_data[0][ii, :self.step_now + 1, :],

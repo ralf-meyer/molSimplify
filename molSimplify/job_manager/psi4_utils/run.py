@@ -242,7 +242,7 @@ def run_general(psi4_config, functional="b3lyp", return_wfn=False):
         "fail_on_maxiter": True})
     if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
         try:
-            if (not functional in b3lyp_d) and (not "hfx_" in functional) and (not "ccsd" in functional):
+            if (functional not in b3lyp_d) and ("hfx_" not in functional) and ("ccsd" not in functional):
                 e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
             elif "hfx_" in functional:
                 basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
@@ -372,7 +372,7 @@ def get_hfx_functional(functional, hfx):
 
 
 def write_jobscript(psi4_config):
-    if not "cluster" in psi4_config:
+    if "cluster" not in psi4_config:
         mem = int(psi4_config['memory'].split(" ")[0])/1000
         with open("./jobscript.sh", "w") as fo:
             fo.write("#$ -S /bin/bash\n")

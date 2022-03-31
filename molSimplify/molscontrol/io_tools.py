@@ -302,7 +302,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
         atom_ind = int(ll[0]) - 1
         if atom_ind in catoms:
             if atom_ind != metal_ind:
-                if not "nan" in ll[-1]:
+                if "nan" not in ll[-1]:
                     dict_mullcharge.update({'charge_%d' % atom_ind: float(ll[-1])})
                 else:
                     dict_mullcharge.update({'charge_%d' % atom_ind: 0})
@@ -312,7 +312,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
         atom_ind = int(ll[0]) - 1
         if atom_ind in catoms:
             if atom_ind == metal_ind:
-                if not "nan" in ll[-1]:
+                if "nan" not in ll[-1]:
                     dict_mullcharge.update({'charge_0': float(ll[-1])})
                 else:
                     dict_mullcharge.update({'charge_0': 0})

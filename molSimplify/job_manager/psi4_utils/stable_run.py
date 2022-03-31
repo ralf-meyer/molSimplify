@@ -22,7 +22,7 @@ def run_with_check(job: str, basedir: str, psi4_config: dict,
         else:
             with open(functional + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
-            if not "==> Iterations <==" in txt:
+            if "==> Iterations <==" not in txt:
                 resubed = True
         if resubed:
             print("previous errored out. resubmitting...")
