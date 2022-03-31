@@ -240,5 +240,3 @@ else:
     new_entry = pd.DataFrame(lig_func_list)
     new_df = pd.concat([df,new_entry],axis=0)
     new_df.to_csv('successful_bridge_functionalizations.csv',index=False)
-
-

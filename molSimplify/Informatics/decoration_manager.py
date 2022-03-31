@@ -204,4 +204,3 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         merged_ligand.writexyz('merged_relaxed.xyz')
         print(BO_mat)    
     return(merged_ligand)
-    

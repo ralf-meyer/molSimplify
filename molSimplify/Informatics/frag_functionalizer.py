@@ -230,6 +230,4 @@ for lignum, ligand in enumerate(temp_list):
         new_df.to_csv('successful_functionalizations.csv',index=False)
 
 with open(os.getcwd()+'/frag_functionalized_synthesized_ligands.json', 'w') as fout:
-    json.dump(functionalized_ligands, fout) 
-
-
+    json.dump(functionalized_ligands, fout)

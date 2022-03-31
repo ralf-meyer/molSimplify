@@ -161,4 +161,3 @@ for i in monodentates:
 
 with open(os.getcwd()+'/synthesized_ligands.json', 'w') as fout:
     json.dump(ligands_to_dump,fout,indent=2)
-
