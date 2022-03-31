@@ -212,8 +212,7 @@ class textfile:
                             results[keyword_number] = [counter]
                         else:
                             results[keyword_number].append(counter)
-                            
-                            
+
         if (last_line and min_value) or (last_line and first_line) or (first_line and min_value):
             raise ValueError('Warning, incompatible options selected in text parsing')
         
