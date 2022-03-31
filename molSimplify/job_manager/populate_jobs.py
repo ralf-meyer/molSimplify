@@ -85,13 +85,13 @@ def generate_fake_results_from_db(rundir, jobname, tmcdoc):
         if int(tmcdoc['spin']) == 1:
             try:
                 shutil.copy(tmcdoc['wavefunction']['c0'], scrdir + '/c0')
-            except:
+            except FileNotFoundError:
                 pass
         else:
             try:
                 shutil.copy(tmcdoc['wavefunction']['ca0'], scrdir + '/ca0')
                 shutil.copy(tmcdoc['wavefunction']['cb0'], scrdir + '/cb0')
-            except:
+            except FileNotFoundError:
                 pass
     inpath = rundir + '/' + jobname + '.in'
     with open(inpath, "w") as fo:
@@ -168,7 +168,7 @@ def populate_single_job(basedir, job, db, safe_filenames=True):
     rundir = basedir + '/' + jobname
     try:
         rundir_p3 = basedir + '/' + jobname_safe
-    except:
+    except NameError:  # jobname_safe not defined
         rundir_p3 = basedir + '/' + jobname.replace('#', '3')
 
     # p3 option
@@ -176,7 +176,7 @@ def populate_single_job(basedir, job, db, safe_filenames=True):
         rundir = rundir_p3
         try:
             jobname = jobname_safe
-        except:
+        except NameError:  # jobname_safe not defined
             jobname = jobname.replace('#', '3')
 
     populated = True

@@ -229,7 +229,7 @@ def reset(outfile_path):
             try:
                 shutil.move(path,
                             os.path.join(old_path, str(np.random.randint(999999999)) + '_' + os.path.split(path)[-1]))
-            except:
+            except FileNotFoundError:
                 print('No file found for: ' + path)
 
         # Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run

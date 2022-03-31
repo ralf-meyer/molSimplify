@@ -19,7 +19,7 @@ def try_float(obj):
     # Converts an object to a floating point if possible
     try:
         floating_point = float(obj)
-    except:
+    except ValueError:
         floating_point = obj
     return floating_point
 

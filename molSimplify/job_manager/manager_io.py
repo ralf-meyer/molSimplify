@@ -14,7 +14,7 @@ def try_float(obj):
     # Converts an object to a floating point if possible
     try:
         floating_point = float(obj)
-    except:
+    except ValueError:
         floating_point = obj
     return floating_point
 
@@ -411,7 +411,7 @@ def read_configure(home_directory, outfile_path):
                     with open(os.getcwd() + "/" + localpath, "r") as f:
                         try:
                             general_sp = json.load(f)
-                        except:
+                        except json.JSONDecodeError:
                             raise ValueError("%s is not a valid json file." % localpath)
                 else:
                     raise ValueError("%s does not exits." % localpath)
@@ -423,7 +423,7 @@ def read_configure(home_directory, outfile_path):
                     with open(os.getcwd() + "/" + localpath, "r") as f:
                         try:
                             psi4_config = json.load(f)
-                        except:
+                        except json.JSONDecodeError:
                             raise ValueError("%s is not a valid json file." % localpath)
                 else:
                     raise ValueError("%s does not exits." % localpath)
