@@ -5,7 +5,6 @@ import numpy as np
 import subprocess
 import pandas as pd
 import shutil
-import time
 from molSimplify.job_manager.classes import resub_history, textfile
 from ast import literal_eval
 import json
