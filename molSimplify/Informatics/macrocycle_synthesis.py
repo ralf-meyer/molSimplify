@@ -1,4 +1,6 @@
-import argparse, subprocess, shutil
+import argparse
+import subprocess
+import shutil
 from molSimplify.Classes.mol3D import *
 import os
 from molSimplify.Informatics.fragment_classes import fragment, bridge, tetradentate

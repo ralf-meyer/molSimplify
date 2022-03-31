@@ -1,6 +1,7 @@
 import json
 import ast
-import sys, os
+import sys
+import os
 import pandas as pd
 
 ### Below is RDKit dependency that this code uses
