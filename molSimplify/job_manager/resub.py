@@ -12,7 +12,7 @@ import molSimplify.job_manager.recovery as recovery
 import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.job_manager.classes import resub_history
 from molSimplify.job_manager.psi4_utils import run_bash
-#from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
+# from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
 
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):

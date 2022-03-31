@@ -42,8 +42,8 @@ def abandon_job(PATH):
     # takes the path to either an outfile or the resub_history pickle
     # sets the jobs status to be abandoned
 
-    #This function is never and should never be called by the job manager. 
-    #It is for manually use with particularly troublesome jobs
+    # This function is never and should never be called by the job manager.
+    # It is for manually use with particularly troublesome jobs
     history = load_history(PATH)
     history.abandon()
     history.save()
@@ -211,7 +211,7 @@ def reset(outfile_path):
                 if derivative:
                     shutil.rmtree(folder)
 
-        #rename outfile and jobscript files
+        # rename outfile and jobscript files
         shutil.move(outfile_path, outfile_path[:-4] + '.old')  # rename old out so it isn't found in .out searches
         shutil.move(outfile_path[:-4] + '_jobscript', outfile_path[
                                                       :-4] + '_oldjob')  # rename old jobscript so it isn't thought to be  job that hasn't started yet

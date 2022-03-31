@@ -704,8 +704,8 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
                              machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus', 'gpusnew']):
-    #if use_molscontrol and machine != 'gibraltar':
-    #    raise ValueError("molscontrol is only implemented on gibraltar for now.")
+    # if use_molscontrol and machine != 'gibraltar':
+    #     raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
     if machine == 'gibraltar':
         if not use_molscontrol:
