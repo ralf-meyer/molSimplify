@@ -4,7 +4,6 @@ import networkx as nx
 from scipy.spatial import distance
 from scipy import sparse
 import copy
-from molSimplify.Informatics.MOF.atomic import COVALENT_RADII
 from molSimplify.Informatics.MOF.atomic import organic, non_metals, noble_gases, metalloids, lanthanides, actinides, transition_metals
 from molSimplify.Informatics.MOF.atomic import alkali, alkaline_earth, main_group, metals
 from molSimplify.Informatics.MOF.atomic import METALS, MASS, COVALENT_RADII
