@@ -11,6 +11,7 @@ import molSimplify.job_manager.moltools as moltools
 import molSimplify.job_manager.recovery as recovery
 import molSimplify.job_manager.manager_io as manager_io
 from molSimplify.job_manager.classes import resub_history
+from molSimplify.job_manager.psi4_utils import run_bash
 #from molSimplify.job_manager.psi4_utils.run import write_jobscript, run_bash
 
 
@@ -289,14 +290,14 @@ def resub(directory='in place'):
 def resub_psi4(psi4_config):
     basedir = os.getcwd()
     if "trigger" in psi4_config:
-        write_jobscript(psi4_config)
+        manager_io.write_jobscript(psi4_config)
         if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
             cmd = "qsub jobscript.sh"
         else:
             cmd = "sbatch jobscript.sh"
         run_bash(cmd=cmd,
-                    basedir=basedir,
-                    rundir=basedir)
+                 basedir=basedir,
+                 rundir=basedir)
         time.sleep(3)
     else:
         for path in os.listdir(basedir):
@@ -305,7 +306,7 @@ def resub_psi4(psi4_config):
                 os.chdir(basedir + "/" + path)
                 with open("psi4_config.json", "w") as fo:
                     json.dump(psi4_config, fo)
-                write_jobscript(psi4_config)
+                manager_io.write_jobscript(psi4_config)
                 os.chdir(basedir)
                 if not "cluster" in psi4_config or psi4_config["cluster"] == "mustang":
                     cmd = "qsub jobscript.sh"
