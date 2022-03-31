@@ -79,7 +79,7 @@ class resub_history:
         """Saves the current status of the history object.
         """
 
-        if self.path == None:
+        if self.path is None:
             raise Exception(
                 'The path for the resub_history pickel file is not specified!')
         with open(self.path, 'wb') as handle:

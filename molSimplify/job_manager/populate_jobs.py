@@ -137,9 +137,9 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
     else:
         jobname = "_".join([job['ligstr'], job['metal'], str(job['spin'])])
     tmcdoc, recover = None, True
-    if not db == None:
+    if db is not None:
         tmcdoc = query_lowestE_converged(db, collection='oct', constraints=query_constraints)
-        if not tmcdoc == None:
+        if tmcdoc is not None:
             print(("Bingo! Optimized geometry found in db: ", query_constraints))
             try:
                 charge = int(tmcdoc["charge"])
@@ -189,7 +189,7 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
         shutil.copyfile(geodir + '/' + jobname + '.xyz', rundir + "/" + jobname + ".xyz")
         os.chdir(rundir)
         # Add fake files etc for a smooth carry-on in job manager for further dependent jobs.
-        if not tmcdoc == None:
+        if tmcdoc is not None:
             outpath = generate_fake_results_from_db(rundir, jobname, tmcdoc)
         else:
             manager_io.write_input(name=jobname, coordinates=jobname + '.xyz', charge=charge, spinmult=int(job["spin"]), run_type='minimize', solvent=False)
