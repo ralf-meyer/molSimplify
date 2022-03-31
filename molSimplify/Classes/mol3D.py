@@ -5328,6 +5328,7 @@ class mol3D:
                 contains atom3D instances that should be in the molecule
         """
         self.atoms = atoms
+        self.natoms = len(atoms)
 
     def setLoc(self, loc):
         """ Sets the conformation of an amino acid in the chain of a protein.
