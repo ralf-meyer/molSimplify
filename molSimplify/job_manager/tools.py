@@ -254,7 +254,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
         names = [i for i in names if i]  # filters out NoneTypes
     elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
         names = job_report.wordgrab(get_username(), 2)[0]
-        names = [i for i in names if i] # filters out NoneTypes
+        names = [i for i in names if i]  # filters out NoneTypes
     else:
         raise ValueError
     if ids:

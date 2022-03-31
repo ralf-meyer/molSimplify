@@ -22,7 +22,7 @@ def isCSD(job):
 
 
 def call_molsimplify(geodir, job, jobname):
-    liglist = ",".join(job["ligstr"].split("_")) # can be a single SMILES string, or list of database ligands (e.g. water_water_water_water_water_water)
+    liglist = ",".join(job["ligstr"].split("_"))  # can be a single SMILES string, or list of database ligands (e.g. water_water_water_water_water_water)
     tmp_name = str(np.random.randint(10 ** 18))  # assign a temporary name so that the results are findable
     temp_rundir = os.path.join(os.path.expanduser('~'), 'Runs')
     bash_command = " ".join(["molsimplify ", '-core ' + job["metal"],
@@ -35,7 +35,7 @@ def call_molsimplify(geodir, job, jobname):
         bash_command = " ".join([bash_command, "-geometry", job["geometry"]])
     if "coord" in job:
         bash_command = " ".join([bash_command, "-coord", str(job["coord"])])
-    if "ligocc" in job: # must be a string, e.g. "6" or "1,1,1,1,1,1"
+    if "ligocc" in job:  # must be a string, e.g. "6" or "1,1,1,1,1,1"
         bash_command = " ".join([bash_command, "-ligocc", job["ligocc"]])
     else:
         bash_command = " ".join([bash_command, "-ligocc", "1,1,1,1,1,1"])
@@ -43,7 +43,7 @@ def call_molsimplify(geodir, job, jobname):
         bash_command = " ".join([bash_command, "-keepHs", job["keepHs"]])
     else:
         bash_command = " ".join([bash_command, "-keepHs", 'yes,yes,yes,yes,yes,yes'])
-    if "smicat" in job: # must be a string, e.g. "1"
+    if "smicat" in job:  # must be a string, e.g. "1"
         bash_command = " ".join([bash_command, "-smicat", job["smicat"]])
     if "skipANN" in job:
         bash_command = " ".join([bash_command, "-skipANN", job["skipANN"]])
@@ -165,7 +165,7 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
         if not iscsd:
             print("NO db connection! Generate initial geometry from molsimplify...")
             jobname_safe = jobname.replace("#", "3").replace("(", "[").replace(")", "]")
-            charge = call_molsimplify(geodir, job, jobname_safe) # this used to say rundir for some reason...
+            charge = call_molsimplify(geodir, job, jobname_safe)  # this used to say rundir for some reason...
         else:
             raise ValueError("Cannot generate initial geometry for CSD complex...")
 

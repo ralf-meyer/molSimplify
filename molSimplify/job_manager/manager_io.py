@@ -123,12 +123,12 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
         min_energy = output.wordgrab('FINAL', 2, min_value=True)[0]
 
         is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
-        if is_finished: # for full optimization
+        if is_finished:  # for full optimization
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
 
         is_finished = output.wordgrab(['processing'], 'whole_line', last_line=True)[0]
-        if is_finished: # for hydrogen optimization
+        if is_finished:  # for hydrogen optimization
             if is_finished[0] == 'Total' and is_finished[1] == 'processing':
                 finished = True
 

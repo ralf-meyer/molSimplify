@@ -489,7 +489,7 @@ def prep_mbe_calc(outfile_path, metal_charge = 0):
     else:
         fe_charge = 3
     charge = int(infile_dict['charge']) - fe_charge
-    spinmult = 1 # always have a singlet
+    spinmult = 1  # always have a singlet
 
     base = os.path.split(outfile_path)[0]
     name = os.path.split(outfile_path)[-1][:-4]
