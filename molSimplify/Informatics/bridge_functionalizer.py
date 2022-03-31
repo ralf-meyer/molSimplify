@@ -28,7 +28,7 @@ funcs = {'C6=CC=CC=C6':'phenyl',
 takes in a batch of synthesized macrocycles
 '''
 input_file = sys.argv[1]
-def read_synthesized_macrocycles(input_file)
+def read_synthesized_macrocycles(input_file):
     with open(sys.argv[1],'r') as f:
         data = json.load(f)
         print('----',len(data))
