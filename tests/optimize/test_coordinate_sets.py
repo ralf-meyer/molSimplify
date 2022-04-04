@@ -3,10 +3,10 @@ import numpy as np
 import geometric.internal
 from utils import g2_molecules
 from molSimplify.Scripts.rmsd import kabsch_rmsd
-from molSimplify.optimize.coordinates import (Distance, Angle,
-                                              LinearAngle, Dihedral,
-                                              InternalCoordinates,
-                                              DelocalizedCoordinates)
+from molSimplify.optimize.primitives import (Distance, Angle,
+                                             LinearAngle, Dihedral)
+from molSimplify.optimize.coordinate_sets import (InternalCoordinates,
+                                                  DelocalizedCoordinates)
 
 
 @pytest.mark.parametrize('name', g2_molecules.keys())

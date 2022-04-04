@@ -10,8 +10,8 @@ from molSimplify.optimize.calculators import (_xtb_methods,
                                               get_calculator)
 from molSimplify.optimize.connectivity import (find_connectivity,
                                                get_primitives)
-from molSimplify.optimize.coordinates import (Distance, Angle, LinearAngle,
-                                              Dihedral, Improper)
+from molSimplify.optimize.primitives import (Distance, Angle, LinearAngle,
+                                             Dihedral, Improper)
 
 
 logger = logging.getLogger(__name__)

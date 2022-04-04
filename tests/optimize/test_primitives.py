@@ -1,11 +1,11 @@
 import pytest
 import numpy as np
 import numdifftools as nd
-from molSimplify.optimize.coordinates import (Distance, InverseDistance,
-                                              Angle, Dihedral, LinearAngle,
-                                              OctahedralA1g, OctahedralEg1,
-                                              OctahedralEg2, OctahedralT1u1,
-                                              OctahedralT1u2, OctahedralT1u3)
+from molSimplify.optimize.primitives import (Distance, InverseDistance,
+                                             Angle, Dihedral, LinearAngle,
+                                             OctahedralA1g, OctahedralEg1,
+                                             OctahedralEg2, OctahedralT1u1,
+                                             OctahedralT1u2, OctahedralT1u3)
 
 
 def test_distances(atol=1e-10):
