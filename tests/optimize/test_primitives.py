@@ -55,6 +55,22 @@ def test_linear_angle(atol=1e-10):
     np.testing.assert_allclose(aw.eref, [0., 0., 1.])
 
 
+def test_dihedral(atol=1e-10):
+    d = Dihedral(0, 1, 2, 3)
+
+    for w in np.pi + np.linspace(-np.pi, np.pi, 101):
+        xyzs = np.array([[-0.7, 0.7*np.cos(w), -0.7*np.sin(w)],
+                        [0., 0., 0.],
+                        [1.0, 0., 0.],
+                        [1.7, 0.7, 0.]])
+
+        if w > np.pi:
+            w_ref = w - 2*np.pi
+        else:
+            w_ref = w
+        assert np.abs(d.value(xyzs) - w_ref) < atol
+
+
 def test_primitive_derivatives(atol=1e-10):
     xyzs = np.array([[0., 0., 0.],
                      [1.3, 0., 0.],
