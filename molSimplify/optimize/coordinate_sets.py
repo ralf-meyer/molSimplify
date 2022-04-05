@@ -1,4 +1,5 @@
 import numpy as np
+from molSimplify.utils.exceptions import ConvergenceError
 
 
 class InternalCoordinates():
@@ -41,8 +42,8 @@ class InternalCoordinates():
             xyzs = xyzs + step
             # Calculate the step for the next iteration
             dq -= step_q
-        raise RuntimeError('Transformation to Cartesians not converged within '
-                           f'{maxiter} iterations')
+        raise ConvergenceError('Transformation to Cartesians not converged '
+                               f'within {maxiter} iterations')
 
     def diff_internals(self, xyzs1, xyzs2):
         dq = np.zeros(len(self.primitives))
