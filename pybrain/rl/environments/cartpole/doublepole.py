@@ -50,4 +50,3 @@ class DoublePoleEnvironment(Environment):
     def getPoleAngles(self):
         """ auxiliary access to just the pole angle(s), to be used by BalanceTask """
         return [self.sensors[0], self.sensors[2]]
-

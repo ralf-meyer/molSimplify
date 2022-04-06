@@ -190,8 +190,8 @@ def fsym(mol):
     for idx in fidx_list:
         sym = mol.getAtom(idx).sym
         fsym_list.append(sym)
-    
-    return fsym_list    
+
+    return fsym_list
 
 def fvalency(mol):
     # getting idxs of interest
@@ -201,8 +201,8 @@ def fvalency(mol):
     for idx in fidx_list:
         valency = len(mol.getBondedAtoms(idx)) - 1
         fvalency_list.append(valency)
-    
-    return fvalency_list    
+
+    return fvalency_list
 
 def fcharge(mol,charge,bond=False):
     # getting idxs of interest
@@ -213,7 +213,7 @@ def fcharge(mol,charge,bond=False):
     for idx in fidx_list:
         partialq = mol.partialcharges[idx]
         fcharge_list.append(float(partialq))
-    
+
     return fcharge_list
 
 def scharge_ave(mol,charge,bond=False):
@@ -245,7 +245,7 @@ def scharge_ave(mol,charge,bond=False):
 #         fcoord = mol.getAtom(idx).coords()
 #         d = distance(mcoord,fcoord)
 #         fdistance_list.append(float(d))
-    
+
 #     return fdistance_list
 
 def all_prop(mol,charge,bond=False):
@@ -332,4 +332,3 @@ def ffeatures(mol,charge,bond=False):
     'fq_5','fq_6','fval_1','fval_2','fval_3','fval_4','fval_5','fval_6']
 
     return feature_names, feature
-

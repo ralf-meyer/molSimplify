@@ -49,4 +49,3 @@ class GoNorthwardTask(EpisodicTask):
 
     def setMaxLength(self, n):
         self.N = n
-

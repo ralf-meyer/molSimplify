@@ -57,4 +57,3 @@ class FiniteDifferences(ContinuousOptimizer):
 
         # update the weights
         self.current = self.gd(gradient)
-

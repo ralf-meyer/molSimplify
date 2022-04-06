@@ -51,4 +51,3 @@ def calcInvFisher(sigma, invSigma=None, factorSigma=None):
     invF.append(sigma)
     invF.reverse()
     return invF
-

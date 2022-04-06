@@ -79,4 +79,3 @@ class StateDependentLayer(NeuronLayer, ParameterContainer):
                 inerr[j] = (outbuf[j] - inbuf[j])
                 if not self.autoalpha and sigma_subst2 != 0:
                     inerr[j] /= sigma_subst2
-

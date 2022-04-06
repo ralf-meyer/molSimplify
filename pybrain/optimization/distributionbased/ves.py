@@ -275,4 +275,3 @@ class VanillaGradientEvolutionStrategies(DistributionBasedOptimizer):
         self.x = self.bestEvaluable
         self.allFactorSigmas[-1][:] = self.factorSigma
         self.sigma = dot(self.factorSigma.T, self.factorSigma)
-

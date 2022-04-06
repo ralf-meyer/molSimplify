@@ -577,4 +577,3 @@ if __name__ == '__main__' :
     # start simulating the world
     while True:
         w.step()
-

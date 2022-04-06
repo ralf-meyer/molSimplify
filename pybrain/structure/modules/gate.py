@@ -93,5 +93,3 @@ class SwitchLayer(NeuronLayer):
     def _backwardImplementation(self, outerr, inerr, outbuf, inbuf):
         inerr += sigmoidPrime(inbuf) * outerr[:self.indim]
         inerr -= sigmoidPrime(inbuf) * outerr[self.indim:]
-
-

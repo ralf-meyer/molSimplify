@@ -79,4 +79,3 @@ class SimpleRenderer(Renderer):
 
             time.sleep(0.05)
         self.stopRequest = False
-

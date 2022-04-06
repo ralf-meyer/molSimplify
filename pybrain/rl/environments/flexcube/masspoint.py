@@ -17,4 +17,3 @@ class MassPoint:
         self.pos = pos
     def setVel(self, vel):
         self.vel = vel
-

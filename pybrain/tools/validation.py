@@ -391,8 +391,3 @@ def testOnSequenceData(module, dataset):
 #    print class_target
 #    print class_output
     return Validator.classificationPerformance(class_output, class_target)
-
-
-
-
-

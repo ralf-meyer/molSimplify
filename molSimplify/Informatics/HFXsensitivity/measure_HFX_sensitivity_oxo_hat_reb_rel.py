@@ -12,7 +12,7 @@ from scipy import stats
 This script takes in an absolute path to a CSV file that has
 complexes labeled, as well as exchange fractions. It then
 takes those values and determines if the behavior is linear or
-not. If the behavior is linear, it calculates the sensitivity. If not, 
+not. If the behavior is linear, it calculates the sensitivity. If not,
 then it gives a reason for not computing it and logs that reason.
 
 The script relies on raw data with one column labeled "complex_no_HFX"
@@ -34,7 +34,7 @@ def measure_sensitivity(path_to_csv, path_to_write=False, R2_cutoff=0.99, CV_tol
     energy_columns = [val for val in raw_data.columns.values if 'oxo' in val or 'hat' in val or 'reb' in val or 'rel' in val]
     raw_data[energy_columns] = raw_data[energy_columns].astype(float)
     ### This loops over unique ligand fields. Here, we keep track of things
-    ### by compiling two lists. One is data that is kept and turned into a 
+    ### by compiling two lists. One is data that is kept and turned into a
     ### sensitivity. The other is any point that is eliminated. We log eliminations
     ### into two categories. The first is 'whole', which means that the whole
     ### ligand field is eliminated. The second is 'point', which means a single
@@ -115,7 +115,7 @@ def measure_sensitivity(path_to_csv, path_to_write=False, R2_cutoff=0.99, CV_tol
                         removed_dict_list += CV_removed_list
                         continue
                     else:
-                        if rxn_energy == 'oxo' or rxn_energy == 'hat' or rxn_energy == 'reb': 
+                        if rxn_energy == 'oxo' or rxn_energy == 'hat' or rxn_energy == 'reb':
                         ##### If it does not meet the R2 check, we check the sign of the slopes.
                             kept_points_X, kept_points_y, slope_removed = slope_sign_check(kept_points_X,kept_points_y, name=row['name'], prop=rxn_energy, num_points=num_points)
                             if len(kept_points_X) < num_points:
@@ -293,7 +293,7 @@ def R2_upon_elimination(X, y, name, prop, R2_cutoff, num_points):
             try:
                 name = int(name)
                 flag = True
-            except: 
+            except:
                 flag = False
             if flag:
                 print(name)
@@ -318,7 +318,7 @@ def slope_sign_check(X, y, name, prop, num_points):
         temp_y = y[i:i+2]
         reg.fit(temp_X.reshape(-1,1),temp_y.reshape(-1,1))
         coef_list.append(float(np.squeeze(reg.coef_)))
-    neg_count = len(list(filter(lambda x: (x < 0), coef_list))) 
+    neg_count = len(list(filter(lambda x: (x < 0), coef_list)))
     pos_count = len(list(filter(lambda x: (x >= 0), coef_list)))
     signchange = ((np.roll(np.sign(coef_list), 1) - np.sign(coef_list)) != 0).astype(int)
     signchange[0] = 0
@@ -332,7 +332,7 @@ def slope_sign_check(X, y, name, prop, num_points):
         sign_flag = signchange_list[0]
     diff_points = abs(neg_count-pos_count)
     remove_counter = 0
-    if ((neg_count == pos_count) or (diff_points>=1 and len(X)<num_points) or 
+    if ((neg_count == pos_count) or (diff_points>=1 and len(X)<num_points) or
             ((len(X)-num_points-min(neg_count,pos_count)-1)<0 and (not min(neg_count,pos_count)<=1)) or ((sign_flag>0.4) and (sign_flag<0.6)) or (num_changes_first>0 and num_changes_second>0)):
         for j, val in enumerate(elim_points_X):
             removed_dict_list.append({'name':name,'alpha':int(np.squeeze(val)), str(prop):float(np.squeeze(elim_points_y[j])),'reason':'identified_slope_sign_change','elim_type':'point'})

@@ -33,4 +33,3 @@ class ConfigGrabber:
         file.close()
         #if len(output)==0: print "Attention: Config for ", name, "not found"
         return output
-

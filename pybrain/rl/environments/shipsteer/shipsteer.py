@@ -125,5 +125,3 @@ class ShipSteeringEnvironment(Environment):
     @property
     def outdim(self):
         return len(self.sensors)
-
-

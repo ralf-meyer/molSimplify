@@ -127,4 +127,3 @@ if __name__ == '__main__':
     print r(net1, net2)
     print r(net2, net1)
     print r.env
-

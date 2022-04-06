@@ -141,4 +141,3 @@ class CartPoleLinEnvironment(CartPoleEnvironment):
     def getCartPosition(self):
         """ auxiliary access to just the cart position, to be used by BalanceTask """
         return self.sensors[2]
-

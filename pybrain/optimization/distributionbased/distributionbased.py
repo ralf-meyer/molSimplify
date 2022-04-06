@@ -31,6 +31,3 @@ class DistributionBasedOptimizer(ContinuousOptimizer):
     def _generateConformingBatch(self):
         """ Generate a batch of samples that conforms to the current distribution.
         If importance mixing is enabled, this can reuse old samples. """
-
-
-

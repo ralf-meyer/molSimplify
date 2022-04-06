@@ -90,5 +90,3 @@ class BidirectionalNetwork(FeedForwardNetwork):
                 self.addConnection(SharedFullConnection(backwardconn, hiddenmesh[(1, i + 1)], hiddenmesh[(1, i)]))
 
         self.sortModules()
-
-

@@ -13,6 +13,3 @@ def test_example_tbp(tmpdir):
     assert passLG
     assert passOG
     assert pass_report
-
-
-

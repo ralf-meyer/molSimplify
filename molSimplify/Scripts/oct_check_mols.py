@@ -102,7 +102,7 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked_inds):
     target_angle: a list of angle (n_catom, < n_catom_candidates)
     catoms_map: a map of {atom_ind_in_mol, ind_in_angle_list}
     picked_inds: atom indexes (in the angle list) that have been picked already.
-    ''' 
+    '''
     _angs = input_angle[1][:]
     angs = copy.copy(_angs)
     picked_angles = [angs[x] for x in picked_inds]
@@ -151,7 +151,7 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked_inds):
 # the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle, catoms_map, picked):
     '''
-    Given the target_angle, choose the input_angle that has the smallest angle deviation 
+    Given the target_angle, choose the input_angle that has the smallest angle deviation
     in input_array.
     input_arr: array of input angles.
     target_angle: array of target angles.

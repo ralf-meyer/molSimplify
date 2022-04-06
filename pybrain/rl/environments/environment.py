@@ -46,5 +46,3 @@ class Environment(object):
         """ Most environments will implement this optional method that allows for
             reinitialization.
         """
-
-

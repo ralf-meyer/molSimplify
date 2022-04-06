@@ -15,14 +15,14 @@ from molSimplify.Classes.mol3D import mol3D
 
 def multitcgen(args, strfiles):
     """Generate multiple terachem input files at once.
-        
+
         Parameters
         ----------
             args : Namespace
                 Namespace of input arguments.
             strfiles : list
                 List of xyz files produced.
-        
+
         Returns
         -------
             jobdirs : list
@@ -65,7 +65,7 @@ def tcgen(args, strfiles, method):
                 List of xyz files produced.
             method : str
                 Name of method to use, (e.g. B3LYP).
-        
+
         Returns
         -------
             jobdirs : list
@@ -258,7 +258,7 @@ def xyz2gxyz(filename):
         ----------
             filename : str
                 Filename of xyz file.
-        
+
         Returns
         -------
             gfilename : str
@@ -282,7 +282,7 @@ def multigamgen(args, strfiles):
                 Namespace of input arguments.
             strfiles : list
                 List of xyz files produced.
-        
+
         Returns
         -------
             jobdirs : list
@@ -316,7 +316,7 @@ def gamgen(args, strfiles, method):
                 List of xyz files produced.
             method : str
                 Name of method to use, (e.g. B3LYP).
-        
+
         Returns
         -------
             jobdirs : list
@@ -486,14 +486,14 @@ def gamgen(args, strfiles, method):
 
 def multiqgen(args, strfiles):
     """Generate multiple QChem input files at once.
-        
+
         Parameters
         ----------
             args : Namespace
                 Namespace of input arguments.
             strfiles : list
                 List of xyz files produced.
-        
+
         Returns
         -------
             jobdirs : list
@@ -527,7 +527,7 @@ def qgen(args, strfiles, method):
                 List of xyz files produced.
             method : str
                 Name of method to use, (e.g. B3LYP).
-        
+
         Returns
         -------
             jobdirs : list
@@ -651,7 +651,7 @@ def mlpgen(args, strfiles, rootdir):
                 List of xyz files produced.
             rootdir : str
                 Path of the root directory.
-        
+
         Returns
         -------
             jobdirs : list
@@ -736,7 +736,7 @@ def multiogen(args, strfiles):
                 Namespace of input arguments.
             strfiles : list
                 List of xyz files produced.
-            
+
         Returns
         -------
             jobdirs : list
@@ -775,7 +775,7 @@ def ogen(args, strfiles, method):
                 List of xyz files produced.
             method : str
                 Method to be used (e.g. B3LYP)
-            
+
         Returns
         -------
             jobdirs : list
@@ -878,7 +878,7 @@ def ogen(args, strfiles, method):
     # Special sanity check for CCSD(T)
     if jobparams['run'] == 'Opt' and 'CC' in jobparams['method']:
         print('''Warning! You requested geometry optimization with Coupled-Cluster methods,
-                which is NOT supported. Instead, we will geometry optimize the structure 
+                which is NOT supported. Instead, we will geometry optimize the structure
                 with B3LYP and then conduct CCSD(T) energy calculation on the optimized structure''')
     # TODO: check ORCA dispersion
     if (args.dispersion):
@@ -967,7 +967,7 @@ def ogenwrt(output, jobparams, xyzf):
                 Dictionary of ORCA input parameters.
             xyzf : str
                 Name for XYZ file.
-            
+
         Returns
         -------
             jobdirs : list
@@ -1025,7 +1025,7 @@ def molcgen(args, strfiles, method):
                 List of xyz files produced.
             method : str
                 Method to be used (e.g. B3LYP)
-            
+
         Returns
         -------
             jobdirs : list
@@ -1189,7 +1189,7 @@ def molcwrt(output, jobparams, xyzf, xyzind):
                 Name for XYZ file.
             xyzind : int
                 Index for xyz file in all generated xyz files
-            
+
         Returns
         -------
             jobdirs : list
@@ -1236,7 +1236,7 @@ def multimolcgen(args, strfiles):
                 Namespace of input arguments.
             strfiles : list
                 List of xyz files produced.
-            
+
         Returns
         -------
             jobdirs : list
@@ -1272,7 +1272,7 @@ def molcbasis(strfiles, basistyp):
                 List of XYZ files produced
             basistyp : str
                 The basis set.
-            
+
         Returns
         -------
             basis : str
@@ -1350,7 +1350,7 @@ def molcras2s(strfiles):
         ----------
             strfiles : list
                 List of XYZ files produced
-            
+
         Returns
         -------
             ras2s : list
@@ -1384,7 +1384,7 @@ def molcnactels(strfiles, oxnum):
                 List of XYZ files produced
             oxnum : int
                 Oxidation state.
-            
+
         Returns
         -------
             nactels : list
@@ -1417,7 +1417,7 @@ def molcfrozens(strfiles):
         ----------
             strfiles : list
                 List of XYZ files produced
-            
+
         Returns
         -------
             frozens : list

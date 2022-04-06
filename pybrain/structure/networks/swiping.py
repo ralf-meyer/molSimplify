@@ -132,4 +132,3 @@ class SwipingNetwork(FeedForwardNetwork):
                 print val.params
             else:
                 print val
-

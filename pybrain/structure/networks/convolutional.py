@@ -77,8 +77,3 @@ if __name__ == '__main__':
         res = N.activate(ravel(array(input)))
         res = res.reshape(3, 3)
         print res
-
-
-
-
-

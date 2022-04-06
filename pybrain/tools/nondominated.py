@@ -173,4 +173,3 @@ def non_dominated_sort(iterable, key=lambda x: x, allowequality=True):
         items -= front
         fronts.append(front)
     return fronts
-

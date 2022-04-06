@@ -74,9 +74,9 @@ def kabsch_rotate(P, Q):
 
 
 def kabsch(P, Q):
-    """Using the Kabsch algorithm with two sets of paired point P and Q, centered 
-    around the centroid. Each vector set is represented as an NxD matrix, where D is the 
-    dimension of the space. The algorithm works in three steps: 
+    """Using the Kabsch algorithm with two sets of paired point P and Q, centered
+    around the centroid. Each vector set is represented as an NxD matrix, where D is the
+    dimension of the space. The algorithm works in three steps:
     1. a centroid translation of P and Q (assumed done before this functioncall)
     2. the computation of a covariance matrix C
     3. computation of the optimal rotation matrix U
@@ -120,7 +120,7 @@ def kabsch(P, Q):
 def quaternion_rmsd(P, Q):
     """ Rotate matrix P unto Q and calculate the RMSD
     based on doi:10.1016/1049-9660(91)90036-O
-        
+
     Parameters
     ----------
         P : np.array
@@ -139,9 +139,9 @@ def quaternion_rmsd(P, Q):
 
 
 def quaternion_transform(r):
-    """Get optimal rotation. 
+    """Get optimal rotation.
     Note: translation will be zero when the centroids of each molecule are the same.
-    
+
     Parameters
     ----------
         r : np.array
@@ -241,12 +241,12 @@ def centroid(X):
     """ Centroid is the mean position of all the points in all of the coordinate
     directions, from a vectorset X. https://en.wikipedia.org/wiki/Centroid
     C = sum(X)/len(X)
-    
+
     Parameters
     ----------
         X : np.array
             (N,D) matrix, where N is points and D is dimension.
-    
+
     Returns
     -------
         C : float
@@ -287,7 +287,7 @@ def hungarian(A, B):
 def reorder_hungarian(p_atoms, q_atoms, p_coord, q_coord):
     """Re-orders the input atom list and xyz coordinates using the Hungarian
     method (using optimized column results)
-        
+
     Parameters
     ----------
         p_atoms : np.array
@@ -328,7 +328,7 @@ def reorder_hungarian(p_atoms, q_atoms, p_coord, q_coord):
 def reorder_distance(p_atoms, q_atoms, p_coord, q_coord):
     """ Re-orders the input atom list and xyz coordinates by atom type and then by
     distance of each atom from the centroid.
-        
+
     Parameters
     ----------
         atoms : np.array

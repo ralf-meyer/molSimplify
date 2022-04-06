@@ -1,5 +1,5 @@
 # ligand name, ligand structure file, abbreviation (unique), connection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), formal charge
-# if connecting atoms 
+# if connecting atoms
 acac:acac.mol,acac,0 5,build functionalize bidentate,BA,-1
 acacen:acacen.mol,acacen, 9 3 14 5,build tetradentate,N,0
 ethylesteracac:ethylesteracac.mol,ethylesteracac,0 5,build functionalize bidentate,BA,-1
@@ -161,7 +161,7 @@ phenisc:phenylisocy.mol,phenisc,0,build mono,A,0
 phenylcyc:phenylcyc.mol,phenylcyc,27 11 13 26,build tetradentate,B,0
 phosacidbipyridine:phosacidbipy.mol,phosacidbip,0 1,build bidentate,BA,0
 phosphine:phosphine.mol,phosphine,0,build small,N,0
-pf3:phosphorustrifluoride.mol,pf3,1,build small,BA,0 
+pf3:phosphorustrifluoride.mol,pf3,1,build small,BA,0
 phenylbenzoxazole:phenylbenzoxazole.mol,phenylbenzoxazole,8 14,build bidentate,BA,0
 phthalocyanine:phthalocyanine.mol,phthalocyanine,30 29 0 2,build tetradentate,A,-2
 pisc:tbuphisocy.mol,pisc,0,bulkymono build,N,0

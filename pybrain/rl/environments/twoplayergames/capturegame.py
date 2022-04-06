@@ -262,4 +262,3 @@ class CaptureGame(TwoPlayerGame):
             p = players[i]
             self.performAction(p.getAction())
             i = (i + 1) % 2
-

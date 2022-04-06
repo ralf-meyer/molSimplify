@@ -26,4 +26,4 @@ maxiter 200
 Lshift 0.2
 end
 
-*xyzfile 2 5 
+*xyzfile 2 5

@@ -379,5 +379,3 @@ class BenchmarkingAgent(object):
         else:
             agent = super(BenchmarkingAgent, self).__getattribute__('agent')
             setattr(agent, key, value)
-
-

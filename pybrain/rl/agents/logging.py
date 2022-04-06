@@ -22,7 +22,7 @@ class LoggingAgent(Agent):
 
     def __init__(self, indim, outdim, **kwargs):
         self.setArgs(**kwargs)
-        
+
         # store input and output dimension
         self.indim = indim
         self.outdim = outdim

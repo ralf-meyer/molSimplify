@@ -159,5 +159,3 @@ class BilinearRanking(RankingFunction):
                 res[i] = ranks[i] + (ranks[i] - transitionpoint) * self.bilinearFactor
         res /= max(res)
         return res
-
-

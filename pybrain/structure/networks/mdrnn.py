@@ -117,5 +117,3 @@ class _AccumulatingMdrnn(_Mdrnn):
         res = super(_AccumulatingMdrnn, self).activate(inpt)
         res.shape = self.outsize, self.indim
         res = res.sum()
-
-

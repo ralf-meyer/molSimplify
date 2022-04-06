@@ -8,7 +8,7 @@ from pybrain.rl.environments.cartpole.doublepole import DoublePoleEnvironment
 from pybrain.rl.environments import EpisodicTask
 from cartpole import CartPoleEnvironment
 from pybrain.utilities import crossproduct
-        
+
 
 class BalanceTask(EpisodicTask):
     """ The task of balancing some pole(s) on a cart """
@@ -155,7 +155,7 @@ class DiscreteNoHelpTask(DiscreteBalanceTask):
         else:
             reward = 0.0
         return reward
-    
+
 
 class DiscretePOMDPTask(DiscreteBalanceTask):
     def __init__(self, env=None, maxsteps=1000):
@@ -215,9 +215,9 @@ class DiscreteBalanceTaskRBF(DiscreteBalanceTask):
     """ From Lagoudakis & Parr, 2003:
     With RBF features to generate a 10-dimensional observation (including bias),
     also no cart-restrictions, no helpful rewards, and a single pole. """
-    
+
     CENTERS = array(crossproduct([[-pi/4, 0, pi/4], [1, 0, -1]]))
-    
+
     def getReward(self):
         angles = map(abs, self.env.getPoleAngles())
         if max(angles) > 1.6:
@@ -225,32 +225,31 @@ class DiscreteBalanceTaskRBF(DiscreteBalanceTask):
         else:
             reward = 0.0
         return reward
-    
+
     def isFinished(self):
         if max(map(abs, self.env.getPoleAngles())) > 1.6:
             return True
         elif self.t >= self.N:
             return True
         return False
-    
+
     def getObservation(self):
         res = ones(1+len(self.CENTERS))
-        sensors = self.env.getSensors()[:-2]        
+        sensors = self.env.getSensors()[:-2]
         res[1:] = exp(-array(map(norm, self.CENTERS-sensors))**2/2)
         return res
-    
+
     @property
     def outdim(self):
         return 1+len(self.CENTERS)
-    
-    
+
+
 class DiscreteDoubleBalanceTaskRBF(DiscreteBalanceTaskRBF):
     """ Same idea, but two poles. """
-    
-    CENTERS = array(crossproduct([[-pi/4, 0, pi/4], [1, 0, -1]]*2))  
-    
+
+    CENTERS = array(crossproduct([[-pi/4, 0, pi/4], [1, 0, -1]]*2))
+
     def __init__(self, env=None, maxsteps=1000):
         if env == None:
             env = DoublePoleEnvironment()
         DiscreteBalanceTask.__init__(self, env, maxsteps)
-    

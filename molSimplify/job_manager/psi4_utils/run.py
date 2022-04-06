@@ -390,7 +390,7 @@ def write_jobscript(psi4_config):
             fo.write("conda activate /home/crduan/miniconda/envs/mols_py36\n")
             fo.write("export PSI_SCRATCH='./'\n")
             fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
-            
+
             if "trigger" in psi4_config:
                 fo.write("python -u loop_derivative_jobs.py  > $SGE_O_WORKDIR/deriv_nohup1.out\n")
             else:
@@ -425,7 +425,7 @@ def write_jobscript(psi4_config):
             fo.write("echo tmpdir: $TMPDIR\n")
             fo.write("cp -rf * $TMPDIR\n")
             fo.write("cd $TMPDIR\n\n")
-            
+
             if "trigger" in psi4_config:
                 fo.write("python -u loop_derivative_jobs.py  > $subdir/deriv_nohup1.out\n")
                 fo.write("rm */*/psi.* */*/dfh.* */*-*/*.npy */b3lyp/*.molden */b3lyp/*1step*\n")
@@ -459,7 +459,7 @@ def write_jobscript(psi4_config):
             fo.write("conda activate mols_psi4\n")
             fo.write("export PSI_SCRATCH='./'\n")
             fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
-            
+
             if "trigger" in psi4_config:
                 fo.write("python -u loop_derivative_jobs.py  > deriv_nohup1.out\n")
             else:

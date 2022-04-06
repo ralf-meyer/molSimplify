@@ -30,6 +30,3 @@ class MDPMazeTask(Task):
         """
         obs = array([self.env.perseus[0] * self.env.mazeTable.shape[0] + self.env.perseus[1]])
         return obs
-
-
-

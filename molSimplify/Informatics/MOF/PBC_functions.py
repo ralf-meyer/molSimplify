@@ -24,7 +24,7 @@ def readcif(name):
             if (not line) or line_stripped.startswith("#"):
                 continue
             line_splitted=line.split()
-            
+
             if line_stripped.startswith("_cell_length_a"):
                 temp = line_splitted[1].replace(')','')
                 temp = temp.replace('(','')
@@ -66,14 +66,14 @@ def readcif(name):
                         fracz_index=atom_props_count-1
                     elif "charge" in line_stripped:
                         charge_index=atom_props_count-1
-        
+
                     cond2=True
                 elif cond2:
                     if len(line_splitted)==atom_props_count:
                         atomlines.append(line)
-        
+
             counter+=1
-        
+
         positions=[]
         numbers=[]
         atomtypes=[]
@@ -132,7 +132,7 @@ def ligand_detect(cell,cart_coords,adj_mat,anchorlist):
         current_node = connected_components[counter]
         for j,v in enumerate(adj_mat[current_node]):
             if v==1 and (j not in checked) and (j not in connected_components):
-                image_flag =compute_image_flag(cell,fcoords[current_node],fcoords[j]) 
+                image_flag =compute_image_flag(cell,fcoords[current_node],fcoords[j])
                 fcoords[j]+= image_flag
                 connected_components.append(j)
                 checked.append(j)
@@ -183,7 +183,7 @@ def returnXYZandGraph(filename,atoms,cell,fcoords,molgraph):
         cart_coord=np.dot(fcoord,cell)
         coord_list.append([cart_coord[0],cart_coord[1],cart_coord[2]])
     tmpstr=",".join([at for at in atoms])
-    if filename != None: 
+    if filename != None:
         np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
     return coord_list, molgraph
 
@@ -227,7 +227,7 @@ def write_cif(fname,cellprm,fcoords,atom_labels):
        f_cif.write("_atom_site_type_symbol\n")
        for i,atom in enumerate(atom_labels):
            f_cif.write("%-5s %8s %8s %8s %5s\n"%(atom,fcoords[i,0],fcoords[i,1],fcoords[i,2],"%s"%(atom)))
-    
+
 def min_img_distance(coords1, coords2, cell):
     invcell=np.linalg.inv(cell)
     one = np.dot(coords1,invcell) % 1
@@ -365,7 +365,7 @@ def compute_adj_matrix(distance_mat,allatomtypes):
             if (set("C") < elements) and  (elements & metals):
                 tempsf = 0.95
             if (set("H") < elements) and  (elements & metals) and (not elements & alkali):
-                tempsf = 0.75 
+                tempsf = 0.75
 
             if (set("O") < elements) and (elements & metals):
                 tempsf = 0.85

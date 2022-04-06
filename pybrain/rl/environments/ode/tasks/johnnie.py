@@ -186,4 +186,3 @@ class StandingUpTask(StandingTask):
             StandingTask.performAction(self, a)
         else:
             StandingTask.performAction(self, action)
-

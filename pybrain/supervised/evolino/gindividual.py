@@ -12,5 +12,3 @@ class Individual(object):
         """ Should return a full copy of the individual
         """
         raise NotImplementedError()
-
-

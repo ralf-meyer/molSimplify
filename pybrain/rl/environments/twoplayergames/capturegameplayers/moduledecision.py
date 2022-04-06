@@ -64,5 +64,3 @@ class ModuleDecidingPlayer(RandomCapturePlayer):
 
     def integrateObservation(self, obs = None):
         pass
-
-

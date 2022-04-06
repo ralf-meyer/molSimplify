@@ -22,7 +22,7 @@ class FunctionEnvironment(Environment, FitnessEvaluator):
     # what would be the desired performance? by default: something close to zero
     desiredValue = 1e-10
     toBeMinimized = True
-    
+
     # does the function already include a penalization term, to keep search near the origin?
     penalized = False
 
@@ -67,4 +67,3 @@ class FunctionEnvironment(Environment, FitnessEvaluator):
 
     # does not provide any observations
     outdim = 0
-

@@ -157,4 +157,3 @@ if __name__ == '__main__':
     d.loadSVMdata(r'M:\Data\Johan\svm\trials_scale.svm')
     print d.getSample()
     print d.getSample()
-

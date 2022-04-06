@@ -130,4 +130,3 @@ class UDPClient(object):
         self.UDPOutSock.sendto(self.ownIP, self.outAddr)
         self.UDPInSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.UDPInSock.bind(self.inAddr)
-

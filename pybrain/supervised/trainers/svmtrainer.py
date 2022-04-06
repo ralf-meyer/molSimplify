@@ -13,20 +13,20 @@ import logging
 
 
 class SVMTrainer(object):
-    """A class performing supervised learning of a DataSet by an SVM unit. See 
+    """A class performing supervised learning of a DataSet by an SVM unit. See
     the remarks on :class:`SVMUnit` above. This whole class is a bit of a hack,
     and provided mostly for convenience of comparisons."""
-    
+
     def __init__(self, svmunit, dataset, modelfile=None, plot=False):
-        """ Initialize data and unit to be trained, and load the model, if 
+        """ Initialize data and unit to be trained, and load the model, if
         provided.
-        
-        The passed `svmunit` has to be an object of class :class:`SVMUnit` 
+
+        The passed `svmunit` has to be an object of class :class:`SVMUnit`
         that is going to be trained on the :class:`ClassificationDataSet` object
-        dataset. 
-        Compared to FNN training we do not use a test data set, instead 5-fold 
+        dataset.
+        Compared to FNN training we do not use a test data set, instead 5-fold
         cross-validation is performed if needed.
-        
+
         If `modelfile` is provided, this model is loaded instead of training.
         If `plot` is True, a grid search is performed and the resulting pattern
         is plotted."""
@@ -41,18 +41,18 @@ class SVMTrainer(object):
             }
 
         if modelfile is not None:  self.load(modelfile)
-        
-        
+
+
     def train(self, search=False, **kwargs):
         """ Train the SVM on the dataset. For RBF kernels (the default), an optional meta-parameter search can be performed.
 
-        :key search: optional name of grid search class to use for RBF kernels: 'GridSearch' or 'GridSearchDOE' 
+        :key search: optional name of grid search class to use for RBF kernels: 'GridSearch' or 'GridSearchDOE'
         :key log2g: base 2 log of the RBF width parameter
         :key log2C: base 2 log of the slack parameter
         :key searchlog: filename into which to dump the search log
-        :key others: ...are passed through to the grid search and/or libsvm 
+        :key others: ...are passed through to the grid search and/or libsvm
         """
-        
+
         self.setParams(**kwargs)
         problem = svm_problem(self.ds['target'].flatten(), self.ds['input'].tolist())
         if search:
@@ -65,19 +65,19 @@ class SVMTrainer(object):
             logging.info(repr(param))
 
         self.svm.setModel(model)
-        
-        
+
+
     def save(self, filename):
         """ save the trained SVM """
         self.svm.saveModel(filename)
-        
-    
+
+
     def load(self, filename):
         """ no training at all - just load the SVM model from a file """
         self.svm.loadModel(filename)
-    
+
     def setParams(self, **kwargs):
-        """ Set parameters for SVM training. Apart from the ones below, you can use all parameters 
+        """ Set parameters for SVM training. Apart from the ones below, you can use all parameters
         defined for the LIBSVM svm_model class, see their documentation.
 
         :key searchlog: Save a list of coordinates and the achieved CV accuracy to this file."""
@@ -94,15 +94,15 @@ class SVMTrainer(object):
             kwargs.pop('searchlog')
         self.params.update(kwargs)
 
-        
-        
+
+
 class GridSearch(svm_model):
     """Helper class used by :class:`SVMTrainer` to perform an exhaustive grid search, and plot the
     resulting accuracy surface, if desired. Adapted from the LIBSVM python toolkit."""
-    
+
     allPts = []
     allScores = []
-    
+
     def __init__(self, problem, targets, cmin, cmax, cstep=None, crossval=5,
                  plotflag=False, maxdepth=8, searchlog='gridsearch_results.txt', **params):
         """ Set up (log) grid search over the two RBF kernel parameters C and gamma.
@@ -125,37 +125,37 @@ class GridSearch(svm_model):
         self.crossval = crossval
         self.plotflag = plotflag
         self.maxdepth = maxdepth  # number of zoom-in steps (DOE search only!)
-        
+
         # set default parameters for training
         self.params = params
-        
+
         if self.plotflag:
-            import pylab as p 
+            import pylab as p
             p.ion()
             p.figure(figsize=[12, 8])
-        
+
         assert isinstance(problem, svm_problem)
         self.problem = problem
         self.targets = targets
-        
+
         self.resfile = open(searchlog, 'w')
 
         # do the parameter searching
         param = self.search()
-        
-        if self.plotflag: 
+
+        if self.plotflag:
             p.ioff()
             p.show()
-        
+
         self.resfile.close()
         svm_model.__init__(self, problem, param)
-        
+
     def setParams(self, **kwargs):
         """ set parameters for SVM training """
         if kwargs.has_key('weight'):
             self.params['nr_weight'] = len(kwargs['weight'])
         self.params.update(kwargs)
-    
+
     def search(self):
         """ iterate successive parameter grid refinement and evaluation; adapted from LIBSVM grid search tool """
         jobs = self.calculate_jobs()
@@ -167,7 +167,7 @@ class GridSearch(svm_model):
                 param = svm_parameter(**self.params)
                 cvresult = array(cross_validation(self.problem, param, self.crossval))
                 corr, = where(cvresult == self.targets)
-                res = (c, g, float(corr.size) / self.targets.size)                
+                res = (c, g, float(corr.size) / self.targets.size)
                 scores.append(res)
                 self._save_points(res)
             self._redraw(scores)
@@ -177,26 +177,26 @@ class GridSearch(svm_model):
         logging.info("best log2C=%12.7g, log2g=%11.7g " % (best[0], best[1]))
         param = svm_parameter(**self.params)
         return param
-    
-        
+
+
     def _permute_sequence(self, seq):
         """ helper function to create a nice sequence of refined regular grids; from LIBSVM grid search tool """
         n = len(seq)
         if n <= 1: return seq
-    
+
         mid = int(n / 2)
         left = self._permute_sequence(seq[:mid])
         right = self._permute_sequence(seq[mid + 1:])
-    
+
         ret = [seq[mid]]
         while left or right:
             if left: ret.append(left.pop(0))
             if right: ret.append(right.pop(0))
-    
+
         return ret
 
     def _range_f(self, begin, end, step):
-        """ like range, but works on non-integer too; from LIBSVM grid search tool """ 
+        """ like range, but works on non-integer too; from LIBSVM grid search tool """
         seq = []
         while 1:
             if step > 0 and begin > end: break
@@ -206,7 +206,7 @@ class GridSearch(svm_model):
         return seq
 
     def calculate_jobs(self):
-        """ like range, but works on non-integer too; from LIBSVM grid search tool """ 
+        """ like range, but works on non-integer too; from LIBSVM grid search tool """
         c_seq = self._permute_sequence(self._range_f(self.usermin[0], self.usermax[0], self.userstep[0]))
         g_seq = self._permute_sequence(self._range_f(self.usermin[1], self.usermax[1], self.userstep[1]))
         nr_c = float(len(c_seq))
@@ -216,7 +216,7 @@ class GridSearch(svm_model):
         i = 0
         j = 0
         jobs = []
-    
+
         while i < nr_c or j < nr_g:
             if i / nr_c < j / nr_g:
                 # increase C resolution
@@ -239,10 +239,10 @@ class GridSearch(svm_model):
         self.resfile.write("%g, %g, %g\n" % res)
         logging.info("log2C=%g, log2g=%g, res=%g" % res)
         self.resfile.flush()
-        
+
     def _redraw(self, db, tofile=0, eta=None):
         """ redraw the updated grid interactively """
-        import pylab as p 
+        import pylab as p
         if len(db) <= 3 or not self.plotflag: return
         #begin_level = round(max(map(lambda(x):x[2],db))) - 3
         #step_size = 0.25
@@ -267,7 +267,7 @@ class GridSearch(svm_model):
         y = dbarr[:, 1]
         y = y.reshape(dimx, dimy)
         z = dbarr[:, 2].reshape(dimx, dimy)
-    
+
         # plot using manual double buffer
         p.ioff()
         p.clf()
@@ -281,18 +281,18 @@ class GridSearch(svm_model):
         p.ion()
         p.draw_if_interactive()
 
-        
+
 
 class GridSearchDOE(GridSearch):
     """ Same as GridSearch, but implements a design-of-experiments based search pattern, as
     described by C. Staelin, http://www.hpl.hp.com/techreports/2002/HPL-2002-354R1.pdf """
 
-    # DOE pattern; the last 5 points do not need to be calculated when refining the grid 
+    # DOE pattern; the last 5 points do not need to be calculated when refining the grid
     doepat = array([[0.5, 1], [0.25, 0.75], [0.75, 0.75], [0, 0.5], [1, 0.5], \
               [0.25, 0.25], [0.75, 0.25], [0.5, 0], [0, 1], [1, 1], [0.5, 0.5], [0, 0], [1, 0]])
     nPts = 13
     depth = 0
-    
+
     def search(self, cmin=None, cmax=None):
         """ iterate parameter grid refinement and evaluation recursively """
         if self.depth > self.maxdepth:
@@ -304,14 +304,14 @@ class GridSearchDOE(GridSearch):
             logging.info("Grid search completed! Final parameters:")
             logging.info(repr(param))
             return param
-        
+
         # generate DOE gridpoints using current range
         if cmin is None:
             # use initial values, if none given
             cmin = array(self.usermin)
             cmax = array(self.usermax)
         points = self.refineGrid(cmin, cmax)
-        
+
         # calculate scores for all grid points using n-fold cross-validation
         scores = []
         isnew = array([True] * self.nPts)
@@ -321,19 +321,19 @@ class GridSearchDOE(GridSearch):
                 # point already exists
                 isnew[i] = False
                 scores.append(self.allScores[idx])
-            else: 
+            else:
                 # new point, run cross-validation
                 self.setParams(C=2 ** points[i, 0], gamma=2 ** points[i, 1])
                 param = svm_parameter(**self.params)
                 cvresult = array(cross_validation(self.problem, param, self.crossval))
-                # save cross validation result as "% correct" 
+                # save cross validation result as "% correct"
                 corr, = where(cvresult == self.targets)
                 corr = float(corr.size) / self.targets.size
                 scores.append(corr)
                 self._save_points((points[i, 0], points[i, 1], corr))
 
         scores = array(scores)
-        
+
         # find max and new ranges by halving the old ones, whereby
         # entire search region must lie within original search range
         newctr = points[scores.argmax(), :].copy()
@@ -343,7 +343,7 @@ class GridSearchDOE(GridSearch):
         cmin = newctr - newdiff
         cmax = newctr + newdiff
         logging.info("depth:\t%3d\tcrange:\t%g\tscore:\t%g" % (self.depth, cmax[0] - cmin[0], scores.max()))
-        
+
         # append points and scores to the full list
         if self.depth == 0:
             self.allPts = points[isnew, :].copy()
@@ -351,25 +351,25 @@ class GridSearchDOE(GridSearch):
         else:
             self.allPts = append(self.allPts, points[isnew, :], axis=0)
             self.allScores = append(self.allScores, scores[isnew], axis=0)
-        
+
         if self.plotflag:
-            import pylab as p 
+            import pylab as p
             if self.depth == 0:
                 self.oPlot = p.plot(self.allPts[:, 0], self.allPts[:, 1], 'o')[0]
             # insert new data into plot
             self.oPlot.set_data(self.allPts[:, 0], self.allPts[:, 1])
             p.draw()
-        
+
         # recursively call ourselves
-        self.depth += 1    
+        self.depth += 1
         return self.search(cmin, cmax)
-    
-    
+
+
     def refineGrid(self, cmin, cmax):
         """ given grid boundaries, generate the corresponding DOE pattern from template"""
         diff = array((cmax - cmin).tolist()*self.nPts).reshape(self.nPts, self.nPars)
         return self.doepat * diff + array(cmin.tolist()*self.nPts).reshape(self.nPts, self.nPars)
-    
+
     def _findIndex(self, point):
         """ determines whether given point already exists in list of all calculated points.
         raises exception if more than one point is found, returns -1 if no point is found """
@@ -387,5 +387,3 @@ class GridSearchDOE(GridSearch):
             raise
         else:
             return idx[0]
-
-

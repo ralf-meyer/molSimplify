@@ -160,4 +160,3 @@ def get_truncated_kier(ligand, connection_atoms):
     # trunc_mol.writexyz('trunc.xyz')
     this_kier = kier(trunc_mol)
     return this_kier
-

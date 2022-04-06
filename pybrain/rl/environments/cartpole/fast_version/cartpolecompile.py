@@ -25,4 +25,3 @@ setup(ext_modules=[Extension('cartpolewrap', ['cartpolewrap.pyx', 'cartpole.cpp'
                                 pyrex_cplus=[True],
                                 )],
       cmdclass={'build_ext': build_ext})
-

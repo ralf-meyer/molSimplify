@@ -147,4 +147,3 @@ class CaptureGameNetwork(BorderSwipingNetwork):
             for mc in self.motherconnections:
                 mc.owner = self
             return CaptureGameNetwork(predefined = cdict, **args)
-

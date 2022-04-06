@@ -15,17 +15,17 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    ```bash
    git clone https://github.com/hjkgrp/molSimplify.git
    ```
-   
+
 3. Go to the folder root folder for molSimplify, create the conda environment from the yaml file (`conda_envs/mols.yml`). **For M1 Macs, use mols_m1.yml instead.** This step will help you get all the dependencies correct in a newly created conda environment named "mols_test". You can specify a different name for this environment at the first line of the yaml file.
 
    ```bash
-   cd molSimplify/conda-envs 
+   cd molSimplify/conda-envs
    conda env create -f mols.yml
    ```
 4. Activate the conda environment you just created. Go back to the root directory of molSimplify (where the setup.py file locates). Local install with pip.
    ```bash
    conda activate mols_test
-   cd .. 
+   cd ..
    pip install -e .
    ```
 5. **(For M1 Macs only)** Install the M1-compatible version of Tensorflow by running `source conda_envs/install_tensorflow_m1.sh`.
@@ -35,7 +35,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    ```
 
 ### via docker
-We also maintain an active [docker image on dockerhub](https://hub.docker.com/repository/docker/hjkgroup/molsimplify) for plug-and-play use. 
+We also maintain an active [docker image on dockerhub](https://hub.docker.com/repository/docker/hjkgroup/molsimplify) for plug-and-play use.
 
 For line by line instructions on an installation via docker, please visit [molSimplify installation webpage of Kulik group](http://hjkgrp.mit.edu/content/installing-molsimplify).
 
@@ -82,4 +82,3 @@ year = {2018},
 If you use any machine learning (ML) models in molSimplify that results in a publication, please cite the corresponding reference in [this MLmodel reference page](https://github.com/hjkgrp/molSimplify/blob/master/MLmodel-reference.md).
 
 **Note that we have disabled developers' supports for Python 2.7 and will only release conda builds on Python 3.**
-

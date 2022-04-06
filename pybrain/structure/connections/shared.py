@@ -79,4 +79,3 @@ class SharedSubsamplingConnection(SharedConnection, SubsamplingConnection):
 
     def _backwardImplementation(self, outerr, inerr, inbuf):
         SubsamplingConnection._backwardImplementation(self, outerr, inerr, inbuf)
-

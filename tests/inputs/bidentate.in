@@ -1,7 +1,7 @@
 -core fe
 -geometry oct
 -coord 6
--lig  bidentate_lig.smi 
+-lig  bidentate_lig.smi
 -ligocc 3
 -keepHs true
 -spin 1

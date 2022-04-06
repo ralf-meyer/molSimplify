@@ -32,4 +32,3 @@ class Table(Module, ParameterContainer):
     def getValue(self, row, column):
         """ return the value at a certain location in the table. """
         return self.params.reshape(self.numRows, self.numColumns)[row, column]
-

@@ -14,4 +14,3 @@ class GomokuPlayer(Agent):
         self.game = game
         self.color = color
         self.setArgs(**args)
-

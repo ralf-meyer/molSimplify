@@ -288,5 +288,3 @@ class NNclassifier(NNtools):
             logging.info("Result on evaluation data: %5.2f%%" % r_val)
 
         self.trainCurve = (learncurve_x, learncurve_y, valcurve_y)
-
-

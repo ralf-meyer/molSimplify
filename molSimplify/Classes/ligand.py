@@ -13,7 +13,7 @@ from molSimplify.Classes.globalvars import bondivdw, vdwrad
 # Ligand class for postprocessing DFT results by measuring ligand properties
 class ligand:
     """Ligand class for postprocessing DFT results to measure ligand properties.
-        
+
     Parameters
     ----------
         master_mol : mol3D
@@ -95,9 +95,9 @@ class ligand:
             self.mol.prop_tensor = prop_tensor
             self.mol.prop_name = self.master_mol.prop_name
         self.ext_int_dict = this_ext_int_dict
-    
+
     def get_lig_mol2(self, transition_metals_only=True, inds=None, include_metal=True, bimetal=False):
-        """Write out ligand mol2 string and molecular graph determinant. 
+        """Write out ligand mol2 string and molecular graph determinant.
         Include Metal flagged with Symbol "X" for placeholder status.
         Parameters
         ----------
@@ -114,7 +114,7 @@ class ligand:
                 Mol2 string for the ligand.
             catoms_indices : list
                 List of catom (connection atom) indices - only returned if include_metal is set to False. Zero-indexed.
-        
+
         """
         this_mol2 = mol3D()
         if inds:
@@ -188,7 +188,7 @@ class ligand:
             Scale of the bondi vdw radii for ligand atoms, by default 1.17
             Paper recommends 1.17
         hydrogens : bool, optional
-            Include hydrogens in percent buried volume, by default True 
+            Include hydrogens in percent buried volume, by default True
             Paper recommends to not include hydrogens.
 
         Returns
@@ -243,15 +243,15 @@ class ligand:
             # Compare distances to radii of atoms, flag any less than than or equal to the radii as buried
             buried = len(np.where(np.any(np.less_equal(ds[:, :], radiusvect[:, None]), axis=0))[0])
             total = ds.shape[1]
-            # Percent buried volume 
+            # Percent buried volume
             percent_buried = float(buried)/total*100
         self.percent_buried_volume = percent_buried
         return percent_buried
 
 
 def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
-    """Extract axial and equatorial components of a octahedral complex. 
-    
+    """Extract axial and equatorial components of a octahedral complex.
+
     Parameters
     ----------
         mol : mol3D
@@ -271,7 +271,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
             List of ligand denticities
         ligcons : list
             List of ligand connection indices (in mol)
-    
+
     """
     # this function takes an octahedral
     # complex and returns ligands
@@ -311,7 +311,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
 
 def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sym_match=False):
     """Assign axial and equatorial portions. Deprecated. Use ligand_assign_consistent. For octahedral geometries.
-    
+
     Parameters
     ----------
         mol : mol3D
@@ -346,11 +346,11 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
             Connecting atoms indices of equatorial ligands.
         ax_con_list : list
             Connecting atoms of axial ligands.
-        eq_con_list : list 
+        eq_con_list : list
             Connecting atoms of equatorial ligands.
         built_ligand_list : list
             List of ligand classes for all ligands.
-    
+
     """
     valid = True
     # loud = False
@@ -751,7 +751,7 @@ def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sy
 def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                              name=False, use_z=False, eq_sym_match=False):
     """This ligand assignment code handles octahedral complexes consistently. Assigns any octahedral complex.
-    
+
     Parameters
     ----------
         mol : mol3D
@@ -788,11 +788,11 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
             Connecting atoms indices of equatorial ligands.
         ax_con_list : list
             Connecting atoms of axial ligands.
-        eq_con_list : list 
+        eq_con_list : list
             Connecting atoms of equatorial ligands.
         built_ligand_list : list
             List of ligand classes for all ligands.
-    
+
     """
     ####### This ligand assignment code handles octahedral complexes consistently.
     ####### It should be able to assign any octahedral complex
@@ -893,7 +893,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
     unique_ligcons = list()
     ligand_counts = list()
     for j, built_ligs in enumerate(built_ligand_list):
-        # test if ligand is unique 
+        # test if ligand is unique
         sl = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
         # Added check for if ligand connecting atoms are also identical
         sl_ligcons = sorted([atom.symbol() for atom in mol.getAtomwithinds(ligcons[j])])
@@ -913,7 +913,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
             ligand_counts.append(1)
             ligand_records.append(j)
     # Pair list contains all pairs of combinations of connecting atom points
-    pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2))  # Pairs of coordinates of ligand-connecting atoms 
+    pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2))  # Pairs of coordinates of ligand-connecting atoms
     angle_list = list()
     pair_list = list()
     for i, pair in enumerate(pair_combos):
@@ -930,8 +930,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
     point_combos = [pair_list[argsort_angle_list[0]] + pair_list[argsort_angle_list[1]],
                     pair_list[argsort_angle_list[1]] + pair_list[argsort_angle_list[2]],
                     pair_list[argsort_angle_list[2]] + pair_list[argsort_angle_list[0]]]
-    #### Next, fit each of these planes with a best fit plane. 
-    #### The plane that fits best will be the equatorial plane by default. 
+    #### Next, fit each of these planes with a best fit plane.
+    #### The plane that fits best will be the equatorial plane by default.
     #### In some cases, the plane must be overruled (i.e seesaw tetradentates)
     #### For special cases like the seesaw, there is consistent handling such that
     #### there is consistent behavior for the ones within the same ligand class.
@@ -973,8 +973,8 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
         print('errors next, argmin combo selected')
         print(error_list)
     #### Find the points that correspond to the best fit plane through 4 points.
-    #### Eq points are used later. Eq points has the number of the connection atoms 
-    #### across from each other. It pulls from a list of 0, 1, 2, 3, 4, 5, and gets 
+    #### Eq points are used later. Eq points has the number of the connection atoms
+    #### across from each other. It pulls from a list of 0, 1, 2, 3, 4, 5, and gets
     #### which 4 are the atoms that are in the equatorial plane.
     eq_points = combo_list[np.argmin(np.array(error_list))]
     max_mw_idx = np.argmax(np.array(mw_plane_list))  # Saved for planar 3X3 dentate cases
@@ -1046,14 +1046,14 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                         temp_ligsym_unique = unique_ligcons[i]
                         for j, built_ligs in enumerate(built_ligand_list):
                             sym_list = sorted([
-                                atom.symbol() for atom in 
+                                atom.symbol() for atom in
                                 built_ligs.master_mol.getAtomwithinds(built_ligs.index_list)])
                             ligcon_inds = [x for x in built_ligs.index_list if x in flat_ligcons]
                             sl_ligcon = sorted([atom.symbol() for atom in built_ligs.master_mol.getAtomwithinds(ligcon_inds)])
                             if sym_list != temp_unique or sl_ligcon != temp_ligsym_unique:
                                 continue
                             elif (ligand_count == 5):
-                                #### In the 5+1 monodentate case, 4 of the 5 are assigned to be equatorial, 
+                                #### In the 5+1 monodentate case, 4 of the 5 are assigned to be equatorial,
                                 five_repeats.append(j)
                             elif (ligand_count == 1):
                                 ax_lig_list.append(j)
@@ -1101,13 +1101,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                         if loud:
                             print(('pair of atoms, then angle', pair, angle))
                         angle_list.append(angle)
-                    #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+                    #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two.
                     #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
                     #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
                     test_angle = np.sort(np.array(angle_list))[::-1][1]
                     if test_angle < angle_cutoff:
                         seesaw = True
-                        #### In the seesaw, the two furthest apart are denoted as axial. 
+                        #### In the seesaw, the two furthest apart are denoted as axial.
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
                         axial_pair = [four_repeats_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
                     else:
@@ -1120,7 +1120,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                         ax_lig_list = axial_pair
                         ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
                     else:  # 2 points in eq plane, seesaw case
-                        #### In the seesaw, the two furthest apart are denoted as axial. 
+                        #### In the seesaw, the two furthest apart are denoted as axial.
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
                         eq_plane_cons = list(set(flat_ligcons) - set([val[0] for val in axial_pair]))
                         eq_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] in eq_plane_cons]
@@ -1171,7 +1171,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 eq_con_list = [ligcons[i] for i in allowed]
                 ax_lig_list = [top_lig, bot_lig]
                 ax_con_list = [top_con, bot_con]
-            else: 
+            else:
                 if max(ligand_counts) == 4:  # Seesaw vs. Planar
                     four_repeats = list()
                     for i, ligand_count in enumerate(ligand_counts):
@@ -1199,13 +1199,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                         if loud:
                             print(('pair of atoms, then angle', pair, angle))
                         angle_list.append(angle)
-                    #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+                    #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two.
                     #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
                     #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
                     test_angle = np.sort(np.array(angle_list))[::-1][1]
                     if test_angle < angle_cutoff:
                         seesaw = True
-                        #### In the seesaw, the two furthest apart are denoted as axial. 
+                        #### In the seesaw, the two furthest apart are denoted as axial.
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
                         axial_pair = [four_repeats_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
                     else:
@@ -1218,7 +1218,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                         ax_lig_list = axial_pair
                         ax_con_list = [ligcons[axial_pair[0]], ligcons[axial_pair[1]]]
                     else:  # 2 points in eq plane, seesaw case
-                        #### In the seesaw, the two furthest apart are denoted as axial. 
+                        #### In the seesaw, the two furthest apart are denoted as axial.
                         #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
                         eq_plane_cons = list(set(flat_ligcons) - set([val[0] for val in axial_pair]))
                         eq_con_list = [ligcons[j] for j in range(len(ligcons)) if ligcons[j] in eq_plane_cons]
@@ -1349,7 +1349,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
         # Reorder equatorial plane
         eq_con_list = [eq_con_list[x] for x in eq_order]
         eq_lig_list = [eq_lig_list[x] for x in eq_order]
-    elif (n_ligs == 5):  # 2+1+1+1+1 
+    elif (n_ligs == 5):  # 2+1+1+1+1
         allowed = list(range(0, 5))
         if loud:
             print('bidentate 2+1+1+1+1 case')
@@ -1381,7 +1381,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
             eq_lig_list = [bidentate_ligand_idx, monodentate_eq_idxs[0], monodentate_eq_idxs[1]]
             eq_con_list = [bidentate_cons, monodentate_eq_cons[0], monodentate_eq_cons[1]]  # ADDED
             ax_lig_list = [val for val in mono_dentate_idx_set if val not in monodentate_eq_idxs]
-            ax_con_list = [[val] for val in mono_con_list if val not in [x[0] for x in monodentate_eq_cons]]  
+            ax_con_list = [[val] for val in mono_con_list if val not in [x[0] for x in monodentate_eq_cons]]
         else:
             ax_lig_list = [bidentate_ligand_idx, bidentate_ligand_idx]
             ax_con_list = [[val] for val in bidentate_cons]
@@ -1444,10 +1444,10 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 tri_eq_ligcons = list(set(tridentate_cons).intersection(
                                       set([flat_ligcons[x] for x in eq_points_max_mw])))
                 mono_eq_ligcons = list(set([flat_ligcons[x] for x in eq_points_max_mw])-set(tri_eq_ligcons))
-                eq_lig_list = [tridentate_ligand_idx, flat_lig_refs[flat_ligcons.index(mono_eq_ligcons[0])], 
+                eq_lig_list = [tridentate_ligand_idx, flat_lig_refs[flat_ligcons.index(mono_eq_ligcons[0])],
                                flat_lig_refs[flat_ligcons.index(mono_eq_ligcons[1])]]
                 eq_con_list = [tri_eq_ligcons, [mono_eq_ligcons[0]], [mono_eq_ligcons[1]]]
-                ax_lig_list = [tridentate_ligand_idx, 
+                ax_lig_list = [tridentate_ligand_idx,
                                list(set(mono_dentate_idx_set).difference(set([x for x in eq_lig_list[1:]])))[0]]
                 tri_ax_ligcon = list(set(tridentate_cons).difference(
                                       set(tri_eq_ligcons)))
@@ -1473,7 +1473,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
-            #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+            #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two.
             #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
             #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
             test_angle = np.sort(np.array(angle_list))[::-1][1]
@@ -1488,9 +1488,9 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 seesaw = False
             if not seesaw:  # Planar
                 eq_lig_list = [bidentate_ligand_idx1, bidentate_ligand_idx2]
-                eq_con_list = [bidentate_cons1, bidentate_cons2]  
+                eq_con_list = [bidentate_cons1, bidentate_cons2]
                 ax_lig_list = list(set(allowed)-set([bidentate_ligand_idx1, bidentate_ligand_idx2]))
-                ax_con_list = [ligcons[j] for j in ax_lig_list] 
+                ax_con_list = [ligcons[j] for j in ax_lig_list]
             else:  # 2 points in eq plane, seesaw case
                 ax_con_list = axial_pair
                 flat_ax_con_list = [item for sublist in ax_con_list for item in sublist]
@@ -1507,7 +1507,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 eq_con_list = eq_con_bidentate_list
                 flat_eq_con_list = [item for sublist in eq_con_list for item in sublist]
                 eq_lig_list = [
-                    j for j, val in enumerate(ligcons) if 
+                    j for j, val in enumerate(ligcons) if
                     len(set(val).intersection(set(flat_eq_con_list))) > 0]
     elif (n_ligs == 3):  # 2+2+2 or 4+1+1, can be seesaw/planar or 3+2+1, seesaw/planar
         if max(ligdents) == 4:  # 4+1+1
@@ -1526,13 +1526,13 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 if loud:
                     print(('pair of atoms, then angle', pair, angle))
                 angle_list.append(angle)
-            #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two. 
+            #### Seesaws will have only 1 ~180 degree angle, whereas planar ligands will have two.
             #### Thus, after measuring the angles for all tetradentate connecting atoms through the metal,
             #### looking at the angle of the first (not zeroeth) element tells us whether or not we have a seesaw.
             test_angle = np.sort(np.array(angle_list))[::-1][1]
             if test_angle < angle_cutoff:
                 seesaw = True
-                #### In the seesaw, the two furthest apart are denoted as axial. 
+                #### In the seesaw, the two furthest apart are denoted as axial.
                 #### The equatorial plane consists of 2 seesaw connecting atoms, and two monodentates.
                 axial_pair = [tetradentate_cons[val] for val in list(pair_list[np.argmax(np.array(angle_list))])]
             else:
@@ -1652,7 +1652,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 ax_lig = list(set(allowed)-set(eq_lig_list))[0]
                 ax_lig_list = [ax_lig, ax_lig]
                 ax_con_list = [[val] for val in ligcons[ax_lig]]
-            else: 
+            else:
                 eq_con_list = [eq_con_bidentate_list[0], eq_con_bidentate_list[1], eq_con_bidentate_list[2]]
                 eq_lig_list = allowed
                 ax_con_list = [list(set(ligcons[i]) - set(eq_con_bidentate_list[i])) for i in allowed if
@@ -1734,7 +1734,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
                 eq_lig2 = list(set(tridentate_cons_2).intersection(eq_ligcons))
                 if len(eq_lig1) == 2 or len(eq_lig2) == 2:  # Catch cases where 2 + 2 planar
                     new_combo_idx = list(set([x for x in range(3)])-set([max_mw_idx]))[0]
-                    eq_points_max_mw = combo_list[new_combo_idx] 
+                    eq_points_max_mw = combo_list[new_combo_idx]
                     eq_ligcons = set([flat_ligcons[j] for j in eq_points_max_mw])
                     eq_lig1 = list(set(tridentate_cons_1).intersection(eq_ligcons))
                     eq_lig2 = list(set(tridentate_cons_2).intersection(eq_ligcons))
@@ -1820,7 +1820,7 @@ def ligand_assign_consistent(mol, liglist, ligdents, ligcons, loud=False,
         if len(flat_eq_con_syms) != 1:  # If more than 1 different type of symbol in eq plane!
             if loud:
                 print('Correcting for eq plane with identical chemical symbols for con atoms.')
-            pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2)) 
+            pair_combos = list(combinations([0, 1, 2, 3, 4, 5], 2))
             pair_list = list()
             for pair in pair_combos:
                 pair_list.append(list(pair))
@@ -1937,7 +1937,7 @@ def ligand_assign_alleq(mol, liglist, ligdents, ligcons):
 
 def get_lig_symmetry(mol, loud=False, htol=3):
     """Handles ligand symmetry assignment.
-        
+
     Parameters
     ----------
         mol : mol3D
@@ -1946,7 +1946,7 @@ def get_lig_symmetry(mol, loud=False, htol=3):
             Flag for extra printout. Default is False.
         htol : int, optional
             Tolerance for hydrogens in matching ligands. Default is 3.
-    
+
     Returns
     -------
         outstring : str
@@ -2194,7 +2194,7 @@ def get_lig_symmetry(mol, loud=False, htol=3):
             else:
                 outstring = 'Error|11|1111'
         elif n_unique_ligs == 4:
-            # |11|c|11|t11, |11|c|11|c11t, |11|c|11|c11c, |11|t|11|t11, 
+            # |11|c|11|t11, |11|c|11|c11t, |11|c|11|c11c, |11|t|11|t11,
             # |111|f/m111
             if max(unique_counts) == 3:  # fac/mer
                 mer = False

@@ -11,7 +11,7 @@ from molSimplify.Classes.globalvars import globalvars
 
 class atom3D:
     """ atom3D class. Base class in molSimplify for representing an element.
-        
+
         Parameters
         ----------
             Sym : str, optional
@@ -24,7 +24,7 @@ class atom3D:
                 Charge assigned to atom when added to mol. Default is None.
     """
     def __init__(self, Sym='C', xyz=[0.0, 0.0, 0.0], name=False, partialcharge=None, Tfactor=0, greek='', occup=1.00, loc=''):
-       
+
         # Element symbol
         self.sym = Sym
         self.partialcharge = None
@@ -54,16 +54,16 @@ class atom3D:
 
         # Coordinates
         self.__xyz = xyz
-        
+
         # Temperature factor (only useful for proteins)
         self.Tfactor = Tfactor
-        
+
         # Greek letter (e.g. alpha carbon - only useful for proteins)
-        if greek == '': 
+        if greek == '':
             self.greek = Sym
         else:
             self.greek = greek
-        
+
         # Occupancy (only useful for proteins)
         self.occup = occup
 
@@ -75,7 +75,7 @@ class atom3D:
 
     def __repr__(self):
         """Returns all bound methods of the mol3D class..
-        
+
         Returns
         -------
             method_string : string
@@ -90,7 +90,7 @@ class atom3D:
 
     def coords(self):
         """ Get coordinates of a given atom.
-        
+
         Returns
         -------
             coords : list
@@ -101,13 +101,13 @@ class atom3D:
 
     def distance(self, atom2):
         """ Get distance from one atom3D class to another.
-        
+
         Parameters
         ----------
             atom2 : atom3D
                 atom3D class of the atom to measure distance from.
 
-        
+
         Returns
         -------
             dist : float
@@ -122,13 +122,13 @@ class atom3D:
 
     def distancev(self, atom2):
         """ Get distance vector from one atom3D class to another.
-        
+
         Parameters
         ----------
             atom2 : atom3D
                 atom3D class of the atom to measure distance from.
 
-        
+
         Returns
         -------
             dist_list : list
@@ -148,7 +148,7 @@ class atom3D:
         ----------
             transition_metals_only : bool, optional
                 Identify only transition metals. Default is true.
-        
+
         Returns
         -------
             metal : bool
@@ -163,7 +163,7 @@ class atom3D:
 
     def setcoords(self, xyz):
         """ Set coordinates of an atom3D class to a new location.
-        
+
         Parameters
         ----------
             xyz : list
@@ -175,7 +175,7 @@ class atom3D:
 
     def symbol(self):
         """ Return symbol of atom3D.
-        
+
         Returns
         -------
             symbol : str
@@ -210,7 +210,7 @@ class atom3D:
         Parameters
         ----------
             dxyz : list
-                Displacement vector of length 3: [dx, dy, dz]. 
+                Displacement vector of length 3: [dx, dy, dz].
 
         """
         x, y, z = self.__xyz

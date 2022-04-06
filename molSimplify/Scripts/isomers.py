@@ -234,9 +234,9 @@ def generatestereo(collapsed_representation):
 #  @return allowed Returns a boolean. True if the bidentates are in allowed positions.
 def checkallowedbidentates(simple_geometry, geometry):
     simple_geometry_tmp = copy(simple_geometry)
-    
+
     # Check if bidentate is in a position where there's nothing to coordinate to
-    
+
     if geometry in ['oct', 'pbp']:
         if simple_geometry[-1].endswith('_alphabond') or simple_geometry[-1].endswith('_betabond'):
             return False

@@ -158,7 +158,7 @@ def excitation_standardizer(excitation, tag):
 
 
 def find_eu_dist(excitation):
-    # returns euclidean distance to nearest trainning 
+    # returns euclidean distance to nearest trainning
     # vector in desciptor space
     mat, rownames = matrix_loader('train_data.csv', rownames=True)
     train_mat = np.array(mat, dtype='float64')

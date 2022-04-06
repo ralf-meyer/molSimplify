@@ -25,4 +25,3 @@ class PenteTask(GomokuTask):
         self.minmoves = 9
         self.maxmoves = self.env.size[0] * self.env.size[1]
         self.reset()
-

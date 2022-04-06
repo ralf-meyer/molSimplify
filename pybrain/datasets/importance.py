@@ -45,4 +45,3 @@ class ImportanceDataSet(SequentialDataSet):
                 print     'importance:', fListToString(importance)
                 print     'error: % .8f' % e
         return totalError, ponderation
-

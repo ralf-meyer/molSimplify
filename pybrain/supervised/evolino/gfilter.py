@@ -116,8 +116,3 @@ class Randomization(SimpleGenomeManipulation):
     def _manipulateValue(self, value):
         """ See SimpleGenomeManipulation._manipulateValue() for more information """
         return self._uniform_variate.getSample()
-
-
-
-
-

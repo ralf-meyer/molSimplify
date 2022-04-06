@@ -161,6 +161,3 @@ if __name__ == '__main__':
     r.maxGames = 200
     print r(net1, net2)
     print r(net2, net1)
-
-
-

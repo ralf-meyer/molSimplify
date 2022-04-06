@@ -49,7 +49,7 @@ def read_synthesized_macrocycles(input_file)
 temp_list_first = read_synthesized_macrocycles(input_file)
 
 '''
-In this section, we disable functionalizations on 
+In this section, we disable functionalizations on
 certain fragments after the fact. Here we dont allow
 functionalizations on any pyrans.
 '''
@@ -69,7 +69,7 @@ for val in temp_list_first:
 
 def count_atoms(smiles):
     return len([val for val in smiles if val.isalpha()])
-        
+
 def split_at_idx(smiles, idx):
     alphabet_indices = [i for i, val in enumerate(smiles) if val.isalpha()]
     forbidden_end = ['=', '/', '\\', ')']
@@ -98,7 +98,7 @@ for lignum, ligand in enumerate(temp_list):
     for func in list(funcs.keys()):
         temp_ligand = ligand.copy()
         rounds += 1
-        smiles = temp_ligand['macrocycle_smiles'] 
+        smiles = temp_ligand['macrocycle_smiles']
         counter = 5
         func_counter = 0
         if func == 'cccc':
@@ -217,7 +217,7 @@ for lignum, ligand in enumerate(temp_list):
                     new_df.to_csv('failed_frag_func.csv',index=False)
             print('counter',lignum, rounds)
     temp_dict = {}
-    temp_dict['name'] = temp_ligand['name'] 
+    temp_dict['name'] = temp_ligand['name']
     temp_dict['charge'] = temp_ligand['charge']
     temp_dict['func_groups'] = list(used_func_groups)
     if not os.path.exists('successful_functionalizations.csv'):
@@ -230,6 +230,4 @@ for lignum, ligand in enumerate(temp_list):
         new_df.to_csv('successful_functionalizations.csv',index=False)
 
 with open(os.getcwd()+'/frag_functionalized_synthesized_ligands.json', 'w') as fout:
-    json.dump(functionalized_ligands, fout) 
-
-
+    json.dump(functionalized_ligands, fout)

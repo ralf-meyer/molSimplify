@@ -553,8 +553,3 @@ class NetworkWrapper(object):
             if m not in network.inmodules and m not in network.outmodules:
                 layers.append(m)
         return layers
-
-
-
-
-

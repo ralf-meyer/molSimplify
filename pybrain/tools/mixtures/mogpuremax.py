@@ -106,4 +106,3 @@ if __name__ == '__main__':
     print m.alpha
     print m.mue
     print m.sigma
-

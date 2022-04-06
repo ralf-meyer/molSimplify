@@ -56,4 +56,3 @@ class StochasticHillClimber(HillClimber):
             acceptProbability = exp(-abs(newEval-self.bestEvaluation)/self.temperature)
             if random() < acceptProbability:
                 self.bestEvaluable, self.bestEvaluation = challenger, newEval
-

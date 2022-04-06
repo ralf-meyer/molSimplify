@@ -178,7 +178,7 @@ class FlexCubeRenderer(object):
                 glPopMatrix()
 
         self.ship()
-                  	
+
         # swap the buffer
         glutSwapBuffers()
 
@@ -323,4 +323,3 @@ if __name__ == '__main__':
     s = sys.argv[1:]
     r = FlexCubeRenderer(*s)
     r._render()
-

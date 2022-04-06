@@ -58,6 +58,3 @@ class KurBenchmark(MultiObjectiveFunction):
         f1 = sum(-10*exp(-0.2*sqrt(x[:-1]**2+x[1:]**2)))
         f2 = sum(power(abs(x), 0.8)+5*sin(x**3))
         return -array([f1, f2])
-
-
-

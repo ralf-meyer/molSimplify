@@ -12,4 +12,3 @@ class SigmoidLayer(NeuronLayer):
 
     def _backwardImplementation(self, outerr, inerr, outbuf, inbuf):
         inerr[:] = outbuf * (1 - outbuf) * outerr
-

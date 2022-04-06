@@ -197,4 +197,3 @@ class CopyJointActuator(JointActuator):
                 # therefore, you can (must) set a torque but it is not applied
                 # to the joint.
                 pass
-

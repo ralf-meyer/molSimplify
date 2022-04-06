@@ -58,7 +58,3 @@ class EvolinoSubIndividual(Individual):
     def __copy__(self):
         """ Returns a complete copy of the individual. """
         return EvolinoSubIndividual(deepcopy(self._genome))
-
-
-
-

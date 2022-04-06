@@ -1,6 +1,6 @@
 #########################################################################
-# Reinforcement Tools for printing, saving and loading for RL examples 
-# 
+# Reinforcement Tools for printing, saving and loading for RL examples
+#
 # Requirements: scipy
 #
 # Author: Frank Sehnke, sehnke@in.tum.de
@@ -33,13 +33,13 @@ class ExTools():
         self.agent.learner.epsilon = 0.2
         self.agent.learner.initSigmas()
 
-    # Method for saving the weight matrix    
+    # Method for saving the weight matrix
     def saveWeights(self, filename, w):
         filepointer = file(filename, 'w+')
         dump(w, filepointer)
         filepointer.close()
 
-    # Method for saving the weight matrix    
+    # Method for saving the weight matrix
     def saveResults(self, filename, results):
         filepointer = file(filename, 'w+')
         dump(results, filepointer)
@@ -52,17 +52,17 @@ class ExTools():
             print "Parameters:", self.agent.learner._bestFound()
             print "Experiment:", runs,
             print " Evaluation:", (updates+1)*self.batch*self.prnts,
-            print " BestReward:", self.agent.learner.bestEvaluation, 
+            print " BestReward:", self.agent.learner.bestEvaluation,
             print " AverageReward:", avReward
-            print 
+            print
             self.rl.append(avReward)
         else:
             avReward = resList
             #print "Parameters: ", self.agent.learner._bestFound()
             print "Step: ", runs, "/", (updates+1)*self.batch*self.prnts,
-            #print "Best: ", self.agent.learner.bestEvaluation, 
+            #print "Best: ", self.agent.learner.bestEvaluation,
             print "Base: ", avReward
-            #print 
+            #print
             self.rl.append(avReward)
 
     def addExps(self):

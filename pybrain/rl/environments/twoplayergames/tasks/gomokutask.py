@@ -98,6 +98,3 @@ class GomokuTask(EpisodicTask, Named):
             agent.color = -self.opponent.color
             res += EpisodicTask.f(self, agent)
         return res / float(self.averageOverGames)
-
-
-

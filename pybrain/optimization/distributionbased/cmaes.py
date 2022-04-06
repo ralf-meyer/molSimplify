@@ -127,4 +127,3 @@ def sorti(vect):
     res1 = array(map(lambda x: x[0], tmp))
     res2 = array(map(lambda x: int(x[1]), tmp))
     return res1, res2
-

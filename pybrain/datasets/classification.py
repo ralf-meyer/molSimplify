@@ -354,6 +354,3 @@ if __name__ == "__main__":
     print dataset.getField('target')
     dataset._convertToClassNb()
     print "reconverted to original:", dataset.getField('target')
-
-
-

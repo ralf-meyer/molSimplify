@@ -371,4 +371,3 @@ if __name__ == '__main__':
     s = sys.argv[1:]
     odeview = ODEViewer(*s)
     odeview.start()
-

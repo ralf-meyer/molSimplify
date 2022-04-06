@@ -52,4 +52,3 @@ def derivative_tree(path: str = "./", trigger: str = "_derivNo_") -> list:
 def get_wfn_path(jobs, ii):
     assert ii > 0
     return "../../" + jobs[ii - 1] + "/b3lyp/wfn.180.npy"
-    
