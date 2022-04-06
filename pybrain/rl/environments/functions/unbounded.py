@@ -26,3 +26,4 @@ class ParabRFunction(UnboundedFunctionEnvironment):
 class SharpRFunction(UnboundedFunctionEnvironment):
     def f(self, x):
         return -x[0] + 100*sqrt(sum(x[1:]**2))
+

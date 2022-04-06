@@ -176,3 +176,4 @@ if __name__ == '__main__':
     #m.sample(10000, "dist")
     m = MixtureOfGaussians("rastrigin", 10)
     m.sample(10000, "max")
+

@@ -36,3 +36,4 @@ class ENAC(PolicyGradientLearner):
         # linear regression
         beta = dot(pinv(X), R)
         return beta[:-1]
+

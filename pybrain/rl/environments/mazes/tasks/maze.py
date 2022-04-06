@@ -60,3 +60,4 @@ class TrivialMaze(MazeTask):
                       [1, 0, 0, 0, 1],
                       [1] * 5, ])
     goal = (1, 3)
+

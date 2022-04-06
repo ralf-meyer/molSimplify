@@ -1,6 +1,6 @@
 """
 Py3Dmol install: (works in both Python2/3 conda environments)
-conda install -c rmg py3dmol
+conda install -c rmg py3dmol 
 Some Documentation: https://pypi.org/project/py3Dmol/
 3DMol.js backend: http://3dmol.csb.pitt.edu/index.html
 """
@@ -76,8 +76,8 @@ def type_convert(structures):
     else:
         raise ValueError('Not Recognized Structure Type Passed')
     return outlist
-
-
+                
+            
 
 def view_structures(structures,w=400,h=400,columns=2,representation='stick',labelsize=18,
                  labels=False,readstring = True):
@@ -111,7 +111,7 @@ def view_structures(structures,w=400,h=400,columns=2,representation='stick',labe
         else:
             label_posits = mol.centersym()  # Put it at the geometric center of the molecule.
         view_ats.addModel(coords,'xyz') # Add the molecule
-        view_ats.setStyle({representation:{'colorscheme':'Jmol'}})
+        view_ats.setStyle({representation:{'colorscheme':'Jmol'}}) 
         if label:
             view_ats.addLabel("{}".format(label), {'position':{'x':'{}'.format(label_posits[0]),
                   'y':'{}'.format(label_posits[1]),'z':'{}'.format(label_posits[2])},
@@ -123,7 +123,7 @@ def view_structures(structures,w=400,h=400,columns=2,representation='stick',labe
     elif len(mol3Ds) < 50:
         rows = int(m.ceil(float(len(mol3Ds))/columns))
         w = w*columns
-        h = h*rows
+        h = h*rows 
         # Initialize Layout
         view_ats = py3Dmol.view(width=w,height=h,linked=False,viewergrid=(rows,columns))
         # Check for labels and populate
@@ -136,7 +136,7 @@ def view_structures(structures,w=400,h=400,columns=2,representation='stick',labe
             if (len(labels) != len(mol3Ds)):
                 print('Wrong amount of labels passed, defaulting to chemical formulas.')
                 label = [x.make_formula(latex=False) for x in mol3Ds]
-            else: # Force them all to be strings.
+            else: # Force them all to be strings. 
                 label = [str(x) for x in labels]
         else:
             raise ValueError('What sort of labels are wanting? Not recognized.')
@@ -164,5 +164,5 @@ def view_structures(structures,w=400,h=400,columns=2,representation='stick',labe
                 x+=1
                 y=0
         view_ats.show()
-    else:
+    else: 
         raise ValueError('Warning. Passing this many structures WILL cause your kernel to crash.')

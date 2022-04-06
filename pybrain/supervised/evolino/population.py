@@ -166,3 +166,6 @@ class EvolinoSubPopulation(SimplePopulation):
             :key fitness: a float value denoting the fitness
         """
         self._fitness[individual] += fitness
+
+
+

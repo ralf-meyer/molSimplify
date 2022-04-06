@@ -30,16 +30,16 @@ from molSimplify.python_nn.clf_analysis_tool import array_stack, get_layer_outpu
 def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
     # Performs a correctly normalized/rescaled prediction for a property specified by predictor_name.
     # Also calculates latent vector and smallest latent distance from training data.
-    # RAC_dataframe can contain anything (e.g. a database pull) as long as it also contains the required RAC features.
+    # RAC_dataframe can contain anything (e.g. a database pull) as long as it also contains the required RAC features. 
     # Predictor_name can be a name like ls_ii, hs_iii, homo, oxo, hat, etc.
     # Input dataframe must have all RAC features in individual columns, or as dictionaries in a single column specified by `RAC_column`.
     # Will not execute if RAC features are missing.
-
+    
     # Returns: RAC_dataframe with new columns added:
     ## predictor_name_latent_vector
     ## predictor_name_min_latent_distance,
     ## predictor_name_prediction
-
+    
     assert type(RAC_dataframe) == pd.DataFrame
     train_vars = load_ANN_variables(predictor_name)
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor_name)
@@ -65,7 +65,7 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
     normalized_input = data_normalize(RAC_subset_for_ANN, train_mean_x, train_var_x)
     ANN_prediction = my_ANN.predict(normalized_input)
     rescaled_output = data_rescale(ANN_prediction, train_mean_y, train_var_y)
-
+    
     # Get latent vectors for training data and queried data
     train_x = load_training_data(predictor_name)
     train_x = pd.DataFrame(train_x, columns=train_vars).astype(float)
@@ -168,7 +168,7 @@ def data_normalize(data, train_mean, train_var, debug=False):
         print(('normalizing with number of dimensions = ' + str(d)))
     ### double check the variance in the training data
     delete_ind = list()
-
+    
     if debug:
         print('shape of things in normalize:')
         print(('data.shape ' + str(data.shape)))
@@ -407,7 +407,7 @@ def load_train_info(predictor, suffix='info'):
 
 def load_keras_ann(predictor, suffix='model'):
     ## this function loads the ANN for property
-    ## "predcitor"
+    ## "predcitor" 
     # disable TF output text to reduce console spam
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     key = get_key(predictor, suffix)
@@ -436,15 +436,15 @@ def load_keras_ann(predictor, suffix='model'):
         # loaded_model.compile(loss="mse", optimizer=Adam(beta_2=0.9637165412871632, beta_1=0.7560951483268549,
         #                                                 decay=0.0006651401379502965, lr=0.0007727366541920176),
         #                      metrics=['mse', 'mae', 'mape']) #decomissioned on 06/20/2019 by Aditya. Using hyperparams from oxo20.
-        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084, beta_1=0.9811686522122317,
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084, beta_1=0.9811686522122317, 
                                                         beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'oxo20':
-        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084, beta_1=0.9811686522122317,
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.0012838133056087084, beta_1=0.9811686522122317, 
                                                         beta_2=0.8264616523572279, decay=0.0005114008091318582),
                              metrics=['mse', 'mae', 'mape'])
     elif predictor == 'homo_empty':
-        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.006677578283098809, beta_1=0.8556594887870226,
+        loaded_model.compile(loss="mse", optimizer=Adam(lr=0.006677578283098809, beta_1=0.8556594887870226, 
                                                         beta_2=0.9463468021275508, decay=0.0006621877134674607),
                              metrics=['mse', 'mae', 'mape'])
 
@@ -488,7 +488,7 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
 
 def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
     if debug:
-        print(('ANN activated for ' + str(predictor)))
+        print(('ANN activated for ' + str(predictor)))    
 
     ## form the excitation in the corrrect order/variables
     excitation = tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names)
@@ -515,7 +515,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
                                      [loaded_model.layers[len(loaded_model.layers) - 2].output])
             latent_space_vector = get_outputs([excitation, 0])  # Using test phase.
         else:
-            latent_space_vector = get_layer_outputs(loaded_model, len(loaded_model.layers) - 2,
+            latent_space_vector = get_layer_outputs(loaded_model, len(loaded_model.layers) - 2, 
                                                     excitation, training_flag=False)
         if debug:
             print('calling ANN model...')
@@ -526,7 +526,7 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
 
 
 def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False):
-    # returns scaled euclidean distance to nearest trainning
+    # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
 
@@ -566,7 +566,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
             csv_lines = list(csv.reader(f))
             print(('Closest Euc Dist Structure:  ' + str(csv_lines[min_ind]).strip('[]') + ' for predictor ' + str(
                 predictor)))
-    # need to get normalized distances
+    # need to get normalized distances 
 
     ########################################################################################
     # Changed by Aditya on 08/13/2018. Previously, nearest neighbor was being found in the #
@@ -583,7 +583,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
 
 
 def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=False):
-    # returns scaled euclidean distance to nearest trainning
+    # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
 
     # average_train_train_10NN = {'homo_empty': 0.43517572, 'oxo20': 0.068675719}
@@ -626,11 +626,11 @@ def find_ANN_10_NN_normalized_latent_dist(predictor, latent_space_vector, debug=
     sorted_dist = np.sort(np.squeeze(dist_array))
     avg_10_NN_dist = np.mean(sorted_dist[0:10])
     norm_avg_10_NN_dist = avg_10_NN_dist/avg_traintrain
-    return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain
+    return norm_avg_10_NN_dist, avg_10_NN_dist, avg_traintrain 
 
 
 def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
-    # returns scaled euclidean distance to nearest trainning
+    # returns scaled euclidean distance to nearest trainning 
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
 
@@ -760,7 +760,7 @@ def save_model(model, predictor, num=None, suffix=False):
 
 def initialize_model_weights(model):
     session = K.get_session()
-    for layer in model.layers:
+    for layer in model.layers: 
         for v in layer.__dict__:
             v_arg = getattr(layer, v)
             if hasattr(v_arg, 'initializer'):

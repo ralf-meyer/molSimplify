@@ -247,3 +247,5 @@ class RWR(DirectSearchLearner):
             draw()
 
         return avgLen, avgR0
+
+

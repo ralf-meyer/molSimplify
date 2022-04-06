@@ -52,3 +52,5 @@ class ReinforcementDataSet(SequentialDataSet):
         creator = self.__class__
         args = self.statedim, self.actiondim
         return creator, args, state, iter([]), iter({})
+
+

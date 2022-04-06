@@ -183,3 +183,5 @@ class XMLstruct:
                 subtag.write(file, depth=depth + 1)
             # finalize tag
             file.write(self._tab * depth + "</" + self.tag['myName'] + ">\n")
+
+

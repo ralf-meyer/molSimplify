@@ -58,7 +58,7 @@ def ensemble_maker_inner(train_mat, labels, model_gen_function, info_dict,
     ## contains core functions to make ensemble models
     ## from training data and labels
     ## model_gen_function is a functiont that takes NO arguments and returns a keras model
-    ## info_dict is a dictionary of training info
+    ## info_dict is a dictionary of training info 
     train_mat, labels = shuffle(train_mat, labels)
     train_mat = np.array_split(train_mat, num, axis=0)
     labels = np.array_split(labels, num, axis=0)

@@ -97,3 +97,6 @@ class FitnessPlotter:
 
     def saveAs(self, filename, format='.jpg'):
         savefig(filename + format)
+
+
+

@@ -78,3 +78,4 @@ class CheaplyCopiable(ParameterContainer, Module):
 
     def resetDerivatives(self):
         self.__stored.resetDerivatives()
+

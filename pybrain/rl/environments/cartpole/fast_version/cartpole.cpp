@@ -55,7 +55,7 @@ static const double TAU         = 0.01;	  //seconds between state updates
 
 char modelfile[100];
 
-extern void initCartPole(int markov_, int numPoles_, int maxsteps_)
+extern void initCartPole(int markov_, int numPoles_, int maxsteps_)	
 {
   poleangle = 4.0156035;
   longPoleAngle = poleangle * one_degree;
@@ -364,3 +364,5 @@ double getReward()
     return -1.0;
   return 0.0;
 }
+
+

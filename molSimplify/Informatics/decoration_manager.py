@@ -39,7 +39,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     #if args.debug:
     #    print  'decorating ligand'
     lig = ligand_to_decorate
-    ## reorder to ensure highest atom index
+    ## reorder to ensure highest atom index 
     ## removed first
     sort_order = [i[0] for i in sorted(enumerate(decoration_index), key=lambda x:x[1])]
     sort_order = sort_order[::-1] ## reverse
@@ -55,12 +55,12 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         lig.convert2OBMol()
         lig.charge = lig.OBMol.GetTotalCharge()
     lig.convert2mol3D() # convert to mol3D
-
+   
     ## create new ligand
     merged_ligand = mol3D()
     merged_ligand.copymol3D(lig)
     for i,dec in enumerate(decoration):
-        print(('** decoration number ' +str(i)+ ' attaching ' + dec + ' at site '+str(decoration_index[i])
+        print(('** decoration number ' +str(i)+ ' attaching ' + dec + ' at site '+str(decoration_index[i]) 
     + '**\n'))
         dec,emsg = lig_load(dec,licores)
         # dec.OBMol.AddHydrogens()
@@ -122,16 +122,16 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
                 theta,urot = rotation_params(r1,merged_ligand.getAtom(decoration_index[i]).coords(),r2)
                 theta = vecangle(vecdiff(r0,merged_ligand.getAtom(decoration_index[i]).coords()),urot)
                 dec = rotate_around_axis(dec,r0,urot,theta)
-
-        ## get the default distance between atoms in question
+                
+        ## get the default distance between atoms in question 
         connection_neighbours = merged_ligand.getAtom(merged_ligand.getBondedAtomsnotH(decoration_index[i])[0])
         new_atom = dec.getAtom(decind)
-        target_distance = connection_neighbours.rad + new_atom.rad
+        target_distance = connection_neighbours.rad + new_atom.rad 
         position_to_place = vecdiff(new_atom.coords(),connection_neighbours.coords())
         old_dist= norm(position_to_place)
         missing = (target_distance - old_dist)/2
         dec.translate([missing*position_to_place[j] for j in [0,1,2]])
-
+        
         r1 = dec.getAtom(decind).coords()
         u = vecdiff(r1,merged_ligand.getAtom(decoration_index[i]).coords())
         dtheta = 2
@@ -165,7 +165,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
         BO_mat = merged_ligand.populateBOMatrix()
         row_deleted = BO_mat[decoration_index[i]]
         bonds_to_add = []
-
+        
         # find where to put the new bonds ->>> Issue here.
         for j,els in enumerate(row_deleted):
             if els > 0:
@@ -180,7 +180,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
                     bonds_to_add.append((bond_partner,(merged_ligand.natoms-1)+dec.cat[0],els))
                 else:
                     bonds_to_add.append((bond_partner,merged_ligand.natoms-1,els))
-
+        
         ## perfrom delete
         merged_ligand.deleteatom(decoration_index[i])
 
@@ -195,11 +195,12 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
             merged_ligand.writexyz('merged' + str(i) + '.xyz')
             merged_ligand.printxyz()
             print('************')
-
+    
     merged_ligand.convert2OBMol()
     merged_ligand,emsg = ffopt('MMFF94',merged_ligand,[],0,[],False,[],100)
     BO_mat = merged_ligand.populateBOMatrix()
     if args.debug:
         merged_ligand.writexyz('merged_relaxed.xyz')
-        print(BO_mat)
+        print(BO_mat)    
     return(merged_ligand)
+    

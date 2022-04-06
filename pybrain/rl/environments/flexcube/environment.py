@@ -164,3 +164,4 @@ class FlexCubeEnvironment(Environment):
         sleep(0.02)
         self.updateLock.release()
         self.updateDone = True
+

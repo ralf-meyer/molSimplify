@@ -141,3 +141,5 @@ class DataSetNormalizer(object):
             self.scale = (bounds[1] - bounds[0]) / (self.par2 - self.par1)
         self.newmin = bounds[0]
         self.newmax = bounds[1]
+
+

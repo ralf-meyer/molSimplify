@@ -120,3 +120,4 @@ def plotFitnessProgession(fitdict, batchsize=1, semilog=True,
     xlabel('number of evaluations')
     pylab.title(title)
     legend()
+

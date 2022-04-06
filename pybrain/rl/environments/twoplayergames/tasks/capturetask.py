@@ -98,3 +98,6 @@ class CaptureGameTask(EpisodicTask, Named):
             x = EpisodicTask.f(self, agent)
             res += x
         return res / float(self.averageOverGames)
+
+
+

@@ -1,5 +1,5 @@
 # flake8: noqa
-#### This section comes from the structgen_one section of the code, must
+#### This section comes from the structgen_one section of the code, must 
 #### be reformatted to reproduce structgen behavior
 def generate_ts(args):
     if (args.tsgen):
@@ -1260,7 +1260,7 @@ def align_linear_pi_sub(core3D, mligcatoms_ext, sub3D, atom0, subcatoms, bangle_
         rL, sub3D_aligned, atom0, core3D)
 
     return sub3D_aligned
-
+    
 # Rotates aligned ligand about M-L axis to minimize steric clashes with rest of complex
 #  @param mol mol3D of the molecule to be rotated
 #  @param molatcoords the coordinates of the atom in the rotated molecule

@@ -33,7 +33,7 @@ def measure_sensitivity(path_to_csv, path_to_write=False, prop='SSE', R2_cutoff=
     raw_data = raw_data.sort_values(by=['complex_no_HFX','alpha'])
 
     ### This loops over unique ligand fields. Here, we keep track of things
-    ### by compiling two lists. One is data that is kept and turned into a
+    ### by compiling two lists. One is data that is kept and turned into a 
     ### sensitivity. The other is any point that is eliminated. We log eliminations
     ### into two categories. The first is 'whole', which means that the whole
     ### ligand field is eliminated. The second is 'point', which means a single
@@ -283,7 +283,7 @@ def slope_sign_check(X, y, name, prop, num_points):
         temp_y = y[i:i+2]
         reg.fit(temp_X,temp_y)
         coef_list.append(float(np.squeeze(reg.coef_)))
-    neg_count = len(list(filter(lambda x: (x < 0), coef_list)))
+    neg_count = len(list(filter(lambda x: (x < 0), coef_list))) 
     pos_count = len(list(filter(lambda x: (x >= 0), coef_list)))
     signchange = ((np.roll(np.sign(coef_list), 1) - np.sign(coef_list)) != 0).astype(int)
     signchange[0] = 0
@@ -297,7 +297,7 @@ def slope_sign_check(X, y, name, prop, num_points):
         sign_flag = signchange_list[0]
     diff_points = abs(neg_count-pos_count)
     remove_counter = 0
-    if ((neg_count == pos_count) or (diff_points>=1 and len(X)<num_points) or
+    if ((neg_count == pos_count) or (diff_points>=1 and len(X)<num_points) or 
             ((len(X)-num_points-min(neg_count,pos_count)-1)<0 and (not min(neg_count,pos_count)<=1)) or ((sign_flag>0.4) and (sign_flag<0.6)) or (num_changes_first>0 and num_changes_second>0)):
         for j, val in enumerate(elim_points_X):
             removed_dict_list.append({'complex_no_HFX':name,'alpha':int(np.squeeze(val)), str(prop):float(np.squeeze(elim_points_y[j])),'reason':'identified_slope_sign_change','elim_type':'point'})

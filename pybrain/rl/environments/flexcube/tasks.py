@@ -201,3 +201,4 @@ class JumpTask(NoRewardTask):
     def reset(self):
         NoRewardTask.reset(self)
         self.maxReward = 0.0
+

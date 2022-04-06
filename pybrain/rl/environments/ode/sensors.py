@@ -313,3 +313,5 @@ class SpecificBodyPositionSensor(BodyPositionSensor):
         # do initial update to get numValues
         self._update()
         self._numValues = len(self._values)
+
+

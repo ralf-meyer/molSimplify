@@ -5,13 +5,13 @@ Adaptation of the Acrobot Environment
 from the "FAReinforcement" library
 of Jose Antonio Martin H. (version 1.0).
 """
-
+    
 from scipy import pi, array, cos, sin
 from pybrain.rl.environments.episodic import EpisodicTask
 
 
-class AcrobotTask(EpisodicTask):
-    """ TODO: not currently episodic: success just reinitializes it. """
+class AcrobotTask(EpisodicTask): 
+    """ TODO: not currently episodic: success just reinitializes it. """   
     input_ranges = [[-pi, pi], [-pi, pi], [-4 * pi, 4 * pi], [-9 * pi, 9 * pi]]
     reward_ranges = [[-1.0, 1000.0]]
 
@@ -36,7 +36,7 @@ class AcrobotTask(EpisodicTask):
     #The number of actions.
     action_list = (-1.0 , 0.0 , 1.0)
     nactions = len(action_list)
-
+    
     # angles, velocities and a bias
     nsenses = 5
 
@@ -46,41 +46,41 @@ class AcrobotTask(EpisodicTask):
 
     # number of the current episode
     episode = 0
-
+    
     target = 1.5
-
-    easy_rewards = False
-
+    
+    easy_rewards = False    
+    
     resetOnSuccess = False
-
+    
     def __init__(self):
         self.reset()
         self.cumreward = 0
-
-    def getObservation(self):
+                
+    def getObservation(self):    
         return array(self.state + [pi])/(pi)
-
+        
     def performAction(self, action):
         if self.done > 0:
-            self.done += 1
+            self.done += 1            
         else:
             self.state = self.DoAction(action, self.state)
-            self.r, self.done = self.GetReward(self.state)
+            self.r, self.done = self.GetReward(self.state)        
             self.cumreward += self.r
-
+            
     def reset(self):
         self.state = self.GetInitialState()
-
+            
     def getReward(self):
         return self.r
-
+    
     def isFinished(self):
         if self.done>=3 and self.resetOnSuccess:
             self.reset()
             return False
         else:
             return self.done>=3
-
+    
     def GetInitialState(self):
         s = [0, 0, 0, 0]
         self.StartEpisode()
@@ -180,35 +180,37 @@ class AcrobotTask(EpisodicTask):
 
 
 class SimpleAcrobot(AcrobotTask):
-
+    
     target = -0.5
-
+    
 class VerySimpleAcrobot(AcrobotTask):
-
+    
     target = -1.
 
 
 class SingleArmSwinger(AcrobotTask):
     """ Variant with one piece fixed."""
-
+    
     nsenses = 3
-
+    
     resetOnSuccess = False
-
+    
     target = 1.95
     maxSteps = 99
 
     def GetInitialState(self):
-
+        
         s = [pi, 0, 0, 0]
         self.StartEpisode()
         return  s
-
-    def getObservation(self):
+    
+    def getObservation(self):    
         return array(self.state[2:] + [pi])/(pi)
-
+        
     def performAction(self, action):
         AcrobotTask.performAction(self, action)
         # re-fix the upper part of the arm
         _, theta2, _, theta2_dot = self.state
         self.state = [pi, theta2, 0, theta2_dot]
+
+        

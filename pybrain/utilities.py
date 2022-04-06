@@ -690,10 +690,10 @@ def dense_orth(dim):
     from scipy import rand
     from scipy.linalg import orth
     return orth(rand(dim, dim))
-
+    
 def sparse_orth(d):
     """ Constructs a sparse orthogonal matrix.
-
+    
     The method is described in:
     Gi-Sang Cheon et al., Constructions for the sparsest orthogonal matrices,
     Bull. Korean Math. Soc 36 (1999) No.1 pp.199-129
@@ -716,6 +716,6 @@ def sparse_orth(d):
             Qi[(i+1),(i+1)] = cos(theta)
         else:
             Qi[i,(i+1)] = sin(theta)
-            Qi[(i+1),(i+1)] = -cos(theta)
+            Qi[(i+1),(i+1)] = -cos(theta)            
         Q = Q*Qi;
     return Q

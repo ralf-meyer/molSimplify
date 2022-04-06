@@ -56,3 +56,4 @@ class MultiDimensionalLSTM(MultiDimensionalRNN):
     """ The same, but with LSTM cells in the hidden layer. """
     componentclass = MDLSTMLayer
     peepholes = False
+

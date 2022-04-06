@@ -39,3 +39,4 @@ class QueuedExperiment(EpisodicExperiment):
         self.agent.history.removeSequence(0)
         # execute one new episode
         self.doEpisodes(1)
+

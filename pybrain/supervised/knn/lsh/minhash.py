@@ -127,3 +127,5 @@ class MinHash(object):
         candidates.sort(key=lambda x: jacardCoefficient(x[0], item),
                         reverse=True)
         return candidates[:k]
+
+

@@ -265,3 +265,4 @@ class FEM(DistributionBasedOptimizer):
             else:
                 self.sigmas = [0.5 * sigma for sigma in self.sigmas]
                 #print "-"
+

@@ -32,3 +32,4 @@ class SimpleraceTask(EpisodicTask):
         self.environment = SimpleraceEnvironment()
         EpisodicTask.__init__(self, self.environment)
         self.t = 0
+

@@ -30,3 +30,4 @@ class Reinforce(PolicyGradientLearner):
         gradient = -mean(loglhs * (returns - baselines), 0)
 
         return gradient
+

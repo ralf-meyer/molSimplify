@@ -30,3 +30,4 @@ if __name__ == '__main__' :
     while True:
         w.step()
         if w.stepCounter == 1000: w.reset()
+

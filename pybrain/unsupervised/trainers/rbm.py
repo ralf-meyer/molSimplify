@@ -187,3 +187,6 @@ class RbmGaussTrainer(RbmGibbsTrainer):
     def updater(self, pos, neg, poshb, neghb, posvb, negvb):
         pos = pos / self.visibleVariances
         return pos - neg, poshb - neghb, posvb - negvb
+
+
+

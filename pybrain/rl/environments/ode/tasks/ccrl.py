@@ -360,3 +360,4 @@ class CCRLPointVarTask(CCRLPointTask):
             return (25.0 - dis) / 2.0
         else:
             return (25.0 - dis) / float(self.epiLen) - float(self.env.tableSum) * 0.1
+

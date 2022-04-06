@@ -55,3 +55,4 @@ class Q(ValueBasedLearner):
                 self.laststate = state
                 self.lastaction = action
                 self.lastreward = reward
+

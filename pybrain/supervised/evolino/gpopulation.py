@@ -148,3 +148,7 @@ class SimplePopulation(Population):
 
     def getAverageFitness(self):
         return sum(self._fitness.values()) / float(len(self._fitness))
+
+
+
+

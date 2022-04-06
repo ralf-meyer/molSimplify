@@ -676,7 +676,7 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
             this_dist = min(periodic_mindist(this_payload, combined_cell, extents), periodic_selfdist(
                 this_payload, extents), this_payload.mindist(combined_cell))
             if (this_dist > (min_dist + 1e-3)):
-
+    
                 if debug:
                     print(('current dist = ' + str(this_dist) +
                            ', the max is ' + str(min_dist)))

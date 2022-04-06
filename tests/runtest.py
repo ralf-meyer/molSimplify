@@ -19,3 +19,4 @@ infile = resource_filename(Requirement.parse(
     "molSimplify"), "tests/inputs/example_1.in")
 args = ['main.py', '-i', infile]
 startgen(args, False, False)
+

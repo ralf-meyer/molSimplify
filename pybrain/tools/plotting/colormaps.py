@@ -31,3 +31,4 @@ class ColorMap:
     def save(self, filename):
         """ save colormap to file"""
         savefig(filename, fig=self.fig, facecolor='black', edgecolor='black')
+

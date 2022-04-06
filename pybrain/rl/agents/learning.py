@@ -76,3 +76,4 @@ class LearningAgent(LoggingAgent):
         """ Call the learner's learn method, which has access to both module and history. """
         if self.learning:
             self.learner.learnEpisodes(episodes)
+

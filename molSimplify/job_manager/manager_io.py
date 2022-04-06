@@ -59,7 +59,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                                'thermo_vib_energy':None, 'thermo_vib_free_energy':None, 'thermo_suspect': None,
                                'orbital_occupation':None, 'oscillating_scf_error':False}
                 return return_dict
-
+                
     output_type = ['TeraChem', 'ORCA'][counter]
 
     name = None
@@ -309,7 +309,7 @@ def read_infile(outfile_path):
     for prop, prop_name in zip([unique_job_name,charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates, guess,
                                 qm_code],
-                               ['name','charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb',
+                               ['name','charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
                                 'method', 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'qm_code']):
@@ -690,19 +690,19 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
-        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit,
+        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
                                  machine=machine, cwd=cwd,
                                  use_molscontrol=use_molscontrol, queues = queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
-                             parallel_environment=parallel_environment,
+                             parallel_environment=parallel_environment, 
                              machine=machine,
                              use_molscontrol=use_molscontrol)
     else:
         raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
 
 
-def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True,
+def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
                              machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
     #if use_molscontrol and machine != 'gibraltar':
     #    raise ValueError("molscontrol is only implemented on gibraltar for now.")

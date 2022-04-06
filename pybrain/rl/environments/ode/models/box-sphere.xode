@@ -3,13 +3,13 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://tanksoftware.com/xode/1.0r23/xode.xsd">
 
 	<world>
-
-		<space>
+	
+		<space>			
 			<body name="box">
 				<transform>
 					<position x="0" y="5" z="0" />
 				</transform>
-
+				
 				<geom name="boxGeom">
 					<box
 						sizex="0.5"
@@ -18,7 +18,7 @@
 					/>
 				</geom>
 				<mass>
-					<mass_shape density="1">
+					<mass_shape density="1"> 
 						<box
 							sizex="0.5"
 							sizey="0.5"
@@ -27,19 +27,19 @@
 					</mass_shape>
 				</mass>
 			</body>
-
+				
 			<body name="sphere">
 				<transform>
 					<position x="1" y="5" z="0" />
 				</transform>
-
+				
 				<geom name="sphereGeom">
 					<sphere
 						radius="0.2"
 					/>
 				</geom>
 				<mass>
-					<mass_shape density="1">
+					<mass_shape density="1"> 
 						<sphere
 							radius="0.2"
 						/>
@@ -47,9 +47,9 @@
 				</mass>
 			</body>
 
-
-
-
+  
+			
+			
 			<geom name="planeGeom">
 				<plane
 					a="0"
@@ -57,7 +57,7 @@
 					c="0"
 					d="0"
 				/>
-			</geom>
+			</geom>			
 		</space>
 	</world>
 </xode>

@@ -122,3 +122,4 @@ if __name__ == '__main__':
     print C.parasitePop
     print '          ', fListToString(C._competitiveSharedFitness(C.pop, C.parasitePop), 2)
     print 'should be:', fListToString([0.83, 0.00, 1.33, 0.83], 2)
+

@@ -351,3 +351,8 @@ class GridSearchDOECostGamma(GridSearchDOE):
         trainer = copy.deepcopy(self._trainer)
         trainer.setArgs(cost=2 ** params[0], gamma=2 ** params[1], ver=0)
         return trainer
+
+
+
+
+

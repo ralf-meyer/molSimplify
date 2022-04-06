@@ -80,3 +80,5 @@ class SVMUnit(object):
     def getNbClasses(self):
         """ return number of classes the current model uses """
         return self.model.get_nr_class()
+
+

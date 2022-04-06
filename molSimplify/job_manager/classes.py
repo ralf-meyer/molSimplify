@@ -150,10 +150,10 @@ class textfile:
 
         else:
             self.lines = None
-
+            
     def wordgrab(self,keywords,indices, last_line=False, first_line = False, min_value = False, matching_index=False):
         """Method to grab words from text. Takes two lists as input.
-
+            
             Parameters
             ----------
                 keywords : list
@@ -173,7 +173,7 @@ class textfile:
             -------
                 results_to_return : list
                     List of results of scraping. Be careful with the nesting (returns a list of lists).
-
+    
         """
         # takes two lists as an input
         # The first list is the keywords to look for
@@ -181,42 +181,42 @@ class textfile:
         #  Returns a list of the resulting values. Numeric values are automatically converted to floats
         # Function is most intuitive when ONE of the following is set to True (last_line,first_line,min_value)
         #     Otherwise, the list will be nested one more time than you may expect
-
+        
         if type(keywords) != list:
             keywords = [keywords]
         if type(indices) != list:
             indices = [indices]*len(keywords)
-
+            
         results = dict()
         zipped_values = list(zip(keywords,indices,list(range(len(keywords)))))
-
+        
         for counter,line in enumerate(self.lines):
             for keyword,index,keyword_number in zipped_values:
                 if keyword in line:
-
+                    
                     if type(index) == int:
                         matching_value = try_float(line.split()[index])
                     else:
                         matching_value = line.split()
-
+                    
                     # Normal Procedure
                     if not matching_index:
                         if keyword_number not in list(results.keys()):
                             results[keyword_number] = [matching_value]
                         else:
                             results[keyword_number].append(matching_value)
-
+                    
                     # Special procedure for returning the index of matching lines instead of the matching values
                     if matching_index:
                         if keyword_number not in list(results.keys()):
                             results[keyword_number] = [counter]
                         else:
                             results[keyword_number].append(counter)
-
-
+                            
+                            
         if (last_line and min_value) or (last_line and first_line) or (first_line and min_value):
             raise ValueError('Warning, incompatible options selected in text parsing')
-
+        
         if last_line:
             for keyword_number in list(results.keys()):
                 results[keyword_number] = results[keyword_number][-1]
@@ -226,7 +226,7 @@ class textfile:
         if min_value:
             for keyword_number in list(results.keys()):
                 results[keyword_number] = min(results[keyword_number])
-
+                
         results_to_return = []
         for key in range(len(keywords)):
             if key in list(results.keys()):
@@ -236,5 +236,5 @@ class textfile:
                     results_to_return.append(None)
                 else:
                     results_to_return.append([None])
-
+        
         return results_to_return

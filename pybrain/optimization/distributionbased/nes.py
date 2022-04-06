@@ -136,3 +136,4 @@ class OriginalNES(VanillaGradientEvolutionStrategies):
             R = outer(s, dot(invA, s)) - diagInvA
             res[i] = triu2flat(R)
         return res
+

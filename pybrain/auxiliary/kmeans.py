@@ -42,3 +42,4 @@ def kinit(X, k):
 
 def kmeanspp(Y, k):
     return kmeans2(Y, kinit(Y, k), minit='points')
+

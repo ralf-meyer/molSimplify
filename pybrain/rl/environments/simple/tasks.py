@@ -36,3 +36,4 @@ class MinimizeTask(EpisodicTask):
         # print self.state, self.action
         reward = self.env.f([s + 0.1 * a for s, a in zip(self.state, self.action)])
         return - sum(reward)
+

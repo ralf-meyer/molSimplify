@@ -337,3 +337,4 @@ class Objects3D:
         result[1] = endPoint[1] - startPoint[1]
         result[2] = endPoint[2] - startPoint[2]
         return [result[0], result[1], result[2]]
+

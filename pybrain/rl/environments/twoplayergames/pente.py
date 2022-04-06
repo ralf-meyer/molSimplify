@@ -84,3 +84,4 @@ class PenteGame(GomokuGame):
         s = GomokuGame.__str__(self)
         s += 'Black captured:' + str(self.pairsTaken[self.BLACK]) + ', white captured:' + str(self.pairsTaken[self.WHITE]) + '.'
         return s
+

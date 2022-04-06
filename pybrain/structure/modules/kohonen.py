@@ -74,3 +74,4 @@ class KohonenMap(Module):
             distm[:, :, i] = tempm
 
         self.neurons[tl[0]:br[0], tl[1]:br[1]] -= self.learningrate * self.difference[tl[0]:br[0], tl[1]:br[1]] * distm[tl[0]:br[0], tl[1]:br[1]]
+

@@ -38,3 +38,4 @@ class Renderer(threading.Thread):
             @note: only if possible. OpenGL glutMainLoop is not stoppable.
         """
         pass
+

@@ -209,3 +209,4 @@ if __name__ == "__main__":
             for j in range(7):
                 pbplot.addData(j, i, math.sqrt(float(i * (j + 1))))
     pbplot.show("WorldInteractions", "Fitness", "Example Plot", True)
+

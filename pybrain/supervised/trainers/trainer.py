@@ -39,3 +39,5 @@ class Trainer(Named):
     def train(self):
         """Train on the current dataset, for a single epoch."""
         abstractMethod()
+
+

@@ -128,3 +128,4 @@ class Time(defaultSensor):
         self.sensorOutput = ["Time", 3]
         self.sensorOutput.append(array([sin(float(self.step) / 4.0), sin(float(self.step) / 8.0), sin(float(self.step) / 16.0)]))
         return self.sensorOutput
+

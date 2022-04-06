@@ -6,7 +6,7 @@ import json
 import itertools
 import pandas as pd
 
-### Below is RDKit dependency that this code uses
+### Below is RDKit dependency that this code uses 
 # from rdkit import Chem
 # from rdkit.Chem import AllChem
 ####
@@ -161,3 +161,4 @@ for i in monodentates:
 
 with open(os.getcwd()+'/synthesized_ligands.json', 'w') as fout:
     json.dump(ligands_to_dump,fout,indent=2)
+

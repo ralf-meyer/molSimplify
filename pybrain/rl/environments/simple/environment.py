@@ -38,3 +38,5 @@ class SimpleEnvironment(Environment):
 
         self.action = zeros(self.dim, float)
         self.updated = True
+
+

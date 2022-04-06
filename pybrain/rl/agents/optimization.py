@@ -9,3 +9,4 @@ class OptimizationAgent(Agent):
     def __init__(self, module, learner):
         self.module = module
         self.learner = learner
+

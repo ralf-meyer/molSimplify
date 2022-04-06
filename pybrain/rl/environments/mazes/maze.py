@@ -111,3 +111,5 @@ class Maze(Environment, Named):
                     s += ' '
             s += '\n'
         return s
+
+

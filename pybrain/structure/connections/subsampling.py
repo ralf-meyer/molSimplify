@@ -23,3 +23,4 @@ class SubsamplingConnection(Connection, ParameterContainer):
 
     def _backwardImplementation(self, outerr, inerr, inbuf):
         raise NotImplementedError()
+

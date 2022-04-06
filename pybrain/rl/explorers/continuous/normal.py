@@ -48,3 +48,5 @@ class NormalExplorer(Explorer, ParameterContainer):
         # auto-alpha
         # inerr /= expln_sigma**2
         # self._derivs /= expln_sigma**2
+
+

@@ -53,3 +53,5 @@ class SimpleSPSA(FiniteDifferences):
         # as a simplification we use alpha = alpha * epsilon**2 for decaying the stepsize instead of the usual use method from SPSA
         # resulting in the same update rule like for PGPE
         self.current = self.gd(fakt * self.epsilon * self.epsilon / deltas)
+
+

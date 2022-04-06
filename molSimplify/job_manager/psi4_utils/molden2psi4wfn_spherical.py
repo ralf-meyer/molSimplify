@@ -23,7 +23,7 @@ def shell_sequence_mapping(atom_shell_types):
 
 def mocoeff_c2s(mocoeffs_c, shell_types):
     '''
-    Covert Cartesian MO coefficients in TC to spherical MO coefficients.
+    Covert Cartesian MO coefficients in TC to spherical MO coefficients. 
     Work for the case where the internal calculation is done in spherical basis but the molden file is written in Cartesian basis.
     mocoeffs_c: MO coefficients at Cartesian basis (but with "sphericalbasis yes")
     shell_types: list of shell types ranked in the same order of MO coefficients (0 for s, 1 for p, and 2 for d)

@@ -46,3 +46,5 @@ class GaussianVariate:
         if x0    is None: x0 = self.x0
         if alpha is None: alpha = self.alpha
         return gauss(x0, alpha)
+
+

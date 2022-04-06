@@ -64,3 +64,5 @@ class ModuleDecidingPlayer(RandomGomokuPlayer):
 
     def integrateObservation(self, obs = None):
         pass
+
+

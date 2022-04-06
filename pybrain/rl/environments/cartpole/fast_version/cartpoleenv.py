@@ -122,3 +122,7 @@ class FastCartPoleTask(EpisodicTask):
             print 'act', action
         impl.performAction(action[0])
         self.addReward()
+
+
+
+

@@ -99,3 +99,5 @@ class GA(ContinuousOptimizer, Evolution):
         self.currentpop = parents[:es]
         for child in self.crossOver(parents, self.populationSize-es):
             self.currentpop.append(self.mutated(child))
+
+

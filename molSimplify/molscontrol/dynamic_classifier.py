@@ -29,7 +29,7 @@ class dft_control:
     self.mode_allowed: allowed modes.
     self.step_decisions: steps at which the dynamic classifier can make predictions. (Resizing to be implemented).
     self.scrpath: path to the scratch directory.
-    self.geofile: filename of the optimization trajectory in a xyz file format. This is the minimum requirement to use
+    self.geofile: filename of the optimization trajectory in a xyz file format. This is the minimum requirement to use 
     the dynamic classifier.
     self.bofile: filename of the trajectory for the bond order matrix (for mode = "terachem").
     self.chargefile: filename of the trajectory for the Mulliken charge(for mode = "terachem").

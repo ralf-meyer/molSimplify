@@ -152,3 +152,4 @@ def sqrtm(M):
     """ Returns the symmetric semi-definite positive square root of a matrix. """
     r = real_if_close(expm(0.5 * logm(M)), 1e-8)
     return (r + r.T) / 2
+

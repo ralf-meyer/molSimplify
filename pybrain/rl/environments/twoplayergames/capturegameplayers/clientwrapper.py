@@ -71,3 +71,5 @@ class ClientCapturePlayer(CapturePlayer):
         chosen = eval(jr)
         assert self.game.isLegal(self.color, chosen)
         return [self.color, chosen]
+
+

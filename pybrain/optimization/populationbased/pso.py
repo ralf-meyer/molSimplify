@@ -131,3 +131,4 @@ class Particle(object):
 
     def move(self):
         self.position += self.velocity
+

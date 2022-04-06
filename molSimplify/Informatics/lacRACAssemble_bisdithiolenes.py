@@ -106,7 +106,7 @@ def get_descriptor_vector(this_complex, custom_ligand_dict=False,
             Compiled list of descriptor values
 
     """
-    ## modifier -
+    ## modifier - 
     descriptor_names = []
     descriptors = []
     # Generate custom_ligand_dict if one not passed!

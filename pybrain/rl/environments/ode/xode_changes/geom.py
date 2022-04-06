@@ -274,3 +274,4 @@ class Geom(node.TreeNode):
                 self._parser.pop()
 
         self._parser.push(startElement=start, endElement=end)
+

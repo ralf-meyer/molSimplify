@@ -4,7 +4,7 @@ from rdkit.Chem.AtomPairs import Torsions
 from molSimplify.Classes.mol3D import mol3D
 
 
-# Nice explanation of fingerprints here:
+# Nice explanation of fingerprints here: 
 # https://www.rdkit.org/UGM/2012/Landrum_RDKit_UGM.Fingerprints.Final.pptx.pdf
 # Nice tutorial here:
 # https://www.rdkit.org/docs/GettingStartedInPython.html
@@ -56,3 +56,4 @@ def get_substructure_smiles(mol, atomID, radius):
 # bit_vector_pyridine = get_morgan(mol='c1ncccc1')
 # below you can see what pyridine and benzene have in common
 # print(set(bit_vector.keys()).intersection(bit_vector_py.keys()))
+
