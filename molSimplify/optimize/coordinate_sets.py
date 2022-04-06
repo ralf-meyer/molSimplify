@@ -7,6 +7,9 @@ class InternalCoordinates():
     def __init__(self, primitives):
         self.primitives = primitives
 
+    def size(self):
+        return len(self.primitives)
+
     def B(self, xyzs):
         B = np.zeros((len(self.primitives), xyzs.size))
         for i, prim in enumerate(self.primitives):
@@ -53,6 +56,9 @@ class InternalCoordinates():
             dq[i] = prim.diff(xyzs1, xyzs2)
         return dq
 
+    def force_to_internals(self, xyzs, force_cart):
+        return self.Binv(xyzs) @ force_cart.flatten()
+
 
 class DelocalizedCoordinates(InternalCoordinates):
 
@@ -68,6 +74,9 @@ class DelocalizedCoordinates(InternalCoordinates):
         w, v = np.linalg.eigh(G)
         # Set of nonredundant eigenvectors (eigenvalue =/= 0)
         self.U = v[:, np.abs(w) > self.threshold]
+
+    def size(self):
+        return self.U.shape[1]
 
     def B(self, xyzs):
         return self.U.T @ InternalCoordinates.B(self, xyzs)
