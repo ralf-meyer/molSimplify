@@ -7,11 +7,12 @@ class NonCartesianBFGS(BFGS):
     arbitrary (internal) coordinate systems.
     """
 
-    def __init__(self, atoms, coordinate_set, **kwargs):
+    def __init__(self, atoms, coordinate_set, maxstep_internal=1.0, **kwargs):
         if kwargs.get('use_line_search', False):
             raise NotImplementedError('Line search is not implemented yet.')
         self.coord_set = coordinate_set
         BFGS.__init__(self, atoms, **kwargs)
+        self.maxstep_internal = maxstep_internal
 
     def initialize(self):
         # initial hessian
@@ -49,6 +50,8 @@ class NonCartesianBFGS(BFGS):
 
         # MOD: step in internals
         dq = np.dot(V, np.dot(f, V) / np.fabs(omega))
+        if np.max(np.abs(dq)) > self.maxstep_internal:
+            dq *= self.maxstep_internal / np.max(np.abs(dq))
         # Transform to Cartesians
         dr = self.coord_set.to_cartesians(dq, r) - r
         steplengths = (dr**2).sum(1)**0.5
@@ -80,11 +83,12 @@ class NonCartesianLBFGS(LBFGS):
     arbitrary (internal) coordinate systems.
     """
 
-    def __init__(self, atoms, coordinate_set, **kwargs):
+    def __init__(self, atoms, coordinate_set, maxstep_internal=1.0, **kwargs):
         if kwargs.get('use_line_search', False):
             raise NotImplementedError('Line search is not implemented yet.')
         LBFGS.__init__(self, atoms, **kwargs)
         self.coord_set = coordinate_set
+        self.maxstep_internal = maxstep_internal
 
     def step(self, f=None):
         """Take a single step
@@ -127,10 +131,11 @@ class NonCartesianLBFGS(LBFGS):
             z += s[i] * (a[i] - b)
 
         # MOD: Calculate internal step
-        p_internal = -z
-        # print('internal step', p_internal)
+        dq = -z
+        if np.max(np.abs(dq)) > self.maxstep_internal:
+            dq *= self.maxstep_internal / np.max(np.abs(dq))
         # MOD: Transform internal step to Cartesian step
-        self.p = self.coord_set.to_cartesians(p_internal, r) - r
+        self.p = self.coord_set.to_cartesians(dq, r) - r
         # ##
 
         g = -f
