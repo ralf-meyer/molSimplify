@@ -66,9 +66,9 @@ def test_redundant_internals(name):
 
     if coords_ref.bork:  # Meaning that the transformation failed:
         with pytest.raises(RuntimeError):
-            coords.to_cartesians(dq, xyzs_dist, maxstep=np.inf, tol=1e-6)
+            coords.to_cartesians(dq, xyzs_dist, maxstep=np.inf)
         return
-    xyzs2 = coords.to_cartesians(dq, xyzs_dist, maxstep=0.1, tol=1e-6)
+    xyzs2 = coords.to_cartesians(dq, xyzs_dist, maxstep=0.1)
 
     assert kabsch_rmsd(xyzs2, xyzs2_ref, translate=True) < 1e-5
     # Test that final geometry is close to original
@@ -124,6 +124,6 @@ def test_delocalized_internals(name):
     dq_ref = coords_ref.calcDiff(xyzs, xyzs_dist)
     np.testing.assert_allclose(dq, dq_ref, atol=1e-8)
 
-    xyzs2 = coords.to_cartesians(dq, xyzs_dist, maxstep=0.1, tol=1e-6)
+    xyzs2 = coords.to_cartesians(dq, xyzs_dist, maxstep=0.1)
     # Test that final geometry is close to original
     assert kabsch_rmsd(xyzs2, xyzs, translate=True) < 1e-5

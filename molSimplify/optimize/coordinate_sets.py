@@ -27,10 +27,12 @@ class InternalCoordinates():
             q[i] = prim.value(xyzs)
         return q
 
-    def to_cartesians(self, dq, xyzs_ref, tol=1e-10, maxstep=0.1, maxiter=50):
+    def to_cartesians(self, dq, xyzs_ref, tol_q=1e-10, tol_x=1e-10,
+                      maxstep=0.05, maxiter=50):
         xyzs = xyzs_ref.copy()
+        step = np.infty * np.ones_like(xyzs)
         for _ in range(maxiter):
-            if np.linalg.norm(dq) < tol:
+            if np.linalg.norm(dq) < tol_q or np.linalg.norm(step) < tol_x:
                 return xyzs
             step = (self.Binv(xyzs).T @ dq).reshape(xyzs.shape)
             steplengths = np.sqrt(np.sum(step**2, axis=-1))
