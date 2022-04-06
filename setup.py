@@ -17,7 +17,8 @@ setup(name='molSimplify',
       },
       data_files=[('molSimplify', ['molSimplify/Data/ML.dat'])],
       install_requires=['numpy', 'scipy', 'scikit-learn',
-                        'pandas', 'keras', 'tensorflow', 'pyyaml'],
+                        'pandas', 'keras', 'tensorflow', 'pyyaml',
+                        'pre-commit'],
       setup_requires=['pytest-runner'],  # this may result some package conflict in local conda build. comment it out if needed.
       tests_require=['pytest'],
       include_package_data=True
