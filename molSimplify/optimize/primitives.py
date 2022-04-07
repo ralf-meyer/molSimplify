@@ -21,6 +21,9 @@ class Distance(Primitive):
     def __init__(self, i, j):
         self.i, self.j = i, j
 
+    def __repr__(self):
+        return f'Distance({self.i}, {self.j})'
+
     def value(self, xyzs):
         rij = xyzs[self.i, :] - xyzs[self.j, :]
         return np.linalg.norm(rij)
@@ -56,6 +59,9 @@ class Angle(Primitive):
         https://www.cs.utexas.edu/users/evouga/uploads/4/5/6/8/45689883/turning.pdf
         """
         self.i, self.j, self.k = i, j, k
+
+    def __repr__(self):
+        return f'Angle({self.i}, {self.j}, {self.k})'
 
     def value(self, xyzs):
         rji = xyzs[self.i, :] - xyzs[self.j, :]
@@ -102,6 +108,9 @@ class LinearAngle(Primitive):
         self.i, self.j, self.k = i, j, k
         self.axis = axis
         self.eref = None
+
+    def __repr__(self):
+        return f'LinearAngle({self.i}, {self.j}, {self.k}, axis={self.axis})'
 
     def _calc_reference(self, xyzs):
         rik = xyzs[self.k, :] - xyzs[self.i, :]
@@ -199,11 +208,14 @@ class LinearAngle(Primitive):
 
 class Dihedral(Primitive):
 
-    def __init__(self, i, j, k, l):  # noqa
+    def __init__(self, i, j, k, l):  # noqa: E741
         """Implementation follows:
         Blondel, A. and Karplus, M., J. Comput. Chem., 17: 1132-1141. (1996)
         """
-        self.i, self.j, self.k, self.l = i, j, k, l  # noqa
+        self.i, self.j, self.k, self.l = i, j, k, l  # noqa: E741
+
+    def __repr__(self):
+        return f'Dihedral({self.i}, {self.j}, {self.k}, {self.l})'
 
     def value(self, xyzs):
         f = xyzs[self.i, :] - xyzs[self.j, :]
@@ -250,6 +262,9 @@ class Dihedral(Primitive):
 class Improper(Dihedral):
     """Alias for Dihedral since it is often necessary to distinguish between
     actual dihedrals and improper (out-of-plane) bends."""
+
+    def __repr__(self):
+        return f'Improper({self.i}, {self.j}, {self.k}, {self.l})'
 
 
 class Octahedral(Primitive):
