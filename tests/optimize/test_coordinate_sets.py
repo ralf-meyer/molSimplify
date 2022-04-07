@@ -4,7 +4,7 @@ import geometric.internal
 from utils import g2_molecules
 from molSimplify.Scripts.rmsd import kabsch_rmsd
 from molSimplify.optimize.primitives import (Distance, Angle,
-                                             LinearAngle, Dihedral)
+                                             LinearAngle, Dihedral, Improper)
 from molSimplify.optimize.coordinate_sets import (InternalCoordinates,
                                                   DelocalizedCoordinates)
 
@@ -127,3 +127,52 @@ def test_delocalized_internals(name):
     xyzs2 = coords.to_cartesians(dq, xyzs_dist, maxstep=0.1)
     # Test that final geometry is close to original
     assert kabsch_rmsd(xyzs2, xyzs, translate=True) < 1e-5
+
+
+def test_difficult_backtransformations():
+    """Collection of backtransformations that have previously failed"""
+    dq = np.array([
+        -2.55649951e-01, -7.00629446e-02, -3.06523919e-01, -1.10446877e-01,
+        9.11339677e-03,  2.82363504e-01,  2.43707743e-02,  7.89718523e-02,
+        2.45630077e-02,  8.33115396e-02,  5.73663475e-03,  3.65728286e-02,
+        1.35996523e-02, -9.16465357e-02,  9.49289202e-02,  1.40607213e-02,
+        -1.68959287e-01,  1.73961566e-01,  1.84477339e-02, -9.56975507e-02,
+        9.24851631e-02, -1.77046877e-01,  1.72087667e-01, -6.94935808e-01,
+        -2.08768675e-02,  9.93074135e-01, -2.97252849e-02,  6.95489833e-01,
+        1.00788510e-02, -1.00000000e+00,  8.95796387e-03,  1.58401215e-03,
+        -2.31595649e-03, -7.48378180e-04, -1.86763552e-03, -1.23072431e-01])
+    xyzs_ref = np.array([
+        [-1.86318924e-02, -2.00432626e-02, -2.65778210e-01],
+        [4.50528678e-02,  2.00410681e+00, -1.25055298e-01],
+        [8.82009675e-02,  2.92135490e+00,  3.47073266e-01],
+        [2.07799671e+00,  4.85485219e-02, -1.54557178e-02],
+        [2.80140937e+00,  8.30984741e-02,  5.40339397e-01],
+        [1.36360916e-03, -2.02203919e+00, -1.23924003e-01],
+        [5.32957615e-03, -2.93975477e+00,  3.51035266e-01],
+        [-2.09749862e+00,  4.94112974e-03, -1.30389161e-02],
+        [-2.81815924e+00,  7.05630460e-03,  5.46231436e-01],
+        [-1.97089471e-02, -1.98612123e-02,  1.48973506e+00],
+        [-1.91075577e-02, -1.88338775e-02,  2.64031391e+00],
+        [-2.25656805e-02, -2.35345004e-02, -2.12318401e+00],
+        [-2.36811609e-02, -2.50393166e-02, -3.27843517e+00]])
+
+    primitives = [Distance(0, 1), Distance(0, 3), Distance(0, 5),
+                  Distance(0, 7), Distance(0, 9), Distance(0, 11),
+                  Distance(1, 2), Distance(3, 4), Distance(5, 6),
+                  Distance(7, 8), Distance(9, 10), Distance(11, 12),
+                  Angle(1, 0, 7), Angle(1, 0, 9), Angle(1, 0, 11),
+                  Angle(3, 0, 5), Angle(3, 0, 9), Angle(3, 0, 11),
+                  Angle(5, 0, 7), Angle(5, 0, 9), Angle(5, 0, 11),
+                  Angle(7, 0, 9), Angle(7, 0, 11),
+                  LinearAngle(0, 1, 2, axis=0), LinearAngle(0, 1, 2, axis=1),
+                  LinearAngle(0, 3, 4, axis=0), LinearAngle(0, 3, 4, axis=1),
+                  LinearAngle(0, 5, 6, axis=0), LinearAngle(0, 5, 6, axis=1),
+                  LinearAngle(0, 7, 8, axis=0), LinearAngle(0, 7, 8, axis=1),
+                  LinearAngle(0, 9, 10, axis=0), LinearAngle(0, 9, 10, axis=1),
+                  LinearAngle(0, 11, 12, axis=0),
+                  LinearAngle(0, 11, 12, axis=1), Improper(0, 1, 3, 5)]
+    coord_set = InternalCoordinates(primitives)
+    # Check that the backtransformation does not fail
+    # Only works after slightly decreasing the step size, fails if scaling
+    # factor is omitted
+    _ = coord_set.to_cartesians(0.95*dq, xyzs_ref)
