@@ -76,6 +76,11 @@ def sgejobgen(args, jobdirs):
         else:
             output.write('#$ -pe smp 1\n')
         if args.joption:
+            multi_option = args.joption[0].split('-')
+            if len(multi_option) > 1:
+                args.joption = []
+                for option in multi_option[1:]:
+                    args.joption += ["-" + option]
             for jopt in args.joption:
                 output.write('# '+jopt+'\n')
         if args.modules:
