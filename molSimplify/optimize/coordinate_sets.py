@@ -25,6 +25,10 @@ class CartesianCoordinates():
     def force_to_internals(self, xyzs, force_cart):
         return force_cart.flatten()
 
+    def hessian_to_internals(self, xyzs, hess_cart, grad_cart=None):
+        return hess_cart
+
+
 class InternalCoordinates():
 
     def __init__(self, primitives):
@@ -81,6 +85,17 @@ class InternalCoordinates():
 
     def force_to_internals(self, xyzs, force_cart):
         return self.Binv(xyzs) @ force_cart.flatten()
+
+    def hessian_to_internals(self, xyzs, hess_cart, grad_cart=None):
+        Binv = self.Binv(xyzs)
+
+        if grad_cart is not None:
+            raise NotImplementedError('Transformation including gradient term '
+                                      'is not implemented yet')
+            # hess_cart -= Binv @ grad_cart @ self.second_derivatives(xyzs)
+
+        hess_int = Binv @ hess_cart @ Binv.T
+        return hess_int
 
 
 class DelocalizedCoordinates(InternalCoordinates):
