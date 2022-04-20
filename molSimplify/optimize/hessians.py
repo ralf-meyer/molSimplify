@@ -26,225 +26,252 @@ def compute_hessian_guess(atoms, method):
         H = numerical_hessian(atoms)
         atoms.calc = old_calc
         return H
+    elif method.lower() == 'trivial':
+        return TrivialGuessHessian().build(atoms)
     elif method.lower() == 'schlegel':
-        return schlegel_hessian(atoms)
+        return SchlegelHessian().build(atoms)
     elif method.lower() == 'fischer_almloef':
-        return fischer_almloef_hessian(atoms)
+        return FischerAlmloefHessian().build(atoms)
     else:
         raise NotImplementedError(f'Unknown hessian_guess {method}')
 
 
-def trivial_hessian(atoms, threshold=1.35):
-    """
-    Follows the recommendation given in
-    Baker et al., J. Chem. Phys. 105, 192, (1996)
+class TrivialGuessHessian():
+    """Base class fpr guess Hessians constructed in internal coordinates. The force
+    constants in this trivial implementation follow the suggestion in
+    Baker et al., J. Chem. Phys. 105, 192 (1996)
+    https://doi.org/10.1063/1.471864"""
 
-    Parameters
-    ----------
-    atoms : ase.atoms.Atoms
-        Arrangement of atoms.
-    threshold : float
-        Atoms closer than this threshold times the sum of their covalent radii
-        are considered bound. Default value suggested by Schlegel is 1.35.
+    def __init__(self, threshold=1.35,
+                 h_trans=0.05 * ase.units.Hartree / ase.units.Bohr**2):
+        """
+        Parameters
+        ----------
+        threshold : float
+            Atoms closer than this threshold times the sum of their covalent
+            radii are considered bound. Default value is 1.35.
+        h_trans : float
+            Force constant for translations.
+        """
+        self.threshold = threshold
+        self.h_trans = h_trans
 
-    Returns
-    -------
-    H : numpy.ndarray
-        Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
-    """
-    N = len(atoms)
-    xyzs = atoms.get_positions()
+    def build(self, atoms):
+        """
+        Parameters
+        ----------
+        atoms : ase.atoms.Atoms
+            Arrangement of atoms.
 
-    bonds = find_connectivity(atoms, threshold=threshold**2,
-                              connect_fragments=True)
-    primitives = get_primitives(xyzs, bonds)
-    # Initialize Hessian in Cartesian coordinates
-    H = np.zeros((3*N, 3*N))
+        Returns
+        -------
+        H : numpy.ndarray
+            Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
+        """
 
-    for prim in primitives:
-        if type(prim) is Distance:
-            h_ii = 0.5 / ase.units.Bohr**2
-        elif type(prim) in [Angle, LinearAngle]:
-            h_ii = 0.2
-        elif type(prim) is Dihedral or type(prim) is Improper:
-            h_ii = 0.2
-        Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_ii * ase.units.Hartree * Bi)
-    return H
+        N = len(atoms)
+        zs = atoms.get_atomic_numbers()
+        xyzs = atoms.get_positions()
+        bonds = find_connectivity(atoms, threshold=self.threshold**2,
+                                  connect_fragments=True)
+        primitives = get_primitives(xyzs, bonds)
+
+        # Calculate the number of bonds on each atom for the torsion
+        # coefficient in the Fischer Almloef Hessian.
+        N_bonds = np.zeros(N)
+        for b in bonds:
+            N_bonds[b[0]] += 1
+            N_bonds[b[1]] += 1
+
+        # Initialize Hessian in Cartesian coordinates
+        H = np.zeros((3*N, 3*N))
+
+        for prim in primitives:
+            if type(prim) is Distance:
+                h_ii = self.distance(xyzs[prim.i], xyzs[prim.j],
+                                     zs[prim.i], zs[prim.j])
+            elif type(prim) is Angle:
+                h_ii = self.angle(xyzs[prim.i], xyzs[prim.j], xyzs[prim.k],
+                                  zs[prim.i], zs[prim.j], zs[prim.k])
+            elif type(prim) is LinearAngle:
+                h_ii = self.linear_angle(xyzs[prim.i], xyzs[prim.j],
+                                         xyzs[prim.k], zs[prim.i],
+                                         zs[prim.j], zs[prim.k])
+            elif type(prim) is Dihedral:
+                h_ii = self.dihedral(xyzs[prim.i], xyzs[prim.j], xyzs[prim.k],
+                                     xyzs[prim.l], zs[prim.i], zs[prim.j],
+                                     zs[prim.k], zs[prim.l],
+                                     N_bonds[prim.j], N_bonds[prim.k])
+            elif type(prim) is Improper:
+                h_ii = self.improper(xyzs[prim.i], xyzs[prim.j], xyzs[prim.k],
+                                     xyzs[prim.l], zs[prim.i], zs[prim.j],
+                                     zs[prim.k], zs[prim.l])
+            Bi = prim.derivative(xyzs)
+            H += np.outer(Bi, h_ii * Bi)
+
+        # Add translation force constants for all three Cartesian displacements
+        for coord in range(3):
+            # The outer product of a displacement vector along the x-axis:
+            # [1, 0, 0, 1, 0, 0, ..., 1, 0, 0] corresponds to the
+            # indexing [0::3, 0::3]
+            H[coord::3, coord::3] += self.h_trans
+        return H
+
+    def distance(self, xyz_i, xyz_j, z_i, z_j):
+        return 0.5 * ase.units.Hartree / ase.units.Bohr**2
+
+    def angle(self, xyz_i, xyz_j, xyz_k, z_i, z_j, z_k):
+        return 0.2 * ase.units.Hartree
+
+    def linear_angle(self, xyz_i, xyz_j, xyz_k, z_i, z_j, z_k):
+        return self.angle(xyz_i, xyz_j, xyz_k, z_i, z_j, z_k)
+
+    def dihedral(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l,
+                 bonds_j, bonds_k):
+        return 0.2 * ase.units.Hartree
+
+    def improper(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l):
+        return 0.2 * ase.units.Hartree
 
 
-def schlegel_hessian(atoms, threshold=1.35):
+class SchlegelHessian(TrivialGuessHessian):
     """
     Schlegel, Theoret. Chim. Acta 66, 333-340 (1984).
     https://doi.org/10.1007/BF00554788
-
-    Parameters
-    ----------
-    atoms : ase.atoms.Atoms
-        Arrangement of atoms.
-    threshold : float
-        Atoms closer than this threshold times the sum of their covalent radii
-        are considered bound. Default value suggested by Schlegel is 1.35.
-
-    Returns
-    -------
-    H : numpy.ndarray
-        Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
     """
-    N = len(atoms)
-    atomic_numbers = atoms.get_atomic_numbers()
-    xyzs = atoms.get_positions()
-    # Calculate the covalent bond distances as they are needed later
-    cov = np.array([ase.data.covalent_radii[num] for num in atomic_numbers])
-    r_cov = cov[:, np.newaxis] + cov[np.newaxis, :]
-    # "Atoms are considered bonded if their internuclear distance is less than
-    # 1.35 times the sum of the covalentradii"
-    bonds = find_connectivity(atoms, threshold=threshold**2,
-                              connect_fragments=True)
-    primitives = get_primitives(xyzs, bonds)
-    # Initialize Hessian in Cartesian coordinates
-    H = np.zeros((3*N, 3*N))
 
-    def get_B_str(num1, num2):
-        """Returns the B parameter for stretch coordinates given two atomic
+    def get_B_str(self, z_1, z_2):
+        """
+        Returns the B parameter for stretch coordinates given two atomic
         numbers
         """
         # Sort for simplicity
-        num1, num2 = min(num1, num2), max(num1, num2)
-        if num1 <= 2:  # First period
-            if num2 <= 2:  # first-first
+        z_1, z_2 = min(z_1, z_2), max(z_1, z_2)
+        if z_1 <= 2:  # First period
+            if z_2 <= 2:  # first-first
                 return -0.244
-            elif num2 <= 10:  # first-second
+            elif z_2 <= 10:  # first-second
                 return 0.352
             else:  # first-third+
                 return 0.660
-        elif num1 <= 10:  # Second period
-            if num2 <= 10:  # second-second
+        elif z_1 <= 10:  # Second period
+            if z_2 <= 10:  # second-second
                 return 1.085
             else:  # second-third+
                 return 1.522
         else:  # third+-third+
             return 2.068
 
-    def get_A_bend(num1, num2):
-        if atomic_numbers[num1] == 1 or atomic_numbers[num2] == 1:
+    def distance(self, xyz_i, xyz_j, z_i, z_j):
+        r = np.linalg.norm(xyz_j - xyz_i)
+        r_cov = ase.data.covalent_radii[z_i] + ase.data.covalent_radii[z_j]
+        if r < self.threshold * r_cov:
+            B = self.get_B_str(z_i, z_j)
+            return (1.734 * ase.units.Hartree * ase.units.Bohr /
+                    (r - B*ase.units.Bohr)**3)
+        else:
+            # Not covalently bonded atoms (from fragment connection).
+            # Following geomeTRIC those are assigned a fixed value:
+            return 0.1 * ase.units.Hartree / ase.units.Bohr**2
+
+    def angle(self, xyz_i, xyz_j, xyz_k, z_i, z_j, z_k):
+        if z_i == 1 or z_k == 1:
             # "either or both terminal atoms hydrogen"
-            return 0.160
+            return 0.160 * ase.units.Hartree
         # "all three heavy atom bends"
-        return 0.250
+        return 0.250 * ase.units.Hartree
 
-    for prim in primitives:
-        if type(prim) is Distance:
-            r = prim.value(xyzs)
-            if r < threshold * r_cov[prim.i, prim.j]:
-                B = get_B_str(atomic_numbers[prim.i], atomic_numbers[prim.j])
-                h_ii = (1.734 * ase.units.Bohr /
-                        (r - B*ase.units.Bohr)**3)
-            else:
-                # Not covalently bonded atoms (from fragment connection).
-                # Following geomeTRIC those are assigned a fixed value:
-                h_ii = 0.1 / ase.units.Bohr**2
-        elif type(prim) in [Angle, LinearAngle]:
-            h_ii = get_A_bend(prim.i, prim.k)
-        elif type(prim) is Dihedral:
-            r = np.linalg.norm(xyzs[prim.j] - xyzs[prim.k])
-            # Follows the implementation in Psi4 (line 177 in
-            # https://github.com/psi4/psi4/blob/d9093c75c71c2b33fbe86f32b25d138675ac22eb/psi4/src/psi4/optking/frag_H_guess.cc)
-            A = 0.0023
-            B = 0.07 / ase.units.Bohr
-            if r < r_cov[prim.j, prim.k] + A / B:
-                h_ii = A - B * (r - r_cov[prim.j, prim.k])
-            else:
-                h_ii = A
-        elif type(prim) is Improper:
-            r1 = xyzs[prim.j] - xyzs[prim.i]
-            r2 = xyzs[prim.k] - xyzs[prim.i]
-            r3 = xyzs[prim.l] - xyzs[prim.i]
-            # Additional np.abs() since we do not know the orientation of r1
-            # with respect to r2 x r3.
-            d = 1 - np.abs(np.dot(r1, np.cross(r2, r3)))/(
-                np.linalg.norm(r1)*np.linalg.norm(r2)*np.linalg.norm(r3))
-            h_ii = 0.045 * d**4
-        Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_ii * ase.units.Hartree * Bi)
-    return H
+    def dihedral(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l,
+                 bonds_j, bonds_k):
+        r = np.linalg.norm(xyz_j - xyz_k)
+        r_cov = ase.data.covalent_radii[z_j] + ase.data.covalent_radii[z_k]
+        # Follows the implementation in Psi4 (line 177 in
+        # https://github.com/psi4/psi4/blob/d9093c75c71c2b33fbe86f32b25d138675ac22eb/psi4/src/psi4/optking/frag_H_guess.cc)
+        A = 0.0023 * ase.units.Hartree
+        B = 0.07 * ase.units.Hartree / ase.units.Bohr
+        if r < r_cov + A / B:
+            return A - B * (r - r_cov)
+        else:
+            return A
+
+    def improper(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l):
+        r1 = xyz_j - xyz_i
+        r2 = xyz_k - xyz_i
+        r3 = xyz_l - xyz_i
+        # Additional np.abs() since we do not know the orientation of r1
+        # with respect to r2 x r3.
+        d = 1 - np.abs(np.dot(r1, np.cross(r2, r3)))/(
+            np.linalg.norm(r1)*np.linalg.norm(r2)*np.linalg.norm(r3))
+        return 0.045 * ase.units.Hartree * d**4
 
 
-def fischer_almloef_hessian(atoms, threshold=1.35):
+class FischerAlmloefHessian(TrivialGuessHessian):
     """
     Fischer and Almloef, J. Phys. Chem. 1992, 96, 24, 9768-9774
     https://doi.org/10.1021/j100203a036
-
-    Parameters
-    ----------
-    atoms : ase.atoms.Atoms
-        Arrangement of atoms.
-    threshold : float
-        Atoms closer than this threshold times the sum of their covalent radii
-        are considered bound. Default value suggested by Schlegel is 1.35.
-
-    Returns
-    -------
-    H : numpy.ndarray
-        Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
     """
-    N = len(atoms)
-    atomic_numbers = atoms.get_atomic_numbers()
-    xyzs = atoms.get_positions()
-    # Calculate the covalent bond distances as they are needed later
-    cov = np.array([ase.data.covalent_radii[num] for num in atomic_numbers])
-    r_cov = cov[:, np.newaxis] + cov[np.newaxis, :]
-    bonds = find_connectivity(atoms, threshold=threshold**2,
-                              connect_fragments=True)
-    # Calculate the number of bonds on each atoms for the torsion coefficient
-    N_bonds = np.zeros(N)
-    for b in bonds:
-        N_bonds[b[0]] += 1
-        N_bonds[b[1]] += 1
-    primitives = get_primitives(xyzs, bonds)
-    # Initialize Hessian in Cartesian coordinates
-    H = np.zeros((3*N, 3*N))
-    for prim in primitives:
-        if type(prim) is Distance:
-            # "Bond stretch between atoms a and b"
-            r_ab = prim.value(xyzs) / ase.units.Bohr
-            r_ab_cov = r_cov[prim.i, prim.j] / ase.units.Bohr
-            if r_ab < threshold * r_ab_cov:
-                h_ii = 0.3601 * np.exp(-1.944 * (r_ab - r_ab_cov))
-            else:
-                # Not covalently bonded atoms (from fragment connection).
-                # Following geomeTRIC those are assigned a fixed value
-                h_ii = 0.1 / ase.units.Bohr**2
-        elif type(prim) in [Angle, LinearAngle]:
-            # "Valence angle bend formed by atoms b-a-c"
-            r_ab = np.linalg.norm(xyzs[prim.i] - xyzs[prim.j]) / ase.units.Bohr
-            r_ac = np.linalg.norm(xyzs[prim.k] - xyzs[prim.j]) / ase.units.Bohr
-            r_ab_cov = r_cov[prim.i, prim.j] / ase.units.Bohr
-            r_ac_cov = r_cov[prim.k, prim.j] / ase.units.Bohr
-            h_ii = (0.089 + 0.11 / (r_ab_cov * r_ac_cov)**(-0.42)
-                    * np.exp(-0.44 * (r_ab + r_ac - r_ab_cov - r_ac_cov)))
-        elif type(prim) is Dihedral:
-            # "Torsion about the central bond between atoms a and b"
-            r_ab = np.linalg.norm(xyzs[prim.j] - xyzs[prim.k]) / ase.units.Bohr
-            r_ab_cov = r_cov[prim.j, prim.k] / ase.units.Bohr
-            # "L, number of bonds connected to atom a and b (except the
-            # central bond)"
-            L = N_bonds[prim.j] - 1 + N_bonds[prim.k] - 1
-            h_ii = (0.0015 + 14.0 * L**0.57 / (r_ab*r_ab_cov)**4
-                    * np.exp(-2.85*(r_ab - r_ab_cov)))
-        elif type(prim) is Improper:
-            # "Out-of-plane bend of atom x and the plane formed by atoms a, b,
-            # and c where atom x is connected to atom a"
-            r_ax = np.linalg.norm(xyzs[prim.j] - xyzs[prim.i]) / ase.units.Bohr
-            r_ax_cov = r_cov[prim.j, prim.i] / ase.units.Bohr
-            r_ab_cov = r_cov[prim.j, prim.k] / ase.units.Bohr
-            r_ac_cov = r_cov[prim.l, prim.k] / ase.units.Bohr
-            phi = prim.value(xyzs)
-            h_ii = (0.0025 + 0.0061 * (r_ab_cov*r_ac_cov)**0.8 * np.cos(phi)**4
-                    * np.exp(-3*(r_ax - r_ax_cov)))
-        Bi = prim.derivative(xyzs)
-        H += np.outer(Bi, h_ii * ase.units.Hartree * Bi)
-    return H
+
+    def distance(self, xyz_i, xyz_j, z_i, z_j):
+        # "Bond stretch between atoms a and b"
+        r_ab = np.linalg.norm(xyz_j - xyz_i)
+        r_ab_cov = ase.data.covalent_radii[z_i] + ase.data.covalent_radii[z_j]
+        A = 0.3601 * ase.units.Hartree / ase.units.Bohr**2
+        B = 1.944 / ase.units.Bohr
+        if r_ab < self.threshold * r_ab_cov:
+            return A * np.exp(-B * (r_ab - r_ab_cov))
+        else:
+            # Not covalently bonded atoms (from fragment connection).
+            # Following geomeTRIC those are assigned a fixed value
+            return 0.1 * ase.units.Hartree / ase.units.Bohr**2
+
+    def angle(self, xyz_i, xyz_j, xyz_k, z_i, z_j, z_k):
+        # "Valence angle bend formed by atoms b-a-c"
+        r_ab = np.linalg.norm(xyz_i - xyz_j)
+        r_ac = np.linalg.norm(xyz_k - xyz_j)
+        r_ab_cov = ase.data.covalent_radii[z_i] + ase.data.covalent_radii[z_j]
+        r_ac_cov = ase.data.covalent_radii[z_k] + ase.data.covalent_radii[z_j]
+        A = 0.089 * ase.units.Hartree
+        B = 0.11 * ase.units.Hartree
+        C = 0.44 / ase.units.Bohr
+        D = -0.42
+        return (A + B / (r_ab_cov * r_ac_cov / ase.units.Bohr**2)**D
+                * np.exp(-C * (r_ab + r_ac - r_ab_cov - r_ac_cov)))
+
+    def dihedral(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l,
+                 bonds_j, bonds_k):
+        # "Torsion about the central bond between atoms a and b"
+        r_ab = np.linalg.norm(xyz_j - xyz_k)
+        r_ab_cov = ase.data.covalent_radii[z_j] + ase.data.covalent_radii[z_k]
+        # "L, number of bonds connected to atom a and b (except the
+        # central bond)"
+        L = bonds_j - 1 + bonds_k - 1
+        A = 0.0015 * ase.units.Hartree
+        B = 14.0 * ase.units.Hartree
+        C = 2.85 / ase.units.Bohr
+        D = 0.57
+        E = 4.0
+        return (A + B * L**D / (r_ab * r_ab_cov / ase.units.Bohr**2)**E
+                * np.exp(-C*(r_ab - r_ab_cov)))
+
+    def improper(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l):
+        # "Out-of-plane bend of atom x and the plane formed by atoms a, b,
+        # and c where atom x is connected to atom a"
+        r_ax = np.linalg.norm(xyz_j - xyz_i)
+        r_ax_cov = ase.data.covalent_radii[z_i] + ase.data.covalent_radii[z_j]
+        r_ab_cov = ase.data.covalent_radii[z_j] + ase.data.covalent_radii[z_k]
+        r_ac_cov = ase.data.covalent_radii[z_l] + ase.data.covalent_radii[z_k]
+
+        n_1 = np.cross(xyz_i - xyz_j, xyz_k - xyz_j)
+        n_2 = np.cross(xyz_j - xyz_k, xyz_l - xyz_k)
+        cos_phi = np.dot(n_1, n_2) / np.linalg.norm(n_1) / np.linalg.norm(n_2)
+
+        A = 0.0025 * ase.units.Hartree
+        B = 0.0061 * ase.units.Hartree
+        C = 3.00 / ase.units.Bohr
+        D = 4.0
+        E = 0.8
+        return (A + B * (r_ab_cov * r_ac_cov / ase.units.Bohr**2)**E
+                * cos_phi**D * np.exp(-C * (r_ax - r_ax_cov)))
 
 
 def xtb_hessian(atoms, method):
