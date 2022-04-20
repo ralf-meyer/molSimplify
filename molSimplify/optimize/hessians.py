@@ -109,7 +109,14 @@ def schlegel_hessian(atoms, threshold=1.35):
             h_ii = get_A_bend(prim.i, prim.k)
         elif type(prim) is Dihedral:
             r = np.linalg.norm(xyzs[prim.j] - xyzs[prim.k])
-            h_ii = 0.0023 - 0.07 / ase.units.Bohr * (r - r_cov[prim.j, prim.k])
+            # Follows the implementation in Psi4 (line 177 in
+            # https://github.com/psi4/psi4/blob/d9093c75c71c2b33fbe86f32b25d138675ac22eb/psi4/src/psi4/optking/frag_H_guess.cc)
+            A = 0.0023
+            B = 0.07 / ase.units.Bohr
+            if r < r_cov[prim.j, prim.k] + A / B:
+                h_ii = A - B * (r - r_cov[prim.j, prim.k])
+            else:
+                h_ii = A
         elif type(prim) is Improper:
             r1 = xyzs[prim.j] - xyzs[prim.i]
             r2 = xyzs[prim.k] - xyzs[prim.i]
