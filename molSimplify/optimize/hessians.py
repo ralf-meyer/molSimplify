@@ -63,11 +63,11 @@ def trivial_hessian(atoms, threshold=1.35):
 
     for prim in primitives:
         if type(prim) is Distance:
-            h_ii = 0.5
+            h_ii = 0.5 / ase.units.Bohr**2
         elif type(prim) in [Angle, LinearAngle]:
-            h_ii = 0.1
+            h_ii = 0.2
         elif type(prim) is Dihedral or type(prim) is Improper:
-            h_ii = 0.1
+            h_ii = 0.2
         Bi = prim.derivative(xyzs)
         H += np.outer(Bi, h_ii * ase.units.Hartree * Bi)
     return H
