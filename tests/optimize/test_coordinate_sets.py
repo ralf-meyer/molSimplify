@@ -42,9 +42,12 @@ def test_redundant_internals(name):
                                coords_ref.calculate(xyzs),
                                atol=1e-8)
 
-    np.testing.assert_allclose(coords.B(xyzs),
-                               coords_ref.wilsonB(xyzs),
-                               atol=1e-8)
+    B = coords.B(xyzs)
+    np.testing.assert_allclose(B, coords_ref.wilsonB(xyzs), atol=1e-8)
+    # Assert that B matrix contains no translations
+    n_q = coords.size()
+    np.testing.assert_allclose(np.sum(B.reshape((n_q, -1, 3)), axis=1),
+                               np.zeros((n_q, 3)), atol=1e-8)
 
     np.testing.assert_allclose(coords.Ginv(xyzs),
                                coords_ref.GInverse(xyzs),
@@ -116,6 +119,11 @@ def test_delocalized_internals(name):
     B = coords.B(xyzs)
     B_ref = coords_ref.wilsonB(xyzs)
     np.testing.assert_allclose(B, B_ref, atol=1e-8)
+    # Assert that B matrix contains no translations
+    n_q = coords.size()
+    np.testing.assert_allclose(np.sum(B.reshape((n_q, -1, 3)), axis=1),
+                               np.zeros((n_q, 3)), atol=1e-8)
+
     # Try to reconstruct the geometry from a distorted reference
     np.random.seed(4321)
     xyzs_dist = xyzs + 0.1*np.random.randn(*xyzs.shape)
