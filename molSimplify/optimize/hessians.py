@@ -43,7 +43,8 @@ class TrivialGuessHessian():
     https://doi.org/10.1063/1.471864"""
 
     def __init__(self, threshold=1.35,
-                 h_trans=0.05 * ase.units.Hartree / ase.units.Bohr**2):
+                 h_trans=0.05 * ase.units.Hartree / ase.units.Bohr**2,
+                 h_rot=0.0):
         """
         Parameters
         ----------
@@ -52,9 +53,12 @@ class TrivialGuessHessian():
             radii are considered bound. Default value is 1.35.
         h_trans : float
             Force constant for translations.
+        h_rot : float
+            Force constant for rotations.
         """
         self.threshold = threshold
         self.h_trans = h_trans
+        self.h_rot = h_rot
 
     def build(self, atoms):
         """
@@ -113,8 +117,20 @@ class TrivialGuessHessian():
         for coord in range(3):
             # The outer product of a displacement vector along the x-axis:
             # [1, 0, 0, 1, 0, 0, ..., 1, 0, 0] corresponds to the
-            # indexing [0::3, 0::3]
-            H[coord::3, coord::3] += self.h_trans
+            # indexing [0::3, 0::3]. The factor 1/N is used to normalize the
+            # displacement vector.
+            H[coord::3, coord::3] += self.h_trans / N
+
+        # Add force constants for rotation about the three Cartesian axes
+        center = np.mean(xyzs, axis=0)
+        for ax in np.eye(3):
+            # A rotation about the geometric center is characterized by the
+            # following B vector.
+            B = np.cross(xyzs - center, ax).flatten()
+            norm_B = np.linalg.norm(B)
+            if norm_B > 0.0:
+                B /= norm_B
+            H += self.h_rot * np.outer(B, B)
         return H
 
     def distance(self, xyz_i, xyz_j, z_i, z_j):
