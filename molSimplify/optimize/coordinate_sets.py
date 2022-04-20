@@ -2,6 +2,29 @@ import numpy as np
 from molSimplify.utils.exceptions import ConvergenceError
 
 
+class CartesianCoordinates():
+
+    def __init__(self, atoms):
+        self.n_atoms = len(atoms)
+
+    def size(self):
+        return 3*self.n_atoms
+
+    def B(self, xyzs):
+        return np.eye(xyzs.size)
+
+    def to_internals(self, xyzs):
+        return xyzs.flatten()
+
+    def to_cartesians(self, dq, xyzs_ref):
+        return xyzs_ref + dq.reshape(xyzs_ref.shape)
+
+    def diff_internals(self, xyzs1, xyzs2):
+        return xyzs1.flatten() - xyzs2.flatten()
+
+    def force_to_internals(self, xyzs, force_cart):
+        return force_cart.flatten()
+
 class InternalCoordinates():
 
     def __init__(self, primitives):

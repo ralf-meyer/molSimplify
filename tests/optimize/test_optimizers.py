@@ -7,7 +7,8 @@ import ase.optimize
 from molSimplify.optimize.calculators import OpenbabelFF
 from molSimplify.optimize.connectivity import find_connectivity, get_primitives
 from molSimplify.optimize.primitives import Distance
-from molSimplify.optimize.coordinate_sets import (DelocalizedCoordinates,
+from molSimplify.optimize.coordinate_sets import (CartesianCoordinates,
+                                                  DelocalizedCoordinates,
                                                   InternalCoordinates)
 from molSimplify.optimize.optimizers import NonCartesianBFGS, NonCartesianLBFGS
 from molSimplify.Scripts.rmsd import kabsch_rmsd
@@ -43,7 +44,7 @@ def test_optimizers_on_H2(opt):
                           for opt in ['BFGS', 'LBFGS']
                           for mol in ['H2O', 'NH3', 'CH4', 'C2H4', 'C2H6',
                                       'C6H6', 'butadiene', 'bicyclobutane']
-                          for coord_set in ['internal', 'dlc']])
+                          for coord_set in ['cart', 'internal', 'dlc']])
 def test_optimizers_on_organic_molecules(opt, mol, coord_set):
     # check if openbabel version > 3.0. This is necessary as
     # OBForceField.GetGradient is not public for prior versions.
@@ -63,7 +64,9 @@ def test_optimizers_on_organic_molecules(opt, mol, coord_set):
 
     bonds = find_connectivity(atoms)
     primitives = get_primitives(xyzs, bonds)
-    if coord_set == 'internal':
+    if coord_set == 'cart':
+        coord_set = CartesianCoordinates(atoms)
+    elif coord_set == 'internal':
         coord_set = InternalCoordinates(primitives)
     elif coord_set == 'dlc':
         coord_set = DelocalizedCoordinates(primitives, xyzs)
@@ -87,7 +90,7 @@ def test_optimizers_on_organic_molecules(opt, mol, coord_set):
                          [(opt, lig, coord_set)
                           for opt in ['BFGS', 'LBFGS']
                           for lig in ['water']
-                          for coord_set in ['internal', 'dlc']])
+                          for coord_set in ['cart', 'internal', 'dlc']])
 def test_optimizers_on_homoleptic_TMCs(opt, ligand, coord_set):
     """TODO: For now only works on water since UFF does not give reasonable
     results for the other ligands."""
@@ -108,7 +111,9 @@ def test_optimizers_on_homoleptic_TMCs(opt, ligand, coord_set):
 
     bonds = find_connectivity(atoms)
     primitives = get_primitives(xyzs, bonds)
-    if coord_set == 'internal':
+    if coord_set == 'cart':
+        coord_set = CartesianCoordinates(atoms)
+    elif coord_set == 'internal':
         coord_set = InternalCoordinates(primitives)
     elif coord_set == 'dlc':
         coord_set = DelocalizedCoordinates(primitives, xyzs)
