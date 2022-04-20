@@ -34,6 +34,45 @@ def compute_hessian_guess(atoms, method):
         raise NotImplementedError(f'Unknown hessian_guess {method}')
 
 
+def trivial_hessian(atoms, threshold=1.35):
+    """
+    Follows the recommendation given in
+    Baker et al., J. Chem. Phys. 105, 192, (1996)
+
+    Parameters
+    ----------
+    atoms : ase.atoms.Atoms
+        Arrangement of atoms.
+    threshold : float
+        Atoms closer than this threshold times the sum of their covalent radii
+        are considered bound. Default value suggested by Schlegel is 1.35.
+
+    Returns
+    -------
+    H : numpy.ndarray
+        Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
+    """
+    N = len(atoms)
+    xyzs = atoms.get_positions()
+
+    bonds = find_connectivity(atoms, threshold=threshold**2,
+                              connect_fragments=True)
+    primitives = get_primitives(xyzs, bonds)
+    # Initialize Hessian in Cartesian coordinates
+    H = np.zeros((3*N, 3*N))
+
+    for prim in primitives:
+        if type(prim) is Distance:
+            h_ii = 0.5
+        elif type(prim) in [Angle, LinearAngle]:
+            h_ii = 0.1
+        elif type(prim) is Dihedral or type(prim) is Improper:
+            h_ii = 0.1
+        Bi = prim.derivative(xyzs)
+        H += np.outer(Bi, h_ii * ase.units.Hartree * Bi)
+    return H
+
+
 def schlegel_hessian(atoms, threshold=1.35):
     """
     Schlegel, Theoret. Chim. Acta 66, 333-340 (1984).
