@@ -6,13 +6,16 @@ import ase.units
 import numpy as np
 import numdifftools as nd
 import geometric.internal
+from utils import g2_molecules
 from xtb.ase.calculator import XTB
 from molSimplify.optimize.calculators import (_openbabel_methods,
                                               get_calculator)
 from molSimplify.optimize.hessians import (filter_hessian,
                                            compute_hessian_guess,
                                            numerical_hessian,
-                                           SchlegelHessian)
+                                           TrivialGuessHessian,
+                                           SchlegelHessian,
+                                           FischerAlmloefHessian)
 
 
 def num_hessian(atoms, step=None):
@@ -119,6 +122,35 @@ def test_schlegel_vs_geometric(tmpdir, system):
                       Bmat) * ase.units.Hartree/ase.units.Bohr**2
     H = SchlegelHessian(threshold=1.2).build(atoms)
     np.testing.assert_allclose(H, H_ref, atol=1e-10)
+
+
+@pytest.mark.parametrize('method', ['trivial', 'schlegel', 'fischer_almloef'])
+@pytest.mark.parametrize('name', g2_molecules.keys())
+def test_internal_coordinate_based_hessians(name, method, atol=1e-10):
+    atoms = g2_molecules[name]['atoms']
+    h_trans = 5.0
+    h_rot = 0.0
+    if method == 'trivial':
+        H = TrivialGuessHessian(h_trans=h_trans, h_rot=h_rot).build(atoms)
+    elif method == 'schlegel':
+        H = SchlegelHessian(h_trans=h_trans, h_rot=h_rot).build(atoms)
+    elif method == 'fischer_almloef':
+        H = FischerAlmloefHessian(h_trans=h_trans, h_rot=h_rot).build(atoms)
+    vals, _ = np.linalg.eigh(H)
+    # Assert that there are exactly 3 eigenvalues corresponding to translation.
+    assert np.count_nonzero(np.abs(vals - h_trans) < atol) == 3
+    # Assert that there are 3 eigenvalues corresponding to rotation (or 2 in
+    # the case of a linear molecule).
+    indices = np.nonzero(np.abs(vals - h_rot) < atol)[0]
+    if len(atoms) == 2 or name in ['C2H2', 'CO2', 'CS2', 'NCCN', 'N2O',
+                                   'HCN', 'OCS', 'CCH']:
+        assert len(indices) == 2
+    else:
+        assert len(indices) == 3
+    # Set these indices to finite value for further checks
+    vals[indices] = 0.1
+    # Assert that the remaining eigenvalues are positive
+    np.testing.assert_array_less(np.zeros_like(vals), vals)
 
 
 def test_filter_hessian():
