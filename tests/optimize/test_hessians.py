@@ -15,7 +15,8 @@ from molSimplify.optimize.hessians import (filter_hessian,
                                            numerical_hessian,
                                            TrivialGuessHessian,
                                            SchlegelHessian,
-                                           FischerAlmloefHessian)
+                                           FischerAlmloefHessian,
+                                           LindhHessian)
 
 
 def num_hessian(atoms, step=None):
@@ -124,7 +125,8 @@ def test_schlegel_vs_geometric(tmpdir, system):
     np.testing.assert_allclose(H, H_ref, atol=1e-10)
 
 
-@pytest.mark.parametrize('method', ['trivial', 'schlegel', 'fischer_almloef'])
+@pytest.mark.parametrize('method', ['trivial', 'schlegel', 'fischer_almloef',
+                                    'lindh'])
 @pytest.mark.parametrize('name', g2_molecules.keys())
 def test_internal_coordinate_based_hessians(name, method, atol=1e-10):
     atoms = g2_molecules[name]['atoms']
@@ -136,15 +138,21 @@ def test_internal_coordinate_based_hessians(name, method, atol=1e-10):
         H = SchlegelHessian(h_trans=h_trans, h_rot=h_rot).build(atoms)
     elif method == 'fischer_almloef':
         H = FischerAlmloefHessian(h_trans=h_trans, h_rot=h_rot).build(atoms)
+    elif method == 'lindh':
+        H = LindhHessian(h_trans=h_trans, h_rot=h_rot).build(atoms)
     vals, _ = np.linalg.eigh(H)
     # Assert that there are exactly 3 eigenvalues corresponding to translation.
     assert np.count_nonzero(np.abs(vals - h_trans) < atol) == 3
     # Assert that there are 3 eigenvalues corresponding to rotation (or 2 in
     # the case of a linear molecule).
     indices = np.nonzero(np.abs(vals - h_rot) < atol)[0]
-    if len(atoms) == 2 or name in ['C2H2', 'CO2', 'CS2', 'NCCN', 'N2O',
-                                   'HCN', 'OCS', 'CCH']:
-        assert len(indices) == 2
+    # List of g2 linear molecules:
+    linear = ['C2H2', 'CO2', 'CS2', 'NCCN', 'N2O', 'HCN', 'OCS', 'CCH']
+    if len(atoms) == 2 or name in linear:
+        # Lindh Hessians do not include linear bend coordinates and, therefore,
+        # have more than two zero eigenvalues for linear molecules.
+        if not (method == 'lindh' and name in linear):
+            assert len(indices) == 2
     else:
         assert len(indices) == 3
     # Set these indices to finite value for further checks

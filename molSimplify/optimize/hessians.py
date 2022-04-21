@@ -32,6 +32,8 @@ def compute_hessian_guess(atoms, method):
         return SchlegelHessian().build(atoms)
     elif method.lower() == 'fischer_almloef':
         return FischerAlmloefHessian().build(atoms)
+    elif method.lower() == 'lindh':
+        return LindhHessian().build(atoms)
     else:
         raise NotImplementedError(f'Unknown hessian_guess {method}')
 
@@ -288,6 +290,110 @@ class FischerAlmloefHessian(TrivialGuessHessian):
         E = 0.8
         return (A + B * (r_ab_cov * r_ac_cov / ase.units.Bohr**2)**E
                 * cos_phi**D * np.exp(-C * (r_ax - r_ax_cov)))
+
+
+class LindhHessian():
+
+    def __init__(self, threshold=1e-8,
+                 h_trans=0.05 * ase.units.Hartree / ase.units.Bohr**2,
+                 h_rot=0.0):
+        """
+        Parameters
+        ----------
+        h_trans : float
+            Force constant for translations.
+        h_rot : float
+            Force constant for rotations.
+        """
+        self.threshold = threshold
+        self.h_trans = h_trans
+        self.h_rot = h_rot
+
+    def build(self, atoms):
+        """
+        Parameters
+        ----------
+        atoms : ase.atoms.Atoms
+            Arrangement of atoms.
+
+        Returns
+        -------
+        H : numpy.ndarray
+            Guess Hessian in cartesian coordinates and ase units (eV/Ang**2)
+        """
+
+        N = len(atoms)
+        zs = atoms.get_atomic_numbers()
+        xyzs = atoms.get_positions()
+
+        rho = np.zeros((N, N))
+        bonds = []
+        # All atoms are considered connected
+        for i in range(N):
+            for j in range(i+1, N):
+                r = np.linalg.norm(xyzs[i] - xyzs[j]) / ase.units.Bohr
+                alpha, r_ref = self.get_parameters(zs[i], zs[j])
+                rho[i, j] = rho[j, i] = np.exp(alpha * (r_ref**2 - r**2))
+                if rho[i, j] > self.threshold:
+                    bonds.append((i, j))
+        # Set planar_threshold to 1. to ignore planars
+        primitives = get_primitives(xyzs, bonds, linear_flag=False,
+                                    planar_threshold=1.0)
+
+        # Initialize Hessian in Cartesian coordinates
+        H = np.zeros((3*N, 3*N))
+
+        k_r = 0.45 * ase.units.Hartree / ase.units.Bohr**2
+        k_phi = 0.15 * ase.units.Hartree
+        k_tau = 0.005 * ase.units.Hartree
+        for prim in primitives:
+            if type(prim) is Distance:
+                h_ii = k_r * rho[prim.i, prim.j]
+            elif type(prim) is Angle:
+                h_ii = k_phi * rho[prim.i, prim.j] * rho[prim.j, prim.k]
+            elif type(prim) is Dihedral:
+                h_ii = (k_tau * rho[prim.i, prim.j]
+                        * rho[prim.j, prim.k] * rho[prim.k, prim.l])
+            Bi = prim.derivative(xyzs)
+            H += np.outer(Bi, h_ii * Bi)
+
+        # Add translation force constants for all three Cartesian displacements
+        for coord in range(3):
+            # The outer product of a displacement vector along the x-axis:
+            # [1, 0, 0, 1, 0, 0, ..., 1, 0, 0] corresponds to the
+            # indexing [0::3, 0::3]. The factor 1/N is used to normalize the
+            # displacement vector.
+            H[coord::3, coord::3] += self.h_trans / N
+
+        # Add force constants for rotation about the three Cartesian axes
+        center = np.mean(xyzs, axis=0)
+        for ax in np.eye(3):
+            # A rotation about the geometric center is characterized by the
+            # following B vector.
+            B = np.cross(xyzs - center, ax).flatten()
+            norm_B = np.linalg.norm(B)
+            if norm_B > 0.0:
+                B /= norm_B
+            H += self.h_rot * np.outer(B, B)
+        return H
+
+    def get_parameters(self, z_1, z_2):
+        # Sort for simplicity
+        z_1, z_2 = min(z_1, z_2), max(z_1, z_2)
+        if z_1 <= 2:  # First period
+            if z_2 <= 2:  # first-first
+                return 1.0, 1.35
+            elif z_2 <= 10:  # first-second
+                return 0.3949, 2.10
+            else:  # first-third+
+                return 0.3949, 2.53
+        elif z_1 <= 10:  # Second period
+            if z_2 <= 10:  # second-second
+                return 0.28, 2.87
+            else:  # second-third+
+                return 0.28, 3.4
+        else:  # third+-third+
+            return 0.28, 3.4
 
 
 def xtb_hessian(atoms, method):
