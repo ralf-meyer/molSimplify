@@ -155,8 +155,8 @@ def find_planars_molsimplify(a, neighbors, xyzs, planar_threshold):
     return [bend], [planar]
 
 
-def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
-                    planar_method='billeter'):
+def find_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
+                    planar_threshold=0.95, planar_method='billeter'):
     """
     Finds primitive internals given a reference geometry and connectivity list.
     Follows the algorithm outlined in Section II A of
@@ -169,6 +169,8 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
         Cartesian coordinates.
     bonds : list of integer pairs
         List of pairs of indices for the atoms that are considered bonded.
+    linear_flag : bool, optional
+        Use linear bends for bends exceeding the linear_threshold angle.
     linear_threshold : float, optional
         Threshold angle in degrees to determine when to replace
         close to linear bends with a coplanar and perpendicular
@@ -205,7 +207,7 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
                 cos_theta = np.abs(cos_angle(r_ai, r_aj))
                 # "Almost linear bends are dropped." Implemented by comparsion
                 # to a threshold angle.
-                if (cos_theta < cos_lin_thresh):
+                if cos_theta <= cos_lin_thresh:
                     bends.append((ai, a, aj))
                     for ak in neighbors[ai]:
                         if (ak != a and ak != aj
@@ -227,7 +229,7 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
                             cos_phi = cos_angle(r_jk, r_aj)
                             if np.abs(cos_phi) < 0.99:
                                 torsions.append((ai, a, aj, ak))
-                else:
+                elif linear_flag:
                     # "If the centre of such an angle is connected to exactly
                     # two atoms, the dropped angle is replaced by..." a linear
                     # bend.
@@ -299,12 +301,13 @@ def find_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
     return bends, linear_bends, torsions, planars
 
 
-def get_primitives(xyzs, bonds, linear_threshold=5., planar_threshold=0.95,
-                   planar_method='billeter'):
+def get_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
+                   planar_threshold=0.95, planar_method='billeter'):
 
     bends, linear_bends, torsions, planars = find_primitives(
-        xyzs, bonds, linear_threshold=linear_threshold,
-        planar_threshold=planar_threshold, planar_method=planar_method)
+        xyzs, bonds, linear_flag=linear_flag,
+        linear_threshold=linear_threshold, planar_threshold=planar_threshold,
+        planar_method=planar_method)
 
     primitives = ([Distance(*b) for b in bonds]
                   + [Angle(*a) for a in bends]
