@@ -37,7 +37,7 @@ def compute_hessian_guess(atoms, method):
 
 
 class TrivialGuessHessian():
-    """Base class fpr guess Hessians constructed in internal coordinates. The force
+    """Base class for guess Hessians constructed in internal coordinates. The force
     constants in this trivial implementation follow the suggestion in
     Baker et al., J. Chem. Phys. 105, 192 (1996)
     https://doi.org/10.1063/1.471864"""
@@ -144,10 +144,10 @@ class TrivialGuessHessian():
 
     def dihedral(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l,
                  bonds_j, bonds_k):
-        return 0.2 * ase.units.Hartree
+        return 0.1 * ase.units.Hartree
 
     def improper(self, xyz_i, xyz_j, xyz_k, xyz_l, z_i, z_j, z_k, z_l):
-        return 0.2 * ase.units.Hartree
+        return 0.1 * ase.units.Hartree
 
 
 class SchlegelHessian(TrivialGuessHessian):
