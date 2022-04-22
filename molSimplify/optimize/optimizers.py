@@ -73,6 +73,10 @@ class NonCartesianBFGS(BFGS):
 
         df = f - f0
         a = np.dot(dr, df)
+        if a > 0:
+            print('Skipping BFGS update to conserve positive '
+                  'definite property')
+            return
         dg = np.dot(self.H, dr)
         b = np.dot(dr, dg)
         self.H -= np.outer(df, df) / a + np.outer(dg, dg) / b
