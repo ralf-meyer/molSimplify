@@ -19,7 +19,7 @@ def try_float(obj):
     # Converts an object to a floating point if possible
     try:
         floating_point = float(obj)
-    except:
+    except ValueError:
         floating_point = obj
     return floating_point
 
@@ -79,7 +79,7 @@ class resub_history:
         """Saves the current status of the history object.
         """
 
-        if self.path == None:
+        if self.path is None:
             raise Exception(
                 'The path for the resub_history pickel file is not specified!')
         with open(self.path, 'wb') as handle:
@@ -143,7 +143,7 @@ class textfile:
                 Path to file to read. Default is None.
         """
         if file_name:
-            raw_file = open(file_name,'r')
+            raw_file = open(file_name, 'r')
             self.lines = raw_file.readlines()
             raw_file.close()
             self.lines = [strip_new_line(i) for i in self.lines]
@@ -151,7 +151,7 @@ class textfile:
         else:
             self.lines = None
             
-    def wordgrab(self,keywords,indices, last_line=False, first_line = False, min_value = False, matching_index=False):
+    def wordgrab(self, keywords, indices, last_line=False, first_line=False, min_value=False, matching_index=False):
         """Method to grab words from text. Takes two lists as input.
             
             Parameters
@@ -188,10 +188,10 @@ class textfile:
             indices = [indices]*len(keywords)
             
         results = dict()
-        zipped_values = list(zip(keywords,indices,list(range(len(keywords)))))
+        zipped_values = list(zip(keywords, indices, list(range(len(keywords)))))
         
-        for counter,line in enumerate(self.lines):
-            for keyword,index,keyword_number in zipped_values:
+        for counter, line in enumerate(self.lines):
+            for keyword, index, keyword_number in zipped_values:
                 if keyword in line:
                     
                     if type(index) == int:
@@ -212,8 +212,7 @@ class textfile:
                             results[keyword_number] = [counter]
                         else:
                             results[keyword_number].append(counter)
-                            
-                            
+
         if (last_line and min_value) or (last_line and first_line) or (first_line and min_value):
             raise ValueError('Warning, incompatible options selected in text parsing')
         

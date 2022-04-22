@@ -46,7 +46,7 @@ for ii, functional in enumerate(psi4_config["functional"]):
                 else:
                     with open(functional + "-%d" % alpha + "/output.dat", "r") as fo:
                         txt = "".join(fo.readlines())
-                    if not "==> Iterations <==" in txt:
+                    if "==> Iterations <==" not in txt:
                         resubed = True
                 if resubed and os.path.isfile(wfn_b):
                     print("previously errored out. resubmitting...")

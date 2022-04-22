@@ -51,7 +51,7 @@ def read_run(outfile_PATH):
         results['metal_spin'] = np.nan
 
     optim_path = os.path.join(os.path.split(outfile_PATH)[0], 'scr', 'optim.xyz')
-    initial_xyz_path = outfile_PATH.rsplit('.',1)[0]+'.xyz'
+    initial_xyz_path = outfile_PATH.rsplit('.', 1)[0]+'.xyz'
     if not os.path.isfile(initial_xyz_path):
         raise Exception('No initial xyz found at: '+initial_xyz_path)
 
@@ -195,7 +195,7 @@ def apply_geo_check(job_outfile_path, geometry):
                 return False
 
         else:
-            raise Exception('A check has not been implemented for geometry: ' + geoemtry)
+            raise Exception('A check has not been implemented for geometry: ' + geometry)
     else:
         # print('No geomery check requested for job: '+job_outfile_path)
         # print('Passing job without a geometry check')
@@ -315,7 +315,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     return completeness
 
 
-def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {},dissociated_ligand_spinmults = {}):
+def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges={}, dissociated_ligand_spinmults={}):
     """Prep ligand breakdown.
 
     Parameters
@@ -453,7 +453,7 @@ def prep_ligand_breakdown(outfile_path, dissociated_ligand_charges = {},dissocia
 
     return jobscripts
 
-def prep_mbe_calc(outfile_path, metal_charge = 0):
+def prep_mbe_calc(outfile_path, metal_charge=0):
     """Prep ligand breakdown.
 
     Parameters
@@ -489,7 +489,7 @@ def prep_mbe_calc(outfile_path, metal_charge = 0):
     else:
         fe_charge = 3
     charge = int(infile_dict['charge']) - fe_charge
-    spinmult = 1 # always have a singlet
+    spinmult = 1  # always have a singlet
 
     base = os.path.split(outfile_path)[0]
     name = os.path.split(outfile_path)[-1][:-4]

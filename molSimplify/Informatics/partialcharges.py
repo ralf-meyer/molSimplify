@@ -332,4 +332,3 @@ def ffeatures(mol,charge,bond=False):
     'fq_5','fq_6','fval_1','fval_2','fval_3','fval_4','fval_5','fval_6']
 
     return feature_names, feature
-

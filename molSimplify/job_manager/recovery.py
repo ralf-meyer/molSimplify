@@ -42,8 +42,8 @@ def abandon_job(PATH):
     # takes the path to either an outfile or the resub_history pickle
     # sets the jobs status to be abandoned
 
-    #This function is never and should never be called by the job manager. 
-    #It is for manually use with particularly troublesome jobs
+    # This function is never and should never be called by the job manager.
+    # It is for manually use with particularly troublesome jobs
     history = load_history(PATH)
     history.abandon()
     history.save()
@@ -201,9 +201,9 @@ def reset(outfile_path):
         # remove all files for derivative jobs spawned based on this job
         derivative_types = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
                             'functional']
-        possible = [i for i in glob.glob(os.path.join(os.path.split(outfile_path)[0],'*')) if os.path.isdir(i)]
+        possible = [i for i in glob.glob(os.path.join(os.path.split(outfile_path)[0], '*')) if os.path.isdir(i)]
         for folder in possible:
-            if os.path.split(outfile_path)[1].rsplit('.',1)[0] in folder:
+            if os.path.split(outfile_path)[1].rsplit('.', 1)[0] in folder:
                 derivative = False
                 for typ in derivative_types:
                     if typ in folder:
@@ -211,7 +211,7 @@ def reset(outfile_path):
                 if derivative:
                     shutil.rmtree(folder)
 
-        #rename outfile and jobscript files
+        # rename outfile and jobscript files
         shutil.move(outfile_path, outfile_path[:-4] + '.old')  # rename old out so it isn't found in .out searches
         shutil.move(outfile_path[:-4] + '_jobscript', outfile_path[
                                                       :-4] + '_oldjob')  # rename old jobscript so it isn't thought to be  job that hasn't started yet
@@ -229,7 +229,7 @@ def reset(outfile_path):
             try:
                 shutil.move(path,
                             os.path.join(old_path, str(np.random.randint(999999999)) + '_' + os.path.split(path)[-1]))
-            except:
+            except FileNotFoundError:
                 print('No file found for: ' + path)
 
         # Rewrite the .xyz, .in, jobscript, and .out file to be the same as they were after the first run
@@ -310,7 +310,7 @@ def clean_resub(outfile_path):
     history.needs_resub = False
     history.save()
 
-    machine=tools.get_machine()
+    machine = tools.get_machine()
     root = outfile_path.rsplit('.', 1)[0]
     name = os.path.split(root)[-1]
     directory = os.path.split(outfile_path)[0]
@@ -392,7 +392,7 @@ def resub_spin(outfile_path):
         history.notes.append('Spin contaminated, lowering HFX to aid convergence')
         history.save()
 
-        machine=tools.get_machine()
+        machine = tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -453,7 +453,7 @@ def resub_scf(outfile_path):
         history.notes.append('SCF convergence error, level shifts adjusted to aid convergence')
         history.save()
 
-        machine=tools.get_machine()
+        machine = tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -513,7 +513,7 @@ def resub_oscillating_scf(outfile_path):
         history.notes.append('SCF convergence error, precision and grid adjusted to aid convergence')
         history.save()
 
-        machine=tools.get_machine()
+        machine = tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -574,7 +574,7 @@ def resub_bad_geo(outfile_path, home_directory):
         history.notes.append('Bad geometry detected, adding constraints and trying again')
         history.save()
 
-        machine=tools.get_machine()
+        machine = tools.get_machine()
         root = outfile_path.rsplit('.', 1)[0]
         name = os.path.split(root)[-1]
         directory = os.path.split(outfile_path)[0]
@@ -630,7 +630,6 @@ def resub_tighter(outfile_path):
     # Takes the path to the outfile of a thermo job with the gradient error problem
     # Finds the parent job and resubmits it with a tighter scf convergence criteria
 
-    machine=tools.get_machine()
     name = os.path.split(outfile_path)[-1].rsplit('.', 1)[0]
     parent_name = name.rsplit('_', 1)[0]
     parent_directory = os.path.split(os.path.split(outfile_path)[0])[0]
@@ -691,7 +690,6 @@ def resub_thermo(outfile_path):
     history.needs_resub = False
     history.save()
 
-    machine=tools.get_machine()
     name = os.path.split(outfile_path)[-1]
     name = name.rsplit('.', 1)[0]
     directory = os.path.split(outfile_path)[0]

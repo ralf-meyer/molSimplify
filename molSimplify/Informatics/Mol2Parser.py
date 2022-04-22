@@ -44,5 +44,3 @@ class Mol2Parser:
             if 'BOND' in row:
                 connectivity_info = True
         return list_of_bonding_info
-
-
