@@ -45,7 +45,7 @@ def get_molecule(xyzfile, charge, spin, sym='c1'):
             fo.readline()
             for ii in range(natoms):
                 wholetext += fo.readline()
-    wholetext += "\nsymmetry %s\nnoreorient\nnocom\n"%sym
+    wholetext += "\nsymmetry %s\nnoreorient\nnocom\n" % sym
     mol = psi4.geometry("""%s""" % wholetext)
     return mol
 
@@ -104,8 +104,8 @@ def b3lyp_hfx():
                     },
             "x_hf": {"alpha": hfx*0.01},
             "c_functionals": {
-                "GGA_C_LYP": {"alpha": 0.81 },
-                "LDA_C_VWN_RPA": {"alpha": 0.19 }
+                "GGA_C_LYP": {"alpha": 0.81},
+                "LDA_C_VWN_RPA": {"alpha": 0.19}
             }
         }
         b3lyp_d["b3lyp_" + str(hfx)] = hfx_func
@@ -114,7 +114,6 @@ def b3lyp_hfx():
 
 def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     b3lyp_d = b3lyp_hfx()
-    home = expanduser("~")
     psi4_scr = './'
     filename = "output"
     basedir = os.getcwd()
@@ -127,7 +126,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     setup_dft_parameters(psi4_config)
     pid = str(os.getpid())
     if os.path.isfile(psi4_config["moldenfile"]):
-        shutil.copyfile(psi4_config["moldenfile"], rundir + '/'+ psi4_config["moldenfile"])
+        shutil.copyfile(psi4_config["moldenfile"], rundir + '/' + psi4_config["moldenfile"])
         os.chdir(rundir)
         psi4.core.set_output_file(filename + '.dat', False)
         ## 1-step SCF
@@ -242,7 +241,7 @@ def run_general(psi4_config, functional="b3lyp", return_wfn=False):
         "fail_on_maxiter": True})
     if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
         try:
-            if (not functional in b3lyp_d) and (not "hfx_" in functional) and (not "ccsd" in functional):
+            if (functional not in b3lyp_d) and ("hfx_" not in functional) and ("ccsd" not in functional):
                 e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
             elif "hfx_" in functional:
                 basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
@@ -284,7 +283,7 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     psi4_scr = './'
     filename = "output"
     basedir = os.getcwd()
-    rundir = "./" + functional + "-%d"% hfx
+    rundir = "./" + functional + "-%d" % hfx
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
     shutil.copyfile("geo.xyz", rundir + '/geo.xyz')
@@ -347,8 +346,8 @@ def get_hfx_functional(functional, hfx):
                     },
             "x_hf": {"alpha": hfx*0.01},
             "c_functionals": {
-                "GGA_C_LYP": {"alpha": 0.81 },
-                "LDA_C_VWN_RPA": {"alpha": 0.19 }
+                "GGA_C_LYP": {"alpha": 0.81},
+                "LDA_C_VWN_RPA": {"alpha": 0.19}
             }
         }
     elif functional == "pbe":
@@ -362,9 +361,9 @@ def get_hfx_functional(functional, hfx):
         mega = "" if "PBE" in functional else "M"
         hfx_func = {
             "name": "hfx_func",
-            "x_functionals": {"%sGGA_X_%s"%(mega, fmap[functional]): {"alpha": 1-hfx*0.01}},
+            "x_functionals": {"%sGGA_X_%s" % (mega, fmap[functional]): {"alpha": 1-hfx*0.01}},
             "x_hf": {"alpha": hfx*0.01},
-            "c_functionals": {"%sGGA_C_%s"%(mega, fmap[functional]): {}}
+            "c_functionals": {"%sGGA_C_%s" % (mega, fmap[functional]): {}}
         }
     else:
         raise ValueError("This functional has not been implemented with HFX resampling yet: ", functional)
@@ -372,7 +371,7 @@ def get_hfx_functional(functional, hfx):
 
 
 def write_jobscript(psi4_config):
-    if not "cluster" in psi4_config:
+    if "cluster" not in psi4_config:
         mem = int(psi4_config['memory'].split(" ")[0])/1000
         with open("./jobscript.sh", "w") as fo:
             fo.write("#$ -S /bin/bash\n")
@@ -380,10 +379,10 @@ def write_jobscript(psi4_config):
             fo.write("#$ -R y\n")
             fo.write("#$ -cwd\n")
             fo.write("#$ -l h_rt=240:00:00\n")
-            fo.write("#$ -l h_rss=%dG\n"% (mem))
+            fo.write("#$ -l h_rss=%dG\n" % (mem))
             fo.write("#$ -q cpus\n")
             fo.write("#$ -l cpus=1\n")
-            fo.write("#$ -pe smp %d\n"%psi4_config['num_threads'])
+            fo.write("#$ -pe smp %d\n" % psi4_config['num_threads'])
             fo.write("# -fin *\n")
 
             fo.write("source /home/crduan/.bashrc\n")
@@ -410,10 +409,10 @@ def write_jobscript(psi4_config):
             fo.write("#SBATCH --job-name=psi4_multiDFA\n")
             fo.write("#SBATCH --nodes=1\n")
             fo.write("#SBATCH --time=96:00:00\n")
-            fo.write("#SBATCH --ntasks-per-node=%d\n"%psi4_config['num_threads'])
+            fo.write("#SBATCH --ntasks-per-node=%d\n" % psi4_config['num_threads'])
             if "queue" in psi4_config and psi4_config["queue"] == "normal":
                 fo.write("#SBATCH --partition=normal\n")
-            fo.write("#SBATCH --mem=%dG\n\n"%mem)
+            fo.write("#SBATCH --mem=%dG\n\n" % mem)
 
             fo.write("source /etc/profile\n")
             fo.write("source ~/.profile\n")

@@ -18,7 +18,7 @@ tools for io.
 def get_num_frame(geofile):
     with open(geofile, 'r') as fo:
         num_atoms = int(fo.readline().split()[0])
-        num_lines = num_atoms + 2  ## +2 for the xyz format.
+        num_lines = num_atoms + 2  # +2 for the xyz format.
     with open(geofile, 'r') as fo:
         txt = fo.readlines()
     return int(len(txt) / num_lines)
@@ -80,7 +80,7 @@ def read_geometry_to_mol(geofile, frame=-1, txt=False):
     if not txt:
         with open(geofile, 'r') as fo:
             num_atoms = int(fo.readline().split()[0])
-        num_lines = num_atoms + 2  ## +2 for the xyz format.
+        num_lines = num_atoms + 2  # +2 for the xyz format.
         with open(geofile, 'r') as fo:
             if (frame + 1) * num_lines != 0:
                 geotext = fo.readlines()[frame * num_lines:(frame + 1) * num_lines]
@@ -150,10 +150,8 @@ def get_geo_metrics(init_mol, job_info, geofile, frame=-1):
     for key in dict_oct_info:
         if "relative" in key:
             continue
-        val = dict_oct_info[key] if (dict_oct_info[key] != -1) and (dict_oct_info[key] != "lig_mismatch") else 1.20 * \
-                                                                                                               dict_oct_check_st[
-                                                                                                                   choice][
-                                                                                                                   key]
+        val = (dict_oct_info[key] if (dict_oct_info[key] != -1) and (dict_oct_info[key] != "lig_mismatch")
+               else 1.20 * dict_oct_check_st[choice][key])
         actural_dict_geo['actural_%s' % key] = val
     for key in dict_oct:
         if "relative" in key:
@@ -239,7 +237,7 @@ def get_gradient(gradfile, job_info, num_sv=3, frame=-1):
                 gradtext = fo.readlines()[frame * num_lines:]
         with open(gradfile, 'r') as fo:
             if not len(gradtext):
-                gradtext = fo.readlines()[-1* num_lines:]
+                gradtext = fo.readlines()[-1 * num_lines:]
         frame += 1
         # print("gradtext: ", gradtext)
     grad_mat = np.zeros(shape=(natoms, 3))
@@ -296,7 +294,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
                 chargetext = fo.readlines()[frame * natoms:]
         with open(chargefile, 'r') as fo:
             if not len(chargetext):
-                chargetext = fo.readlines()[-1* natoms:]
+                chargetext = fo.readlines()[-1 * natoms:]
         frame += 1
         # print("chargetext: ", chargetext)
     for line in chargetext:
@@ -304,7 +302,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
         atom_ind = int(ll[0]) - 1
         if atom_ind in catoms:
             if atom_ind != metal_ind:
-                if not "nan" in ll[-1]:
+                if "nan" not in ll[-1]:
                     dict_mullcharge.update({'charge_%d' % atom_ind: float(ll[-1])})
                 else:
                     dict_mullcharge.update({'charge_%d' % atom_ind: 0})
@@ -314,7 +312,7 @@ def get_mullcharge(chargefile, job_info, frame=-1):
         atom_ind = int(ll[0]) - 1
         if atom_ind in catoms:
             if atom_ind == metal_ind:
-                if not "nan" in ll[-1]:
+                if "nan" not in ll[-1]:
                     dict_mullcharge.update({'charge_0': float(ll[-1])})
                 else:
                     dict_mullcharge.update({'charge_0': 0})
