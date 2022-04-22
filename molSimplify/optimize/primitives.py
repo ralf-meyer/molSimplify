@@ -52,11 +52,12 @@ class InverseDistance(Distance):
 
 
 class Angle(Primitive):
+    """Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002)
+    https://doi.org/10.1063/1.1515483
+    """
 
     def __init__(self, i, j, k):
         """Atom j is center of angle
-        Implementation follows:
-        https://www.cs.utexas.edu/users/evouga/uploads/4/5/6/8/45689883/turning.pdf
         """
         self.i, self.j, self.k = i, j, k
 
@@ -64,33 +65,42 @@ class Angle(Primitive):
         return f'Angle({self.i}, {self.j}, {self.k})'
 
     def value(self, xyzs):
-        rji = xyzs[self.i, :] - xyzs[self.j, :]
-        rjk = xyzs[self.k, :] - xyzs[self.j, :]
-        norm_rji = np.linalg.norm(rji)
-        norm_rjk = np.linalg.norm(rjk)
-        cross = np.cross(rji, rjk)
-        z = cross/np.linalg.norm(cross)
-        t = 2 * np.arctan2(
-            np.dot(cross, z),
-            norm_rji*norm_rjk + np.dot(rji, rjk))
-        return t
+        u = xyzs[self.i, :] - xyzs[self.j, :]
+        u /= np.linalg.norm(u)
+        v = xyzs[self.k, :] - xyzs[self.j, :]
+        v /= np.linalg.norm(v)
+        return np.arccos(np.dot(u, v))
 
     def derivative(self, xyzs):
-        rji = xyzs[self.i, :] - xyzs[self.j, :]
-        rjk = xyzs[self.k, :] - xyzs[self.j, :]
-        norm_rji = np.linalg.norm(rji)
-        norm_rjk = np.linalg.norm(rjk)
-        cross = np.cross(rji, rjk)
-        z = cross/np.linalg.norm(cross)
+        u = xyzs[self.i, :] - xyzs[self.j, :]
+        norm_u = np.linalg.norm(u)
+        u /= norm_u
+        v = xyzs[self.k, :] - xyzs[self.j, :]
+        norm_v = np.linalg.norm(v)
+        v /= norm_v
+        w = np.cross(u, v)
+        norm_w = np.linalg.norm(w)
+        if norm_w > 0:
+            w /= norm_w
+        else:
+            w = np.cross(u, np.array([1, -1, 1]))
+            norm_w = np.linalg.norm(w)
+            if norm_w > 0:
+                w /= norm_w
+            else:
+                w = np.cross(u, np.array([-1, 1, 1]))
+                w /= np.linalg.norm(w)
         dt = np.zeros(xyzs.size)
-        dt[3*self.i:3*(self.i+1)] = np.cross(rji, z)/norm_rji**2
-        dt[3*self.k:3*(self.k+1)] = - np.cross(rjk, z)/norm_rjk**2
-        dt[3*self.j:3*(self.j+1)] = (- dt[3*self.i:3*(self.i+1)]
-                                     - dt[3*self.k:3*(self.k+1)])
+        cross_u = np.cross(u, w)/norm_u
+        cross_v = np.cross(w, v)/norm_v
+        dt[3*self.i:3*(self.i+1)] = cross_u
+        dt[3*self.j:3*(self.j+1)] = - cross_u - cross_v
+        dt[3*self.k:3*(self.k+1)] = cross_v
         return dt
 
 
 class LinearAngle(Primitive):
+
     def __init__(self, i, j, k, axis):
         """Closely follows the implementation in geomeTRIC
 

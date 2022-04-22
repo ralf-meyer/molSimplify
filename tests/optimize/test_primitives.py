@@ -28,7 +28,7 @@ def test_angle(atol=1e-10):
     xyzs = np.array([[0., 0., 0.],
                      [1.2, 0., 0.],
                      [0.7, 0., 0.]])
-    for theta in [0.01, np.pi/3, np.pi/2, 2*np.pi/3, np.pi - 0.01]:
+    for theta in [0.0, np.pi/3, np.pi/2, 2*np.pi/3, np.pi]:
         xyzs[2, :] = 0.7*np.cos(theta), 0., 0.7*np.sin(theta)
         assert np.abs(a.value(xyzs) - theta) < atol
 
