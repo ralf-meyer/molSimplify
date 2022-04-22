@@ -121,7 +121,7 @@ def test_schlegel_vs_geometric(tmpdir, system):
     H_ref = np.einsum('ai,ab,bj->ij', Bmat,
                       coords_ref.guess_hessian(xyzs/ase.units.Bohr),
                       Bmat) * ase.units.Hartree/ase.units.Bohr**2
-    H = SchlegelHessian(threshold=1.2).build(atoms)
+    H = SchlegelHessian(threshold=1.2, h_trans=0.).build(atoms)
     np.testing.assert_allclose(H, H_ref, atol=1e-10)
 
 
