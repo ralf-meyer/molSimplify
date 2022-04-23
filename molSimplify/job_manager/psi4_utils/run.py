@@ -386,8 +386,8 @@ def write_jobscript(psi4_config):
             fo.write("#$ -pe smp %d\n"%psi4_config['num_threads'])
             fo.write("# -fin *\n")
 
-            fo.write("source /home/crduan/.bashrc\n")
-            fo.write("conda activate /home/crduan/miniconda/envs/mols_py36\n")
+            fo.write(f"source {psi4_config['bashrc']}\n")
+            fo.write(f"conda activate {psi4_config['conda_env']}\n")
             fo.write("export PSI_SCRATCH='./'\n")
             fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
             

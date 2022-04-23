@@ -4,7 +4,9 @@ import shutil
 import numpy as np
 from molSimplify.job_manager.psi4_utils.run import run_general_hfx
 
-psi4_config = json.load(open("psi4_config.json", "r"))
+psi4_config = {'bashrc':'/home/crduan/.bashrc',
+    'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
+psi4_config.update(json.load(open("psi4_config.json", "r")))
 alphalist = [20, 15, 10, 5, 2]
 rescued = 0
 success_count = 0
