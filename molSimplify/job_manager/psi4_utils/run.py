@@ -121,7 +121,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
     ensure_dir(rundir)
-    shutil.copyfile("geo.xyz", rundir + '/geo.xyz')
+    shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir,psi4_config["xyzfile"]))
     sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
     mol = get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
     setup_dft_parameters(psi4_config)
@@ -223,7 +223,7 @@ def run_general(psi4_config, functional="b3lyp", return_wfn=False):
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
     ensure_dir(rundir)
-    shutil.copyfile("geo.xyz", functional.replace("(", "l-").replace(")", "-r") + '/geo.xyz')
+    shutil.copyfile(psi4_config["xyzfile"], functional.replace("(", "l-").replace(")", "-r") + '/' + psi4_config["xyzfile"])
     os.chdir(rundir)
     psi4.core.set_output_file(filename + '.dat', False)
     sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
@@ -287,7 +287,7 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     rundir = "./" + functional + "-%d"% hfx
     d = json.load(open(psi4_config["charge-spin-info"], "r"))
     psi4_config.update(d)
-    shutil.copyfile("geo.xyz", rundir + '/geo.xyz')
+    shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir,psi4_config["xyzfile"]))
     ensure_dir(rundir)
     os.chdir(rundir)
     psi4.core.set_output_file(filename + '.dat', False)
