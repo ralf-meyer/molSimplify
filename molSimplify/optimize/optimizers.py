@@ -1,8 +1,8 @@
 import numpy as np
-from ase.optimize import BFGS, LBFGS
+import ase.optimize
 
 
-class NonCartesianBFGS(BFGS):
+class BFGS(ase.optimize.BFGS):
     """Adaptation of ASEs implementation of the BFGS optimizer to allow for
     arbitrary (internal) coordinate systems.
     """
@@ -11,7 +11,7 @@ class NonCartesianBFGS(BFGS):
         if kwargs.get('use_line_search', False):
             raise NotImplementedError('Line search is not implemented yet.')
         self.coord_set = coordinate_set
-        BFGS.__init__(self, atoms, **kwargs)
+        ase.optimize.BFGS.__init__(self, atoms, **kwargs)
         self.maxstep_internal = maxstep_internal
 
     def initialize(self):
@@ -75,14 +75,14 @@ class NonCartesianBFGS(BFGS):
         a = np.dot(dr, df)
         if a > 0:
             print('Skipping BFGS update to conserve positive '
-                  'definite property')
+                  'definiteness.')
             return
         dg = np.dot(self.H, dr)
         b = np.dot(dr, dg)
         self.H -= np.outer(df, df) / a + np.outer(dg, dg) / b
 
 
-class NonCartesianLBFGS(LBFGS):
+class LBFGS(ase.optimize.LBFGS):
     """Adaptation of ASEs implementation of the LBFGS optimizer to allow for
     arbitrary (internal) coordinate systems.
     """
@@ -90,7 +90,7 @@ class NonCartesianLBFGS(LBFGS):
     def __init__(self, atoms, coordinate_set, maxstep_internal=1.0, **kwargs):
         if kwargs.get('use_line_search', False):
             raise NotImplementedError('Line search is not implemented yet.')
-        LBFGS.__init__(self, atoms, **kwargs)
+        ase.optimize.LBFGS.__init__(self, atoms, **kwargs)
         self.coord_set = coordinate_set
         self.maxstep_internal = maxstep_internal
 
