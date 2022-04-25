@@ -10,12 +10,12 @@ from molSimplify.optimize.primitives import Distance
 from molSimplify.optimize.coordinate_sets import (CartesianCoordinates,
                                                   DelocalizedCoordinates,
                                                   InternalCoordinates)
-from molSimplify.optimize.optimizers import BFGS, LBFGS
+from molSimplify.optimize.optimizers import BFGS, LBFGS, RFO
 from molSimplify.Scripts.rmsd import kabsch_rmsd
 from pkg_resources import resource_filename, Requirement
 
 
-@pytest.mark.parametrize('optimizer', [BFGS, LBFGS])
+@pytest.mark.parametrize('optimizer', [BFGS, LBFGS, RFO])
 def test_optimizers_on_H2(optimizer):
     """Separate test case because H2 is not supported by MMFF94"""
     atoms = ase.atoms.Atoms(['H', 'H'], positions=[[0., 0., 0.],
@@ -26,20 +26,21 @@ def test_optimizers_on_H2(optimizer):
     atoms_ref = atoms.copy()
     atoms_ref.calc = ase.calculators.emt.EMT()
     opt_ref = ase.optimize.BFGS(atoms_ref)
-    opt_ref.run(fmax=0.01)
+    opt_ref.run(fmax=0.01, steps=100)
     xyzs_ref = atoms_ref.get_positions()
     r_ref = np.linalg.norm(xyzs_ref[0] - xyzs_ref[1])
 
     coord_set = InternalCoordinates([Distance(0, 1)])
     opt = optimizer(atoms, coord_set)
-    opt.run(fmax=0.01)
+    opt.run(fmax=0.01, steps=100)
+    assert opt.converged()
     # Test that the final bond length correct
     xyzs = atoms.get_positions()
     r = np.linalg.norm(xyzs[0] - xyzs[1])
     assert abs(r - r_ref) < 1e-3
 
 
-@pytest.mark.parametrize('optimizer', [BFGS, LBFGS])
+@pytest.mark.parametrize('optimizer', [BFGS, LBFGS, RFO])
 @pytest.mark.parametrize('mol', ['H2O', 'NH3', 'CH4', 'C2H4', 'C2H6',
                                  'C6H6', 'butadiene', 'bicyclobutane'])
 @pytest.mark.parametrize('coord_set', ['cart', 'internal', 'dlc'])
@@ -74,13 +75,14 @@ def test_optimizers_on_organic_molecules(optimizer, mol, coord_set):
 
     opt_ref.run(fmax=0.001, steps=100)
     opt.run(fmax=0.001, steps=100)
+    assert opt.converged()
 
     assert kabsch_rmsd(atoms.get_positions(),
                        atoms_ref.get_positions(),
                        translate=True) < 1e-2
 
 
-@pytest.mark.parametrize('optimizer', [BFGS, LBFGS])
+@pytest.mark.parametrize('optimizer', [BFGS, LBFGS, RFO])
 @pytest.mark.parametrize('ligand', ['water'])
 @pytest.mark.parametrize('coord_set', ['cart', 'internal', 'dlc'])
 def test_optimizers_on_homoleptic_TMCs(optimizer, ligand, coord_set):
@@ -111,10 +113,11 @@ def test_optimizers_on_homoleptic_TMCs(optimizer, ligand, coord_set):
         coord_set = DelocalizedCoordinates(primitives, xyzs)
 
     opt_ref = ase.optimize.BFGS(atoms_ref)
-    opt = optimizer(atoms, coord_set)
-
     opt_ref.run(fmax=0.001, steps=100)
+
+    opt = optimizer(atoms, coord_set)
     opt.run(fmax=0.001, steps=100)
+    assert opt.converged()
 
     assert kabsch_rmsd(atoms.get_positions(),
                        atoms_ref.get_positions(),

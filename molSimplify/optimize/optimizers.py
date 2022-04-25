@@ -82,6 +82,38 @@ class BFGS(ase.optimize.BFGS):
         self.H -= np.outer(df, df) / a + np.outer(dg, dg) / b
 
 
+class RFO(BFGS):
+
+    def step(self, f=None):
+        atoms = self.atoms
+
+        if f is None:
+            f = atoms.get_forces()
+
+        r = atoms.get_positions()
+        f = self.coord_set.force_to_internals(r, f.flatten())
+        self.update(r, f, self.r0, self.f0)
+
+        # extended Hessian matrix
+        H_ext = np.block([[self.H, -f[:, np.newaxis]], [-f, 0.]])
+
+        _, V = np.linalg.eigh(H_ext)
+
+        # Step is calculated by proper rescaling of the eigenvector
+        # corresponding to the lowest (first) eigenvalue.
+        dq = V[:-1, 0] / V[-1, 0]
+        if np.max(np.abs(dq)) > self.maxstep_internal:
+            dq *= self.maxstep_internal / np.max(np.abs(dq))
+        # Transform to Cartesians
+        dr = self.coord_set.to_cartesians(dq, r) - r
+        steplengths = (dr**2).sum(1)**0.5
+        dr = self.determine_step(dr, steplengths)
+        atoms.set_positions(r + dr)
+        self.r0 = r.copy()
+        self.f0 = f.copy()
+        self.dump((self.H, self.r0, self.f0, self.maxstep))
+
+
 class LBFGS(ase.optimize.LBFGS):
     """Adaptation of ASEs implementation of the LBFGS optimizer to allow for
     arbitrary (internal) coordinate systems.
