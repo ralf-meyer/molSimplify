@@ -17,7 +17,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    git clone https://github.com/hjkgrp/molSimplify.git
    ```
    
-3. Go to the folder root folder for molSimplify, create the conda environment from the yaml file (`conda_envs/mols.yml`). **For M1 Macs, use mols_m1.yml instead.** This step will help you get all the dependencies correct in a newly created conda environment named "mols_test". You can specify a different name for this environment at the first line of the yaml file.
+3. Go to the folder root folder for molSimplify, create the conda environment from the yaml file (`devtools/conda-envs/mols.yml`). **For M1 Macs, use** `mols_m1.yml` **instead.** This step will help you get all the dependencies correct in a newly created conda environment named "mols_test". You can specify a different name for this environment at the first line of the yaml file.
 
    ```bash
    cd molSimplify/devtools/conda-envs 
@@ -29,7 +29,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    cd .. 
    pip install -e .
    ```
-5. **(For M1 Macs only)** Install the M1-compatible version of Tensorflow by running `source devtools/conda_envs/install_tensorflow_m1.sh`.
+5. **(For M1 Macs only)** Install the M1-compatible version of Tensorflow by running `source devtools/conda-envs/install_tensorflow_m1.sh`.
 6. To test your installation, you can run the command below at the root directory of molSimplify. You are good to go if all the tests are passed!
    ```bash
    python setup.py test
