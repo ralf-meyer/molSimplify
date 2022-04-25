@@ -10,6 +10,7 @@ class BFGS(ase.optimize.BFGS):
     def __init__(self, atoms, coordinate_set, maxstep_internal=1.0, **kwargs):
         if kwargs.get('use_line_search', False):
             raise NotImplementedError('Line search is not implemented yet.')
+        # Coordinate set needs to be assigned before initialize() is called.
         self.coord_set = coordinate_set
         ase.optimize.BFGS.__init__(self, atoms, **kwargs)
         self.maxstep_internal = maxstep_internal
@@ -84,6 +85,10 @@ class BFGS(ase.optimize.BFGS):
 
 class RFO(BFGS):
 
+    def __init__(self, *args, mu=0, **kwargs):
+        BFGS.__init__(self, *args, **kwargs)
+        self.mu = mu
+
     def step(self, f=None):
         atoms = self.atoms
 
@@ -100,8 +105,9 @@ class RFO(BFGS):
         _, V = np.linalg.eigh(H_ext)
 
         # Step is calculated by proper rescaling of the eigenvector
-        # corresponding to the lowest (first) eigenvalue.
-        dq = V[:-1, 0] / V[-1, 0]
+        # corresponding to the mu-th eigenvalue. For minimizations
+        # the lowest i.e. zeroth eigenvalue is chosen.
+        dq = V[:-1, self.mu] / V[-1, self.mu]
         if np.max(np.abs(dq)) > self.maxstep_internal:
             dq *= self.maxstep_internal / np.max(np.abs(dq))
         # Transform to Cartesians
