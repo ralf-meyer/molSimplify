@@ -22,7 +22,7 @@ before_install:
 install:
 
     # Create test environment for package
-  - python devtools/scripts/create_conda_env.py -n=test -p=$PYTHON_VER devtools/conda-envs/mols.yaml
+  - python devtools/scripts/create_conda_env.py -n=test -p=$PYTHON_VER devtools/conda-envs/mols.yml
     # Activate the test environment
   - conda activate mols_test
     # Build and install package
