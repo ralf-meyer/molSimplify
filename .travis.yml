@@ -32,8 +32,8 @@ install:
 script:
   - python setup.py test
 
-# notifications:
-#   slack:
-#     if: branch = master
-#     rooms:
-#       - hjklol:tIyrsTGNRmimRH5PcbzOVpvO
+notifications:
+  slack:
+    if: branch = master
+    rooms:
+      - hjklol:tIyrsTGNRmimRH5PcbzOVpvO
