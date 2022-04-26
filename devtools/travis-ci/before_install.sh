@@ -32,7 +32,7 @@ source ~/.bashrc  # source file to get new commands
 #export PATH=$MINICONDA_HOME/bin:$PATH  # Old way, should not be needed anymore
 
 # Strict channel_priority to make solving easier.
-conda config --set channel_priority strict
+conda config --set channel_priority flexible
 conda config --set always_yes yes
 
 # Update conda
