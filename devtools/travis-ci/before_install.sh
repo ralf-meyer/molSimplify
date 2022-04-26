@@ -34,7 +34,6 @@ source ~/.bashrc  # source file to get new commands
 # Strict channel_priority to make solving easier.
 conda config --set channel_priority strict
 conda config --set always_yes yes
-conda config --append channels conda-forge
 
 # Update conda
 conda update -n base -c defaults conda
