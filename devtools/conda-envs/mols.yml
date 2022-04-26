@@ -2,6 +2,7 @@ name: mols_test
 channels:
      - conda-forge
      - anaconda
+     - pytorch
      - defaults
 dependencies:
      - python=3.7
