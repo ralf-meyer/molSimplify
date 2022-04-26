@@ -26,11 +26,12 @@ install:
     # Activate the test environment
   - conda activate test
     # Build and install package
-  - python setup.py develop --no-deps
+  - pip install -e .
 
 
 script:
   - python setup.py test
+  - molsimplify -h
 
 notifications:
   slack:
