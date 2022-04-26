@@ -1,49 +1,37 @@
-dist: xenial
 language: python
-python:
-  # We don't actually use the Travis Python, but this keeps it organized.
-  - "3.6"
-install:
-  - sudo apt-get update
-  # We do this conditionally because it saves us some downloading if the
-  # version is the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # - conda install conda-build
-  # Useful for debugging any issues with conda
-  - conda info -a
 
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - source activate test-environment
-  - conda config --add channels hjkgroup
-  - conda config --add channels anaconda
-  - conda config --add channels conda-forge
-  - conda config --add channels defaults
-  - conda install pyyaml
-  - conda install tensorflow=1.14.0
-  - conda install keras=2.3.1
-  - conda install pandas
-  - conda install scikit-learn=0.20.3
-  - conda install xtb
-  - conda install -c hjkgroup openbabel
-  # - conda build conda-recipe -c hjkgroup
-  - conda install molsimplify --use-local
-  # Needed for testing without Pybrain
-  - conda install pytest
+# Run jobs on container-based infrastructure, can be overridden per job
+
+matrix:
+  include:
+    # Extra includes for OSX since python language is not available by default on OSX
+    - os: linux
+      language: generic  # No need to set Python version since its conda
+      env: PYTHON_VER=3.7
+
+before_install:
+    # Additional info about the build
+  - uname -a
+  - df -h
+  - ulimit -a
+
+    # Install the Python environment
+  - source devtools/travis-ci/before_install.sh
+  - python -V
+
+install:
+
+    # Create test environment for package
+  - python devtools/scripts/create_conda_env.py -n=mols_test -p=$PYTHON_VER devtools/conda-envs/mols.yml
+    # Activate the test environment
+  - conda activate mols_test
+    # Build and install package
+  - pip install -e .
+
 
 script:
-  # Your test script goes here
   - python setup.py test
-  # - molsimplify -h
+  - molsimplify -h
 
 notifications:
   slack:
