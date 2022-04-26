@@ -8,8 +8,8 @@ dependencies:
      - hjkgroup::openbabel
      - psi4::psi4
      - theochem::iodata
-     - pytorch::pytorch
-     - pytorch::torchvision
+     - pytorch
+     - torchvision
      - xtb
      - tensorflow
      - keras
