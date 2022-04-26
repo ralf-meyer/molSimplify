@@ -1,5 +1,6 @@
 name: mols_test
 channels:
+     - psi4
      - conda-forge
      - anaconda
      - pytorch
@@ -8,7 +9,7 @@ dependencies:
      - python=3.7
      - pip
      - hjkgroup::openbabel
-     - psi4::psi4
+     - psi4
      - theochem::iodata
      - pytorch
      - torchvision
