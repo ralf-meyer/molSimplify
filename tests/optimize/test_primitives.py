@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 import numdifftools as nd
 from molSimplify.optimize.primitives import (Distance, InverseDistance,
-                                             Angle, Dihedral, LinearAngle,
+                                             Angle, LinearAngle,
+                                             Dihedral, Improper,
                                              OctahedralA1g, OctahedralEg1,
                                              OctahedralEg2, OctahedralT1u1,
                                              OctahedralT1u2, OctahedralT1u3)
@@ -31,6 +32,27 @@ def test_angle(atol=1e-10):
     for theta in [0.0, np.pi/3, np.pi/2, 2*np.pi/3, np.pi]:
         xyzs[2, :] = 0.7*np.cos(theta), 0., 0.7*np.sin(theta)
         assert np.abs(a.value(xyzs) - theta) < atol
+
+
+def test_angle_on_linear_geometry():
+    ref = np.array([1, -1, 1])
+    a = Angle(1, 0, 2)
+
+    r1 = 1.2
+    r2 = 0.7
+    xyzs = np.array([[0., 0., 0.],
+                     [r1, 0., 0.],
+                     [-r2, 0., 0.]])
+    dq = a.derivative(xyzs).reshape(-1, 3)
+    # Assert that derivative is perpendicular to atomic line
+    np.testing.assert_allclose(np.dot(dq, [1, 0, 0]), np.zeros(3))
+
+    xyzs = np.array([[0., 0., 0.],
+                     r1 * ref,
+                     -r2 * ref])
+    dq = a.derivative(xyzs).reshape(-1, 3)
+    # Assert that derivative is perpendicular to atomic line
+    np.testing.assert_allclose(np.dot(dq, ref), np.zeros(3))
 
 
 def test_linear_angle(atol=1e-10):
@@ -69,6 +91,21 @@ def test_dihedral(atol=1e-10):
         else:
             w_ref = w
         assert np.abs(d.value(xyzs) - w_ref) < atol
+
+
+def test_primitive_representations():
+    r = Distance(11, 38)
+    assert repr(r) == 'Distance(11, 38)'
+    r_inv = InverseDistance(11, 38)
+    assert repr(r_inv) == 'InverseDistance(11, 38)'
+    a = Angle(8, 101, 38)
+    assert repr(a) == 'Angle(8, 101, 38)'
+    lin = LinearAngle(4, 12, 8, axis=1)
+    assert repr(lin) == 'LinearAngle(4, 12, 8, axis=1)'
+    d = Dihedral(2, 5, 7, 1)
+    assert repr(d) == 'Dihedral(2, 5, 7, 1)'
+    i = Improper(4, 6, 3, 5)
+    assert repr(i) == 'Improper(4, 6, 3, 5)'
 
 
 def test_primitive_derivatives(atol=1e-10):

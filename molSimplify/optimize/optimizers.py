@@ -291,18 +291,14 @@ class LBFGS(ase.optimize.LBFGS):
         # ##
 
         g = -f
-        if self.use_line_search is True:
-            e = self.func(r)
-            self.line_search(r, g, e)
-            dr = (self.alpha_k * self.p).reshape(len(self.atoms), -1)
-        else:
-            self.force_calls += 1
-            self.function_calls += 1
-            dr = self.determine_step(self.p) * self.damping
+        # MOD: Removed option for linesearch
+        dr = self.determine_step(self.p) * self.damping
         # MOD: xyzs instead of r
         self.atoms.set_positions(r + dr)
 
         self.iteration += 1
+        self.force_calls += 1
+        self.function_calls += 1
         self.r0 = r
         self.f0 = -g
         self.dump((self.iteration, self.s, self.y,

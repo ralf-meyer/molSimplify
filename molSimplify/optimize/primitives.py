@@ -6,11 +6,11 @@ class Primitive():
 
     @abstractmethod
     def value(self, xyzs):
-        ...
+        """ Evaluate the Primitive on an (N, 3) array"""
 
     @abstractmethod
     def derivative(self, xyzs):
-        ...
+        """ Calculate the derivative for the Primitive on an (N, 3) array"""
 
     def diff(self, xyzs1, xyzs2):
         return self.value(xyzs1) - self.value(xyzs2)
@@ -38,6 +38,9 @@ class Distance(Primitive):
 
 
 class InverseDistance(Distance):
+
+    def __repr__(self):
+        return f'InverseDistance({self.i}, {self.j})'
 
     def value(self, xyzs):
         return 1./Distance.value(self, xyzs)
