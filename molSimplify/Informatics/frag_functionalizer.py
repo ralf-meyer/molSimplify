@@ -1,6 +1,7 @@
 import json
 import ast
-import sys, os
+import sys
+import os
 import pandas as pd
 
 ### Below is RDKit dependency that this code uses
@@ -28,7 +29,7 @@ funcs = {'cccc':'phenyl',
 takes in a batch of synthesized macrocycles
 '''
 input_file = sys.argv[1]
-def read_synthesized_macrocycles(input_file)
+def read_synthesized_macrocycles(input_file):
     with open(sys.argv[1],'r') as f:
         data = json.load(f)
         print('----',len(data))
@@ -159,8 +160,8 @@ for lignum, ligand in enumerate(temp_list):
             inds3 = temp_ligand['frag3_func']
             inds4 = temp_ligand['frag4_func']
 
-            func_inds1  = []
-            func_inds2  = []
+            func_inds1 = []
+            func_inds2 = []
             if isinstance(inds1, list) and len(inds1)>0:
                 func_inds1 += inds1
             if isinstance(inds2, list) and len(inds2)>0:
@@ -230,6 +231,4 @@ for lignum, ligand in enumerate(temp_list):
         new_df.to_csv('successful_functionalizations.csv',index=False)
 
 with open(os.getcwd()+'/frag_functionalized_synthesized_ligands.json', 'w') as fout:
-    json.dump(functionalized_ligands, fout) 
-
-
+    json.dump(functionalized_ligands, fout)

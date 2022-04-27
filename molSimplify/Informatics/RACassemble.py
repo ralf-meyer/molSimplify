@@ -334,27 +334,3 @@ def append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivat
     else:
         descriptor_derivatives =  np.row_stack([descriptor_derivatives,dmat])
     return descriptor_derivative_names, descriptor_derivatives
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

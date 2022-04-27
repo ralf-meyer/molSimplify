@@ -5,7 +5,6 @@ import numpy as np
 import subprocess
 import pandas as pd
 import shutil
-import time
 from molSimplify.job_manager.classes import resub_history, textfile
 from ast import literal_eval
 import json
@@ -15,7 +14,7 @@ def try_float(obj):
     # Converts an object to a floating point if possible
     try:
         floating_point = float(obj)
-    except:
+    except ValueError:
         floating_point = obj
     return floating_point
 
@@ -52,12 +51,12 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 counter = 0
             else:
                 print('.out file type not recognized for file: ' + outfile_path)
-                return_dict = {'name':None, 'charge':None, 'finalenergy':None,
-                               'time':None, 's_squared': None, 's_squared_ideal':None,
-                               'finished':False, 'min_energy':None, 'scf_error':False,
-                               'thermo_grad_error':False, 'solvation_energy': None, 'optimization_cycles':None,
-                               'thermo_vib_energy':None, 'thermo_vib_free_energy':None, 'thermo_suspect': None,
-                               'orbital_occupation':None, 'oscillating_scf_error':False}
+                return_dict = {'name': None, 'charge': None, 'finalenergy': None,
+                               'time': None, 's_squared': None, 's_squared_ideal': None,
+                               'finished': False, 'min_energy': None, 'scf_error': False,
+                               'thermo_grad_error': False, 'solvation_energy': None, 'optimization_cycles': None,
+                               'thermo_vib_energy': None, 'thermo_vib_free_energy': None, 'thermo_suspect': None,
+                               'orbital_occupation': None, 'oscillating_scf_error': False}
                 return return_dict
                 
     output_type = ['TeraChem', 'ORCA'][counter]
@@ -124,12 +123,12 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
         min_energy = output.wordgrab('FINAL', 2, min_value=True)[0]
 
         is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
-        if is_finished: # for full optimization
+        if is_finished:  # for full optimization
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
 
-        is_finished = output.wordgrab(['processing'],'whole_line', last_line=True)[0]
-        if is_finished: # for hydrogen optimization
+        is_finished = output.wordgrab(['processing'], 'whole_line', last_line=True)[0]
+        if is_finished:  # for hydrogen optimization
             if is_finished[0] == 'Total' and is_finished[1] == 'processing':
                 finished = True
 
@@ -306,10 +305,10 @@ def read_infile(outfile_path):
 
     return_dict = {}
 
-    for prop, prop_name in zip([unique_job_name,charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
+    for prop, prop_name in zip([unique_job_name, charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates, guess,
                                 qm_code],
-                               ['name','charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
+                               ['name', 'charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
                                 'method', 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'qm_code']):
@@ -356,7 +355,7 @@ def read_configure(home_directory, outfile_path):
             vertIP = True
         if 'functionalsSP' in line or 'FunctionalsSP' in line:
             functionalsSP = [str(p) for p in line.split()[1:]]
-        if ('thermo' in line and not 'thermo_grad_error' in line) or ('Thermo' in line and not 'Thermo_grad_error' in line):
+        if ('thermo' in line and 'thermo_grad_error' not in line) or ('Thermo' in line and 'Thermo_grad_error' not in line):
             thermo = True
         if 'dissociation' in line or 'Dissociation' in line:
             dissociation = True
@@ -369,7 +368,7 @@ def read_configure(home_directory, outfile_path):
     max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
     ss_cutoff, hard_job_limit, use_molscontrol, general_sp = False, False, False, False
     run_psi4, psi4_config = False, {}
-    dissociated_ligand_charges,dissociated_ligand_spinmults = {}, {}
+    dissociated_ligand_charges, dissociated_ligand_spinmults = {}, {}
     for configure in [home_configure, local_configure]:
         for line in configure:
             if 'max_jobs' in line.split(':'):
@@ -412,7 +411,7 @@ def read_configure(home_directory, outfile_path):
                     with open(os.getcwd() + "/" + localpath, "r") as f:
                         try:
                             general_sp = json.load(f)
-                        except:
+                        except json.JSONDecodeError:
                             raise ValueError("%s is not a valid json file." % localpath)
                 else:
                     raise ValueError("%s does not exits." % localpath)
@@ -424,12 +423,12 @@ def read_configure(home_directory, outfile_path):
                     with open(os.getcwd() + "/" + localpath, "r") as f:
                         try:
                             psi4_config = json.load(f)
-                        except:
+                        except json.JSONDecodeError:
                             raise ValueError("%s is not a valid json file." % localpath)
                 else:
                     raise ValueError("%s does not exits." % localpath)
     # If global settings not specified, choose defaults:
-    if (not max_jobs) and isinstance(max_jobs,bool):
+    if (not max_jobs) and isinstance(max_jobs, bool):
         max_jobs = 50
     if not max_resub:
         max_resub = 5
@@ -502,7 +501,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
                 parallel_environment=4, precision='dynamic', dftgrid=1, dynamicgrid='yes',
-                machine = 'gibraltar'):
+                machine='gibraltar'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
 
@@ -586,9 +585,10 @@ def write_terachem_input(infile_dictionary):
     if type(infile['convergence_thresholds']) == list:
         if infile['convergence_thresholds'][0]:
             thresholds = [line if line.endswith('\n') else line + '\n' for line in infile['convergence_thresholds']]
-            tight_thresholds = "min_converge_gmax " + thresholds[0] + "min_converge_grms " + thresholds[
-                1] + "min_converge_dmax " + thresholds[2] + "min_converge_drms " + thresholds[3] + "min_converge_e " + \
-                               thresholds[4] + "convthre " + thresholds[5]
+            tight_thresholds = ("min_converge_gmax " + thresholds[0] + "min_converge_grms " 
+                                + thresholds[1] + "min_converge_dmax " + thresholds[2] 
+                                + "min_converge_drms " + thresholds[3] + "min_converge_e "
+                                + thresholds[4] + "convthre " + thresholds[5])
             text = text[:-1] + ['\n', tight_thresholds, 'end']
 
     if infile['dispersion']:
@@ -614,10 +614,10 @@ def write_terachem_input(infile_dictionary):
                             'pcm_radii read\n',
                             'pcm_radii_file /home/harperd/pcm_radii\n',
                             'end']
-    if infile['machine'] in ['gibraltar','bridges']:
-        text = text[:-1] + ['nbo yes\n', 'gpus 1\n','end']
+    if infile['machine'] in ['gibraltar', 'bridges']:
+        text = text[:-1] + ['nbo yes\n', 'gpus 1\n', 'end']
     elif infile['machine'] in ['comet']:
-        text = text[:-1] + ['gpus 2\n','end']
+        text = text[:-1] + ['gpus 2\n', 'end']
     else:
         raise ValueError('Machine not known!')
 
@@ -685,14 +685,14 @@ def write_orca_input(infile_dictionary):
 
 
 def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
-                    machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
+                    machine='gibraltar', cwd=False, use_molscontrol=False, queues=['gpus', 'gpusnew']):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
                                  machine=machine, cwd=cwd,
-                                 use_molscontrol=use_molscontrol, queues = queues)
+                                 use_molscontrol=use_molscontrol, queues=queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                              parallel_environment=parallel_environment, 
@@ -703,9 +703,9 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
-                             machine='gibraltar', cwd=False, use_molscontrol=False, queues = ['gpus','gpusnew']):
-    #if use_molscontrol and machine != 'gibraltar':
-    #    raise ValueError("molscontrol is only implemented on gibraltar for now.")
+                             machine='gibraltar', cwd=False, use_molscontrol=False, queues=['gpus', 'gpusnew']):
+    # if use_molscontrol and machine != 'gibraltar':
+    #     raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
     if machine == 'gibraltar':
         if not use_molscontrol:
@@ -822,7 +822,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                 text += ["PID_KILL=$!\n"]
                 text += ["molscontrol $PID_KILL &\n"]
                 text += ["wait\n"]
-    elif terachem_line and machine in ['bridges','comet']:
+    elif terachem_line and machine in ['bridges', 'comet']:
         text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
     if custom_line:
         if type(custom_line) == list:
