@@ -11,6 +11,15 @@ jobs:
     - name: Install conda
       run: |
         source devtools/travis-ci/before_install.sh
-    - name: Create environment
+    - name: Create environment and install molSimplify
       run: |
         conda env create -n test -f devtools/conda-envs/mols.yml
+        conda activate test
+        pip install -e .
+        conda list
+    - name: Run pytest
+      run: |
+        pytest
+    - name: Run help
+      run: |
+        molsimplify -h
