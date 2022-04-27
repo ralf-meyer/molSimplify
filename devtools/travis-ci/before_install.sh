@@ -10,7 +10,7 @@ if [[ "$uname" == "Darwin" ]]; then
         command md5 -r "$@"
     }
     MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
-elif [[ "$uname" == "Linux" ]]: then
+elif [[ "$uname" == "Linux" ]]; then
     MINICONDA=Miniconda3-latest-Linux-x86_64.sh
 else
     echo "Unsupported system $uname"
