@@ -9,9 +9,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Setup conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          update-conda: true
+      uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: true
     - name: Create environment and install molSimplify
       run: |
         conda env create -n test -f devtools/conda-envs/mols.yml
