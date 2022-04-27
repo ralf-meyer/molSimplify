@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install conda
       run: |
-      source devtools/travis-ci/before_install.sh
+        source devtools/travis-ci/before_install.sh
     - name: Create environment
       run: |
-      conda env create -n test -f devtools/conda-envs/mols.yml
+        conda env create -n test -f devtools/conda-envs/mols.yml
