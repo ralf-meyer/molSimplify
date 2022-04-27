@@ -27,6 +27,8 @@ install:
   - conda activate mols_test
     # Build and install package
   - pip install -e .
+  # Inspect the installation
+  - conda list
 
 
 script:
