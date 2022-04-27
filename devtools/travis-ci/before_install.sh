@@ -30,7 +30,7 @@ echo ". $MINICONDA_HOME/etc/profile.d/conda.sh" >> ~/.bashrc  # Source the profi
 echo "conda activate" >> ~/.bashrc  # Activate conda
 source ~/.bashrc  # source file to get new commands
 
-conda config --set channel_priority strict
+conda config --set channel_priority flexible
 conda config --set always_yes yes
 
 # Update conda
