@@ -1,7 +1,6 @@
 name: mols_test
 channels:
      - hjkgroup
-     - psi4
      - conda-forge
      - anaconda
      - theochem
@@ -10,7 +9,6 @@ dependencies:
      - python=3.7
      - openbabel
      - xtb
-     - psi4
      - tensorflow
      - keras
      - pyqt
