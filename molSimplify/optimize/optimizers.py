@@ -1,5 +1,115 @@
+import time
 import numpy as np
 import ase.optimize
+import ase.units
+
+
+class ConvergenceMixin():
+    """Mixin class used to replace the convergence criteria of an
+    ase.optimize.optimizer class. Usage:
+    >>> class NewOptimizer(ConvergenceMixin, OldOptimizer):
+            pass
+    >>> opt = NewOptimizer(atoms)
+    Note: Because of Pythons method resolution order the mixin class
+    needs to come first!
+    """
+    threshold_energy = 1e-4
+    threshold_max_step = 1e-3
+    threshold_rms_step = 5e-2
+    threshold_max_grad = 1e-3
+    threshold_rms_grad = 1e-3
+
+    def convergence_condition(self, energy_change, max_step, rms_step,
+                              max_grad, rms_grad):
+        """This is separated out as some convergence criteria might
+        want to implement a more sophisticated logic than just all True"""
+        conditions = (energy_change < self.threshold_energy,
+                      max_step < self.threshold_max_step,
+                      rms_step < self.threshold_rms_step,
+                      max_grad < self.threshold_max_grad,
+                      rms_grad < self.threshold_rms_grad)
+        return all(conditions), conditions
+
+    def irun(self, steps=None):
+        """ remove fmax from the argument list"""
+        if steps:
+            self.max_steps = steps
+        return ase.optimize.optimize.Dynamics.irun(self)
+
+    def run(self, steps=None):
+        """ remove fmax from the argument list"""
+        if steps:
+            self.max_steps = steps
+        return ase.optimize.optimize.Dynamics.run(self)
+
+    def converged(self, forces=None):
+        """Did the optimization converge?"""
+        if forces is None:
+            forces = self.atoms.get_forces()
+
+        energy = self.atoms.get_potential_energy()
+        previous_energy = getattr(self, 'previous_energy', energy)
+        energy_change = abs(energy - previous_energy)
+
+        positions = self.atoms.get_positions()
+        previous_positions = getattr(self, 'previous_positions',
+                                     positions)
+        step = positions - previous_positions
+        max_step = np.max(np.abs(step))
+        rms_step = np.sqrt(np.mean(step**2))
+
+        max_grad = np.max(np.abs(forces))
+        rms_grad = np.sqrt(np.mean(forces**2))
+
+        self.previous_energy = energy
+        self.previous_positions = positions
+        return self.convergence_condition(energy_change, max_step,
+                                          rms_step, max_grad, rms_grad)[0]
+
+    def log(self, forces=None):
+        if forces is None:
+            forces = self.atoms.get_forces()
+        max_grad = np.max(np.abs(forces))
+        rms_grad = np.sqrt(np.mean(forces**2))
+        e = self.atoms.get_potential_energy(
+            force_consistent=self.force_consistent)
+        e_old = getattr(self, 'previous_energy', e)
+        delta_e = e - e_old
+
+        positions = self.atoms.get_positions()
+        previous_positions = getattr(self, 'previous_positions', positions)
+        step = positions - previous_positions
+        max_step = np.max(np.abs(step))
+        rms_step = np.sqrt(np.mean(step**2))
+
+        conditions = self.convergence_condition(
+            abs(delta_e), max_step, rms_step, max_grad, rms_grad)[1]
+        conv = ['*' if c else ' ' for c in conditions]
+
+        T = time.localtime()
+        if self.logfile is not None:
+            name = self.__class__.__name__
+            if self.nsteps == 0:
+                args = (" " * len(name), "Step", "Time", "Energy", "delta_e",
+                        "grad_max", "grad_rms", "step_max", "step_rms")
+                msg = "%s  %4s %8s %15s %15s  %15s  %15s  %15s  %15s\n" % args
+                self.logfile.write(msg)
+
+            msg = (f'{name}:  {self.nsteps:3d} {T[3]:02d}:{T[4]:02d}'
+                   f':{T[4]:02d} {e:15.6f} {delta_e:15.6f}{conv[0]} '
+                   f'{max_grad:15.6f}{conv[1]} {rms_grad:15.6f}{conv[2]} '
+                   f'{max_step:15.6f}{conv[3]} {rms_step:15.6f}{conv[4]}\n')
+            self.logfile.write(msg)
+
+            self.logfile.flush()
+
+
+class TerachemConvergence(ConvergenceMixin):
+    threshold_energy = 1e-6 * ase.units.Hartree
+    threshold_max_step = 1.8e-3 * ase.units.Bohr
+    threshold_rms_step = 1.2e-3 * ase.units.Bohr
+    threshold_max_grad = 4.5e-4 * ase.units.Hartree / ase.units.Bohr
+    threshold_rms_grad = 3.0e-4 * ase.units.Hartree / ase.units.Bohr
 
 
 class BFGS(ase.optimize.BFGS):

@@ -10,7 +10,9 @@ from molSimplify.optimize.primitives import Distance
 from molSimplify.optimize.coordinate_sets import (CartesianCoordinates,
                                                   DelocalizedCoordinates,
                                                   InternalCoordinates)
-from molSimplify.optimize.optimizers import BFGS, LBFGS, RFO
+from molSimplify.optimize.optimizers import (BFGS, LBFGS, RFO,
+                                             ConvergenceMixin,
+                                             TerachemConvergence)
 from molSimplify.Scripts.rmsd import kabsch_rmsd
 from pkg_resources import resource_filename, Requirement
 
@@ -38,6 +40,22 @@ def test_optimizers_on_H2(optimizer):
     xyzs = atoms.get_positions()
     r = np.linalg.norm(xyzs[0] - xyzs[1])
     assert abs(r - r_ref) < 1e-3
+
+
+@pytest.mark.parametrize('mixin', [ConvergenceMixin,
+                                   TerachemConvergence])
+def test_convergence_criteria(mixin):
+    atoms = ase.atoms.Atoms(['H', 'H'], positions=[[0., 0., 0.],
+                                                   [.5, .5, .5]])
+    atoms.calc = ase.calculators.emt.EMT()
+
+    class TestOptimizer(mixin, ase.optimize.BFGS):
+        pass
+
+    opt = TestOptimizer(atoms)
+    for _ in opt.irun(steps=100):
+        pass
+    assert opt.converged()
 
 
 @pytest.mark.parametrize('optimizer', [BFGS, LBFGS, RFO])
