@@ -284,9 +284,7 @@ def find_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
         # "If an atom is connected to more than two atoms" and the threshold
         # is small enough to be exceeded.
         if len(neighbors[a]) > 2 and planar_threshold < 1.0:
-            if planar_method.lower() == 'none':
-                bends_to_remove, planars_to_append = [], []
-            elif planar_method.lower() == 'billeter':
+            if planar_method.lower() == 'billeter':
                 bends_to_remove, planars_to_append = find_planars_billeter(
                     a, neighbors, xyzs, planar_threshold)
             elif planar_method.lower() == 'molsimplify':

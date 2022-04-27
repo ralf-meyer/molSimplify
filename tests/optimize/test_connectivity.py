@@ -76,13 +76,20 @@ def test_find_primitives(name):
         assert sorted(bends) == sorted(bends_ref)
 
 
-def test_find_primitives_on_linear_chains():
+def test_find_primitives_on_pentatetraene():
     """
+    Test proper detection of linear chains on pentatetraene:
     H(7)                            H(5)
      \\                            //
       C(4) - C(3) - C(0) - C(1) - C(2)
      //                            \\
     H(8)                            H(6)
+    Second methyl isocyanide:
+         H(4)
+          \\
+    H(3) - C(2) - N(1) - C(0)
+          //
+         H(5)
     """
     ri = 1.4
     atoms = ase.atoms.Atoms(
@@ -103,6 +110,57 @@ def test_find_primitives_on_linear_chains():
     assert linear_bends == [(1, 0, 3), (0, 1, 2), (0, 3, 4)]
     assert torsions == [(5, 2, 4, 7), (5, 2, 4, 8), (6, 2, 4, 7), (6, 2, 4, 8)]
     assert planars == [(2, 1, 5, 6), (4, 3, 7, 8)]
+
+
+def test_find_primitives_on_methyl_isocyanide():
+    """
+    Test proper detection of linear chains on methyl isocyanide:
+                    H(4)
+                   //
+    C(0) - N(1) - C(2) - H(3)
+                   \\
+                    H(5)
+    """
+    ri = 1.4
+    atoms = ase.atoms.Atoms(
+        ['C', 'N', 'C', 'H', 'H', 'H'],
+        positions=np.array([[0., 0., 0.],
+                            [ri, 0., 0.],
+                            [2*ri, 0., 0.],
+                            [2.5*ri, -0.5*ri, 0.],
+                            [2.5*ri, 0.5*ri, 0.5*ri],
+                            [2.5*ri, 0.5*ri, -0.5*ri]]))
+    bonds = find_connectivity(atoms)
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds)
+    assert bends == [(1, 2, 3), (1, 2, 4), (1, 2, 5),
+                     (3, 2, 4), (3, 2, 5), (4, 2, 5)]
+    assert linear_bends == [(0, 1, 2)]
+    assert torsions == []
+    assert planars == []
+
+
+def test_find_primitives_on_isocyanic_acid():
+    """
+    Test proper detection of linear chains on isocyanic acid:
+                    H(3)
+                   //
+    O(0) - C(1) - N(2)
+    """
+    ri = 1.4
+    atoms = ase.atoms.Atoms(
+        ['O', 'C', 'N', 'H'],
+        positions=np.array([[0., 0., 0.],
+                            [ri, 0., 0.],
+                            [2*ri, 0., 0.],
+                            [2.5*ri, 0.5*ri, 0.]]))
+    bonds = find_connectivity(atoms)
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds)
+    assert bends == [(1, 2, 3)]
+    assert linear_bends == [(0, 1, 2)]
+    assert torsions == []
+    assert planars == []
 
 
 def test_find_primitives_on_simple_octahedron():
@@ -138,6 +196,38 @@ def test_find_primitives_on_simple_octahedron():
     assert linear_bends == []
     assert torsions == []
     assert planars == []
+
+
+def test_planar_methods_on_Fe_CO_6():
+    xyz_file = resource_filename(
+        Requirement.parse('molSimplify'),
+        'tests/optimize/inputs/homoleptic_octahedrals/Co_II_co.xyz')
+    atoms = ase.io.read(xyz_file)
+    bonds = find_connectivity(atoms)
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds, planar_method='billeter')
+
+    assert bends == [(1, 0, 7), (1, 0, 9), (1, 0, 11),
+                     (3, 0, 5), (3, 0, 9), (3, 0, 11), (5, 0, 7),
+                     (5, 0, 9), (5, 0, 11), (7, 0, 9), (7, 0, 11)]
+    assert linear_bends == [(0, 1, 2), (0, 3, 4), (0, 5, 6),
+                            (0, 7, 8), (0, 9, 10), (0, 11, 12)]
+    assert torsions == []
+    assert planars == [(0, 1, 3, 5)]
+
+    bends, linear_bends, torsions, planars = find_primitives(
+        atoms.get_positions(), bonds, planar_method='molsimplify')
+
+    assert bends == [(1, 0, 3), (1, 0, 7), (1, 0, 9), (1, 0, 11),
+                     (3, 0, 5), (3, 0, 9), (3, 0, 11), (5, 0, 7),
+                     (5, 0, 9), (5, 0, 11), (7, 0, 9), (7, 0, 11)]
+    assert linear_bends == [(0, 1, 2), (0, 3, 4), (0, 5, 6),
+                            (0, 7, 8), (0, 9, 10), (0, 11, 12)]
+    assert torsions == []
+    assert planars == []
+
+    with pytest.raises(NotImplementedError):
+        find_primitives(atoms.get_positions(), bonds, planar_method='foo')
 
 
 @pytest.mark.parametrize('ligand', ['co', 'misc', 'water', 'pyr', 'furan'])
