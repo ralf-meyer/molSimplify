@@ -1,0 +1,16 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  linux:
+    run-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install conda
+      run: |
+      source devtools/travis-ci/before_install.sh
+    - name: Create environment
+      run: |
+      conda env create -n test -f devtools/conda-envs/mols.yml
