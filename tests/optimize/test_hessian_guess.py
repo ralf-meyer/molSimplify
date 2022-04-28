@@ -10,13 +10,13 @@ from utils import g2_molecules
 from xtb.ase.calculator import XTB
 from molSimplify.optimize.calculators import (_openbabel_methods,
                                               get_calculator)
-from molSimplify.optimize.hessians import (filter_hessian,
-                                           compute_hessian_guess,
-                                           numerical_hessian,
-                                           TrivialGuessHessian,
-                                           SchlegelHessian,
-                                           FischerAlmloefHessian,
-                                           LindhHessian)
+from molSimplify.optimize.hessian_guess import (filter_hessian,
+                                                compute_hessian_guess,
+                                                numerical_hessian,
+                                                TrivialGuessHessian,
+                                                SchlegelHessian,
+                                                FischerAlmloefHessian,
+                                                LindhHessian)
 
 
 def num_hessian(atoms, step=None):

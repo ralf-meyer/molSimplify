@@ -12,7 +12,8 @@ import numpy as np
 import pathlib
 from molSimplify.optimize.calculators import get_calculator
 from molSimplify.optimize.params import parse_args
-from molSimplify.optimize.hessians import compute_hessian_guess, filter_hessian
+from molSimplify.optimize.hessian_guess import (compute_hessian_guess,
+                                                filter_hessian)
 from molSimplify.optimize.connectivity import (find_connectivity,
                                                find_primitives)
 from molSimplify.Classes.globalvars import metalslist
