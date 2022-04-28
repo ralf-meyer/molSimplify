@@ -8,15 +8,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Conda setup
+      uses: s-weigand/setup-conda@v1
       with:
-        activate-environment: mols_test
-        environment-file: devtools/conda-envs/mols.yml
+        update-conda: true
         python-version: 3.7
     - name: Install molSimplify
       run: |
-        conda activate mols_test
+        conda env create -f devtools/conda-envs/mols.yml	
+        # Source instead of conda activate
+        source activate mols_test	
         conda info
         conda list
         pip install -e .
