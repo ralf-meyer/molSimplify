@@ -5,7 +5,6 @@ channels:
      - conda-forge
      - anaconda
      - pytorch
-     - psi4
      - theochem
      - defaults
 dependencies:
@@ -16,15 +15,15 @@ dependencies:
      - tensorflow
      - keras
      - pytorch
-     - torchvision
+       #- torchvision, optional
      - pyqt
      - pip
      - qt
      - scikit-learn
      - pandas
      - scipy
-     - gpy # in pip the spelling is GPy
-     - hyperopt
+       #- gpy # in pip the spelling is GPy, optional
+       #- hyperopt # optional
      - pymongo
      - iodata
      - libffi
