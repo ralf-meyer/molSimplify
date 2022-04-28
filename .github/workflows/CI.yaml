@@ -19,7 +19,7 @@ on:
 #     - cron: "0 0 * * *"
 
 jobs:
-  test:
+  CI:
     name: Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
