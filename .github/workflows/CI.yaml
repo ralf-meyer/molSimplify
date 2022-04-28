@@ -66,9 +66,10 @@ jobs:
         pytest -v tests/
         
     - name: Report Status
-      if: always()
+      if: ${{ github.event_name != 'pull_request' }}
       uses: ravsamhq/notify-slack-action@v1
       with:
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
         status: ${{ job.status }}
       env:
         SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK}}
