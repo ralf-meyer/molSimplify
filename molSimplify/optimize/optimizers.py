@@ -3,6 +3,7 @@ import time
 import numpy as np
 import ase.optimize
 import ase.units
+from molSimplify.optimize.coordinate_sets import CartesianCoordinates
 from molSimplify.optimize.hessian_approximations import (BFGSHessian,
                                                          BofillHessian)
 
@@ -120,11 +121,14 @@ class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
     defaults = {**ase.optimize.optimize.Optimizer.defaults,
                 'maxstep_internal': 1.0, 'H0': 70.0}
 
-    def __init__(self, atoms, coordinate_set, restart=None, logfile='-',
+    def __init__(self, atoms, coordinate_set=None, restart=None, logfile='-',
                  trajectory=None, master=None, H0=None,
                  maxstep=None, maxstep_internal=None):
 
-        self.coord_set = coordinate_set
+        if coordinate_set is None:
+            self.coord_set = CartesianCoordinates(atoms)
+        else:
+            self.coord_set = coordinate_set
         if H0 is None:
             self.H0 = self.defaults['H0']
         else:
