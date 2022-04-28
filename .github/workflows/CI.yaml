@@ -67,7 +67,8 @@ jobs:
         
     - name: Report Status
       if: ${{ github.event_name != 'pull_request' }}
-      uses: ravsamhq/notify-slack-action@v1
+      #uses: ravsamhq/notify-slack-action@v1
+      uses: 8398a7/action-slack@v3
       with:
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
         status: ${{ job.status }}
