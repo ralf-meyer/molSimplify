@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import time
 import numpy as np
 import ase.optimize
@@ -6,7 +7,7 @@ import ase.units
 
 class ConvergenceMixin():
     """Mixin class used to replace the convergence criteria of an
-    ase.optimize.optimizer class. Usage:
+    molSimplify.optimize.Optimizer class. Usage:
     >>> class NewOptimizer(ConvergenceMixin, OldOptimizer):
             pass
     >>> opt = NewOptimizer(atoms)
@@ -112,103 +113,138 @@ class TerachemConvergence(ConvergenceMixin):
     threshold_rms_grad = 3.0e-4 * ase.units.Hartree / ase.units.Bohr
 
 
-class BFGS(ase.optimize.BFGS):
-    """Adaptation of ASEs implementation of the BFGS optimizer to allow for
-    arbitrary (internal) coordinate systems.
-    """
+class HessianApproximation(np.ndarray):
 
-    def __init__(self, atoms, coordinate_set, maxstep_internal=1.0, **kwargs):
-        if kwargs.get('use_line_search', False):
-            raise NotImplementedError('Line search is not implemented yet.')
-        # Coordinate set needs to be assigned before initialize() is called.
+    def __new__(cls, input_array):
+        obj = np.asarray(input_array).view(cls)
+        return obj
+
+    @abstractmethod
+    def update(self, dr, dg):
+        """Update the Hessian using the step dr and change in gradient dg"""
+
+
+class BFGSHessian(HessianApproximation):
+
+    def update(self, dr, dg):
+        a = np.dot(dr, dg)
+        if a < 0:
+            print('Skipping BFGS update to conserve positive '
+                  'definiteness.')
+            return
+        v = np.dot(self, dr)
+        b = np.dot(dr, v)
+        self += np.outer(dg, dg) / a - np.outer(v, v) / b
+
+
+class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
+
+    defaults = {**ase.optimize.optimize.Optimizer.defaults,
+                'maxstep_internal': 1.0, 'H0': 70.0}
+
+    def __init__(self, atoms, coordinate_set, restart=None, logfile='-',
+                 trajectory=None, master=None, H0=None,
+                 maxstep=None, maxstep_internal=None):
+
         self.coord_set = coordinate_set
-        ase.optimize.BFGS.__init__(self, atoms, **kwargs)
-        self.maxstep_internal = maxstep_internal
+        if H0 is None:
+            self.H0 = self.defaults['H0']
+        else:
+            self.H0 = H0
+
+        if maxstep is None:
+            self.maxstep = self.defaults['maxstep']
+        else:
+            self.maxstep = maxstep
+        if maxstep_internal is None:
+            self.maxstep_internal = self.defaults['maxstep_internal']
+        else:
+            self.maxstep_internal = maxstep_internal
+        ase.optimize.optimize.Optimizer.__init__(self, atoms, restart, logfile,
+                                                 trajectory, master)
 
     def initialize(self):
-        # initial hessian
-        # MOD: initialize to correct size
-        self.H0 = np.eye(self.coord_set.size()) * self.alpha
-
-        self.H = None
+        if np.size(self.H0) == 1:
+            H0 = np.eye(self.coord_set.size()) * self.H0
+        else:
+            H0 = self.H0
+        self.H = self.hessian_approx(H0)
         self.r0 = None
         self.f0 = None
 
     def step(self, f=None):
-        atoms = self.atoms
-
         if f is None:
-            f = atoms.get_forces()
+            f = self.atoms.get_forces()
 
-        r = atoms.get_positions()
+        r = self.atoms.get_positions()
         # MOD: Transform forces to internal coordinates
         f = self.coord_set.force_to_internals(r, f.flatten())
         # MOD: remove the flattening here
         self.update(r, f, self.r0, self.f0)
-        omega, V = np.linalg.eigh(self.H)
-
-        # FUTURE: Log this properly
-        # # check for negative eigenvalues of the hessian
-        # if any(omega < 0):
-        #     n_negative = len(omega[omega < 0])
-        #     msg = '\n** BFGS Hessian has {} negative eigenvalues.'.format(
-        #         n_negative
-        #     )
-        #     print(msg, flush=True)
-        #     if self.logfile is not None:
-        #         self.logfile.write(msg)
-        #         self.logfile.flush()
 
         # MOD: step in internals
-        dq = np.dot(V, np.dot(f, V) / np.fabs(omega))
-        if np.max(np.abs(dq)) > self.maxstep_internal:
-            dq *= self.maxstep_internal / np.max(np.abs(dq))
+        dq = self.internal_step(f)
+        # Rescale
+        maxsteplength_internal = np.max(np.abs(dq))
+        if maxsteplength_internal > self.maxstep_internal:
+            dq *= self.maxstep_internal / maxsteplength_internal
+
         # Transform to Cartesians
         dr = self.coord_set.to_cartesians(dq, r) - r
-        steplengths = (dr**2).sum(1)**0.5
-        dr = self.determine_step(dr, steplengths)
-        atoms.set_positions(r + dr)
+        # Rescale
+        maxsteplength = np.max(np.sqrt(np.sum(dr**2, axis=1)))
+        if maxsteplength > self.maxstep:
+            dr *= self.maxstep / maxsteplength
+
+        self.atoms.set_positions(r + dr)
         self.r0 = r.copy()
         self.f0 = f.copy()
-        self.dump((self.H, self.r0, self.f0, self.maxstep))
+        self.dump((self.coord_set, self.H, self.r0, self.f0, self.maxstep,
+                   self.maxstep_internal))
+
+    @abstractmethod
+    def internal_step(self, f):
+        """this needs to be implemented by subclasses"""
+
+    def read(self):
+        (self.coord_set, self.H, self.r0, self.f0, self.maxstep,
+         self.maxstep_internal) = self.load()
 
     def update(self, r, f, r0, f0):
-        if self.H is None:
-            self.H = self.H0
+        if r0 is None or f0 is None:  # No update on the first iteration
             return
+
         dr = self.coord_set.diff_internals(r, r0).flatten()
 
         if np.abs(dr).max() < 1e-7:
             # Same configuration again (maybe a restart):
             return
 
-        df = f - f0
-        a = np.dot(dr, df)
-        if a > 0:
-            print('Skipping BFGS update to conserve positive '
-                  'definiteness.')
-            return
-        dg = np.dot(self.H, dr)
-        b = np.dot(dr, dg)
-        self.H -= np.outer(df, df) / a + np.outer(dg, dg) / b
+        dg = -(f - f0)
+        self.H.update(dr, dg)
 
 
-class RFO(BFGS):
+class BFGS(InternalCoordinatesOptimizer):
+    hessian_approx = BFGSHessian
+
+    def internal_step(self, f):
+        omega, V = np.linalg.eigh(self.H)
+        print(omega)
+        return np.dot(V, np.dot(f, V) / np.fabs(omega))
+
+
+class RFO(InternalCoordinatesOptimizer):
 
     def __init__(self, *args, mu=0, **kwargs):
-        BFGS.__init__(self, *args, **kwargs)
         self.mu = mu
+        if self.mu == 0:
+            self.hessian_approx = BFGSHessian
+        else:
+            raise NotImplementedError()
+            # self.hessian_approx = BofillHessian
+        InternalCoordinatesOptimizer.__init__(self, *args, **kwargs)
 
-    def step(self, f=None):
-        atoms = self.atoms
-
-        if f is None:
-            f = atoms.get_forces()
-
-        r = atoms.get_positions()
-        f = self.coord_set.force_to_internals(r, f.flatten())
-        self.update(r, f, self.r0, self.f0)
-
+    def internal_step(self, f):
         # extended Hessian matrix
         H_ext = np.block([[self.H, -f[:, np.newaxis]], [-f, 0.]])
 
@@ -217,17 +253,7 @@ class RFO(BFGS):
         # Step is calculated by proper rescaling of the eigenvector
         # corresponding to the mu-th eigenvalue. For minimizations
         # the lowest i.e. zeroth eigenvalue is chosen.
-        dq = V[:-1, self.mu] / V[-1, self.mu]
-        if np.max(np.abs(dq)) > self.maxstep_internal:
-            dq *= self.maxstep_internal / np.max(np.abs(dq))
-        # Transform to Cartesians
-        dr = self.coord_set.to_cartesians(dq, r) - r
-        steplengths = (dr**2).sum(1)**0.5
-        dr = self.determine_step(dr, steplengths)
-        atoms.set_positions(r + dr)
-        self.r0 = r.copy()
-        self.f0 = f.copy()
-        self.dump((self.H, self.r0, self.f0, self.maxstep))
+        return V[:-1, self.mu] / V[-1, self.mu]
 
 
 class LBFGS(ase.optimize.LBFGS):
