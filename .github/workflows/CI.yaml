@@ -70,6 +70,7 @@ jobs:
       #uses: ravsamhq/notify-slack-action@v1
       uses: 8398a7/action-slack@v3
       with:
+        job_name: CI Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
         status: ${{ job.status }}
       env:
