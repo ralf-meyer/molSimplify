@@ -14,9 +14,9 @@ jobs:
         activate-environment: mols_test
         environment-file: devtools/conda-envs/mols.yml
         python-version: 3.7
-        auto-activate-base: false
     - name: Install molSimplify
       run: |
+        conda activate mols_test
         conda info
         conda list
         pip install -e .
