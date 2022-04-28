@@ -24,7 +24,8 @@ jobs:
     - name: Run pytest
       run: |
         source activate mols_test	
-        python setup.py test
+        conda install -c conda-forge pytest pytest-cov
+        pytest
     - name: Test command line help message
       run: |
         molsimplify -h
