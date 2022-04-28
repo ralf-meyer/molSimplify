@@ -74,3 +74,4 @@ jobs:
         status: ${{ job.status }}
       env:
         SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK}}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }} # required
