@@ -97,7 +97,7 @@ def test_convergence_criteria(mixin):
                                                    [.5, .5, .5]])
     atoms.calc = ase.calculators.emt.EMT()
 
-    class TestOptimizer(mixin, ase.optimize.BFGS):
+    class TestOptimizer(mixin, BFGS):
         pass
 
     opt = TestOptimizer(atoms)

@@ -51,22 +51,19 @@ class ConvergenceMixin():
         if forces is None:
             forces = self.atoms.get_forces()
 
-        energy = self.atoms.get_potential_energy()
-        previous_energy = getattr(self, 'previous_energy', energy)
-        energy_change = abs(energy - previous_energy)
+        e = self.atoms.get_potential_energy()
+        e0 = self.e0 if self.e0 is not None else e
+        energy_change = abs(e - e0)
 
-        positions = self.atoms.get_positions()
-        previous_positions = getattr(self, 'previous_positions',
-                                     positions)
-        step = positions - previous_positions
+        r = self.atoms.get_positions()
+        r0 = self.r0 if self.r0 is not None else r
+        step = r - r0
         max_step = np.max(np.abs(step))
         rms_step = np.sqrt(np.mean(step**2))
 
         max_grad = np.max(np.abs(forces))
         rms_grad = np.sqrt(np.mean(forces**2))
 
-        self.previous_energy = energy
-        self.previous_positions = positions
         return self.convergence_condition(energy_change, max_step,
                                           rms_step, max_grad, rms_grad)[0]
 
@@ -77,12 +74,12 @@ class ConvergenceMixin():
         rms_grad = np.sqrt(np.mean(forces**2))
         e = self.atoms.get_potential_energy(
             force_consistent=self.force_consistent)
-        e_old = getattr(self, 'previous_energy', e)
-        delta_e = e - e_old
+        e0 = self.e0 if self.e0 is not None else e
+        delta_e = e - e0
 
-        positions = self.atoms.get_positions()
-        previous_positions = getattr(self, 'previous_positions', positions)
-        step = positions - previous_positions
+        r = self.atoms.get_positions()
+        r0 = self.r0 if self.r0 is not None else r
+        step = r - r0
         max_step = np.max(np.abs(step))
         rms_step = np.sqrt(np.mean(step**2))
 
@@ -149,10 +146,12 @@ class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
         if np.size(self.H0) == 1:
             H0 = np.eye(self.coord_set.size()) * self.H0
         else:
-            H0 = self.H0
+            H0 = self.coord_set.hessian_to_internals(
+                self.atoms.get_positions(), self.H0)
         self.H = self.hessian_approx(H0)
         self.r0 = None
         self.f0 = None
+        self.e0 = None
 
     def step(self, f=None):
         if f is None:
@@ -181,15 +180,16 @@ class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
         self.atoms.set_positions(r + dr)
         self.r0 = r.copy()
         self.f0 = f.copy()
-        self.dump((self.coord_set, self.H, self.r0, self.f0, self.maxstep,
-                   self.maxstep_internal))
+        self.e0 = self.atoms.get_potential_energy()
+        self.dump((self.coord_set, self.H, self.r0, self.f0, self.e0,
+                   self.maxstep, self.maxstep_internal))
 
     @abstractmethod
     def internal_step(self, f):
         """this needs to be implemented by subclasses"""
 
     def read(self):
-        (self.coord_set, self.H, self.r0, self.f0, self.maxstep,
+        (self.coord_set, self.H, self.r0, self.f0, self.e0, self.maxstep,
          self.maxstep_internal) = self.load()
 
     def update(self, r, f, r0, f0):
