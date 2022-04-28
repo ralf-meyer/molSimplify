@@ -3,6 +3,8 @@ import time
 import numpy as np
 import ase.optimize
 import ase.units
+from molSimplify.optimize.hessian_approximations import (BFGSHessian,
+                                                         BofillHessian)
 
 
 class ConvergenceMixin():
@@ -113,30 +115,6 @@ class TerachemConvergence(ConvergenceMixin):
     threshold_rms_grad = 3.0e-4 * ase.units.Hartree / ase.units.Bohr
 
 
-class HessianApproximation(np.ndarray):
-
-    def __new__(cls, input_array):
-        obj = np.asarray(input_array).view(cls)
-        return obj
-
-    @abstractmethod
-    def update(self, dr, dg):
-        """Update the Hessian using the step dr and change in gradient dg"""
-
-
-class BFGSHessian(HessianApproximation):
-
-    def update(self, dr, dg):
-        a = np.dot(dr, dg)
-        if a < 0:
-            print('Skipping BFGS update to conserve positive '
-                  'definiteness.')
-            return
-        v = np.dot(self, dr)
-        b = np.dot(dr, v)
-        self += np.outer(dg, dg) / a - np.outer(v, v) / b
-
-
 class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
 
     defaults = {**ase.optimize.optimize.Optimizer.defaults,
@@ -240,8 +218,7 @@ class RFO(InternalCoordinatesOptimizer):
         if self.mu == 0:
             self.hessian_approx = BFGSHessian
         else:
-            raise NotImplementedError()
-            # self.hessian_approx = BofillHessian
+            self.hessian_approx = BofillHessian
         InternalCoordinatesOptimizer.__init__(self, *args, **kwargs)
 
     def internal_step(self, f):
