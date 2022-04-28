@@ -13,6 +13,8 @@ dependencies:
      - psi4
      - tensorflow
      - keras
+     - pytorch
+     - torchvision
      - pyqt
      - pip
      - qt
