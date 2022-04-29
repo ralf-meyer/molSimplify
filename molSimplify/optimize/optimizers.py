@@ -114,7 +114,7 @@ class TerachemConvergence(ConvergenceMixin):
 
 
 class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
-
+    hessian_approx = None
     defaults = {**ase.optimize.optimize.Optimizer.defaults,
                 'maxstep_internal': 1.0, 'H0': 70.0}
 
@@ -206,13 +206,20 @@ class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
         self.H.update(dr, dg)
 
 
-class BFGS(InternalCoordinatesOptimizer):
-    hessian_approx = BFGSHessian
+class NewtonRaphson(InternalCoordinatesOptimizer):
+    """Can not be instantiated because of the missing Hessian approximation
+    that must be added in subclasses."""
 
     def internal_step(self, f):
         omega, V = np.linalg.eigh(self.H)
-        print(omega)
-        return np.dot(V, np.dot(f, V) / np.fabs(omega))
+        # Only take step in the direction of non-zero eigenvalues
+        non_zero = np.abs(omega) > 1e-6
+        return np.dot(V[:, non_zero],
+                      np.dot(f, V[:, non_zero]) / omega[non_zero])
+
+
+class BFGS(NewtonRaphson):
+    hessian_approx = BFGSHessian
 
 
 class RFO(InternalCoordinatesOptimizer):
@@ -235,6 +242,38 @@ class RFO(InternalCoordinatesOptimizer):
         # corresponding to the mu-th eigenvalue. For minimizations
         # the lowest i.e. zeroth eigenvalue is chosen.
         return V[:-1, self.mu] / V[-1, self.mu]
+
+
+class PRFO(InternalCoordinatesOptimizer):
+    hessian_approx = BofillHessian
+
+    def __init__(self, *args, mu=1, **kwargs):
+        self.mu = mu
+        InternalCoordinatesOptimizer.__init__(self, *args, **kwargs)
+
+    def internal_step(self, f):
+        step = np.zeros_like(f)
+        omega, V = np.linalg.eigh(self.H)
+        # Tranform the force vector to the eigenbasis of the Hessian
+        f_trans = np.dot(f, V)
+        # Partition into two subproblems.
+        # The first mu coordinates that are maximized.
+        H_max = np.block([[np.diag(omega[:self.mu]),
+                           -f_trans[:self.mu, np.newaxis]],
+                          [-f_trans[:self.mu], 0.]])
+        _, V_max = np.linalg.eigh(H_max)
+        # The remaining coordinates that are minimized.
+        H_min = np.block([[np.diag(omega[self.mu:]),
+                           -f_trans[self.mu:, np.newaxis]],
+                          [-f_trans[self.mu:], 0.]])
+        _, V_min = np.linalg.eigh(H_min)
+        # Calculate the step by combining the highest eigenvector
+        # from the maximization subset
+        step[:self.mu] = V_max[:-1, -1] / V_max[-1, -1]
+        # and the lowest eigenvector from the minimization subset
+        step[self.mu:] = V_min[:-1, 0] / V_min[-1, 0]
+        # Tranform step back to original system
+        return np.dot(V, step)
 
 
 class LBFGS(ase.optimize.LBFGS):
