@@ -249,7 +249,7 @@ def scharge_ave(mol,charge,bond=False):
 #     return fdistance_list
 
 def all_prop(mol,charge,bond=False):
-    fprio_list, fd_list = fpriority(mol)
+    fprio_list, fd_list, idx_list = fpriority(mol)
     # fsym_list = fsym(mol)
     fva_list = fvalency(mol)
     fq_list = fcharge(mol,charge,bond)
@@ -269,7 +269,7 @@ def all_prop(mol,charge,bond=False):
     return prop_list
 
 def f_prop(mol,charge,bond=False):
-    fprio_list, fd_list = fpriority(mol)
+    fprio_list, fd_list, idx_list = fpriority(mol)
     # fsym_list = fsym(mol)
     fva_list = fvalency(mol)
     fq_list = fcharge(mol,charge,bond)
