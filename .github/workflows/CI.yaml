@@ -75,7 +75,7 @@ jobs:
     
     - name: Run tests
       run: |
-        pytest -v tests/
+        pytest -v --cov=molSimplify
         
     - name: Report Status
       # Slack notifications only on the main repo
