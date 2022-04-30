@@ -44,6 +44,7 @@ jobs:
     # More info on the whole conda setup: https://github.com/conda-incubator/setup-miniconda
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
+      id: conda-setup
       with:
         activate-environment: mols_test
     # Get date for the cache key
@@ -56,9 +57,10 @@ jobs:
       id: cache
       env:
         # Increase this value to reset cache if mols.yml has not changed
-        CACHE_NUMBER: 0
+        CACHE_NUMBER: 1
       with:
-        path: ${{ env.CONDA_PREFIX }}/envs
+        # TODO: Figure out how to avoid this hard coded path. For some reason $CONDA does not work.
+        path: /usr/share/miniconda/envs/mols_test
         key:
           # Key contains current year and month to ensure it is updated once a month
           ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.current-time.outputs.year }}-${{
