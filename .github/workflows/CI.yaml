@@ -64,7 +64,8 @@ jobs:
         key:
           # Key contains current year and month to ensure it is updated once a month
           ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.current-time.outputs.year }}-${{
-          steps.current-time.outputs.month }}-${{ hashFiles('devtools/conda-envs/mols.yml') }}-${{ env.CACHE_NUMBER }}
+          steps.current-time.outputs.month }}-${{ hashFiles('devtools/conda-envs/mols.yml') }}-${{
+          env.CACHE_NUMBER }}
     # Install environment from yaml file if cache-hit == false
     - name: Update conda env
       run: conda env update -n mols_test -f devtools/conda-envs/mols.yml
