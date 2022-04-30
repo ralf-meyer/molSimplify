@@ -29,42 +29,46 @@ jobs:
         include:
           - os: ubuntu-latest
             python-version: 3.7
-
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Additional info about the build
-      shell: bash
       run: |
         uname -a
         df -h
         ulimit -a
+
     # More info on options: https://github.com/conda-incubator/setup-miniconda
-    - uses: conda-incubator/setup-miniconda@v2
+    - name: Cache conda
+        uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if etc/example-environment.yml has not changed
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-${{ runner.arch }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('devtools/conda-envs/mols.yml') }}
+
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
         environment-file: devtools/conda-envs/mols.yml
-
-        channels: conda-forge,defaults
-
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
         activate-environment: mols_test
         auto-update-conda: false
         auto-activate-base: false
         show-channel-urls: true
 
     - name: Install package
-
-      # conda setup requires this special shell
-      shell: bash -l {0}
       run: |
         pip install -e .
         conda list
     
     - name: Run tests
-
-      # conda setup requires this special shell
-      shell: bash -l {0}
-
       run: |
         pytest -v tests/
         
@@ -75,7 +79,7 @@ jobs:
       uses: 8398a7/action-slack@v3
       with:
         job_name: Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        fields: message,commit,author,workflow,job,took
         status: ${{ job.status }}
       env:
         SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK}}
