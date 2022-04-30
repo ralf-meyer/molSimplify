@@ -69,7 +69,8 @@ jobs:
         pytest -v tests/
         
     - name: Report Status
-      if: ${{ github.event_name != 'pull_request' }}
+      # Slack notifications only on the main repo
+      if: ${{ github.event_name != 'pull_request' && github.repository == 'hjkgrp/molSimplify' }}
       #uses: ravsamhq/notify-slack-action@v1
       uses: 8398a7/action-slack@v3
       with:

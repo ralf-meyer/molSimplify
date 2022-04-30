@@ -24,15 +24,16 @@ jobs:
         # F63* syntax error in assertion, comparison, or print
         # F7** syntax error in loops or functions
         # F82* undefined variables
-        # Currently still excluding Informatics as there are syntax errors in that folder!
-        flake8 molSimplify --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=Informatics
+        # Currently still excluding some files in Informatics that import from rdkit!
+        flake8 molSimplify --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=fragment_classes.py,frag_functionalizer.py,bridge_functionalizer.py
     - name: Run full flake8 linter
       run: |
         # Will never fail the build because of the --exit-zero flag but gives a report of the "code quality"
         flake8 molSimplify --count --statistics --max-complexity 15 --max-line-length=127 --exit-zero
 
     - name: Report Status
-      if: ${{ github.event_name != 'pull_request' }}
+      # Slack notifications only on the main repo
+      if: ${{ github.event_name != 'pull_request' && github.repository == 'hjkgrp/molSimplify' }}
       #uses: ravsamhq/notify-slack-action@v1
       uses: 8398a7/action-slack@v3
       with:
