@@ -57,7 +57,7 @@ jobs:
       id: cache
       env:
         # Increase this value to reset cache if mols.yml has not changed
-        CACHE_NUMBER: 1
+        CACHE_NUMBER: 0
       with:
         # TODO: Figure out how to avoid this hard coded path. For some reason $CONDA does not work.
         path: /usr/share/miniconda/envs/mols_test
