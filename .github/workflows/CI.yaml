@@ -43,12 +43,12 @@ jobs:
 
     # More info on the whole conda setup: https://github.com/conda-incubator/setup-miniconda
     - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-            miniforge-variant: Mambaforge
-            miniforge-version: latest
-            activate-environment: mols_test
-            use-mamba: true
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          activate-environment: mols_test
+          use-mamba: true
     # Get date for the cache key
     - name: Get current time
       uses: josStorer/get-current-time@v2
