@@ -73,6 +73,7 @@ jobs:
     - name: Install package
       run: |
         pip install -e .
+        pip install pytest-cov
         conda list
     
     - name: Run tests
