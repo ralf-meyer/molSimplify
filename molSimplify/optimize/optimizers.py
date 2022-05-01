@@ -247,7 +247,7 @@ class RFO(InternalCoordinatesOptimizer):
 class PRFO(InternalCoordinatesOptimizer):
     hessian_approx = BofillHessian
 
-    def __init__(self, *args, mu=1, **kwargs):
+    def __init__(self, *args, mu=0, **kwargs):
         self.mu = mu
         InternalCoordinatesOptimizer.__init__(self, *args, **kwargs)
 
@@ -257,21 +257,24 @@ class PRFO(InternalCoordinatesOptimizer):
         # Tranform the force vector to the eigenbasis of the Hessian
         f_trans = np.dot(f, V)
         # Partition into two subproblems.
-        # The first mu coordinates that are maximized.
-        H_max = np.block([[np.diag(omega[:self.mu]),
-                           -f_trans[:self.mu, np.newaxis]],
-                          [-f_trans[:self.mu], 0.]])
+        # The coordinates mu are maximized.
+        max_ind = np.zeros_like(omega, dtype=bool)
+        max_ind[self.mu] = True
+        H_max = np.block([[np.diag(omega[max_ind]),
+                           -f_trans[max_ind, np.newaxis]],
+                          [-f_trans[max_ind], 0.]])
         _, V_max = np.linalg.eigh(H_max)
         # The remaining coordinates that are minimized.
-        H_min = np.block([[np.diag(omega[self.mu:]),
-                           -f_trans[self.mu:, np.newaxis]],
-                          [-f_trans[self.mu:], 0.]])
+        min_ind = np.logical_not(max_ind)
+        H_min = np.block([[np.diag(omega[min_ind]),
+                           -f_trans[min_ind, np.newaxis]],
+                          [-f_trans[min_ind], 0.]])
         _, V_min = np.linalg.eigh(H_min)
         # Calculate the step by combining the highest eigenvector
         # from the maximization subset
-        step[:self.mu] = V_max[:-1, -1] / V_max[-1, -1]
+        step[max_ind] = V_max[:-1, -1] / V_max[-1, -1]
         # and the lowest eigenvector from the minimization subset
-        step[self.mu:] = V_min[:-1, 0] / V_min[-1, 0]
+        step[min_ind] = V_min[:-1, 0] / V_min[-1, 0]
         # Tranform step back to original system
         return np.dot(V, step)
 

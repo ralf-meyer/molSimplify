@@ -12,8 +12,8 @@ from molSimplify.optimize.hessian_guess import numerical_hessian
 from xtb.ase.calculator import XTB
 
 
-@pytest.mark.parametrize('optimizer', [RFO, PRFO])
-def test_ammonia_transition_state(optimizer):
+@pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
+def test_ammonia_transition_state(optimizer, mu):
     atoms = ase.build.molecule('NH3')
     atoms.calc = XTB(method='GFN2-xTB')
 
@@ -24,15 +24,15 @@ def test_ammonia_transition_state(optimizer):
                   Angle(1, 0, 2), Angle(2, 0, 3), Improper(0, 1, 2, 3)]
     H = numerical_hessian(atoms)
     coord_set = InternalCoordinates(primitives)
-    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=1, maxstep=0.05)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
     opt.run(fmax=0.005, steps=100)
     assert opt.converged()
     # Assert that the geometry is close to planar
     assert np.abs(primitives[-1].value(atoms.get_positions())) < 1e-2
 
 
-@pytest.mark.parametrize('optimizer', [RFO, PRFO])
-def test_ethane_transition_state(optimizer):
+@pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
+def test_ethane_transition_state(optimizer, mu):
     atoms = ase.build.molecule('C2H6')
     atoms.calc = XTB(method='GFN2-xTB')
 
@@ -47,7 +47,7 @@ def test_ethane_transition_state(optimizer):
     primitives = get_primitives(xyzs, bonds)
     H = numerical_hessian(atoms)
     coord_set = DelocalizedCoordinates(primitives, xyzs)
-    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=1, maxstep=0.05)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
     opt.run(fmax=0.005, steps=100)
 
     assert opt.converged()
