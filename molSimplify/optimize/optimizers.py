@@ -158,6 +158,7 @@ class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
             f = self.atoms.get_forces()
 
         r = self.atoms.get_positions()
+        e = self.atoms.get_potential_energy()
         # MOD: Transform forces to internal coordinates
         f = self.coord_set.force_to_internals(r, f.flatten())
         # MOD: remove the flattening here
@@ -180,7 +181,7 @@ class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
         self.atoms.set_positions(r + dr)
         self.r0 = r.copy()
         self.f0 = f.copy()
-        self.e0 = self.atoms.get_potential_energy()
+        self.e0 = e
         self.dump((self.coord_set, self.H, self.r0, self.f0, self.e0,
                    self.maxstep, self.maxstep_internal))
 
