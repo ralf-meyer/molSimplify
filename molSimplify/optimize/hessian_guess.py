@@ -44,9 +44,7 @@ class TrivialGuessHessian():
     Baker et al., J. Chem. Phys. 105, 192 (1996)
     https://doi.org/10.1063/1.471864"""
 
-    def __init__(self, threshold=1.35,
-                 h_trans=0.05 * ase.units.Hartree / ase.units.Bohr**2,
-                 h_rot=0.0):
+    def __init__(self, threshold=1.35, h_trans=0.0, h_rot=0.0):
         """
         Parameters
         ----------
