@@ -1,19 +1,62 @@
 import pytest
 import numpy as np
+import ase.atoms
 import ase.build
+import ase.calculators
 from molSimplify.optimize.connectivity import get_primitives
 from molSimplify.optimize.primitives import (Distance, Angle, Improper,
-                                             Dihedral)
+                                             Dihedral, Cartesian)
 from molSimplify.optimize.coordinate_sets import (InternalCoordinates,
                                                   DelocalizedCoordinates)
 from molSimplify.optimize.optimizers import RFO, PRFO
 from molSimplify.optimize.hessian_guess import numerical_hessian
-
+from molSimplify.optimize.calculators import CerjanMillerSurface, AdamsSurface
 from xtb.ase.calculator import XTB
 
 
 @pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
-def test_ammonia_transition_state(optimizer, mu):
+def test_transition_state_cerjan_miller_surface(optimizer, mu):
+    atoms = ase.atoms.Atoms(positions=np.array([[0.05, 0.05, 0.]]))
+    atoms.calc = CerjanMillerSurface()
+    coord_set = InternalCoordinates([Cartesian(0, axis=0),
+                                     Cartesian(0, axis=1)])
+    H = numerical_hessian(atoms)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
+    opt.run(fmax=0.005, steps=100)
+    assert opt.converged()
+    q = coord_set.to_internals(atoms.get_positions())
+    # q[0] should be close to 1
+    assert abs(abs(q[0]) - 1.0) < 1e-2
+    # q[1] should be close to 0
+    assert abs(q[1]) < 1e-2
+
+
+@pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
+def test_transition_state_adams_surface(optimizer, mu, atol=1e-2):
+    # Should end up at minimum (2.2410, 0.4419)
+    atoms = ase.atoms.Atoms(positions=np.array([[-0.05, 0.05, 0.]]))
+    atoms.calc = AdamsSurface()
+    coord_set = InternalCoordinates([Cartesian(0, axis=0),
+                                     Cartesian(0, axis=1)])
+    H = numerical_hessian(atoms)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
+    opt.run(fmax=0.005, steps=100)
+    assert opt.converged()
+    q = coord_set.to_internals(atoms.get_positions())
+    np.testing.assert_allclose(q, (2.2410, 0.4419), atol)
+
+    # Should end up at minimum (-0.1985, -2.2793)
+    atoms.set_positions(np.array([[0.05, -0.05, 0.]]))
+    H = numerical_hessian(atoms)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
+    opt.run(fmax=0.005, steps=100)
+    assert opt.converged()
+    q = coord_set.to_internals(atoms.get_positions())
+    np.testing.assert_allclose(q, (-0.1985, -2.2793), atol)
+
+
+@pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
+def test_transition_state_ammonia(optimizer, mu):
     atoms = ase.build.molecule('NH3')
     atoms.calc = XTB(method='GFN2-xTB')
 
@@ -25,14 +68,14 @@ def test_ammonia_transition_state(optimizer, mu):
     H = numerical_hessian(atoms)
     coord_set = InternalCoordinates(primitives)
     opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
-    opt.run(fmax=0.005, steps=100)
+    opt.run(fmax=0.001, steps=100)
     assert opt.converged()
     # Assert that the geometry is close to planar
     assert np.abs(primitives[-1].value(atoms.get_positions())) < 1e-2
 
 
 @pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
-def test_ethane_transition_state(optimizer, mu):
+def test_transition_state_ethane(optimizer, mu):
     atoms = ase.build.molecule('C2H6')
     atoms.calc = XTB(method='GFN2-xTB')
 
