@@ -98,8 +98,8 @@ class ConvergenceMixin():
 
             msg = (f'{name}:  {self.nsteps:3d} {T[3]:02d}:{T[4]:02d}'
                    f':{T[4]:02d} {e:15.6f} {delta_e:15.6f}{conv[0]} '
-                   f'{max_grad:15.6f}{conv[1]} {rms_grad:15.6f}{conv[2]} '
-                   f'{max_step:15.6f}{conv[3]} {rms_step:15.6f}{conv[4]}\n')
+                   f'{max_grad:15.6f}{conv[3]} {rms_grad:15.6f}{conv[4]} '
+                   f'{max_step:15.6f}{conv[1]} {rms_step:15.6f}{conv[2]}\n')
             self.logfile.write(msg)
 
             self.logfile.flush()
