@@ -16,6 +16,24 @@ class Primitive():
         return self.value(xyzs1) - self.value(xyzs2)
 
 
+class Cartesian(Primitive):
+
+    def __init__(self, i, axis=0):
+        self.i = i
+        self.axis = axis
+
+    def __repr__(self):
+        return f'Cartesian({self.i}, axis={self.axis})'
+
+    def value(self, xyzs):
+        return xyzs[self.i, self.axis]
+
+    def derivative(self, xyzs):
+        dq = np.zeros(xyzs.size)
+        dq[3*self.i+self.axis] = 1.0
+        return dq
+
+
 class Distance(Primitive):
 
     def __init__(self, i, j):
