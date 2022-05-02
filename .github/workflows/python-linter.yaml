@@ -37,7 +37,7 @@ jobs:
       #uses: ravsamhq/notify-slack-action@v1
       uses: 8398a7/action-slack@v3
       with:
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        fields: message,commit,author,workflow,job,took
         status: ${{ job.status }}
       env:
         SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK}}
