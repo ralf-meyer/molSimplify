@@ -9,7 +9,8 @@ from molSimplify.optimize.connectivity import find_connectivity, get_primitives
 from molSimplify.optimize.primitives import Distance
 from molSimplify.optimize.coordinate_sets import (CartesianCoordinates,
                                                   DelocalizedCoordinates,
-                                                  InternalCoordinates)
+                                                  InternalCoordinates,
+                                                  ApproximateNormalCoordinates)
 from molSimplify.optimize.optimizers import (BFGS, LBFGS, RFO,
                                              ConvergenceMixin,
                                              TerachemConvergence)
@@ -117,7 +118,7 @@ def test_convergence_criteria(mixin):
 @pytest.mark.parametrize('optimizer', [BFGS, LBFGS, RFO])
 @pytest.mark.parametrize('mol', ['H2O', 'NH3', 'CH4', 'C2H4', 'C2H6',
                                  'C6H6', 'butadiene', 'bicyclobutane'])
-@pytest.mark.parametrize('coord_set', ['cart', 'internal', 'dlc'])
+@pytest.mark.parametrize('coord_set', ['cart', 'internal', 'dlc', 'anc'])
 def test_optimizers_on_organic_molecules(optimizer, mol, coord_set):
     # check if openbabel version > 3.0. This is necessary as
     # OBForceField.GetGradient is not public for prior versions.
@@ -143,6 +144,8 @@ def test_optimizers_on_organic_molecules(optimizer, mol, coord_set):
         coord_set = InternalCoordinates(primitives)
     elif coord_set == 'dlc':
         coord_set = DelocalizedCoordinates(primitives, xyzs)
+    elif coord_set == 'anc':
+        coord_set = ApproximateNormalCoordinates(atoms)
 
     opt_ref = ase.optimize.BFGS(atoms_ref)
     opt = optimizer(atoms, coord_set)
@@ -158,7 +161,7 @@ def test_optimizers_on_organic_molecules(optimizer, mol, coord_set):
 
 @pytest.mark.parametrize('optimizer', [BFGS, LBFGS, RFO])
 @pytest.mark.parametrize('ligand', ['water'])
-@pytest.mark.parametrize('coord_set', ['cart', 'internal', 'dlc'])
+@pytest.mark.parametrize('coord_set', ['cart', 'internal', 'dlc', 'anc'])
 def test_optimizers_on_homoleptic_TMCs(optimizer, ligand, coord_set):
     """TODO: For now only works on water since UFF does not give reasonable
     results for the other ligands."""
@@ -185,6 +188,8 @@ def test_optimizers_on_homoleptic_TMCs(optimizer, ligand, coord_set):
         coord_set = InternalCoordinates(primitives)
     elif coord_set == 'dlc':
         coord_set = DelocalizedCoordinates(primitives, xyzs)
+    elif coord_set == 'anc':
+        coord_set = ApproximateNormalCoordinates(atoms)
 
     opt_ref = ase.optimize.BFGS(atoms_ref)
     opt_ref.run(fmax=0.001, steps=100)

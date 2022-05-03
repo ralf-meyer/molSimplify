@@ -1,5 +1,6 @@
 import numpy as np
 from molSimplify.utils.exceptions import ConvergenceError
+from molSimplify.optimize.hessian_guess import LindhHessian
 from warnings import warn
 
 
@@ -134,3 +135,37 @@ class DelocalizedCoordinates(InternalCoordinates):
     def diff_internals(self, xyzs1, xyzs2):
         return self.U.T @ InternalCoordinates.diff_internals(self, xyzs1,
                                                              xyzs2)
+
+
+class ApproximateNormalCoordinates():
+
+    def __init__(self, atoms, threshold=0.):
+        self.threshold = threshold
+        self.build(atoms)
+
+    def build(self, atoms):
+        H = LindhHessian(h_trans=0., h_rot=0.).build(atoms)
+        vals, V = np.linalg.eigh(H)
+        self.V = V[:, np.abs(vals) >= self.threshold]
+        self.x0 = atoms.get_positions()
+
+    def size(self):
+        return self.V.shape[1]
+
+    def B(self, xyzs):
+        return self.V.T
+
+    def to_internals(self, xyzs):
+        return (xyzs - self.x0).flatten() @ self.V
+
+    def to_cartesians(self, dq, xyzs_ref):
+        return xyzs_ref + (self.V @ dq).reshape(xyzs_ref.shape)
+
+    def diff_internals(self, xyzs1, xyzs2):
+        return (xyzs1 - xyzs2).flatten() @ self.V
+
+    def force_to_internals(self, xyzs, force_cart):
+        return force_cart @ self.V
+
+    def hessian_to_internals(self, xyzs, hess_cart, grad_cart=None):
+        return self.V.T @ hess_cart @ self.V

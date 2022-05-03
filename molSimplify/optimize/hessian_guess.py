@@ -292,9 +292,7 @@ class FischerAlmloefHessian(TrivialGuessHessian):
 
 class LindhHessian():
 
-    def __init__(self, threshold=1e-8,
-                 h_trans=0.05 * ase.units.Hartree / ase.units.Bohr**2,
-                 h_rot=0.0):
+    def __init__(self, threshold=1e-8, h_trans=0., h_rot=0.):
         """
         Parameters
         ----------
