@@ -1,5 +1,6 @@
 import numpy as np
 from molSimplify.utils.exceptions import ConvergenceError
+from warnings import warn
 
 
 class CartesianCoordinates():
@@ -58,8 +59,9 @@ class InternalCoordinates():
         return q
 
     def to_cartesians(self, dq, xyzs_ref, tol_q=1e-10, tol_x=1e-10,
-                      maxstep=0.05, maxiter=50):
+                      maxstep=0.05, maxiter=50, recursion_depth=0):
         xyzs = xyzs_ref.copy()
+        dq_start = dq.copy()
         step = np.infty * np.ones_like(xyzs)
         for _ in range(maxiter):
             if np.linalg.norm(dq) < tol_q or np.linalg.norm(step) < tol_x:
@@ -74,8 +76,15 @@ class InternalCoordinates():
             xyzs = xyzs + step
             # Calculate the step for the next iteration
             dq -= step_q
-        raise ConvergenceError('Transformation to Cartesians not converged '
-                               f'within {maxiter} iterations')
+        if recursion_depth >= 3:
+            raise ConvergenceError('Transformation to Cartesians not converged'
+                                   f' within {maxiter} iterations')
+        # Else warn, reduce dq_step by half, and try again
+        warn('Reducing step in transformation to Cartesians')
+        return self.to_cartesians(dq_start/2, xyzs_ref, tol_q=tol_q,
+                                  tol_x=tol_x, maxstep=maxstep,
+                                  maxiter=maxiter,
+                                  recursion_depth=recursion_depth + 1)
 
     def diff_internals(self, xyzs1, xyzs2):
         dq = np.zeros(len(self.primitives))
