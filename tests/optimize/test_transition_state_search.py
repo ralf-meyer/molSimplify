@@ -10,7 +10,9 @@ from molSimplify.optimize.coordinate_sets import (InternalCoordinates,
                                                   DelocalizedCoordinates)
 from molSimplify.optimize.optimizers import RFO, PRFO
 from molSimplify.optimize.hessian_guess import numerical_hessian
-from molSimplify.optimize.calculators import CerjanMillerSurface, AdamsSurface
+from molSimplify.optimize.calculators import (CerjanMillerSurface,
+                                              AdamsSurface,
+                                              MuellerBrownSurface)
 from xtb.ase.calculator import XTB
 
 
@@ -33,7 +35,7 @@ def test_transition_state_cerjan_miller_surface(optimizer, mu):
 
 @pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
 def test_transition_state_adams_surface(optimizer, mu, atol=1e-2):
-    # Should end up at minimum (2.2410, 0.4419)
+    # Should end up at transition state (2.2410, 0.4419)
     atoms = ase.atoms.Atoms(positions=np.array([[-0.05, 0.05, 0.]]))
     atoms.calc = AdamsSurface()
     coord_set = InternalCoordinates([Cartesian(0, axis=0),
@@ -45,7 +47,7 @@ def test_transition_state_adams_surface(optimizer, mu, atol=1e-2):
     q = coord_set.to_internals(atoms.get_positions())
     np.testing.assert_allclose(q, (2.2410, 0.4419), atol)
 
-    # Should end up at minimum (-0.1985, -2.2793)
+    # Should end up at transition state (-0.1985, -2.2793)
     atoms.set_positions(np.array([[0.05, -0.05, 0.]]))
     H = numerical_hessian(atoms)
     opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
@@ -53,6 +55,30 @@ def test_transition_state_adams_surface(optimizer, mu, atol=1e-2):
     assert opt.converged()
     q = coord_set.to_internals(atoms.get_positions())
     np.testing.assert_allclose(q, (-0.1985, -2.2793), atol)
+
+
+@pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
+def test_transition_state_mueller_brown_surface(optimizer, mu, atol=1e-2):
+    # Should end up at transition state (-0.8220, 0.6243)
+    atoms = ase.atoms.Atoms(positions=np.array([[-0.1, 0.5, 0.]]))
+    atoms.calc = MuellerBrownSurface()
+    coord_set = InternalCoordinates([Cartesian(0, axis=0),
+                                     Cartesian(0, axis=1)])
+    H = numerical_hessian(atoms)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
+    opt.run(fmax=0.005, steps=100)
+    assert opt.converged()
+    q = coord_set.to_internals(atoms.get_positions())
+    np.testing.assert_allclose(q, (-0.8220, 0.6243), atol)
+
+    # Start from other side
+    atoms.set_positions(np.array([[-1,  0.7, 0.]]))
+    H = numerical_hessian(atoms)
+    opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
+    opt.run(fmax=0.005, steps=100)
+    assert opt.converged()
+    q = coord_set.to_internals(atoms.get_positions())
+    np.testing.assert_allclose(q, (-0.8220, 0.6243), atol)
 
 
 @pytest.mark.parametrize('optimizer,mu', [(RFO, 1), (PRFO, 0)])
