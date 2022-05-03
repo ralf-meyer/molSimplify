@@ -18,20 +18,20 @@ class ConvergenceMixin():
     needs to come first!
     """
     threshold_energy = 1e-4
-    threshold_max_step = 1e-3
-    threshold_rms_step = 5e-2
     threshold_max_grad = 1e-3
     threshold_rms_grad = 1e-3
+    threshold_max_step = 1e-3
+    threshold_rms_step = 5e-2
 
-    def convergence_condition(self, energy_change, max_step, rms_step,
-                              max_grad, rms_grad):
+    def convergence_condition(self, energy_change, max_grad, rms_grad,
+                              max_step, rms_step):
         """This is separated out as some convergence criteria might
         want to implement a more sophisticated logic than just all True"""
         conditions = (energy_change < self.threshold_energy,
-                      max_step < self.threshold_max_step,
-                      rms_step < self.threshold_rms_step,
                       max_grad < self.threshold_max_grad,
-                      rms_grad < self.threshold_rms_grad)
+                      rms_grad < self.threshold_rms_grad,
+                      max_step < self.threshold_max_step,
+                      rms_step < self.threshold_rms_step)
         return all(conditions), conditions
 
     def irun(self, steps=None):
@@ -51,6 +51,9 @@ class ConvergenceMixin():
         if forces is None:
             forces = self.atoms.get_forces()
 
+        max_grad = np.max(np.abs(forces))
+        rms_grad = np.sqrt(np.mean(forces**2))
+
         e = self.atoms.get_potential_energy()
         e0 = self.e0 if self.e0 is not None else e
         energy_change = abs(e - e0)
@@ -61,17 +64,16 @@ class ConvergenceMixin():
         max_step = np.max(np.abs(step))
         rms_step = np.sqrt(np.mean(step**2))
 
-        max_grad = np.max(np.abs(forces))
-        rms_grad = np.sqrt(np.mean(forces**2))
-
-        return self.convergence_condition(energy_change, max_step,
-                                          rms_step, max_grad, rms_grad)[0]
+        return self.convergence_condition(energy_change, max_grad, rms_grad,
+                                          max_step, rms_step)[0]
 
     def log(self, forces=None):
         if forces is None:
             forces = self.atoms.get_forces()
+
         max_grad = np.max(np.abs(forces))
         rms_grad = np.sqrt(np.mean(forces**2))
+
         e = self.atoms.get_potential_energy(
             force_consistent=self.force_consistent)
         e0 = self.e0 if self.e0 is not None else e
@@ -84,7 +86,7 @@ class ConvergenceMixin():
         rms_step = np.sqrt(np.mean(step**2))
 
         conditions = self.convergence_condition(
-            abs(delta_e), max_step, rms_step, max_grad, rms_grad)[1]
+            abs(delta_e), max_grad, rms_grad, max_step, rms_step)[1]
         conv = ['*' if c else ' ' for c in conditions]
 
         T = time.localtime()
@@ -98,8 +100,8 @@ class ConvergenceMixin():
 
             msg = (f'{name}:  {self.nsteps:3d} {T[3]:02d}:{T[4]:02d}'
                    f':{T[4]:02d} {e:15.6f} {delta_e:15.6f}{conv[0]} '
-                   f'{max_grad:15.6f}{conv[3]} {rms_grad:15.6f}{conv[4]} '
-                   f'{max_step:15.6f}{conv[1]} {rms_step:15.6f}{conv[2]}\n')
+                   f'{max_grad:15.6f}{conv[1]} {rms_grad:15.6f}{conv[2]} '
+                   f'{max_step:15.6f}{conv[3]} {rms_step:15.6f}{conv[4]}\n')
             self.logfile.write(msg)
 
             self.logfile.flush()
@@ -107,10 +109,10 @@ class ConvergenceMixin():
 
 class TerachemConvergence(ConvergenceMixin):
     threshold_energy = 1e-6 * ase.units.Hartree
-    threshold_max_step = 1.8e-3 * ase.units.Bohr
-    threshold_rms_step = 1.2e-3 * ase.units.Bohr
     threshold_max_grad = 4.5e-4 * ase.units.Hartree / ase.units.Bohr
     threshold_rms_grad = 3.0e-4 * ase.units.Hartree / ase.units.Bohr
+    threshold_max_step = 1.8e-3 * ase.units.Bohr
+    threshold_rms_step = 1.2e-3 * ase.units.Bohr
 
 
 class InternalCoordinatesOptimizer(ase.optimize.optimize.Optimizer):
