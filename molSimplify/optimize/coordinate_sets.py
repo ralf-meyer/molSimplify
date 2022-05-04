@@ -1,3 +1,5 @@
+import time
+import pickle
 import numpy as np
 from molSimplify.utils.exceptions import ConvergenceError
 from molSimplify.optimize.hessian_guess import LindhHessian
@@ -65,8 +67,9 @@ class CartesianCoordinates(CoordinateSet):
 
 class InternalCoordinates(CoordinateSet):
 
-    def __init__(self, primitives):
+    def __init__(self, primitives, save_failures=True):
         self.primitives = primitives
+        self.save_failures = save_failures
 
     def size(self):
         return len(self.primitives)
@@ -110,8 +113,14 @@ class InternalCoordinates(CoordinateSet):
             # Calculate the step for the next iteration
             dq -= step_q
         if recursion_depth >= 3:
+            save_file = 'not saved as requested.'
+            if self.save_failures:
+                save_file = f'transformation_failure_{time.time():.0f}.pickle'
+                with open(save_file, 'wb') as fout:
+                    pickle.dump([self, dq_start, xyzs_ref], fout)
             raise ConvergenceError('Transformation to Cartesians not converged'
-                                   f' within {maxiter} iterations')
+                                   f' within {maxiter} iterations, checkpoint'
+                                   f' file {save_file}')
         # Else warn, reduce dq_step by half, and try again
         warn('Reducing step in transformation to Cartesians')
         return self.to_cartesians(dq_start/2, xyzs_ref, tol_q=tol_q,
