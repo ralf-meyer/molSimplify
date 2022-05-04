@@ -4,7 +4,39 @@ from molSimplify.optimize.hessian_guess import LindhHessian
 from warnings import warn
 
 
-class CartesianCoordinates():
+class CoordinateSet():
+
+    def size(self):
+        """Return the number of internal coordinates."""
+
+    def B(self, xyzs):
+        """Transformation matrix for the linearized transformation from
+        Cartesian to internal coordinates."""
+
+    def to_internals(self, xyzs):
+        """Transform a given Cartesian geometry to the internal representation.
+        """
+
+    def to_cartesians(self, dq, xyzs_ref):
+        """For a given step in internal coordinates find the new Cartesian
+        geometry."""
+
+    def diff_internals(self, xyzs1, xyzs2):
+        """Calculate the distance (1-2) between the internal representations of
+        two Cartesian geometries. This is a separate method as some internal
+        representation might need cleaning up, e.g. resticting angle to a
+        specific range."""
+
+    def force_to_internals(self, xyzs, force_cart):
+        """Transfrom a Cartesian force vector to the internal coordinate
+        system."""
+
+    def hessian_to_internals(self, xyzs, hess_cart, grad_cart=None):
+        """Transform a Cartesian Hessian matrix to the internal coordinate
+        system."""
+
+
+class CartesianCoordinates(CoordinateSet):
 
     def __init__(self, atoms):
         self.n_atoms = len(atoms)
@@ -31,7 +63,7 @@ class CartesianCoordinates():
         return hess_cart
 
 
-class InternalCoordinates():
+class InternalCoordinates(CoordinateSet):
 
     def __init__(self, primitives):
         self.primitives = primitives
@@ -137,7 +169,7 @@ class DelocalizedCoordinates(InternalCoordinates):
                                                              xyzs2)
 
 
-class ApproximateNormalCoordinates():
+class ApproximateNormalCoordinates(CoordinateSet):
 
     def __init__(self, atoms, threshold=0.):
         self.threshold = threshold
