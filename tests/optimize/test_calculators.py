@@ -68,3 +68,8 @@ def test_mueller_brown_surface():
     atoms.set_positions([[-0.8220, 0.6243, 0.]])
     f = atoms.get_forces()
     np.testing.assert_allclose(f, np.zeros_like(f), atol=1e-2)
+
+    # Test transition state at approximately (0.2125, 0.2930)
+    atoms.set_positions([[0.2125, 0.2930, 0.]])
+    f = atoms.get_forces()
+    np.testing.assert_allclose(f, np.zeros_like(f), atol=1e-2)
