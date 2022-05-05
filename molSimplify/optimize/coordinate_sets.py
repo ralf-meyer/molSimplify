@@ -167,7 +167,7 @@ class DelocalizedCoordinates(InternalCoordinates):
         G = B @ B.T
         w, v = np.linalg.eigh(G)
         # Set of nonredundant eigenvectors (eigenvalue =/= 0)
-        self.U = v[:, np.abs(w) > self.threshold]
+        self.U = v[:, np.abs(w) > self.threshold].copy()
 
     def size(self):
         return self.U.shape[1]
@@ -192,7 +192,7 @@ class ApproximateNormalCoordinates(CoordinateSet):
     def build(self, atoms):
         H = LindhHessian(h_trans=0., h_rot=0.).build(atoms)
         vals, V = np.linalg.eigh(H)
-        self.V = V[:, np.abs(vals) >= self.threshold]
+        self.V = V[:, np.abs(vals) >= self.threshold].copy()
         self.x0 = atoms.get_positions()
 
     def size(self):
