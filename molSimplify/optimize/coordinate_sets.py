@@ -2,8 +2,21 @@ import time
 import pickle
 import numpy as np
 from molSimplify.utils.exceptions import ConvergenceError
+from molSimplify.optimize.connectivity import get_primitives
 from molSimplify.optimize.hessian_guess import LindhHessian
 from warnings import warn
+
+
+def get_coordinate_set(atoms, name='cart'):
+    if name.lower() in ['cartesian', 'cart']:
+        return CartesianCoordinates(atoms)
+    elif name.lower() == 'dlc':
+        primitives = get_primitives(atoms)
+        return DelocalizedCoordinates(primitives, xyzs=atoms.get_positions())
+    elif name.lower() == 'anc':
+        return ApproximateNormalCoordinates(atoms)
+    else:
+        raise NotImplementedError('Unknown coordinate set {name}')
 
 
 class CoordinateSet():
@@ -25,6 +38,7 @@ class CoordinateSet():
         two Cartesian geometries. This is a separate method as some internal
         representation might need cleaning up, e.g. resticting angle to a
         specific range."""
+        return self.to_internals(xyzs1) - self.to_internals(xyzs2)
 
     def force_to_internals(self, xyzs, force_cart):
         """Transfrom a Cartesian force vector to the internal coordinate
@@ -48,9 +62,6 @@ class CartesianCoordinates(CoordinateSet):
 
     def to_cartesians(self, dq, xyzs_ref):
         return xyzs_ref + dq.reshape(xyzs_ref.shape)
-
-    def diff_internals(self, xyzs1, xyzs2):
-        return xyzs1.flatten() - xyzs2.flatten()
 
     def force_to_internals(self, xyzs, force_cart):
         return force_cart.flatten()
