@@ -34,7 +34,7 @@ def test_redundant_internals(name):
         else:
             raise NotImplementedError(f'Internal {type(ic)} not implemented')
 
-    coords = InternalCoordinates(primitives)
+    coords = InternalCoordinates(primitives, save_failures=False)
 
     xyzs = atoms.get_positions()
     # Test transformation to internal coordinates
