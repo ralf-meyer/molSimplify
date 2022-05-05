@@ -294,7 +294,7 @@ class FischerAlmloefHessian(TrivialGuessHessian):
 
 class LindhHessian():
 
-    def __init__(self, threshold=1e-8, h_trans=0., h_rot=0.):
+    def __init__(self, threshold=1e-4, h_trans=0., h_rot=0.):
         """
         Parameters
         ----------
