@@ -9,11 +9,8 @@ from warnings import warn
 class CoordinateSet():
 
     def size(self):
-        """Return the number of internal coordinates."""
-
-    def B(self, xyzs):
-        """Transformation matrix for the linearized transformation from
-        Cartesian to internal coordinates."""
+        """Return the number of internal coordinates. Needed for example to
+        setup a correctly sized hessian matrix."""
 
     def to_internals(self, xyzs):
         """Transform a given Cartesian geometry to the internal representation.
@@ -45,9 +42,6 @@ class CartesianCoordinates(CoordinateSet):
 
     def size(self):
         return 3*self.n_atoms
-
-    def B(self, xyzs):
-        return np.eye(xyzs.size)
 
     def to_internals(self, xyzs):
         return xyzs.flatten()
@@ -192,9 +186,6 @@ class ApproximateNormalCoordinates(CoordinateSet):
 
     def size(self):
         return self.V.shape[1]
-
-    def B(self, xyzs):
-        return self.V.T
 
     def to_internals(self, xyzs):
         return (xyzs - self.x0).flatten() @ self.V
