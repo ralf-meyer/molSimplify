@@ -156,7 +156,7 @@ def find_planars_molsimplify(a, neighbors, xyzs, planar_threshold):
 
 
 def find_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
-                    planar_threshold=0.95, planar_method='billeter'):
+                    planar_threshold=0.95, planar_method='molsimplify'):
     """
     Finds primitive internals given a reference geometry and connectivity list.
     Follows the algorithm outlined in Section II A of
@@ -300,7 +300,7 @@ def find_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
 
 
 def get_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
-                   planar_threshold=0.95, planar_method='billeter'):
+                   planar_threshold=0.95, planar_method='molsimplify'):
 
     bends, linear_bends, torsions, planars = find_primitives(
         xyzs, bonds, linear_flag=linear_flag,
