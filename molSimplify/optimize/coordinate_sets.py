@@ -185,12 +185,13 @@ class DelocalizedCoordinates(InternalCoordinates):
 
 class ApproximateNormalCoordinates(CoordinateSet):
 
-    def __init__(self, atoms, threshold=0.):
+    def __init__(self, atoms, H=None, threshold=0.):
         self.threshold = threshold
-        self.build(atoms)
+        self.build(atoms, H=H)
 
-    def build(self, atoms):
-        H = LindhHessian(h_trans=0., h_rot=0.).build(atoms)
+    def build(self, atoms, H=None):
+        if H is None:
+            H = LindhHessian(h_trans=0., h_rot=0.).build(atoms)
         vals, V = np.linalg.eigh(H)
         self.V = V[:, np.abs(vals) >= self.threshold].copy()
         self.x0 = atoms.get_positions()
