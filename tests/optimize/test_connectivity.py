@@ -38,7 +38,7 @@ def test_find_primitives(name):
     linear_threshold = np.arccos(0.95) * 180 / np.pi
     bends, linear_bends, torsions, planars = find_primitives(
         atoms.get_positions(), bonds, linear_threshold=linear_threshold,
-        planar_threshold=0.95)
+        planar_threshold=0.95, planar_method='billeter')
 
     coords_ref = geometric.internal.PrimitiveInternalCoordinates(
         mol, connect=True)

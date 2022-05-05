@@ -299,9 +299,13 @@ def find_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
     return bends, linear_bends, torsions, planars
 
 
-def get_primitives(xyzs, bonds, linear_flag=True, linear_threshold=5.,
+def get_primitives(atoms, threshold=1.25, connect_fragments=True,
+                   linear_flag=True, linear_threshold=5.,
                    planar_threshold=0.95, planar_method='molsimplify'):
 
+    bonds = find_connectivity(atoms, threshold=threshold,
+                              connect_fragments=connect_fragments)
+    xyzs = atoms.get_positions()
     bends, linear_bends, torsions, planars = find_primitives(
         xyzs, bonds, linear_flag=linear_flag,
         linear_threshold=linear_threshold, planar_threshold=planar_threshold,

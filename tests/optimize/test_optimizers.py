@@ -5,7 +5,7 @@ import ase.build
 import ase.calculators.emt
 import ase.optimize
 from molSimplify.optimize.calculators import OpenbabelFF
-from molSimplify.optimize.connectivity import find_connectivity, get_primitives
+from molSimplify.optimize.connectivity import get_primitives
 from molSimplify.optimize.primitives import Distance
 from molSimplify.optimize.coordinate_sets import (CartesianCoordinates,
                                                   DelocalizedCoordinates,
@@ -136,8 +136,7 @@ def test_optimizers_on_organic_molecules(optimizer, mol, coord_set):
     atoms_ref = atoms.copy()
     atoms_ref.calc = OpenbabelFF(ff='MMFF94')
 
-    bonds = find_connectivity(atoms)
-    primitives = get_primitives(xyzs, bonds)
+    primitives = get_primitives(atoms)
     if coord_set == 'cart':
         coord_set = CartesianCoordinates(atoms)
     elif coord_set == 'internal':
@@ -180,8 +179,7 @@ def test_optimizers_on_homoleptic_TMCs(optimizer, ligand, coord_set):
     atoms_ref = atoms.copy()
     atoms_ref.calc = OpenbabelFF(ff='UFF')
 
-    bonds = find_connectivity(atoms)
-    primitives = get_primitives(xyzs, bonds)
+    primitives = get_primitives(atoms)
     if coord_set == 'cart':
         coord_set = CartesianCoordinates(atoms)
     elif coord_set == 'internal':

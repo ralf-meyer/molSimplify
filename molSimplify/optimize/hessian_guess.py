@@ -9,6 +9,7 @@ from molSimplify.optimize.calculators import (_xtb_methods,
                                               _openbabel_methods,
                                               get_calculator)
 from molSimplify.optimize.connectivity import (find_connectivity,
+                                               find_primitives,
                                                get_primitives)
 from molSimplify.optimize.primitives import (Distance, Angle, LinearAngle,
                                              Dihedral, Improper)
@@ -78,7 +79,8 @@ class TrivialGuessHessian():
         xyzs = atoms.get_positions()
         bonds = find_connectivity(atoms, threshold=self.threshold**2,
                                   connect_fragments=True)
-        primitives = get_primitives(xyzs, bonds)
+        primitives = get_primitives(atoms, threshold=self.threshold**2,
+                                    connect_fragments=True)
 
         # Calculate the number of bonds on each atom for the torsion
         # coefficient in the Fischer Almloef Hessian.
@@ -332,9 +334,13 @@ class LindhHessian():
                 rho[i, j] = rho[j, i] = np.exp(alpha * (r_ref**2 - r**2))
                 if rho[i, j] > self.threshold:
                     bonds.append((i, j))
-        # Set planar_threshold to 1. to ignore planars
-        primitives = get_primitives(xyzs, bonds, linear_flag=False,
-                                    planar_threshold=1.0)
+
+        bends, _, torsions, _ = find_primitives(xyzs, bonds, linear_flag=False,
+                                                planar_threshold=1.0)
+
+        primitives = ([Distance(*b) for b in bonds]
+                      + [Angle(*a) for a in bends]
+                      + [Dihedral(*d) for d in torsions])
 
         # Initialize Hessian in Cartesian coordinates
         H = np.zeros((3*N, 3*N))

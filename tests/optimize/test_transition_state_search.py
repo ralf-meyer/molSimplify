@@ -112,8 +112,7 @@ def test_transition_state_ethane(optimizer, mu):
     atoms.positions[2:5] = atoms.positions[2:5].dot(rot_mat)
 
     xyzs = atoms.get_positions()
-    bonds = [(0, 1), (0, 2), (0, 3), (0, 4), (1, 5), (1, 6), (1, 7)]
-    primitives = get_primitives(xyzs, bonds)
+    primitives = get_primitives(atoms)
     H = numerical_hessian(atoms)
     coord_set = DelocalizedCoordinates(primitives, xyzs)
     opt = optimizer(atoms, coordinate_set=coord_set, H0=H, mu=mu, maxstep=0.05)
