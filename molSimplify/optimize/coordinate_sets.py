@@ -7,14 +7,15 @@ from molSimplify.optimize.hessian_guess import LindhHessian
 from warnings import warn
 
 
-def get_coordinate_set(atoms, name='cart'):
+def get_coordinate_set(atoms, name='cart', coord_kwargs={}):
     if name.lower() in ['cartesian', 'cart']:
-        return CartesianCoordinates(atoms)
+        return CartesianCoordinates(atoms, **coord_kwargs)
     elif name.lower() == 'dlc':
         primitives = get_primitives(atoms)
-        return DelocalizedCoordinates(primitives, xyzs=atoms.get_positions())
+        return DelocalizedCoordinates(primitives, xyzs=atoms.get_positions(),
+                                      **coord_kwargs)
     elif name.lower() == 'anc':
-        return ApproximateNormalCoordinates(atoms)
+        return ApproximateNormalCoordinates(atoms, **coord_kwargs)
     else:
         raise NotImplementedError('Unknown coordinate set {name}')
 
