@@ -2,7 +2,8 @@ import io
 import numpy as np
 import ase.io
 import ase.units
-import ase.calculators.calculator as ase_calculator
+from ase.calculators.calculator import (Calculator, FileIOCalculator,
+                                        all_changes)
 try:  # For compatibility with openbabel < 3.0
     from openbabel import openbabel
 except ImportError:
@@ -26,7 +27,75 @@ def get_calculator(method):
         return OpenbabelFF(ff=method.upper())
 
 
-class OpenbabelFF(ase_calculator.Calculator):
+class TeraChem(FileIOCalculator):
+    """
+    TeraChem calculator
+    """
+    name = 'TeraChem'
+
+    implemented_properties = ['energy', 'forces']
+    command = 'terachem PREFIX.inp > PREFIX.out'
+
+    # Following the minimal requirements given in
+    # http://www.petachem.com/doc/userguide.pdf
+    default_parameters = {'run': 'gradient',
+                          'method': 'blyp',
+                          'basis': '6-31g*',
+                          'charge': 0}
+
+    def __init__(self, restart=None,
+                 ignore_bad_restart_file=FileIOCalculator._deprecated,
+                 label='terachem', atoms=None, **kwargs):
+        """
+        """
+
+        FileIOCalculator.__init__(self, restart, ignore_bad_restart_file,
+                                  label, atoms, **kwargs)
+
+    def read(self, label):
+        raise NotImplementedError()
+
+    def read_results(self):
+        with open(f'{self.label}.out', 'r') as fileobj:
+            N_atoms = 0
+            lineiter = iter(fileobj)
+            for line in lineiter:
+                if 'Total atoms:' in line:
+                    N_atoms = int(line.split()[2])
+                elif 'FINAL ENERGY:' in line:
+                    self.results['energy'] = float(
+                        line.split()[2]) * ase.units.Hartree
+                elif 'Gradient units are Hartree/Bohr' in line:
+                    gradient = np.zeros((N_atoms, 3))
+                    # Skip next two lines
+                    next(lineiter)
+                    next(lineiter)
+                    for i in range(N_atoms):
+                        gradient[i, :] = list(
+                            map(float, next(lineiter).split()))
+                    # Convert gradient to ASE forces
+                    self.results['forces'] = (
+                        - gradient * ase.units.Hartree / ase.units.Bohr)
+
+    def write_input(self, atoms, properties=None, system_changes=None):
+        FileIOCalculator.write_input(self, atoms, properties, system_changes)
+
+        # Write geometry as .xyz
+        ase.io.write(f'{self.label}.xyz', atoms, plain=True)
+
+        with open(f'{self.label}.inp', 'w') as fileobj:
+            fileobj.write('# ASE generated input file\n')
+
+            # Add xyz path to input file
+            fileobj.write(f'{"coordinates":-25s}   {self.prefix}.xyz\n')
+
+            for key, value in self.parameters.items():
+                fileobj.write(f'{key:-25s}   {value}\n')
+
+            fileobj.write('end\n')
+
+
+class OpenbabelFF(Calculator):
 
     implemented_properties = ['energy', 'forces']
 
@@ -38,7 +107,7 @@ class OpenbabelFF(ase_calculator.Calculator):
                 'kJ/mol': ase.units.kJ/ase.units.mol}
 
     def __init__(self, **kwargs):
-        ase_calculator.Calculator.__init__(self, **kwargs)
+        Calculator.__init__(self, **kwargs)
         self.outputname = 'openbabelff'
 
     def initialize(self, atoms):
@@ -52,9 +121,8 @@ class OpenbabelFF(ase_calculator.Calculator):
         self.energy_unit = self.ob_units[self.ff.GetUnit()]
 
     def calculate(self, atoms=None, properties=['energy'],
-                  system_changes=ase_calculator.all_changes):
-        ase_calculator.Calculator.calculate(self, atoms, properties,
-                                            system_changes)
+                  system_changes=all_changes):
+        Calculator.calculate(self, atoms, properties, system_changes)
 
         if 'numbers' in system_changes:
             self.initialize(self.atoms)
@@ -82,15 +150,14 @@ class OpenbabelFF(ase_calculator.Calculator):
         return obMol
 
 
-class TwoDCalculator(ase_calculator.Calculator):
+class TwoDCalculator(Calculator):
     """Base class for two dimensional benchmark systems."""
 
     implemented_properties = ['energy', 'forces']
 
     def calculate(self, atoms=None, properties=['energy'],
-                  system_changes=ase_calculator.all_changes):
-        ase_calculator.Calculator.calculate(self, atoms, properties,
-                                            system_changes)
+                  system_changes=all_changes):
+        Calculator.calculate(self, atoms, properties, system_changes)
 
         xyzs = self.atoms.get_positions()
         x = xyzs[0, 0]
