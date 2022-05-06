@@ -203,8 +203,8 @@ class SchlegelHessian(TrivialGuessHessian):
                  bonds_j, bonds_k):
         r = np.linalg.norm(xyz_j - xyz_k)
         r_cov = ase.data.covalent_radii[z_j] + ase.data.covalent_radii[z_k]
-        # Follows the implementation in Psi4 (line 177 in
-        # https://github.com/psi4/psi4/blob/d9093c75c71c2b33fbe86f32b25d138675ac22eb/psi4/src/psi4/optking/frag_H_guess.cc)
+        # Follows the implementation in Psi4: line 177 in
+        # https://github.com/psi4/psi4/blob/d9093c75c71c2b33fbe86f32b25d138675ac22eb/psi4/src/psi4/optking/frag_H_guess.cc
         A = 0.0023 * ase.units.Hartree
         B = 0.07 * ase.units.Hartree / ase.units.Bohr
         if r < r_cov + A / B:
@@ -294,10 +294,15 @@ class FischerAlmloefHessian(TrivialGuessHessian):
 
 class LindhHessian():
 
-    def __init__(self, threshold=1e-4, h_trans=0., h_rot=0.):
+    def __init__(self, threshold=1e-5, h_trans=0., h_rot=0.):
         """
         Parameters
         ----------
+        threshold : float
+            Only pairs of atoms with a rho value above this threshold are
+            considered bonded. Increasing this threshold can significantly
+            speed up the construction of the Hessian by reducing the
+            amount of primitives that are used for the guess.
         h_trans : float
             Force constant for translations.
         h_rot : float

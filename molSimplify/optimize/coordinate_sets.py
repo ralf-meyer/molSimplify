@@ -194,7 +194,11 @@ class ApproximateNormalCoordinates(CoordinateSet):
         if H is None:
             H = LindhHessian(h_trans=0., h_rot=0.).build(atoms)
         vals, V = np.linalg.eigh(H)
-        self.V = V[:, np.abs(vals) >= self.threshold].copy()
+        inds = np.abs(vals) >= self.threshold
+        if np.sum(inds) < (3*len(atoms) - 6):
+            warn(f'Warning: {np.sum(inds)} coordinates might be insufficient'
+                 f' for {len(atoms)} atoms.')
+        self.V = V[:, inds].copy()
         self.x0 = atoms.get_positions()
 
     def size(self):
