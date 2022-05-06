@@ -37,17 +37,17 @@ def run_preoptimization(atoms, method, optimizer=ase.optimize.LBFGS):
 
 
 def run_preprocessing(atoms, preopt='xtb', name='molsimp'):
-    # Find metal indices
-    metal_ind = [i for i in range(len(atoms))
-                 if atoms[i].get('symbol') in metalslist]
-    # raise error if more than one metal
-    if len(metal_ind) > 1:
-        raise NotImplementedError('Currently only systems with a single metal '
-                                  'atom can be handled.')
-    logger.info(f'Metal indices {metal_ind}')
-    # Find graph
-    connectivity = find_connectivity(atoms)
     if preopt is not None:
+        # Find metal indices
+        metal_ind = [i for i in range(len(atoms))
+                     if atoms[i].get('symbol') in metalslist]
+        # raise error if more than one metal
+        if len(metal_ind) > 1:
+            raise NotImplementedError('Currently only systems with a single '
+                                      'metal atom can be handled.')
+        logger.info(f'Metal indices {metal_ind}')
+        # Find graph
+        connectivity = find_connectivity(atoms)
         # Collect indices of frozen atoms starting with a copy of metal_ind
         frozen_inds = [i for i in metal_ind]
         # Freeze connecting atoms
@@ -91,7 +91,7 @@ def main():
 
     atoms = read_terachem_input(args['input'])
 
-    run_preprocessing(args)
+    run_preprocessing(atoms, args['preopt'])
 
     run_optimization(atoms,
                      coords=args['coords'],
