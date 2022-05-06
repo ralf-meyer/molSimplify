@@ -137,6 +137,46 @@ def test_delocalized_internals(name):
     assert kabsch_rmsd(xyzs2, xyzs, translate=True) < 1e-5
 
 
+def test_impossible_triangles():
+    """The idea of this test case is to request a back transformation from
+    geometrically 'impossible' (i.e. contradicting) set of redundant
+    coordinates."""
+    # First example is a equilateral triangle where a inconsistent set of side
+    # lengths and angles is used.
+    xyzs = np.array([[0., 0., 4.],
+                     [3., 0., 0.],
+                     [-3., 0., 0.]])
+
+    primitives = [Distance(0, 1), Distance(0, 2), Distance(1, 2),
+                  Angle(1, 0, 2)]
+    coord_set = InternalCoordinates(primitives)
+    q = coord_set.to_internals(xyzs)
+    # Change the side lengths (0, 1) and (0, 2) from 5 to 4 Angstrom while
+    # keeping the angle (1, 0, 2) fixed.
+    q_new = q.copy()
+    q_new[:2] = 4.
+    # This results in [4., 4., 6., 1.28700222]
+    dq = q_new - q
+    xyzs = coord_set.to_cartesians(dq, xyzs)
+    q_final = coord_set.to_internals(xyzs)
+    # Assert that the backtransformation resulted in a compromise of length
+    # and angle changes that are as close as possible to q_new.
+    q_ref = [4.08, 4.08, 5.89, 1.61]
+    np.testing.assert_allclose(q_final, q_ref, atol=0.01)
+
+    # Second example: three angles that do not add up to 180
+    primitives = [Angle(1, 0, 2), Angle(0, 1, 2), Angle(0, 2, 1)]
+    coord_set = InternalCoordinates(primitives)
+    q = coord_set.to_internals(xyzs)
+    # Increase all angles by 1
+    dq = np.ones(q.shape)
+    xyzs = coord_set.to_cartesians(dq, xyzs)
+    q_final = coord_set.to_internals(xyzs)
+    # Assert that the geometry has not changed since it is not possible to
+    # realize the requested change
+    np.testing.assert_allclose(q_final, q)
+
+
 def test_difficult_backtransformations():
     """Collection of backtransformations that have previously failed"""
     dq = np.array([
