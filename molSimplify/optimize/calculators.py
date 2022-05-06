@@ -87,10 +87,10 @@ class TeraChem(FileIOCalculator):
             fileobj.write('# ASE generated input file\n')
 
             # Add xyz path to input file
-            fileobj.write(f'{"coordinates":-25s}   {self.prefix}.xyz\n')
+            fileobj.write(f'{"coordinates":25s}   {self.prefix}.xyz\n')
 
             for key, value in self.parameters.items():
-                fileobj.write(f'{key:-25s}   {value}\n')
+                fileobj.write(f'{key:25s}   {value}\n')
 
             fileobj.write('end\n')
 
