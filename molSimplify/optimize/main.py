@@ -65,7 +65,8 @@ def run_preprocessing(atoms, preopt='xtb', name='molsimp'):
         atoms.set_constraint()
 
 
-def run_optimization(atoms, coords='cart', hessian_guess='trivial',
+def run_optimization(atoms, coords='cart', steps=300,
+                     hessian_guess='trivial',
                      hessian_thresh=None, name='molsimp'):
 
     # Build optimizer with terachem convergence criteria
@@ -81,7 +82,7 @@ def run_optimization(atoms, coords='cart', hessian_guess='trivial',
 
     opt = MolSimplifyOpt(atoms, coordinate_set=coord_set, H0=H0,
                          trajectory=f'{name}_optim.traj')
-    opt.run()
+    opt.run(steps=steps)
 
 
 def main():
@@ -95,6 +96,7 @@ def main():
 
     run_optimization(atoms,
                      coords=args['coords'],
+                     steps=args['maxiter'],
                      hessian_guess=args['hessian_guess'],
                      hessian_thresh=args['hessian_thresh'])
 

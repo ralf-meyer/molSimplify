@@ -14,6 +14,7 @@ def parse_args(args):
     opt.add_argument('--optimizer', type=str, choices=['BFGS', 'RFO'])
     opt.add_argument('--coords', type=str, choices=['cart', 'dlc', 'anc'],
                      default='dlc')
+    opt.add_argument('--maxiter', type=int, default=300)
     opt.add_argument('--hessian_guess', type=str, default='trivial',
                      choices=['trivial', 'schlegel', 'fischer_almloef',
                               'lindh'])
