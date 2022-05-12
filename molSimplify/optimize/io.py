@@ -52,3 +52,24 @@ def read_terachem_input(terachem_file):
                 params[key] = val
     atoms.calc = TeraChem(**params)
     return atoms
+
+
+def read_terachem_frequencies(frequencies_file):
+    with open(frequencies_file, 'r') as fin:
+        lines = fin.readlines()
+    n_atoms = int(lines[0].split()[2])
+    n_modes = int(lines[1].split()[3])
+
+    # The following double list contraction gets all the frequencies from
+    # the headers by slicing with a stride of 3*n_atoms + 4, where the + 4 is
+    # necessary to account for one header, the actual frequencies,
+    # one separator and one footer line.
+    frequencies = np.array([float(sp) for line in lines[4::3*n_atoms+4]
+                            for sp in line.split()])
+
+    # The modes are read row by row in exactly the same way
+    modes = np.zeros((3*n_atoms, n_modes))
+    for i in range(3*n_atoms):
+        modes[i, :] = [float(sp) for line in lines[6+i::3*n_atoms+4]
+                       for sp in line[6:].split()]
+    return frequencies, modes
