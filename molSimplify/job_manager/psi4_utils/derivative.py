@@ -31,11 +31,11 @@ def sanity_check(folders: list, trigger: str = "_derivNo_") -> dict:
         else:
             folders_ignored.append(folder)
     if not trigger_appear:
-        raise KeyError("<trigger>: %s not appeared in any folders."%trigger)
+        raise KeyError("<trigger>: %s not appeared in any folders." % trigger)
     if len(basename) > 1:
-        raise ValueError("multiple base jobs occur: %s"%basename)
+        raise ValueError("multiple base jobs occur: %s" % basename)
     if len(folders_ignored):
-        print("Warning: The following folders are ignored: %s"%str(folders_ignored))
+        print("Warning: The following folders are ignored: %s" % str(folders_ignored))
     return jobs
 
 
@@ -52,4 +52,3 @@ def derivative_tree(path: str = "./", trigger: str = "_derivNo_") -> list:
 def get_wfn_path(jobs, ii):
     assert ii > 0
     return "../../" + jobs[ii - 1] + "/b3lyp/wfn.180.npy"
-    

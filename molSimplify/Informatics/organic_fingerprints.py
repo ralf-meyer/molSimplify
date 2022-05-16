@@ -56,4 +56,3 @@ def get_substructure_smiles(mol, atomID, radius):
 # bit_vector_pyridine = get_morgan(mol='c1ncccc1')
 # below you can see what pyridine and benzene have in common
 # print(set(bit_vector.keys()).intersection(bit_vector_py.keys()))
-

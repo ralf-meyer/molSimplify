@@ -164,15 +164,7 @@ def generate_all_ligand_misc_dimers(mol, loud, custom_ligand_dict=False):
     for ax_ligand_list, ax_con_int_list, n_ax, result_ax in zip(axligs, axcons, n_axs, result_axs):
         for i in range(0, n_ax):
             ax_ligand_list[i].mol.convert2OBMol()
-            if not (i == 0):
-                result_ax_dent += ax_ligand_list[i].dent
-                result_ax_maxdelen += get_lig_EN(
-                    ax_ligand_list[i].mol, ax_con_int_list[i])
-                result_ax_ki += kier(ax_ligand_list[i].mol)
-                result_ax_tki += get_truncated_kier(
-                    ax_ligand_list[i].mol, ax_con_int_list[i])
-                result_ax_charge += ax_ligand_list[i].mol.OBMol.GetTotalCharge()
-            else:
+            if i == 0:
                 result_ax_dent = ax_ligand_list[i].dent
                 result_ax_maxdelen = get_lig_EN(
                     ax_ligand_list[i].mol, ax_con_int_list[i])
@@ -180,6 +172,14 @@ def generate_all_ligand_misc_dimers(mol, loud, custom_ligand_dict=False):
                 result_ax_tki = get_truncated_kier(
                     ax_ligand_list[i].mol, ax_con_int_list[i])
                 result_ax_charge = ax_ligand_list[i].mol.OBMol.GetTotalCharge()
+            else:
+                result_ax_dent += ax_ligand_list[i].dent
+                result_ax_maxdelen += get_lig_EN(
+                    ax_ligand_list[i].mol, ax_con_int_list[i])
+                result_ax_ki += kier(ax_ligand_list[i].mol)
+                result_ax_tki += get_truncated_kier(
+                    ax_ligand_list[i].mol, ax_con_int_list[i])
+                result_ax_charge += ax_ligand_list[i].mol.OBMol.GetTotalCharge()                
         # average axial results
         result_ax_dent = np.divide(result_ax_dent, n_ax)
         result_ax_maxdelen = np.divide(result_ax_maxdelen, n_ax)

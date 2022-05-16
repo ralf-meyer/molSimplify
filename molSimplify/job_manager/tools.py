@@ -114,7 +114,7 @@ def call_bash(string, error=False, version=1):
         p = subprocess.Popen(string, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
 
-    if sys.version_info > (3,0):
+    if sys.version_info > (3, 0):
         out = out.decode('utf-8')
         err = err.decode('utf-8')
 
@@ -242,9 +242,9 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     try:
         if get_machine() == 'gibraltar':
             job_report.lines = call_bash("qstat -r")
-        elif get_machine() in ['comet','bridges']:
+        elif get_machine() in ['comet', 'bridges']:
             job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
-                                          version=2)
+                                         version=2)
         else:
             raise ValueError
     except:
@@ -252,22 +252,22 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     if get_machine() == 'gibraltar':
         names = job_report.wordgrab('jobname:', 2)[0]
         names = [i for i in names if i]  # filters out NoneTypes
-    elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
+    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
         names = job_report.wordgrab(get_username(), 2)[0]
-        names = [i for i in names if i] # filters out NoneTypes
+        names = [i for i in names if i]  # filters out NoneTypes
     else:
         raise ValueError
     if ids:
         job_ids = []
         if get_machine() == 'gibraltar':
             line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
-        elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
+        elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
             line_indices_of_jobnames = job_report.wordgrab(get_username(), 2, matching_index=True)[0]
         line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
         for line_index in line_indices_of_jobnames:
             if get_machine() == 'gibraltar':
                 job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
-            elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
+            elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
                 job_ids.append(int(job_report.lines[line_index].split()[0]))
         if len(names) != len(job_ids):
             print(len(names))
@@ -348,7 +348,7 @@ def get_total_queue_usage():
     # gets the number of jobs in the queue for this user, regardless of where they originate
     if get_machine() == 'gibraltar':
         jobs = call_bash("qstat -u '" + get_username() + "'", version=2)
-    elif get_machine() in ['comet','bridges', "mustang", "supercloud"]:
+    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
         jobs = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u ' + get_username(),
                          version=2)
     else:
@@ -569,7 +569,7 @@ def qsub(jobscript_list):
         if get_machine() in ['gibraltar']:
             stdout, stderr = call_bash('qsub ' + jobscript, error=True)
             stdouts.append(stdout)
-        elif get_machine() in ['bridges','comet']:
+        elif get_machine() in ['bridges', 'comet']:
             stdout, stderr = call_bash('sbatch ' + jobscript, error=True)
             stdouts.append(stdout)
         if len(stderr) > 0:
@@ -810,7 +810,7 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
     home = os.getcwd()
     os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
     manager_io.write_terachem_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)) + '_' + identifier,
-                                        terachem_line=False, time_limit='12:00:00',machine=get_machine())
+                                        terachem_line=False, time_limit='12:00:00', machine=get_machine())
     shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_' + identifier + '_jobscript',
                 'bundle_' + str(max(existing_bundle_numbers) + 1))
     fil = open('bundle_' + str(max(existing_bundle_numbers) + 1), 'a')
@@ -892,7 +892,7 @@ def prep_vertical_ip(path):
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
                 manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name,machine=get_machine())
+                manager_io.write_jobscript(name, machine=get_machine())
 
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
 
@@ -1194,7 +1194,7 @@ def prep_general_sp(path, general_config):
             else:
                 new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
             for calc in new_spin:
-                suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), calc)
+                suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), calc)
                 PATH = os.path.join(functional_base_path, suffix)
                 if os.path.isdir(PATH):
                     continue
@@ -1227,7 +1227,7 @@ def prep_general_sp(path, general_config):
                     fil.write('solvent:%s\n' % str(solvent))
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
         elif config['type'] == "energy":
-            suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
+            suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
             PATH = os.path.join(functional_base_path, suffix)
             if os.path.isdir(PATH):
                 continue

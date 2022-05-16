@@ -4,7 +4,9 @@ import shutil
 import numpy as np
 from molSimplify.job_manager.psi4_utils.run import run_general_hfx
 
-psi4_config = json.load(open("psi4_config.json", "r"))
+psi4_config = {'bashrc':'/home/crduan/.bashrc',
+    'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
+psi4_config.update(json.load(open("psi4_config.json", "r")))
 alphalist = [20, 15, 10, 5, 2]
 rescued = 0
 success_count = 0
@@ -30,8 +32,8 @@ for ii, functional in enumerate(psi4_config["functional"]):
                                             alphalist[jj-1])
             if not os.path.isdir(functional + "-%d" % alpha) and not failed:
                 os.makedirs(functional + "-%d" % alpha)
-                shutil.copyfile("geo.xyz", functional + "-%d" %
-                                alpha + '/geo.xyz')
+                shutil.copyfile(psi4_config['xyzfile'], functional + "-%d" %
+                                alpha + '/' + psi4_config['xyzfile'])
                 success = run_general_hfx(psi4_config, functional, hfx=alpha, wfn=wfn)
                 print("success: ", success)
                 if success:
@@ -46,7 +48,7 @@ for ii, functional in enumerate(psi4_config["functional"]):
                 else:
                     with open(functional + "-%d" % alpha + "/output.dat", "r") as fo:
                         txt = "".join(fo.readlines())
-                    if not "==> Iterations <==" in txt:
+                    if "==> Iterations <==" not in txt:
                         resubed = True
                 if resubed and os.path.isfile(wfn_b):
                     print("previously errored out. resubmitting...")

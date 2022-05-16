@@ -22,7 +22,7 @@ def isCSD(job):
 
 
 def call_molsimplify(geodir, job, jobname):
-    liglist = ",".join(job["ligstr"].split("_")) # can be a single SMILES string, or list of database ligands (e.g. water_water_water_water_water_water)
+    liglist = ",".join(job["ligstr"].split("_"))  # can be a single SMILES string, or list of database ligands (e.g. water_water_water_water_water_water)
     tmp_name = str(np.random.randint(10 ** 18))  # assign a temporary name so that the results are findable
     temp_rundir = os.path.join(os.path.expanduser('~'), 'Runs')
     bash_command = " ".join(["molsimplify ", '-core ' + job["metal"],
@@ -35,7 +35,7 @@ def call_molsimplify(geodir, job, jobname):
         bash_command = " ".join([bash_command, "-geometry", job["geometry"]])
     if "coord" in job:
         bash_command = " ".join([bash_command, "-coord", str(job["coord"])])
-    if "ligocc" in job: # must be a string, e.g. "6" or "1,1,1,1,1,1"
+    if "ligocc" in job:  # must be a string, e.g. "6" or "1,1,1,1,1,1"
         bash_command = " ".join([bash_command, "-ligocc", job["ligocc"]])
     else:
         bash_command = " ".join([bash_command, "-ligocc", "1,1,1,1,1,1"])
@@ -43,7 +43,7 @@ def call_molsimplify(geodir, job, jobname):
         bash_command = " ".join([bash_command, "-keepHs", job["keepHs"]])
     else:
         bash_command = " ".join([bash_command, "-keepHs", 'yes,yes,yes,yes,yes,yes'])
-    if "smicat" in job: # must be a string, e.g. "1"
+    if "smicat" in job:  # must be a string, e.g. "1"
         bash_command = " ".join([bash_command, "-smicat", job["smicat"]])
     if "skipANN" in job:
         bash_command = " ".join([bash_command, "-skipANN", job["skipANN"]])
@@ -56,7 +56,6 @@ def call_molsimplify(geodir, job, jobname):
     print(("geodir: ", geodir))
     inner_folder_path = glob.glob(os.path.join(file_name, '*'))[0]
     xyz_path = glob.glob(os.path.join(inner_folder_path, '*.xyz'))[0]
-    xyz_name = os.path.split(xyz_path)[-1]
     charge = False
     with open(inner_folder_path + '/terachem_input', "r") as fo:
         for line in fo:
@@ -86,13 +85,13 @@ def generate_fake_results_from_db(rundir, jobname, tmcdoc):
         if int(tmcdoc['spin']) == 1:
             try:
                 shutil.copy(tmcdoc['wavefunction']['c0'], scrdir + '/c0')
-            except:
+            except FileNotFoundError:
                 pass
         else:
             try:
                 shutil.copy(tmcdoc['wavefunction']['ca0'], scrdir + '/ca0')
                 shutil.copy(tmcdoc['wavefunction']['cb0'], scrdir + '/cb0')
-            except:
+            except FileNotFoundError:
                 pass
     inpath = rundir + '/' + jobname + '.in'
     with open(inpath, "w") as fo:
@@ -124,7 +123,7 @@ def generate_fake_results_from_db(rundir, jobname, tmcdoc):
     return outpath
 
 
-def populate_single_job(basedir, job, db, safe_filenames = True):
+def populate_single_job(basedir, job, db, safe_filenames=True):
     geodir = basedir + "/initial_geometry/"
     if not os.path.isdir(geodir):
         os.makedirs(geodir)
@@ -137,23 +136,20 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
     else:
         jobname = "_".join([job['ligstr'], job['metal'], str(job['spin'])])
     tmcdoc, recover = None, True
-    if not db == None:
+    if db is not None:
         tmcdoc = query_lowestE_converged(db, collection='oct', constraints=query_constraints)
-        if not tmcdoc == None:
+        if tmcdoc is not None:
             print(("Bingo! Optimized geometry found in db: ", query_constraints))
             try:
                 charge = int(tmcdoc["charge"])
-                spin = int(tmcdoc["spin"])
-                energy = float(tmcdoc["energy"])
-                wfn = tmcdoc['wavefunction']
                 ss_act, ss_target = float(tmcdoc["ss_act"]), float(tmcdoc["ss_target"])
                 if abs(ss_act - ss_target) > 1 and tmcdoc["ss_flag"] == 1:
                     recover = False
                     print("Spin contamination for singlets! (used ub3lyp)")
                 write_xyz_from_db(geodir, jobname, tmcdoc["opt_geo"])
-                wfnpath = "/home/data/wfn/"+ str(tmcdoc['unique_name'])
+                wfnpath = "/home/data/wfn/" + str(tmcdoc['unique_name'])
                 wfnfiles = os.listdir(wfnpath)
-                if not any(x in ["c0", "ca0", "cb0"] and os.stat(wfnpath+'/%s'%x).st_size > 1000 for x in wfnfiles):
+                if not any(x in ["c0", "ca0", "cb0"] and os.stat(wfnpath+'/%s' % x).st_size > 1000 for x in wfnfiles):
                     recover = False
                     print("No WFN file found at /home/data/wfn/.")
             except:
@@ -165,23 +161,23 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
         if not iscsd:
             print("NO db connection! Generate initial geometry from molsimplify...")
             jobname_safe = jobname.replace("#", "3").replace("(", "[").replace(")", "]")
-            charge = call_molsimplify(geodir, job, jobname_safe) # this used to say rundir for some reason...
+            charge = call_molsimplify(geodir, job, jobname_safe)  # this used to say rundir for some reason...
         else:
             raise ValueError("Cannot generate initial geometry for CSD complex...")
 
     rundir = basedir + '/' + jobname
     try:
         rundir_p3 = basedir + '/' + jobname_safe
-    except:
-        rundir_p3 = basedir + '/' + jobname.replace('#','3')
+    except NameError:  # jobname_safe not defined
+        rundir_p3 = basedir + '/' + jobname.replace('#', '3')
 
     # p3 option
     if safe_filenames:
         rundir = rundir_p3
         try:
             jobname = jobname_safe
-        except:
-            jobname = jobname.replace('#','3')
+        except NameError:  # jobname_safe not defined
+            jobname = jobname.replace('#', '3')
 
     populated = True
     if not os.path.isdir(rundir) and not os.path.isdir(rundir_p3) and recover:
@@ -189,8 +185,8 @@ def populate_single_job(basedir, job, db, safe_filenames = True):
         shutil.copyfile(geodir + '/' + jobname + '.xyz', rundir + "/" + jobname + ".xyz")
         os.chdir(rundir)
         # Add fake files etc for a smooth carry-on in job manager for further dependent jobs.
-        if not tmcdoc == None:
-            outpath = generate_fake_results_from_db(rundir, jobname, tmcdoc)
+        if tmcdoc is not None:
+            generate_fake_results_from_db(rundir, jobname, tmcdoc)
         else:
             manager_io.write_input(name=jobname, coordinates=jobname + '.xyz', charge=charge, spinmult=int(job["spin"]), run_type='minimize', solvent=False)
             manager_io.write_jobscript(jobname)
