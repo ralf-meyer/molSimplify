@@ -150,8 +150,8 @@ def get_descriptor_vector(this_complex, custom_ligand_dict=False,
     return descriptor_names, descriptors
 
 
-def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifier=False, lacRACs=True, loud=False,
-                                metal_ind=None):
+def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifier=False,
+                               lacRACs=True, depth=4, loud=False, metal_ind=None):
     """ Calculate and return all derivatives of RACs for a given octahedral complex.
 
     Parameters
@@ -173,6 +173,8 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
         lacRACs : bool, optional
             Use ligand_assign_consistent (lac) to represent mol3D given
             if False, use ligand_assign (older), default True
+        depth : int, optional
+            depth of RACs to calculate, by default 4
         loud : bool, optional
             Print debugging information, by default False
         metal_ind : bool, optional

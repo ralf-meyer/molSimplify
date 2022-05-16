@@ -580,4 +580,3 @@ class tetradentate:
                                 checked_canonical.append(test)
                             counter += 1
         return results_dict_list
-

@@ -42,7 +42,7 @@ def mocoeff_c2s(mocoeffs_c, shell_types):
     //
     d_conv, d_conv_inv: conversion metrix.
     source: https://github.com/psi4/psi4/blob/master/psi4/src/psi4/libmints/writer.cc, FCHKWriter
-    '''
+    '''  # noqa W605
     pf1 = 1.0
     pf2 = np.sqrt(1.0 / 3.0)
     d_conv = np.array([
