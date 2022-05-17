@@ -2538,7 +2538,7 @@ class mol3D:
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return (ss)
 
-    def readfromxyz(self, filename, fictitious_elecment=False, read_final_optim_step=False):
+    def readfromxyz(self, filename, , fictitious_element=False, read_final_optim_step=False):
         """Read XYZ into a mol3D class instance.
 
         Parameters
