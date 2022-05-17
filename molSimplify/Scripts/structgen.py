@@ -178,6 +178,7 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 else:
                     # old MCDL-25
                     print('using old ANN because tensorflow/keras import failed')
+                    from molSimplify.Scripts.nn_prep import ANN_preproc
                     ANN_flag, ANN_reason, ANN_attributes = ANN_preproc(
                         args, ligands, occs, dents, batslist, tcats, licores)
             if ANN_flag:
