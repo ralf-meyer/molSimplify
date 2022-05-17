@@ -1,24 +1,53 @@
 # Written by JP Janet for HJK Group
 # Dpt of Chemical Engineering, MIT
 
-##########################################################
-######## This script contains a neural network  ##########
-#####  trained on octahedral metal-ligand          #######
-########   bond distances and spin propensity  ###########
-##########################################################
+# ########################################################
+# ###### This script contains a neural network  ##########
+# ###  trained on octahedral metal-ligand          #######
+# ######   bond distances and spin propensity  ###########
+# ########################################################
 
 
 import csv
 
 import numpy as np
 from pkg_resources import resource_filename, Requirement
-
-from pybrain.structure import FeedForwardNetwork, TanhLayer, LinearLayer, BiasUnit, FullConnection
+from molSimplify.utils.decorators import deprecated
 
 
 def simple_network_builder(layers, partial_path):
+    """Numpy based implementation of a simple neural network to replace the
+    now deprecated pybrain variant."""
+
+    class ThreeLayerNetwork():
+        """Fixed architecture neural network"""
+
+        def __init__(self, layers, partial_path):
+            self.w1 = np.array(
+                csv_loader(partial_path + '_w1.csv')).reshape(-1, layers[0])
+            self.w2 = np.array(
+                csv_loader(partial_path + '_w2.csv')).reshape(-1, layers[1])
+            self.w3 = np.array(
+                csv_loader(partial_path + '_w3.csv')).reshape(-1, layers[2])
+            self.b1 = np.array(csv_loader(partial_path + '_b1.csv'))
+            self.b2 = np.array(csv_loader(partial_path + '_b2.csv'))
+            self.b3 = np.array(csv_loader(partial_path + '_b3.csv'))
+
+        def activate(self, input):
+            layer1 = np.tanh(self.w1 @ input + self.b1)
+            layer2 = np.tanh(self.w2 @ layer1 + self.b2)
+            output = self.w3 @ layer2 + self.b3
+            return output
+
+    return ThreeLayerNetwork(layers, partial_path)
+
+
+@deprecated
+def simple_network_builder_pybrain(layers, partial_path):
+    from pybrain.structure import (FeedForwardNetwork, TanhLayer, LinearLayer,
+                                   BiasUnit, FullConnection)
     n = FeedForwardNetwork()
-    ## create the network
+    # create the network
     inlayer = LinearLayer(layers[0], name="In")
     hidden_one = TanhLayer(layers[1], name="Hidden 1")
     hidden_two = TanhLayer(layers[2], name="Hidden 2")
@@ -35,7 +64,7 @@ def simple_network_builder(layers, partial_path):
     b1_to_one = FullConnection(b1, hidden_one)
     b2_to_two = FullConnection(b1, hidden_two)
     b3_to_output = FullConnection(b1, output)
-    ### load weights and biases
+    # load weights and biases
     in_to_one._setParameters(np.array((csv_loader(partial_path + '_w1.csv'))))
     one_to_two._setParameters(np.array(csv_loader(partial_path + '_w2.csv')))
     two_to_out._setParameters(np.array(csv_loader(partial_path + '_w3.csv')))
@@ -43,17 +72,17 @@ def simple_network_builder(layers, partial_path):
     b2_to_two._setParameters(np.array(csv_loader(partial_path + '_b2.csv')))
     b3_to_output._setParameters(np.array(csv_loader(partial_path + '_b3.csv')))
 
-    ### connect the network topology
+    # connect the network topology
     n.addConnection(in_to_one)
     n.addConnection(one_to_two)
     n.addConnection(two_to_out)
-#    n.sortModules()
+    # n.sortModules()
 
     n.addConnection(b1_to_one)
     n.addConnection(b2_to_two)
     n.addConnection(b3_to_output)
 
-    ### finalize network object
+    # finalize network object
     n.sortModules()
 
     return n
@@ -61,7 +90,8 @@ def simple_network_builder(layers, partial_path):
 
 def csv_loader(path):
     # print('in csv loader')
-    path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
+    path_to_file = resource_filename(Requirement.parse("molSimplify"),
+                                     "molSimplify/python_nn/" + path)
     with open(path_to_file, 'r') as csvfile:
         csv_lines = csv.reader(csvfile, delimiter=',')
         ret_list = list()
@@ -72,16 +102,18 @@ def csv_loader(path):
 
 
 def matrix_loader(path, rownames=False):
-    ## loads matrix with rowname option
+    # loads matrix with rowname option
     if rownames:
-        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),
+                                         "molSimplify/python_nn/" + path)
         with open(path_to_file, "r") as f:
             csv_lines = list(csv.reader(f))
             row_names = [row[0] for row in csv_lines]
             mat = [row[1:] for row in csv_lines]
         return mat, row_names
     else:
-        path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
+        path_to_file = resource_filename(Requirement.parse("molSimplify"),
+                                         "molSimplify/python_nn/" + path)
         with open(path_to_file, 'r') as csvfile:
             csv_lines = csv.reader(csvfile, delimiter=',')
             mat = [a for a in csv_lines]
@@ -138,12 +170,9 @@ def simple_hs_ann(excitation):
 
 
 def excitation_standardizer(excitation, tag):
-    ## this function implements
-    ## a scale-and-center
-    ## type of normalization
-    ## that may help predictions
-    ## currently testing for
-    ## splitting and slope only
+    """This function implements a scale-and-center type of normalization
+    that may help predictions currently testing for splitting and slope only
+    """
 
     centers = csv_loader(tag+"_center.csv")
     shifts = csv_loader(tag+"_scale.csv")
@@ -158,7 +187,7 @@ def excitation_standardizer(excitation, tag):
 
 
 def find_eu_dist(excitation):
-    # returns euclidean distance to nearest trainning 
+    # returns euclidean distance to nearest trainning
     # vector in desciptor space
     mat, rownames = matrix_loader('train_data.csv', rownames=True)
     train_mat = np.array(mat, dtype='float64')
