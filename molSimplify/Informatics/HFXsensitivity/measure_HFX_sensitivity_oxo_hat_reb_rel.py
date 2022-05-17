@@ -297,7 +297,6 @@ def R2_upon_elimination(X, y, name, prop, R2_cutoff, num_points):
                 flag = False
             if flag:
                 print(name)
-                sard
             removed_dict_list.append({'name':name,'alpha':int(np.squeeze(test_X)), str(prop):float(np.squeeze(test_y)),'reason':'eliminating_point_led_to_R2_pass','elim_type':'point','R2':R2})
             return kept_points_X, kept_points_y, removed_dict_list, R2, reg
         if isinstance(kept_points_X, bool) or (len(kept_points_X)<num_points):
