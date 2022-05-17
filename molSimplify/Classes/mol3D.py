@@ -2538,7 +2538,7 @@ class mol3D:
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return (ss)
 
-    def readfromxyz(self, filename, fictitious_elecment=False):
+    def readfromxyz(self, filename, fictitious_element=False):
         """Read XYZ into a mol3D class instance.
 
         Parameters
@@ -2546,7 +2546,7 @@ class mol3D:
             filename : string
                 String of path to XYZ file. Path may be local or global.
         """
-        # print('!!!!', filename)
+
         globs = globalvars()
         amassdict = globs.amass()
         self.graph = []
@@ -2555,28 +2555,34 @@ class mol3D:
         f = open(fname + '.xyz', 'r')
         s = f.read().splitlines()
         f.close()
+        try:
+            atom_count = int(s[0])
+        except:
+            atom_count = 0
+        current_atom_counter = 0
         for line in s[2:]:
             line_split = line.split()
-            if len(line_split) == 4 and line_split[0]:
-                # this looks for unique atom IDs in files
+            # If the split line has more than 4 elements, only elements 0 through 3 will be used.
+            # this means that it should work with any XYZ file that also stores something like mulliken charge
+            # Next, this looks for unique atom IDs in files
+            print(line_split,'linesplit')
+            if len(line_split)>0:
+                current_atom_counter += 1
                 lm = re.search(r'\d+$', line_split[0])
-                # print(line_split, line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
-                if line_split[0] in list(amassdict.keys()) or fictitious_elecment:
-                    # print(line_split, line_split[0])
+                if line_split[0] in list(amassdict.keys()) or fictitious_element:
                     atom = atom3D(line_split[0], [float(line_split[1]), float(
                         line_split[2]), float(line_split[3])])
                 elif lm is not None:
                     symb = re.sub(r'\d+', '', line_split[0])
-                    # number = lm.group()
-                    # print('sym and number ' +str(symb) + ' ' + str(number))
                     globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                                   name=line_split[0])
                 else:
                     print('cannot find atom type')
                     sys.exit()
-                self.addAtom(atom)
+                if current_atom_counter <= atom_count:
+                    self.addAtom(atom)
 
     def readfrommol2(self, filename, readstring=False, trunc_sym="X"):
         """Read mol2 into a mol3D class instance. Stores the bond orders and atom types (SYBYL).

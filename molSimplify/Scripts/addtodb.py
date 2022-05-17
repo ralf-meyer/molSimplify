@@ -145,7 +145,7 @@ def addtocdb(smimol, sminame, smicat):
         css = ' '.join(cs)
         # convert to unicode
         smimol = unicodedata.normalize(
-            'NFKD', smimol).encode('ascii', 'ignore')
+            'NFKD', smimol)
         if '~' in smimol:
             smimol = smimol.replace('~', os.expanduser('~'))
         # convert ligand from smiles/file
@@ -200,9 +200,9 @@ def addtobdb(smimol, sminame):
     else:
         # convert to unicode
         smimol = unicodedata.normalize(
-            'NFKD', smimol).encode('ascii', 'ignore')
+            'NFKD', smimol)
         sminame = unicodedata.normalize(
-            'NFKD', sminame).encode('ascii', 'ignore')
+            'NFKD', sminame)
         if '~' in smimol:
             smimol = smimol.replace('~', os.expanduser('~'))
         # convert ligand from smiles/file
@@ -264,7 +264,7 @@ def removefromDB(sminame, ropt):
     bind_folder = globs.custom_path + "/Bind/"
 
     # convert to unicode
-    sminame = unicodedata.normalize('NFKD', sminame).encode('ascii', 'ignore')
+    sminame = unicodedata.normalize('NFKD', sminame)
 
     if ropt == 1:
         # update dictionary
