@@ -72,7 +72,6 @@ cyclam:cyclam.mol,cyclam,17 34 36 15,build tetradentate,A,0
 cyclen:cyclen.mol,cyclen,6 9 0 3,build tetradentate,A,0
 cyclopentadienyl:cyclopentadienyl.mol,Cp,0 1 2 3 4 pi,build aromatic organometallic,N,-1
 cysteine:cysteine.mol,Cys,5,build functionalize aminoacid,BA,0
-dd:dd.smi,dd,0,all build functionalize,BA,0
 diaminomethyl:diaminomethyl.mol,damthyl,3 1,build bidentate,N,-1
 dicyanamide:dicyanamide.mol,dicyanamide,0,build small,N,-1
 dppe:dppe.mol,dppe,21 25, build bidentate,A,0
@@ -121,7 +120,7 @@ mebipy:mebipy.mol,mebipy,0 1,build bidentate,BA,0
 methanal:methanal.mol,metha,0,functionalize small,N,-1
 methanol:methanol.mol,methanol,1,functionalize small,N,0
 formaldehyde:formaldehyde.mol,formaldehyde,1,functionalize small,N,0
-formate:formate.mol,formate, 0, build mono,B,-1
+formate:formate.xyz,formate, 0, build mono,B,-1
 caprolactone:caprolactone.mol,caprolactone,4,bulky mono,N,0
 mebim_py:mebim_py.xyz,mebim_py,0 11,build bidentate,N,0
 mebim_pz:mebim_pz.xyz,mebim_pz,0 10,build bidentate,N,0
@@ -130,7 +129,6 @@ methanethiol:methanethiol.mol,mthil,0,build functionalize small,N,-1
 methionine:methionine.mol,Met,6,build functionalize aminoacid,BA,0
 methyl:methyl.mol,meth,0,functionalize small organometallic,N,-1
 misc:methylisocy.mol,misc,0,small,A,0
-c2h3ns:c2h3ns.xyz,c2h3ns,0,small,A,0
 nitro:nitro.mol,nit,1,build functionalize small,N,-1
 nitrite:nitrite.mol,nitrite,1,build mono, B, -1
 nitrate:nitrate.mol,nitrate,1,build mono, B, -1
@@ -247,7 +245,7 @@ nco-:nco-.mol,nco-,0,build functionalize small,N,-1
 no2-:no2-.mol,no2-,0,build functionalize small,N,-1
 o2-:o2-.mol,o2-,0,build functionalize small,N,-2
 s2-:s2-.mol,s2-,0,build functionalize small,N,-2
-hydride:hydride,hydride,0,build functionalize small,N,-1
+hydride:hydride.mol,hydride,0,build functionalize small,N,-1
 n2:n2.mol,n2,0,build functionalize small,N,0
 o2:o2.mol,o2,0,build functionalize small,N,0
 och2:och2.mol,och2,0,build functionalize small,N,0
