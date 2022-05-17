@@ -33,7 +33,6 @@ hydrothiazole:hydrothiazole.mol,hydrothiazole,4,build functionalize,A,0
 hydrodiazole:hydrodiazole.mol,hydrodiazole,4,build functionalize,A,0
 bihydrodiazole:bihydrodiazole.mol,bihydrodiazole,4 13,build bidentate,A,0
 bioxazole:bioxazole.mol,bioxazole,4 9,build bidentate,A,0
-oxazole:oxazole.mol,oxazole,4,build functionalize,A,0
 bithiazole:bithiazole.mol,bithiazole,4 9,build bidentate,A,0
 thiazole:thiazole.mol,thiazole,4,build functionalize,A,0
 diazole:diazole.mol,diazole,4,build functionalize,A,0
@@ -106,10 +105,6 @@ hydrocyanide:hydrocyanide.mol,hydc,1,build small,N,0
 hydroisocyanide:hydroisocyanide.mol,hisc,0,build small,N,0
 hydroxyl:hydroxyl.mol,hxl,0,build functionalize small,N,-1
 imidazole:imidazole.mol,imd,2,build small,BA,0
-imidazolate:imidazolate.mol,imidazolate,2,build small,BA,-1
-aminoimidazolate:aminoimidazolate.mol,aminoimidazolate,2,build monodentate,BA,-1
-cyanoimidazolate:cyanoimidazolate.mol,cyanoimidazolate,2,build monodentate,BA,-1
-hydroxyimidazolate:hydroxyimidazolate.mol,hydroxyimidazolate,2,build monodentate,BA,-1
 biimidazole:biimidazole.mol,biimd,2 10,build bidentate,BA,0
 imine:imine.mol,imi,0,functionalize small,N,-1
 iminodiacetic:iminodiacetic.mol,iminodiacetic,0 1,build bidentate, BA, -2
@@ -252,18 +247,19 @@ nco-:nco-.mol,nco-,0,build functionalize small,N,-1
 no2-:no2-.mol,no2-,0,build functionalize small,N,-1
 o2-:o2-.mol,o2-,0,build functionalize small,N,-2
 s2-:s2-.mol,s2-,0,build functionalize small,N,-2
-hs-:hs-.mol,hs-,0,build functionalize small,N,-1
-h2s:h2s.mol,h2s,0,build functionalize small,N,0
-ph2-:ph2-.mol,ph2-,0,build functionalize small,N,-1
-ph3:ph3.mol,ph3,0,build functionalize small,N,0
-nitrito:nitrito.mol,nitrito,0,build functionalize small,N,-1
-hydrogen:hydrogen.mol,hydrogen,0,build functionalize small,N,-1
-c2:c2.mol,c2,0,build functionalize small,N,0
+hydride:hydride,hydride,0,build functionalize small,N,-1
 n2:n2.mol,n2,0,build functionalize small,N,0
 o2:o2.mol,o2,0,build functionalize small,N,0
-cs:cs.mol,cs,0,build functionalize small,N,0
-no-:no-.mol,no-,0,build functionalize small,N,-1
-ns-:ns-.mol,ns-,0,build functionalize small,N,-1
-nch:nch.mol,nch,0,build functionalize small,N,0
 och2:och2.mol,och2,0,build functionalize small,N,0
 hydrogensulfide:hydrogensulfide.mol, hydrogensulfide,0,build functionalize small,N,0
+nch:nch.mol,nch,0,build functionalize small,N,0
+ns-:ns-.mol,ns-,0,build functionalize small,N,-1
+no-:no-.mol,no-,0,build functionalize small,N,-1
+cs:cs.mol,cs,0,build functionalize small,N,0
+c2:c2.mol,c2,0,build functionalize small,N,0
+ph3:ph3.mol,ph3,0,build functionalize small,N,0
+ph2-:ph2-.mol,ph2-,0,build functionalize small,N,-1
+h2s:h2s.mol,h2s,0,build functionalize small,N,0
+hs-:hs-.mol,hs-,0,build functionalize small,N,-1
+no2-:no2-.mol,no2-,0,build functionalize small,N,-1
+nco-:nco-.mol,nco-,0,build functionalize small,N,-1
