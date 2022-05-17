@@ -2,7 +2,9 @@ import os
 import json
 from molSimplify.job_manager.psi4_utils.run import run_b3lyp, run_general
 
-psi4_config = json.load(open("psi4_config.json", "r"))
+psi4_config = {'bashrc':'/home/crduan/.bashrc',
+    'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
+psi4_config.update(json.load(open("psi4_config.json", "r")))
 success_count = 0
 print("===b3lyp===")
 if not os.path.isdir("b3lyp"):
@@ -20,7 +22,7 @@ else:
     else:
         with open(functional + "/output.dat", "r") as fo:
             txt = "".join(fo.readlines())
-        if not "==> Iterations <==" in txt:
+        if "==> Iterations <==" not in txt:
             resubed = True
     if resubed:
         print("previous errored out. resubmitting...")
@@ -51,7 +53,7 @@ for ii, functional in enumerate(psi4_config["functional"]):
         else:
             with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
-            if not "==> Iterations <==" in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt) or ("@DF-UHF iter" in txt) or ("@DF-RHF iter" in txt))):
+            if "==> Iterations <==" not in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt) or ("@DF-UHF iter" in txt) or ("@DF-RHF iter" in txt))):
                 resubed = True
         if resubed:
             print("previous errored out. resubmitting...")
