@@ -46,6 +46,12 @@ Welcome to molSimplify's documentation!
    Informatics
 
 .. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
+   tutorials/development
+
+.. toctree::
    :caption: Useful Links
 
    View Source Code (GitHub) <https://github.com/hjkgrp/molSimplify>
