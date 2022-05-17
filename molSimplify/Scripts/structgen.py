@@ -164,6 +164,7 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
         if True:
             if args.oldANN:
                 print('using old ANN by request')
+                from molSimplify.Scripts.nn_prep import ANN_preproc
                 ANN_flag, ANN_reason, ANN_attributes = ANN_preproc(
                     args, ligands, occs, dents, batslist, tcats, licores)
             else:
