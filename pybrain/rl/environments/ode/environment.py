@@ -6,8 +6,8 @@ import xode.parser, xode.body, xode.geom #@UnresolvedImport @UnusedImport @Reimp
 import ode #@UnresolvedImport
 
 from pybrain.rl.environments.environment import Environment
-from tools.configgrab import ConfigGrabber
-import sensors, actuators
+from .tools.configgrab import ConfigGrabber
+from . import sensors, actuators
 from pybrain.utilities import threaded
 import threading
 import warnings
@@ -28,7 +28,7 @@ class ODEEnvironment(Environment):
 
     def __init__(self, render=True, realtime=True, ip="127.0.0.1", port="21590", buf='16384'):
         """ initializes the virtual world, variables, the frame rate and the callback functions."""
-        print "ODEEnvironment -- based on Open Dynamics Engine."
+        print("ODEEnvironment -- based on Open Dynamics Engine.")
 
         # initialize base class
         self.render = render
@@ -167,7 +167,7 @@ class ODEEnvironment(Environment):
             self.getRenderer().setCenterObj(self.root.namedChild(name).getODEObject())
         except KeyError:
             # name not found, unset centerObj
-            print "Warning: Cannot center on " + name
+            print("Warning: Cannot center on " + name)
             self.centerObj = None
 
     def loadXODE(self, filename, reload=False):
@@ -179,19 +179,19 @@ class ODEEnvironment(Environment):
         f.close()
         try:
             # filter all xode "world" objects from root, take only the first one
-            world = filter(lambda x: isinstance(x, xode.parser.World), self.root.getChildren())[0]
+            world = [x for x in self.root.getChildren() if isinstance(x, xode.parser.World)][0]
         except IndexError:
             # malicious format, no world tag found
-            print "no <world> tag found in " + filename + ". quitting."
+            print("no <world> tag found in " + filename + ". quitting.")
             sys.exit()
         self.world = world.getODEObject()
         self._setWorldParameters()
         try:
             # filter all xode "space" objects from world, take only the first one
-            space = filter(lambda x: isinstance(x, xode.parser.Space), world.getChildren())[0]
+            space = [x for x in world.getChildren() if isinstance(x, xode.parser.Space)][0]
         except IndexError:
             # malicious format, no space tag found
-            print "no <space> tag found in " + filename + ". quitting."
+            print("no <space> tag found in " + filename + ". quitting.")
             sys.exit()
         self.space = space.getODEObject()
 
@@ -200,12 +200,12 @@ class ODEEnvironment(Environment):
         self._parseBodies(self.root)
 
         if self.verbosity > 0:
-            print "-------[body/mass list]-----"
+            print("-------[body/mass list]-----")
             for (body, _) in self.body_geom:
                 try:
-                    print body.name, body.getMass()
+                    print(body.name, body.getMass())
                 except AttributeError:
-                    print "<Nobody>"
+                    print("<Nobody>")
 
         # now parse the additional parameters at the end of the xode file
         self.loadConfig(filename, reload)
@@ -220,9 +220,9 @@ class ODEEnvironment(Environment):
         for passpairstring in self.config.getValue("passpairs")[:]:
             self.passpairs.append(eval(passpairstring))
         if self.verbosity > 0:
-            print "-------[pass tuples]--------"
-            print self.passpairs
-            print "----------------------------"
+            print("-------[pass tuples]--------")
+            print(self.passpairs)
+            print("----------------------------")
 
         # <centerOn>
         # set focus of camera to the first object specified in the section, if any
@@ -238,7 +238,7 @@ class ODEEnvironment(Environment):
                 # find first object with that name
                 obj = self.root.namedChild(jointName).getODEObject()
             except IndexError:
-                print "ERROR: Could not affix object '" + jointName + "' to environment!"
+                print("ERROR: Could not affix object '" + jointName + "' to environment!")
                 sys.exit(1)
             if isinstance(obj, ode.Joint):
                 # if it is a joint, use this joint to fix to environment
@@ -273,7 +273,7 @@ class ODEEnvironment(Environment):
                 try:
                     self.addSensor(eval('sensors.' + s))
                 except AttributeError:
-                    print dir(sensors)
+                    print(dir(sensors))
                     warnings.warn("Sensor name with name " + s + " not found. skipped.")
         else:
             for s in self.sensors:
@@ -290,7 +290,7 @@ class ODEEnvironment(Environment):
             body.name = node.getName()
             try:
                 # filter all xode geom objects and take the first one
-                xgeom = filter(lambda x: isinstance(x, xode.geom.Geom), node.getChildren())[0]
+                xgeom = [x for x in node.getChildren() if isinstance(x, xode.geom.Geom)][0]
             except IndexError:
                 return() # no geom object found, skip this node
             # get the real ode object
@@ -371,7 +371,7 @@ class ODEEnvironment(Environment):
         return num
 
     def getActionLength(self):
-        print "getActionLength() is deprecated. use property 'indim' instead."
+        print("getActionLength() is deprecated. use property 'indim' instead.")
         return self.indim
 
     @property
@@ -534,17 +534,17 @@ class ODEEnvironment(Environment):
     #--- helper functions ---#
     def _print_help(self):
         """ prints out the keyboard shortcuts. """
-        print "v   -> toggle view with mouse on/off"
-        print "s   -> toggle screen capture on/off"
-        print "d   -> drop an object"
-        print "f   -> lift all objects"
-        print "m   -> toggle mouse view (press button to zoom)"
-        print "r   -> random torque at all joints"
-        print "a/z -> negative/positive torque to all joints"
-        print "g   -> print current state"
-        print "n   -> reset environment"
+        print("v   -> toggle view with mouse on/off")
+        print("s   -> toggle screen capture on/off")
+        print("d   -> drop an object")
+        print("f   -> lift all objects")
+        print("m   -> toggle mouse view (press button to zoom)")
+        print("r   -> random torque at all joints")
+        print("a/z -> negative/positive torque to all joints")
+        print("g   -> print current state")
+        print("n   -> reset environment")
         self.specialfunctionDoc()
-        print "x,q -> exit program"
+        print("x,q -> exit program")
 
     def specialfunctionDoc(self):
         """Derived classes can implement extra functionality here"""
@@ -560,7 +560,7 @@ if __name__ == '__main__' :
     Parameters: modelname = base name of the xode file to use (default: johnnie)
     """
 
-    print "ODEEnvironment -- test program"
+    print("ODEEnvironment -- test program")
     if len(sys.argv) > 1:
         modelName = sys.argv[1]
     else:

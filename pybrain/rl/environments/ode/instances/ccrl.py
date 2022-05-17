@@ -92,19 +92,19 @@ class CCRLEnvironment(ODEEnvironment):
         f.close()
         try:
             # filter all xode "world" objects from root, take only the first one
-            world = filter(lambda x: isinstance(x, xode.parser.World), self.root.getChildren())[0]
+            world = [x for x in self.root.getChildren() if isinstance(x, xode.parser.World)][0]
         except IndexError:
             # malicious format, no world tag found
-            print "no <world> tag found in " + filename + ". quitting."
+            print("no <world> tag found in " + filename + ". quitting.")
             sys.exit()
         self.world = world.getODEObject()
         self._setWorldParameters()
         try:
             # filter all xode "space" objects from world, take only the first one
-            space = filter(lambda x: isinstance(x, xode.parser.Space), world.getChildren())[0]
+            space = [x for x in world.getChildren() if isinstance(x, xode.parser.Space)][0]
         except IndexError:
             # malicious format, no space tag found
-            print "no <space> tag found in " + filename + ". quitting."
+            print("no <space> tag found in " + filename + ". quitting.")
             sys.exit()
         self.space = space.getODEObject()
 
@@ -119,12 +119,12 @@ class CCRLEnvironment(ODEEnvironment):
                     body.setPosition(body.getPosition() + self.pert)
 
         if self.verbosity > 0:
-            print "-------[body/mass list]-----"
+            print("-------[body/mass list]-----")
             for (body, _) in self.body_geom:
                 try:
-                    print body.name, body.getMass()
+                    print(body.name, body.getMass())
                 except AttributeError:
-                    print "<Nobody>"
+                    print("<Nobody>")
 
         # now parse the additional parameters at the end of the xode file
         self.loadConfig(filename, reload)
