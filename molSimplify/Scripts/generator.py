@@ -30,7 +30,8 @@ from molSimplify.Scripts.rungen import (constrgen,
 def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                       argv=['main.py', '-i', 'asdfasdfasdfasdf'],
                       flag=True,
-                      gui=False):
+                      gui=False,
+                      write=False):
     """This is the main way to generate structures completely within Python.
 
         Parameters
@@ -43,6 +44,8 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                 Flag for printing information. Default is True.
             gui : bool, optional
                 Flag for GUI. Default is False.
+            write : bool, optional
+                Flag to generate outputfile from python
 
         Returns
         -------
@@ -56,8 +59,11 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
     """
     # from molSimplify.Scripts.generator import startgen_pythonic
     inputfile_str = '\n'.join([k + ' ' + v for k, v in list(input_dict.items())])
-    strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=False)
-    return (strfiles, emsg, this_diag)
+    if write:
+        startgen(argv, flag, gui, inputfile_str, write_files=write)
+    else:
+        strfiles, emsg, this_diag = startgen(argv, flag, gui, inputfile_str, write_files=write)
+        return (strfiles, emsg, this_diag)
 
 
 # Coordinates subroutines

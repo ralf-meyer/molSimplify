@@ -116,7 +116,7 @@ iminodiacetic:iminodiacetic.mol,iminodiacetic,0 1,build bidentate, BA, -2
 isoleucine:isoleucine.mol,Ile,3,build functionalize aminoacid,BA,0
 isoleucineB:isoleucine.mol,Ile,3 21,build functionalize aminoacid,BA,0
 isothiocyanate:isothiocyanate.mol,ithcynt,0,build functionalize small,BA,-1
-ncs:isothiocyanate.mol,ithcynt,0,build functionalize small,N
+ncs:isothiocyanate.mol,ithcynt,0,build functionalize small,N,-1
 leucine:leucine.mol,Leu,21,build functionalize aminoacid,BA,0
 leucineB:leucine.mol,Leu,3 21,build functionalize aminoacid,BA,0
 lysine:lysine.mol,Lys,3,build functionalize aminoacid,BA,1
@@ -269,6 +269,8 @@ ns-:ns-.mol,ns-,0,build functionalize small,N,-1
 nch:nch.mol,nch,0,build functionalize small,N,0
 och2:och2.mol,och2,0,build functionalize small,N,0
 hydrogensulfide:hydrogensulfide.mol, hydrogensulfide,0,build functionalize small,N,0
+o22-:o2.xyz,o22-,0 1,build functionalize small,N,-2
+cyanate:cyanate.xyz,cyanate,0,build functionalize small,N,-1
 CN1:CN1.mol,CN1,10 5, build bidentate, A, -1
 CN101:CN101.mol,CN101,20 4, build bidentate, A, -1
 CN102:CN102.mol,CN102,9 5, build bidentate, A, -1
