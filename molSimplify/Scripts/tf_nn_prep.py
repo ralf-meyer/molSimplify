@@ -718,9 +718,9 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("************** and metal-ligand bond distances    ****************")
         print("******************************************************************")
         if high_spin:
-            print(('You have selected a high-spin state, s = ' + str(spin)))
+            print(('You have selected a high-spin state, multiplicity = ' + str(spin)))
         else:
-            print(('You have selected a low-spin state, s = ' + str(spin)))
+            print(('You have selected a low-spin state, multiplicity = ' + str(spin)))
         # report to stdout
         if split[0] < 0 and not high_spin:
             if abs(split[0]) > 5:
