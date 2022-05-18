@@ -153,6 +153,16 @@ def compareOG(xyz1, xyz2, thresh):
     print("Threshold for overall geometry check: ", thresh)
     return passOG
 
+def runtest_num_atoms_in_xyz(xyzfile):
+    xyz_file1 = mol3D()
+    xyz_file1.readfromxyz('refs/' + xyzfile + '.xyz')
+    xyz_file1.getNumAtoms()
+
+    xyz_file2 = open('refs/'+ xyzfile + '.xyz').readlines()
+    num_atoms = int(xyz_file2[0])
+    
+    if num_atoms != xyz_file1.getNumAtoms():
+        print('Something is wrong with the number of atoms read from the XYZ file!')
 
 def compareGeo(xyz1, xyz2, threshMLBL, threshLG, threshOG, slab=False):
     # Compare number of atoms

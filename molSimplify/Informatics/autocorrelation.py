@@ -124,7 +124,7 @@ def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True, catoms=None):
 
 def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None):
     """This function returns the ratiometrics for one atom
-    
+
     Parameters
     ----------
         mol : mol3D class
@@ -132,11 +132,11 @@ def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None)
         orig : int, zero-indexed starting atom
         d : int, number of hops to travel
         oct : bool, if complex is octahedral, will use better bond checks
-    
+
     Returns
     -------
         result_vector : vector of prop_vec_num / prop_vec_den
-    
+
     """
     result_vector = np.zeros(d + 1)
     hopped = 0
@@ -170,7 +170,7 @@ def ratiometric(mol, prop_vec_num, prop_vec_den, orig, d, oct=True, catoms=None)
 
 def summetric(mol, prop_vec, orig, d, oct=True, catoms=None):
     """This function returns the summetrics for one atom
-    
+
     Parameters
     ----------
         mol : mol3D class
@@ -178,7 +178,7 @@ def summetric(mol, prop_vec, orig, d, oct=True, catoms=None):
         orig : int, zero-indexed starting atom
         d : int, number of hops to travel
         oct : bool, if complex is octahedral, will use better bond checks
-        
+
     Returns
     -------
         result_vector : vector of prop_vec_num / prop_vec_den
@@ -189,7 +189,7 @@ def summetric(mol, prop_vec, orig, d, oct=True, catoms=None):
     active_set = set([orig])
     historical_set = set()
     result_vector[hopped] = prop_vec[orig] + prop_vec[orig]
-    """   
+    """
         if oct:
             print('using OCT autocorrelation')
         else:
@@ -675,7 +675,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][-1]
-            prop_dict.update({keys: values}) 
+            prop_dict.update({keys: values})
         ####### 11/06/2019 -- Adjusted Gval RACs to not adjust on oxidation state. Confounded with O RACs. #####
         # # else:
         #     at_keys = globs.amass().keys()
@@ -730,7 +730,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
             if not atom.ismetal():
                 w[i] = globs.bondsdict()[atom.symbol()]
             else:
-                w[i] = len(mol.getBondedAtomsSmart(i, oct=True))
+                w[i] = len(mol.getBondedAtomsSmart(i, oct=oct))
         done = True
     elif prop == 'bondvalence_devi':
         assert len(mol.getAtoms()) == len(mol.bvd_dict)
@@ -1515,9 +1515,9 @@ def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4, oct=True,
 
 
 def generate_metal_ox_autocorrelation_derivatives(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
-    ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
+    ## oxmodifier - dict, used to modify prop vector (e.g. for adding
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
-    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal... 
+    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = None
     colnames = []
@@ -1547,9 +1547,9 @@ def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True, fla
 
 
 def generate_metal_ox_deltametric_derivatives(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False):
-    ## oxmodifier - dict, used to modify prop vector (e.g. for adding 
+    ## oxmodifier - dict, used to modify prop vector (e.g. for adding
     ##             ONLY used with  ox_nuclear_charge    ox or charge)
-    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal... 
+    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
@@ -1865,7 +1865,7 @@ def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True, NumB=F
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
         allowed_strings += ['group_number']
-        labels_strings += ['Gval'] 
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]

@@ -76,6 +76,11 @@ def sgejobgen(args, jobdirs):
         else:
             output.write('#$ -pe smp 1\n')
         if args.joption:
+            multi_option = args.joption[0].split('-')
+            if len(multi_option) > 1:
+                args.joption = []
+                for option in multi_option[1:]:
+                    args.joption += ["-" + option]
             for jopt in args.joption:
                 output.write('# '+jopt+'\n')
         if args.modules:
@@ -99,6 +104,7 @@ def sgejobgen(args, jobdirs):
             if not tc:
                 output.write(
                     'terachem terachem_input > $SGE_O_WORKDIR/opttest.out')
+            output.write('\n\nsleep 30')
         elif args.qccode and ('gam' in args.qccode.lower() or 'qch' in args.qccode.lower()):
             gm = False
             qch = False
@@ -112,6 +118,7 @@ def sgejobgen(args, jobdirs):
                 output.write('rungms gam.inp '+cpus + ' > gam.out')
             elif not qch and 'qch' in args.qccode.lower():
                 output.write('qchem qch.inp '+cpus + ' > qch.out')
+            output.write('\n\nsleep 30')
         elif args.qccode and ('orc' in args.qccode.lower() or 'molc' in args.qccode.lower()):
             orc = False
             molc = False
@@ -124,7 +131,8 @@ def sgejobgen(args, jobdirs):
             if not orc and 'orca' in args.qccode.lower():
                 output.write('orca orca.in > orca.out')
             elif not molc and 'molc' in args.qccode.lower():
-                output.write('pymolcas molcas.input -f')
+                output.write('pymolcas molcas.input -f')    
+            output.write('\n\nsleep 30')
         else:
             print(
                 'Not supported QC code requested. Please input execution command manually')

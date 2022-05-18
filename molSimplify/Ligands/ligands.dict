@@ -261,3 +261,5 @@ h2s:h2s.mol,h2s,0,build functionalize small,N,0
 hs-:hs-.mol,hs-,0,build functionalize small,N,-1
 no2-:no2-.mol,no2-,0,build functionalize small,N,-1
 nco-:nco-.mol,nco-,0,build functionalize small,N,-1
+o22-:o2.xyz,o22-,0 1,build functionalize small,N,-2
+cyanate:cyanate.xyz,cyanate,0,build functionalize small,N,-1
