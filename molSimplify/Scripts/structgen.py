@@ -74,8 +74,6 @@ def getbackbcombsall(nums):
         bbcombs[i] = list(tup)
     return bbcombs
 
-  
-sardines
 
 def getnupdateb(backbatoms, denticity):
     """Gets a combination of backbone points that satisfies denticity and updates possible combinations.
