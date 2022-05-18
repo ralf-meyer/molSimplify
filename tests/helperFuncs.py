@@ -153,7 +153,7 @@ def compareOG(xyz1, xyz2, thresh):
     print("Threshold for overall geometry check: ", thresh)
     return passOG
 
-def runtest_num_atoms_in_xyz(xyzfile):
+def runtest_num_atoms_in_xyz(tmpdir, xyzfile):
     xyz_file1 = mol3D()
     xyz_file1.readfromxyz('refs/' + xyzfile + '.xyz')
     xyz_file1.getNumAtoms()
