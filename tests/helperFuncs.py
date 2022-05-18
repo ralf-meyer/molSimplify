@@ -155,10 +155,10 @@ def compareOG(xyz1, xyz2, thresh):
 
 def runtest_num_atoms_in_xyz(tmpdir, xyzfile):
     xyz_file1 = mol3D()
-    xyz_file1.readfromxyz('refs/' + xyzfile + '.xyz')
+    xyz_file1.readfromxyz('tests/refs/' + xyzfile + '.xyz')
     xyz_file1.getNumAtoms()
 
-    xyz_file2 = open('refs/'+ xyzfile + '.xyz').readlines()
+    xyz_file2 = open('tests/refs/'+ xyzfile + '.xyz').readlines()
     num_atoms = int(xyz_file2[0])
     
     if num_atoms != xyz_file1.getNumAtoms():
