@@ -64,7 +64,7 @@ def test_example_1(tmpdir):
 #############################################
 
 III. Run Test Cases
-  1. Tests will be automatically run by Travis. However, it's highly recommended
+  1. Tests will be automatically run by GitHub CI. However, it's highly recommended
      that one runs the tests locally before committing or push to repository to
      avoid breaking things
 

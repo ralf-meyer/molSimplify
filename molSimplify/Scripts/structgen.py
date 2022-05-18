@@ -192,7 +192,7 @@ def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
                 ANN_bondl = len(
                     [item for items in batslist for item in items])*[False]
                 if args.debug:
-                    if ANN_reason == 'found incorrect ligand symmetry':  # This is a workaround so as to not have to change report files checked by Travis CI when running test cases, which would require everyone using molSimplify from source to have to git pull the new files before any new commits
+                    if ANN_reason == 'found incorrect ligand symmetry':  # This is a workaround so as to not have to change report files checked by GitHub CI when running test cases, which would require everyone using molSimplify from source to have to git pull the new files before any new commits
                         print(("ANN call failed with reason: either found incorrect ligand symmetry, or see ANN messages above"))
                     else:
                         print(("ANN call failed with reason: " + ANN_reason))
