@@ -33,7 +33,7 @@ jobs:
 
     - name: Report Status
       # Slack notifications only on the main repo
-      if: ${{ github.event_name != 'pull_request' && github.repository == 'hjkgrp/molSimplify' }}
+      if: ${{ github.event_name != 'pull_request' && github.repository == 'hjkgrp/molSimplify' && job.status == 'failure'}}
       #uses: ravsamhq/notify-slack-action@v1
       uses: 8398a7/action-slack@v3
       with:
