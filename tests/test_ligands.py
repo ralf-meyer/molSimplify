@@ -44,7 +44,7 @@ def test_no_repeats():
     ]  # Grabbing the ligand names.
     repeated_keys = [
         item for idx, item in enumerate(listed_keys) if item in listed_keys[:idx]
-    ]  # The unique ligand names.
+    ]  # The repeated ligand names.
     assert len(repeated_keys) == 0
 
 
