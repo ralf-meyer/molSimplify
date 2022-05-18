@@ -74,13 +74,16 @@ jobs:
     - name: Install package
       run: |
         pip install -e .
-        pip install pytest-cov
+        pip install pytest-cov codecov
         conda list
     
     - name: Run tests
       run: |
         pytest -v --cov=molSimplify
-        
+    
+    - name: Upload coverage report to codecov
+      run: codecov
+    
     - name: Report Status
       # Slack notifications only on the main repo
       if: ${{ github.event_name != 'pull_request' && github.repository == 'hjkgrp/molSimplify' }}
