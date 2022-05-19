@@ -45,7 +45,7 @@ class dft_observation:
     def get_coord(self):
         self.coord = len(self.mol.getBondedAtomsSmart(self.mol.findMetal()[0]))
 
-    def get_descriptor_vector(self, lig_only, simple, name=False, loud=False):
+    def get_descriptor_vector(self, lig_only, simple, flag_name=False, loud=False):
 
         self.get_coord()
         if not lig_only and (self.coord == 6):
@@ -58,7 +58,7 @@ class dft_observation:
                str(len(self.descriptor_names))))
         if self.coord == 6:  # oct only
             results_dictionary = generate_all_ligand_autocorrelations(
-                self.mol, depth=3, loud=loud, name=name)
+                self.mol, depth=3, loud=loud, flag_name=flag_name)
             self.append_descriptors(
                 results_dictionary['colnames'], results_dictionary['result_ax_full'], 'f', 'ax')
             self.append_descriptors(
@@ -71,7 +71,7 @@ class dft_observation:
                 self.append_descriptors(
                     results_dictionary['colnames'], results_dictionary['result_eq_con'], 'lc', 'eq')
                 results_dictionary = generate_all_ligand_deltametrics(
-                    self.mol, depth=3, loud=True, name=name)
+                    self.mol, depth=3, loud=True, flag_name=flag_name)
                 self.append_descriptors(
                     results_dictionary['colnames'], results_dictionary['result_ax_con'], 'D_lc', 'ax')
                 self.append_descriptors(
