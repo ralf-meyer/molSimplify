@@ -950,7 +950,7 @@ class mGUI():
         self.jgrid.addWidget(self.butqcgRet, 7, 4, 1, 1)
         # load defaults if existing
         if glob.glob(str(globs.custom_path)+'/Data/.jobdefinput.inp'):
-            loadfrominputjob(str(globs.custom_path)+'/Data/.jobdefinput.inp')
+            loadfrominputjob(self, str(globs.custom_path)+'/Data/.jobdefinput.inp')
         ##########################################
         ### create local DB interaction window ###
         ##########################################

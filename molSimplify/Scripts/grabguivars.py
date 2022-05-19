@@ -571,10 +571,10 @@ def loadfrominputqch(gui, fname):
 
 
 def loadfrominputjob(gui, fname):
-    f = open(fname, 'r')
-    s = f.read()
+    with open(fname, 'r') as fin:
+        s = fin.read()
     s = [_f for _f in s.splitlines() if _f]
-    f.close()
+
     gui.etjopt.setText('')
     gui.jcomm.setText('')
     ### general structure generation options ###

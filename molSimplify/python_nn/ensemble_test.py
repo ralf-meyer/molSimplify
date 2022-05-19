@@ -58,7 +58,7 @@ def ensemble_maker_inner(train_mat, labels, model_gen_function, info_dict,
     ## contains core functions to make ensemble models
     ## from training data and labels
     ## model_gen_function is a functiont that takes NO arguments and returns a keras model
-    ## info_dict is a dictionary of training info 
+    ## info_dict is a dictionary of training info
     train_mat, labels = shuffle(train_mat, labels)
     train_mat = np.array_split(train_mat, num, axis=0)
     labels = np.array_split(labels, num, axis=0)
@@ -264,13 +264,13 @@ def latent_space_uq(predictor, layer_index=-2, descriptors=False, descriptor_nam
         ## get latent dist
         training_latent_distance = np.array(get_latent([excitation, 0]))[0]
         nn_latent_dist_train, _, __ = dist_neighbor(training_latent_distance, training_latent_distance, labels_train,
-                                                    l=5, dist_ref=1, just_nn=True)
+                                                    l=5, dist_ref=1)
         nn_dist_avrg_train = np.mean(nn_latent_dist_train)
         # print(nn_dist_avrg_train)
         test_latent_distance = np.array(get_latent([excitation_test, 0]))[0]
         nn_latent_dist_test, nn_dists, nn_labels = dist_neighbor(test_latent_distance, training_latent_distance,
                                                                  labels_train,
-                                                                 l=5, dist_ref=nn_dist_avrg_train, just_nn=False)
+                                                                 l=5, dist_ref=nn_dist_avrg_train)
         if not entropy:
             # print(nn_latent_dist_test.shape)
             # print(min(nn_latent_dist_test), max(nn_latent_dist_test))

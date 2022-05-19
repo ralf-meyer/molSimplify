@@ -836,12 +836,12 @@ def bind_load(userbind, bindcores):
                 bind.charge = bind.OBMol.GetTotalCharge()
             except IOError:
                 emsg = 'Failed converting file ' + userbind+' to molecule..Check your file.\n'
-                return False, emsg
+                return False, False, emsg
             bind.ident = userbind.rsplit('/')[-1]
             bind.ident = bind.ident.split('.'+ftype)[0]
         else:
             emsg = 'Binding species file '+userbind+' does not exist. Exiting..\n'
-            return False, emsg
+            return False, False, emsg
     # if not, try converting from SMILES
     else:
         # check for transition metals
@@ -1119,7 +1119,7 @@ def copy_to_custom_path():
     globs = globalvars()
     if not globs.custom_path:
         print('Error, custom path not set!')
-        raise('')
+        raise FileNotFoundError('Error, custom path not set!')
     # create folder
     if not os.path.exists(globs.custom_path):
         os.makedirs(globs.custom_path)

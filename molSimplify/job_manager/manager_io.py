@@ -58,7 +58,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                                'thermo_vib_energy': None, 'thermo_vib_free_energy': None, 'thermo_suspect': None,
                                'orbital_occupation': None, 'oscillating_scf_error': False}
                 return return_dict
-                
+
     output_type = ['TeraChem', 'ORCA'][counter]
 
     name = None
@@ -308,7 +308,7 @@ def read_infile(outfile_path):
     for prop, prop_name in zip([unique_job_name, charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates, guess,
                                 qm_code],
-                               ['name', 'charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 
+                               ['name', 'charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb',
                                 'method', 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'qm_code']):
@@ -585,8 +585,8 @@ def write_terachem_input(infile_dictionary):
     if type(infile['convergence_thresholds']) == list:
         if infile['convergence_thresholds'][0]:
             thresholds = [line if line.endswith('\n') else line + '\n' for line in infile['convergence_thresholds']]
-            tight_thresholds = ("min_converge_gmax " + thresholds[0] + "min_converge_grms " 
-                                + thresholds[1] + "min_converge_dmax " + thresholds[2] 
+            tight_thresholds = ("min_converge_gmax " + thresholds[0] + "min_converge_grms "
+                                + thresholds[1] + "min_converge_dmax " + thresholds[2]
                                 + "min_converge_drms " + thresholds[3] + "min_converge_e "
                                 + thresholds[4] + "convthre " + thresholds[5])
             text = text[:-1] + ['\n', tight_thresholds, 'end']
@@ -691,13 +691,12 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
-                                 machine=machine,
-                                 use_molscontrol=use_molscontrol, queues=queues)
+                                 machine=machine, use_molscontrol=use_molscontrol,
+                                 queues=queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
-                             parallel_environment=parallel_environment, 
-                             machine=machine,
-                             use_molscontrol=use_molscontrol)
+                             parallel_environment=parallel_environment,
+                             machine=machine, use_molscontrol=use_molscontrol)
     else:
         raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
 
@@ -827,8 +826,11 @@ def write_molscontrol_config():
 
 
 def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel_environment=4,
-                         machine='gibraltar'):
+                         machine='gibraltar', use_molscontrol=False):
     # Write a generic orca jobscript
+
+    if use_molscontrol:
+        raise NotImplementedError('molscontrol is currently not supported for orca.')
 
     memory_allocation = str(
         int(parallel_environment) * 3)  # allocate memory based on 192 GB for 64 processors on the new cpu nodes
