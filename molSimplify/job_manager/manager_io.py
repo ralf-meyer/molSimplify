@@ -685,13 +685,13 @@ def write_orca_input(infile_dictionary):
 
 
 def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='terachem', parallel_environment=4,
-                    machine='gibraltar', use_molscontrol=False, queues=['gpus', 'gpusnew']):
+                    machine='gibraltar', cwd=False, use_molscontrol=False, queues=['gpus', 'gpusnew']):
     # Writes a generic obscript
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
         write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
-                                 machine=machine,
+                                 machine=machine, cwd=cwd,
                                  use_molscontrol=use_molscontrol, queues=queues)
     elif qm_code == 'orca':
         write_orca_jobscript(name, custom_line=custom_line, time_limit=time_limit,
@@ -703,14 +703,15 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
 
 
 def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
-                             machine='gibraltar', use_molscontrol=False, queues=['gpus', 'gpusnew']):
+                             machine='gibraltar', cwd=False, use_molscontrol=False, queues=['gpus', 'gpusnew']):
     # if use_molscontrol and machine != 'gibraltar':
     #     raise ValueError("molscontrol is only implemented on gibraltar for now.")
     jobscript = open(name + '_jobscript', 'w')
     if machine == 'gibraltar':
         if not use_molscontrol:
             text = ['#$ -S /bin/bash\n',
-                    '#$ -N ' + name + '\n'
+                    '#$ -N ' + name + '\n',
+                    '#$ -cwd\n',
                     '#$ -R y\n',
                     '#$ -l h_rt=' + time_limit + '\n',
                     '#$ -l h_rss=8G\n',
@@ -726,7 +727,8 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                     ]
         else:
             text = ['#$ -S /bin/bash\n',
-                    '#$ -N ' + name + '\n'
+                    '#$ -N ' + name + '\n',
+                    '#$ -cwd\n',
                     '#$ -R y\n',
                     '#$ -l h_rt=' + time_limit + '\n',
                     '#$ -l h_rss=8G\n',
@@ -798,15 +800,28 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
         raise ValueError('Job manager does not know how to run Terachem on this machine!')
     if terachem_line and machine == 'gibraltar':
         if not use_molscontrol:
-            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+            if not cwd:
+                text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out\n']
+            else:
+                text += ["echo $SGE_O_WORKDIR\n"]
+                text += ['cd $SGE_O_WORKDIR\n']
+                text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
         else:
             text += ["cp %s.xyz initgeo.xyz" % name]
-            text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out &\n']
-            text += ["PID_KILL=$!\n"]
-            text += ["molscontrol $PID_KILL &\n"]
-            text += ["wait\n"]
-            text += ["mv *.log $SGE_O_WORKDIR\n"]
-            text += ["mv features.json $SGE_O_WORKDIR/dyanmic_features.json\n"]
+            if not cwd:
+                text += ['terachem ' + name + '.in ' + '> $SGE_O_WORKDIR/' + name + '.out &\n']
+                text += ["PID_KILL=$!\n"]
+                text += ["molscontrol $PID_KILL &\n"]
+                text += ["wait\n"]
+                text += ["mv *.log $SGE_O_WORKDIR\n"]
+                text += ["mv features.json $SGE_O_WORKDIR/dyanmic_features.json\n"]
+            else:
+                text += ["echo $SGE_O_WORKDIR\n"]
+                text += ['cd $SGE_O_WORKDIR\n']
+                text += ['terachem ' + name + '.in ' + '> ' + name + '.out &\n']
+                text += ["PID_KILL=$!\n"]
+                text += ["molscontrol $PID_KILL &\n"]
+                text += ["wait\n"]
     elif terachem_line and machine in ['bridges', 'comet']:
         text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
     if custom_line:
@@ -814,7 +829,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             text = text[:12] + custom_line + text[12:]
         else:
             text = text[:12] + [custom_line + '\n'] + text[12:]
-    text += ['sleep 30']
+
     for i in text:
         jobscript.write(i)
     jobscript.close()
@@ -834,6 +849,7 @@ def write_orca_jobscript(name, custom_line=None, time_limit='96:00:00', parallel
     if machine == 'gibraltar':
         text = ['#$ -S /bin/bash\n',
                 '#$ -N ' + name + '\n',
+                '#$ -cwd\n',
                 '#$ -R y\n',
                 '#$ -l h_rt=' + time_limit + '\n',
                 '#$ -l h_rss=' + memory_allocation + 'G\n',
