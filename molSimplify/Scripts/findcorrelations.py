@@ -161,7 +161,8 @@ def correlation_supervisor(path, rootdir, simple=False, lig_only=False, max_desc
     mse_reduce = list()
     # stepwise reduce the feature set until only one is left
     for n in range(0, n_tot):
-        reductor = feature_selection.RFE(Reg, n_tot-n, step=1, verbose=0)
+        reductor = feature_selection.RFE(Reg, n_features_to_select=n_tot-n,
+                                         step=1, verbose=0)
         reductor.fit(Xs, Y)
         Ypred_all = reductor.predict(Xs)
         rs_all = metrics.r2_score(Y, Ypred_all)
