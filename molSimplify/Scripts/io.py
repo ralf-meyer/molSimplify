@@ -1117,7 +1117,7 @@ def copy_to_custom_path():
     globs = globalvars()
     if not globs.custom_path:
         print('Error, custom path not set!')
-        raise('')
+        raise FileNotFoundError('Error, custom path not set!')
     # create folder
     if not os.path.exists(globs.custom_path):
         os.makedirs(globs.custom_path)
