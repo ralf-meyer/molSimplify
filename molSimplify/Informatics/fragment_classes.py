@@ -11,7 +11,7 @@ class fragment:
     for that fragment. This fragment then builds macrocycles
     '''
     def __init__(self, name, options, start_macrocycle=False, ring_closure_ind=1):
-        ''' 
+        '''
         Name is the name (i.e. pyrrole)
         Options is a list of tuples that contain
         the smiles string and metal coordination atom
@@ -79,7 +79,7 @@ class fragment:
         '''
         This function only works on ring closures with one cycle.
         It identifies the current ring closure and adjusts the index of
-        that ring closure based on the user input. If the smiles 
+        that ring closure based on the user input. If the smiles
         does not actually have a ring in it, then it returns the
         original smiles tuple.
         '''
@@ -111,7 +111,7 @@ class fragment:
         '''
         This function takes a smiles string for monodentate portions and
         returns an adjusted smiles that incorporates the start of a macrocycle.
-        The default macrocycle ring index will be 9. If c1ncccc1 is handed in, 
+        The default macrocycle ring index will be 9. If c1ncccc1 is handed in,
         the returned smiles will be c19ncccc1. It simply starts the ring
         opening of the macrocycle.
         '''
@@ -156,11 +156,11 @@ class fragment:
 
     def split_smiles_at_lc_adjacent(self, smiles_tuple):
         '''
-        This function takes a smiles string and splits it into its respective 
+        This function takes a smiles string and splits it into its respective
         parts that can be functionalized. We allow functionalizations at the
         direct neighbors of the coordinating atom. Thus, this function returns
         a list of substrings that make up the smiles string, so that we can
-        stitch together different substructures. 
+        stitch together different substructures.
 
         Takes in a smiles tuple and splits the string into three parts:
         1) between the left adjacent atom and the connection atom
@@ -298,11 +298,11 @@ class tetradentate:
 
     def split_smiles_at_lc_adjacent(self, smiles_tuple):
         '''
-        This function takes a smiles string and splits it into its respective 
+        This function takes a smiles string and splits it into its respective
         parts that can be functionalized. We allow functionalizations at the
         direct neighbors of the coordinating atom. Thus, this function returns
         a list of substrings that make up the smiles string, so that we can
-        stitch together different substructures. 
+        stitch together different substructures.
 
         Takes in a smiles tuple and splits the string into three parts:
         1) between the left adjacent atom and the connection atom
@@ -491,15 +491,15 @@ class tetradentate:
                                 print(self.fragment1.name,self.fragment3.name,self.bridge1.return_name(),self.bridge2.return_name(),self.bridge3.return_name())
                                 func_1, func_2, func_3, func_4 = False, False, False, False
                                 bridge1_func, bridge2_func, bridge3_func = False, False, False
-                                coord_2 = (frag1[1][1] + 
-                                          self.count_atoms(center1) + 
-                                          self.count_atoms(frag1[0][0]) + 
+                                coord_2 = (frag1[1][1] +
+                                          self.count_atoms(center1) +
+                                          self.count_atoms(frag1[0][0]) +
                                           self.count_atoms(left1))
-                                coord_3 = (coord_2 + self.count_atoms(center2) + 
-                                          self.count_atoms(frag2[0][0]) + 
+                                coord_3 = (coord_2 + self.count_atoms(center2) +
+                                          self.count_atoms(frag2[0][0]) +
                                           self.count_atoms(left3))
-                                coord_4 = (coord_3 + self.count_atoms(center3) + 
-                                          self.count_atoms(frag3[0][0]) + 
+                                coord_4 = (coord_3 + self.count_atoms(center3) +
+                                          self.count_atoms(frag3[0][0]) +
                                           self.count_atoms(left4))
                                 if len(frag1[1][2]) > 0: #frag 1 has functionalizable positions
                                     func_1 = [val +self.count_atoms(frag1[0][0] + left2 + center2 +
@@ -519,24 +519,24 @@ class tetradentate:
                                 if len(frag4[1][2]) > 0:
                                     func_4 = [val +self.count_atoms(frag1[0][0] + left2 + center2 +
                                                     frag2[0][0] + left3 + center3 +
-                                                    frag3[0][0] + left4 + center4 + frag4[0][0] + str(9)) 
+                                                    frag3[0][0] + left4 + center4 + frag4[0][0] + str(9))
                                                 for val in frag4[1][2]]
 
                                 if len(frag1[0][1]) > 0: #frag 1 has functionalizable positions
-                                    bridge1_func = [self.count_atoms(left1 + center1) for val in frag1[0][1]]
+                                    bridge1_func = [self.count_atoms(left1 + center1) for _ in frag1[0][1]]
                                 if len(frag3[0][1]) > 0:
                                     bridge2_func = [self.count_atoms(left1 + center1 + '(' + frag1[0][0] + left2 + center2 +
-                                               '(' + frag2[0][0] + left3 + center3) for val in frag3[0][1]]
-                                
+                                               '(' + frag2[0][0] + left3 + center3) for _ in frag3[0][1]]
+
                                 if len(frag2[0][1]) > 0:
                                     ### bridge 3 is symmetric
                                     bridge3_func_1 = [self.count_atoms(left1 + center1 + '(' + frag1[0][0] + left2 + center2)
-                                                     for val in frag2[0][1]]
+                                                     for _ in frag2[0][1]]
                                     bridge3_func_2 = [self.count_atoms(left1 + center1 + '(' + frag1[0][0] + left2 + center2 +
                                                       '(' + frag2[0][0] + left3 + center3 +
-                                                      '(' + frag3[0][0] + left4 + center4)for val in frag2[0][1]]
+                                                      '(' + frag3[0][0] + left4 + center4)for _ in frag2[0][1]]
                                     bridge3_func = [bridge3_func_1, bridge3_func_2]
-                                
+
                                 # At the end here we are adding back ones because smicat is 1 indexed
                                 # instead of 0
                                 coord_atoms_zero_index = [frag1[1][1],
@@ -559,14 +559,14 @@ class tetradentate:
                                              'frag2_smiles':frag2[1][0],
                                              'frag3_smiles':frag3[1][0],
                                              'frag4_smiles':frag4[1][0],
-                                             'frag1_func':func_1, 
-                                             'frag2_func':func_2, 
-                                             'frag3_func':func_3, 
+                                             'frag1_func':func_1,
+                                             'frag2_func':func_2,
+                                             'frag3_func':func_3,
                                              'frag4_func':func_4,
                                              'bridge1_func':bridge1_func,
                                              'bridge2_func':bridge2_func,
                                              'bridge3_func':bridge3_func,
-                                             'macrocycle_smiles':full_macrocycle, 
+                                             'macrocycle_smiles':full_macrocycle,
                                              'coord_atoms_zero_index':coord_atoms_zero_index,
                                              'coord_atoms_smicat':coord_atoms_smicat,
                                              'coord_elements':coord_elements,
