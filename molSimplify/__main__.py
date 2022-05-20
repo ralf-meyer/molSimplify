@@ -37,7 +37,8 @@ from .Scripts.inparse import (parseinputs_advanced, parseinputs_slabgen,
                               parseinputs_postproc, parseinputs_random,
                               parseinputs_binding, parseinputs_tsgen,
                               parseinputs_customcore, parseinputs_naming,
-                              parseinputs_basic, parseCLI)
+                              parseinputs_ligdict, parseinputs_basic, 
+                              parseCLI)
 from .Scripts.generator import startgen
 from molSimplify.Classes.globalvars import globalvars
 
@@ -57,6 +58,7 @@ DescString_basic += '-h binding: binding species (second molecule) generation he
 DescString_basic += '-h customcore: custom core functionalization help\n'
 DescString_basic += '-h tsgen: transition state generation help\n'
 DescString_basic += '-h naming: custom filename help\n'
+DescString_basic += '-h liganddict: ligands.dict help\n'
 ## Advanced help description string
 DescString_advanced = 'Printing advanced structure generation help.'
 ## Slab builder help description string
@@ -81,6 +83,8 @@ DescString_tsgen = 'Printing transition state generation help.'
 DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
+## Ligand dictionary help description string
+DescString_ligdict = 'Printing ligand dictionary help.'
 
 
 def tensorflow_silence():
@@ -174,6 +178,9 @@ def main(args=None):
         elif 'naming' in args:
             parser = argparse.ArgumentParser(description=DescString_naming)
             parseinputs_naming(parser)
+        elif 'liganddict' in args:
+            parser = argparse.ArgumentParser(description=DescString_ligdict, formatter_class=argparse.RawTextHelpFormatter) # The formatter class allows for the display of new lines.
+            parseinputs_ligdict(parser)
         else:
             # print basic help
             parser = argparse.ArgumentParser(description=DescString_basic,

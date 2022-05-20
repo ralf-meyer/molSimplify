@@ -1,0 +1,26 @@
+# Input file generated from molSimplify at 05/20/2022 16:04
+-checkdirb True
+-core Fe
+-oxstate II
+-coord 6
+-geometry oct
+-lig [nH]1cnc2c(c1)nc(n2)c1ncccc1	12,8
+-ligocc 3
+-spin 1
+-keepHs True
+-rundir /Users/gianmarcoterrones/molSimplify/Runs
+-smicat 11,7
+-ff mmff94
+-ffoption ba
+-nconfs 1
+-charge 2
+-calccharge True
+-distort 0
+-qccode terachem
+-runtyp energy
+-method b3lyp
+-basis lacvps_ecp
+-jsched sge
+-jobdir bidentate
+-jid 6
+-bcharge 0
