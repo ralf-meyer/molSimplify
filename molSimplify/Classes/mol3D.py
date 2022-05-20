@@ -31,7 +31,6 @@ try:
     qtflag = True
 except ImportError:
     qtflag = False
-    pass
 
 
 class mol3D:
@@ -3043,7 +3042,7 @@ class mol3D:
                         cutoff = 0.6
                     else:
                         cutoff = 0.65
-                    if ii != jj and (distance(atom1.coords(), atom0.coords()) < cutoff * (atom1.rad + atom0.rad)):
+                    if distance(atom1.coords(), atom0.coords()) < cutoff * (atom1.rad + atom0.rad):
                         overlap = True
                         norm = distance(
                             atom1.coords(), atom0.coords())/(atom1.rad+atom0.rad)

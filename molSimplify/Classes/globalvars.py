@@ -485,7 +485,7 @@ class globalvars:
         # About message
         self.about = s
         ###### GET INFORMATION ######
-        runfromcmd, Linux, OSX = False, False, False
+        runfromcmd = False
         try:
             ### check if running through commandline ###
             if sys.stdin.isatty():
@@ -496,32 +496,32 @@ class globalvars:
         except AttributeError:  # if sys.stdin does not have an isatty method
             runfromcmd = True
         ### get running os ###
+        self.linux, self.osx = False, False
         if platform.system().lower() in 'linux':
-            Linux = True  # noqa F481 variable never used!
+            self.linux = True
         elif platform.system().lower() in 'darwin':
-            OSX = True
-        self.osx = OSX
+            self.osx = True
         # get cwd
         # script filename (usually with path)
         _ = inspect.getfile(inspect.currentframe())
         cdir2 = os.path.dirname(os.path.abspath(
             inspect.getfile(inspect.currentframe())))  # script directory
         cdir = cdir2.rsplit('/', 1)[0]
-        cdir2 = cdir
+        # unused:
+        # cdir2 = cdir
         homedir = os.path.expanduser("~")
         # create default molSimplify for mac
-        if OSX and not glob.glob(homedir + '/.' + self.PROGRAM) and not runfromcmd:
+        if self.osx and not glob.glob(homedir + '/.' + self.PROGRAM) and not runfromcmd:
             txt = 'INSTALLDIR=/Applications/' + self.PROGRAM + '.app/Contents/Resources\n'
-            f = open(homedir + '/.' + self.PROGRAM, 'w')
-            f.write(txt)
-            f.close()
+            with open(homedir + '/.' + self.PROGRAM, 'w') as fout:
+                fout.write(txt)
         self.chemdbdir = ''
         self.multiwfn = ''
         self.custom_path = False
         ###### check for ~/.molSimplify ######
         if glob.glob(homedir + '/.' + self.PROGRAM):
-            f = open(homedir + '/.' + self.PROGRAM, 'r')
-            s = [_f for _f in f.read().splitlines() if _f]
+            with open(homedir + '/.' + self.PROGRAM, 'r') as fin:
+                s = [_f for _f in fin.read().splitlines() if _f]
             d = dict()
             for ss in s:
                 sp = [_f for _f in ss.split('=') if _f]
@@ -537,9 +537,8 @@ class globalvars:
                 self.custom_path = d['CUSTOM_DATA_PATH']
         else:
             self.installdir = cdir
-            f = open(homedir + '/.' + self.PROGRAM, 'w')
-            f.write('CHEMDBDIR=\n')
-            f.close()
+            with open(homedir + '/.' + self.PROGRAM, 'w') as fout:
+                fout.write('CHEMDBDIR=\n')
 
         # Home directory
         self.homedir = homedir

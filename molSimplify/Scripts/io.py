@@ -561,7 +561,7 @@ def core_load(usercore, mcores=None):
 # Load substrate and convert to mol3D
 #  @param usersubstrate Name of substrate
 #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-#  @return mol3D of substrate, error messages
+#  @return mol3D of substrate, subscatom, error messages
 #  attributes of substrate: OBMol, denticity, ident (identity), charge, cat (connection atom index), and grps (substrate group)
 
 
@@ -600,7 +600,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         if not glob.glob(fsubst):
             emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fsubst
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
         if ('.xyz' in fsubst):
             sub.OBMol = sub.getOBMol(fsubst, 'xyzf')
         elif ('.mol' in fsubst):
@@ -647,12 +647,12 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 emsg = 'Failed converting file ' + usersubstrate + \
                     ' to molecule..Check your file.\n'
                 print(emsg)
-                return False, emsg
+                return False, subcatoms, emsg
             sub.ident = usersubstrate.split('/')[-1].split('.')[0]
         else:
             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
     # if not, try converting from SMILES
     else:
         # check for transition metals
@@ -667,7 +667,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
             emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
         sub.cat = [0]
         sub.denticity = 1
         sub.ident = 'substrate'

@@ -67,13 +67,15 @@ def expandrepresentation(args):
             expanded.append(ligand)
     return expanded
 
-# Given a list, genertes all possible permutations of that list
+# Given a list, generates all possible permutations of that list
 #  @param lst The list to permute
 #  @return master A list of lists, with each specifying a permutation
 
 
-def findpermutations(lst, master=[]):
-    for i in range(len(lst)-1):
+def findpermutations(lst, master=None):
+    if master is None:
+        master = []
+    for _ in range(len(lst)-1):
         if not master:
             for element in lst:
                 master.append([element])
@@ -234,9 +236,9 @@ def generatestereo(collapsed_representation):
 #  @return allowed Returns a boolean. True if the bidentates are in allowed positions.
 def checkallowedbidentates(simple_geometry, geometry):
     simple_geometry_tmp = copy(simple_geometry)
-    
+
     # Check if bidentate is in a position where there's nothing to coordinate to
-    
+
     if geometry in ['oct', 'pbp']:
         if simple_geometry[-1].endswith('_alphabond') or simple_geometry[-1].endswith('_betabond'):
             return False
