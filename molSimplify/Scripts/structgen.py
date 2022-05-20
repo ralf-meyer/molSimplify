@@ -1799,7 +1799,7 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
     return lig3D_aligned
 
 
-def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=False, ligpiatoms=[], MLb=[], ANN_flag=False, ANN_bondl=[], this_diag=0, MLbonds=dict(), MLoptbds=[], i=0, EnableAutoLinearBend=True):
+def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=False, ligpiatoms=[], MLb=[], ANN_flag=False, ANN_bondl=[], this_diag=0, MLbonds=dict(), MLoptbds=None, i=0, EnableAutoLinearBend=True):
     """Aligns a monodentate ligand to core connecting atom coordinates.
 
     Parameters
@@ -1831,7 +1831,7 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=
         MLbonds : dict, optional
             M-L bond dictionary. Default is empty.
         MLoptbds : list, optional
-            List of final M-L bond lengths. Default is empty.
+            List of final M-L bond lengths. Default is None.
         i : int, optional
             Ligand serial number. Default is 0.
         EnableAutoLinearBend : bool, optional
@@ -1845,6 +1845,9 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms, rempi=
             Updated list of metal ligand bonds.
 
     """
+    if MLoptbds is None:
+        MLoptbds = []
+
     corerefcoords = coreref.coords()
     # connection atom in lig3D
     atom0 = catoms[0]

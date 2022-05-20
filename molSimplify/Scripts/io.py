@@ -646,12 +646,12 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 emsg = 'Failed converting file ' + usersubstrate + \
                     ' to molecule..Check your file.\n'
                 print(emsg)
-                return False, emsg
+                return False, subcatoms, emsg
             sub.ident = usersubstrate.split('/')[-1].split('.')[0]
         else:
             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
     # if not, try converting from SMILES
     else:
         # check for transition metals
@@ -666,7 +666,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
             emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
         sub.cat = [0]
         sub.denticity = 1
         sub.ident = 'substrate'

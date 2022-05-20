@@ -512,20 +512,19 @@ def shave__type(super_cell, dim, mode):
 
     dim_ref = 1000
 
+    del_list = []
     if (mode == -1):
         for i, atoms in enumerate(super_cell.getAtoms()):
             coords = atoms.coords()
             if (coords[dim] < dim_ref):
                 dim_ref = coords[dim]
-        del_list = list()
         for i, atoms in enumerate(super_cell.getAtoms()):
             coords = atoms.coords()
             if abs(coords[dim] - dim_ref) < TOL:
                 del_list.append(i)
-    if (mode == 1):
+    elif (mode == 1):
         extents = find_extents(super_cell)
         dim_max = extents[dim]
-        del_list = list()
         for i, atoms in enumerate(super_cell.getAtoms()):
             coords = atoms.coords()
             if abs(coords[dim] - dim_max) < TOL:
