@@ -170,9 +170,7 @@ def getconstsample(no_rgen, args, licores, coord):
         # check for multiple multidentate ligands
         dsorted = sorted(dents)
         if not coord or (coord and totdent == coord):
-            if len(dsorted) > 1 and (dsorted[-1]+dsorted[-2] > totdent):
-                generated = generated
-            else:
+            if not (len(dsorted) > 1 and (dsorted[-1]+dsorted[-2] > totdent)):
                 if (args.lignum and len(set(combo)) == int(args.lignum)):
                     # reorder with high denticity atoms in the beginning
                     keysl = sorted(list(range(len(dents))),
@@ -388,7 +386,7 @@ def draw_supervisor(args, rundir):
             print('Due to technical limitations, we will draw only the first substrate.')
         print('Drawing the substrate.')
         print((args.substrate[0]))
-        substrate, emsg = substr_load(args.substrate[0])
+        substrate, subcatoms, emsg = substr_load(args.substrate[0], 0, args.subcatoms)
         substrate.draw_svg(args.substrate[0])
     else:
         print('You have not specified anything to draw. Currently supported: ligand, core, substrate')
