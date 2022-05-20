@@ -31,7 +31,6 @@ try:
     qtflag = True
 except ImportError:
     qtflag = False
-    pass
 
 
 class mol3D:
