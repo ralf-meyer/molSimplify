@@ -560,7 +560,7 @@ def core_load(usercore, mcores=None):
 # Load substrate and convert to mol3D
 #  @param usersubstrate Name of substrate
 #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-#  @return mol3D of substrate, error messages
+#  @return mol3D of substrate, subscatom, error messages
 #  attributes of substrate: OBMol, denticity, ident (identity), charge, cat (connection atom index), and grps (substrate group)
 
 
@@ -599,7 +599,7 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         if not glob.glob(fsubst):
             emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fsubst
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
         if ('.xyz' in fsubst):
             sub.OBMol = sub.getOBMol(fsubst, 'xyzf')
         elif ('.mol' in fsubst):
