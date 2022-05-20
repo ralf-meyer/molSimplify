@@ -496,6 +496,7 @@ class globalvars:
         except AttributeError:  # if sys.stdin does not have an isatty method
             runfromcmd = True
         ### get running os ###
+        self.linux, self.osx = False, False
         if platform.system().lower() in 'linux':
             self.linux = True
         elif platform.system().lower() in 'darwin':
