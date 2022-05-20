@@ -102,7 +102,7 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked_inds):
     target_angle: a list of angle (n_catom, < n_catom_candidates)
     catoms_map: a map of {atom_ind_in_mol, ind_in_angle_list}
     picked_inds: atom indexes (in the angle list) that have been picked already.
-    ''' 
+    '''
     _angs = input_angle[1][:]
     angs = copy.copy(_angs)
     picked_angles = [angs[x] for x in picked_inds]
@@ -151,7 +151,7 @@ def comp_two_angle_array(input_angle, target_angle, catoms_map, picked_inds):
 # the output_angle.
 def comp_angle_pick_one_best(input_arr, target_angle, catoms_map, picked):
     '''
-    Given the target_angle, choose the input_angle that has the smallest angle deviation 
+    Given the target_angle, choose the input_angle that has the smallest angle deviation
     in input_array.
     input_arr: array of input angles.
     target_angle: array of target angles.
@@ -471,8 +471,10 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
         coord = my_mol.getAtomCoords(atom)
         catom_coord.append(coord)
     th_input_arr = []
+    catoms_map = {}
     for idx1, coord1 in enumerate(catom_coord):
         delr1 = (np.array(coord1) - np.array(metal_coord)).tolist()
+        catoms_map.update({catoms[idx1]: idx1})
         theta_tmp = []
         for idx2, coord2 in enumerate(catom_coord):
             if idx2 != idx1:
@@ -481,7 +483,7 @@ def oct_comp(file_in, angle_ref=oct_angle_ref, catoms_arr=None,
                 theta_tmp.append(theta)
         th_input_arr.append([catoms[idx1], theta_tmp])
     th_output_arr, sum_del_angle, catoms_arr, max_del_sig_angle = loop_target_angle_arr(
-        th_input_arr, angle_ref)
+        th_input_arr, angle_ref, catoms_map)
     if debug:
         print(('th:', th_output_arr))
         print(('sum_del:', sum_del_angle))
