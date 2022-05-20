@@ -676,7 +676,6 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
             this_dist = min(periodic_mindist(this_payload, combined_cell, extents), periodic_selfdist(
                 this_payload, extents), this_payload.mindist(combined_cell))
             if (this_dist > (min_dist + 1e-3)):
-    
                 if debug:
                     print(('current dist = ' + str(this_dist) +
                            ', the max is ' + str(min_dist)))
@@ -732,7 +731,7 @@ def combine_multi_aligned_payload_with_cell(super_cell, super_cell_vector, paylo
         for ii in range(0, nsteps+1):
             for indices in enumerate(cand_list):
                 this_translation = [(-1)*dfactor*distances_list[indices[0]]
-                                    for i in trans_vec_list[indices[0]]]
+                                    for _ in trans_vec_list[indices[0]]]
                 distorted_payload.getAtom(
                     int(indices[1])).translate(this_translation)
             distorted_payload, enl = cell_ffopt(
