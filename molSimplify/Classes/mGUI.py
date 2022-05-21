@@ -1800,15 +1800,13 @@ class mGUI():
             choice = QMessageBox.warning(
                 self.geWindow, 'Error', 'Please specify geometry name!')
         else:
-            globs = globalvars()
             if globs.custom_path:
                 f = globs.custom_path + "/Data/coordinations.dict"
             else:
                 f = resource_filename(Requirement.parse(
                     "molSimplify"), "molSimplify/Data/coordinations.dict")
-            fl = open(f, 'r')
-            s = fl.read()
-            fl.close()
+            with open(f, 'r') as fl:
+                s = fl.read()
             if gname.lower() not in s and gshort.lower() not in s:
                 choice = QMessageBox.warning(
                     self.geWindow, 'Remove', 'Coordination '+gname+' does not exist.')
@@ -1822,15 +1820,13 @@ class mGUI():
                     snew += ss+'\n'
                 else:
                     srem = [_f for _f in ss.split(' ')[-1] if _f]
-            globs = globalvars()
             if globs.custom_path:
                 f = globs.custom_path + "/Data/coordinations.dict"
             else:
                 f = resource_filename(Requirement.parse(
                     "molSimplify"), "molSimplify/Data/coordinations.dict")
-            fl = open(f, 'w')
-            fl.write(snew)
-            fl.close()
+            with open(f, 'w') as fl:
+                fl.write(snew)
             # remove file
             if glob.glob(str(globs.custom_path)+'/Data/'+srem+'.dat'):
                 os.remove(str(globs.custom_path)+'/Data/'+srem+'.dat')
