@@ -2,7 +2,9 @@ import os
 import json
 from molSimplify.job_manager.psi4_utils.run import run_b3lyp, run_general
 
-psi4_config = json.load(open("psi4_config.json", "r"))
+psi4_config = {'bashrc':'/home/crduan/.bashrc',
+    'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
+psi4_config.update(json.load(open("psi4_config.json", "r")))
 success_count = 0
 print("===b3lyp===")
 if not os.path.isdir("b3lyp"):
@@ -20,7 +22,7 @@ else:
     else:
         with open(functional + "/output.dat", "r") as fo:
             txt = "".join(fo.readlines())
-        if not "==> Iterations <==" in txt:
+        if "==> Iterations <==" not in txt:
             resubed = True
     if resubed:
         print("previous errored out. resubmitting...")
@@ -36,22 +38,22 @@ else:
             success_count += 1
 for ii, functional in enumerate(psi4_config["functional"]):
     print("===%d: %s===" % (ii, functional))
-    if not os.path.isdir(functional):
-        os.makedirs(functional)
+    if not os.path.isdir(functional.replace("(", "l-").replace(")", "-r")):
+        os.makedirs(functional.replace("(", "l-").replace(")", "-r"))
         success = run_general(psi4_config, functional)
         print("success: ", success)
         if success:
             success_count += 1
     else:
         print("folder exists.")
-        files = os.listdir(functional)
+        files = os.listdir(functional.replace("(", "l-").replace(")", "-r"))
         resubed = False
-        if not os.path.isfile(functional + "/output.dat"):
+        if not os.path.isfile(functional.replace("(", "l-").replace(")", "-r") + "/output.dat"):
             resubed = True
         else:
-            with open(functional + "/output.dat", "r") as fo:
+            with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
-            if not "==> Iterations <==" in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt))):
+            if "==> Iterations <==" not in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt) or ("@DF-UHF iter" in txt) or ("@DF-RHF iter" in txt))):
                 resubed = True
         if resubed:
             print("previous errored out. resubmitting...")
@@ -60,7 +62,7 @@ for ii, functional in enumerate(psi4_config["functional"]):
             if success:
                 success_count += 1
         else:
-            with open(functional + "/output.dat", "r") as fo:
+            with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
                 txt = "".join(fo.readlines())
             if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(functional + "/wfn.180.npy"):
                 print("success: ", True)

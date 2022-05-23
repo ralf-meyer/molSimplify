@@ -24,16 +24,23 @@
     along with molSimplify. If not, see http://www.gnu.org/licenses/.
 '''
 # fix OB bug: https://github.com/openbabel/openbabel/issues/1983
-import sys, argparse, os, platform, shutil
+import sys
+import argparse
+import os
 if not('win' in sys.platform):
     flags = sys.getdlopenflags()
-import openbabel
 if not('win' in sys.platform):
     sys.setdlopenflags(flags)
 
-from .Scripts.inparse import *
-from .Scripts.generator import *
-from molSimplify.Classes.globalvars import *
+from .Scripts.inparse import (parseinputs_advanced, parseinputs_slabgen,
+                              parseinputs_db, parseinputs_inputgen,
+                              parseinputs_postproc, parseinputs_random,
+                              parseinputs_binding, parseinputs_tsgen,
+                              parseinputs_customcore, parseinputs_naming,
+                              parseinputs_ligdict, parseinputs_basic, 
+                              parseCLI)
+from .Scripts.generator import startgen
+from molSimplify.Classes.globalvars import globalvars
 
 globs = globalvars()
 ## Basic help description string
@@ -51,6 +58,7 @@ DescString_basic += '-h binding: binding species (second molecule) generation he
 DescString_basic += '-h customcore: custom core functionalization help\n'
 DescString_basic += '-h tsgen: transition state generation help\n'
 DescString_basic += '-h naming: custom filename help\n'
+DescString_basic += '-h liganddict: ligands.dict help\n'
 ## Advanced help description string
 DescString_advanced = 'Printing advanced structure generation help.'
 ## Slab builder help description string
@@ -75,6 +83,9 @@ DescString_tsgen = 'Printing transition state generation help.'
 DescString_customcore = 'Printing ligand replacement help.'
 ## Custom file naming help description string
 DescString_naming = 'Printing custom filename help.'
+## Ligand dictionary help description string
+DescString_ligdict = 'Printing ligand dictionary help.'
+
 
 def tensorflow_silence():
     ## thanks to
@@ -98,14 +109,11 @@ def tensorflow_silence():
 
 
 try:
-    import PyQt5
-    from PyQt5.QtGui import *
-    from molSimplify.Classes.mGUI import *
-
+    from PyQt5.QtWidgets import QApplication
+    from molSimplify.Classes.mGUI import mGUI
     qtflag = True
 except ImportError:
     qtflag = False
-    pass
 
 
 ## Main function
@@ -125,8 +133,7 @@ def main(args=None):
     ### run GUI by default ###
     args = sys.argv[1:]
     gui = True
-    cmd = False
-    if len(args)==0 and not qtflag:
+    if len(args) == 0 and not qtflag:
         print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")
         exit()
     ####################################
@@ -168,6 +175,9 @@ def main(args=None):
         elif 'naming' in args:
             parser = argparse.ArgumentParser(description=DescString_naming)
             parseinputs_naming(parser)
+        elif 'liganddict' in args:
+            parser = argparse.ArgumentParser(description=DescString_ligdict, formatter_class=argparse.RawTextHelpFormatter) # The formatter class allows for the display of new lines.
+            parseinputs_ligdict(parser)
         else:
             # print basic help
             parser = argparse.ArgumentParser(description=DescString_basic,
@@ -188,7 +198,7 @@ def main(args=None):
         print('molSimplify is starting!')
         gui = False
         # run from commandline
-        emsg = startgen(sys.argv, False, gui)
+        startgen(sys.argv, False, gui)
     ### grab from commandline arguments ###
     else:
         print('No input file detected, reading arguments from commandline')
@@ -196,7 +206,9 @@ def main(args=None):
         gui = False
         # create input file from commandline
         infile = parseCLI([_f for _f in args if _f])
-        args = ['main.py','-i',infile]
-        emsg = startgen(args,False,gui)
+        args = ['main.py', '-i', infile]
+        startgen(args, False, gui)
+
+
 if __name__ == '__main__':
     main()

@@ -62,19 +62,17 @@ def parse(folder, molf):
         resd == resd[1:]
     found = False
     for met in metals:
-        if (found == False):
+        if not found:
             ml = [line for line in sm if met in line]
-            if len(ml) > 0 and found == False:
+            if len(ml) > 0 and not found:
                 if 'Title' in ml[0] and len(ml) > 1:
                     mlll = ml[1].split(None)
                 else:
                     mlll = ml[0].split(None)
                 if len(mlll) > 2:
                     found = True
-                    fmet = met
     if len(ml) == 0:
         print('WARNING:No metal found, defaulting to 1st atom for relative properties..')
-        skipm = True
         ml = [sm[4]]
         mlll = [_f for _f in ml[0].split(None) if _f]
     atidx = int(mlll[1])-1
@@ -115,7 +113,7 @@ def parse(folder, molf):
     for noatom in range(0, natoms):  # loop over atoms
         # skip first line
         while(True):
-            l = [_f for _f in sgto[cl].split(None) if _f]
+            l = [_f for _f in sgto[cl].split(None) if _f]  # noqa: E741
             if len(l) > 0:
                 if (l[0] == 's' or l[0] == 'S'):  # get shell type
                     atoms[noatom].ns = int(l[1])  # number of primitives
@@ -157,15 +155,6 @@ def parse(folder, molf):
     txt = ''
     header = 'MO   Energy  Spin Occup S-char  P-char  D-char Av-orb\n'
     eldic = {'Alpha': 0, 'Beta': 0}
-    totAocc = 0.0
-    totBocc = 0.0
-    coreel = 8.9  # 9 a and 9 b core electrons
-    totscoeffs = 0.0
-    totpcoeffs = 0.0
-    totdcoeffs = 0.0
-    scenter = 0.0
-    pcenter = 0.0
-    dcenter = 0.0
     ehomo = -999.0
     elumo = 10000.0
     e0 = 10000.0
@@ -257,12 +246,12 @@ def parsed(orbf):
     elumo = 10000.0
     ens0 = 0.0
     for line in s:
-        l = [_f for _f in line.split(None) if _f]
-        occ = int(l[3])
-        en = float(l[1])
-        sc = float(l[-4].split('%')[0])
-        dc = float(l[-2].split('%')[0])
-        avocc = float(l[-1])
+        li = [_f for _f in line.split(None) if _f]
+        occ = int(li[3])
+        en = float(li[1])
+        sc = float(li[-4].split('%')[0])
+        dc = float(li[-2].split('%')[0])
+        avocc = float(li[-1])
         dbandc += occ*dc*en
         totcoefs += dc
         if (sc > 99.5):

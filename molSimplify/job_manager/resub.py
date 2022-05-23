@@ -41,7 +41,7 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
         print(message1 + name + message2)
         if machine in ['gibraltar']:
             tools.call_bash('qdel ' + str(id_))
-        elif machine in ['comet','bridges']:
+        elif machine in ['comet', 'bridges']:
             tools.call_bash('scancel '+str(id_))
         else:
             raise ValueError('Sardines.')
@@ -55,7 +55,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
             directory : str
                 Directory of interest to analyze.
             list_of_outfiles : list
-                List of output files that aree read to spawn derivative jobs.
+                List of output files that are read to spawn derivative jobs.
 
     """
     for job in list_of_outfiles:
@@ -73,8 +73,11 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['hfx_resample']:
             tools.prep_hfx_resample(job)
         if configure_dict['dissociation']:
-            moltools.prep_ligand_breakown(job, dissociated_ligand_charges = configure_dict['dissociated_ligand_charges'],
-                                          dissociated_ligand_spinmults = configure_dict['dissociated_ligand_spinmults'])
+            moltools.prep_ligand_breakdown(job, dissociated_ligand_charges=configure_dict['dissociated_ligand_charges'],
+                                           dissociated_ligand_spinmults=configure_dict['dissociated_ligand_spinmults'])
+        if configure_dict['mbe']:
+            moltools.prep_mbe_calc(job)  # needs to be generalized, not just for Fe
+            # moltools.prep_mbe_calc(job, metal_charge = configure_dict['metal_charge'])
         if bool(configure_dict['general_sp']):
             tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 
@@ -102,7 +105,6 @@ def resub(directory='in place'):
     oscillating_scf_errors = completeness['oscillating_scf_errors']  # These are calculations which failed to complete, appear to have an oscillaing scf error,
     need_resub = completeness['Needs_resub']  # These are calculations with level shifts changed or hfx exchange changed
     spin_contaminated = completeness['Spin_contaminated']  # These are finished jobs with spin contaminated solutions
-    active = completeness['Active']  # These are jobs which are currently running
     thermo_grad_error = completeness['Thermo_grad_error']  # These are thermo jobs encountering the thermo grad error
     waiting = completeness['Waiting']  # These are jobs which are or were waiting for another job to finish before continuing.
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
@@ -285,22 +287,33 @@ def resub(directory='in place'):
 
 def resub_psi4(psi4_config):
     basedir = os.getcwd()
-    for path in os.listdir(basedir):
-        if os.path.isdir(basedir + "/" + path):
-            print("at: ", basedir + "/" + path)
-            os.chdir(basedir + "/" + path)
-            with open("psi4_config.json", "w") as fo:
-                json.dump(psi4_config, fo)
-            write_jobscript(psi4_config)
-            os.chdir(basedir)
-            if not "cluster" in psi4_config:
-                cmd = "qsub jobscript.sh"
-            else:
-                cmd = "sbatch jobscript.sh"
-            run_bash(cmd=cmd,
-                     basedir=basedir,
-                     rundir=basedir + "/" + path)
-            time.sleep(3)
+    if "trigger" in psi4_config:
+        write_jobscript(psi4_config)
+        if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang":
+            cmd = "qsub jobscript.sh"
+        else:
+            cmd = "sbatch jobscript.sh"
+        run_bash(cmd=cmd,
+                 basedir=basedir,
+                 rundir=basedir)
+        time.sleep(3)
+    else:
+        for path in os.listdir(basedir):
+            if os.path.isdir(basedir + "/" + path):
+                print("at: ", basedir + "/" + path)
+                os.chdir(basedir + "/" + path)
+                with open("psi4_config.json", "w") as fo:
+                    json.dump(psi4_config, fo)
+                write_jobscript(psi4_config)
+                os.chdir(basedir)
+                if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang":
+                    cmd = "qsub jobscript.sh"
+                else:
+                    cmd = "sbatch jobscript.sh"
+                run_bash(cmd=cmd,
+                         basedir=basedir,
+                         rundir=basedir + "/" + path)
+                time.sleep(3)
 
 
 def main():

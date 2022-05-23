@@ -1,4 +1,6 @@
-import os,glob,sys
+import os
+import glob
+import sys
 import copy
 import numpy as np
 import subprocess
@@ -17,7 +19,7 @@ def ensure_dir(dirpath):
     ----------
         dirpath : str
             The name of the directory.
-        
+
     """
     if not os.path.isdir(dirpath):
         os.makedirs(dirpath)
@@ -34,7 +36,7 @@ def check_valid_outfile(path):
     -------
         validity : bool
             Whether or not an output file is truly an output file. True if it is.
-        
+
     """
     # The nohup.out file gets caught in the find statement
     # use this function so that we only get TeraChem.outs
@@ -51,7 +53,7 @@ def check_valid_outfile(path):
         return True
 
 def priority_sort(lst_of_lsts):
-    """This function ensures that each entry occurs in only one list. If an entry occurs in multiple lists, 
+    """This function ensures that each entry occurs in only one list. If an entry occurs in multiple lists,
     it is retained in the list which appears first in the list of lists.
 
     Parameters
@@ -63,7 +65,7 @@ def priority_sort(lst_of_lsts):
     -------
         new_lst_of_lsts : list
             New list of lists that is sorted.
-        
+
     """
     # Takes a list of lists
     # This function ensures that each entry occurs in only one list
@@ -95,7 +97,7 @@ def call_bash(string, error=False, version=1):
         error : bool, optional
             Return error with the bash call. Default is False.
         version : int
-            Call version. Version 1 splits the string and does not use the shell variable in subprocess. 
+            Call version. Version 1 splits the string and does not use the shell variable in subprocess.
             Version 2 does not split the string and uses shell = True.
 
     Returns
@@ -112,7 +114,7 @@ def call_bash(string, error=False, version=1):
         p = subprocess.Popen(string, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
 
-    if sys.version_info > (3,0):
+    if sys.version_info > (3, 0):
         out = out.decode('utf-8')
         err = err.decode('utf-8')
 
@@ -131,8 +133,8 @@ def get_machine():
     Returns
     -------
         machine : str
-            Name of the machine being run on. 
-            
+            Name of the machine being run on.
+
     """
     # Gets the identity of the machine job_manager is being run on!
     hostname = call_bash('hostname')[0]
@@ -144,6 +146,10 @@ def get_machine():
         machine = 'comet'
     elif 'home' in hostname:
         machine = 'gibraltar'
+    elif "mustang" in hostname:
+        machine = "mustang"
+    elif "gridsan" in hostname or "login-" in hostname:
+        machine = "supercloud"
     else:
         raise ValueError('Machine Unknown to Job Manager')
     return machine
@@ -154,8 +160,8 @@ def get_username():
     Returns
     -------
         user : str
-            Name of the user running jobs. 
-            
+            Name of the user running jobs.
+
     """
     user = call_bash('whoami')[0]
     # Gets the identify of the user who is using the job manager
@@ -231,37 +237,37 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
         raise Exception('Incompatible options passed to list_active_jobs()')
     if home_directory == 'in place':
         home_directory = os.getcwd()
-    
+
     job_report = textfile()
     try:
         if get_machine() == 'gibraltar':
             job_report.lines = call_bash("qstat -r")
-        elif get_machine() in ['comet','bridges']:
-            job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(), 
-                                          version=2)
-        else: 
+        elif get_machine() in ['comet', 'bridges']:
+            job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
+                                         version=2)
+        else:
             raise ValueError
     except:
         job_report.lines = []
     if get_machine() == 'gibraltar':
         names = job_report.wordgrab('jobname:', 2)[0]
         names = [i for i in names if i]  # filters out NoneTypes
-    elif get_machine() in ['comet','bridges']:
+    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
         names = job_report.wordgrab(get_username(), 2)[0]
-        names = [i for i in names if i] # filters out NoneTypes
+        names = [i for i in names if i]  # filters out NoneTypes
     else:
         raise ValueError
     if ids:
         job_ids = []
         if get_machine() == 'gibraltar':
             line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
-        elif get_machine() in ['comet','bridges']:
+        elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
             line_indices_of_jobnames = job_report.wordgrab(get_username(), 2, matching_index=True)[0]
         line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
         for line_index in line_indices_of_jobnames:
             if get_machine() == 'gibraltar':
                 job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
-            elif get_machine() in ['comet','bridges']:
+            elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
                 job_ids.append(int(job_report.lines[line_index].split()[0]))
         if len(names) != len(job_ids):
             print(len(names))
@@ -342,7 +348,7 @@ def get_total_queue_usage():
     # gets the number of jobs in the queue for this user, regardless of where they originate
     if get_machine() == 'gibraltar':
         jobs = call_bash("qstat -u '" + get_username() + "'", version=2)
-    elif get_machine() in ['comet','bridges']:
+    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud"]:
         jobs = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u ' + get_username(),
                          version=2)
     else:
@@ -527,7 +533,7 @@ def find(key, directory='in place', maxdepth=False):
     #  @return A list of paths
     if directory == 'in place':
         directory = os.getcwd()
-    if maxdepth != False:
+    if maxdepth:
         bash = 'find ' + directory + ' -name ' + key + ' -maxdepth '+str(maxdepth)
     else:
         bash = 'find ' + directory + ' -name ' + key
@@ -563,7 +569,7 @@ def qsub(jobscript_list):
         if get_machine() in ['gibraltar']:
             stdout, stderr = call_bash('qsub ' + jobscript, error=True)
             stdouts.append(stdout)
-        elif get_machine() in ['bridges','comet']:
+        elif get_machine() in ['bridges', 'comet']:
             stdout, stderr = call_bash('sbatch ' + jobscript, error=True)
             stdouts.append(stdout)
         if len(stderr) > 0:
@@ -595,7 +601,7 @@ def check_original(job):
     name = name.split('_')
 
     dependent_jobs = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
-                      'functional']
+                      'functional', 'mbe', 'metal']
     if any(j in name for j in dependent_jobs):
         return False
     else:
@@ -753,7 +759,7 @@ def bundle_jobscripts(home_directory, jobscript_paths, max_bundle_size=10):
     return output_jobscripts
 
 def sub_bundle_jobscripts(home_directory, jobscript_paths):
-    """This function will bundle together a list of jobscripts. It writes the bundle folders. 
+    """This function will bundle together a list of jobscripts. It writes the bundle folders.
     Records info in run directory.
 
     Parameters
@@ -804,7 +810,7 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
     home = os.getcwd()
     os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
     manager_io.write_terachem_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)) + '_' + identifier,
-                                        terachem_line=False, time_limit='12:00:00',machine=get_machine())
+                                        terachem_line=False, time_limit='12:00:00', machine=get_machine())
     shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_' + identifier + '_jobscript',
                 'bundle_' + str(max(existing_bundle_numbers) + 1))
     fil = open('bundle_' + str(max(existing_bundle_numbers) + 1), 'a')
@@ -827,7 +833,7 @@ def prep_vertical_ip(path):
     ----------
         path : str
             Path to the output file of a finished job.
-       
+
     Returns
     -------
         jobscripts : list
@@ -851,7 +857,7 @@ def prep_vertical_ip(path):
         new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
 
     base = os.path.split(path)[0]
-    
+
     if infile_dict['run_type'] == 'minimize':
         optimxyz = os.path.join(base, 'scr', 'optim.xyz')
     else:
@@ -886,12 +892,11 @@ def prep_vertical_ip(path):
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
                 manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name,machine=get_machine())
+                manager_io.write_jobscript(name, machine=get_machine())
 
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
 
     os.chdir(home)
-
     return jobscripts
 
 def prep_vertical_ea(path):
@@ -901,12 +906,12 @@ def prep_vertical_ea(path):
     ----------
         path : str
             Path to the output file of a finished job.
-       
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts of vertical EA jobs.
-            
+
     """
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical EA run
     # Returns a list of the PATH(s) to the jobscript(s) to start the vertical IP calculations(s)
@@ -974,12 +979,12 @@ def prep_solvent_sp(path, solvents=[78.9]):
             Path to the output file of a finished job.
         solvents : list, optional
             List of solvent dielectrics to be considered. Default is 78.9.
-       
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts of solvent jobs.
-            
+
     """
     # Given a path to the outfile of a finished run, this preps the files for a single point solvent run
     # Uses the wavefunction from the gas phase calculation as an initial guess
@@ -1057,12 +1062,12 @@ def prep_functionals_sp(path, functionalsSP):
             Path to the output file of a finished job.
         functionalsSP : list
             Functionals for the derivative jobs.
-       
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts of jobs with other functionals.
-            
+
     """
     home = os.getcwd()
     path = convert_to_absolute_path(path)
@@ -1189,7 +1194,7 @@ def prep_general_sp(path, general_config):
             else:
                 new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
             for calc in new_spin:
-                suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), calc)
+                suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), calc)
                 PATH = os.path.join(functional_base_path, suffix)
                 if os.path.isdir(PATH):
                     continue
@@ -1222,7 +1227,7 @@ def prep_general_sp(path, general_config):
                     fil.write('solvent:%s\n' % str(solvent))
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
         elif config['type'] == "energy":
-            suffix = "type_%s_functional_%s_solvent_%s_spin_%d"%(config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
+            suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), infile_dict['spinmult'])
             PATH = os.path.join(functional_base_path, suffix)
             if os.path.isdir(PATH):
                 continue
@@ -1274,12 +1279,12 @@ def prep_thermo(path):
     ----------
         path : str
             Path to the output file of a finished job.
-        
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts of thermo jobs.
-            
+
     """
     # Given a path to the outfile of a finished run, this preps the files for a thermo calculation
     # Uses the wavefunction from the previous calculation as an initial guess
@@ -1335,12 +1340,12 @@ def prep_ultratight(path):
     ----------
         path : str
             Path to the output file of a finished job.
-        
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts of ultratight jobs for solvent SP calcs.
-            
+
     """
     # Given a path to the outfile of a finished run, this preps a run with tighter convergence criteria
     # Uses the wavefunction and geometry from the previous calculation as an initial guess
@@ -1431,12 +1436,12 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
             Path to the output file of a finished job.
         hfx_values : list, optional
             List of hartree fock exchange values to resample. Default is [0, 5, 10, 15, 20, 25, 30].
-        
+
     Returns
     -------
         jobscripts : list
             List of paths for jobscripts HFX resampled calculations.
-            
+
     """
     # Given a path to the outfile of a finished run, this preps the files for hfx resampling
     # Uses the wavefunction from the gas phase calculation as an initial guess
@@ -1525,7 +1530,7 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(source_dir, 'scr', 'ca0'), os.path.join('ca0'))
             shutil.copyfile(os.path.join(source_dir, 'scr', 'cb0'), os.path.join('cb0'))
-            manager_io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'], 
+            manager_io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
                                        machine=get_machine())
 
         local_infile_dict = copy.copy(infile_dict)

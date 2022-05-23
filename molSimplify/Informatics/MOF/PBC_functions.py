@@ -4,14 +4,13 @@ import networkx as nx
 from scipy.spatial import distance
 from scipy import sparse
 import copy
-from molSimplify.Informatics.MOF.atomic import COVALENT_RADII
 from molSimplify.Informatics.MOF.atomic import organic, non_metals, noble_gases, metalloids, lanthanides, actinides, transition_metals
 from molSimplify.Informatics.MOF.atomic import alkali, alkaline_earth, main_group, metals
 from molSimplify.Informatics.MOF.atomic import METALS, MASS, COVALENT_RADII
 
 deg2rad = np.pi/180.0
 def readcif(name):
-    with open (name , 'r') as fi:
+    with open(name , 'r') as fi:
         EIF = fi.readlines()
         cond=True
         cond2=False
@@ -51,7 +50,7 @@ def readcif(name):
                 temp = temp.replace('(','')
                 cell_gamma=float(temp)
                 cell_parameter_boundary[1]=counter+1
-            if cond2==True and line_stripped.startswith("loop_"):
+            if cond2 and line_stripped.startswith("loop_"):
                 break
             else:
                 if line_stripped.startswith("_atom") :
@@ -68,7 +67,7 @@ def readcif(name):
                         charge_index=atom_props_count-1
         
                     cond2=True
-                elif cond2==True:
+                elif cond2:
                     if len(line_splitted)==atom_props_count:
                         atomlines.append(line)
         
@@ -131,7 +130,7 @@ def ligand_detect(cell,cart_coords,adj_mat,anchorlist):
     while len(connected_components) < len(cart_coords):
         current_node = connected_components[counter]
         for j,v in enumerate(adj_mat[current_node]):
-            if v==1 and ( j not in checked ) and ( j not in connected_components):
+            if v==1 and (j not in checked) and (j not in connected_components):
                 image_flag =compute_image_flag(cell,fcoords[current_node],fcoords[j]) 
                 fcoords[j]+= image_flag
                 connected_components.append(j)
@@ -201,7 +200,8 @@ def returnXYZandGraph(filename,atoms,cell,fcoords,molgraph):
         cart_coord=np.dot(fcoord,cell)
         coord_list.append([cart_coord[0],cart_coord[1],cart_coord[2]])
     tmpstr=",".join([at for at in atoms])
-    np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
+    if filename != None: 
+        np.savetxt(filename[:-4]+".net",molgraph,fmt="%i",delimiter=",",header=tmpstr)
     return coord_list, molgraph
 
 def writeXYZcoords(filename,atoms,coords):
@@ -312,6 +312,18 @@ def compute_distance_matrix2(cell,cart_coords):
 
     return distance_matrix
 
+def compute_distance_matrix3(cell, cart_coords, num_cells = 1):
+    pos = np.arange(-num_cells, num_cells+1, 1)
+    combos = np.array(np.meshgrid(pos, pos, pos)).T.reshape(-1,3)
+    shifts = np.sum(np.expand_dims(cell, axis=0)*np.expand_dims(combos, axis=-1), axis=1)
+    # NxNxCells distance array
+    shifted = np.expand_dims(cart_coords, axis=1) + np.expand_dims(shifts, axis=0)
+    dist = np.expand_dims(np.expand_dims(cart_coords, axis=1), axis=1) - np.expand_dims(shifted,axis=0)
+    dist = np.sqrt(np.sum(np.square(dist), axis=-1))
+    # But we want only min
+    distance_matrix = np.min(dist, axis=-1)
+    return distance_matrix
+
 
 def make_graph_from_nodes_edges(nodes,edges,attribs):
     gr = nx.Graph()
@@ -351,7 +363,7 @@ def make_supercell(cell,atoms,fcoords,exp_coeff):
 
 
 def compute_adj_matrix(distance_mat,allatomtypes):
-    adj_matrix=np.zeros( distance_mat.shape)
+    adj_matrix=np.zeros(distance_mat.shape)
     for i,e1 in enumerate(allatomtypes[:-1]):
         for j,e2 in enumerate(allatomtypes[i+1:]):
             elements = set([e1, e2])

@@ -5,22 +5,16 @@
 #  Modified by JP Janet and Aditya Nandy
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.geometry import *
-from molSimplify.Scripts.molSimplify_io import *
-from molSimplify.Classes.globalvars import *
-try:
-    from molSimplify.Classes.mWidgets import *
-except:
-    pass
+from molSimplify.Scripts.io import (copy_to_custom_path, readdict,
+                                    lig_load, core_load, bind_load)
+from molSimplify.Classes.globalvars import globalvars
 import os
 import sys
-import subprocess
 import re
 import unicodedata
 import openbabel
-import random
 import shutil
-from pkg_resources import resource_filename, Requirement
+
 
 # Add molecule to ligand database
 #  @param smimol SMILES string or molecule file to be added
@@ -31,7 +25,6 @@ from pkg_resources import resource_filename, Requirement
 #  @param smictg Ligand category
 #  @param ffopt Flag for ligand FF optimization
 #  @return Error messages
-
 def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=None):
     emsg = False
     globs = globalvars()
@@ -80,12 +73,12 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
         print("smimol is "+str(smimol))
         print("sminame is "+str(sminame))
         # sanitize ff options:
-        if not ffopt in ["A", "B", "BA", "N"]:
+        if ffopt not in ["A", "B", "BA", "N"]:
             print('warning: incompatible ffopt choice. Options are ' +
                   str(["A", "B", "BA", "N"]))
             sys.exit(1)
 
-        if smichg != None:
+        if smichg is not None:
             lig.charge = smichg
         # new entry for dictionary
         if '.mol' in smimol:
@@ -98,9 +91,9 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
             # write smiles file in Ligands directory
             obConversion = openbabel.OBConversion()
             obConversion.SetOutFormat("smi")
-            red = obConversion.Read(lig.OBMol)
+            obConversion.Read(lig.OBMol)
             obConversion.WriteFile(lig.OBMol, ligands_folder + sminame+'.smi')
-            #lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
+            # lig.OBMol.write('smi',ligands_folder + sminame+'.smi')
             snew = str(sminame)+':'+str(sminame)+'.smi,'+str(shortname)+','+str(css)+','+str(grp)+','+str(ffopt)+','+str(lig.charge)
         else:
             # write xyz file in Ligands directory
@@ -121,12 +114,12 @@ def addtoldb(smimol, sminame, smident, smicat, smigrps, smictg, ffopt, smichg=No
         f.close()
     return emsg
 
+
 # Add molecule to cores database
 #  @param smimol SMILES string or molecule file to be added
 #  @param sminame Name of core for key in dictionary
 #  @param smicat Core connecting atoms
 #  @return Error messages
-
 def addtocdb(smimol, sminame, smicat):
     emsg = False
     globs = globalvars()
@@ -152,7 +145,7 @@ def addtocdb(smimol, sminame, smicat):
         css = ' '.join(cs)
         # convert to unicode
         smimol = unicodedata.normalize(
-            'NFKD', smimol).encode('ascii', 'ignore')
+            'NFKD', smimol)
         if '~' in smimol:
             smimol = smimol.replace('~', os.expanduser('~'))
         # convert ligand from smiles/file
@@ -185,11 +178,11 @@ def addtocdb(smimol, sminame, smicat):
         f.close()
     return emsg
 
+
 # Add molecule to binding species database
 #  @param smimol SMILES string or molecule file to be added
 #  @param sminame Name of binding species for key in dictionary
 #  @return Error messages
-
 def addtobdb(smimol, sminame):
     globs = globalvars()
     if not globs.custom_path or not os.path.exists(str(globs.custom_path)):
@@ -207,9 +200,9 @@ def addtobdb(smimol, sminame):
     else:
         # convert to unicode
         smimol = unicodedata.normalize(
-            'NFKD', smimol).encode('ascii', 'ignore')
+            'NFKD', smimol)
         sminame = unicodedata.normalize(
-            'NFKD', sminame).encode('ascii', 'ignore')
+            'NFKD', sminame)
         if '~' in smimol:
             smimol = smimol.replace('~', os.expanduser('~'))
         # convert ligand from smiles/file
@@ -250,11 +243,11 @@ def addtobdb(smimol, sminame):
         f.close()
     return emsg
 
+
 # Remove molecule from database
 #  @param sminame Name of molecule for key in dictionary
 #  @param ropt Flag for molecule type (0 for core, 1 for ligand, 2 for binding species)
 #  @return Error messages
-
 def removefromDB(sminame, ropt):
     emsg = False
     globs = globalvars()
@@ -266,12 +259,12 @@ def removefromDB(sminame, ropt):
     li_path = globs.custom_path + "/Ligands/ligands.dict"
     li_folder = globs.custom_path + "/Ligands/"
     core_path = globs.custom_path + "/Cores/cores.dict"
-    core_dir = globs.custom_path + "/Cores/"
+    core_folder = globs.custom_path + "/Cores/"
     bind_path = globs.custom_path + "/Bind/bind.dict"
     bind_folder = globs.custom_path + "/Bind/"
 
     # convert to unicode
-    sminame = unicodedata.normalize('NFKD', sminame).encode('ascii', 'ignore')
+    sminame = unicodedata.normalize('NFKD', sminame)
 
     if ropt == 1:
         # update dictionary
@@ -289,7 +282,6 @@ def removefromDB(sminame, ropt):
                 os.remove(li_folder + sss[1].split(',')[0])
         f.close()
     elif ropt == 0:
-        mcores = readdict(core_path)
         # update dictionary
         f = open(core_path, 'r')
         ss = f.read().splitlines()
@@ -305,7 +297,6 @@ def removefromDB(sminame, ropt):
                 os.remove(core_folder+sss[1].split(',')[0])
         f.close()
     elif ropt == 2:
-        bindcores = readdict(bind_path)
         # update dictionary
         f = open(bind_path, 'r')
         ss = f.read().splitlines()

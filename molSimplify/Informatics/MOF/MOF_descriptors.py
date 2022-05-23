@@ -26,10 +26,14 @@ import re
 # Pymatgen is used to get the primitive cell.                                           #
 #########################################################################################
 from pymatgen.io.cif import CifParser
+
+
 def get_primitive(datapath, writepath):
     s = CifParser(datapath, occupancy_tolerance=1).get_structures()[0]
     sprim = s.get_primitive_structure()
-    sprim.to("cif",writepath)
+    sprim.to("cif", writepath)
+
+
 '''<<<< END OF CODE TO COMPUTE PRIMITIVE UNIT CELLS >>>>'''
 
 #########################################################################################
@@ -323,7 +327,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False, graph_provided
 
     for comp in range(n_components):
         inds_in_comp = [i for i in range(len(labels_components)) if labels_components[i]==comp]
-        if not set(inds_in_comp)&metal_list:
+        if not set(inds_in_comp) & metal_list:
             full_names = [0]
             full_descriptors = [0]
             tmpstr = "Failed to featurize %s: solvent molecules\n"%(name)
@@ -388,7 +392,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False, graph_provided
     anc_atoms = set()
     for linker in linker_list:
         for atom_linker in linker:
-            bonded2atom  = np.nonzero(adj_matrix[atom_linker,:])[1] 
+            bonded2atom = np.nonzero(adj_matrix[atom_linker,:])[1] 
             if set(bonded2atom) & metal_list:
                 anc_atoms.add(atom_linker)
     """""""""
@@ -434,15 +438,15 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False, graph_provided
             else: 
                 # check number of times we cross PBC :
                 # TODO: we still can fail in multidentate ligands!
-                linker_cart_coords=np.array([at.coords() \
-                        for at in [molcif.getAtom(val) for val in atoms_list]])
+                linker_cart_coords = np.array([
+                    at.coords() for at in [molcif.getAtom(val) for val in atoms_list]])
                 linker_adjmat = np.array(linker_subgraphlist[ii].todense())
                 pr_image_organic = ligand_detect(cell_v,linker_cart_coords,linker_adjmat,linkeranchors_list)
                 sbu_temp = linkeranchors_atoms.copy()
                 sbu_temp.update({val for val in initial_SBU_list[list(sbu_connect_list)[0]]})
                 sbu_temp = list(sbu_temp)
-                sbu_cart_coords=np.array([at.coords() \
-                       for at in [molcif.getAtom(val) for val in sbu_temp]])
+                sbu_cart_coords = np.array([
+                    at.coords() for at in [molcif.getAtom(val) for val in sbu_temp]])
                 sbu_adjmat = slice_mat(adj_matrix.todense(),sbu_temp) 
                 pr_image_sbu = ligand_detect(cell_v,sbu_cart_coords,sbu_adjmat,set(range(len(linkeranchors_list))))
                 if not (len(np.unique(pr_image_sbu, axis=0))==1 and len(np.unique(pr_image_organic, axis=0))==1): # linker 

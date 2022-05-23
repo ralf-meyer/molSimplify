@@ -6,38 +6,36 @@
 #  Dpt of Chemical Engineering, MIT
 
 # imports
-from math import sqrt
-import os, io
 from molSimplify.Classes.AA3D import AA3D
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom, makeMol
 from molSimplify.Classes.globalvars import globalvars
-import gzip
-from itertools import chain
 import urllib.request as urllib
+import urllib.error
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import string
 import subprocess
 import shlex
 import ast
 import time
 from scipy.spatial import ConvexHull
+# from pymol import cmd, stored
 
 # no GUI support for now
+
 
 class protein3D:
     """Holds information about a protein, used to do manipulations.  Reads
     information from structure file (pdb, cif) or is directly built from
     molsimplify.
-    
+
     """
-    
+
     def __init__(self, pdbCode='undef'):
         # Number of amino acids
-        self.naas = 0 
+        self.naas = 0
         # Number of heteromolecules
         self.nhetmols = 0
         # Number of chains
@@ -82,9 +80,10 @@ class protein3D:
         self.centroid = []
         # convex hull
         self.hull = []
-    
+
     def setAAs(self, aas):
         """ Set amino acids of a protein3D class to different amino acids.
+
         Parameters
         ----------
             aas : dictionary
@@ -96,7 +95,7 @@ class protein3D:
 
     def setAtoms(self, atoms):
         """ Set atom indices of a protein3D class to atoms.
-        
+
         Parameters
         ----------
             atoms : dictionary
@@ -107,7 +106,7 @@ class protein3D:
 
     def setIndices(self, a_ids):
         """ Set atom indices of a protein3D class to atoms.
-        
+
         Parameters
         ----------
             a_ids : dictionary
@@ -118,7 +117,7 @@ class protein3D:
 
     def setHetmols(self, hetmols):
         """ Set heteromolecules of a protein3D class to different ones.
-        
+
         Parameters
         ----------
             hetmols : dictionary
@@ -160,7 +159,7 @@ class protein3D:
                 List of missing amino acids.
         """
         self.missing_aas = missing_aas
-            
+
     def setConf(self, conf):
         """ Set possible conformations of a protein3D class to a new list.
 
@@ -176,13 +175,7 @@ class protein3D:
         instance based first on what the greatest occupancy level is and then
         the first conformation ihe alphabet with all else equal.
 
-        Returns
-        -------
-            p : protein3D
-                the same protein3D instance as self but in the automatically
-                chosen conformation
         """
-        p = self
         for c in self.conf:
             c_ids = []
             if c in self.aas.keys():
@@ -192,25 +185,25 @@ class protein3D:
             if len(lst) == 1:
                 self.chains[c[0]].insert(c[1]-1, lst[0])
             else:
-                for l in lst:
-                    if l not in self.chains[c[0]]:
-                        for j in l.atoms:
+                for li in lst:
+                    if li not in self.chains[c[0]]:
+                        for j in li.atoms:
                             in_more_confs = False
                             for m in lst:
-                                if m != l and j in m.atoms:
+                                if m != li and j in m.atoms:
                                     in_more_confs = True
                             if type(j) != atom3D and not in_more_confs:
                                 c_ids.append(j[0])
                             elif not in_more_confs:
-                                c_ids.append(p.getIndex(j))
-                        p.stripAtoms(c_ids)
-                        if type(l) == AA3D and l in p.aas[c]:
-                            p.aas[c].remove(l)
-                        elif type(l) == mol3D and l in p.hetmols[c]:
-                            p.hetmols[c].remove(l)
-        p.setConf([])
-        return p
-            
+                                c_ids.append(self.getIndex(j))
+                        # print(c_ids)
+                        self.stripAtoms(c_ids)
+                        if type(li) == AA3D and li in self.aas[c]:
+                            self.aas[c].remove(li)
+                        elif type(li) == mol3D and li in self.hetmols[c]:
+                            self.hetmols[c].remove(li)
+        self.setConf([])
+
     def setR(self, R):
         """ Set R value of protein3D class.
 
@@ -220,7 +213,7 @@ class protein3D:
                 The desired new R value.
         """
         self.R = R
-            
+
     def setRfree(self, Rfree):
         """ Set Rfree value of protein3D class.
 
@@ -240,22 +233,42 @@ class protein3D:
                 The desired new RSRZ score.
         """
         self.RSRZ = RSRZ
-            
+
     def getMissingAtoms(self):
         """ Get missing atoms of a protein3D class.
 
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> for symbol_list in pdb_system.getMissingAtoms():
+        >>>     for symbol in symbol_list:
+        >>>         print(symbol.sym) # Prints the symbol of missing atom
+        >>>         print(symbol.coords()) # Prints the coordinates of the missing atom - they are all the
+        >>>                         # coordinates of origin by default (0.0,0.0,0.0) for missing atoms
         """
         return self.missing_atoms.values()
-    
+
     def getMissingAAs(self):
         """ Get missing amino acid residues of a protein3D class.
 
+        Example demonstration of this method:
+
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getMissingAAs()   # This gives a list of AA3D objects
+        >>> [pdb_system.getMissingAAs()[x].three_lc for x in range(len(val.getMissingAAs()))] # This returns
+        >>>                     # the list of missing AAs by their 3-letter codes
         """
         return self.missing_aas
-    
+
     def countAAs(self):
         """ Return the number of amino acid residues in a protein3D class.
 
+        Example demonstration of this method:
+
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.countAAs() # This return the number of AAs in the PDB for all the chains.
         """
         return self.naas
 
@@ -263,7 +276,7 @@ class protein3D:
         """
         Find atoms with a specific symbol that are contained in amino acids
         or heteromolecules.
-        
+
         Parameters
         ----------
             sym : str
@@ -276,6 +289,12 @@ class protein3D:
         ----------
             inds: list
                 a list of atom indices with the specified symbol.
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.findAtom(sym="S", aa=True) # Returns indices of sulphur atoms present in amino acids
+        >>> pdb_system.findAtom(sym="S", aa=False) # Returns indices of sulphur atoms present in heteromolecules
         """
         inds = []
         if aa:
@@ -297,7 +316,7 @@ class protein3D:
     def findAA(self, three_lc="XAA"):
         """
         Find amino acids with a specific three-letter code.
-        
+
         Parameters
         ----------
             three_lc: str
@@ -307,11 +326,17 @@ class protein3D:
         -------
             inds: set
                 a set of amino acid indices with the specified symbol.
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.findAA(three_lc = 'MET') # Returns a set of pairs where each pair is a combination of the chain name
+        >>>                              # and the index of the amino acid specified (in this case, 'MET')
         """
         inds = set()
-        for aa in self.aas:
-            if aa.three_lc == three_lc:
-                inds.add((aa.chain, aa.id))
+        for aa in self.aas.values():
+            if aa[0].three_lc == three_lc:
+                inds.add((aa[0].chain, aa[0].id))
         return inds
 
     def getChain(self, chain_id):
@@ -327,6 +352,11 @@ class protein3D:
         -------
             p : protein3D
                 A protein3D instance consisting of just the chain of interest
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getChain('A') # Get chain A of the PDB
         """
         p = protein3D()
         p.setChains({chain_id: self.chains[chain_id]})
@@ -347,7 +377,7 @@ class protein3D:
         atoms = {}
         for a_id in self.atoms:
             aa = self.getResidue(a_id)
-            if aa != None:
+            if aa is not None:
                 if aa.chain == chain_id:
                     atoms[a_id] = self.atoms[a_id]
             else:
@@ -374,35 +404,56 @@ class protein3D:
         ----------
             a_id : int
                 the index of the desired atom whose molecule we want to find
+            aas_only : boolean
+                True if we want ito find atoms contained in amino acids only.
+                False if we want atoms contained in all molecules. Default is False.
 
         Returns
         -------
             mol : AA3D or mol3D
                 the amino acid residue or heteromolecule containing the atom
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.getMolecule(a_id=2166) # This returns an molSimplify.Classes.AA3D.AA3D obejct indicating
+        >>>                                   # we that the atom is part of an amino acid
+        >>> pdb_system.getMolecule(a_id=2166).three_lc() # This prints the three letter code of the amino acid of which
+        >>>                                              # atom 2166 is a part of
+        >>> pdb_system.getMolecule(a_id=9164) # This returns a mol3D object indicating that the atom is part of a molecule
+        >>>                                   # that is not an amino acid
+        >>> pdb_system.getMolecule(a_id=9164).name # This prints the name of the molecule, in this case, it is 'TAU'
         """
         for s in self.aas.values():
-            for mol in s: # mol is AA3D
+            for mol in s:  # mol is AA3D
                 if (a_id, self.atoms[a_id]) in mol.atoms:
                     return mol
-        for mol in self.missing_atoms.keys(): # mol is incomplete AA3D
+        for mol in self.missing_atoms.keys():  # mol is incomplete AA3D
             if (a_id, self.atoms[a_id]) in self.missing_atoms[mol]:
                 return mol
         if not aas_only:
             for s in self.hetmols.values():
-                for mol in s: # mol is mol3D
+                for mol in s:  # mol is mol3D
                     if self.atoms[a_id] in mol.atoms:
                         return mol
-        return None # something is wrong
+        return None  # something is wrong
 
     def stripAtoms(self, atoms_stripped):
         """ Removes certain atoms from the protein3D class instance.
-        
+
         Parameters
         ----------
             atoms_stripped : list
                 list of atom3D indices that should be removed
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.stripAtoms([2166, 4442, 6733, 2165]) # This removes the list of atoms with
+        >>>                                                # indices listedin the code
         """
         atoms = self.atoms
+        a_ids = self.a_ids
         keys = list(self.aas.keys()) + list(self.hetmols.keys())
         for tup in keys:
             if tup in self.aas.keys():
@@ -412,7 +463,6 @@ class protein3D:
             for elt in mol_set:
                 for a in elt.atoms:
                     if type(a) != atom3D:
-                        a_id = a[0]
                         atom = a[1]
                     else:
                         atom = a
@@ -422,23 +472,49 @@ class protein3D:
                     if a_id in atoms_stripped:
                         if (a_id, atom) in elt.atoms:
                             elt.atoms.remove((a_id, atom))
+                            if atom in elt.c:
+                                elt.c.remove(atom)
+                            elif atom in elt.n:
+                                elt.n.remove(atom)
                         elif atom in elt.atoms:
                             elt.atoms.remove(atom)
-                        if len(elt.atoms) == 0:
-                            if tup in self.aas.keys():
-                                self.aas[tup].remove(elt)
-                                if len(self.aas[tup]) == 0:
-                                    del self.aas[tup]
-                            else:
-                                self.hetmols[tup].remove(elt)
-                                if len(self.hetmols[tup]) == 0:
-                                    del self.hetmols[tup]
                         atoms_stripped.remove(a_id)
                         if atom in self.bonds.keys():
+                            for at in self.bonds[atom]:
+                                if at in self.bonds.keys():
+                                    temp = self.bonds[at].copy()
+                                    if atom in temp:
+                                        temp.remove(atom)
+                                    self.bonds[at] = temp
                             del self.bonds[atom]
                         del atoms[a_id]
-                        del self.a_ids[atom]
+                        del a_ids[atom]
+                if len(elt.atoms) == 0:
+                    if tup in self.aas.keys():
+                        self.aas[tup].remove(elt)
+                        if len(self.aas[tup]) == 0:
+                            del self.aas[tup]
+                    else:
+                        self.hetmols[tup].remove(elt)
+                        if len(self.hetmols[tup]) == 0:
+                            del self.hetmols[tup]
+        while len(atoms_stripped) != 0:
+            a_id = atoms_stripped[0]
+            atoms_stripped.pop(0)
+            if a_id not in atoms.keys():
+                continue
+            atom = atoms[a_id]
+            if atom in self.bonds.keys():
+                for at in self.bonds[atom]:
+                    temp = self.bonds[at].copy()
+                    if atom in temp:
+                        temp.remove(atom)
+                    self.bonds[at] = temp
+                del self.bonds[atom]
+            del atoms[a_id]
+            del a_ids[atom]
         self.setAtoms(atoms)
+        self.setIndices(a_ids)
 
     def stripHetMol(self, hetmol):
         """ Removes all heteroatoms part of the specified heteromolecule from
@@ -449,34 +525,49 @@ class protein3D:
             hetmol : str
                 String representing the name of a heteromolecule whose
                 heteroatoms should be stripped from the protein3D class instance
+
+        Example demonstration of this method:
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7') # Fetch a PDB
+        >>> pdb_system.stripHetMol()
         """
-        h = list(self.hetmols.keys()).copy()
-        for k in h:
-            for m in h[k]:
+        hets = self.hetmols.copy()
+        for k in hets.keys():
+            if k not in self.hetmols.keys():
+                continue
+            for m in hets[k]:
                 if m.name == hetmol:
-                    self.stripAtoms(m.atoms)
+                    ids = []
+                    for a in m.atoms:
+                        ids.append(self.a_ids[a])
+                    self.stripAtoms(ids)
                     del self.hetmols[k]
-                
+
     def findMetal(self, transition_metals_only=True):
         """Find metal(s) in a protein3D class.
         Parameters
         ----------
             transition_metals_only : bool, optional
                 Only find transition metals. Default is true.
-                
+
         Returns
         -------
             metal_list : list
                 List of indices of metal atoms in protein3D.
+
+        Example of fetching a PDB file:
+
+        >>> pdb_system = protein3D()
+        >>> pdb_system.fetch_pdb('1os7')
         """
         if not self.metals:
             metal_list = []
-            for l in self.hetmols.keys(): # no metals in AAs
-                for m in l:
+            for li in self.hetmols.values():  # no metals in AAs
+                for m in li:
                     for a in m.atoms:
                         if a.ismetal(transition_metals_only=transition_metals_only):
                             if a.occup == 1 or a in self.bonds.keys():
-                                metal_list.append(i)
+                                metal_list.append(self.getIndex(a))
             self.metals = metal_list
         return (self.metals)
 
@@ -492,7 +583,7 @@ class protein3D:
         self.atoms[atomIdx].frozen = True
 
     def freezeatoms(self, Alist):
-        """Set the freeze attribute to be true for a given set of atom3D classes, 
+        """Set the freeze attribute to be true for a given set of atom3D classes,
         given their indices. Preserves ordering, starts from largest index.
 
         Parameters
@@ -527,7 +618,7 @@ class protein3D:
         ----------
             atom : atom3D
                 atom3D class for element at given index.
-            
+
         Returns
         -------
             idx : int
@@ -540,9 +631,9 @@ class protein3D:
             print(atom.sym)
             idx = list(self.atoms.keys())[list(self.atoms.values()).index(atom)]
         return idx
-    
+
     def getBoundMols(self, h_id, aas_only=False):
-        """Get a list of moleculess bound to a heteroatom, usually a metal.
+        """Get a list of molecules bound to a heteroatom, usually a metal.
 
         Parameters
         ----------
@@ -562,10 +653,10 @@ class protein3D:
             if self.atoms[h_id] not in self.bonds.keys():
                 return None
             elif b in self.bonds[self.atoms[h_id]]:
-                if self.getMolecule(b_id, aas_only) != None:
+                if self.getMolecule(b_id, aas_only) is not None:
                     bound_mols.append(self.getMolecule(b_id, aas_only))
         return bound_mols
-    
+
     def readfrompdb(self, text):
         """ Read PDB into a protein3D class instance.
 
@@ -577,7 +668,7 @@ class protein3D:
         """
 
         # read in PDB file
-        if '.pdb' in text: # means this is a filename
+        if '.pdb' in text:  # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
             f = open(fname + '.pdb', 'r')
@@ -610,7 +701,7 @@ class protein3D:
                 Rfree = float(temp2[8])
             else:
                 Rfree = 100
-        else:
+        elif "R VALUE          (WORKING SET, NO CUTOFF)" in text:
             temp = text.split("R VALUE          (WORKING SET, NO CUTOFF)")
             temp2 = temp[-1].split()
             if temp2[1] != 'NULL':
@@ -621,7 +712,9 @@ class protein3D:
                 Rfree = float(temp2[10])
             else:
                 Rfree = 100
-        temp = temp[1].split(enter)
+        else:
+            R = -100
+            Rfree = 100
 
         # start getting missing amino acids
         if "M RES C SSSEQI" in text:
@@ -636,9 +729,9 @@ class protein3D:
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
-                l = line.split()
-                if len(l) > 2:
-                    a = AA3D(l[0], l[1], l[2])
+                sp = line.split()
+                if len(sp) > 2:
+                    a = AA3D(sp[0], sp[1], sp[2])
                     missing_aas.append(a)
 
         # start getting missing atoms
@@ -649,18 +742,18 @@ class protein3D:
             split = text[-1]
             want = want.split(split)
             for line in want:
-                if line == want[-1]: 
+                if line == want[-1]:
                     text = line
                     line = line.split(enter)
                     line = line[0]
                     text = text.replace(line, '')
-                l = line.split()
-                if len(l) > 2:
-                    missing_atoms[(l[1],l[2])] = []
-                    for atom in l[3:]:
+                sp = line.split()
+                if len(sp) > 2:
+                    missing_atoms[(sp[1], sp[2])] = []
+                    for atom in sp[3:]:
                         if atom != enter and atom[0] in ['C', 'N', 'O', 'H']:
-                            missing_atoms[(l[1],l[2])].append(atom3D(Sym=atom[0],
-                                                           greek=atom))
+                            missing_atoms[(sp[1], sp[2])].append(
+                                atom3D(Sym=atom[0], greek=atom))
         # start getting amino acids and heteroatoms
         pa_dict = {'AltLoc': ""}
         if "ENDMDL" in text:
@@ -681,22 +774,33 @@ class protein3D:
                 if a_dict['ResName'] in globalvars().getAllAAs() or "ATOM" in l_type:
                     # have an amino acid or biomolecule monomer
                     a, aas, conf, chains, pa_dict, bonds = makeMol(a_dict, aas, conf, chains, pa_dict, bonds)
-                else: # have a normal heteromolecule
+                else:  # have a normal heteromolecule
                     a, hetmols, conf, chains, pa_dict, bonds = makeMol(a_dict, hetmols, conf, chains, pa_dict, bonds, False)
                 atoms[a_dict['SerialNum']] = a
                 a_ids[a] = a_dict['SerialNum']
 
-            elif "CONECT" in l_type: # get extra connections
-                line = line[6:] # remove type
-                l = [line[i:i+5] for i in range(0, len(line), 5)]
-                if int(l[0]) in atoms.keys() and atoms[int(l[0])] not in bonds.keys():
-                    bonds[atoms[int(l[0])]] = set()
-                for i in l[1:]:
+            elif "CONECT" in l_type:  # get extra connections
+                line = line[6:]  # remove type
+                li = [line[i:i+5] for i in range(0, len(line), 5)]
+                if int(li[0]) in atoms.keys() and atoms[int(li[0])] not in bonds.keys():
+                    bonds[atoms[int(li[0])]] = set()
+                for i in li[1:]:
                     try:
-                        bonds[atoms[int(l[0])]].add(atoms[int(i)])
-                    except:
-                        if "  " not in i and i != " ":
-                            print("likely OXT")
+                        bonds[atoms[int(li[0])]].add(atoms[int(i)])
+                        if atoms[int(li[0])].loc != '':
+                            for j in {1, -1}:
+                                if atoms[int(li[0]) + j].greek == atoms[int(li[0])].greek:
+                                    if atoms[int(li[0]) + j] not in bonds.keys():
+                                        bonds[atoms[int(li[0]) + j]] = {atoms[int(i)]}
+                                    else:
+                                        bonds[atoms[int(li[0]) + j]].add(atoms[int(i)])
+                                    if atoms[int(i)] not in bonds.keys():
+                                        bonds[atoms[int(i)]] = {atoms[int(li[0]) + j]}
+                                    else:
+                                        bonds[atoms[int(i)]].add(atoms[int(li[0]) + j])
+                    except ValueError:
+                        # if "  " not in i and i != " ":
+                        #    print("likely OXT")
                         continue
         # deal with conformations in chains
         for i in conf:
@@ -744,23 +848,23 @@ class protein3D:
             data = urllib.urlopen(
                 'https://files.rcsb.org/view/' + remoteCode +
                 '.pdb').read()
-        except:
-            print("warning: %s not found.\n"%pdbCode)
+        except urllib.error.URLError:
+            print("warning: %s not found.\n" % pdbCode)
         else:
             try:
                 self.readfrompdb(str(data))
                 self.setPDBCode(pdbCode)
-                print("fetched: %s"%(pdbCode))
+                print("fetched: %s" % (pdbCode))
             except IOError:
                 print('aborted')
             else:
                 if len(data) == 0:
-                    print("warning: %s not valid.\n"%pdbCode)
+                    print("warning: %s not valid.\n" % pdbCode)
 
     def setBonds(self, bonds):
         """Sets the bonded atoms in the protein.
         This is effectively the molecular graph.
-         
+
         Parameters
         ----------
             bonds : dictionary
@@ -772,7 +876,7 @@ class protein3D:
     def readMetaData(self):
         """ API query to fetch XML data from a pdb and add its useful attributes
         to a protein3D class.
-        
+
         Parameters
         ----------
             pdbCode : str
@@ -783,42 +887,42 @@ class protein3D:
             start = 'https://files.rcsb.org/pub/pdb/validation_reports/' + pdbCode[1] + pdbCode[2]
             link = start + '/' + pdbCode + '/' + pdbCode + '_validation.xml'
             xml_doc = requests.get(link)
-        except:
-            print("warning: %s not found.\n"%pdbCode)
+        except urllib.error.URLError:
+            print("warning: %s not found.\n" % pdbCode)
         else:
             try:
                 ### We then use beautiful soup to read the XML doc. LXML is an XML reader. The soup object is what we then use to parse!
-                soup = BeautifulSoup(xml_doc.content,'lxml-xml')
-                
-                ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections. 
+                soup = BeautifulSoup(xml_doc.content, 'lxml-xml')
+
+                ### We can then use methods of the soup object to find "tags" within the XML file. This is how we would extract sections.
                 ### This is an example of getting everything with a "sec" tag.
                 body = soup.find_all('wwPDB-validation-information')
                 entry = body[0].find_all("Entry")
                 if "DataCompleteness" not in entry[0].attrs.keys():
                     self.setDataCompleteness(0)
-                    print("warning: %s has no DataCompleteness."%pdbCode)
+                    print("warning: %s has no DataCompleteness." % pdbCode)
                 else:
                     self.setDataCompleteness(float(entry[0].attrs["DataCompleteness"]))
                 if "percent-RSRZ-outliers" not in entry[0].attrs.keys():
                     self.setRSRZ(100)
-                    print("warning: %s has no RSRZ.\n"%pdbCode)
+                    print("warning: %s has no RSRZ.\n" % pdbCode)
                 else:
                     self.setRSRZ(float(entry[0].attrs["percent-RSRZ-outliers"]))
                 if "TwinL" not in entry[0].attrs.keys():
-                    print("warning: %s has no TwinL."%pdbCode)
+                    print("warning: %s has no TwinL." % pdbCode)
                     self.setTwinL(0)
                 else:
                     self.setTwinL(float(entry[0].attrs["TwinL"]))
                 if "TwinL2" not in entry[0].attrs.keys():
-                    print("warning: %s has no TwinL2."%pdbCode)
+                    print("warning: %s has no TwinL2." % pdbCode)
                     self.setTwinL2(0)
                 else:
                     self.setTwinL2(float(entry[0].attrs["TwinL2"]))
             except IOError:
                 print('aborted')
             else:
-                if xml_doc == None:
-                    print("warning: %s not valid.\n"%pdbCode)
+                if xml_doc is None:
+                    print("warning: %s not valid.\n" % pdbCode)
 
     def setDataCompleteness(self, DataCompleteness):
         """ Set DataCompleteness value of protein3D class.
@@ -868,16 +972,16 @@ class protein3D:
         dict_str = out.decode("UTF-8")
         int_dict = ast.literal_eval(dict_str)
         res2 = subprocess.Popen(['curl', int_dict['location']],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out2, err2 = res2.communicate()
         dict2_str = out2.decode("UTF-8")
         dictionary = ast.literal_eval(dict2_str)
-        t = 5
+        t = 5  # can change depending on how frequently to loop
         while dictionary["status_code"] == 202:
             res2 = subprocess.Popen(['curl', int_dict['location']],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            print('sleeping', t)
+            # print('sleeping', t)
             time.sleep(t)
             res2.wait()
             out2, err2 = res2.communicate()
@@ -891,8 +995,8 @@ class protein3D:
             if index in self.atoms.keys():
                 a = self.atoms[index]
                 a.setEDIA(EDIA)
-                if a.occup < 1: # more than one conformation
-                    subdf = df[df["Infile id"]==index+1]
+                if a.occup < 1:  # more than one conformation
+                    subdf = df[df["Infile id"] == index+1]
                     if subdf.shape[0] == 0 and index+1 in self.atoms.keys():
                         self.atoms[index+1].setEDIA(EDIA)
                     elif subdf.shape[0] == 0 and index-1 in self.atoms.keys():
@@ -912,10 +1016,10 @@ class protein3D:
 
     def centermass(self):
         """Computes coordinates of center of mass of protein.
-        
+
         """
 
-        center_of_mass = [0, 0, 0] # coordinates of center of mass (X, Y, Z)
+        center_of_mass = [0, 0, 0]  # coordinates of center of mass (X, Y, Z)
         mmass = 0
         # loop over atoms in molecule
         if len(self.atoms.keys()) > 0:
@@ -938,10 +1042,10 @@ class protein3D:
 
     def setCentroid(self):
         """Computes coordinates of center of mass of protein.
-        
+
         """
 
-        centroid = [0, 0, 0] # coordinates of centroid (X, Y, Z)
+        centroid = [0, 0, 0]  # coordinates of centroid (X, Y, Z)
         # loop over atoms in protein
         if len(self.atoms.keys()) > 0:
             for atom in self.atoms.values():
@@ -962,7 +1066,7 @@ class protein3D:
 
     def convexhull(self):
         """Computes convex hull of protein.
-        
+
         Returns
         -------
             hull : array

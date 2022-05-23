@@ -9,7 +9,7 @@ import scipy.misc
 import skimage.transform as skitransform
 import pickle
 import json
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from molSimplify.molscontrol.io_tools import obtain_jobinfo, read_geometry_to_mol, get_geo_metrics, get_bond_order, get_gradient, \
     get_mullcharge, kill_job, check_pid, get_ss_del, get_metal_spin_del
 from molSimplify.molscontrol.clf_tools import get_layer_outputs, dist_neighbor, get_entropy, find_closest_model
@@ -219,7 +219,7 @@ class dft_control:
             for idx, fname in list(self.features_dict[self.mode].items()):
                 self.features.update({fname: []})
             logging.info('Feature initialized.')
-        except Exception as e:
+        except Exception:
             logging.error('Feature initialization failed.', exc_info=True)
 
     def get_file_path(self, filein):
@@ -242,7 +242,7 @@ class dft_control:
                 logging.info("Loading model: %s ..." %
                              _modelname.split('/')[-1])
                 self.models.update({step: load_model(_modelname)})
-        except Exception as e:
+        except Exception:
             logging.error('Failed at model loading.', exc_info=True)
 
     def load_training_data(self):
@@ -258,7 +258,7 @@ class dft_control:
             for key, val in list(_train_data.items()):
                 self.train_data.append(val)
             logging.info("Training data loaded.")
-        except Exception as e:
+        except Exception:
             logging.error('Failed at training data loading.', exc_info=True)
 
     def load_normalization_vec(self):
@@ -377,7 +377,7 @@ class dft_control:
 
     def calculate_lse(self, step=False):
         step = self.step_now if not step else step
-        if not self.step_now in self.step_decisions:
+        if self.step_now not in self.step_decisions:
             fmat_train = []
             for ii in range(len(self.train_data[0])):
                 # fmat_train.append(scipy.misc.imresize(self.train_data[0][ii, :self.step_now + 1, :],
@@ -437,7 +437,7 @@ class dft_control:
                 filepath = self.get_file_path(filename)
                 if os.path.isfile(filepath):
                     self.file_updated[self.mode].update({filename: True})
-            existed = all(value == True for value in list(
+            existed = all(value is True for value in list(
                 self.file_updated[self.mode].values()))
         for filename in self.files_track[self.mode]:
             filepath = self.get_file_path(filename)
@@ -453,7 +453,7 @@ class dft_control:
             self.step_now += 1
             self.prepare_feature_mat()
             logging.info("%d step feature obtained." % self.step_now)
-        except Exception as e:
+        except Exception:
             logging.warning(
                 'Cannot obtain the information of the zeroth step.', exc_info=True)
 
@@ -462,7 +462,7 @@ class dft_control:
             filepath = self.get_file_path(filename)
             if os.path.getmtime(filepath) - val > 3:
                 self.file_updated[self.mode].update({filename: True})
-        updated = all(value == True for value in list(
+        updated = all(value is True for value in list(
             self.file_updated[self.mode].values()))
         if self.debug:
             updated = True

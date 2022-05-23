@@ -5,12 +5,10 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-from molSimplify.Scripts.molSimplify_io import (lig_load)
+from molSimplify.Scripts.io import lig_load
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.graph_analyze import (get_lig_EN,
-                                                   get_truncated_kier,
-                                                   kier,
-                                                   obtain_truncation)
+                                                   get_truncated_kier)
 from molSimplify.python_nn.ANN import (find_eu_dist,
                                        simple_hs_ann,
                                        simple_ls_ann,
@@ -62,14 +60,12 @@ def check_ligands(ligs, batlist, dents, tcats):
     # of connection atoms
 
     n_ligs = len(ligs)
-    unique_ligands = []
     axial_ind_list = []
-    equitorial_ind_list = []
+    equatorial_ind_list = []
     axial_ligs = []
-    equitorial_ligs = []
+    equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
-    eq_ligs = []
     eq_tcat = False
     ax_tcat = False
     valid = True
@@ -88,17 +84,17 @@ def check_ligands(ligs, batlist, dents, tcats):
             if not (this_lig in unique_ligs):
                 unique_ligs.append(this_lig)
                 ucats.append(tcats[i])
-            elif (this_lig in unique_ligs) and not (this_lig in equitorial_ligs):
-                equitorial_ligs.append(this_lig)
+            elif (this_lig in unique_ligs) and not (this_lig in equatorial_ligs):
+                equatorial_ligs.append(this_lig)
                 eq_dent = this_dent
                 eq_tcat = tcats[i]
         if len(unique_ligs) == 1:
-            axial_ligs.append(equitorial_ligs[0])
+            axial_ligs.append(equatorial_ligs[0])
             ax_dent = 2
             ax_tcat = eq_tcat
         elif len(unique_ligs) == 2:
             for i, uligs in enumerate(unique_ligs):
-                if not (uligs in equitorial_ligs):  # only occured once
+                if not (uligs in equatorial_ligs):  # only occured once
                     axial_ligs.append(uligs)
                     ax_dent = 2
                     ax_tcat = ucats[i]
@@ -118,26 +114,26 @@ def check_ligands(ligs, batlist, dents, tcats):
                         ax_dent = this_dent
                         ax_tcat = tcats[i]
                 else:
-                    if not (this_lig in equitorial_ligs):
-                        equitorial_ligs.append(this_lig)
+                    if not (this_lig in equatorial_ligs):
+                        equatorial_ligs.append(this_lig)
                         eq_dent = this_dent
                         eq_tcat = tcats[i]
             else:
-                if not (this_lig in equitorial_ligs):
-                    equitorial_ligs.append(this_lig)
+                if not (this_lig in equatorial_ligs):
+                    equatorial_ligs.append(this_lig)
                     eq_dent = this_dent
                     eq_tcat = tcats[i]
     if not (len(axial_ligs) == 1):
         print(('axial ligs mismatch: ', axial_ligs, ax_dent))
         valid = False
-    if not (len(equitorial_ligs) == 1):
-        print(('equitorial ligs mismatch: ', equitorial_ligs, eq_dent))
+    if not (len(equatorial_ligs) == 1):
+        print(('equatorial ligs mismatch: ', equatorial_ligs, eq_dent))
         valid = False
     if valid:  # get the index position in ligs
         axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
-        equitorial_ind_list = [ligs.index(eq_lig)
-                               for eq_lig in equitorial_ligs]
-    return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list
+        equatorial_ind_list = [ligs.index(eq_lig)
+                               for eq_lig in equatorial_ligs]
+    return valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list
 
 
 def check_metal(metal, oxidation_state):
@@ -152,13 +148,6 @@ def check_metal(metal, oxidation_state):
         if int(oxidation_state) in supported_metal_dict[metal]:
             outcome = True
     return outcome, oxidation_state
-
-
-def get_truncated_kier(ligand, connection_atoms):
-        # three hop truncation
-    trunc_mol = obtain_truncation(ligand, connection_atoms, 3)
-    this_kier = kier(trunc_mol)
-    return this_kier
 
 
 def get_con_at_type(mol, connection_atoms):
@@ -179,7 +168,7 @@ def get_con_at_type(mol, connection_atoms):
                 else:
                     print('different connection atoms in one ligand')
                     valid = False
-        if not this_type in ['C', 'O', 'Cl', 'N', 'S']:
+        if this_type not in ['C', 'O', 'Cl', 'N', 'S']:
             valid = False
             print(('untrained atom type: ', this_type))
     return valid, this_type
@@ -252,7 +241,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if emsg:
         print((str(" ".join(["ANN messages:"] + [str(i) for i in emsg]))))
     if valid:
-        valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list = check_ligands(
+        valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list = check_ligands(
             ligs, batslist, dents, tcats)
         if args.debug:
             print("\n")
@@ -267,7 +256,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(batslist)
             print(('lig validity', valid))
             print(('ax ligs', axial_ligs))
-            print(('eq ligs', equitorial_ligs))
+            print(('eq ligs', equatorial_ligs))
             print(('spin is', spin))
         if not valid:
             ANN_reason = 'found incorrect ligand symmetry'
@@ -279,18 +268,18 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         # check decoration index
         if newdecs:
             if newdecs[axial_ind_list[0]]:
-                #print('decorating ' + str(axial_ligs[0]) + ' with ' +str(newdecs[axial_ind_list[0]]) + ' at sites '  + str(newdec_inds[axial_ind_list[0]]))
+                # print('decorating ' + str(axial_ligs[0]) + ' with ' +str(newdecs[axial_ind_list[0]]) + ' at sites '  + str(newdec_inds[axial_ind_list[0]]))
                 ax_lig3D = decorate_ligand(
                     args, axial_ligs[0], newdecs[axial_ind_list[0]], newdec_inds[axial_ind_list[0]])
 
         ax_lig3D.convert2mol3D()  # mol3D representation of ligand
         # eq
-        eq_lig3D, r_emsg = lig_load(equitorial_ligs[0], licores)  # load ligand
+        eq_lig3D, r_emsg = lig_load(equatorial_ligs[0], licores)  # load ligand
         if newdecs:
-            if newdecs[equitorial_ind_list[0]]:
-                #print('decorating ' + str(equitorial_ligs[0]) + ' with ' +str(newdecs[equitorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equitorial_ind_list[0]]))
+            if newdecs[equatorial_ind_list[0]]:
+                # print('decorating ' + str(equatorial_ligs[0]) + ' with ' +str(newdecs[equatorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equatorial_ind_list[0]]))
                 eq_lig3D = decorate_ligand(
-                    args, equitorial_ligs[0], newdecs[equitorial_ind_list[0]], newdec_inds[equitorial_ind_list[0]])
+                    args, equatorial_ligs[0], newdecs[equatorial_ind_list[0]], newdec_inds[equatorial_ind_list[0]])
         if r_emsg:
             emsg += r_emsg
         eq_lig3D.convert2mol3D()  # mol3D representation of ligand
@@ -322,7 +311,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         if axial_ligs[0] in ['carbonyl', 'cn']:
             ax_bo = 3
-        if equitorial_ligs[0] in ['carbonyl', 'cn']:
+        if equatorial_ligs[0] in ['carbonyl', 'cn']:
             eq_bo = 3
         eq_charge = eq_lig3D.OBMol.GetTotalCharge()
         ax_charge = ax_lig3D.OBMol.GetTotalCharge()
@@ -340,8 +329,8 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange)/100  # if given as %
                 elif float(args.exchange) <= 1:
                     alpha = float(args.exchange)
-            except:
-                print('cannot case exchange argument as a float, using 20%')
+            except ValueError:
+                print('cannot cast exchange argument to float, using 20%')
 
         if args.debug:
             print(('ax_bo', ax_bo))
@@ -387,16 +376,16 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         valid, nn_excitation = ax_lig_corrector(nn_excitation, ax_type)
         valid, slope_excitation = ax_lig_corrector(slope_excitation, ax_type)
 
-   # print('ax_cor',valid)
-  #  print('start eq check')
+    # print('ax_cor',valid)
+    # print('start eq check')
     if valid:
         valid, nn_excitation = eq_lig_corrector(nn_excitation, eq_type)
         valid, slope_excitation = eq_lig_corrector(slope_excitation, eq_type)
 
-  #  print('eq_cor',valid)
+    # print('eq_cor',valid)
     #
     # print(slope_excitation)
-    #print('excitations: ')
+    # print('excitations: ')
     # print(nn_excitation)
     # print(slope_excitation)
 
@@ -499,36 +488,36 @@ def ax_lig_corrector(excitation, con_atom_type):
         if not con_atom_type == "C":
             excitation[ax_lig_index_dictionary[con_atom_type]] = 1
         valid = True
-    except:
+    except KeyError:
         valid = False
     return valid, excitation
 
 
 def eq_lig_corrector(excitation, con_atom_type):
-    #print('in eliq cor, excitation 1;5'  + str(excitation[1:5]))
+    # print('in eliq cor, excitation 1;5'  + str(excitation[1:5]))
     eq_lig_index_dictionary = {'Cl': 15, 'F': 15, 'N': 16, 'O': 17, 'S': 18}
     try:
         if not con_atom_type == "C":
             excitation[eq_lig_index_dictionary[con_atom_type]] = 1
         valid = True
-    except:
+    except KeyError:
         valid = False
-    #print('end eliq cor, excitation 1;5'  + str(excitation[1:5]))
+    # print('end eliq cor, excitation 1;5'  + str(excitation[1:5]))
     return valid, excitation
 
 
 def metal_corrector(excitation, metal):
     metal_index_dictionary = {'co': 0, 'cr': 1, 'fe': 2, 'mn': 3, 'ni': 4}
     # print(excitation)
-    #print('metal is ' + str(metal) +' setting slot ' +str(metal_index_dictionary[metal]) + ' to 1' )
+    # print('metal is ' + str(metal) +' setting slot ' +str(metal_index_dictionary[metal]) + ' to 1' )
     try:
         excitation[metal_index_dictionary[metal]] += 1
         valid = True
-    except:
+    except KeyError:
         valid = False
 
     return valid, excitation
-#n = network_builder([25,50,51],"nn_split")
+# n = network_builder([25,50,51],"nn_split")
 
 
 def spin_classify(metal, spin, ox):

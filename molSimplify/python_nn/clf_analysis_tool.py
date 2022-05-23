@@ -2,8 +2,8 @@
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 import tensorflow as tf
-from keras import backend as K
-from keras import Model
+from tensorflow.keras import backend as K
+from tensorflow.keras import Model
 
 
 def get_acc(pred_std, pred_err, stds):
@@ -14,7 +14,7 @@ def get_acc(pred_std, pred_err, stds):
             if _std < target_std:
                 _pred_err.append(pred_err[idx])
         pred_err_arr.append(_pred_err)
-    acc, auc, ratio = [], [], []
+    acc, ratio = [], []
     for idx, _ in enumerate(pred_err_arr):
         pred_err_now = pred_err_arr[idx]
         acc_arr = [1 if pred_err_now[ii] < 0.5 else 0 for ii in range(len(pred_err_now))]
@@ -26,7 +26,7 @@ def get_acc(pred_std, pred_err, stds):
     return stds, np.array(acc), np.array(ratio)
 
 
-def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
+def dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):  # noqa: E741
     dist_mat = pairwise_distances(fmat1, fmat2, 'manhattan')
     dist_mat = dist_mat * 1.0 / dist_ref
     dist_avrg, dist_list, labels_list = [], [], []
@@ -105,7 +105,7 @@ def get_layer_outputs(model, layer_index, input,
         nn_outputs = get_outputs([input, training_flag])[0]
     else:
         partial_model = Model(model.inputs, model.layers[layer_index].output)
-        nn_outputs = partial_model([input], training= training_flag).numpy()  # runs the model in training mode
+        nn_outputs = partial_model([input], training=training_flag).numpy()  # runs the model in training mode
     return nn_outputs
 
 

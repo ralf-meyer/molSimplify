@@ -11,7 +11,7 @@ import os
 from molSimplify.Classes.ligand import ligand
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Scripts.molSimplify_io import lig_load
+from molSimplify.Scripts.io import lig_load
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts,
                                                  create_OHE)
 from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
@@ -46,8 +46,8 @@ def spin_classify(metal, spin, ox):
     return high_spin, spin_ops
 
 
-# wrapper to get AN predictions from a known mol3D()
-# generally unsfae
+# wrapper to get ANN predictions from a known mol3D()
+# generally unsafe
 def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
 
     tensorflow_silence()
@@ -74,7 +74,7 @@ def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
     split, latent_split = ANN_supervisor(
         'split', descriptors, descriptor_names, debug)
 
-    # call ANN for bond lenghts
+    # call ANN for bond lengths
     if oxidation_state == 2:
         r_ls, latent_r_ls = ANN_supervisor(
             'ls_ii', descriptors, descriptor_names, debug)
@@ -99,7 +99,7 @@ def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
 
 def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     # tests if ligand combination
-    # is compatiable with the ANN
+    # is compatible with the ANN
     # INPUT:
     #   - ligs:  list of mol3D class, ligands
     #   - batlist: list of int, occupations
@@ -108,7 +108,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     # OUTPUT:
     #   - valid: bool
     # tcats controls
-    # manual overide
+    # manual override
     # of connection atoms
 
     n_ligs = len(ligs)
@@ -118,24 +118,20 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print(('occs in function  ' + str(occs)))
         print(('tcats in function  ' + str(tcats)))
 
-    unique_ligands = []
     axial_ind_list = []
-    equitorial_ind_list = []
+    equatorial_ind_list = []
     axial_ligs = []
-    equitorial_ligs = []
+    equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
-    eq_ligs = []
     eq_tcat = False
     ax_tcat = False
-    triple_bidentate = False
     pentadentate = False
     ax_occs = []
     eq_occs = []
     valid = True
     if (set(dents) == set([2])):
         print('triple bidentate case')
-        triple_bidentate = True
         unique_ligs = []
         ucats = []
         unique_dict = {}
@@ -146,7 +142,6 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             this_bat = batlist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
-            this_occs = occs[i]
             # mulitple points
             if not (this_lig in unique_ligs):
                 unique_ligs.append(this_lig)
@@ -160,7 +155,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             ax_dent = 2
             ax_tcat = tcats[0]
             ax_occs.append(1)
-            equitorial_ligs.append(ligs[0])
+            equatorial_ligs.append(ligs[0])
             eq_dent = 2
             eq_tcat = tcats[0]
             eq_occs.append(2)
@@ -172,7 +167,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                     ax_occs.append(1)
                     ax_tcat = tcats[ligs.index(key)]
                 elif unique_dict[key] == 2:
-                    equitorial_ligs.append(key)
+                    equatorial_ligs.append(key)
                     eq_dent = 2
                     eq_occs.append(2)
                     eq_tcat = tcats[ligs.index(key)]
@@ -197,12 +192,12 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             # mulitple points
             if len(this_bat) > 1:
                 if debug:
-                    print(('adding ' + str(this_lig) + ' to equitorial'))
-                equitorial_ligs.append(this_lig)
+                    print(('adding ' + str(this_lig) + ' to equatorial'))
+                equatorial_ligs.append(this_lig)
                 eq_dent = 4
                 eq_tcat = tcats[i]
                 eq_occs.append(1)
-                equitorial_ind_list.append(i)
+                equatorial_ind_list.append(i)
             if debug:
                 print(('adding ' + str(this_lig) + ' to axial'))
             axial_ligs.append(this_lig)
@@ -238,18 +233,18 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                     axial_ind_list.append(i)
                 else:
                     if debug:
-                        print(('adding ' + str(this_lig) + ' to equitorial'))
-                    equitorial_ligs.append(this_lig)
+                        print(('adding ' + str(this_lig) + ' to equatorial'))
+                    equatorial_ligs.append(this_lig)
                     eq_dent = this_dent
                     eq_tcat = tcats[i]
                     eq_occs.append(occs[i])
-                    equitorial_ind_list.append(i)
+                    equatorial_ind_list.append(i)
             else:
-                equitorial_ligs.append(this_lig)
+                equatorial_ligs.append(this_lig)
                 eq_dent = this_dent
                 eq_tcat = tcats[i]
                 eq_occs.append(occs[i])
-                equitorial_ind_list.append(i)
+                equatorial_ind_list.append(i)
     if (len(axial_ligs) > 2):
         print(('axial lig error : ', axial_ligs, ax_dent, ax_tcat, ax_occs))
         valid = False
@@ -257,15 +252,15 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print(('eq occupations  ' + str(eq_occs)))
         print(('eq dent   ' + str(eq_dent)))
     if not (4.0 / (float(eq_dent) * sum(eq_occs)) == 1):
-        print(('equitorial ligs error: ', equitorial_ligs, eq_dent, eq_tcat))
+        print(('equatorial ligs error: ', equatorial_ligs, eq_dent, eq_tcat))
         valid = False
     if valid and len(axial_ind_list) == 0:  # get the index position in ligs
         axial_ind_list = [ligs.index(ax_lig) for ax_lig in axial_ligs]
-    if valid and len(equitorial_ind_list) == 0:  # get the index position in ligs
-        equitorial_ind_list = [ligs.index(eq_lig)
-                               for eq_lig in equitorial_ligs]
+    if valid and len(equatorial_ind_list) == 0:  # get the index position in ligs
+        equatorial_ind_list = [ligs.index(eq_lig)
+                               for eq_lig in equatorial_ligs]
 
-    return valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equitorial_ind_list, ax_occs, eq_occs, pentadentate
+    return valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list, ax_occs, eq_occs, pentadentate
 
 
 def check_metal(metal, oxidation_state):
@@ -330,7 +325,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     tcats = newcats
     occs = newoccs
     if args.debug:
-        print('tf_nn has finisihed prepping ligands')
+        print('tf_nn has finished prepping ligands')
 
     if not args.geometry == "oct":
         emsg.append(
@@ -344,6 +339,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if valid:
         oxidation_state = args.oxstate
         valid, oxidation_state = check_metal(this_metal, oxidation_state)
+        if args.debug:
+            print(f'valid after running check_metal? {valid}')
         if int(oxidation_state) in [3, 4, 5]:
             catalytic_moieties = ['oxo', 'x', 'hydroxyl', '[O--]', '[OH-]']
             if args.debug:
@@ -358,6 +355,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('metal is ' + str(this_metal)))
             print(('metal validity', valid))
     if not valid and not catalysis:
+        emsg.append("\n The only metals that are supported are Fe, Mn, Cr, Co, and Ni")
         emsg.append("\n Oxidation state not available for this metal")
         ANN_reason = 'ox state not available for metal'
     if valid:
@@ -376,8 +374,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                "{0:.2f}".format(metal_check_time) + ' seconds'))
 
     if valid or catalysis:
-        (valid, axial_ligs, equitorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list,
-         equitorial_ind_list, ax_occs, eq_occs, pentadentate) = tf_check_ligands(
+        (valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list,
+         equatorial_ind_list, ax_occs, eq_occs, pentadentate) = tf_check_ligands(
             ligs, batslist, dents, tcats, occs, args.debug)
 
         if args.debug:
@@ -388,13 +386,13 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('Bats (backbone atoms)', batslist))
             print(('lig validity', valid))
             print(('ax ligs', axial_ligs))
-            print(('eq ligs', equitorial_ligs))
+            print(('eq ligs', equatorial_ligs))
             print(('spin is', spin))
 
         if catalysis:
             valid = False
     if (not valid) and (not catalysis):
-        ANN_reason = 'found incorrect ligand symmetry'
+        ANN_reason = 'found incorrect ligand symmetry'  # or, an invalid metal, oxidation state, spin state combination was used
     elif not valid and catalysis:
         if args.debug:
             print('tf_nn detects catalytic')
@@ -441,8 +439,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print([h.mol.cat for h in ax_ligands_list])
 
         if args.debug:
-            print(('loading equitorial ligands ' + str(equitorial_ligs)))
-        for ii, eql in enumerate(equitorial_ligs):
+            print(('loading equatorial ligands ' + str(equatorial_ligs)))
+        for ii, eql in enumerate(equatorial_ligs):
             eq_lig3D, r_emsg = lig_load(eql, licores)  # load ligand
             net_lig_charge += eq_lig3D.charge
             if r_emsg:
@@ -457,14 +455,14 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             if newdecs:
                 if args.debug:
                     print(('newdecs' + str(newdecs)))
-                    print(('equitorial_ind_list is ' + str(equitorial_ind_list)))
+                    print(('equatorial_ind_list is ' + str(equatorial_ind_list)))
                 c = 0
-                if newdecs[equitorial_ind_list[ii]]:
+                if newdecs[equatorial_ind_list[ii]]:
                     if args.debug:
                         print(('decorating ' + str(eql) + ' with ' + str(
-                            newdecs[equitorial_ind_list[ii]]) + ' at sites ' + str(newdec_inds[equitorial_ind_list[ii]])))
-                    eq_lig3D = decorate_ligand(args, eql, newdecs[equitorial_ind_list[ii]],
-                                               newdec_inds[equitorial_ind_list[ii]])
+                            newdecs[equatorial_ind_list[ii]]) + ' at sites ' + str(newdec_inds[equatorial_ind_list[ii]])))
+                    eq_lig3D = decorate_ligand(args, eql, newdecs[equatorial_ind_list[ii]],
+                                               newdec_inds[equatorial_ind_list[ii]])
                     c += 1
 
             eq_lig3D.convert2mol3D()  # mol3D representation of ligand
@@ -531,7 +529,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                                "sc_label_trust": lse_trust(sc_lse)})
 
         # build RACs without geo
-        con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(
             this_complex, custom_ligand_dict, ox_modifier)
 
@@ -547,7 +544,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange) / 100  # if given as %
                 elif float(args.exchange) <= 1:
                     alpha = float(args.exchange)
-            except:
+            except ValueError:
                 print('cannot cast exchange argument as a float, using 20%')
         descriptor_names += ['alpha']
         descriptors += [alpha]
@@ -665,7 +662,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         # in order for molSimplify to understand if
         ANN_bondl = len(ligs) * [False]
         added = 0
-        for ii, eql in enumerate(equitorial_ind_list):
+        for ii, eql in enumerate(equatorial_ind_list):
             for jj in range(0, eq_occs[ii]):
                 ANN_bondl[added] = r[2]
                 added += 1
@@ -721,9 +718,9 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("************** and metal-ligand bond distances    ****************")
         print("******************************************************************")
         if high_spin:
-            print(('You have selected a high-spin state, s = ' + str(spin)))
+            print(('You have selected a high-spin state, multiplicity = ' + str(spin)))
         else:
-            print(('You have selected a low-spin state, s = ' + str(spin)))
+            print(('You have selected a low-spin state, multiplicity = ' + str(spin)))
         # report to stdout
         if split[0] < 0 and not high_spin:
             if abs(split[0]) > 5:
@@ -759,7 +756,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
-        from keras import backend as K
+        from tensorflow.keras import backend as K
         # This is done to get rid of the attribute error that is a bug in tensorflow.
         K.clear_session()
         current_time = time.time()
@@ -771,7 +768,6 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if catalysis:
         print('-----In Catalysis Mode-----')
         # build RACs without geo
-        con_mat = this_complex.graph
         descriptor_names, descriptors = get_descriptor_vector(
             this_complex, custom_ligand_dict, ox_modifier)
         # get alpha
@@ -782,8 +778,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     alpha = float(args.exchange) * 100  # if given as %
                 elif float(args.exchange) >= 1:
                     alpha = float(args.exchange)
-            except:
-                print('cannot case exchange argument as a float, using 20%')
+            except ValueError:
+                print('cannot cast exchange argument to float, using 20%')
         descriptor_names += ['alpha', 'ox', 'spin', 'charge_lig']
         descriptors += [alpha, ox, spin, net_lig_charge]
         if args.debug:
@@ -798,7 +794,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             current_time = time.time()
             split_ANN_time = current_time - last_time
             last_time = current_time
-        oxo_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo",latent_oxo,args.debug)
+        oxo_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo", latent_oxo, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -817,7 +813,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(
                 ('HAT ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds'))
 
-        hat_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("hat",latent_hat,args.debug)
+        hat_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("hat", latent_hat, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -837,7 +833,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('oxo20 ANN took ' +
                   "{0:.2f}".format(oxo20_ANN_time) + ' seconds'))
         # oxo20_dist = find_ANN_latent_dist("oxo20", latent_oxo20, args.debug)
-        oxo20_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("oxo20",latent_oxo20,args.debug)
+        oxo20_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo20", latent_oxo20, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -858,7 +854,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('homo_empty ANN took ' +
                   "{0:.2f}".format(homo_empty_ANN_time) + ' seconds'))
         # homo_empty_dist = find_ANN_latent_dist("homo_empty", latent_homo_empty, args.debug)
-        homo_empty_dist, avg_10_NN_dist, avg_traintrain  = find_ANN_10_NN_normalized_latent_dist("homo_empty",latent_homo_empty,args.debug)
+        homo_empty_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("homo_empty", latent_homo_empty, args.debug)
         if args.debug:
             current_time = time.time()
             min_dist_time = current_time - last_time
@@ -963,7 +959,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         print("*******************************************************************")
         print("************** ANN complete, saved in record file *****************")
         print("*******************************************************************")
-        from keras import backend as K
+        from tensorflow.keras import backend as K
         # This is done to get rid of the attribute error that is a bug in tensorflow.
         K.clear_session()
 
@@ -981,7 +977,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
     if False:
         # test Euclidean norm to training data distance
-        train_dist, best_row = find_eu_dist(nn_excitation)
+        train_dist, best_row = find_eu_dist(nn_excitation)  # noqa: F821 (line unreachable)
         ANN_trust = max(0.01, 1.0 - train_dist)
 
         ANN_attributes.update({'ANN_closest_train': best_row})
@@ -991,7 +987,7 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         # use ANN to predict fucntional sensitivty
         HFX_slope = 0
-        HFX_slope = get_slope(slope_excitation)
+        HFX_slope = get_slope(slope_excitation)  # noqa: F821 (line unreachable)
         print(('Predicted HFX exchange sensitivity is : ' +
                "{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX'))
         ANN_attributes.update({'ANN_slope': HFX_slope})

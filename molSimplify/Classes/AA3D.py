@@ -5,9 +5,6 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
-# imports
-import os
-from math import sqrt
 
 class AA3D:
     """Holds information about an amino acid, used to do manipulations.  Reads information from structure file (pdb, cif) or is directly built from molsimplify.
@@ -20,7 +17,7 @@ class AA3D:
         # Number of atoms
         self.natoms = 0
         # 3-letter code of amino acid (in all caps)
-        self.three_lc = three_lc # if no name is specified, defaults to glycine
+        self.three_lc = three_lc  # if no name is specified, defaults to glycine
         # Mass of molecule
         self.mass = 0
         # Size of molecule
@@ -32,8 +29,8 @@ class AA3D:
         # Occupancy of amino acid in chain
         self.occup = occup
         # Peptide bond atoms
-        self.c = None
-        self.n = None
+        self.c = []
+        self.n = []
         # Bonds
         self.bonds = {}
         # Next amino acid in the chain
@@ -145,7 +142,7 @@ class AA3D:
                 centroid[1] += xyz[1]
                 centroid[2] += xyz[2]
         else:
-            centroid= False
+            centroid = False
             print(
                 'ERROR: Centroid calculation failed. Structure will be inaccurate.\n')
         return centroid
@@ -236,7 +233,7 @@ class AA3D:
         >>> complex_mol.addAtom(C_atom) # Add carbon atom at cartesian position 1, 1, 1 to mol3D object. 
         """
 
-        if index == None:
+        if index is None:
             index = len(self.atoms)
         # self.atoms.append(atom)
         self.atoms.append((index, atom))
@@ -253,5 +250,3 @@ class AA3D:
                 a one-character string representing the conformation
         """
         self.loc = loc
-            
-

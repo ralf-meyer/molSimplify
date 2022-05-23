@@ -1,9 +1,9 @@
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
-from keras import backend as K
+from tensorflow.keras import backend as K
 import tensorflow as tf
 from sklearn.neighbors import BallTree
-from keras import Model
+from tensorflow.keras import Model
 
 """
 tools for ML models.
@@ -18,11 +18,11 @@ def get_layer_outputs(model, layer_index, input,
         nn_outputs = get_outputs([input, training_flag])[0]
     else:
         partial_model = Model(model.inputs, model.layers[layer_index].output)
-        nn_outputs = partial_model([input], training= training_flag).numpy()  # runs the model in training mode
+        nn_outputs = partial_model([input], training=training_flag).numpy()  # runs the model in training mode
     return nn_outputs
 
 
-def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
+def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):  # noqa E741
     dist_mat = pairwise_distances(fmat1, fmat2, 'manhattan')
     dist_mat = dist_mat * 1.0 / dist_ref
     dist_avrg, dist_list, labels_list = [], [], []
@@ -50,7 +50,7 @@ def _dist_neighbor(fmat1, fmat2, labels, l=5, dist_ref=1):
     return dist_avrg, dist_list, labels_list
 
 
-def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):
+def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):  # noqa E741
     tree = BallTree(fmat2, leaf_size=2, metric='cityblock')
     dist_mat, inds = tree.query(fmat1, l)
     dist_mat = dist_mat * 1.0 / dist_ref
@@ -59,7 +59,7 @@ def dist_neighbor(fmat1, fmat2, labels, l=10, dist_ref=1):
     return dist_avrg, dist_mat, labels_list
 
 
-def get_entropy(dists, neighbor_targets):
+def _get_entropy(dists, neighbor_targets):
     entropies = []
     _sum = 0
     for ii, _neighbor_targets in enumerate(neighbor_targets):
@@ -88,6 +88,23 @@ def get_entropy(dists, neighbor_targets):
     return np.array(entropies)
 
 
+def get_entropy(dists, neighbor_targets, nclasses=2):
+    entropies = []
+    for ii, _neighbor_targets in enumerate(neighbor_targets):
+        p = [dist_penalty(2) for ii in range(nclasses)]
+        for idx, tar in enumerate(_neighbor_targets):
+            tar = int(tar)
+            d = dists[ii][idx]
+            if d <= 10:
+                p[tar] += dist_penalty(d) if d > 1e-6 else 100
+        p = [x/np.sum(p) for x in p]
+        _entropy = 0
+        for ii in range(nclasses):
+            _entropy += -p[ii] * np.log(p[ii])
+        entropies.append(_entropy)
+    return np.array(entropies)
+
+
 def dist_penalty(d):
     return np.exp(-1 * d ** 2)
 
@@ -96,7 +113,7 @@ def find_closest_model(step, allowed_steps):
     step_chosen = 0
     for _s in allowed_steps:
         delta = step - _s
-        if (not "mindelta" in list(locals().keys())):
+        if ("mindelta" not in list(locals().keys())):
             mindelta = abs(delta)
             step_chosen = _s
         elif (abs(delta) < mindelta):

@@ -5,19 +5,22 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+import copy
+import random
+import re
+import shutil
 import glob
 import os
-import shutil
-import re
-import argparse
-import sys
-import random
+import time
+import difflib
+
 import openbabel
-import copy
-from molSimplify.Classes.mol3D import *
-from molSimplify.Classes.globalvars import *
-from molSimplify.Classes.mol3D import mol3D
 from pkg_resources import resource_filename, Requirement
+
+from molSimplify.Classes.globalvars import (globalvars,
+                                            romans)
+from molSimplify.Classes.mol3D import mol3D
+
 
 # Print available geometries
 
@@ -128,7 +131,7 @@ def readdict_sub(fname):
         if (line[0] != '#') and line.strip():
             key = "".join([_f for _f in line.split(':')[0] if _f])
             val = "".join([_f for _f in line.split(':')[1] if _f])
-            vals = "".join([_f.strip() for _f in val.split(',') if _f])
+            vals = [_f.strip() for _f in val.split(',') if _f]
             vv = []
             for i, val in enumerate(vals):
                 vvs = ([_f for _f in val.split(' ') if _f])
@@ -181,6 +184,7 @@ def getlicores(flip=True):
 
 def getsimpleligs():
     slicores = getslicores()
+    a = []
     for key in slicores:
         a.append(key)
     a = sorted(a)
@@ -338,8 +342,8 @@ def loaddata(path):
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
-            l = [_f for _f in line.split(None) if _f]
-            d[(l[0], l[1], l[2], l[3], l[4])] = l[5]  # read dictionary
+            s = [_f for _f in line.split(None) if _f]
+            d[(s[0], s[1], s[2], s[3], s[4])] = s[5]  # read dictionary
     f.close()
     return d
 
@@ -364,8 +368,8 @@ def loaddata_ts(path):
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
-            l = [_f for _f in line.split(None) if _f]
-            d[(l[0], l[1], l[2], l[3])] = l[4:]  # read dictionary
+            s = [_f for _f in line.split(None) if _f]
+            d[(s[0], s[1], s[2], s[3])] = s[4:]  # read dictionary
     f.close()
     return d
 
@@ -378,7 +382,7 @@ def loadcdxml(cdxml):
     # try importing pybel
     try:
         import pybel
-    except:
+    except ImportError:  # What is the purpose of excepting and then raising?
         raise
     fname = re.sub(r'.cdxml', '', cdxml)  # file name for the new xyz
     # check cdxml file for Dashed bonds
@@ -471,8 +475,8 @@ def loadcoord(coord):
     f.close()
     b = []
     for line in txt:
-        l = [_f for _f in line.split(None) if _f]
-        b.append([float(l[0]), float(l[1]), float(l[2])])
+        s = [_f for _f in line.split(None) if _f]
+        b.append([float(s[0]), float(s[1]), float(s[2])])
     return b
 
 # Load core and convert to mol3D
@@ -482,7 +486,7 @@ def loadcoord(coord):
 
 
 def core_load(usercore, mcores=None):
-    if mcores == None:
+    if mcores is None:
         mcores = getmcores()
     globs = globalvars()
     if '~' in usercore:
@@ -492,7 +496,7 @@ def core_load(usercore, mcores=None):
     core = mol3D()  # initialize core molecule
     # check if core exists in dictionary
     if usercore.lower() in list(mcores.keys()):
-        #print('loading core from dictionary')
+        # print('loading core from dictionary')
         dbentry = mcores[usercore.lower()]
         # load core mol file (with hydrogens
         if globs.custom_path:
@@ -511,7 +515,7 @@ def core_load(usercore, mcores=None):
             core.OBMol = core.getOBMol(fcore, 'molf')
         elif ('.smi' in fcore):
             core.OBMol = core.getOBMol(fcore, 'smif')
-        core.cat = [int(l) for l in [_f for _f in dbentry[1] if _f]]
+        core.cat = [int(i) for i in [_f for _f in dbentry[1] if _f]]
         core.denticity = dbentry[2]
         core.ident = usercore
     # load from file
@@ -557,13 +561,13 @@ def core_load(usercore, mcores=None):
 # Load substrate and convert to mol3D
 #  @param usersubstrate Name of substrate
 #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-#  @return mol3D of substrate, error messages
+#  @return mol3D of substrate, subscatom, error messages
 #  attributes of substrate: OBMol, denticity, ident (identity), charge, cat (connection atom index), and grps (substrate group)
 
 
 def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
     # if not using a user-defined substrate dictionary
-    if subcores == None:
+    if subcores is None:
         subcores = getsubcores()
     # load global variables
     globs = globalvars()
@@ -594,9 +598,9 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 "molSimplify"), "molSimplify/Substrates/" + var_list_sub_i[0])
         # check if substrate xyz/mol file exists
         if not glob.glob(fsubst):
-            emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
+            emsg = "We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fsubst
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
         if ('.xyz' in fsubst):
             sub.OBMol = sub.getOBMol(fsubst, 'xyzf')
         elif ('.mol' in fsubst):
@@ -618,14 +622,14 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
         # Parsing substrate connection atoms
         if 'pi' in var_list_sub_i[2]:
             sub.denticity = 1
-            sub.cat = [int(l) for l in var_list_sub_i[2][:-1]]
+            sub.cat = [int(li) for li in var_list_sub_i[2][:-1]]
             sub.cat.append('pi')
         else:
-            sub.cat = [int(l) for l in var_list_sub_i[2]]
+            sub.cat = [int(li) for li in var_list_sub_i[2]]
         if not subcatoms:
             subcatoms = sub.cat
         # Parsing substrate group
-        sub.grps = [l for l in var_list_sub_i[3]]
+        sub.grps = [li for li in var_list_sub_i[3]]
         if len(var_list_sub_i[4]) > 0:
             sub.ffopt = var_list_sub_i[4]
     # load from file
@@ -643,12 +647,12 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 emsg = 'Failed converting file ' + usersubstrate + \
                     ' to molecule..Check your file.\n'
                 print(emsg)
-                return False, emsg
+                return False, subcatoms, emsg
             sub.ident = usersubstrate.split('/')[-1].split('.')[0]
         else:
             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
     # if not, try converting from SMILES
     else:
         # check for transition metals
@@ -659,98 +663,20 @@ def substr_load(usersubstrate, sub_i, subcatoms, subcores=None):
                 usersubstrate, 'smistring', True)  # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
-            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
-            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
+            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usersubstrate
+            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
             print(emsg)
-            return False, emsg
+            return False, subcatoms, emsg
         sub.cat = [0]
         sub.denticity = 1
         sub.ident = 'substrate'
     return sub, subcatoms, emsg
 
-# ## Load substrate and convert to mol3D
-# #  @param usersubstrate Name of substrate
-# #  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-# #  @return mol3D of substrate, error messages
-# def substr_load(usersubstrate,subcores=None):
-#     if subcores == None:
-#         subcores = getsubcores()
-#     globs = globalvars()
-#     if '~' in usersubstrate:
-#         homedir = os.path.expanduser("~")
-#         usersubstrate = usersubstrate.replace('~',homedir)
-#     emsg = False
-#     substrate = mol3D() # initialize core molecule
-#     ### check if core exists in dictionary
-#     if usersubstrate.lower() in subcores.keys():
-#         print('loading substrate from dictionary')
-#         dbentry = subcores[usersubstrate.lower()]
-#         # load substrate mol file (with hydrogens
-#         if globs.custom_path:
-#             fsubst = globs.custom_path + "/Substrates/" +dbentry[0]
-#         else:
-#             fsubst = resource_filename(Requirement.parse("molSimplify"),"molSimplify/Substrates/" +dbentry[0])
-
-#         # check if substrate xyz/mol file exists
-#         if not glob.glob(fsubst):
-#             emsg ="We can't find the substrate structure file %s right now! Something is amiss. Exiting..\n" % fcore
-#             print emsg
-#             return False,emsg
-#         if ('.xyz' in fsubst):
-#             substrate.OBMol = substrate.getOBMol(fsubst,'xyzf')
-#         elif ('.mol' in fsubst):
-#             substrate.OBMol = substrate.getOBMol(fsubst,'molf')
-#         elif ('.smi' in fsubst):
-#             substrate.OBMol = substrate.getOBMol(fsubst,'smif')
-#         substrate.ident = dbentry[1]
-#     ### load from file
-#     elif ('.mol' in usersubstrate or '.xyz' in usersubstrate or '.smi' in usersubstrate):
-#         if glob.glob(usersubstrate):
-#             ftype = usersubstrate.split('.')[-1]
-#             print('Substrate is a '+ftype+' file')
-#             # try and catch error if conversion doesn't work
-#             try:
-#                 substrate.OBMol = substrate.getOBMol(usersubstrate,ftype+'f') # convert from file
-#                 print('Substrate successfully converted to OBMol')
-#             except IOError:
-#                 emsg = 'Failed converting file ' +usersubstrate+' to molecule..Check your file.\n'
-#                 print emsg
-#                 return False,emsg
-#             substrate.ident = usersubstrate.split('.')[0]
-#             substrate.ident = substrate.ident.rsplit('/')[-1]
-#         else:
-#             emsg = 'Substrate file '+usersubstrate+' does not exist. Exiting..\n'
-#             print emsg
-#             return False,emsg
-#     ### if not, try converting from SMILES
-#     else:
-#         # check for transition metals
-#         usersubstrate = checkTMsmiles(usersubstrate)
-#         # try and catch error if conversion doesn't work
-#         try:
-#             substrate.OBMol = substrate.getOBMol(usersubstrate,'smistring',True) # convert from smiles
-#             print('Substrate successfully interpreted as smiles')
-#         except IOError:
-#             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usercore
-#             emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usercore
-#             emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
-#             print emsg
-#             return False,emsg
-#         substrate.cat = [0]
-#         substrate.denticity = 1
-#         substrate.ident = 'substrate'
-#     return substrate,emsg
-
-# Load ligand and convert to mol3D
-#  @param userligand Name of ligand
-#  @param licores Ligands dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
-#  @return mol3D of ligand, error messages
-
 
 def lig_load(userligand, licores=None):
 
-    if licores == None:
+    if licores is None:
         licores = getlicores()
         # @licores.pop("x", None)
     globs = globalvars()
@@ -771,10 +697,20 @@ def lig_load(userligand, licores=None):
     emsg = False
     lig = mol3D()  # initialize ligand molecule
     lig.needsconformer = False
+    # get similarity of userligand to ligands in dictionary, from the sequence point of view
+    text_similarities = [difflib.SequenceMatcher(None, userligand, i).ratio() for i in list(licores.keys())]
     # check if ligand exists in dictionary
-    if userligand in list(licores.keys()):
-        print(('loading ligand from dictionary: ' + str(userligand)))
-        dbentry = licores[userligand]
+    if userligand in list(licores.keys()) or max(text_similarities) > 0.6: # Two cases here
+        if userligand in list(licores.keys()): # Ligand is in the dictionary ligands.dict
+            print(('loading ligand from dictionary: ' + str(userligand)))
+            dbentry = licores[userligand]
+        else: # max(text_similarities) > 0.6 --> It is likely the user made a typo in inputting a ligand that is in ligands.dict
+            max_similarity = max(text_similarities)
+            index_max = text_similarities.index(max_similarity)
+            desired_ligand = list(licores.keys())[index_max]
+            print(f'ligand was not in dictionary, but the sequence is very similar to a ligand that is: {str(desired_ligand)}')
+            print(('loading ligand from dictionary: ' + str(desired_ligand))) 
+            dbentry = licores[desired_ligand] # Loading the typo-d ligand
         # load lig mol file (with hydrogens)
         if globs.custom_path:
             flig = globs.custom_path + "/Ligands/" + dbentry[0]
@@ -789,6 +725,8 @@ def lig_load(userligand, licores=None):
             return False, emsg
         if ('.xyz' in flig):
             lig.OBMol = lig.getOBMol(flig, 'xyzf')
+            # Set charge to last entry in ligands.dict
+            lig.OBMol.SetTotalCharge(int(dbentry[-1][0]))
         elif ('.mol' in flig):
             lig.OBMol = lig.getOBMol(flig, 'molf')
         elif ('.smi' in flig):
@@ -804,25 +742,25 @@ def lig_load(userligand, licores=None):
         else:
             lig.denticity = len(dbentry[2])
         lig.ident = dbentry[1]
+        lig.convert2mol3D()
         lig.charge = lig.OBMol.GetTotalCharge()
         if 'pi' in dbentry[2]:
-            lig.cat = [int(l) for l in dbentry[2][:-1]]
+            lig.cat = [int(li) for li in dbentry[2][:-1]]
             lig.cat.append('pi')
         else:
             if lig.denticity == 1:
                 lig.cat = [int(dbentry[2])]
             else:
-                lig.cat = [int(l) for l in dbentry[2]]
+                lig.cat = [int(li) for li in dbentry[2]]
         if lig.denticity > 1:
             lig.grps = dbentry[3]
         else:
             lig.grps = []
         if len(dbentry) > 3:
             lig.ffopt = dbentry[4][0]
-
     # load from file
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
-        #flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
+        # flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
         if glob.glob(userligand):
             ftype = userligand.split('.')[-1]
             # try and catch error if conversion doesn't work
@@ -844,13 +782,15 @@ def lig_load(userligand, licores=None):
             return False, emsg
     # if not, try interpreting as SMILES string
     else:
+        print(f'Interpreting ligand {userligand} as a SMILES string, as it was not in the ligands dictionary.')
+        print(f'Available ligands in the ligands dictionary can be found at molSimplify/molSimplify/Ligands/ligands.dict\nOr by running the command `molsimplify -h liganddict`')
         try:
             lig.getOBMol(userligand, 'smistring', True)  # convert from smiles
             lig.convert2mol3D()
             assert lig.natoms
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
-        except:
+        except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
             emsg += "Furthermore, we couldn't find the ligand structure: '%s' in the ligands dictionary. Try again!\n" % userligand
             emsg += "\nAvailable ligands are: %s\n" % getligs()
@@ -908,12 +848,12 @@ def bind_load(userbind, bindcores):
                 bind.charge = bind.OBMol.GetTotalCharge()
             except IOError:
                 emsg = 'Failed converting file ' + userbind+' to molecule..Check your file.\n'
-                return False, emsg
+                return False, False, emsg
             bind.ident = userbind.rsplit('/')[-1]
             bind.ident = bind.ident.split('.'+ftype)[0]
         else:
             emsg = 'Binding species file '+userbind+' does not exist. Exiting..\n'
-            return False, emsg
+            return False, False, emsg
     # if not, try converting from SMILES
     else:
         # check for transition metals
@@ -968,7 +908,6 @@ def getinputargs(args, fname):
 
 
 def plugin_defs():
-    globs = globalvars()
     plugin_path = resource_filename(Requirement.parse(
         "molSimplify"), "molSimplify/plugindefines_reference.txt")
     return plugin_path
@@ -979,28 +918,28 @@ def plugin_defs():
     # and chooses an appropriate name
     # bind_ident is used to pass binding
     # species information
-    #print('the root directory for this calc is '+ (rootdir))
+    # print('the root directory for this calc is '+ (rootdir))
     # check if smiles string in binding species
     # if args.bind:
     # if bsmi:
     # if args.nambsmi: # if name specified use it in file
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+args.nambsmi[0:2]
     # if args.name:
-    #fname = rootdir+'/'+args.name+args.nambsmi[0:2]
+    # fname = rootdir+'/'+args.name+args.nambsmi[0:2]
     # else: # else use default
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm'
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+'bsm'
     # if args.name:
-    #fname = rootdir+'/'+args.name+'bsm'
+    # fname = rootdir+'/'+args.name+'bsm'
     # else: # else use name from binding in dictionary
-    #fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
+    # fname = rootdir+'/'+core.ident[0:3]+ligname+bind.ident[0:2]
     # if args.name:
-    #fname = rootdir+'/'+args.name + bind.ident[0:2]
+    # fname = rootdir+'/'+args.name + bind.ident[0:2]
     # else:
     # if globs.debug:
-    #print('the root calculation directory is' + str(rootdir))
-    #fname = rootdir+'/'+core.ident[0:3]+ligname
+    # print('the root calculation directory is' + str(rootdir))
+    # fname = rootdir+'/'+core.ident[0:3]+ligname
     # if args.name:
-    #fname = rootdir+'/'+args.name
+    # fname = rootdir+'/'+args.name
 
     # return fname
 
@@ -1027,8 +966,7 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
             center += 'badjob_'
         try:
             center += core.getAtom(0).symbol().lower()
-        except:
-
+        except AttributeError:
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -1049,15 +987,23 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if not lig in licores:
-                lig = lig.split('\t')[0]
-                sminum += 1
-                name += '_smi' + str(int(sernum)+int(sminum)
-                                     ) + '_' + str(ligoc[i])
-            else:
+            if lig not in licores: # indicative of a SMILES string, or a misspelled ligand
+                # Checking if it is likely a misspelling
+                text_similarities = [difflib.SequenceMatcher(None, lig, i).ratio() for i in list(licores.keys())]                
+                if max(text_similarities) > 0.6: # likely a misspelling of a ligand that is in ligands.dict
+                    max_similarity = max(text_similarities)
+                    index_max = text_similarities.index(max_similarity)
+                    desired_ligand = list(licores.keys())[index_max]
+                    name += '_' + str(desired_ligand) + '_' + str(ligoc[i])
+                else: # SMILES string
+                    lig = lig.split('\t')[0]
+                    sminum += 1
+                    name += '_smi' + str(int(sernum)+int(sminum)
+                                         ) + '_' + str(ligoc[i])
+            else: # ligand is in ligands.dict
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
-        print([nconf,args.nconfs])
+        print([nconf, args.nconfs])
         if nconf and int(args.nconfs) >= 1:
             name += "_conf_"+str(nconf)
         if args.bind:
@@ -1091,7 +1037,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
             center += 'badjob_'
         try:
             center += core.getAtom(0).symbol().lower()
-        except:
+        except AttributeError:
             if ('.xyz' in core):
                 core = core.split('.')[0]
             center += str(core).lower()
@@ -1108,7 +1054,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if not lig in licores:
+            if lig not in licores:
                 lig = lig.split('\t')[0]
                 sminum += 1
                 name += '_smi' + str(int(sernum)+int(sminum)
@@ -1163,7 +1109,7 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, 
 #     else:
 #         try:
 #             center = core.getAtom(0).symbol().lower()
-#         except:
+#         except AttributeError:
 #             center = str(core).lower()
 #         name = rootdir + '/' + center
 #         #if args.oxstate:
@@ -1193,7 +1139,7 @@ def copy_to_custom_path():
     globs = globalvars()
     if not globs.custom_path:
         print('Error, custom path not set!')
-        raise('')
+        raise FileNotFoundError('Error, custom path not set!')
     # create folder
     if not os.path.exists(globs.custom_path):
         os.makedirs(globs.custom_path)
