@@ -1452,7 +1452,6 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
     return results_dictionary
 
 
-<<<<<<< HEAD
 def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False, Gval=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
