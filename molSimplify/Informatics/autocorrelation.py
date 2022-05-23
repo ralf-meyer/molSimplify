@@ -1447,12 +1447,15 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
     return results_dictionary
 
 
-def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False):
+def generate_multimetal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False, Zeff=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    if Zeff:
+        allowed_strings+= ['effective_nuclear_charge']
+        labels_strings+= ['Zeff']
     if polarizability:
         allowed_strings += ['polarizability']
         labels_strings += ['alpha']
@@ -1645,12 +1648,15 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
     return results_dictionary
 
 
-def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False):
+def generate_multimetal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False, polarizability=False,Zeff=False):
     #	oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
+    if Zeff:
+        allowed_strings+= ['effective_nuclear_charge']
+        labels_strings+= ['Zeff']
     if polarizability:
         allowed_strings += ['polarizability']
         labels_strings += ['alpha']
