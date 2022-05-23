@@ -265,7 +265,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False, graph_provided
     cell_v = mkcell(cpar)
     cart_coords = fractional2cart(fcoords,cell_v)
     name = os.path.basename(data).strip(".cif")
-    if len(cart_coords) > 40000:
+    if len(cart_coords) > 2000:
         print("Too large cif file, skipping it for now...")
         full_names = [0]
         full_descriptors = [0]
