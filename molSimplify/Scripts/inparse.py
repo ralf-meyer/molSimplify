@@ -507,11 +507,10 @@ def parseCLI(args):
     s = [_f for _f in cliargs.split(' -') if _f]
     # fname = args.core[0] + '.inp'
     fname = 'CLIinput.inp'
-    f = open(fname, 'w')
-    f.write('# molSimplify input file generated from CLI input\n')
-    for line in s:
-        f.write('-'+line+'\n')
-    f.close()
+    with open(fname, 'w') as f:
+        f.write('# molSimplify input file generated from CLI input\n')
+        for line in s:
+            f.write('-'+line+'\n')
     return fname
 
 # Parses input file

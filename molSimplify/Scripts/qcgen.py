@@ -198,56 +198,55 @@ def tcgen(args, strfiles, method):
     # Now we're ready to start building the input file
     if not args.jobdir:
         for i, jobd in enumerate(jobdirs):
-            output = open(jobd+'/terachem_input', 'w')
-            output.write('# file created with %s\n' % globs.PROGRAM)
-            jobparams['coordinates'] = coordfs[i]
-            for keys in list(jobparams.keys()):
-                output.write('%s %s\n' % (keys, jobparams[keys]))
-            if jobparams['run'] == 'minimize':
-                output.write('new_minimizer yes\n')
-                # output.write('min_coordinates cartesian\n')
-            if args.tc_fix_dihedral:
-                temp = mol3D()
-                temp.readfromxyz(strfiles[i])
-                metal_ind = temp.findMetal()
-                fixed_atoms = list()
-                fixed_atoms = temp.getBondedAtoms(metal_ind)
-                fixed_atoms = [str(int(i)+1)
-                               for i in fixed_atoms]  # 1-based indices
-                string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
-                # print(string_to_write)
-                output.write('$constraint_set \n')
-                output.write(string_to_write + '\n')
-            output.write('end\n')
-            output.close()
+            with open(jobd+'/terachem_input', 'w') as output:
+                output.write('# file created with %s\n' % globs.PROGRAM)
+                jobparams['coordinates'] = coordfs[i]
+                for keys in list(jobparams.keys()):
+                    output.write('%s %s\n' % (keys, jobparams[keys]))
+                if jobparams['run'] == 'minimize':
+                    output.write('new_minimizer yes\n')
+                    # output.write('min_coordinates cartesian\n')
+                if args.tc_fix_dihedral:
+                    temp = mol3D()
+                    temp.readfromxyz(strfiles[i])
+                    metal_ind = temp.findMetal()
+                    fixed_atoms = list()
+                    fixed_atoms = temp.getBondedAtoms(metal_ind)
+                    fixed_atoms = [str(int(i)+1)
+                                   for i in fixed_atoms]  # 1-based indices
+                    string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
+                    # print(string_to_write)
+                    output.write('$constraint_set \n')
+                    output.write(string_to_write + '\n')
+                output.write('end\n')
     elif args.jobdir:
         for i, jobd in enumerate(jobdirs):
             print(('jobd is ' + jobd))
             if args.name:
-                output = open(jobd + '/'+args.name + '.in', 'w')
+                output_filename = jobd + '/'+args.name + '.in'
             else:
-                output = open(jobd+'/terachem_input', 'w')
-            output.write('# file created with %s\n' % globs.PROGRAM)
-            jobparams['coordinates'] = coordfs[i]
-            for keys in list(jobparams.keys()):
-                output.write('%s %s\n' % (keys, jobparams[keys]))
-            if jobparams['run'] == 'minimize':
-                output.write('new_minimizer yes\n')
-                # output.write('min_coordinates cartesian\n')
-            if args.tc_fix_dihedral:
-                temp = mol3D()
-                temp.readfromxyz(strfiles[i])
-                metal_ind = temp.findMetal()
-                fixed_atoms = list()
-                fixed_atoms = temp.getBondedAtoms(metal_ind)
-                fixed_atoms = [str(int(i)+1)
-                               for i in fixed_atoms]  # 1-based indices
-                string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
-                # print(string_to_write)
-                output.write('$constraint_set \n')
-                output.write(string_to_write + '\n')
-            output.write('end\n')
-            output.close()
+                output_filename = jobd+'/terachem_input'
+            with open(output_filename, 'w') as output:
+                output.write('# file created with %s\n' % globs.PROGRAM)
+                jobparams['coordinates'] = coordfs[i]
+                for keys in list(jobparams.keys()):
+                    output.write('%s %s\n' % (keys, jobparams[keys]))
+                if jobparams['run'] == 'minimize':
+                    output.write('new_minimizer yes\n')
+                    # output.write('min_coordinates cartesian\n')
+                if args.tc_fix_dihedral:
+                    temp = mol3D()
+                    temp.readfromxyz(strfiles[i])
+                    metal_ind = temp.findMetal()
+                    fixed_atoms = list()
+                    fixed_atoms = temp.getBondedAtoms(metal_ind)
+                    fixed_atoms = [str(int(i)+1)
+                                   for i in fixed_atoms]  # 1-based indices
+                    string_to_write = 'dihedral 0 ' + '_'.join(fixed_atoms)
+                    # print(string_to_write)
+                    output.write('$constraint_set \n')
+                    output.write(string_to_write + '\n')
+                output.write('end\n')
     return jobdirs
 
 
@@ -394,9 +393,8 @@ def gamgen(args, strfiles, method):
     # Now we're ready to start building the input file and the job script
     for i, jobd in enumerate(jobdirs):
         output = open(jobd+'/gam.inp', 'w')
-        f = open(coordfs[i])
-        s = f.read()  # read coordinates
-        f.close()
+        with open(coordfs[i]) as f:
+            s = f.read()  # read coordinates
         jobparams['coordinates'] = s
         output.write('! File created using %s\n' % globs.PROGRAM)
         # write $BASIS block
@@ -600,9 +598,8 @@ def qgen(args, strfiles, method):
     # Now we're ready to start building the input file and the job script
     for i, jobd in enumerate(jobdirs):
         output = open(jobd+'/qch.inp', 'w')
-        f = open(jobd+'/'+coordfs[i])
-        s0 = f.readlines()[2:]  # read coordinates
-        f.close()
+        with open(jobd+'/'+coordfs[i]) as f:
+            s0 = f.readlines()[2:]  # read coordinates
         # if separate split to two molecules
         if args.bsep and '--' in ''.join(s0):
             idxsplit = [isdx for isdx, ss in enumerate(s0) if '--' in ss][0]
@@ -698,9 +695,8 @@ def mlpgen(args, strfiles, rootdir):
     # Now we're ready to start building the input file and the job script
     for i, jobd in enumerate(jobdirs):
         output = open(strfiles[i] + '.mop', 'w')
-        f = open(strfiles[i]+'.xyz')
-        s = f.readlines()[2:]  # read coordinates
-        f.close()
+        with open(strfiles[i]+'.xyz') as f:
+            s = f.readlines()[2:]  # read coordinates
         # write rem block
         for terms in jobparams:
             output.write(' ' + terms)

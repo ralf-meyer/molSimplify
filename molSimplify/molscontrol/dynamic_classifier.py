@@ -329,9 +329,8 @@ class dft_control:
             raise KeyError("Mode is not recognized.")
         for idx, fname in list(self.features_dict[self.mode].items()):
             self.features[fname].append(dict_combined[fname])
-        f = open("features.json", "w")
-        json.dump(self.features, f)
-        f.close()
+        with open("features.json", "w") as f:
+            json.dump(self.features, f)
 
     def normalize_features(self):
         for idx, fname in list(self.features_dict[self.mode].items()):

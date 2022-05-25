@@ -2554,9 +2554,8 @@ class mol3D:
         self.graph = []
         self.xyzfile = filename
         fname = filename.split('.xyz')[0]
-        f = open(fname + '.xyz', 'r')
-        s = f.read().splitlines()
-        f.close()
+        with open(fname + '.xyz', 'r') as f:
+            s = f.read().splitlines()
         try:
             atom_count = int(s[0])
         except:
@@ -3222,9 +3221,8 @@ class mol3D:
             ss += "%s \t%.1f\t%f\t%f\t%f\n" % (atom.sym,
                                                float(atom.atno), xyz[0], xyz[1], xyz[2])
         fname = filename.split('.gxyz')[0]
-        f = open(fname + '.gxyz', 'w')
-        f.write(ss)
-        f.close()
+        with open(fname + '.gxyz', 'w') as f:
+            f.write(ss)
 
     def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False, writestring=False, withgraph=False, specialheader=False):
         """Write standard XYZ file.
@@ -3295,9 +3293,8 @@ class mol3D:
             return ss
         else:
             fname = filename.split('.xyz')[0]
-            f = open(fname + '.xyz', 'w')
-            f.write(ss)
-            f.close()
+            with open(fname + '.xyz', 'w') as f:
+                f.write(ss)
 
     def writemxyz(self, mol, filename):
         """Write standard XYZ file with two molecules
@@ -3320,9 +3317,8 @@ class mol3D:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         fname = filename.split('.xyz')[0]
-        f = open(fname + '.xyz', 'w')
-        f.write(ss)
-        f.close()
+        with open(fname + '.xyz', 'w') as f:
+            f.write(ss)
 
     def writenumberedxyz(self, filename):
         """Write standard XYZ file with numbers instead of symbols.
@@ -3349,9 +3345,8 @@ class mol3D:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom_name, xyz[0], xyz[1], xyz[2])
         fname = filename.split('.xyz')[0]
-        f = open(fname + '.xyz', 'w')
-        f.write(ss)
-        f.close()
+        with open(fname + '.xyz', 'w') as f:
+            f.write(ss)
 
     def writesepxyz(self, mol, filename):
         """Write standard XYZ file with two molecules separated.
@@ -3375,9 +3370,8 @@ class mol3D:
             xyz = atom.coords()
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         fname = filename.split('.xyz')[0]
-        f = open(fname + '.xyz', 'w')
-        f.write(ss)
-        f.close()
+        with open(fname + '.xyz', 'w') as f:
+            f.write(ss)
 
     def writemol2(self, filename, writestring=False, ignoreX=False, force=False):
         """Write mol2 file from mol3D object. Partial charges are appended if given.

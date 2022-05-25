@@ -57,9 +57,8 @@ def read_run(outfile_PATH):
 
     check_geo = False
     if os.path.isfile(optim_path):
-        fil = open(optim_path, 'r')
-        lines = fil.readlines()
-        fil.close()
+        with open(optim_path, 'r') as fil:
+            lines = fil.readlines()
         if len(lines) > 0:
             check_geo = True  # Only apply geo check if an optimized geometry exists
 

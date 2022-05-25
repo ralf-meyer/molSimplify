@@ -671,10 +671,9 @@ class protein3D:
         if '.pdb' in text:  # means this is a filename
             self.pdbfile = text
             fname = text.split('.pdb')[0]
-            f = open(fname + '.pdb', 'r')
-            text = f.read()
+            with open(fname + '.pdb', 'r') as f:
+                text = f.read()
             enter = '\n'
-            f.close()
         else:
             enter = "\\n"
 

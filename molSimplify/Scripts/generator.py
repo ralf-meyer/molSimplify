@@ -102,14 +102,13 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     #    instdir = raw_input("Please select the full path of the top installation directory for the program: ")
     #    cdbdir = raw_input("Please specify the full path of the directory containing chemical databases:")
     #    mwfn = raw_input("Specify the full path to the Multiwfn executable (for post-processing):")
-    #    f = open(homedir+'/.molSimplify','w')
-    #    if len(instdir) > 1:
-    #        f.write("INSTALLDIR="+instdir+'\n')
-    #    if len(cdbdir) > 1:
-    #        f.write("CHEMDBDIR="+cdbdir+'\n')
-    #    if len(mwfn) > 1 :
-    #        f.write("MULTIWFN="+mwfn[0]+'\n')
-    #    f.close()
+    #    with open(homedir+'/.molSimplify','w') as f:
+    #        if len(instdir) > 1:
+    #            f.write("INSTALLDIR="+instdir+'\n')
+    #        if len(cdbdir) > 1:
+    #            f.write("CHEMDBDIR="+cdbdir+'\n')
+    #        if len(mwfn) > 1 :
+    #            f.write("MULTIWFN="+mwfn[0]+'\n')
     ### end set-up configuration file ###
     ############ GLOBALS DEFINITION ############
     globs = globalvars()

@@ -250,7 +250,6 @@ def nbopost(resfiles, folder, gui, flog):
             gui.app.processEvents()
         with open(resf) as f:
             s = f.read()
-            f.close()
         # split output into QC and nbo parts
         ssp = ' N A T U R A L   A T O M I C   O R B I T A L'
         if ssp in s:
@@ -301,7 +300,6 @@ def terapost(resfiles, folder, gui, flog):
             gui.iWtxt.setText('Processing '+resfp+'\n'+gui.iWtxt.toPlainText())
         with open(resf) as f:
             s = f.read()
-            f.close()
         # split output into terachem and nbo parts
         stera = s  # get tera output
         if 'TeraChem' in s:
@@ -370,9 +368,8 @@ def terapost(resfiles, folder, gui, flog):
     # sort alphabetically and print
     text = sorted(text)
     if len(text) > 0:
-        f = open(folder+'/tera-results.txt', 'w')
-        f.write(header+''.join(text))
-        f.close()
+        with open(folder+'/tera-results.txt', 'w') as f:
+            f.write(header+''.join(text))
 
 # Parse GAMESS output
 #  @param resfiles Files to be post-processed
@@ -407,7 +404,6 @@ def gampost(resfiles, folder, gui, flog):
             resfold = resfold[-1]
         with open(resf) as f:
             s = f.read()
-            f.close()
         if 'GAMESS' in s:
             sgam = s  # get gamess output
             ''' Parse gamess output '''
@@ -491,6 +487,5 @@ def gampost(resfiles, folder, gui, flog):
     # sort alphabetically and print
     text = sorted(text)
     if len(text) > 0:
-        f = open(folder+'/gam-results.txt', 'w')
-        f.write(header+''.join(text))
-        f.close()
+        with open(folder+'/gam-results.txt', 'w') as f:
+            f.write(header+''.join(text))

@@ -115,10 +115,9 @@ def save_run(outfile_path, rewrite_inscr=True, save_scr_flag=True):
         
     """
     def write(list_of_lines, path):
-        fil = open(path, 'w')
-        for i in list_of_lines:
-            fil.write(i)
-        fil.close()
+        with open(path, 'w') as fil:
+            for i in list_of_lines:
+                fil.write(i)
 
     if save_scr_flag:
         scr_path = save_scr(outfile_path, rewrite_inscr=rewrite_inscr)
@@ -128,27 +127,23 @@ def save_run(outfile_path, rewrite_inscr=True, save_scr_flag=True):
     history = resub_history()
     history.read(outfile_path)
 
-    f = open(outfile_path, 'r')
-    out_lines = f.readlines()
-    f.close()
+    with open(outfile_path, 'r') as f:
+        out_lines = f.readlines()
     history.outfiles.append(out_lines)
 
     infile_path = outfile_path.rsplit('.', 1)[0] + '.in'
-    f = open(infile_path, 'r')
-    in_lines = f.readlines()
-    f.close()
+    with open(infile_path, 'r') as f:
+        in_lines = f.readlines()
     history.infiles.append(in_lines)
 
     jobscript_path = outfile_path.rsplit('.', 1)[0] + '_jobscript'
-    f = open(jobscript_path, 'r')
-    job_lines = f.readlines()
-    f.close()
+    with open(jobscript_path, 'r') as f:
+        job_lines = f.readlines()
     history.jobscripts.append(job_lines)
 
     xyz_path = outfile_path.rsplit('.', 1)[0] + '.xyz'
-    f = open(xyz_path, 'r')
-    xyz_lines = f.readlines()
-    f.close()
+    with open(xyz_path, 'r') as f:
+        xyz_lines = f.readlines()
     history.xyzs.append(xyz_lines)
 
     history.save()
@@ -239,22 +234,18 @@ def reset(outfile_path):
         infile = history.infiles[0]
         jobscript = history.jobscripts[0]
         xyz = history.xyzs[0]
-        writer = open(outfile_path, 'w')
-        for i in outfile:
-            writer.write(i)
-        writer.close()
-        writer = open(outfile_path.rsplit('.', 1)[0] + '.in', 'w')
-        for i in infile:
-            writer.write(i)
-        writer.close()
-        writer = open(outfile_path.rsplit('.', 1)[0] + '.xyz', 'w')
-        for i in xyz:
-            writer.write(i)
-        writer.close()
-        writer = open(outfile_path.rsplit('.', 1)[0] + '_jobscript', 'w')
-        for i in jobscript:
-            writer.write(i)
-        writer.close()
+        with open(outfile_path, 'w') as writer:
+            for i in outfile:
+                writer.write(i)
+        with open(outfile_path.rsplit('.', 1)[0] + '.in', 'w') as writer:
+            for i in infile:
+                writer.write(i)
+        with open(outfile_path.rsplit('.', 1)[0] + '.xyz', 'w') as writer:
+            for i in xyz:
+                writer.write(i)
+        with open(outfile_path.rsplit('.', 1)[0] + '_jobscript', 'w') as writer:
+            for i in jobscript:
+                writer.write(i)
 
         shutil.move(scr_path + '_0', scr_path)
         shutil.move(pickle_path, os.path.join(old_path, str(np.random.randint(999999999)) + '_resub_history'))

@@ -31,10 +31,9 @@ def printgeoms():
     else:
         f = resource_filename(Requirement.parse(
             "molSimplify"), "molSimplify/Data/coordinations.dict")
-    f = open(f, 'r')
-    s = f.read().splitlines()
+    with open(f, 'r') as f:
+        s = f.read().splitlines()
     s = [_f for _f in s if _f]
-    f.close()
     geomnames = []
     geomshorts = []
     coords = []
@@ -62,10 +61,9 @@ def getgeoms():
     else:
         f = resource_filename(Requirement.parse(
             "molSimplify"), "molSimplify/Data/coordinations.dict")
-    f = open(f, 'r')
-    s = f.read().splitlines()
+    with open(f, 'r') as f:
+        s = f.read().splitlines()
     s = [_f for _f in s if _f]
-    f.close()
     geomnames = []
     geomshorts = []
     coords = []
@@ -91,9 +89,8 @@ def getgeoms():
 
 def readdict(fname):
     d = dict()
-    f = open(fname, 'r')
-    lines = [_f for _f in f.readlines() if _f]
-    f.close()
+    with open(fname, 'r') as f:
+        lines = [_f for _f in f.readlines() if _f]
     for line in lines:
         if (line[0] != '#') and line.strip():
             key = "".join([_f for _f in line.split(':')[0] if _f])
@@ -122,10 +119,9 @@ def readdict_sub(fname):
         def __init__(self, subname):
             self.subname = subname
     d = dict()
-    f = open(fname, 'r')
-    txt = f.read()
+    with open(fname, 'r') as f:
+        txt = f.read()
     lines = [_f for _f in txt.splitlines() if _f]
-    f.close()
     for line in lines:
         if (line[0] != '#') and line.strip():
             key = "".join([_f for _f in line.split(':')[0] if _f])
@@ -336,14 +332,13 @@ def loaddata(path):
             "molSimplify"), "molSimplify"+path)
     d = dict()
 
-    f = open(fname)
-    txt = f.read()
+    with open(fname) as f:
+        txt = f.read()
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
             s = [_f for _f in line.split(None) if _f]
             d[(s[0], s[1], s[2], s[3], s[4])] = s[5]  # read dictionary
-    f.close()
     return d
 
 # Load M-L bond length dictionary from data
@@ -362,14 +357,13 @@ def loaddata_ts(path):
             "molSimplify"), "molSimplify"+path)
     d = dict()
 
-    f = open(fname)
-    txt = f.read()
+    with open(fname) as f:
+        txt = f.read()
     lines = [_f for _f in txt.splitlines() if _f]
     for line in lines[1:]:
         if '#' != line[0]:  # skip comments
             s = [_f for _f in line.split(None) if _f]
             d[(s[0], s[1], s[2], s[3])] = s[4:]  # read dictionary
-    f.close()
     return d
 
 # Load a chemdraw cdxml file and write out xyz
@@ -385,9 +379,8 @@ def loadcdxml(cdxml):
         raise
     fname = re.sub(r'.cdxml', '', cdxml)  # file name for the new xyz
     # check cdxml file for Dashed bonds
-    f = open(cdxml, 'r')
-    lines = f.read().splitlines()
-    f.close()
+    with open(cdxml, 'r') as f:
+        lines = f.read().splitlines()
     signal = False
     for i, line in enumerate(lines):
         if 'Dash' in line:
@@ -397,15 +390,14 @@ def loadcdxml(cdxml):
     # remove the dash bond
     if signal:
         cdxml = cdxml.replace('.cdxml', '.temp.cdxml')
-    f = open(cdxml, 'a')
-    if signal:
-        for i, line in enumerate(lines):
-            if i not in list(range(lnum-5, lnum+2)):
+    with open(cdxml, 'a') as f:
+        if signal:
+            for i, line in enumerate(lines):
+                if i not in list(range(lnum-5, lnum+2)):
+                    f.write(line + '\n')
+        else:
+            for i, line in enumerate(lines):
                 f.write(line + '\n')
-    else:
-        for i, line in enumerate(lines):
-            f.write(line + '\n')
-    f.close()
     # load cdxml into obmol
     obconv = openbabel.OBConversion()  # ob Class
     obmol = openbabel.OBMol()  # ob Class
@@ -462,16 +454,13 @@ def loadcdxml(cdxml):
 
 def loadcoord(coord):
     globs = globalvars()
-#    f = open(installdir+'Data/'+coord+'.dat')
     if globs.custom_path:
         f = globs.custom_path + "/Data/" + coord + ".dat"
     else:
         f = resource_filename(Requirement.parse(
             "molSimplify"), "molSimplify/Data/" + coord + ".dat")
-    f = open(f)
-
-    txt = [_f for _f in f.read().splitlines() if _f]
-    f.close()
+    with open(f) as f:
+        txt = [_f for _f in f.read().splitlines() if _f]
     b = []
     for line in txt:
         s = [_f for _f in line.split(None) if _f]
@@ -867,30 +856,29 @@ def bind_load(userbind, bindcores):
 def getinputargs(args, fname):
     # list with arguments
     # write input args
-    f = open(fname+'.molinp', 'w')
-    f.write("# Input file generated from molSimplify at " +
-            time.strftime('%m/%d/%Y %H:%M')+'\n')
-    for arg in vars(args):
-        if 'nbind' not in arg and 'rgen' not in arg and 'i' != arg:
-            if getattr(args, arg):
-                f.write('-'+arg+' ')
-                if isinstance(getattr(args, arg), list):
-                    for ii, iar in enumerate(getattr(args, arg)):
-                        if isinstance(iar, list):
-                            if ii < len(getattr(args, arg))-1:
-                                f.write('/')
-                            for jj, iiar in enumerate(iar):
-                                f.write(str(iiar))
-                                if jj < len(iar)-1:
+    with open(fname+'.molinp', 'w') as f:
+        f.write("# Input file generated from molSimplify at " +
+                time.strftime('%m/%d/%Y %H:%M')+'\n')
+        for arg in vars(args):
+            if 'nbind' not in arg and 'rgen' not in arg and 'i' != arg:
+                if getattr(args, arg):
+                    f.write('-'+arg+' ')
+                    if isinstance(getattr(args, arg), list):
+                        for ii, iar in enumerate(getattr(args, arg)):
+                            if isinstance(iar, list):
+                                if ii < len(getattr(args, arg))-1:
+                                    f.write('/')
+                                for jj, iiar in enumerate(iar):
+                                    f.write(str(iiar))
+                                    if jj < len(iar)-1:
+                                        f.write(',')
+                            else:
+                                f.write(str(iar))
+                                if ii < len(getattr(args, arg))-1:
                                     f.write(',')
-                        else:
-                            f.write(str(iar))
-                            if ii < len(getattr(args, arg))-1:
-                                f.write(',')
-                else:
-                    f.write(str(getattr(args, arg)))
-                f.write('\n')
-    f.close()
+                    else:
+                        f.write(str(getattr(args, arg)))
+                    f.write('\n')
 
 # Load plugin definitions
 
