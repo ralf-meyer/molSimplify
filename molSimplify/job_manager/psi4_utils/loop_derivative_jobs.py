@@ -9,7 +9,8 @@ basedir = os.getcwd()
 success_count = 0
 psi4_config = {'bashrc':'/home/crduan/.bashrc',
     'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
-psi4_config.update(json.load(open("psi4_config.json", "r")))
+with open("psi4_config.json", "r") as f:
+    psi4_config.update(json.load())
 jobs = derivative_tree(path="./", trigger=psi4_config["trigger"])
 print("jobs:", jobs)
 # ---run first job from scratch---

@@ -1980,8 +1980,8 @@ class mGUI():
             # check if multiple ligands in .smi file
             for li in lls:
                 if '.smi' in li:
-                    f = open(li, 'r')
-                    smis = [_f for _f in f.read().splitlines() if _f]
+                    with open(li, 'r') as f:
+                        smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
                     liglist.append(li)
@@ -2084,8 +2084,8 @@ class mGUI():
             # check if multiple ligands in .smi file
             for li in lls:
                 if '.smi' in li:
-                    f = open(li, 'r')
-                    smis = [_f for _f in f.read().splitlines() if _f]
+                    with open(li, 'r') as f:
+                        smis = [_f for _f in f.read().splitlines() if _f]
                     liglist += smis
                 else:
                     liglist.append(li)

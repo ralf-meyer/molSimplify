@@ -117,7 +117,8 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     psi4_scr = './'
     filename = "output"
     basedir = os.getcwd()
-    d = json.load(open(psi4_config["charge-spin-info"], "r"))
+    with open(psi4_config["charge-spin-info"], "r") as f:
+        d = json.load(f)
     psi4_config.update(d)
     ensure_dir(rundir)
     shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir,psi4_config["xyzfile"]))
@@ -219,7 +220,8 @@ def run_general(psi4_config, functional="b3lyp", return_wfn=False):
     filename = "output"
     basedir = os.getcwd()
     rundir = "./" + functional.replace("(", "l-").replace(")", "-r")
-    d = json.load(open(psi4_config["charge-spin-info"], "r"))
+    with open(psi4_config["charge-spin-info"], "r") as f:
+        d = json.load()
     psi4_config.update(d)
     ensure_dir(rundir)
     shutil.copyfile(psi4_config["xyzfile"], functional.replace("(", "l-").replace(")", "-r") + '/' + psi4_config["xyzfile"])
@@ -284,7 +286,8 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     filename = "output"
     basedir = os.getcwd()
     rundir = "./" + functional + "-%d" % hfx
-    d = json.load(open(psi4_config["charge-spin-info"], "r"))
+    with open(psi4_config["charge-spin-info"], "r") as f:
+        d = json.load(f)
     psi4_config.update(d)
     shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir,psi4_config["xyzfile"]))
     ensure_dir(rundir)

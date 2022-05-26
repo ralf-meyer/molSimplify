@@ -4,7 +4,8 @@ from molSimplify.job_manager.psi4_utils.run import run_b3lyp, run_general
 
 psi4_config = {'bashrc':'/home/crduan/.bashrc',
     'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
-psi4_config.update(json.load(open("psi4_config.json", "r")))
+with open("psi4_config.json", "r") as f:
+    psi4_config.update(json.load())
 success_count = 0
 print("===b3lyp===")
 if not os.path.isdir("b3lyp"):

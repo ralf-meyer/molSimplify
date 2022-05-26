@@ -158,7 +158,8 @@ def runtest_num_atoms_in_xyz(tmpdir, xyzfile):
     xyz_file1.readfromxyz('tests/refs/' + xyzfile + '.xyz')
     xyz_file1.getNumAtoms()
 
-    xyz_file2 = open('tests/refs/'+ xyzfile + '.xyz').readlines()
+    with open('tests/refs/'+ xyzfile + '.xyz', 'r') as f:
+        xyz_file2 = f.readlines()
     num_atoms = int(xyz_file2[0])
     
     if num_atoms != xyz_file1.getNumAtoms():
@@ -236,7 +237,8 @@ def parse4test(infile, tmpdir, isMulti=False, external={}):
             newdata += "-lig " + abs_smi + "\n"
             # fsmi = tmpdir.join(smi)
             # oldsmi=os.path.dirname(infile)+"/"+smi
-            # smidata=open(oldsmi).read()
+            # with open(oldsmi) as f:
+            #     smidata=f.read()
             # fsmi.write(smidata)
             # print "smi file is copied to the temporary running folder!"
     newdata += "-jobdir " + name + "\n"

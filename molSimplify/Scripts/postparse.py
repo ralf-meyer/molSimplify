@@ -270,8 +270,8 @@ def nbopost(resfiles, folder, gui, flog):
                 tt += "{:6.4f}".format(nbores[3]).ljust(10)+'\n'
             textnbo.append(tt)
     textnbo = sorted(textnbo)
-    f = open(folder+'/nbo.txt', 'w')
-    f.write(headern+''.join(textnbo))
+    with open(folder+'/nbo.txt', 'w') as f:
+        f.write(headern+''.join(textnbo))
 
 # Parse terachem output
 #  @param resfiles Files to be post-processed
