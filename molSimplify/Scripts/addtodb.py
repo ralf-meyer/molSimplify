@@ -164,7 +164,7 @@ def addtocdb(smimol, sminame, smicat):
             snew = sminame+':'+sminame+'.xyz,'+css+','+'1'
         # update dictionary
         with open(cpath, 'r') as f:
-            ss = f.read().splitlines()        
+            ss = f.read().splitlines()
         ss.append(snew)
         ssort = sorted(ss[1:])
         with open(cpath, 'w') as f:
@@ -264,7 +264,7 @@ def removefromDB(sminame, ropt):
         with open(li_path, 'r') as f:
             ss = f.read().splitlines()
         ssort = sorted(ss[1:])
-        with open(li_path, 'w') as :
+        with open(li_path, 'w') as f:
             f.write(ss[0]+'\n')
             for s in ssort:
                 sss = s.split(':')
