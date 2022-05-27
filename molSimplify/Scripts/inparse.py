@@ -534,7 +534,8 @@ def parseinputfile(args, inputfile_str=None):
     if inputfile_str:
         inputfile_lines = inputfile_str.split('\n')
     else:
-        inputfile_lines = open(args.i)
+        with open(args.i) as f:
+            inputfile_lines = f.readlines()
 
     for line in inputfile_lines:
         # For arguments that cannot accept smiles as args, split possible comments
