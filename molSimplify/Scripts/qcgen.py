@@ -104,7 +104,7 @@ def tcgen(args, strfiles, method):
         else:
             nametrunc = coordname
         if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
-            os.mkdir(rdir+'/'+nametrunc)
+            os.makedirs(rdir+'/'+nametrunc)
         mdir = rdir+'/'+nametrunc
         if method:
             if method[0] == 'U' or method[0] == 'u':
@@ -113,7 +113,7 @@ def tcgen(args, strfiles, method):
                 mmd = '/'+method
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
-                os.mkdir(mdir)
+                os.makedirs(mdir)
         if not args.jobdir:
             jobdirs.append(mdir)
             if not args.reportonly:
@@ -363,8 +363,12 @@ def gamgen(args, strfiles, method):
                 os.mkdir(mdir)
         jobdirs.append(mdir)
         shutil.copy2(xyzf, mdir)
-        shutil.copy2(xyzf.replace('.gxyz', '.molinp'),
-                     mdir.replace('.gxyz', '.molinp'))
+        # Try copying molinp and report file to jobdir
+        try:
+            shutil.copy2(xyzf.replace('.gxyz', '.molinp'),
+                         mdir.replace('.gxyz', '.molinp'))
+        except FileNotFoundError:
+            pass
         try:
             shutil.copy2(xyzf.replace('.xyz', '.report'),
                          mdir.replace('.xyz', '.report'))
@@ -560,18 +564,22 @@ def qgen(args, strfiles, method):
         else:
             nametrunc = coordname
         if not os.path.exists(rdir+'/'+nametrunc) and not args.jobdir:
-            os.mkdir(rdir+'/'+nametrunc)
+            os.makedirs(rdir+'/'+nametrunc)
         mdir = rdir+'/'+nametrunc
         if method:
             mmd = '/'+method
             mdir = rdir+'/'+nametrunc+mmd
             if not os.path.exists(mdir):
-                os.mkdir(mdir)
+                os.makedirs(mdir)
 
         jobdirs.append(mdir)
         shutil.copy2(xyzf, mdir)
-        shutil.copy2(xyzf.replace('.xyz', '.molinp'),
-                     mdir.replace('.xyz', '.molinp'))
+        # Try copying molinp and report files to the new jobdir
+        try:
+            shutil.copy2(xyzf.replace('.xyz', '.molinp'),
+                         mdir.replace('.xyz', '.molinp'))
+        except FileNotFoundError:
+            pass
         try:
             shutil.copy2(xyzf.replace('.xyz', '.report'),
                          mdir.replace('.xyz', '.report'))
@@ -982,9 +990,10 @@ def ogenwrt(output, jobparams, xyzf):
     # write the scf control block
     output.write('%scf\n')
     output.write('MaxIter '+jobparams['MaxIter']+'\n')
-    if jobparams['levelshift'] == 'yes':
-        output.write(
-            'Shift Shift '+str(jobparams['levelshiftval'])+' ErrOff ' + str(jobparams['ErrOff'])+'  end\n')
+    if 'levelshift' in jobparams:
+        if jobparams['levelshift'] == 'yes':
+            output.write('Shift Shift '+str(jobparams['levelshiftval'])
+                         +' ErrOff ' + str(jobparams['ErrOff'])+'  end\n')
     output.write('DIISMaxEq '+str(jobparams['DIISMaxEq'])+'\n')
     output.write('end\n\n')
     # write the method block to control HFX
