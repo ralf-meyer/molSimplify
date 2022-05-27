@@ -396,28 +396,28 @@ def gamgen(args, strfiles, method):
         jobparams['run'] = 'SADPOINT'
     # Now we're ready to start building the input file and the job script
     for i, jobd in enumerate(jobdirs):
-        output = open(jobd+'/gam.inp', 'w')
+        output = []
         with open(coordfs[i]) as f:
             s = f.read()  # read coordinates
         jobparams['coordinates'] = s
-        output.write('! File created using %s\n' % globs.PROGRAM)
+        output.append('! File created using %s\n' % globs.PROGRAM)
         # write $BASIS block
-        output.write(' $BASIS ')
+        output.append(' $BASIS ')
         if args.ngauss:
-            output.write(' GBASIS='+jobparams['GBASIS'])
-            output.write(' NGAUSS='+jobparams['NGAUSS'])
+            output.append(' GBASIS='+jobparams['GBASIS'])
+            output.append(' NGAUSS='+jobparams['NGAUSS'])
         else:
-            output.write(' GBASIS='+jobparams['GBASIS'])
+            output.append(' GBASIS='+jobparams['GBASIS'])
         if args.ndfunc:
-            output.write(' NDFUNC='+args.ndfunc)
+            output.append(' NDFUNC='+args.ndfunc)
         if args.npfunc:
-            output.write(' NPFUNC='+args.npfunc)
-        output.write(' $END\n')
+            output.append(' NPFUNC='+args.npfunc)
+        output.append(' $END\n')
         # write $SYSTEM block
-        output.write(' $SYSTEM ')
+        output.append(' $SYSTEM ')
         # check if MWORDS specified by the user
         if not args.sysoption or not ('MWORDS' in args.sysoption):
-            output.write(' MWORDS=16')
+            output.append(' MWORDS=16')
         # write additional options
         if (args.sysoption):
             if len(args.sysoption) % 2 > 0:
@@ -425,17 +425,17 @@ def gamgen(args, strfiles, method):
             else:
                 for elem in range(0, int(0.5*len(args.sysoption))):
                     key, val = args.sysoption[2*elem], args.sysoption[2*elem+1]
-                    output.write(' '+key+'='+val+' ')
-        output.write(' $END\n')
+                    output.append(' '+key+'='+val+' ')
+        output.append(' $END\n')
         # write CONTRL block
-        output.write(' $CONTRL SCFTYP='+jobparams['SCFTYP']+' DFTTYP=')
-        output.write(jobparams['DFTTYP']+' RUNTYP='+jobparams['RUNTYP'])
-        output.write('\n  ICHARG='+jobparams['ICHARG']+' MULT=')
+        output.append(' $CONTRL SCFTYP='+jobparams['SCFTYP']+' DFTTYP=')
+        output.append(jobparams['DFTTYP']+' RUNTYP='+jobparams['RUNTYP'])
+        output.append('\n  ICHARG='+jobparams['ICHARG']+' MULT=')
         # check if CC basis set specified and add spherical
         if 'CC' in jobparams['GBASIS']:
-            output.write(jobparams['MULT']+' ISPHER=1\n')
+            output.append(jobparams['MULT']+' ISPHER=1\n')
         else:
-            output.write(jobparams['MULT']+'\n')
+            output.append(jobparams['MULT']+'\n')
         # write additional options
         if (args.ctrloption):
             if len(args.ctrloption) % 2 > 0:
@@ -444,17 +444,17 @@ def gamgen(args, strfiles, method):
                 for elem in range(0, int(0.5*len(args.ctrloption))):
                     key, val = args.ctrloption[2 *
                                                elem], args.ctrloption[2*elem+1]
-                    output.write(' '+key+'='+val+' ')
-        output.write(' $END\n')
+                    output.append(' '+key+'='+val+' ')
+        output.append(' $END\n')
         # write $SCF block
-        output.write(' $SCF ')
+        output.append(' $SCF ')
         # check if options specified by the user
         if not args.scfoption or not ('DIRSCF' in args.scfoption):
-            output.write(' DIRSCF=.TRUE.')
+            output.append(' DIRSCF=.TRUE.')
         if not args.scfoption or not ('DIIS' in args.scfoption):
-            output.write(' DIIS=.TRUE.')
+            output.append(' DIIS=.TRUE.')
         if not args.scfoption or not ('SHIFT' in args.scfoption):
-            output.write(' SHIFT=.TRUE.')
+            output.append(' SHIFT=.TRUE.')
         # write additional options
         if (args.scfoption):
             if len(args.scfoption) % 2 != 0:
@@ -462,13 +462,13 @@ def gamgen(args, strfiles, method):
             else:
                 for elem in range(0, int(0.5*len(args.scfoption))):
                     key, val = args.scfoption[2*elem], args.scfoption[2*elem+1]
-                    output.write(' '+key+'='+val+' ')
-        output.write(' $END\n')
+                    output.append(' '+key+'='+val+' ')
+        output.append(' $END\n')
         # write $STATPT block
-        output.write(' $STATPT ')
+        output.append(' $STATPT ')
         # check if NSTEP specified by the user
         if not args.statoption or not ('NSTEP' in args.statoption):
-            output.write(' NSTEP=100')
+            output.append(' NSTEP=100')
         # write additional options
         if (args.statoption):
             if len(args.statoption) % 2 > 0:
@@ -477,12 +477,13 @@ def gamgen(args, strfiles, method):
                 for elem in range(0, int(0.5*len(args.statoption))):
                     key, val = args.statoption[2 *
                                                elem], args.statoption[2*elem+1]
-                    output.write(' '+key+'='+val+' ')
-        output.write(' $END\n')
+                    output.append(' '+key+'='+val+' ')
+        output.append(' $END\n')
         # write $DATA block
-        output.write(' $DATA\n')
-        output.write(jobparams['coordinates']+' $END\n')
-        output.close()
+        output.append(' $DATA\n')
+        output.append(jobparams['coordinates']+' $END\n')
+        with open(jobd+'/gam.inp', 'w') as f:
+            f.writelines(output)
     return jobdirs
 
 
@@ -605,7 +606,7 @@ def qgen(args, strfiles, method):
         jobparams['CHARGE'] = args.charge
     # Now we're ready to start building the input file and the job script
     for i, jobd in enumerate(jobdirs):
-        output = open(jobd+'/qch.inp', 'w')
+        output = []
         with open(jobd+'/'+coordfs[i]) as f:
             s0 = f.readlines()[2:]  # read coordinates
         # if separate split to two molecules
@@ -618,16 +619,16 @@ def qgen(args, strfiles, method):
         else:
             s = s0
         # write rem block
-        output.write('$rem\nUNRESTRICTED\t\t' + jobparams['UNRESTRICTED'])
-        output.write(
+        output.append('$rem\nUNRESTRICTED\t\t' + jobparams['UNRESTRICTED'])
+        output.append(
             '\nBASIS\t\t'+jobparams['BASIS']+'\nJOBTYPE\t\t'+jobparams['JOBTYPE'])
-        output.write('\nEXCHANGE\t\t' +
-                     jobparams['EXCHANGE']+'\nCORRELATION\t\t')
-        output.write(jobparams['CORRELATION']+'\nMAX_SCF_CYCLES\t\t')
-        output.write(jobparams['MAX_SCF_CYCLES']+'\nGEOM_OPT_MAX_CYCLES\t\t')
-        output.write(jobparams['GEOM_OPT_MAX_CYCLES'] +
-                     '\nSYMMETRY\t\t'+jobparams['SYMMETRY'])
-        output.write('\nPRINT_ORBITALS\t\t'+jobparams['PRINT_ORBITALS']+'\n')
+        output.append('\nEXCHANGE\t\t' +
+                      jobparams['EXCHANGE']+'\nCORRELATION\t\t')
+        output.append(jobparams['CORRELATION']+'\nMAX_SCF_CYCLES\t\t')
+        output.append(jobparams['MAX_SCF_CYCLES']+'\nGEOM_OPT_MAX_CYCLES\t\t')
+        output.append(jobparams['GEOM_OPT_MAX_CYCLES'] +
+                      '\nSYMMETRY\t\t'+jobparams['SYMMETRY'])
+        output.append('\nPRINT_ORBITALS\t\t'+jobparams['PRINT_ORBITALS']+'\n')
         # write additional options
         if (args.remoption):
             if len(args.remoption) % 2 > 0:
@@ -635,13 +636,14 @@ def qgen(args, strfiles, method):
             else:
                 for elem in range(0, int(0.5*len(args.remoption))):
                     key, val = args.remoption[2*elem], args.remoption[2*elem+1]
-                    output.write(key+'\t\t'+val+'\n')
-        output.write('$end\n\n')
+                    output.append(key+'\t\t'+val+'\n')
+        output.append('$end\n\n')
         # write $molecule block
-        output.write(
+        output.append(
             '$molecule\n'+jobparams['CHARGE']+' '+jobparams['SPIN']+'\n')
-        output.write(''.join(s)+'$end')
-        output.close()
+        output.append(''.join(s)+'$end\n')
+        with open(jobd+'/qch.inp', 'w') as f:
+            f.writelines(output)
     return jobdirs
 
 
@@ -701,13 +703,13 @@ def mlpgen(args, strfiles, rootdir):
     if args.charge:
         jobparams.append('CHARGE='+str(args.charge))
     # Now we're ready to start building the input file and the job script
-    for i, jobd in enumerate(jobdirs):
-        output = open(strfiles[i] + '.mop', 'w')
-        with open(strfiles[i]+'.xyz') as f:
+    for xyzf in strfiles:
+        output = []
+        with open(xyzf + '.xyz') as f:
             s = f.readlines()[2:]  # read coordinates
         # write rem block
         for terms in jobparams:
-            output.write(' ' + terms)
+            output.append(' ' + terms)
         # write additional options
         if (args.remoption):
             if len(args.remoption) % 2 > 0:
@@ -715,19 +717,20 @@ def mlpgen(args, strfiles, rootdir):
             else:
                 for elem in range(0, int(0.5*len(args.remoption))):
                     key, val = args.remoption[2*elem], args.remoption[2*elem+1]
-                    output.write(key+'\t\t'+val+'\n')
-        output.write('\n' + nametrunc+'\n')
-        output.write('\n')
+                    output.append(key+'\t\t'+val+'\n')
+        output.append('\n' + nametrunc+'\n')
+        output.append('\n')
         # write $molecule block
         for lines in s:
             ll = lines.split('\t')
             for i, items in enumerate(ll):
-                output.write(' ' + items.strip('\n'))
+                output.append(' ' + items.strip('\n'))
                 if i > 0:
-                    output.write(' 1')
+                    output.append(' 1')
                 if i == 3:
-                    output.write('\n')
-        output.close()
+                    output.append('\n')
+        with open(xyzf + '.mop', 'w') as f:
+            f.writelines(output)
     return jobdirs
 
 
