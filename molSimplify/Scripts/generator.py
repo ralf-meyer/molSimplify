@@ -53,9 +53,9 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
                 Folder containing the runs.
             emsg : bool
                 Flag for error. If error, returns a string with error.
-            this_diag : rundiag 
+            this_diag : rundiag
                 Rundiag class instance that contains ANN attributes (this_diag.ANN_attributes) and a mol3D class instance (this_diag.mol).
-            
+
     """
     # from molSimplify.Scripts.generator import startgen_pythonic
     inputfile_str = '\n'.join([k + ' ' + v for k, v in list(input_dict.items())])
@@ -258,7 +258,3 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
         print(ss)
     del args
     return emsg
-
-
-if __name__ == "__main__":
-    startgen()

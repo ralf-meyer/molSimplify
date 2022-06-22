@@ -11,7 +11,7 @@ from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.helpers import read_atom, makeMol
 from molSimplify.Classes.globalvars import globalvars
-import urllib.request as urllib
+import urllib.request
 import urllib.error
 import requests
 from bs4 import BeautifulSoup
@@ -844,7 +844,7 @@ class protein3D:
         """
         remoteCode = pdbCode.upper()
         try:
-            data = urllib.urlopen(
+            data = urllib.request.urlopen(
                 'https://files.rcsb.org/view/' + remoteCode +
                 '.pdb').read()
         except urllib.error.URLError:
