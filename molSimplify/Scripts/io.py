@@ -158,14 +158,14 @@ def getligs():
 #  @return Ligands dictionary
 
 
-def getlicores(flip=True):
+def getlicores(flip: bool = True) -> dict:
     globs = globalvars()
     if globs.custom_path:  # test if a custom path is used:
-        licores = str(globs.custom_path).rstrip('/') + "/Ligands/ligands.dict"
+        licores_path = str(globs.custom_path).rstrip('/') + "/Ligands/ligands.dict"
     else:
-        licores = resource_filename(Requirement.parse(
+        licores_path = resource_filename(Requirement.parse(
             "molSimplify"), "molSimplify/Ligands/ligands.dict")
-    licores = readdict(licores)
+    licores = readdict(licores_path)
     if flip:
         for ligand in list(licores.keys()):
             if len(licores[ligand][2]) == 2 and type(licores[ligand][2]) == list:
