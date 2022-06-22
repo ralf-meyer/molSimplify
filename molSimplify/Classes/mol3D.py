@@ -2558,7 +2558,7 @@ class mol3D:
             s = f.read().splitlines()
         try:
             atom_count = int(s[0])
-        except:
+        except ValueError:
             atom_count = 0
         current_atom_counter = 0
         start = 2
@@ -2569,8 +2569,8 @@ class mol3D:
             # If the split line has more than 4 elements, only elements 0 through 3 will be used.
             # this means that it should work with any XYZ file that also stores something like mulliken charge
             # Next, this looks for unique atom IDs in files
-            print(line_split,'linesplit')
-            if len(line_split)>0:
+            print(line_split, 'linesplit')
+            if len(line_split) > 0:
                 current_atom_counter += 1
                 lm = re.search(r'\d+$', line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
