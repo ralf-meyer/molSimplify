@@ -546,7 +546,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
             min_dist = this_dist
             min_ind = i
             # best_row = rownames[i]
-            min_row = rows
+            # min_row = rows
 
     if debug:
         print(('min dist EU is ' + str(min_dist)))

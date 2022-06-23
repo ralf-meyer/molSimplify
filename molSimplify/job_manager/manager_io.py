@@ -687,7 +687,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
     # custom line allows the addition of extra lines just before the export statement
 
     if qm_code == 'terachem':
-        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit, 
+        write_terachem_jobscript(name, custom_line=custom_line, time_limit=time_limit,
                                  machine=machine, use_molscontrol=use_molscontrol,
                                  queues=queues)
     elif qm_code == 'orca':
@@ -698,7 +698,7 @@ def write_jobscript(name, custom_line=None, time_limit='96:00:00', qm_code='tera
         raise Exception('QM code: ' + qm_code + ' not recognized for jobscript writing!')
 
 
-def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True, 
+def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', terachem_line=True,
                              machine='gibraltar', use_molscontrol=False, queues=['gpus', 'gpusnew']):
     # if use_molscontrol and machine != 'gibraltar':
     #     raise ValueError("molscontrol is only implemented on gibraltar for now.")
@@ -813,7 +813,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
         else:
             text = text[:12] + [custom_line + '\n'] + text[12:]
     text += ['sleep 30']
-    
+
     with open(name + '_jobscript', 'w') as jobscript:
         for i in text:
             jobscript.write(i)

@@ -793,7 +793,7 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
 
     # Record info about how the jobs are being bundled
     with open(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1),
-                            'bundle_' + str(max(existing_bundle_numbers) + 1) + '_info'), 'w') as fil:
+                           'bundle_' + str(max(existing_bundle_numbers) + 1) + '_info'), 'w') as fil:
         for i in jobscript_paths[:-1]:
             fil.write(os.path.split(i)[-1].rsplit('_', 1)[0] + '\n')
         fil.write(os.path.split(jobscript_paths[-1])[-1].rsplit('_', 1)[0])
@@ -1389,7 +1389,7 @@ def prep_ultratight(path):
         manager_io.write_input(local_infile_dict)
 
         # Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
-        with open(name + '.out', 'w') as f:
+        with open(name + '.out', 'w') as _:
             pass
 
         os.chdir(home)

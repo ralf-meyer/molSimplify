@@ -2,8 +2,8 @@ import os
 import json
 from molSimplify.job_manager.psi4_utils.run import run_b3lyp, run_general
 
-psi4_config = {'bashrc':'/home/crduan/.bashrc',
-    'conda_env':'/home/crduan/miniconda/envs/mols_py36'}
+psi4_config = {'bashrc': '/home/crduan/.bashrc',
+               'conda_env': '/home/crduan/miniconda/envs/mols_py36'}
 with open("psi4_config.json", "r") as f:
     psi4_config.update(json.load(f))
 success_count = 0

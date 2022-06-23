@@ -121,7 +121,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
         d = json.load(f)
     psi4_config.update(d)
     ensure_dir(rundir)
-    shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir,psi4_config["xyzfile"]))
+    shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir, psi4_config["xyzfile"]))
     sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
     mol = get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
     setup_dft_parameters(psi4_config)
@@ -130,7 +130,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
         shutil.copyfile(psi4_config["moldenfile"], rundir + '/' + psi4_config["moldenfile"])
         os.chdir(rundir)
         psi4.core.set_output_file(filename + '.dat', False)
-        ## 1-step SCF
+        # 1-step SCF
         psi4.set_options({
             "maxiter": 5,
             "D_CONVERGENCE": 1e5,
@@ -145,7 +145,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
         else:
             e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
         wfn.to_file("wfn-1step.180")
-        ## Get converged WFN
+        # Get converged WFN
         d_molden = iodata.molden.load_molden(psi4_config["moldenfile"])
         restricted = True if any(x in psi4_config["ref"] for x in ["r", "R"]) else False
         if not psi4_config["basis"] == "def2-tzvp":
@@ -159,7 +159,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
         else:
             wfn_minimal_np[()]['matrix']["Cb"] = Ca
         np.save("wfn-1step-tc.180.npy", wfn_minimal_np)
-        ## Copy wfn file to the right place with a right name
+        # Copy wfn file to the right place with a right name
         pid = str(os.getpid())
         targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
         shutil.copyfile("wfn-1step-tc.180.npy", targetfile)
@@ -194,7 +194,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     except:
         print("This calculation does not converge.")
     if psi4_config["basis"] == "def2-tzvp" and sucess:
-        psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"],})
+        psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"]})
         try:
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
@@ -230,12 +230,12 @@ def run_general(psi4_config, functional="b3lyp", return_wfn=False):
     sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
     mol = get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
     setup_dft_parameters(psi4_config)
-    ## Copy wfn file to the right place with a right name---
+    # Copy wfn file to the right place with a right name---
     pid = str(os.getpid())
     targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
     if os.path.isfile(psi4_config["wfnfile"]):
         shutil.copyfile(psi4_config["wfnfile"], targetfile)
-    ## Final scf---
+    # Final scf---
     psi4.set_options({
         "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
         "D_CONVERGENCE": 3e-5,
@@ -289,21 +289,21 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     with open(psi4_config["charge-spin-info"], "r") as f:
         d = json.load(f)
     psi4_config.update(d)
-    shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir,psi4_config["xyzfile"]))
+    shutil.copyfile(psi4_config["xyzfile"], os.path.join(rundir, psi4_config["xyzfile"]))
     ensure_dir(rundir)
     os.chdir(rundir)
     psi4.core.set_output_file(filename + '.dat', False)
     sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
     mol = get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
     setup_dft_parameters(psi4_config)
-    ## Copy wfn file to the right place with a right name---
+    # Copy wfn file to the right place with a right name---
     pid = str(os.getpid())
     targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
     if not os.path.isfile(wfn):
         print("Previous calculation failed... This one is skipped.")
         return False
     shutil.copyfile(wfn, targetfile)
-    ## Final scf---
+    # Final scf---
     psi4.set_options({
         "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
         "D_CONVERGENCE": 3e-5,

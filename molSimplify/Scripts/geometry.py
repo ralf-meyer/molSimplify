@@ -15,12 +15,12 @@ import numpy as np
 
 def norm(u):
     """Get euclidean norm of vector.
-        
+
         Parameters
         ----------
             u : list
                 Vector of interest.
-            
+
         Returns
         -------
             norm : float
@@ -36,12 +36,12 @@ def norm(u):
 
 def normalize(u):
     """Normalize a vector.
-        
+
         Parameters
         ----------
             u : list
                 Vector of interest.
-            
+
         Returns
         -------
             norm_vect : list
@@ -57,14 +57,14 @@ def normalize(u):
 
 def distance(r1, r2):
     """Euclidean distance between points.
-        
+
         Parameters
         ----------
             r1 : list
                 Coordinates of point 1.
             r2 : list
                 Coordinates of point 2.
-            
+
         Returns
         -------
             dist : float
@@ -80,14 +80,14 @@ def distance(r1, r2):
 
 def vecdiff(r1, r2):
     """Element-wise vector difference
-        
+
         Parameters
         ----------
             r1 : list
                 Vector 1.
             r2 : list
                 Vector 2.
-            
+
         Returns
         -------
             diff : list
@@ -100,14 +100,14 @@ def vecdiff(r1, r2):
 
 def midpt(r1, r2):
     """Vector midpoint.
-        
+
         Parameters
         ----------
             r1 : list
                 Vector 1.
             r2 : list
                 Vector 2.
-            
+
         Returns
         -------
             mid : list
@@ -120,7 +120,7 @@ def midpt(r1, r2):
 
 def checkcolinear(r1, r2, r3):
     """Checks if three points are collinear.
-        
+
         Parameters
         ----------
             r1 : list
@@ -129,7 +129,7 @@ def checkcolinear(r1, r2, r3):
                 Coordinates of point 2.
             r3 : list
                 Coordinates of point 3.
-            
+
         Returns
         -------
             collinear_flag : bool
@@ -147,7 +147,7 @@ def checkcolinear(r1, r2, r3):
 
 def checkplanar(r1, r2, r3, r4):
     """Checks if four points are coplanar.
-        
+
         Parameters
         ----------
             r1 : list
@@ -158,7 +158,7 @@ def checkplanar(r1, r2, r3, r4):
                 Coordinates of point 3.
             r4 : list
                 Coordinates of point 4.
-            
+
         Returns
         -------
             coplanar_flag : bool
@@ -178,14 +178,14 @@ def checkplanar(r1, r2, r3, r4):
 
 def vecangle(r1, r2):
     """Computes angle between two vectors.
-        
+
         Parameters
         ----------
             r1 : list
                 Vector 1.
             r2 : list
                 Vector 2.
-            
+
         Returns
         -------
             theta : float
@@ -202,7 +202,7 @@ def vecangle(r1, r2):
 
 def getPointu(Rr, dist, u):
     """Gets point given reference point, direction vector and distance.
-        
+
         Parameters
         ----------
             Rr : list
@@ -211,7 +211,7 @@ def getPointu(Rr, dist, u):
                 Distance in angstroms.
             u : list
                 Direction vector.
-            
+
         Returns
         -------
             P : list
@@ -232,7 +232,7 @@ def getPointu(Rr, dist, u):
 
 def rotation_params(r0, r1, r2):
     """Gets angle between three points (r10 and r21) and and the normal vector to the plane containing three points.
-        
+
         Parameters
         ----------
             r0 : list
@@ -241,7 +241,7 @@ def rotation_params(r0, r1, r2):
                 Coordinates for point 2.
             r2 : list
                 Coordinates for point 3.
-            
+
         Returns
         -------
             theta : float
@@ -280,7 +280,7 @@ def rotation_params(r0, r1, r2):
 
 def dihedral(mol, idx1, idx2, idx3, idx4):
     """Computes dihedral angle for a set of four atom indices.
-    
+
         Parameters
         ----------
             mol0 : mol3D
@@ -303,19 +303,19 @@ def dihedral(mol, idx1, idx2, idx3, idx4):
     v1 = np.array(r2)-np.array(r1)  # vector formed between atoms 1 and 2
     v2 = np.array(r3)-np.array(r2)  # vector formed between atoms 2 and 3
     v3 = np.array(r4)-np.array(r3)  # vector formed between atoms 3 and 4
-    
+
     v1_x_v2 = np.cross(v1, v2)  # cross product of v1 and v2
     v2_x_v3 = np.cross(v2, v3)  # cross product of v2 and v3
-    
+
     normal_1 = v1_x_v2/(np.linalg.norm(v1_x_v2))  # normal to the plane formed by 1,2,3
     normal_2 = v2_x_v3/(np.linalg.norm(v2_x_v3))  # normal to the plane formed by 2,3,4
-    
+
     unit_1 = v2/(np.linalg.norm(v2))
     unit_2 = np.cross(unit_1, normal_2)
-    
+
     cos_angle = np.dot(normal_1, normal_2)
     sine_angle = np.dot(normal_1, unit_2)
-    
+
     dihedral_angle = round(np.degrees(-np.arctan2(sine_angle, cos_angle)), 3)
     return dihedral_angle
 
@@ -329,7 +329,7 @@ def kabsch(mol0, mol1):
                 mol3D class instance of molecule to be aligned.
             mol1 : mol3D
                 mol3D class instance of reference molecule.
-            
+
         Returns
         -------
             mol0 : mol3D
@@ -339,7 +339,7 @@ def kabsch(mol0, mol1):
             d0 : list
                 Translation vector for mol0.
             d1 : list
-                Translation vector for mol1. 
+                Translation vector for mol1.
 
     """
     # translate to align centroids with origin
@@ -385,7 +385,7 @@ def ReflectPlane(u, r, Rp):
                 Point to be reflected.
             Rp : list
                 Reference point on plane.
-            
+
         Returns
         -------
             rn : list
@@ -440,7 +440,7 @@ def PointRotateAxis(u, rp, r, theta):
     -------
         rotated : list
             Rotated point.
-    
+
     """
     # construct augmented vector rr = [r;1]
     rr = r
@@ -488,7 +488,7 @@ def PointRotateMat(r, R):
     -------
         rotated : list
             Rotated point.
-    
+
     """
     rn = [0, 0, 0]
     rn[0] = R[0][0] * r[0] + R[1][0] * r[1] + R[2][0] * r[2]
@@ -513,7 +513,7 @@ def PointTranslateSph(Rp, p0, D):
     -------
         p : list
             Translated point.
-    
+
     """
     # translate to origin
     ps = [0, 0, 0]
@@ -552,7 +552,7 @@ def PointTranslateSphgivenphi(Rp, p0, D):
     -------
         p : list
             Translated point.
-    
+
     """
     # translate to origin
     ps = [0, 0, 0]
@@ -595,7 +595,7 @@ def PointTranslateSphgivenr(Rp, p0, D, pref, r):
     -------
         p : list
             Translated point.
-    
+
     """
     # translate to origin
     ps = [0, 0, 0]
@@ -877,7 +877,7 @@ def setcmdistance(mol, Rp, bond):
             Reference alignment point.
         bond : float
             Final distance of aligned point to alignment point
-        
+
     Returns
     -------
         mol : mol3D
@@ -913,7 +913,7 @@ def protate(mol, Rr, D):
             Origin of sphere.
         D : list
             [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-        
+
     Returns
     -------
         mol : mol3D
@@ -946,9 +946,9 @@ def protateref(mol, Rr, Rref, D):
             Origin of sphere.
         Rref : list
             Reference point in molecule
-        D : list 
+        D : list
             [final radial distance, change in polar phi, change in azimuthal theta] in RADIANS
-        
+
     Returns
     -------
         mol : mol3D
@@ -976,9 +976,9 @@ def cmrotate(mol, D):
     ----------
         mol : mol3D
             mol3D class instance of molecule to be rotated.
-        D : list 
+        D : list
             [theta-x, theta-y, theta-z] in RADIANS
-        
+
     Returns
     -------
         mol : mol3D
@@ -1008,9 +1008,9 @@ def rotateRef(mol, Ref, D):
             mol3D class instance of molecule to be rotated.
         Ref : list
             Reference point
-        D : list 
+        D : list
             [theta-x, theta-y, theta-z] in RADIANS
-        
+
     Returns
     -------
         mol : mol3D
@@ -1042,7 +1042,7 @@ def aligntoaxis(mol, Rr, Rp, u):
             Reference point on axis
         u : list
             Target axis for alignment
-        
+
     Returns
     -------
         mol : mol3D
@@ -1078,7 +1078,7 @@ def aligntoaxis2(mol, Rr, Rp, u, d):
             Target axis for alignment
         d : float
             Final distance from aligned point to axis
-        
+
     Returns
     -------
         mol : mol3D
@@ -1110,7 +1110,7 @@ def alignPtoaxis(Rr, Rp, u, d):
             Target axis for alignment. Direction vector.
         d : float
             Final distance from aligned point to axis
-        
+
     Returns
     -------
         dxyz : list
@@ -1139,7 +1139,7 @@ def pmrotate(mol, Rp, D):
             Cartesian origin.
         D : list
             [theta-x, theta-y, theta-z] in DEGREES
-        
+
     Returns
     -------
         mol : mol3D
@@ -1174,7 +1174,7 @@ def connectivity_match(inds1, inds2, mol1, mol2):
             mol3D class instance for molecule 1.
         mol2 : mol3D
             mol3D class instance for molecule 2.
-        
+
     Returns
     -------
         match_flag : bool

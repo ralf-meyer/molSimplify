@@ -996,7 +996,7 @@ def ogenwrt(output, jobparams, xyzf):
     if 'levelshift' in jobparams:
         if jobparams['levelshift'] == 'yes':
             output.write('Shift Shift '+str(jobparams['levelshiftval'])
-                         +' ErrOff ' + str(jobparams['ErrOff'])+'  end\n')
+                         + ' ErrOff ' + str(jobparams['ErrOff'])+'  end\n')
     output.write('DIISMaxEq '+str(jobparams['DIISMaxEq'])+'\n')
     output.write('end\n\n')
     # write the method block to control HFX
