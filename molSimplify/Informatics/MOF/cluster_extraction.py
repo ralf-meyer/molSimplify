@@ -1,5 +1,5 @@
 from molSimplify.Scripts.cellbuilder_tools import import_from_cif
-from molSimplify.Classes import mol3D
+from molSimplify.Classes.mol3D import mol3D
 import os
 import copy
 import numpy as np
