@@ -5,7 +5,6 @@
 #
 #  Department of Chemical Engineering, MIT
 
-import sys
 import os
 import subprocess
 import tempfile
