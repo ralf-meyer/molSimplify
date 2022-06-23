@@ -127,7 +127,6 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
     ### run GUI by default ###
-    args = sys.argv[1:]
     gui = True
     if len(args) == 0 and not qtflag:
         print("\nGUI not supported since PyQt5 can not be loaded. Please use commandline version.\n")

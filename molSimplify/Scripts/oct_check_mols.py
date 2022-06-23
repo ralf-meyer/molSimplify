@@ -577,10 +577,8 @@ def Oct_inspection(file_in, file_init_geo=None, catoms_arr=None, dict_check=dict
         print('Error, must have 6 connecting atoms for octahedral.')
         quit()
     num_coord_metal = 6
-    oct_angle_devi, oct_dist_del, max_del_sig_angle = [
-                                                          -1, -1], [-1, -1, -1, -1], -1
+    oct_angle_devi, oct_dist_del, max_del_sig_angle = [-1, -1], [-1, -1, -1, -1], -1
     rmsd_max, atom_dist_max = -1, -1
-    dict_orientation = {'devi_linear_max': -1, 'devi_linear_avrg': -1}
     if file_init_geo is not None:
         # print('!!!Inspection,flag_loose:', flag_loose)
         # _start = time.clock()

@@ -341,7 +341,6 @@ def terapost(resfiles, folder, gui, flog):
             # get results
             en = [line for line in ss if 'FINAL ENERGY:' in line]  # energy
             en = en[-1].rsplit(None, 2)[-2] if len(en) > 0 else 'NaN'
-            conv = 'NA'
             if (optim == 'Y'):
                 conv = [line for line in ss if 'Converged!' in line]
                 conv = 'Y' if len(conv) > 0 else 'N'

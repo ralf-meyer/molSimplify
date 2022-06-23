@@ -2306,7 +2306,6 @@ def mcomplex(args, ligs, ligoc, licores, globs):
     if args.mligcatoms:
         for i in range(len(args.mligcatoms)):
             mligcatoms_ext.append(0)
-    initatoms = core3D.natoms  # initial number of atoms in core3D
     for i, ligand in enumerate(ligands):
         if args.debug:
             print('************')
