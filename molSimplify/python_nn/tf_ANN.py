@@ -399,9 +399,8 @@ def load_test_labels(predictor):
 def load_train_info(predictor, suffix='info'):
     key = get_key(predictor, suffix)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
-    json_file = open(path_to_file, 'r')
-    loaded_info_dict = json.loads(json_file.read())
-    json_file.close()
+    with open(path_to_file, 'r') as json_file:
+        loaded_info_dict = json.loads(json_file.read())
     return loaded_info_dict
 
 
@@ -413,9 +412,8 @@ def load_keras_ann(predictor, suffix='model'):
     key = get_key(predictor, suffix)
     if "clf" not in predictor:
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
-        json_file = open(path_to_file, 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
+        with open(path_to_file, 'r') as json_file:
+            loaded_model_json = json_file.read()
         loaded_model = model_from_json(loaded_model_json)
         # load weights into  model
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.h5')
@@ -548,7 +546,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
             min_dist = this_dist
             min_ind = i
             # best_row = rownames[i]
-            min_row = rows
+            # min_row = rows
 
     if debug:
         print(('min dist EU is ' + str(min_dist)))

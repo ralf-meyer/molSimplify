@@ -171,7 +171,6 @@ def import_from_cif(fst, return_extra_cif_info=False):
 def center_of_sym(list_of_points):
     n = len(list_of_points)
 #    print('lop = ' + str(list_of_points))
-    csym = [0, 0, 0]
     csym = [float(sum(x)/n) for x in zip(*list_of_points)]
     return csym
 # get sets min z coord of mol3D to zero

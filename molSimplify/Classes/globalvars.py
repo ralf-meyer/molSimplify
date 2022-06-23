@@ -707,9 +707,8 @@ class globalvars:
                 Path to custom data ~/.molSimplify file.
         """
         homedir = os.path.expanduser("~")
-        f = open(homedir + '/.' + self.PROGRAM, 'a')
-        f.write('CUSTOM_DATA_PATH=' + str(path) + "\n")
-        f.close()
+        with open(homedir + '/.' + self.PROGRAM, 'a') as f:
+            f.write('CUSTOM_DATA_PATH=' + str(path) + "\n")
 
     def bbcombs_mononuc(self):
         """Get backbone combinations dictionary

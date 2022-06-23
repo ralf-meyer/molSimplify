@@ -250,7 +250,6 @@ def nbopost(resfiles, folder, gui, flog):
             gui.app.processEvents()
         with open(resf) as f:
             s = f.read()
-            f.close()
         # split output into QC and nbo parts
         ssp = ' N A T U R A L   A T O M I C   O R B I T A L'
         if ssp in s:
@@ -271,8 +270,8 @@ def nbopost(resfiles, folder, gui, flog):
                 tt += "{:6.4f}".format(nbores[3]).ljust(10)+'\n'
             textnbo.append(tt)
     textnbo = sorted(textnbo)
-    f = open(folder+'/nbo.txt', 'w')
-    f.write(headern+''.join(textnbo))
+    with open(folder+'/nbo.txt', 'w') as f:
+        f.write(headern+''.join(textnbo))
 
 # Parse terachem output
 #  @param resfiles Files to be post-processed
@@ -301,7 +300,6 @@ def terapost(resfiles, folder, gui, flog):
             gui.iWtxt.setText('Processing '+resfp+'\n'+gui.iWtxt.toPlainText())
         with open(resf) as f:
             s = f.read()
-            f.close()
         # split output into terachem and nbo parts
         stera = s  # get tera output
         if 'TeraChem' in s:
@@ -343,7 +341,6 @@ def terapost(resfiles, folder, gui, flog):
             # get results
             en = [line for line in ss if 'FINAL ENERGY:' in line]  # energy
             en = en[-1].rsplit(None, 2)[-2] if len(en) > 0 else 'NaN'
-            conv = 'NA'
             if (optim == 'Y'):
                 conv = [line for line in ss if 'Converged!' in line]
                 conv = 'Y' if len(conv) > 0 else 'N'
@@ -370,9 +367,8 @@ def terapost(resfiles, folder, gui, flog):
     # sort alphabetically and print
     text = sorted(text)
     if len(text) > 0:
-        f = open(folder+'/tera-results.txt', 'w')
-        f.write(header+''.join(text))
-        f.close()
+        with open(folder+'/tera-results.txt', 'w') as f:
+            f.write(header+''.join(text))
 
 # Parse GAMESS output
 #  @param resfiles Files to be post-processed
@@ -407,7 +403,6 @@ def gampost(resfiles, folder, gui, flog):
             resfold = resfold[-1]
         with open(resf) as f:
             s = f.read()
-            f.close()
         if 'GAMESS' in s:
             sgam = s  # get gamess output
             ''' Parse gamess output '''
@@ -491,6 +486,5 @@ def gampost(resfiles, folder, gui, flog):
     # sort alphabetically and print
     text = sorted(text)
     if len(text) > 0:
-        f = open(folder+'/gam-results.txt', 'w')
-        f.write(header+''.join(text))
-        f.close()
+        with open(folder+'/gam-results.txt', 'w') as f:
+            f.write(header+''.join(text))
