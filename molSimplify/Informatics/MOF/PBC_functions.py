@@ -147,13 +147,31 @@ def XYZ_connected(cell,cart_coords,adj_mat):
     connected_components=[0]
     checked=[]
     counter=0
+    import networkx as nx
+    from scipy import sparse
+    n_components, labels_components = sparse.csgraph.connected_components(csgraph=adj_mat, directed=False, return_labels=True)
+    # print(n_components,'comp',labels_components)
+    tested_index = 0
+    index_counter = 0
     while len(connected_components) < len(cart_coords):
-        current_node = connected_components[counter]
+        try:
+            current_node = connected_components[counter]
+        except:
+            indices = [i for i, x in enumerate(labels_components) if x == tested_index]
+            current_node = indices[index_counter]
+            # print(current_node,indices)
+            
+            if index_counter == (len(indices)-1):
+                tested_index += 1
+                index_counter = 0
+            else:
+                index_counter += 1
         for j,v in enumerate(adj_mat[current_node]):
-            if v==1 and j not in checked and j not in connected_components:
+            if v==1 and (j not in checked) and (j not in connected_components):
                 fcoords[j]+=compute_image_flag(cell,fcoords[current_node],fcoords[j])
                 connected_components.append(j)
                 checked.append(j)
+            # print(connected_components)
         counter+=1
     return fcoords
 

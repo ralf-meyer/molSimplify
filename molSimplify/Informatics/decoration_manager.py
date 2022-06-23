@@ -30,6 +30,7 @@ def decorate_ligand(args,ligand_to_decorate,decoration,decoration_index):
     # INPUT
     #   - args: placeholder for input arguments
     #   - ligand_to_decorate: mol3D ligand
+    #   - set ligand_to_decorate.ob_dict to False or empty dictionary first to avoid potential error
     #   - decoration: list of smiles/decorations
     #   - decoration_index: list of ligand atoms to replace
     # OUTPUT

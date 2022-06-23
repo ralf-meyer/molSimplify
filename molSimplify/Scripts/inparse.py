@@ -18,7 +18,7 @@ from molSimplify.Classes.globalvars import (defaultspins,
                                             romans,
                                             mtlsdlist)
 from molSimplify.Scripts.io import (getbinds, getcores, getgeoms, getlicores,
-                                    getslicores, printgeoms, substr_load)
+                                    getslicores, printgeoms, substr_load, getligs)
 
 
 # Checks input for correctness and uses defaults otherwise
@@ -1110,7 +1110,7 @@ def parseinputs_basic(*p):
         "-coord", help="coordination such as 4,5,6", action="store_true")
     parser.add_argument("-geometry", help="geometry", action="store_true")
     parser.add_argument("-geo", help="geometry", action="store_true")
-    parser.add_argument("-lig", help="ligands to be included in complex")
+    parser.add_argument("-lig", help="ligands to be included in complex; ligands.dict options display with command `molsimplify -h liganddict`")
     parser.add_argument(
         "-ligocc", help="number of corresponding ligands", action="store_true")  # e.g. 1,2,1
     parser.add_argument("-spin", help="Spin multiplicity (e.g., 1 for singlet)")
@@ -1605,6 +1605,29 @@ def parseinputs_naming(*p):
         "-suff", help="additional suffix for jobs folder names", action="store_true")
     parser.add_argument(
         "-sminame", help="name for smiles species used in the folder naming. e.g. amm", action="store_true")
+    if len(p) == 1:  # only one input, printing help only
+        args = parser.parse_args()
+        return args
+    elif len(p) == 2:  # two inputs, normal parsing
+        args = p[1]
+        parser.parse_args(namespace=args)
+    return 0
+
+
+# Prints ligands in ligands.dict
+#  @param *p Parser pointer
+
+
+def parseinputs_ligdict(*p):
+    parser = p[0]
+
+    available_ligands = getligs().split(' ')
+    available_ligands.sort() # Sorting the ligands in alphabetical order
+    available_ligands = "\n".join(available_ligands) # Converting back from a list to a string
+    available_ligands = "ligands to be included in complex; available ligands in the ligands dictionary at molSimplify/molSimplify/Ligands/ligands.dict are: \n%s}" % available_ligands
+
+    parser.add_argument(
+        "-lig LIG", help=available_ligands, action="store_true")
     if len(p) == 1:  # only one input, printing help only
         args = parser.parse_args()
         return args

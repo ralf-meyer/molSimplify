@@ -11,6 +11,7 @@ from scipy.spatial import distance
 from scipy import sparse
 import itertools
 from molSimplify.Informatics.MOF.PBC_functions import *
+import re
 
 #### NOTE: In addition to molSimplify's dependencies, this portion requires
 #### pymatgen to be installed. The RACs are intended to be computed
@@ -225,7 +226,7 @@ def make_MOF_linker_RACs(linkerlist, linker_subgraphlist, molcif, depth, name, c
     return colnames, averaged_ligand_descriptors
 
 
-def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
+def get_MOF_descriptors(data, depth, path=False, xyzpath = False, graph_provided = False):
     if not path:
         print('Need a directory to place all of the linker, SBU, and ligand objects. Exiting now.')
         raise ValueError('Base path must be specified in order to write descriptors.')
@@ -260,7 +261,6 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
     Input cif file and get the cell parameters and adjacency matrix. If overlap, do not featurize.
     Simultaneously prepare mol3D class for MOF for future RAC featurization (molcif)
     """""""""
-
     cpar, allatomtypes, fcoords = readcif(data)
     cell_v = mkcell(cpar)
     cart_coords = fractional2cart(fcoords,cell_v)
@@ -272,16 +272,38 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath = False):
         tmpstr = "Failed to featurize %s: large primitive cell\n"%(name)
         write2file(path,"/FailedStructures.log",tmpstr)
         return full_names, full_descriptors
-    distance_mat = compute_distance_matrix3(cell_v,cart_coords)
-    try:
-        adj_matrix=compute_adj_matrix(distance_mat,allatomtypes)
-    except NotImplementedError:
-        full_names = [0]
-        full_descriptors = [0]
-        tmpstr = "Failed to featurize %s: atomic overlap\n"%(name)
-        write2file(path,"/FailedStructures.log",tmpstr)
-        return full_names, full_descriptors
-
+    if not graph_provided:
+        distance_mat = compute_distance_matrix3(cell_v,cart_coords)
+        try:
+            adj_matrix=compute_adj_matrix(distance_mat,allatomtypes)
+        except NotImplementedError:
+            full_names = [0]
+            full_descriptors = [0]
+            tmpstr = "Failed to featurize %s: atomic overlap\n"%(name)
+            write2file(path,"/FailedStructures.log",tmpstr)
+            return full_names, full_descriptors
+    else:
+        adj_matrix_list = []
+        max_sofar = 0
+        with open(data.replace('primitive','cif'),'r') as f:
+            readdata = f.readlines()
+            flag = False
+            for i, row in enumerate(readdata):
+                if '_ccdc_geom_bond_type' in row:
+                    flag = True
+                    continue
+                if flag:
+                    splitrow = row.split()
+                    atom1 = int(re.findall(r'\d+',splitrow[0])[0])
+                    atom2 = int(re.findall(r'\d+',splitrow[1])[0])
+                    max_sofar = max(atom1, max_sofar)
+                    max_sofar = max(atom2, max_sofar)
+                    adj_matrix_list.append((atom1,atom2))
+        adj_matrix = np.zeros((max_sofar+1,max_sofar+1))
+        for i, row in enumerate(adj_matrix_list):
+            adj_matrix[row[0],row[1]] = 1
+            adj_matrix[row[1],row[0]] = 1
+    adj_matrix = sparse.csr_matrix(adj_matrix)
     writeXYZandGraph(xyzpath, allatomtypes, cell_v, fcoords, adj_matrix.todense())
     molcif,_,_,_,_ = import_from_cif(data, True)
     molcif.graph = adj_matrix.todense()

@@ -12,6 +12,7 @@ import shutil
 import glob
 import os
 import time
+import difflib
 
 import openbabel
 from pkg_resources import resource_filename, Requirement
@@ -685,10 +686,20 @@ def lig_load(userligand, licores=None):
     emsg = False
     lig = mol3D()  # initialize ligand molecule
     lig.needsconformer = False
+    # get similarity of userligand to ligands in dictionary, from the sequence point of view
+    text_similarities = [difflib.SequenceMatcher(None, userligand, i).ratio() for i in list(licores.keys())]
     # check if ligand exists in dictionary
-    if userligand in list(licores.keys()):
-        print(('loading ligand from dictionary: ' + str(userligand)))
-        dbentry = licores[userligand]
+    if userligand in list(licores.keys()) or max(text_similarities) > 0.6: # Two cases here
+        if userligand in list(licores.keys()): # Ligand is in the dictionary ligands.dict
+            print(('loading ligand from dictionary: ' + str(userligand)))
+            dbentry = licores[userligand]
+        else: # max(text_similarities) > 0.6 --> It is likely the user made a typo in inputting a ligand that is in ligands.dict
+            max_similarity = max(text_similarities)
+            index_max = text_similarities.index(max_similarity)
+            desired_ligand = list(licores.keys())[index_max]
+            print(f'ligand was not in dictionary, but the sequence is very similar to a ligand that is: {str(desired_ligand)}')
+            print(('loading ligand from dictionary: ' + str(desired_ligand))) 
+            dbentry = licores[desired_ligand] # Loading the typo-d ligand
         # load lig mol file (with hydrogens)
         if globs.custom_path:
             flig = globs.custom_path + "/Ligands/" + dbentry[0]
@@ -736,7 +747,6 @@ def lig_load(userligand, licores=None):
             lig.grps = []
         if len(dbentry) > 3:
             lig.ffopt = dbentry[4][0]
-
     # load from file
     elif ('.mol' in userligand or '.xyz' in userligand or '.smi' in userligand or '.sdf' in userligand):
         # flig = resource_filename(Requirement.parse("molSimplify"),"molSimplify/" +userligand)
@@ -761,6 +771,8 @@ def lig_load(userligand, licores=None):
             return False, emsg
     # if not, try interpreting as SMILES string
     else:
+        print(f'Interpreting ligand {userligand} as a SMILES string, as it was not in the ligands dictionary.')
+        print(f'Available ligands in the ligands dictionary can be found at molSimplify/molSimplify/Ligands/ligands.dict\nOr by running the command `molsimplify -h liganddict`')
         try:
             lig.getOBMol(userligand, 'smistring', True)  # convert from smiles
             lig.convert2mol3D()
@@ -963,12 +975,20 @@ def name_complex(rootdir, core, geometry, ligs, ligoc, sernum, args, nconf=False
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if lig not in licores:
-                lig = lig.split('\t')[0]
-                sminum += 1
-                name += '_smi' + str(int(sernum)+int(sminum)
-                                     ) + '_' + str(ligoc[i])
-            else:
+            if lig not in licores: # indicative of a SMILES string, or a misspelled ligand
+                # Checking if it is likely a misspelling
+                text_similarities = [difflib.SequenceMatcher(None, lig, i).ratio() for i in list(licores.keys())]                
+                if max(text_similarities) > 0.6: # likely a misspelling of a ligand that is in ligands.dict
+                    max_similarity = max(text_similarities)
+                    index_max = text_similarities.index(max_similarity)
+                    desired_ligand = list(licores.keys())[index_max]
+                    name += '_' + str(desired_ligand) + '_' + str(ligoc[i])
+                else: # SMILES string
+                    lig = lig.split('\t')[0]
+                    sminum += 1
+                    name += '_smi' + str(int(sernum)+int(sminum)
+                                         ) + '_' + str(ligoc[i])
+            else: # ligand is in ligands.dict
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
         print([nconf, args.nconfs])
