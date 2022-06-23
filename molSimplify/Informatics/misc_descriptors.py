@@ -2,7 +2,6 @@ from molSimplify.Classes.ligand import ligand_breakdown, ligand_assign
 from molSimplify.Informatics.graph_analyze import (get_lig_EN,
                                                    get_truncated_kier,
                                                    kier)
-from molSimplify.Classes.globalvars import globalvars
 import numpy as np
 
 
