@@ -37,7 +37,7 @@ from .Scripts.inparse import (parseinputs_advanced, parseinputs_slabgen,
                               parseinputs_postproc, parseinputs_random,
                               parseinputs_binding, parseinputs_tsgen,
                               parseinputs_customcore, parseinputs_naming,
-                              parseinputs_ligdict, parseinputs_basic, 
+                              parseinputs_ligdict, parseinputs_basic,
                               parseCLI)
 from .Scripts.generator import startgen
 from molSimplify.Classes.globalvars import globalvars

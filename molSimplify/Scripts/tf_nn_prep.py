@@ -295,7 +295,6 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
     ANN_attributes = {}
     ######################
 
-    r = [0.] * 3
     emsg = list()
     valid = True
     catalysis = False
@@ -309,7 +308,6 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
     newoccs = []
     newdecs = [False] * 6
     newdec_inds = [[0]] * 6
-    ANN_trust = 'None'
     count = -1
     for i, lig in enumerate(ligs):
         this_occ = occs[i]
