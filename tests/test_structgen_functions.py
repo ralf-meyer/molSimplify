@@ -1,9 +1,12 @@
+import numpy as np
+from argparse import Namespace
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.rundiag import run_diag
-from molSimplify.Scripts.io import loaddata, lig_load
+from molSimplify.Scripts.io import loaddata, lig_load, getlicores
 from molSimplify.Scripts.structgen import (smartreorderligs,
                                            get_MLdist_database,
-                                           get_MLdist)
+                                           get_MLdist,
+                                           init_ANN)
 
 
 def test_smartreorderligs():
@@ -44,28 +47,28 @@ def test_get_MLdist_database():
     connecting_atom = 0
     MLbonds = loaddata('/Data/ML.dat')
 
-    dist, match = get_MLdist_database(
+    dist, exact_match = get_MLdist_database(
         atom3D(Sym='Fe'), '2', '5', water, connecting_atom, 'water', MLbonds)
-    assert match
+    assert exact_match
     assert dist == 2.12
 
-    dist, match = get_MLdist_database(
+    dist, exact_match = get_MLdist_database(
         atom3D(Sym='Co'), 'III', '5', ammonia,
         connecting_atom, 'ammonia', MLbonds)
-    assert match
+    assert exact_match
     assert dist == 2.17
 
     # Test covariant radii fall back if not in database:
-    dist, match = get_MLdist_database(
+    dist, exact_match = get_MLdist_database(
         atom3D(Sym='Fe'), '2', '5', water, connecting_atom, 'water', {})
 
-    assert ~match
+    assert exact_match is False
     assert dist == 1.98
 
-    dist, match = get_MLdist_database(
+    dist, exact_match = get_MLdist_database(
         atom3D(Sym='Cr'), 'II', '5', water, connecting_atom, 'water', {})
 
-    assert ~match
+    assert exact_match is False
     assert dist == 2.0
 
 
@@ -103,3 +106,47 @@ def test_get_MLdist():
     dist = get_MLdist(atom3D(Sym='Fe'), '2', '5', water, connecting_atom,
                       'water', ['False']*6, 2, True, 3.14, this_diag, {})
     assert dist == 3.14
+
+
+def test_init_ANN():
+    licores = getlicores()
+
+    # Test skipping:
+    args = Namespace(skipANN=True)
+    (ANN_flag, ANN_bondl, _,
+     ANN_attributes, catalysis_flag) = init_ANN(
+         args, ligands=['water']*6, occs=[1]*6, dents=[1]*6,
+         batslist=[[1], [2], [3], [4], [5], [6]], tcats=[0]*6, licores=licores)
+
+    assert ANN_flag is False
+    assert ANN_bondl == [False] * 6
+    assert ANN_attributes == dict()
+    assert catalysis_flag is False
+
+    # Test oldANN
+    args = Namespace(skipANN=False, oldANN=True, core='Fe', decoration=False,
+                     geometry='oct', oxstate='2', spin='5', debug=False,
+                     exchange=0.2)
+    (ANN_flag, ANN_bondl, _,
+     ANN_attributes, catalysis_flag) = init_ANN(
+         args, ligands=['water']*6, occs=[1]*6, dents=[1]*6,
+         batslist=[[1], [2], [3], [4], [5], [6]], tcats=[0]*6, licores=licores)
+
+    assert ANN_flag
+    assert ANN_bondl == ANN_attributes['ANN_bondl']
+    np.testing.assert_allclose(ANN_bondl, [2.0757] * 6, atol=1e-4)
+    assert catalysis_flag is False
+
+    # Test default ANN
+    args = Namespace(skipANN=False, oldANN=False, core='Fe', decoration=False,
+                     geometry='oct', oxstate='2', spin='5', debug=False,
+                     exchange=0.2)
+    (ANN_flag, ANN_bondl, _,
+     ANN_attributes, catalysis_flag) = init_ANN(
+         args, ligands=['water']*6, occs=[1]*6, dents=[1]*6,
+         batslist=[[1], [2], [3], [4], [5], [6]], tcats=[0]*6, licores=licores)
+
+    assert ANN_flag
+    assert ANN_bondl == ANN_attributes['ANN_bondl']
+    np.testing.assert_allclose(ANN_bondl, [2.1664] * 4 + [2.1349, 2.1218], atol=1e-4)
+    assert catalysis_flag is False
