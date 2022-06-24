@@ -26,8 +26,8 @@ import tensorflow as tf
 from molSimplify.python_nn.clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
 
 
-def perform_ANN_prediction(RAC_dataframe: pd.Dataframe, predictor_name: str,
-                           RAC_column: str = 'RACs') -> pd.Dataframe:
+def perform_ANN_prediction(RAC_dataframe: pd.DataFrame, predictor_name: str,
+                           RAC_column: str = 'RACs') -> pd.DataFrame:
     # Performs a correctly normalized/rescaled prediction for a property specified by predictor_name.
     # Also calculates latent vector and smallest latent distance from training data.
     # RAC_dataframe can contain anything (e.g. a database pull) as long as it also contains the required RAC features.
