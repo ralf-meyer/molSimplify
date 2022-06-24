@@ -13,10 +13,7 @@ import random
 import itertools
 import numpy as np
 from typing import Any, List, Tuple
-from molSimplify.Scripts.distgeom import (GetConf)
-from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.rundiag import run_diag
+from molSimplify.Scripts.distgeom import GetConf
 from molSimplify.Scripts.geometry import (PointTranslateSph,
                                           aligntoaxis2,
                                           checkcolinear,
@@ -40,11 +37,12 @@ from molSimplify.Scripts.io import (core_load,
                                     loadcoord,
                                     loaddata,
                                     name_complex)
-
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.rundiag import run_diag
 from molSimplify.Classes.globalvars import (elementsbynum,
                                             romans,
                                             globalvars)
-from molSimplify.Classes.rundiag import (run_diag)
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.RACassemble import (assemble_connectivity_from_parts)
 from molSimplify.Classes.ligand import ligand as ligand_class
