@@ -2551,7 +2551,7 @@ class mol3D:
         -------
             filename : string
                 String of path to XYZ file. Path may be local or global.
-            fictitious_element: TODO
+            fictitious_element : TODO
             read_final_optim_step : boolean
                 if there are multiple geometries in the xyz file
                 (after an optimization run) use only the last one
@@ -2605,7 +2605,7 @@ class mol3D:
                 String of path to XYZ file. Path may be local or global. May be read in as a string.
             readstring : bool
                 Flag for deciding whether a string of mol2 file is being passed as the filename
-            trunc_sym: string
+            trunc_sym : string
                 Element symbol at which one would like to truncate the bo graph.
         """
 
@@ -3551,9 +3551,9 @@ class mol3D:
         ----------
             debug : bool, optional
                 Flag for whether extra output should be printed. Default is False.
-            strict_cutoff: bool, optional
+            strict_cutoff : bool, optional
                 strict bonding cutoff for fullerene and SACs
-            catom_list: list, optional
+            catom_list : list, optional
                 List of indices of bonded atoms.
 
         """
@@ -4671,9 +4671,9 @@ class mol3D:
 
         Parameters
         ----------
-            strict_cutoff: bool, optional
+            strict_cutoff : bool, optional
                 strict bonding cutoff for fullerene and SACs
-            catom_list: list, optional
+            catom_list : list, optional
                 List of indices of bonded atoms.
 
         Returns
@@ -5298,26 +5298,26 @@ class mol3D:
         ----------
             lac : bool, optional
                 Use lac for ligand_assign_consistent behavior. Default is True
-            force_generate: bool, optional
+            force_generate : bool, optional
                 Force the generation of features.
-            eq_sym: bool, optional
+            eq_sym : bool, optional
                 Force equatorial plane to have same chemical symbols if possible.
-            use_dist: bool, optional
+            use_dist : bool, optional
                 Whether or not CD-RACs used.
-            NumB: bool, optional
+            NumB : bool, optional
                 Whether or not the number of bond RAC features are generated.
-            Gval: bool, optional
+            Gval : bool, optional
                 Whether or not the group number RAC features are generated.
-            size_normalize: bool, optional
+            size_normalize : bool, optional
                 Whether or not to normalize by the number of atoms.
-            alleq: bool, optional
+            alleq : bool, optional
                 Whether or not all ligands are equatorial.
-            strict_cutoff: bool, optional
+            strict_cutoff : bool, optional
                 strict bonding cutoff for fullerene and SACs
-            catom_list: list, optional
+            catom_list : list, optional
                 List of indices of bonded atoms.
-            MRdiag_dict: TODO
-            depth: int, optional
+            MRdiag_dict : TODO
+            depth : int, optional
                 The depth of the RACs (how many bonds out the RACs go).
 
         Returns
