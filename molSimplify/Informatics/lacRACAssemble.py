@@ -59,7 +59,8 @@ def get_descriptor_vector(this_complex, custom_ligand_dict=False,
             Whether or not to normalize by the number of atoms.
         alleq : bool, optional
             Whether or not all ligands are equatorial.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
         depth : int, optional
             The depth of the RACs (how many bonds out the RACs go).
 
@@ -578,7 +579,8 @@ def construct_property_vector(mol, prop, oct=True, modifier=False, MRdiag_dict={
             if passed - dict, used to modify prop vector (e.g. for adding
             ONLY used with  ox_nuclear_charge    ox or charge)
             {"Fe":2, "Co": 3} etc, by default False
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -711,7 +713,8 @@ def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False,
             Weigh autocorrelation by distance of atoms from each other, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -792,7 +795,8 @@ def generate_full_complex_autocorrelations(mol, loud,
             use G value as RAC, by default False
         polarizability : bool, optional
             Use polarizability (alpha) as RAC, by default False
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -910,7 +914,8 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True, use_dist=False, s
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -988,7 +993,8 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.            
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -1069,7 +1075,8 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False, use_d
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -1189,7 +1196,8 @@ def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -1337,7 +1345,8 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -1578,7 +1587,8 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -1768,7 +1778,8 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------
@@ -1896,7 +1907,8 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
             Weigh autocorrelation by physical distance of atom from original, by default False
         size_normalize : bool, optional
             Whether or not to normalize by the number of atoms.
-        MRdiag_dict : TODO
+        MRdiag_dict : dict, optional
+            Keys are ligand identifiers, values are MR diagnostics like E_corr.
 
     Returns
     -------

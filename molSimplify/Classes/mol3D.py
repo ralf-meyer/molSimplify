@@ -3554,7 +3554,7 @@ class mol3D:
             strict_cutoff : bool, optional
                 strict bonding cutoff for fullerene and SACs
             catom_list : list, optional
-                List of indices of bonded atoms.
+                List of indices of coordinating atoms.
 
         """
 
@@ -4674,7 +4674,7 @@ class mol3D:
             strict_cutoff : bool, optional
                 strict bonding cutoff for fullerene and SACs
             catom_list : list, optional
-                List of indices of bonded atoms.
+                List of indices of coordinating atoms.
 
         Returns
         -------
@@ -5305,7 +5305,7 @@ class mol3D:
             use_dist : bool, optional
                 Whether or not CD-RACs used.
             NumB : bool, optional
-                Whether or not the number of bond RAC features are generated.
+                Whether or not the number of bonds RAC features are generated.
             Gval : bool, optional
                 Whether or not the group number RAC features are generated.
             size_normalize : bool, optional
@@ -5315,8 +5315,9 @@ class mol3D:
             strict_cutoff : bool, optional
                 strict bonding cutoff for fullerene and SACs
             catom_list : list, optional
-                List of indices of bonded atoms.
-            MRdiag_dict : TODO
+                List of indices of coordinating atoms.
+            MRdiag_dict : dict, optional
+                Keys are ligand identifiers, values are MR diagnostics like E_corr.
             depth : int, optional
                 The depth of the RACs (how many bonds out the RACs go).
 
