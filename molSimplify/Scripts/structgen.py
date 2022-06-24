@@ -12,7 +12,7 @@ import openbabel
 import random
 import itertools
 import numpy as np
-from typing import List, Tuple
+from typing import Any, List, Tuple
 from molSimplify.Scripts.distgeom import (GetConf)
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.mol3D import mol3D
@@ -113,7 +113,9 @@ def getnupdateb(backbatoms, denticity):
     return batoms, backbatoms
 
 
-def init_ANN(args, ligands, occs, dents, batslist, tcats, licores):
+def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
+             batslist: List[List[int]], tcats: List[str], licores: dict
+             ) -> Tuple[bool, List[Any], str, dict, bool]:
     """Initializes ANN.
 
     Parameters
@@ -1420,7 +1422,7 @@ def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
     return lig3D_aligned
 
 
-def rotate_catoms_fix_Hs(lig3D, catoms, mcoords, core3D):
+def rotate_catoms_fix_Hs(lig3D: mol3D, catoms: List[int], mcoords, core3D: mol3D) -> mol3D:
     """Rotates connecting atoms of multidentate ligands to improve H atom placement.
     Loops over rotate_catom_fix_Hs().
 

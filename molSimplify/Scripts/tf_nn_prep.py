@@ -7,7 +7,7 @@
 
 import time
 import os
-
+from typing import Tuple, List
 from molSimplify.Classes.ligand import ligand
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
@@ -26,7 +26,7 @@ from molSimplify.python_nn.tf_ANN import (ANN_supervisor,
 
 # import numpy
 # import openbabel
-def spin_classify(metal, spin, ox):
+def spin_classify(metal: str, spin: str, ox: int) -> Tuple[bool, List[int]]:
     metal_spin_dictionary = {'co': {2: 4, 3: 5},
                              'cr': {2: 5, 3: 4},
                              'fe': {2: 5, 3: 6},
