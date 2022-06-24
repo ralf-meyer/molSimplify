@@ -15,7 +15,8 @@ import numpy as np
 from typing import List, Tuple
 from molSimplify.Scripts.distgeom import (GetConf)
 from molSimplify.Classes.atom3D import atom3D
-from molSimplify.Classes.mol3D import (mol3D)
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Classes.rundiag import run_diag
 from molSimplify.Scripts.geometry import (PointTranslateSph,
                                           aligntoaxis2,
                                           checkcolinear,
@@ -1448,7 +1449,10 @@ def rotate_catoms_fix_Hs(lig3D, catoms, mcoords, core3D):
     return lig3D_aligned
 
 
-def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds):
+def get_MLdist(metal: atom3D, oxstate: str, spin: str, lig3D: mol3D,
+               atom0: int, ligand: str, MLb: List[str], i: int,
+               ANN_flag: bool, ANN_bondl: float, this_diag: run_diag,
+               MLbonds: dict, debug: bool = False) -> float:
     """Gets target M-L distance from desired source (custom, sum cov rad or ANN).
     Aligns a monodentate ligand to core connecting atom coordinates.
 
@@ -1494,22 +1498,22 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
     else:
         # otherwise, check for exact DB match
         bondl, exact_match = get_MLdist_database(
-            metal, args.oxstate, args.spin, lig3D, atom0, ligand, MLbonds, args.debug)
+            metal, oxstate, spin, lig3D, atom0, ligand, MLbonds, debug)
         try:
             this_diag.set_dict_bl(bondl)
         except AttributeError:
             pass
         if not exact_match and ANN_flag:
             # if no exact match found and ANN enabled, use it
-            if args.debug:
-                print('no M-L match in DB, using ANN')
+            if debug:
+                print('no exact M-L match in DB, using ANN')
             bondl = ANN_bondl
         elif exact_match:
             print('using exact M-L match from DB')
         else:
-            print(
-                'Warning: ANN not active and exact M-L match not found in DB, distance may not be accurate')
-            print(('using DB distance of '+str(bondl)))
+            print('Warning: ANN not active and exact M-L match not found in '
+                  'DB, distance may not be accurate')
+            print(f'using partial DB match distance of {bondl}')
     return bondl
 
 
@@ -1828,8 +1832,8 @@ def align_dent2_catom2_refined(args, lig3D, catoms, bondl, r1, r0, core3D, rtarg
 
 def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms,
                     rempi=False, ligpiatoms=[], MLb=[], ANN_flag=False,
-                    ANN_bondl=[], this_diag=0, MLbonds=dict(), MLoptbds=None,
-                    i=0, EnableAutoLinearBend=True):
+                    ANN_bondl: float = np.nan, this_diag=0, MLbonds=dict(),
+                    MLoptbds=None, i=0, EnableAutoLinearBend=True):
     """Aligns a monodentate ligand to core connecting atom coordinates.
 
     Parameters
@@ -1884,8 +1888,8 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms,
     # translate ligand to overlap with backbone connecting point
     lig3D.alignmol(lig3D.getAtom(atom0), cpoint)
     # determine bond length (database/cov rad/ANN)
-    bondl = get_MLdist(args, lig3D, atom0, ligand, coreref,
-                       MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds)
+    bondl = get_MLdist(coreref, args.oxstate, args.spin, lig3D, atom0, ligand,
+                       MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds, args.debug)
     MLoptbds.append(bondl)
     # align ligand to correct M-L distance
     u = vecdiff(cpoint.coords(), corerefcoords)
@@ -1911,7 +1915,7 @@ def align_dent1_lig(args, cpoint, core3D, coreref, ligand, lig3D, catoms,
 
 
 def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D,
-                    catoms, MLb, ANN_flag, ANN_bondl, this_diag, MLbonds,
+                    catoms, MLb, ANN_flag, ANN_bondl: float, this_diag, MLbonds,
                     MLoptbds, frozenats, i):
     """Aligns a bidentate ligand to core connecting atom coordinates.
 
@@ -1975,8 +1979,8 @@ def align_dent2_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D,
     lig3D, r1b = align_dent2_catom2_coarse(
         args, lig3D, core3D, catoms, r1, r0, m3D, batoms, corerefcoords)
     # get bond length
-    bondl = get_MLdist(args, lig3D, atom0, ligand, coreref,
-                       MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds)
+    bondl = get_MLdist(coreref, args.oxstate, args.spin, lig3D, atom0, ligand,
+                       MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds, args.debug)
     MLoptbds.append(bondl)
     MLoptbds.append(bondl)
     lig3D, dxyz = setPdistance(lig3D, r1, r0, bondl)
@@ -2125,8 +2129,9 @@ def align_dent3_lig(args, cpoint, batoms, m3D, core3D, coreref, ligand, lig3D,
     d2 = min(distance(lig3Db.getAtom(catoms[2]).coords(), m3D.getAtom(batoms[2]).coords(
     )), distance(lig3Db.getAtom(catoms[2]).coords(), m3D.getAtom(batoms[0]).coords()))
     lig3D = lig3D if d1 < d2 else lig3Db
-    bondl = get_MLdist(args, lig3D, atom0, ligand, m3D.getAtom(
-        0), MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds)
+    bondl = get_MLdist(m3D.getAtom(0), args.oxstate, args.spin, lig3D, atom0,
+                       ligand, MLb, i, ANN_flag, ANN_bondl, this_diag, MLbonds,
+                       args.debug)
     for iib in range(0, 3):
         MLoptbds.append(bondl)
     # set correct distance
@@ -2470,8 +2475,10 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                     lig3D.translate(d0)
                     lig3D = rotate_mat(lig3D, U)
 
-                    bondl = get_MLdist(args, lig3D, atom0, ligand, m3D.getAtom(
-                        0), MLb, i, ANN_flag, ANN_bondl[ligsused], this_diag, MLbonds)
+                    bondl = get_MLdist(m3D.getAtom(0), args.oxstate, args.spin,
+                                       lig3D, atom0, ligand, MLb, i, ANN_flag,
+                                       ANN_bondl[ligsused], this_diag, MLbonds,
+                                       args.debug)
                     for iib in range(0, 4):
                         MLoptbds.append(bondl)
                 elif (denticity == 5):

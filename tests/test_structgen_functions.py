@@ -1,7 +1,9 @@
 from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.rundiag import run_diag
 from molSimplify.Scripts.io import loaddata, lig_load
 from molSimplify.Scripts.structgen import (smartreorderligs,
-                                           get_MLdist_database)
+                                           get_MLdist_database,
+                                           get_MLdist)
 
 
 def test_smartreorderligs():
@@ -65,3 +67,39 @@ def test_get_MLdist_database():
 
     assert ~match
     assert dist == 2.0
+
+
+def test_get_MLdist():
+    water, _ = lig_load('water')
+    connecting_atom = 0
+    MLbonds = loaddata('/Data/ML.dat')
+    this_diag = run_diag()
+
+    # Test user defined BL (take second item from supplied list)
+    dist = get_MLdist(atom3D(Sym='Fe'), '2', '5', water, connecting_atom,
+                      'water', ['0', '0', '1.2', '0', '0', '0'], 2, False, 0.0,
+                      this_diag, MLbonds)
+    assert dist == 1.2
+
+    # Test 'c' in bond list
+    dist = get_MLdist(atom3D(Sym='Fe'), '2', '5', water, connecting_atom,
+                      'water', ['0', '0', 'c', '0', '0', '0'], 2, False, 0.0,
+                      this_diag, MLbonds)
+    assert dist == 1.98
+
+    # Test DB lookup
+    dist = get_MLdist(atom3D(Sym='Fe'), '2', '5', water, connecting_atom,
+                      'water', ['False']*6, 2, False, 0.0, this_diag, MLbonds)
+    assert this_diag.dict_bondl
+    assert dist == 2.12
+
+    # Test covalent fall back
+    dist = get_MLdist(atom3D(Sym='Fe'), '2', '5', water, connecting_atom,
+                      'water', ['False']*6, 2, False, 0.0, this_diag, {})
+    assert this_diag.dict_bondl
+    assert dist == 1.98
+
+    # No DB match: use ANN result
+    dist = get_MLdist(atom3D(Sym='Fe'), '2', '5', water, connecting_atom,
+                      'water', ['False']*6, 2, True, 3.14, this_diag, {})
+    assert dist == 3.14
