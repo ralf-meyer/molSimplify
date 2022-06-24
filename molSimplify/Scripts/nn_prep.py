@@ -173,7 +173,9 @@ def get_con_at_type(mol, connection_atoms: List[Union[int, str]]) -> Tuple[bool,
     return valid, this_type
 
 
-def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores) -> Tuple[bool, str, dict]:
+def ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
+                batslist: List[List[int]], tcats: List[str],
+                licores: dict) -> Tuple[bool, str, dict]:
     # prepares and runs ANN calculation
 
     ######################

@@ -12,7 +12,7 @@ import openbabel
 import random
 import itertools
 import numpy as np
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Dict
 from molSimplify.Scripts.distgeom import GetConf
 from molSimplify.Scripts.geometry import (PointTranslateSph,
                                           aligntoaxis2,
@@ -113,7 +113,7 @@ def getnupdateb(backbatoms: List[List[int]], denticity: int) -> Tuple[List[int],
 
 def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
              batslist: List[List[int]], tcats: List[str], licores: dict
-             ) -> Tuple[bool, List[Any], str, dict, bool]:
+             ) -> Tuple[bool, List[Any], str, Dict[str, Any], bool]:
     """Initializes ANN.
 
     Parameters
@@ -149,66 +149,57 @@ def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
     """
     # initialize ANN
     globs = globalvars()
-    catalysis_flag = False
     if args.skipANN:
         print('Skipping ANN')
         ANN_flag = False
         # there needs to be 1 length per possible lig
         ANN_bondl = len([item for items in batslist for item in items])*[False]
-        ANN_attributes = {'ANN_bondl': ANN_bondl}
+        ANN_attributes: Dict[str, Any] = {}
         ANN_reason = 'ANN skipped by user'
+        catalysis_flag = False
+        return ANN_flag, ANN_bondl, ANN_reason, ANN_attributes, catalysis_flag
+
+    if args.oldANN:
+        print('using old ANN by request')
+        from molSimplify.Scripts.nn_prep import ANN_preproc
+        ANN_flag, ANN_reason, ANN_attributes = ANN_preproc(
+            args, ligands, occs, dents, batslist, tcats, licores)
     else:
-
-        # try:
-        if True:
-            if args.oldANN:
-                print('using old ANN by request')
-                from molSimplify.Scripts.nn_prep import ANN_preproc
-                ANN_flag, ANN_reason, ANN_attributes = ANN_preproc(
-                    args, ligands, occs, dents, batslist, tcats, licores)
-            else:
-                if globs.testTF():
-                    # new RACs-ANN
-                    from molSimplify.Scripts.tf_nn_prep import tf_ANN_preproc
-                    if args.debug:
-                        print('Using tf_ANN_preproc')
-                    ANN_flag, ANN_reason, ANN_attributes, catalysis_flag = tf_ANN_preproc(
-                        args, ligands, occs, dents, batslist, tcats, licores, args.debug)
-                else:
-                    # old MCDL-25
-                    print('using old ANN because tensorflow/keras import failed')
-                    from molSimplify.Scripts.nn_prep import ANN_preproc
-                    ANN_flag, ANN_reason, ANN_attributes = ANN_preproc(
-                        args, ligands, occs, dents, batslist, tcats, licores)
-            if ANN_flag:
-                ANN_bondl = ANN_attributes['ANN_bondl']
-                if args.debug:
-                    print(('ANN bond length is ' + str(ANN_bondl) +
-                           ' type ' + str(type(ANN_bondl))))
-
-            else:
-                # there needs to be 1 length per possible lig
-                ANN_bondl = len(
-                    [item for items in batslist for item in items])*[False]
-                if args.debug:
-                    if ANN_reason == 'found incorrect ligand symmetry':
-                        # This is a workaround so as to not have to change
-                        # report files checked by GitHub CI when running test
-                        # cases, which would require everyone using molSimplify
-                        # from source to have to git pull the new files before
-                        # any new commits
-                        print("ANN call failed with reason: either found "
-                              "incorrect ligand symmetry, or see ANN "
-                              "messages above")
-                    else:
-                        print(("ANN call failed with reason: " + ANN_reason))
-        # except:
+        if globs.testTF():
+            # new RACs-ANN
+            from molSimplify.Scripts.tf_nn_prep import tf_ANN_preproc
+            if args.debug:
+                print('Using tf_ANN_preproc')
+            ANN_flag, ANN_reason, ANN_attributes, catalysis_flag = tf_ANN_preproc(
+                args, ligands, occs, dents, batslist, tcats, licores, args.debug)
         else:
-            print("ANN call rejected")
-            ANN_reason = 'uncaught exception'
-            ANN_flag = False
-            ANN_bondl = len(
-                [item for items in batslist for item in items])*[False]
+            # old MCDL-25
+            print('using old ANN because tensorflow/keras import failed')
+            from molSimplify.Scripts.nn_prep import ANN_preproc
+            ANN_flag, ANN_reason, ANN_attributes = ANN_preproc(
+                args, ligands, occs, dents, batslist, tcats, licores)
+    if ANN_flag:
+        ANN_bondl = ANN_attributes['ANN_bondl']
+        if args.debug:
+            print(('ANN bond length is ' + str(ANN_bondl) +
+                   ' type ' + str(type(ANN_bondl))))
+
+    else:
+        # there needs to be 1 length per possible lig
+        ANN_bondl = len(
+            [item for items in batslist for item in items])*[False]
+        if args.debug:
+            if ANN_reason == 'found incorrect ligand symmetry':
+                # This is a workaround so as to not have to change
+                # report files checked by GitHub CI when running test
+                # cases, which would require everyone using molSimplify
+                # from source to have to git pull the new files before
+                # any new commits
+                print("ANN call failed with reason: either found "
+                      "incorrect ligand symmetry, or see ANN "
+                      "messages above")
+            else:
+                print(("ANN call failed with reason: " + ANN_reason))
     return ANN_flag, ANN_bondl, ANN_reason, ANN_attributes, catalysis_flag
 
 
