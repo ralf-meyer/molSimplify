@@ -155,6 +155,7 @@ def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
         ANN_flag = False
         # there needs to be 1 length per possible lig
         ANN_bondl = len([item for items in batslist for item in items])*[False]
+        ANN_attributes = {'ANN_bondl': ANN_bondl}
         ANN_reason = 'ANN skipped by user'
     else:
 

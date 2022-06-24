@@ -763,7 +763,8 @@ def lig_load(userligand: str, licores: dict = None) -> Tuple[Any, str]:
     # if not, try interpreting as SMILES string
     else:
         print(f'Interpreting ligand {userligand} as a SMILES string, as it was not in the ligands dictionary.')
-        print(f'Available ligands in the ligands dictionary can be found at molSimplify/molSimplify/Ligands/ligands.dict\nOr by running the command `molsimplify -h liganddict`')
+        print('Available ligands in the ligands dictionary can be found at molSimplify/molSimplify/Ligands/ligands.dict\n'
+              'Or by running the command `molsimplify -h liganddict`')
         try:
             lig.getOBMol(userligand, 'smistring', True)  # convert from smiles
             lig.convert2mol3D()
