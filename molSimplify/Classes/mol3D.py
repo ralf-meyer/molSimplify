@@ -4335,6 +4335,8 @@ class mol3D:
                 The cutoffs of each geo_check metrics we have. Default is False
             angle_ref : bool, optional
                 Reference list of list for the expected angles (A-metal-B) of each connection atom.
+            num_coord : int, optional
+                The metal coordination number.
             flag_catoms : bool, optional
                 Whether or not to return the catoms arr. Default as False.
             catoms_arr : Nonetype, optional
@@ -4551,24 +4553,26 @@ class mol3D:
         ----------
             init_mol : mol3D
                 mol3D class instance of the initial geometry.
+            catoms_arr : Nonetype, optional
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+            num_coord : int, optional
+                The metal coordination number.
             dict_check : dict, optional
                 The cutoffs of each geo_check metrics we have. Default is False
+            std_not_use : list, optional
+                Geometry checks to skip. Default is False.
             angle_ref : bool, optional
                 Reference list of list for the expected angles (A-metal-B) of each connection atom.
             flag_catoms : bool, optional
                 Whether or not to return the catoms arr. Default as False.
-            catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
-            debug : bool, optional
-                Flag for extra printout. Default is False.
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
                 Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
-            std_not_use : list, optional
-                Geometry checks to skip. Default is False.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
 
         Returns
         -------
