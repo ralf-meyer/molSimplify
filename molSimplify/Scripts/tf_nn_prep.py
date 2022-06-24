@@ -48,14 +48,15 @@ def spin_classify(metal: str, spin: str, ox: int) -> Tuple[bool, List[int]]:
 
 # wrapper to get ANN predictions from a known mol3D()
 # generally unsafe
-def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
+def invoke_ANNs_from_mol3d(mol: mol3D, oxidation_state: int,
+                           alpha: float = 0.2, debug: bool = False) -> dict:
 
     tensorflow_silence()
 
     # check input
     if not oxidation_state == 2 and not oxidation_state == 3:
         print('Error, oxidation state must be 2 or 3')
-        return False
+        return {}
 
     # find the metal from RACs
     metal = mol.getAtom(mol.findMetal()[0]).symbol()
@@ -97,12 +98,14 @@ def invoke_ANNs_from_mol3d(mol, oxidation_state, alpha=0.2, debug=False):
     return (results_dictionary)
 
 
-def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
+def tf_check_ligands(ligs: List[str], batslist: List[List[int]],
+                     dents: List[int], tcats: List[str],
+                     occs: List[int], debug: bool):
     # tests if ligand combination
     # is compatible with the ANN
     # INPUT:
     #   - ligs:  list of mol3D class, ligands
-    #   - batlist: list of int, occupations
+    #   - batslist: list of int, occupations
     #   - dents: list of int, denticity
     #   - tcats: list of int/bool
     # OUTPUT:
@@ -124,8 +127,8 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
     equatorial_ligs = []
     ax_dent = 0
     eq_dent = 0
-    eq_tcat = False
-    ax_tcat = False
+    eq_tcat = ''
+    ax_tcat = ''
     pentadentate = False
     ax_occs = []
     eq_occs = []
@@ -139,7 +142,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
             # something unexpected happened!
             valid = False
         for i in range(0, n_ligs):
-            this_bat = batlist[i]
+            this_bat = batslist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
             # mulitple points
@@ -177,7 +180,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         print('THIS IS A PENTADENTATE!')
         pentadentate = True
         for i in range(0, n_ligs):
-            this_bat = batlist[i]
+            this_bat = batslist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
             this_occ = occs[i]
@@ -188,7 +191,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                 print(('this_dent  ' + str(this_dent)))
                 print(('this_occ  ' + str(this_occ)))
                 print(('this backbone atom  ' +
-                      str(this_bat) + ' from ' + str(batlist)))
+                      str(this_bat) + ' from ' + str(batslist)))
             # mulitple points
             if len(this_bat) > 1:
                 if debug:
@@ -208,7 +211,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
 
     else:
         for i in range(0, n_ligs):
-            this_bat = batlist[i]
+            this_bat = batslist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
             this_occ = occs[i]
@@ -219,7 +222,7 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
                 print(('this_dent  ' + str(this_dent)))
                 print(('this_occ  ' + str(this_occ)))
                 print(('this backbone atom  ' +
-                       str(this_bat) + ' from ' + str(batlist)))
+                       str(this_bat) + ' from ' + str(batslist)))
             # mulitple points
             if len(this_bat) == 1:
                 if (5 in this_bat) or (6 in this_bat):
@@ -260,10 +263,11 @@ def tf_check_ligands(ligs, batlist, dents, tcats, occs, debug):
         equatorial_ind_list = [ligs.index(eq_lig)
                                for eq_lig in equatorial_ligs]
 
-    return valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list, ax_occs, eq_occs, pentadentate
+    return (valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat,
+            axial_ind_list, equatorial_ind_list, ax_occs, eq_occs, pentadentate)
 
 
-def check_metal(metal, oxidation_state):
+def check_metal(metal: str, oxidation_state: str) -> Tuple[bool, str]:
     supported_metal_dict = {"fe": [2, 3], "mn": [2, 3], "cr": [2, 3],
                             "co": [2, 3], "ni": [2]}
     romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5', 'VI': '6'}
@@ -277,7 +281,9 @@ def check_metal(metal, oxidation_state):
     return outcome, oxidation_state
 
 
-def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
+def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
+                   batslist: List[List[int]], tcats: List[str],
+                   licores: dict) -> Tuple[bool, str, dict, bool]:
     # prepares and runs ANN calculation
 
     current_time = time.time()
@@ -285,11 +291,11 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     last_time = current_time
 
     ######################
-    ANN_reason = {}
+    ANN_reason = 'None'
     ANN_attributes = {}
     ######################
 
-    r = 0
+    r = [0.] * 3
     emsg = list()
     valid = True
     catalysis = False
@@ -302,8 +308,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     newdents = []
     newoccs = []
     newdecs = [False] * 6
-    newdec_inds = [[]] * 6
-    ANN_trust = False
+    newdec_inds = [[0]] * 6
+    ANN_trust = 'None'
     count = -1
     for i, lig in enumerate(ligs):
         this_occ = occs[i]
@@ -659,8 +665,8 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
 
         # now that we have bond predictions, we need to map these
         # back to a length of equal size as the original ligand request
-        # in order for molSimplify to understand if
-        ANN_bondl = len(ligs) * [False]
+        # in order for molSimplify to understand it
+        ANN_bondl = len(ligs) * [0.]
         added = 0
         for ii, eql in enumerate(equatorial_ind_list):
             for jj in range(0, eq_occs[ii]):
@@ -974,20 +980,3 @@ def tf_ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         ANN_reason = ' uncaught rejection (see sdout/stderr)'
 
     return valid, ANN_reason, ANN_attributes, catalysis
-
-    if False:
-        # test Euclidean norm to training data distance
-        train_dist, best_row = find_eu_dist(nn_excitation)  # noqa: F821 (line unreachable)
-        ANN_trust = max(0.01, 1.0 - train_dist)
-
-        ANN_attributes.update({'ANN_closest_train': best_row})
-
-        print((' with closest training row ' +
-               best_row[:-2] + ' at  ' + str(best_row[-2:]) + '% HFX'))
-
-        # use ANN to predict fucntional sensitivty
-        HFX_slope = 0
-        HFX_slope = get_slope(slope_excitation)  # noqa: F821 (line unreachable)
-        print(('Predicted HFX exchange sensitivity is : ' +
-               "{0:.2f}".format(float(HFX_slope)) + ' kcal/HFX'))
-        ANN_attributes.update({'ANN_slope': HFX_slope})

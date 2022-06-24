@@ -16,6 +16,7 @@ import os
 import numpy as np
 import pandas as pd
 import scipy
+from typing import List, Tuple, Union
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import model_from_json, load_model
 from tensorflow.keras.optimizers import Adam
@@ -25,9 +26,8 @@ import tensorflow as tf
 from molSimplify.python_nn.clf_analysis_tool import array_stack, get_layer_outputs, dist_neighbor, get_entropy
 
 
-## Functions
-
-def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
+def perform_ANN_prediction(RAC_dataframe: pd.Dataframe, predictor_name: str,
+                           RAC_column: str = 'RACs') -> pd.Dataframe:
     # Performs a correctly normalized/rescaled prediction for a property specified by predictor_name.
     # Also calculates latent vector and smallest latent distance from training data.
     # RAC_dataframe can contain anything (e.g. a database pull) as long as it also contains the required RAC features.
@@ -36,9 +36,9 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
     # Will not execute if RAC features are missing.
 
     # Returns: RAC_dataframe with new columns added:
-    ## predictor_name_latent_vector
-    ## predictor_name_min_latent_distance,
-    ## predictor_name_prediction
+    # - predictor_name_latent_vector
+    # - predictor_name_min_latent_distance,
+    # - predictor_name_prediction
 
     assert type(RAC_dataframe) == pd.DataFrame
     train_vars = load_ANN_variables(predictor_name)
@@ -76,7 +76,7 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
     query_latent = get_outputs([normalized_input, 0])[0]
 
     # Append all results to dataframe
-    results_allocation = [None for i in range(len(RAC_dataframe))]
+    results_list = []
     for i in range(len(RAC_dataframe)):
         results_dict = {}
         min_latent_distance = min(np.linalg.norm(training_latent - query_latent[i][:], axis=1))
@@ -86,8 +86,8 @@ def perform_ANN_prediction(RAC_dataframe, predictor_name, RAC_column='RACs'):
         if len(output_value) == 1:  # squash array of length 1 to the value it contains
             output_value = output_value[0]
         results_dict['%s_prediction' % predictor_name] = output_value
-        results_allocation[i] = results_dict
-    results_df = pd.DataFrame(results_allocation, index=RAC_dataframe.index)
+        results_list.append(results_dict)
+    results_df = pd.DataFrame(results_list, index=RAC_dataframe.index)
     RAC_dataframe_with_results = RAC_dataframe.join(results_df)
     return RAC_dataframe_with_results
 
@@ -106,8 +106,8 @@ def get_error_params(latent_distances, errors):
     return results.x
 
 
-def matrix_loader(path, rownames=False):
-    ## loads matrix with rowname option
+def matrix_loader(path: str, rownames: bool = False) -> Union[Tuple[List[List[str]], List[str]], List[List[str]]]:
+    # loads matrix with rowname option
     if rownames:
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
         with open(path_to_file, "r") as f:
@@ -118,12 +118,12 @@ def matrix_loader(path, rownames=False):
     else:
         path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/python_nn/" + path)
         with open(path_to_file, 'r') as csvfile:
-            csv_lines = csv.reader(csvfile, delimiter=',')
-            mat = [a for a in csv_lines]
+            lines = csv.reader(csvfile, delimiter=',')
+            mat = [a for a in lines]
         return mat
 
 
-def get_key(predictor, suffix=False):
+def get_key(predictor: str, suffix: bool = False) -> str:
     if suffix:
         if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
             key = 'geos/' + predictor + '_%s' % suffix
