@@ -148,7 +148,6 @@ def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
 
     """
     # initialize ANN
-    ANN_attributes = dict()
     globs = globalvars()
     catalysis_flag = False
     if args.skipANN:
