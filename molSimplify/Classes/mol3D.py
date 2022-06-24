@@ -884,6 +884,10 @@ class mol3D:
         ----------
             oct : bool
                 Defines whether a structure is octahedral. Default is True.
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
+            catom_list: list, optional
+                List of indices of bonded atoms.
 
         """
         if not len(self.graph):
@@ -1814,6 +1818,10 @@ class mol3D:
                 Index of reference atom.
             oct : bool, optional
                 Flag for turning on octahedral bonding routines.
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
+            catom_list: list, optional
+                List of indices of bonded atoms.
 
         Returns
         -------
@@ -2707,8 +2715,8 @@ class mol3D:
         self.graph = []
         s = xyzstring.split('\n')
         try:
-            s.remove('')  # TODO: Pretty sure str does not have a remove method
-        except AttributeError:
+            s.remove('') 
+        except ValueError:
             pass
         s = [str(val) + '\n' for val in s]
         for line in s[0:]:
@@ -3542,6 +3550,10 @@ class mol3D:
         ----------
             debug : bool, optional
                 Flag for whether extra output should be printed. Default is False.
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
+            catom_list: list, optional
+                List of indices of bonded atoms.
 
         """
 
@@ -3614,6 +3626,8 @@ class mol3D:
                 Reference list of list for the expected angles (A-metal-B) of each connection atom.
             catoms_arr : Nonetype, optional
                 Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
 
         Returns
         -------
@@ -4343,8 +4357,6 @@ class mol3D:
                 Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
             debug : bool, optional
                 Flag for extra printout. Default is False.
-            flag_loose : bool, optional
-                Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             skip : list, optional
                 Geometry checks to skip. Default is False.
             flag_deleteH : bool, optional,
@@ -4445,24 +4457,23 @@ class mol3D:
         ----------
             init_mol : mol3D
                 mol3D class instance of the initial geometry.
-            dict_check : dict, optional
-                The cutoffs of each geo_check metrics we have. Default is False
-            angle_ref : bool, optional
-                Reference list of list for the expected angles (A-metal-B) of each connection atom.
-            flag_catoms : bool, optional
-                Whether or not to return the catoms arr. Default as False.
             catoms_arr : Nonetype, optional
                 Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
-            debug : bool, optional
-                Flag for extra printout. Default is False.
+            dict_check : dict, optional
+                The cutoffs of each geo_check metrics we have. Default is False
+            std_not_use : list, optional
+                Geometry checks to skip. Default is False.
+            angle_ref : bool, optional
+                Reference list of list for the expected angles (A-metal-B) of each connection atom.
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
                 Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            dict_check_loose: TODO
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
-            std_not_use : list, optional
-                Geometry checks to skip. Default is False.
+            debug : bool, optional
+                Flag for extra printout. Default is False.
 
         Returns
         -------
@@ -4563,12 +4574,11 @@ class mol3D:
                 Geometry checks to skip. Default is False.
             angle_ref : bool, optional
                 Reference list of list for the expected angles (A-metal-B) of each connection atom.
-            flag_catoms : bool, optional
-                Whether or not to return the catoms arr. Default as False.
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
                 Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+            dict_check_loose: TODO
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
             debug : bool, optional
@@ -4655,6 +4665,13 @@ class mol3D:
 
     def get_fcs(self, strict_cutoff=False, catom_list=None):
         """ Get first coordination shell of a transition metal complex.
+
+        Parameters
+        ----------
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
+            catom_list: list, optional
+                List of indices of bonded atoms.
 
         Returns
         -------
@@ -5278,10 +5295,15 @@ class mol3D:
         ----------
             lac : bool, optional
                 Use lac for ligand_assign_consistent behavior. Default is True
-            eq_sym: bool, optional
-                Force equatorial plane to have same chemical symbols if possible.
             force_generate: bool, optional
                 Force the generation of features.
+            eq_sym: bool, optional
+                Force equatorial plane to have same chemical symbols if possible.
+            TODO missing many parameters
+            strict_cutoff: bool, optional
+                strict bonding cutoff for fullerene and SACs
+            catom_list: list, optional
+                List of indices of bonded atoms.
 
         Returns
         -------
