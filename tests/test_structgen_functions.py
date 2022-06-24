@@ -1,4 +1,7 @@
-from molSimplify.Scripts.structgen import smartreorderligs
+from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Scripts.io import loaddata, lig_load
+from molSimplify.Scripts.structgen import (smartreorderligs,
+                                           get_MLdist_database)
 
 
 def test_smartreorderligs():
@@ -31,3 +34,34 @@ def test_smartreorderligs():
     # Tetradentate
     indices = smartreorderligs(['water', 'porphirine', 'misc'], [1, 4, 1])
     assert indices == [1, 0, 2]
+
+
+def test_get_MLdist_database():
+    water, _ = lig_load('water')
+    ammonia, _ = lig_load('ammonia')
+    connecting_atom = 0
+    MLbonds = loaddata('/Data/ML.dat')
+
+    dist, match = get_MLdist_database(
+        atom3D(Sym='Fe'), '2', '5', water, connecting_atom, 'water', MLbonds)
+    assert match
+    assert dist == 2.12
+
+    dist, match = get_MLdist_database(
+        atom3D(Sym='Co'), 'III', '5', ammonia,
+        connecting_atom, 'ammonia', MLbonds)
+    assert match
+    assert dist == 2.17
+
+    # Test covariant radii fall back if not in database:
+    dist, match = get_MLdist_database(
+        atom3D(Sym='Fe'), '2', '5', water, connecting_atom, 'water', {})
+
+    assert ~match
+    assert dist == 1.98
+
+    dist, match = get_MLdist_database(
+        atom3D(Sym='Cr'), 'II', '5', water, connecting_atom, 'water', {})
+
+    assert ~match
+    assert dist == 2.0

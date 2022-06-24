@@ -12,7 +12,7 @@ import openbabel
 import random
 import itertools
 import numpy as np
-from typing import List
+from typing import List, Tuple
 from molSimplify.Scripts.distgeom import (GetConf)
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.mol3D import (mol3D)
@@ -1494,7 +1494,7 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
     else:
         # otherwise, check for exact DB match
         bondl, exact_match = get_MLdist_database(
-            args, metal, lig3D, atom0, ligand, MLbonds)
+            metal, args.oxstate, args.spin, lig3D, atom0, ligand, MLbonds, args.debug)
         try:
             this_diag.set_dict_bl(bondl)
         except AttributeError:
@@ -1513,16 +1513,20 @@ def get_MLdist(args, lig3D, atom0, ligand, metal, MLb, i, ANN_flag, ANN_bondl, t
     return bondl
 
 
-def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
+def get_MLdist_database(metal: atom3D, oxstate: str, spin: str, lig3D: mol3D,
+                        atom0: int, ligand: str, MLbonds: dict,
+                        debug=False) -> Tuple[float, bool]:
     """Gets target M-L distance from desired source (custom, sum cov rad or ANN).
     Aligns a monodentate ligand to core connecting atom coordinates.
 
     Parameters
     ----------
-        args : Namespace
-            Namespace of arguments.
         metal : atom3D
             atom3D class instance of the first atom (usually a metal).
+        oxstate:  str:
+            oxidation state
+        spin : str
+            spin state
         lig3D : mol3D
             mol3D class instance of the ligand.
         atom0 : int
@@ -1540,15 +1544,16 @@ def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
             Flag for database match.
     """
     # check for roman letters in oxstate
-    if args.oxstate:  # if defined put oxstate in keys
-        if args.oxstate in list(romans.keys()):
-            oxs = romans[args.oxstate]
+    if oxstate:  # if defined put oxstate in keys
+        if oxstate in romans.keys():
+            oxs = romans[oxstate]
         else:
-            oxs = args.oxstate
+            oxs = oxstate
     else:
         oxs = '-'
     # check for spin multiplicity
-    spin = args.spin if args.spin else '-'
+    spin = spin if spin else '-'
+    # Build possible keys in descending order of specificity
     key = []
     key.append((metal.sym, oxs, spin, lig3D.getAtom(atom0).sym, ligand))
     # disregard exact ligand
@@ -1557,20 +1562,19 @@ def get_MLdist_database(args, metal, lig3D, atom0, ligand, MLbonds):
     key.append((metal.sym, '-', '-', lig3D.getAtom(atom0).sym, ligand))
     # else just consider bonding atom
     key.append((metal.sym, '-', '-', lig3D.getAtom(atom0).sym, '-'))
-    found = False
     exact_match = False
     # search for data
     for kk in key:
-        if (kk in list(MLbonds.keys())):  # if exact key in dictionary
+        if kk in MLbonds.keys():  # if exact key in dictionary
             bondl = float(MLbonds[kk])
-            found = True
             if (kk == ((metal.sym, oxs, spin, lig3D.getAtom(atom0).sym, ligand))):  # exact match
                 exact_match = True
             break
-    if not found:  # last resort covalent radii
+    else:  # If no match in dict (no break encountered):
+        # last resort sum of covalent radii
         bondl = metal.rad + lig3D.getAtom(atom0).rad
-    if args.debug:
-        print(('ms default distance is  ' + str(bondl)))
+    if debug:
+        print(f'ms default distance is {bondl}')
     return bondl, exact_match
 
 
@@ -2523,7 +2527,8 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                         catoms[0]).coords(), m3D.getAtom(batoms[0]).coords())
                     lig3D = lig3D if (d1 < d2) else lig3Db  # pick best one
                     bondl, exact_match = get_MLdist_database(
-                        args, core3D.getAtom(0), lig3D, catoms[0], ligand, MLbonds)
+                        core3D.getAtom(0), args.oxstate, args.spin, lig3D,
+                        catoms[0], ligand, MLbonds, args.debug)
                     # flip if necessary
                     if len(batslist) > ligsused:
                         nextatbats = batslist[ligsused]
@@ -2554,7 +2559,8 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                     # translate metal to the middle of octahedral
                     core3D.translate(vecdiff(ligc.centersym(), mcoords))
                     bondl, exact_match = get_MLdist_database(
-                        args, core3D.getAtom(0), lig3D, catoms[0], ligand, MLbonds)
+                        core3D.getAtom(0), args.oxstate, args.spin, lig3D,
+                        catoms[0], ligand, MLbonds, args.debug)
                     for iib in range(0, 6):
                         MLoptbds.append(bondl)
                 auxm = mol3D()
