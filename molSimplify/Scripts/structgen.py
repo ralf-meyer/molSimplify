@@ -72,7 +72,7 @@ def getbackbcombsall(nums):
     return bbcombs
 
 
-def getnupdateb(backbatoms, denticity):
+def getnupdateb(backbatoms: List[List[int]], denticity: int) -> Tuple[List[int], List[List[int]]]:
     """Gets a combination of backbone points that satisfies denticity and updates possible combinations.
 
     Parameters
@@ -93,14 +93,14 @@ def getnupdateb(backbatoms, denticity):
     dlist = []
     batoms = []
     # find matching combination
-    for b in backbatoms:
-        if len(b) == denticity:
-            batoms = b
+    for bba in backbatoms:
+        if len(bba) == denticity:
+            batoms = bba
             break
     # loop and find elements to delete
-    for b in batoms:
+    for ba in batoms:
         for i, bcomb in enumerate(backbatoms):
-            if b in bcomb and i not in dlist:
+            if ba in bcomb and i not in dlist:
                 dlist.append(i)
     dlist.sort(reverse=True)  # sort
     # delete used points
@@ -173,7 +173,7 @@ def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
                     if args.debug:
                         print('Using tf_ANN_preproc')
                     ANN_flag, ANN_reason, ANN_attributes, catalysis_flag = tf_ANN_preproc(
-                        args, ligands, occs, dents, batslist, tcats, licores)
+                        args, ligands, occs, dents, batslist, tcats, licores, args.debug)
                 else:
                     # old MCDL-25
                     print('using old ANN because tensorflow/keras import failed')

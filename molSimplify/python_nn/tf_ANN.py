@@ -123,7 +123,7 @@ def matrix_loader(path: str, rownames: bool = False) -> Union[Tuple[List[List[st
         return mat
 
 
-def get_key(predictor: str, suffix: bool = False) -> str:
+def get_key(predictor: str, suffix: str = None) -> str:
     if suffix:
         if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
             key = 'geos/' + predictor + '_%s' % suffix
@@ -153,7 +153,7 @@ def get_key(predictor: str, suffix: bool = False) -> str:
     return key
 
 
-def data_rescale(scaled_dat, train_mean, train_var, debug=False):
+def data_rescale(scaled_dat, train_mean, train_var, debug=False) -> np.ndarray:
     d = np.shape(train_mean)[0]
     if debug:
         print(('unnormalizing with number of dimensions = ' + str(d)))
@@ -161,7 +161,7 @@ def data_rescale(scaled_dat, train_mean, train_var, debug=False):
     return (dat)
 
 
-def data_normalize(data, train_mean, train_var, debug=False):
+def data_normalize(data, train_mean, train_var, debug=False) -> np.ndarray:
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
     if debug:
@@ -185,10 +185,10 @@ def data_normalize(data, train_mean, train_var, debug=False):
         train_var = np.delete(train_var, delete_ind, axis=0)
 
     scaled_dat = np.divide((data.T - train_mean), np.sqrt(train_var), ).T
-    return (scaled_dat)
+    return scaled_dat
 
 
-def load_normalization_data(name):
+def load_normalization_data(name: str):
     train_mean_x = list()
     path_to_file = resource_filename(Requirement.parse("molSimplify"),
                                      "molSimplify/tf_nn/" + '/rescaling_data/' + name + '_mean_x.csv')
@@ -219,15 +219,11 @@ def load_normalization_data(name):
     else:
         print('---Mean and Variance information do not exist. Calculate from training data...---')
         train_mean_x, train_mean_y, train_var_x, train_var_y = get_data_mean_std(predictor=name)
-    train_mean_x = np.array(train_mean_x)
-    train_var_x = np.array(train_var_x)
-    train_mean_y = np.array(train_mean_y)
-    train_var_y = np.array(train_var_y)
 
-    return train_mean_x, train_mean_y, train_var_x, train_var_y
+    return np.array(train_mean_x), np.array(train_mean_y), np.array(train_var_x), np.array(train_var_y)
 
 
-def get_data_mean_std(predictor):
+def get_data_mean_std(predictor: str):
     if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
         key = 'geos/' + predictor + '_bl_x'
     elif predictor in ['homo', 'gap']:
@@ -272,7 +268,7 @@ def get_data_mean_std(predictor):
     return train_mean_x, train_mean_y, train_var_x, train_var_y
 
 
-def load_ANN_variables(predictor, suffix='vars'):
+def load_ANN_variables(predictor: str, suffix: str = 'vars') -> List[str]:
     key = get_key(predictor, suffix)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.csv')
     names = []
@@ -282,7 +278,7 @@ def load_ANN_variables(predictor, suffix='vars'):
     return names
 
 
-def load_training_data(predictor):
+def load_training_data(predictor: str) -> List[List[str]]:
     if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
         key = 'geos/' + predictor + '_bl_x'
     elif predictor in ['homo', 'gap']:
@@ -350,7 +346,7 @@ def load_test_data(predictor):
     return mat
 
 
-def load_training_labels(predictor):
+def load_training_labels(predictor: str) -> List[List[str]]:
     if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
         key = 'geos/' + predictor + '_bl_y'
     elif predictor in ['homo', 'gap']:
@@ -373,7 +369,7 @@ def load_training_labels(predictor):
     return mat
 
 
-def load_test_labels(predictor):
+def load_test_labels(predictor: str) -> List[List[str]]:
     if predictor in ['ls_ii', 'hs_ii', 'ls_iii', 'hs_iii']:
         key = 'geos/' + predictor + '_bl_y'
     elif predictor in ['homo', 'gap']:
@@ -396,7 +392,7 @@ def load_test_labels(predictor):
     return mat
 
 
-def load_train_info(predictor, suffix='info'):
+def load_train_info(predictor: str, suffix: str = 'info') -> dict:
     key = get_key(predictor, suffix)
     path_to_file = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key + '.json')
     with open(path_to_file, 'r') as json_file:
@@ -404,7 +400,7 @@ def load_train_info(predictor, suffix='info'):
     return loaded_info_dict
 
 
-def load_keras_ann(predictor, suffix='model'):
+def load_keras_ann(predictor: str, suffix: str = 'model'):
     ## this function loads the ANN for property
     ## "predcitor"
     # disable TF output text to reduce console spam
@@ -460,7 +456,7 @@ def load_keras_ann(predictor, suffix='model'):
     return (loaded_model)
 
 
-def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
+def tf_ANN_excitation_prepare(predictor: str, descriptors: List[float], descriptor_names: List[str]) -> np.ndarray:
     ## this function reforms the provided list of descriptors and their
     ## names to match the expectations of the target ANN model.
     ## it does NOT perfrom standardization
@@ -479,12 +475,15 @@ def tf_ANN_excitation_prepare(predictor, descriptors, descriptor_names):
             print(('looking for  ' + str(var_name)))
             print(('Error! variable  ' + str(var_name) + ' not found!'))
             break
-    excitation = np.array(excitation)
-    excitation = np.reshape(excitation, (1, len(target_names)))
-    return excitation
+    output = np.array(excitation)
+    output = np.reshape(output, (1, len(target_names)))
+    return output
 
 
-def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
+def ANN_supervisor(predictor: str,
+                   descriptors: List[float],
+                   descriptor_names: List[str],
+                   debug: bool = False) -> Tuple[np.ndarray, np.ndarray]:
     if debug:
         print(('ANN activated for ' + str(predictor)))
 
@@ -519,11 +518,14 @@ def ANN_supervisor(predictor, descriptors, descriptor_names, debug=False):
             print('calling ANN model...')
     else:
         latent_space_vector = find_clf_lse(predictor, excitation, loaded_model=loaded_model, ensemble=False,
-                                           modelname=False, debug=debug)
+                                           modelname=None, debug=debug)
     return result, latent_space_vector
 
 
-def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False):
+def find_true_min_eu_dist(predictor: str,
+                          descriptors: List[float],
+                          descriptor_names: List[str],
+                          debug: bool = False) -> float:
     # returns scaled euclidean distance to nearest trainning
     # vector in desciptor space
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
@@ -536,7 +538,7 @@ def find_true_min_eu_dist(predictor, descriptors, descriptor_names, debug=False)
     mat = load_training_data(predictor)
     train_mat = np.array(mat, dtype='float64')
     ## loop over rows
-    min_dist = 100000000
+    min_dist = 100000000.
     min_ind = 0
     for i, rows in enumerate(train_mat):
         scaled_row = np.squeeze(
@@ -679,8 +681,13 @@ def find_ANN_latent_dist(predictor, latent_space_vector, debug=False):
     return (min_dist)
 
 
-def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=False,  debug=False):
-    if modelname is False:
+def find_clf_lse(predictor: str,
+                 excitation,
+                 loaded_model,
+                 ensemble: bool = False,
+                 modelname: str = None,
+                 debug: bool = False) -> np.ndarray:
+    if modelname is None:
         modelname = "spectro"
         if predictor == "geo_static_clf":
             avrg_latent_dist = 33.21736244173539
@@ -688,13 +695,12 @@ def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=
             avrg_latent_dist = 38.276809428032685
         else:
             print("Unknown model type")
-            return -1
+            return np.zeros_like(excitation)
     key = get_key(predictor, suffix='')
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     train_mean_x, train_mean_y, train_var_x, train_var_y = load_normalization_data(predictor)
-    fmat_train = load_training_data(predictor)
     labels_train = np.array(load_training_labels(predictor), dtype='int')
-    fmat_train = np.array(fmat_train, dtype='float64')
+    fmat_train = np.array(load_training_data(predictor), dtype='float64')
     fmat_train = data_normalize(fmat_train, train_mean_x, train_var_x,  debug=debug)
     fmat_train = np.array(fmat_train)
     if not ensemble:
@@ -714,7 +720,7 @@ def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=
             print(base_path)
             print(model_list)
             print(("Error: LSE cannot be calculated with modelname %s--The number of models is wrong." % modelname))
-            return -1
+            return np.zeros_like(excitation)
         fmat_train = np.array_split(fmat_train, 10, axis=0)
         labels_train = np.array_split(labels_train, 10, axis=0)
         entropies_list = []
@@ -737,7 +743,7 @@ def find_clf_lse(predictor, excitation, loaded_model, ensemble=False, modelname=
     return lse
 
 
-def save_model(model, predictor, num=None, suffix=False):
+def save_model(model: tf.keras.Model, predictor: str, num: int = None, suffix: str = None):
     key = get_key(predictor, suffix)
     base_path = resource_filename(Requirement.parse("molSimplify"), "molSimplify/tf_nn/" + key)
     base_path = base_path + 'ensemble_models'
@@ -756,7 +762,7 @@ def save_model(model, predictor, num=None, suffix=False):
     print(("Saved model !%s! to disk" % name.split('/')[-1]))
 
 
-def initialize_model_weights(model):
+def initialize_model_weights(model: tf.keras.Model) -> tf.keras.Model:
     session = K.get_session()
     for layer in model.layers:
         for v in layer.__dict__:
