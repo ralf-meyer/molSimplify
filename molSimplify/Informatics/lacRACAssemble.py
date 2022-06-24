@@ -53,6 +53,14 @@ def get_descriptor_vector(this_complex, custom_ligand_dict=False,
             index of the metal atom to generate property, by default False
         smiles_charge : bool, optional
             use obmol conversion through smiles to assign ligand_misc_charges, by default False
+        use_dist: bool, optional
+            Whether or not CD-RACs used.
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
+        alleq: bool, optional
+            Whether or not all ligands are equatorial.
+        depth: int, optional
+            The depth of the RACs (how many bonds out the RACs go).
 
     Returns
     -------
@@ -350,6 +358,8 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, use_dist=False, size_norma
             Flag is octahedral complex, by default True
         use_dist : bool, optional
             Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -457,6 +467,10 @@ def deltametric(mol, prop_vec, orig, d, oct=True, use_dist=False, size_normalize
             number of hops to travel
         oct : bool, optional
             Flag is octahedral complex, by default True
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -693,6 +707,8 @@ def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False,
             Use ox modifier, by default False
         use_dist : bool, optional
             Weigh autocorrelation by distance of atoms from each other, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -722,6 +738,8 @@ def full_autocorrelation_derivative(mol, prop, d, oct=True, modifier=False):
             depth of scope to evalue
         oct : bool, optional
             Is octahedral flag, by default True
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False            
         modifier : bool, optional
             Use ox modifier, by default False
 
@@ -763,6 +781,8 @@ def generate_full_complex_autocorrelations(mol, loud,
             Use ox_modifier on metal charge, by default False
         use_dist : bool, optional
             Weigh autocorrelations by interatomic distances, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.        
         NumB : bool, optional
             use number of bonds as RAC, by default False
         Gval : bool, optional
@@ -882,6 +902,10 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True, use_dist=False, s
             atoms from which the autocorrelation vector should be centered
         oct : bool, optional
             use octahedral flag, by default True
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -955,6 +979,8 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
             use ox_modifier, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.            
 
     Returns
     -------
@@ -1030,6 +1056,10 @@ def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False, use_d
             atoms from which the autocorrelation vector should be centered
         oct : bool, optional
             use octahedral flag, by default True
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -1139,12 +1169,16 @@ def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
             depth of autocorrelation
         oct : bool, optional
             use octahedral geometry evaluations, by default True
+        metal_ind : bool, optional
+            index of metal atom to consider, by default False
         func : function, optional
             which function to evaluate mc-racs by, by default deltametric
         modifier : bool, optional
             use ox_modifier, by default False
-        metal_ind : bool, optional
-            index of metal atom to consider, by default False
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -1288,6 +1322,10 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
             Use number of bonds as descriptor property, by default False
         Gval : bool, optional
             Use G value as descriptor property, by default False
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -1524,6 +1562,10 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
             Use number of bonds as descriptor property, by default False
         Gval : bool, optional
             Use G value as descriptor property, by default False
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -1709,6 +1751,10 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
             Use G value as descriptor property, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------
@@ -1832,6 +1878,10 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
             Use G value as descriptor property, by default False
         metal_ind : bool, optional
             index of the metal atom to generate property, by default False
+        use_dist : bool, optional
+            Weigh autocorrelation by physical distance of atom from original, by default False
+        size_normalize: bool, optional
+            Whether or not to normalize by the number of atoms.
 
     Returns
     -------

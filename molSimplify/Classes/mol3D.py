@@ -2551,6 +2551,7 @@ class mol3D:
         -------
             filename : string
                 String of path to XYZ file. Path may be local or global.
+            fictitious_element: TODO
             read_final_optim_step : boolean
                 if there are multiple geometries in the xyz file
                 (after an optimization run) use only the last one
@@ -4469,7 +4470,8 @@ class mol3D:
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
                 Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
-            dict_check_loose: TODO
+            dict_check_loose: dict, optional
+                Dictionary of geo check metrics, if a dictionary other than the default one from globalvars is desired.
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
             debug : bool, optional
@@ -4578,7 +4580,8 @@ class mol3D:
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
                 Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
-            dict_check_loose: TODO
+            dict_check_loose: dict, optional
+                Dictionary of geo check metrics, if a dictionary other than the default one from globalvars is desired.
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
             debug : bool, optional
@@ -5299,11 +5302,23 @@ class mol3D:
                 Force the generation of features.
             eq_sym: bool, optional
                 Force equatorial plane to have same chemical symbols if possible.
-            TODO missing many parameters
+            use_dist: bool, optional
+                Whether or not CD-RACs used.
+            NumB: bool, optional
+                Whether or not the number of bond RAC features are generated.
+            Gval: bool, optional
+                Whether or not the group number RAC features are generated.
+            size_normalize: bool, optional
+                Whether or not to normalize by the number of atoms.
+            alleq: bool, optional
+                Whether or not all ligands are equatorial.
             strict_cutoff: bool, optional
                 strict bonding cutoff for fullerene and SACs
             catom_list: list, optional
                 List of indices of bonded atoms.
+            MRdiag_dict: TODO
+            depth: int, optional
+                The depth of the RACs (how many bonds out the RACs go).
 
         Returns
         -------
