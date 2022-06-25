@@ -149,6 +149,7 @@ def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
     """
     # initialize ANN
     globs = globalvars()
+    catalysis_flag = False
     if args.skipANN:
         print('Skipping ANN')
         ANN_flag = False
@@ -156,7 +157,6 @@ def init_ANN(args, ligands: List[str], occs: List[int], dents: List[int],
         ANN_bondl = len([item for items in batslist for item in items])*[False]
         ANN_attributes: Dict[str, Any] = {}
         ANN_reason = 'ANN skipped by user'
-        catalysis_flag = False
         return ANN_flag, ANN_bondl, ANN_reason, ANN_attributes, catalysis_flag
 
     if args.oldANN:
