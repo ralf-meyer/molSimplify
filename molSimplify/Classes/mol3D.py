@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from math import sqrt
 import numpy as np
 import openbabel
+from typing import List
 from scipy.spatial import ConvexHull
 
 from molSimplify.Classes.atom3D import atom3D
@@ -213,7 +214,7 @@ class mol3D:
             xyz = submol_to_move.getAtomCoords(i)
             self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
 
-    def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
+    def addAtom(self, atom: atom3D, index: int = None, auto_populate_BO_dict: bool = True):
         """Adds an atom to the atoms attribute, which contains a list of
         atom3D class instances.
 
@@ -1273,7 +1274,7 @@ class mol3D:
                     close_metal = i
         return close_metal
 
-    def findMetal(self, transition_metals_only=True):
+    def findMetal(self, transition_metals_only: bool = True) -> List[int]:
         """Find metal(s) in a mol3D class.
 
         Parameters
@@ -1293,9 +1294,9 @@ class mol3D:
                 if atom.ismetal(transition_metals_only=transition_metals_only):
                     metal_list.append(i)
             self.metals = metal_list
-        return (self.metals)
+        return self.metals
 
-    def findAtomsbySymbol(self, sym):
+    def findAtomsbySymbol(self, sym: str) -> List[int]:
         """Find all elements with a given symbol in a mol3D class.
 
         Parameters
