@@ -1,9 +1,7 @@
-import pytest
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
 
 
-@pytest.mark.skip
 def test_adding_and_deleting_atoms():
     mol = mol3D()
     mol.addAtom(atom3D(Sym='Fe'))
