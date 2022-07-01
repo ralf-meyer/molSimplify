@@ -16,6 +16,7 @@ import numpy as np
 import openbabel
 from typing import List
 from scipy.spatial import ConvexHull
+from molSimplify.utils.decorators import deprecated
 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
@@ -312,6 +313,8 @@ class mol3D:
         if return_graph:
             return graph
 
+    @deprecated('Duplicate function will be removed in a future release. '
+                'Use findAtomsbySymbol instead.')
     def find_atom(self, sym="X"):
         """
         Find atoms with a specific symbol.
@@ -332,7 +335,7 @@ class mol3D:
                 inds.append(ii)
         return inds
 
-    def add_bond(self, idx1, idx2, bond_type):
+    def add_bond(self, idx1: int, idx2: int, bond_type: int) -> dict:
         """
         Add a bond of order bond_type between the atom at idx1 and the atom at idx2.
         Adjusts bo_dict and graph only, not BO_mat nor OBMol.
@@ -1164,7 +1167,7 @@ class mol3D:
                     "Si": 4, "P": 3, "S": 2, "Cl": 1,
                     "Ge": 4, "As": 3, "Se": 2, "Br": 1,
                     "Sn": 4, "Sb": 3, "Te": 2, "I": 1}
-        self.deleteatoms(self.find_atom("X"))
+        self.deleteatoms(self.findAtomsbySymbol("X"))
         self.convert2OBMol2()
         ringlist = self.OBMol.GetSSSR()
         ringinds = []
@@ -1257,15 +1260,15 @@ class mol3D:
 
         """
 
-        close_metal = False
+        close_metal = None
         mindist = 1000
-        for i in enumerate(self.findMetal()):
+        for i in self.findMetal():
             atom = self.getAtom(i)
             if distance(atom.coords(), atom0.coords()) < mindist:
                 mindist = distance(atom.coords(), atom0.coords())
                 close_metal = i
         # if no metal, find heaviest atom
-        if not close_metal:
+        if close_metal is None:
             maxaw = 0
             for i, atom in enumerate(self.atoms):
                 if atom.atno > maxaw:
@@ -2668,7 +2671,7 @@ class mol3D:
                 graph = np.zeros((self.natoms, self.natoms))
                 bo_graph = np.zeros((self.natoms, self.natoms))
                 bo_dict = dict()
-        X_inds = self.find_atom(trunc_sym)
+        X_inds = self.findAtomsbySymbol(trunc_sym)
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
             self.bo_graph = bo_graph
@@ -5324,6 +5327,7 @@ class mol3D:
             bls[m_id] = {"M-L bond lengths": ml_bls, "relative bond lengths": rel_bls}
         return bls
 
+    @deprecated('Using this function might lead to inconsistent behavior.')
     def setAtoms(self, atoms):
         """ Set atoms of a mol3D class to atoms.
 
