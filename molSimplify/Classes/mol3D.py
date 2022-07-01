@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from math import sqrt
 import numpy as np
 import openbabel
+from typing import List
 from scipy.spatial import ConvexHull
 
 from molSimplify.Classes.atom3D import atom3D
@@ -82,7 +83,7 @@ class mol3D:
         # Holder for molecular group
         self.grps = False
         # Holder for metals
-        self.metals = False
+        self.metals = None
         # Conformation (empty string if irrelevant)
         self.loc = loc
         # Temporary list for storing conformations
@@ -213,7 +214,7 @@ class mol3D:
             xyz = submol_to_move.getAtomCoords(i)
             self.atoms[atidx].__init__(Sym=asym, xyz=xyz)
 
-    def addAtom(self, atom, index=None, auto_populate_BO_dict=True):
+    def addAtom(self, atom: atom3D, index: int = None, auto_populate_BO_dict: bool = True):
         """Adds an atom to the atoms attribute, which contains a list of
         atom3D class instances.
 
@@ -279,7 +280,7 @@ class mol3D:
         self.natoms += 1
         self.mass += atom.mass
         self.size = self.molsize()
-        self.metal = False
+        self.metals = None
 
     def assign_graph_from_net(self, path_to_net, return_graph=False):
         """
@@ -610,7 +611,7 @@ class mol3D:
             self.addAtom(atom3D(sym, pos))
         # self.atoms = atom3D_list
         # reset metal ID
-        self.metal = False
+        self.metals = None
 
     def convert2OBMol(self, force_clean=False, ignoreX=False):
         """Converts mol3D class instance to OBMol class instance.
@@ -785,7 +786,7 @@ class mol3D:
                         cmol.OBMol.AddBond(i + 1, j + 1, int(jointBOMat[i][j]))
         # reset graph
         cmol.graph = []
-        self.metal = False
+        self.metals = None
         return cmol
 
     def coords(self):
@@ -957,7 +958,7 @@ class mol3D:
         if len(self.graph):
             self.graph = np.delete(
                 np.delete(self.graph, atomIdx, 0), atomIdx, 1)
-        self.metal = False
+        self.metals = None
         del (self.atoms[atomIdx])
 
     def deleteatoms(self, Alist):
@@ -995,7 +996,7 @@ class mol3D:
             del (self.atoms[h])
         if len(self.graph):
             self.graph = np.delete(np.delete(self.graph, Alist, 0), Alist, 1)
-        self.metal = False
+        self.metals = None
 
     def freezeatom(self, atomIdx):
         """Set the freeze attribute to be true for a given atom3D class.
@@ -1259,12 +1260,10 @@ class mol3D:
                 index of the nearest metal, or heaviest atom if no metal found.
 
         """
-        if not self.metals:
-            self.findMetal()
 
         close_metal = False
         mindist = 1000
-        for i in enumerate(self.metals):
+        for i in enumerate(self.findMetal()):
             atom = self.getAtom(i)
             if distance(atom.coords(), atom0.coords()) < mindist:
                 mindist = distance(atom.coords(), atom0.coords())
@@ -1277,7 +1276,7 @@ class mol3D:
                     close_metal = i
         return close_metal
 
-    def findMetal(self, transition_metals_only=True):
+    def findMetal(self, transition_metals_only: bool = True) -> List[int]:
         """Find metal(s) in a mol3D class.
 
         Parameters
@@ -1291,15 +1290,15 @@ class mol3D:
                 List of indices of metal atoms in mol3D.
 
         """
-        if not self.metals:
+        if self.metals is None:
             metal_list = []
             for i, atom in enumerate(self.atoms):
                 if atom.ismetal(transition_metals_only=transition_metals_only):
                     metal_list.append(i)
             self.metals = metal_list
-        return (self.metals)
+        return self.metals
 
-    def findAtomsbySymbol(self, sym):
+    def findAtomsbySymbol(self, sym: str) -> List[int]:
         """Find all elements with a given symbol in a mol3D class.
 
         Parameters

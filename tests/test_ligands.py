@@ -1,4 +1,5 @@
 import pytest
+from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Scripts.io import readdict, lig_load
 from pkg_resources import resource_filename, Requirement
 from os import listdir
@@ -16,7 +17,8 @@ def test_ligands_dict(lig_name):
     assert len(lig_dict[lig_name]) == 6
     lig, emsg = lig_load(lig_name)
     # Assert that the ligand could be loaded
-    assert emsg is False
+    assert type(lig) == mol3D
+    assert emsg == ''
     # Assert that the charge of the loaded ligand equals the
     # charge noted in ligands.dict
     charge = int(lig_dict[lig_name][-1][0])

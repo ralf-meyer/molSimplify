@@ -34,7 +34,7 @@ def simple_network_builder(layers: List[int], partial_path: str):
             self.b2 = np.array(csv_loader(partial_path + '_b2.csv'))
             self.b3 = np.array(csv_loader(partial_path + '_b3.csv'))
 
-        def activate(self, input):
+        def activate(self, input: np.ndarray) -> np.ndarray:
             layer1 = np.tanh(self.w1 @ input + self.b1)
             layer2 = np.tanh(self.w2 @ layer1 + self.b2)
             output = self.w3 @ layer2 + self.b3

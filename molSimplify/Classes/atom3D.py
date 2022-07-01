@@ -143,7 +143,7 @@ class atom3D:
         dz = xyz[2]-point[2]
         return [dx, dy, dz]
 
-    def ismetal(self, transition_metals_only=True):
+    def ismetal(self, transition_metals_only: bool = True) -> bool:
         """ Identify whether an atom is a metal.
 
         Parameters

@@ -5,6 +5,7 @@
 #
 #  Dpt of Chemical Engineering, MIT
 
+from typing import List, Tuple, Union
 from molSimplify.Scripts.io import lig_load
 from molSimplify.Informatics.decoration_manager import (decorate_ligand)
 from molSimplify.Informatics.graph_analyze import (get_lig_EN,
@@ -16,10 +17,8 @@ from molSimplify.python_nn.ANN import (find_eu_dist,
                                        simple_splitting_ann)
 
 
-def get_bond_order(OBMol, connection_atoms, mol):
-    # informs the ANN
-    # of the highest bond
-    ## order in ligand
+def get_bond_order(OBMol, connection_atoms, mol) -> int:
+    # informs the ANN of the highest bond order in ligand
     # INPUT:
     #   - OBMol:  OBMol class ligand
     # OUTPUT:
@@ -136,7 +135,7 @@ def check_ligands(ligs, batlist, dents, tcats):
     return valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list
 
 
-def check_metal(metal, oxidation_state):
+def check_metal(metal: str, oxidation_state: str) -> Tuple[bool, str]:
     supported_metal_dict = {"fe": [2, 3], "mn": [2, 3], "cr": [2, 3],
                             "co": [2, 3], "ni": [2]}
     romans = {'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5', 'VI': '6'}
@@ -150,7 +149,7 @@ def check_metal(metal, oxidation_state):
     return outcome, oxidation_state
 
 
-def get_con_at_type(mol, connection_atoms):
+def get_con_at_type(mol, connection_atoms: List[Union[int, str]]) -> Tuple[bool, str]:
     this_type = ""
     been_set = False
     valid = True
@@ -174,16 +173,17 @@ def get_con_at_type(mol, connection_atoms):
     return valid, this_type
 
 
-def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
+def ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
+                batslist: List[List[int]], tcats: List[str],
+                licores: dict) -> Tuple[bool, str, dict]:
     # prepares and runs ANN calculation
 
     ######################
-    ANN_reason = False  # holder for reason to reject ANN call
+    ANN_reason = ''  # holder for reason to reject ANN call
     ANN_attributes = dict()
     ######################
 
     nn_excitation = []
-    r = 0
     emsg = list()
     valid = True
     metal = args.core
@@ -194,8 +194,8 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     newcats = []
     newdents = []
     newdecs = [False]*6
-    newdec_inds = [[]]*6
-    ANN_trust = False
+    newdec_inds = [[0]]*6
+    ANN_trust = ''
     count = -1
     for i, lig in enumerate(ligs):
         this_occ = occs[i]
@@ -241,7 +241,8 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
     if emsg:
         print((str(" ".join(["ANN messages:"] + [str(i) for i in emsg]))))
     if valid:
-        valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat, eq_tcat, axial_ind_list, equatorial_ind_list = check_ligands(
+        (valid, axial_ligs, equatorial_ligs, ax_dent, eq_dent, ax_tcat,
+         eq_tcat, axial_ind_list, equatorial_ind_list) = check_ligands(
             ligs, batslist, dents, tcats)
         if args.debug:
             print("\n")
@@ -268,7 +269,6 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         # check decoration index
         if newdecs:
             if newdecs[axial_ind_list[0]]:
-                # print('decorating ' + str(axial_ligs[0]) + ' with ' +str(newdecs[axial_ind_list[0]]) + ' at sites '  + str(newdec_inds[axial_ind_list[0]]))
                 ax_lig3D = decorate_ligand(
                     args, axial_ligs[0], newdecs[axial_ind_list[0]], newdec_inds[axial_ind_list[0]])
 
@@ -277,7 +277,6 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
         eq_lig3D, r_emsg = lig_load(equatorial_ligs[0], licores)  # load ligand
         if newdecs:
             if newdecs[equatorial_ind_list[0]]:
-                # print('decorating ' + str(equatorial_ligs[0]) + ' with ' +str(newdecs[equatorial_ind_list[0]]) + ' at sites '  + str(newdec_inds[equatorial_ind_list[0]]))
                 eq_lig3D = decorate_ligand(
                     args, equatorial_ligs[0], newdecs[equatorial_ind_list[0]], newdec_inds[equatorial_ind_list[0]])
         if r_emsg:
@@ -400,12 +399,11 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             print(('You have selected a low-spin state, s = ' + str(spin)))
         # test Euclidean norm to training data distance
         train_dist, best_row = find_eu_dist(nn_excitation)
-        ANN_trust = max(0.01, 1.0-train_dist)
 
         ANN_attributes.update({'ANN_dist_to_train': train_dist})
         ANN_attributes.update({'ANN_closest_train': best_row})
         print(('distance to training data is ' +
-               "{0:.2f}".format(train_dist) + ' ANN trust: ' + "{0:.2f}".format(ANN_trust)))
+               "{0:.2f}".format(train_dist) + ' ANN trust: ' + "{0:.2f}".format(max(0.01, 1.0-train_dist))))
         print((' with closest training row ' +
                best_row[:-2] + ' at  ' + str(best_row[-2:]) + '% HFX'))
         ANN_trust = 'not set'
@@ -423,7 +421,6 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
             ANN_trust = 'very low'
         ANN_attributes.update({'ANN_trust': ANN_trust})
         # engage ANN
-        delta = 0
 
         delta, scaled_excitation = get_splitting(nn_excitation)
         # report to stdout
@@ -441,7 +438,7 @@ def ANN_preproc(args, ligs, occs, dents, batslist, tcats, licores):
                     'warning, ANN predicts a near degenerate ground state for this complex')
         print(("ANN predicts a spin splitting (HS - LS) of " + "{0:.2f}".format(
             float(delta[0])) + ' kcal/mol at '+"{0:.0f}".format(100*alpha) + '% HFX'))
-        ANN_attributes.update({'pred_split_ HS_LS': delta[0]})
+        ANN_attributes.update({'pred_split_HS_LS': delta[0]})
         # reparse to save attributes
         ANN_attributes.update({'This spin': spin})
         if delta[0] < 0 and (abs(delta[0]) > 5):
