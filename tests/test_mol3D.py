@@ -57,7 +57,10 @@ def test_finding_and_counting_methods():
     assert mol.findMetal() == [0]
     # Test make_formula (sorted by atomic number)
     assert mol.make_formula(latex=False) == 'Fe1O6C6'
-    assert mol.make_formula(latex=True) == 'Fe_1O_6C_6'
+    assert (mol.make_formula(latex=True)
+            == r'\textrm{Fe}_{1}\textrm{O}_{6}\textrm{C}_{6}')
+    # Test typevect
+    np.testing.assert_equal(mol.typevect(), np.array(['Fe'] + ['C', 'O']*6))
 
 
 def test_add_bond():
