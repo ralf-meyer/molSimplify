@@ -40,6 +40,9 @@ def test_finding_and_counting_methods():
     # optional argument allows to return just the indices:
     assert (mol.getAtomwithSyms(syms=['Fe', 'O'], return_index=True)
             == ref_indices)
+    # Test mols_symbols
+    mol.mols_symbols()
+    assert mol.symbols_dict == {'Fe': 1, 'C': 6, 'O': 6}
     # Test count_nonH_atoms
     assert mol.count_nonH_atoms() == 13
     # Test count_atoms (exclude O)
@@ -52,6 +55,9 @@ def test_finding_and_counting_methods():
     assert mol.findcloseMetal(mol.getAtom(-1)) == 0
     # Test findMetal
     assert mol.findMetal() == [0]
+    # Test make_formula (sorted by atomic number)
+    assert mol.make_formula(latex=False) == 'Fe1O6C6'
+    assert mol.make_formula(latex=True) == 'Fe_1O_6C_6'
 
 
 def test_add_bond():
