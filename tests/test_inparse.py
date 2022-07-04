@@ -1,6 +1,9 @@
 import os
-from molSimplify.Scripts.inparse import parseinputfile
-from argparse import Namespace
+from molSimplify.Scripts.inparse import (parseinputfile, checkinput,
+                                         parseall,
+                                         parseinputs_basic,
+                                         parseinputs_advanced)
+from argparse import ArgumentParser, Namespace
 from pkg_resources import resource_filename, Requirement
 
 
@@ -15,6 +18,45 @@ def test_parseinputfile_empty():
 
     # Assert defaults are set
     assert args.__dict__ == defaults
+
+
+def test_parseinputs_basic(monkeypatch):
+    # Monkeypatch is used to change sys.argv parsed by the Argumentparser.
+    monkeypatch.setattr('sys.argv', ['molsimplify'])
+    parser = ArgumentParser()
+    args = parseinputs_basic(parser)
+    defaults = dict(coord=False, core=None, ff='uff', ff_final_opt=None,
+                    ffoption='BA', geo=False, geometry=False, keepHs=None,
+                    lig=None, ligloc=False, ligocc=False, multiplicity=None,
+                    oxstate=None, rundir=False, skipANN=None, smicat=False,
+                    spin=None, spinmultiplicity=None)
+    assert args.__dict__ == defaults
+
+
+def test_parseinputs_advanced(monkeypatch):
+    # Monkeypatch is used to change sys.argv parsed by the Argumentparser.
+    monkeypatch.setattr('sys.argv', ['molsimplify'])
+    parser = ArgumentParser()
+    args = parseinputs_advanced(parser)
+    defaults = dict(MLbonds=False, antigeoisomer=None, calccharge=True,
+                    charge=None, decoration=False, decoration_index=False,
+                    distort='0', genall=False, isomers=None, langles=False,
+                    ligalign=False, nconfs='1', oldANN=None, pangles=False,
+                    reportonly=None, scoreconfs=False, stereos=None)
+    assert args.__dict__ == defaults
+
+
+def test_checkinput(monkeypatch):
+    # Monkeypatch is used to change sys.argv parsed by the Argumentparser.
+    monkeypatch.setattr('sys.argv', ['molsimplify'])
+    parser = ArgumentParser()
+    # Runs all parsers and populates the args Namespace
+    args = parseall(parser)
+    checkinput(args, calctype='base')
+    # Test a few defaults:
+    assert args.core == ['Fe']
+    assert args.oxstate == '2'
+    assert args.spin == '5'
 
 
 def test_parseinputfile_inputfile_kwarg():
