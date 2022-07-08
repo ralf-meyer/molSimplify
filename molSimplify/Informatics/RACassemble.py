@@ -36,7 +36,7 @@ import numpy as np
 #  @param custom_ligand_dict dict defining ligands (see below)
 #  @return this_complex  mol3D with correct graph
 def assemble_connectivity_from_parts(metal_mol: mol3D, custom_ligand_dict):
-    # # custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
+    # # custom_ligand_dict.keys() must be eq_ligand_list, ax_ligand_list
     # #                                    ax_con_int_list ,eq_con_int_list
     # # with types: eq/ax_ligand_list list of mol3D
     # #             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
