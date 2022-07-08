@@ -314,43 +314,40 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
 #  @param suffix RAC suffix
 #  @return descriptor_names updated names
 #  @return descriptors updated RACs
-def create_OHE(descriptor_names,descriptors, metal,oxidation_state):
-    # fucntion to append OHE encoding of oxidation state
+def create_OHE(metal: str,
+               oxidation_state: Union[int, str]
+               ) -> Tuple[List[str], List[int]]:
+    # function to append OHE encoding of oxidation state
     # and d-electron countst
     OHE_names = ['ox2', 'ox3', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8']
     OHE_values = [0] * len(OHE_names)
-    #print(OHE_values)
     if int(oxidation_state) == 2:
-        OHE_values[0]+=1
-    #    print(OHE_values)
+        OHE_values[0] += 1
     elif int(oxidation_state) == 3:
-        OHE_values[1]+=1
+        OHE_values[1] += 1
     if metal == "Cr" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d4")]+=1
+        OHE_values[OHE_names.index("d4")] += 1
     elif metal == "Cr" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d3")]+=1
+        OHE_values[OHE_names.index("d3")] += 1
     elif metal == "Mn" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d5")]+=1
+        OHE_values[OHE_names.index("d5")] += 1
     elif metal == "Mn" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d4")]+=1
+        OHE_values[OHE_names.index("d4")] += 1
     elif metal == "Fe" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d6")]+=1
+        OHE_values[OHE_names.index("d6")] += 1
     elif metal == "Fe" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d5")]+=1
+        OHE_values[OHE_names.index("d5")] += 1
     elif metal == "Co" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d7")]+=1
+        OHE_values[OHE_names.index("d7")] += 1
     elif metal == "Co" and int(oxidation_state) == 3:
-        OHE_values[OHE_names.index("d6")]+=1
+        OHE_values[OHE_names.index("d6")] += 1
     elif metal == "Ni" and int(oxidation_state) == 2:
-        OHE_values[OHE_names.index("d8")]+=1
+        OHE_values[OHE_names.index("d8")] += 1
     else:
-        print('Error: unknown metal and oxidation state '+ str(metal) +'/' +str(oxidation_state))
-        return False
+        raise NotImplementedError('Error: unknown metal and oxidation state '
+                                  + str(metal) + '/' + str(oxidation_state))
 
-    descriptor_names = descriptor_names + OHE_names
-    descriptors = descriptors +  OHE_values
-
-    return descriptor_names,descriptors
+    return OHE_names, OHE_values
 
 
 # # utility to build standardly formated RACS
