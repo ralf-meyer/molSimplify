@@ -775,7 +775,9 @@ def find_ligand_autocorrelations_oct(mol, prop, loud, depth, name=False,
     ##             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list,
+         eq_natoms_list, ax_con_int_list, eq_con_int_list,
+         ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
             mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
@@ -1161,13 +1163,17 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_na
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
-        ax_ligand_ac_full, eq_ligand_ac_full, ax_ligand_ac_con, eq_ligand_ac_con = find_ligand_autocorrelations_oct(mol,
-                                                                                                                    properties,
-                                                                                                                    loud=loud,
-                                                                                                                    depth=depth,
-                                                                                                                    name=name,
-                                                                                                                    oct=True,
-                                                                                                                    custom_ligand_dict=custom_ligand_dict)
+        (ax_ligand_ac_full,
+         eq_ligand_ac_full,
+         ax_ligand_ac_con,
+         eq_ligand_ac_con) = find_ligand_autocorrelations_oct(
+             mol,
+             properties,
+             loud=loud,
+             depth=depth,
+             name=name,
+             oct=True,
+             custom_ligand_dict=custom_ligand_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1177,12 +1183,17 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, name=False, flag_na
         result_ax_con.append(ax_ligand_ac_con)
         result_eq_con.append(eq_ligand_ac_con)
     if flag_name:
-        results_dictionary = {'colnames': colnames, 'result_ax_full_ac': result_ax_full,
+        results_dictionary = {'colnames': colnames,
+                              'result_ax_full_ac': result_ax_full,
                               'result_eq_full_ac': result_eq_full,
-                              'result_ax_con_ac': result_ax_con, 'result_eq_con_ac': result_eq_con}
+                              'result_ax_con_ac': result_ax_con,
+                              'result_eq_con_ac': result_eq_con}
     else:
-        results_dictionary = {'colnames': colnames, 'result_ax_full': result_ax_full, 'result_eq_full': result_eq_full,
-                              'result_ax_con': result_ax_con, 'result_eq_con': result_eq_con}
+        results_dictionary = {'colnames': colnames,
+                              'result_ax_full': result_ax_full,
+                              'result_eq_full': result_eq_full,
+                              'result_ax_con': result_ax_con,
+                              'result_eq_con': result_eq_con}
     return results_dictionary
 
 
