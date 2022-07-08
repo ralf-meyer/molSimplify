@@ -8,6 +8,7 @@ import numpy as np
 from itertools import combinations
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.globalvars import bondivdw, vdwrad
+from molSimplify.utils.decorators import deprecated
 
 
 # Ligand class for postprocessing DFT results by measuring ligand properties
@@ -309,6 +310,7 @@ def ligand_breakdown(mol, flag_loose=False, BondedOct=False, silent=True):
     return liglist, ligdents, ligcons
 
 
+@deprecated('Use ligand_assign_consistent instead.')
 def ligand_assign(mol, liglist, ligdents, ligcons, loud=False, name=False, eq_sym_match=False):
     """Assign axial and equatorial portions. Deprecated. Use ligand_assign_consistent. For octahedral geometries.
 
