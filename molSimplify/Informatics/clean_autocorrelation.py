@@ -102,9 +102,10 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
         autocorrelation_vector += autocorrelation(mol, w, atomIdx, d, oct=oct)
     return (autocorrelation_vector)
 
-def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Gval = False, polarizability=False):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+
+def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Gval=False, polarizability=False):
+    # # this function gets autocorrelations for a molecule starting
+    # # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
@@ -201,7 +202,7 @@ def deltametric_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
             # print('called in DAC')
             this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
             # print('--1--:', this_atoms_neighbors)
-            if this_atom == orig and (not catoms == None):
+            if this_atom == orig and (catoms is not None):
                 this_atoms_neighbors = catoms
             # print('--2--:', this_atoms_neighbors)
             for bound_atoms in this_atoms_neighbors:
@@ -294,7 +295,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][0]
-            prop_dict.update({keys: values}) 
+            prop_dict.update({keys: values})
         ####### 11/06/2019 -- Adjusted Gval RACs to not adjust on oxidation state. Confounded with O RACs. #####
         # # else:
         #     at_keys = globs.amass().keys()
@@ -749,7 +750,7 @@ def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True, NumB=F
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
         allowed_strings += ['group_number']
-        labels_strings += ['Gval'] 
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]

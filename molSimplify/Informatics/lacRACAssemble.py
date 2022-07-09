@@ -149,8 +149,8 @@ def get_descriptor_vector(this_complex, custom_ligand_dict=False,
                                                        results_dictionary['result_eq_con'],
                                                        'D_lc', 'eq')
 
-    ## metal ACs
-    #print('getting metal ACs')
+    # metal ACs
+    # print('getting metal ACs')
     results_dictionary = generate_metal_autocorrelations(this_complex, depth=depth,
                                                          loud=False, modifier=ox_modifier,
                                                          NumB=NumB, Gval=Gval, metal_ind=metal_ind,
@@ -242,56 +242,97 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
             ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
                 built_ligand_list = ligand_assign(
-                this_complex, liglist, ligdents, ligcons, loud)
-        custom_ligand_dict = {'ax_ligand_list':ax_ligand_list, 'eq_ligand_list':eq_ligand_list,
-                               'ax_con_int_list':ax_con_int_list, 'eq_con_int_list':eq_con_int_list}
-    ##  cannot do misc descriptors !
+                    this_complex, liglist, ligdents, ligcons, loud)
+        custom_ligand_dict = {'ax_ligand_list': ax_ligand_list,
+                              'eq_ligand_list': eq_ligand_list,
+                              'ax_con_int_list': ax_con_int_list,
+                              'eq_con_int_list': eq_con_int_list}
+    #  cannot do misc descriptors !
     descriptor_derivative_names = []
     descriptor_derivatives = None
-    ## full ACs
-    results_dictionary = generate_full_complex_autocorrelation_derivatives(this_complex,depth=depth,
-                                                                           loud=False,flag_name=False,
+    # full ACs
+    results_dictionary = generate_full_complex_autocorrelation_derivatives(this_complex, depth=depth,
+                                                                           loud=False, flag_name=False,
                                                                            modifier=ox_modifier)
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['results'],'f','all')
-    ## ligand ACs
-    #print('getting ligand AC derivatives')
-    results_dictionary = generate_all_ligand_autocorrelation_derivatives(this_complex,depth=depth,loud=False, custom_ligand_dict=custom_ligand_dict)
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['result_ax_full'],'f','ax')
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['result_eq_full'],'f','eq')
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'lc','ax')
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['result_eq_con'],'lc','eq')
-    results_dictionary = generate_all_ligand_deltametric_derivatives(this_complex,depth=depth,loud=False, custom_ligand_dict=custom_ligand_dict)
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['result_ax_con'],'D_lc','ax')
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['result_eq_con'],'D_lc','eq')
-    ## metal ACs
-    #print('getting metal AC derivatives')
-    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex,depth=depth,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['results'],'mc','all')
-    results_dictionary = generate_metal_deltametric_derivatives(this_complex,depth=depth,loud=False,modifier=ox_modifier, metal_ind=metal_ind)
-    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                        results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['results'],
+                                                                                        'f', 'all')
+    # ligand ACs
+    # print('getting ligand AC derivatives')
+    results_dictionary = generate_all_ligand_autocorrelation_derivatives(this_complex, depth=depth, loud=False,
+                                                                         custom_ligand_dict=custom_ligand_dict)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['result_ax_full'],
+                                                                                        'f', 'ax')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['result_eq_full'],
+                                                                                        'f', 'eq')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['result_ax_con'],
+                                                                                        'lc', 'ax')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['result_eq_con'],
+                                                                                        'lc', 'eq')
+    results_dictionary = generate_all_ligand_deltametric_derivatives(this_complex, depth=depth, loud=False,
+                                                                     custom_ligand_dict=custom_ligand_dict)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['result_ax_con'],
+                                                                                        'D_lc', 'ax')
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['result_eq_con'],
+                                                                                        'D_lc', 'eq')
+    # metal ACs
+    # print('getting metal AC derivatives')
+    results_dictionary = generate_metal_autocorrelation_derivatives(this_complex, depth=depth, loud=False,
+                                                                    modifier=ox_modifier, metal_ind=metal_ind)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['results'],
+                                                                                        'mc', 'all')
+    results_dictionary = generate_metal_deltametric_derivatives(this_complex, depth=depth, loud=False,
+                                                                modifier=ox_modifier, metal_ind=metal_ind)
+    descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                        descriptor_derivatives,
+                                                                                        results_dictionary['colnames'],
+                                                                                        results_dictionary['results'],
+                                                                                        'D_mc', 'all')
     # ## ox-metal ACs
     if ox_modifier:
-        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex,depth=depth,loud=False, metal_ind=metal_ind)
-        descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                            results_dictionary['colnames'],results_dictionary['results'],'mc','all')
+        results_dictionary = generate_metal_ox_autocorrelation_derivatives(ox_modifier, this_complex, depth=depth,
+                                                                           loud=False, metal_ind=metal_ind)
+        descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                            descriptor_derivatives,
+                                                                                            results_dictionary['colnames'],
+                                                                                            results_dictionary['results'],
+                                                                                            'mc', 'all')
 
-        results_dictionary =  generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex,depth=depth,loud=False, metal_ind=metal_ind)
-        descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives,
-                                                                                            results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
+        results_dictionary = generate_metal_ox_deltametric_derivatives(ox_modifier, this_complex, depth=depth,
+                                                                       loud=False, metal_ind=metal_ind)
+        descriptor_derivative_names, descriptor_derivatives = append_descriptor_derivatives(descriptor_derivative_names,
+                                                                                            descriptor_derivatives,
+                                                                                            results_dictionary['colnames'],
+                                                                                            results_dictionary['results'],
+                                                                                            'D_mc', 'all')
 
     return descriptor_derivative_names, descriptor_derivatives
 
 
-def append_descriptors(descriptor_names,descriptors,list_of_names,list_of_props,prefix,suffix):
+def append_descriptors(descriptor_names, descriptors, list_of_names, list_of_props, prefix, suffix):
     """Utility to build standardly formated RACS
 
     Parameters
@@ -324,10 +365,10 @@ def append_descriptors(descriptor_names,descriptors,list_of_names,list_of_props,
 
     for names in list_of_names:
         if not isinstance(names, basestring):
-            names = ["-".join([prefix,str(i),suffix]) for i in names]
+            names = ["-".join([prefix, str(i), suffix]) for i in names]
             descriptor_names += names
         else:
-            names = "-".join([prefix,str(names),suffix])
+            names = "-".join([prefix, str(names), suffix])
             descriptor_names.append(names)
     for values in list_of_props:
         if not isinstance(names, basestring):
@@ -337,7 +378,8 @@ def append_descriptors(descriptor_names,descriptors,list_of_names,list_of_props,
     return descriptor_names, descriptors
 
 
-def append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivatives, mat_of_names,dmat,prefix,suffix):
+def append_descriptor_derivatives(descriptor_derivative_names, descriptor_derivatives,
+                                  mat_of_names, dmat, prefix, suffix):
     """Utility to build standardly formated RACS derivatives
 
     Parameters
@@ -369,12 +411,12 @@ def append_descriptor_derivatives(descriptor_derivative_names,descriptor_derivat
         basestring = str
 
     for names in mat_of_names:
-        jnames = ["-".join([prefix,str(i),suffix]) for i in names]
+        jnames = ["-".join([prefix, str(i), suffix]) for i in names]
         descriptor_derivative_names.append(jnames)
     if descriptor_derivatives is None:
         descriptor_derivatives = dmat
     else:
-        descriptor_derivatives =  np.row_stack([descriptor_derivatives,dmat])
+        descriptor_derivatives = np.row_stack([descriptor_derivatives, dmat])
     return descriptor_derivative_names, descriptor_derivatives
 
 
@@ -422,7 +464,7 @@ def autocorrelation(mol, prop_vec, orig, d, oct=True, use_dist=False, size_norma
             if not use_dist:
                 result_vector[hopped] += prop_vec[orig] * prop_vec[inds]
             else:
-                this_dist = mol.getDistToMetal(orig,inds)
+                this_dist = mol.getDistToMetal(orig, inds)
                 if size_normalize:
                     result_vector[hopped] += prop_vec[orig] * prop_vec[inds] / (this_dist * mol.natoms)
                 else:
@@ -469,7 +511,7 @@ def autocorrelation_derivative(mol, prop_vec, orig, d, oct=True):
         hopped += 1
         new_active_set = set()
         for this_atom in active_set:
-            ## prepare all atoms attached to this connection
+            # prepare all atoms attached to this connection
             # print('called in AC')
             this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
             for bound_atoms in this_atoms_neighbors:
@@ -518,7 +560,7 @@ def deltametric(mol, prop_vec, orig, d, oct=True, use_dist=False, size_normalize
         hopped += 1
         new_active_set = set()
         for this_atom in active_set:
-            ## prepare all atoms attached to this connection
+            # prepare all atoms attached to this connection
             # print('called in DAC')
             this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
             for bound_atoms in this_atoms_neighbors:
@@ -565,14 +607,14 @@ def deltametric_derivative(mol, prop_vec, orig, d, oct=True):
     hopped = 0
     active_set = set([orig])
     historical_set = set()
-    ## the zero-depth element is always zero
+    # the zero-depth element is always zero
     for derivate_ind in range(0, len(prop_vec)):
         derivative_mat[hopped, derivate_ind] = 0.0
     while hopped < (d):
         hopped += 1
         new_active_set = set()
         for this_atom in active_set:
-            ## prepare all atoms attached to this connection
+            # prepare all atoms attached to this connection
             # print('called in DAC')
             this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
             for bound_atoms in this_atoms_neighbors:
@@ -625,7 +667,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False, MRdiag_dict={
     prop_dict = dict()
     w = np.zeros(mol.natoms)
     done = False
-    if not prop in allowed_strings:
+    if prop not in allowed_strings:
         print(('error, property  ' + str(prop) + ' is not a vaild choice'))
         print((' options are  ' + str(allowed_strings)))
         return False
@@ -655,10 +697,10 @@ def construct_property_vector(mol, prop, oct=True, modifier=False, MRdiag_dict={
             for keys in at_keys:
                 values = globs.amass()[keys][1]
                 if keys in list(modifier.keys()):
-                    values -= float(modifier[keys]) # assumes oxidation state provided (i.e. Fe(IV))
+                    values -= float(modifier[keys])  # assumes oxidation state provided (i.e. Fe(IV))
                 prop_dict.update({keys: values})
     elif prop == 'polarizability':
-        prop_dict =  globs.polarizability()
+        prop_dict = globs.polarizability()
         for i, atoms in enumerate(mol.getAtoms()):
             atom_type = atoms.symbol()
             w[i] = prop_dict[atom_type]
@@ -711,7 +753,8 @@ def construct_property_vector(mol, prop, oct=True, modifier=False, MRdiag_dict={
         for i, atoms in enumerate(mol.getAtoms()):
             w[i] = mol.charge_dict[i]
         done = True
-    elif prop in ['A25PBE', 'B1', 'rND_PBE', 'IND_PBE', 'nLUMO_MP2', 'T1', 'largest_amp', 'TAE', 'C0^2', 'nLUMO_CAS', '%CorrE_orca']:
+    elif prop in ['A25PBE', 'B1', 'rND_PBE', 'IND_PBE', 'nLUMO_MP2', 'T1',
+                  'largest_amp', 'TAE', 'C0^2', 'nLUMO_CAS', '%CorrE_orca']:
         for i, atoms in enumerate(mol.getAtoms()):
             w[i] = MRdiag_dict[prop][mol.getAtom(i).symbol()]
         done = True
@@ -749,7 +792,8 @@ def full_autocorrelation(mol, prop, d, oct=True, modifier=False, use_dist=False,
     index_set = list(range(0, mol.natoms))
     autocorrelation_vector = np.zeros(d + 1)
     for centers in index_set:
-        autocorrelation_vector += autocorrelation(mol, w, centers, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
+        autocorrelation_vector += autocorrelation(mol, w, centers, d, oct=oct, use_dist=use_dist,
+                                                  size_normalize=size_normalize)
     return (autocorrelation_vector)
 
 
@@ -826,8 +870,8 @@ def generate_full_complex_autocorrelations(mol, loud,
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -889,8 +933,8 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -938,10 +982,12 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True, use_dist=False, s
     autocorrelation_vector = np.zeros(d + 1)
     if hasattr(atomIdx, "__len__"):
         for elements in atomIdx:
-            autocorrelation_vector += autocorrelation(mol, w, elements, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
+            autocorrelation_vector += autocorrelation(mol, w, elements, d, oct=oct, use_dist=use_dist,
+                                                      size_normalize=size_normalize)
         autocorrelation_vector = np.divide(autocorrelation_vector, len(atomIdx))
     else:
-        autocorrelation_vector += autocorrelation(mol, w, atomIdx, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
+        autocorrelation_vector += autocorrelation(mol, w, atomIdx, d, oct=oct, use_dist=use_dist,
+                                                  size_normalize=size_normalize)
     return (autocorrelation_vector)
 
 
@@ -1009,7 +1055,7 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
     """
     autocorrelation_vector = np.zeros(d)
     try:
-        if not isinstance(metal_ind,int):
+        if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
         autocorrelation_vector = func(mol, w, metal_ind, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
@@ -1049,7 +1095,7 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True, metal_ind=None
     """
     autocorrelation_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
-        if not isinstance(metal_ind,int):
+        if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         autocorrelation_vector_derivative = func(mol, w, metal_ind, d, oct=oct)
@@ -1160,7 +1206,7 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True, metal_ind=None,
     """
     deltametric_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
-        if not isinstance(metal_ind,int):
+        if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         deltametric_vector_derivative = func(mol, w, metal_ind, d, oct=oct)
@@ -1199,7 +1245,7 @@ def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
     """
     deltametric_vector = np.zeros(d + 1)
     try:
-        if not isinstance(metal_ind,int):
+        if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
         deltametric_vector = func(mol, w, metal_ind, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
@@ -1211,7 +1257,7 @@ def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
 
 # Get the ligand_misc_descriptors
 # custom_ligand_dict.keys() must be eq_ligands_list, ax_ligand_list
-##                                    ax_con_int_list ,eq_con_int_list
+# #                                    ax_con_int_list ,eq_con_int_list
 # @param mol, mol3D class
 # @param loud, bool, print out statements for debugging
 # @return results_dictionary, vector, ax vs eq. charge (from OBMol) and denticity
@@ -1244,7 +1290,7 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False, smiles_charge=
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud)
+                mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
@@ -1345,7 +1391,7 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+=['group_number']
+        allowed_strings += ['group_number']
         labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
@@ -1369,40 +1415,52 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
         ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
         eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
-    ## count ligands
+    # count ligands
     n_ax = len(ax_ligand_list)
     n_eq = len(eq_ligand_list)
     colnames = []
     for ii, properties in enumerate(allowed_strings):
-        ############### replaced find_ligand_autocorrelations_oct function here
-        ## get full ligand AC
+        # ############## replaced find_ligand_autocorrelations_oct function here
+        # get full ligand AC
         ax_ligand_ac_full = []
         eq_ligand_ac_full = []
         for i in range(0, n_ax):
             if not list(ax_ligand_ac_full):
-                ax_ligand_ac_full = full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                ax_ligand_ac_full = full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist,
+                                                         size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                ax_ligand_ac_full += full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                ax_ligand_ac_full += full_autocorrelation(ax_ligand_list[i].mol, properties, depth, use_dist=use_dist,
+                                                          size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         ax_ligand_ac_full = np.divide(ax_ligand_ac_full, n_ax)
         for i in range(0, n_eq):
             if not list(eq_ligand_ac_full):
-                eq_ligand_ac_full = full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                eq_ligand_ac_full = full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist,
+                                                         size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
             else:
-                eq_ligand_ac_full += full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                eq_ligand_ac_full += full_autocorrelation(eq_ligand_list[i].mol, properties, depth, use_dist=use_dist,
+                                                          size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         eq_ligand_ac_full = np.divide(eq_ligand_ac_full, n_eq)
         ax_ligand_ac_con = []
         eq_ligand_ac_con = []
         for i in range(0, n_ax):
             if not list(ax_ligand_ac_con):
-                ax_ligand_ac_con = atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                ax_ligand_ac_con = atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i],
+                                                             use_dist=use_dist, size_normalize=size_normalize,
+                                                             MRdiag_dict=MRdiag_dict)
             else:
-                ax_ligand_ac_con += atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                ax_ligand_ac_con += atom_only_autocorrelation(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i],
+                                                              use_dist=use_dist, size_normalize=size_normalize,
+                                                              MRdiag_dict=MRdiag_dict)
         ax_ligand_ac_con = np.divide(ax_ligand_ac_con, n_ax)
         for i in range(0, n_eq):
             if not list(eq_ligand_ac_con):
-                eq_ligand_ac_con = atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                eq_ligand_ac_con = atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i],
+                                                             use_dist=use_dist, size_normalize=size_normalize,
+                                                             MRdiag_dict=MRdiag_dict)
             else:
-                eq_ligand_ac_con += atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                eq_ligand_ac_con += atom_only_autocorrelation(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i],
+                                                              use_dist=use_dist, size_normalize=size_normalize,
+                                                              MRdiag_dict=MRdiag_dict)
         eq_ligand_ac_con = np.divide(eq_ligand_ac_con, n_eq)
         ################
         this_colnames = []
@@ -1470,17 +1528,17 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud)
+                mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
         ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
         eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
-    ## count ligands
+    # count ligands
     n_ax = len(ax_ligand_list)
     n_eq = len(eq_ligand_list)
     for ii, properties in enumerate(allowed_strings):
-        ## allocate the full jacobian matrix
+        # allocate the full jacobian matrix
         ax_full_j = np.zeros([depth + 1, mol.natoms])
         eq_full_j = np.zeros([depth + 1, mol.natoms])
         ax_con_j = np.zeros([depth + 1, mol.natoms])
@@ -1489,12 +1547,12 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
         # full ligand ACs
         for i in range(0, n_ax):  # for each ax ligand
             ax_ligand_ac_full_derivative = full_autocorrelation_derivative(ax_ligand_list[i].mol, properties, depth)
-            ## now we need to map back to full positions
+            # now we need to map back to full positions
             for jj, row in enumerate(ax_ligand_ac_full_derivative):
                 for original_ids in list(ax_ligand_list[i].ext_int_dict.keys()):
                     ax_full_j[jj, original_ids] += np.divide(row[ax_ligand_list[i].ext_int_dict[original_ids]], n_ax)
         for i in range(0, n_eq):  # for each eq ligand
-            ## now we need to map back to full positions
+            # now we need to map back to full positions
             eq_ligand_eq_full_derivative = full_autocorrelation_derivative(eq_ligand_list[i].mol, properties, depth)
             for jj, row in enumerate(eq_ligand_eq_full_derivative):
                 for original_ids in list(eq_ligand_list[i].ext_int_dict.keys()):
@@ -1502,15 +1560,15 @@ def generate_all_ligand_autocorrelation_derivatives(mol, loud, depth=4, flag_nam
         # ligand connection ACs
         for i in range(0, n_ax):
             ax_ligand_ac_con_derivative = atom_only_autocorrelation_derivative(ax_ligand_list[i].mol, properties, depth,
-                                                                            ax_con_int_list[i])
-            ## now we need to map back to full positions
+                                                                               ax_con_int_list[i])
+            # now we need to map back to full positions
             for jj, row in enumerate(ax_ligand_ac_con_derivative):
                 for original_ids in list(ax_ligand_list[i].ext_int_dict.keys()):
                     ax_con_j[jj, original_ids] += np.divide(row[ax_ligand_list[i].ext_int_dict[original_ids]], n_ax)
         for i in range(0, n_eq):
             eq_ligand_ac_con_derivative = atom_only_autocorrelation_derivative(eq_ligand_list[i].mol, properties, depth,
-                                                                            eq_con_int_list[i])
-            ## now we need to map back to full positions
+                                                                               eq_con_int_list[i])
+            # now we need to map back to full positions
             for jj, row in enumerate(eq_ligand_ac_con_derivative):
                 for original_ids in list(eq_ligand_list[i].ext_int_dict.keys()):
                     eq_con_j[jj, original_ids] += np.divide(row[eq_ligand_list[i].ext_int_dict[original_ids]], n_eq)
@@ -1583,8 +1641,8 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1603,25 +1661,33 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
         ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
         eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
-    ## count ligands
+    # count ligands
     n_ax = len(ax_ligand_list)
     n_eq = len(eq_ligand_list)
     for ii, properties in enumerate(allowed_strings):
         ####################
-        ## get partial ligand AC
+        # get partial ligand AC
         ax_ligand_ac_con = []
         eq_ligand_ac_con = []
         for i in range(0, n_ax):
             if not list(ax_ligand_ac_con):
-                ax_ligand_ac_con = atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                ax_ligand_ac_con = atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i],
+                                                         use_dist=use_dist, size_normalize=size_normalize,
+                                                         MRdiag_dict=MRdiag_dict)
             else:
-                ax_ligand_ac_con += atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                ax_ligand_ac_con += atom_only_deltametric(ax_ligand_list[i].mol, properties, depth, ax_con_int_list[i],
+                                                          use_dist=use_dist, size_normalize=size_normalize,
+                                                          MRdiag_dict=MRdiag_dict)
         ax_ligand_ac_con = np.divide(ax_ligand_ac_con, n_ax)
         for i in range(0, n_eq):
             if not list(eq_ligand_ac_con):
-                eq_ligand_ac_con = atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                eq_ligand_ac_con = atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i],
+                                                         use_dist=use_dist, size_normalize=size_normalize,
+                                                         MRdiag_dict=MRdiag_dict)
             else:
-                eq_ligand_ac_con += atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i], use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                eq_ligand_ac_con += atom_only_deltametric(eq_ligand_list[i].mol, properties, depth, eq_con_int_list[i],
+                                                          use_dist=use_dist, size_normalize=size_normalize,
+                                                          MRdiag_dict=MRdiag_dict)
         eq_ligand_ac_con = np.divide(eq_ligand_ac_con, n_eq)
         ####################
         this_colnames = []
@@ -1673,8 +1739,8 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1682,29 +1748,29 @@ def generate_all_ligand_deltametric_derivatives(mol, loud, depth=4, flag_name=Fa
         liglist, ligdents, ligcons = ligand_breakdown(mol)
         ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
             ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud)
+                mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
         ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
         eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
-    ## count ligands
+    # count ligands
     n_ax = len(ax_ligand_list)
     n_eq = len(eq_ligand_list)
     for ii, properties in enumerate(allowed_strings):
-        ## allocate the full jacobian matrix
+        # allocate the full jacobian matrix
         ax_con_j = np.zeros([depth + 1, mol.natoms])
         eq_con_j = np.zeros([depth + 1, mol.natoms])
         #################
         for i in range(0, n_ax):
             ax_ligand_ac_con_derivative = atom_only_deltametric_derivative(ax_ligand_list[i].mol, properties, depth,
-                                                                        ax_con_int_list[i])
+                                                                           ax_con_int_list[i])
             for jj, row in enumerate(ax_ligand_ac_con_derivative):
                 for original_ids in list(ax_ligand_list[i].ext_int_dict.keys()):
                     ax_con_j[jj, original_ids] += np.divide(row[ax_ligand_list[i].ext_int_dict[original_ids]], n_ax)
         for i in range(0, n_eq):
             eq_ligand_ac_con_derivative = atom_only_deltametric_derivative(eq_ligand_list[i].mol, properties, depth,
-                                                                        eq_con_int_list[i])
+                                                                           eq_con_int_list[i])
             for jj, row in enumerate(eq_ligand_ac_con_derivative):
                 for original_ids in list(eq_ligand_list[i].ext_int_dict.keys()):
                     eq_con_j[jj, original_ids] += np.divide(row[eq_ligand_list[i].ext_int_dict[original_ids]], n_eq)
@@ -1767,8 +1833,8 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1779,7 +1845,8 @@ def generate_metal_autocorrelations(mol, loud, depth=4, oct=True, flag_name=Fals
             labels_strings += [k]
     for ii, properties in enumerate(allowed_strings):
         metal_ac = metal_only_autocorrelation(mol, properties, depth, oct=oct,
-                                              modifier=modifier, metal_ind=metal_ind, use_dist=use_dist, size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
+                                              modifier=modifier, metal_ind=metal_ind, use_dist=use_dist,
+                                              size_normalize=size_normalize, MRdiag_dict=MRdiag_dict)
         this_colnames = []
         for i in range(0, depth + 1):
             this_colnames.append(labels_strings[ii] + '-' + str(i))
@@ -1829,8 +1896,8 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1890,8 +1957,8 @@ def generate_metal_deltametrics(mol, loud, depth=4, oct=True, flag_name=False,
     allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size']
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
-        allowed_strings+= ['group_number']
-        labels_strings+= ['Gval']
+        allowed_strings += ['group_number']
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]
@@ -1975,15 +2042,15 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
         results_dictionary = {'colnames': colnames, 'results': result}
     return results_dictionary
 
-################## Possibly Needed - ox_ utilities
 
+# ################# Possibly Needed - ox_ utilities
 def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4,
                                        oct=True, flag_name=False, metal_ind=None,
                                        use_dist=False, size_normalize=False):
-    ## oxmodifier - dict, used to modify prop vector (e.g. for adding
-    ##             ONLY used with  ox_nuclear_charge    ox or charge)
-    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
-    #	oct - bool, if complex is octahedral, will use better bond checks
+    # # oxmodifier - dict, used to modify prop vector (e.g. for adding
+    # #             ONLY used with  ox_nuclear_charge    ox or charge)
+    # #              {"Fe":2, "Co": 3} etc, normally only 1 metal...
+    #    oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     metal_ox_ac = metal_only_autocorrelation(mol, 'ox_nuclear_charge', depth, oct=oct,
@@ -2000,10 +2067,10 @@ def generate_metal_ox_autocorrelations(oxmodifier, mol, loud, depth=4,
 
 def generate_metal_ox_autocorrelation_derivatives(oxmodifier, mol, loud, depth=4, oct=True, flag_name=False,
                                                   metal_ind=None):
-    ## oxmodifier - dict, used to modify prop vector (e.g. for adding
-    ##             ONLY used with  ox_nuclear_charge    ox or charge)
-    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
-    #	oct - bool, if complex is octahedral, will use better bond checks
+    # # oxmodifier - dict, used to modify prop vector (e.g. for adding
+    # #             ONLY used with  ox_nuclear_charge    ox or charge)
+    # #              {"Fe":2, "Co": 3} etc, normally only 1 metal...
+    #    oct - bool, if complex is octahedral, will use better bond checks
     result = None
     colnames = []
     metal_ox_ac = metal_only_autocorrelation_derivative(mol, 'ox_nuclear_charge', depth, oct=oct,
@@ -2017,14 +2084,15 @@ def generate_metal_ox_autocorrelation_derivatives(oxmodifier, mol, loud, depth=4
 
 def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True,
                                    flag_name=False, metal_ind=None, use_dist=False, size_normalize=False):
-    ## oxmodifier - dict, used to modify prop vector (e.g. for adding
-    ##             ONLY used with  ox_nuclear_charge    ox or charge)
-    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
-    #	oct - bool, if complex is octahedral, will use better bond checks
+    # # oxmodifier - dict, used to modify prop vector (e.g. for adding
+    # #             ONLY used with  ox_nuclear_charge    ox or charge)
+    # #              {"Fe":2, "Co": 3} etc, normally only 1 metal...
+    #    oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     metal_ox_ac = metal_only_deltametric(mol, 'ox_nuclear_charge', depth, oct=oct,
-                                         metal_ind=metal_ind, modifier=oxmodifier, use_dist=use_dist, size_normalize=size_normalize)
+                                         metal_ind=metal_ind, modifier=oxmodifier, use_dist=use_dist,
+                                         size_normalize=size_normalize)
     this_colnames = []
     for i in range(0, depth + 1):
         this_colnames.append('O' + '-' + str(i))
@@ -2035,11 +2103,11 @@ def generate_metal_ox_deltametrics(oxmodifier, mol, loud, depth=4, oct=True,
 
 
 def generate_metal_ox_deltametric_derivatives(oxmodifier, mol, loud, depth=4, oct=True,
-                                              flag_name=False, metal_ind = False):
-    ## oxmodifier - dict, used to modify prop vector (e.g. for adding
-    ##             ONLY used with  ox_nuclear_charge    ox or charge)
-    ##              {"Fe":2, "Co": 3} etc, normally only 1 metal...
-    #	oct - bool, if complex is octahedral, will use better bond checks
+                                              flag_name=False, metal_ind=False):
+    # # oxmodifier - dict, used to modify prop vector (e.g. for adding
+    # #             ONLY used with  ox_nuclear_charge    ox or charge)
+    # #              {"Fe":2, "Co": 3} etc, normally only 1 metal...
+    #    oct - bool, if complex is octahedral, will use better bond checks
     result = list()
     colnames = []
     metal_ox_ac = metal_only_deltametric_derivative(mol, 'ox_nuclear_charge',
