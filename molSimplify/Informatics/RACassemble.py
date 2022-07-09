@@ -38,7 +38,7 @@ import numpy as np
 def assemble_connectivity_from_parts(metal_mol: mol3D, custom_ligand_dict):
     # # custom_ligand_dict.keys() must be eq_ligand_list, ax_ligand_list
     # #                                    ax_con_int_list ,eq_con_int_list
-    # # with types: eq/ax_ligand_list list of mol3D
+    # # with types: eq/ax_ligand_list list of ligand classes
     # #             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     # start with the connectivity matrix of the whole complex
     n_total = (1 + sum(m.mol.natoms for m in custom_ligand_dict["eq_ligand_list"])
