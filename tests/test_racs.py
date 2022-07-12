@@ -1,4 +1,3 @@
-import pytest
 import pickle
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
