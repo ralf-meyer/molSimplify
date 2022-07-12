@@ -2543,14 +2543,15 @@ class mol3D:
             ss += "%s \t%f\t%f\t%f\n" % (atom.sym, xyz[0], xyz[1], xyz[2])
         return (ss)
 
-    def readfromxyz(self, filename, fictitious_element=False, read_final_optim_step=False):
+    def readfromxyz(self, filename, ligand_unique_id=False, read_final_optim_step=False):
         """Read XYZ into a mol3D class instance.
 
         Parameters
         -------
             filename : string
                 String of path to XYZ file. Path may be local or global.
-            fictitious_element : TODO
+            ligand_unique_id : string
+                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph. For ligands, they don't have a natural name, so they are named with a UUID.
             read_final_optim_step : boolean
                 if there are multiple geometries in the xyz file
                 (after an optimization run) use only the last one
@@ -2581,7 +2582,7 @@ class mol3D:
                 current_atom_counter += 1
                 lm = re.search(r'\d+$', line_split[0])
                 # if the string ends in digits m will be a Match object, or None otherwise.
-                if line_split[0] in list(amassdict.keys()) or fictitious_element:
+                if line_split[0] in list(amassdict.keys()) or ligand_unique_id:
                     atom = atom3D(line_split[0], [float(line_split[1]), float(
                         line_split[2]), float(line_split[3])])
                 elif lm is not None:
