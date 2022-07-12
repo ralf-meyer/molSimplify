@@ -2795,33 +2795,10 @@ def structgen(args, rootdir, ligands, ligoc, globs, sernum, write_files=True):
         if '.xyz' in args.core:
             core3D.readfromxyz(args.core)
         else:
-            atom = atom3D()
-            atom.__init__(Sym=args.core, xyz=[0, 0, 0])
+            atom = atom3D(Sym=args.core, xyz=[0, 0, 0])
             core3D.addAtom(atom)
         name_core = args.core
 
-    # generate file name parts
-    ligname = ''
-    nosmiles = 0
-    for li in ligands:
-        if li not in list(licores.keys()):
-            if '.xyz' in li or '.mol' in li:
-                li = li.split('.')[-1]
-                li = li.rsplit('/')[-1]
-            else:
-                if args.sminame:
-                    if globs.nosmiles > 1:
-                        ismidx = nosmiles
-                    else:
-                        ismidx = 0
-                    if len(args.sminame) > ismidx:
-                        li = args.sminame[ismidx][0:2]
-                    else:
-                        li = 'smi'+str(nosmiles)
-                else:
-                    li = 'smi'+str(nosmiles)
-                nosmiles += 1
-        ligname += ''.join("%s" % li[0:2])
     if args.calccharge:
         args.charge = core3D.charge
         if args.debug:
