@@ -2551,7 +2551,7 @@ class mol3D:
             filename : string
                 String of path to XYZ file. Path may be local or global.
             ligand_unique_id : string
-                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph. For ligands, they don't have a natural name, so they are named with a UUID.
+                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph. For ligands, they don't have a natural name, so they are named with a UUID. Hard to attribute MR character to just atoms, so it is attributed ligands instead.
             read_final_optim_step : boolean
                 if there are multiple geometries in the xyz file
                 (after an optimization run) use only the last one
