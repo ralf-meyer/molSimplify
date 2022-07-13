@@ -66,6 +66,13 @@ class ligand:
             self.lig_mol_graph_det = False
             self.percent_buried_volume = False
 
+    def __repr__(self):
+        if hasattr(self, 'mol'):
+            return f'ligand({self.mol.make_formula(latex=False)})'
+        else:
+            # Default python repr:
+            return object.__repr__(self)
+
     def obtain_mol3d(self):
         """Getting the mol3D of the ligand. Deprecated. Map between int and ext indcies. Obtain the ligand from the complex mol3D object.
         """
