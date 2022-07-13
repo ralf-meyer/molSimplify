@@ -78,7 +78,8 @@ def get_descriptor_vector(this_complex, custom_ligand_dict=False,
                 ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
                 built_ligand_list = ligand_assign(this_complex, liglist, ligdents, ligcons, loud, eq_sym_match=eq_sym)
         else:
-            ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list = ligand_assign_alleq(this_complex, liglist, ligdents, ligcons)
+            ax_ligand_list, eq_ligand_list, ax_con_int_list, eq_con_int_list = ligand_assign_alleq(
+                this_complex, liglist, ligdents, ligcons)
         custom_ligand_dict = {'ax_ligand_list': ax_ligand_list,
                               'eq_ligand_list': eq_ligand_list,
                               'ax_con_int_list': ax_con_int_list,
@@ -239,10 +240,9 @@ def get_descriptor_derivatives(this_complex, custom_ligand_dict=False, ox_modifi
         else:
             from molSimplify.Classes.ligand import ligand_assign as ligand_assign
         liglist, ligdents, ligcons = ligand_breakdown(this_complex)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, \
-            ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, \
-                built_ligand_list = ligand_assign(
-                    this_complex, liglist, ligdents, ligcons, loud)
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list,
+         ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list,
+         built_ligand_list) = ligand_assign(this_complex, liglist, ligdents, ligcons, loud)
         custom_ligand_dict = {'ax_ligand_list': ax_ligand_list,
                               'eq_ligand_list': eq_ligand_list,
                               'ax_con_int_list': ax_con_int_list,
@@ -1407,8 +1407,8 @@ def generate_all_ligand_autocorrelations(mol, loud, depth=4, flag_name=False,
     result_eq_con = list()
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
-            ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list,
+         ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
             mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
@@ -1653,9 +1653,8 @@ def generate_all_ligand_deltametrics(mol, loud, depth=4, flag_name=False,
             labels_strings += [k]
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, \
-            ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
-            mol, liglist, ligdents, ligcons, loud)
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list,
+         ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(mol, liglist, ligdents, ligcons, loud)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
