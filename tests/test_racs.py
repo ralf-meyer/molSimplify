@@ -1,3 +1,4 @@
+import pytest
 import pickle
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
@@ -60,7 +61,7 @@ def test_Fe_CO_6():
 
     ref_path = resource_filename(
         Requirement.parse('molSimplify'),
-        'tests/refs/racs/racs_Fe_(CO)_6.pickle')
+        'tests/refs/racs/racs_Fe_carbonyl_6.pickle')
     with open(ref_path, 'rb') as fin:
         ref_features = pickle.load(fin)
 
@@ -69,24 +70,31 @@ def test_Fe_CO_6():
         assert abs(val - ref_features[key]) < 1e-4
 
 
-def test_Mn_water2_ammonia_furan2_ammonia():
+@pytest.mark.parametrize('xyz_path, ref_path', [
+    ('fe_carbonyl_6.xyz', 'racs_Fe_carbonyl_6.pickle'),
+    ('mn_furan_water_ammonia_furan_water_ammonia.xyz',
+     'racs_Mn_furan_water_ammonia_furan_water_ammonia.pickle'),
+    ('cr_acac_acac_bipy.xyz',
+     'racs_Cr_acac_acac_bipy.pickle'),
+    ('co_acac_en_water_hydrogensulfide.xyz',
+     'racs_Co_acac_en_water_hydrogensulfide.pickle')])
+def test_Mn_water2_ammonia_furan2_ammonia(xyz_path, ref_path):
     xyz_path = resource_filename(
         Requirement.parse('molSimplify'),
-        'tests/refs/racs/'
-        'mn_furan_water_ammonia_furan_water_ammonia.xyz')
+        f'tests/refs/racs/{xyz_path}')
     mol = mol3D()
     mol.readfromxyz(xyz_path)
     features = mol.get_features()
 
     ref_path = resource_filename(
         Requirement.parse('molSimplify'),
-        'tests/refs/racs/'
-        'racs_Mn_furan_water_ammonia_furan_water_ammonia.pickle')
+        f'tests/refs/racs/{ref_path}')
     with open(ref_path, 'rb') as fin:
         ref_features = pickle.load(fin)
 
     assert features.keys() == ref_features.keys()
     for key, val in features.items():
+        print(key, val, ref_features[key])
         assert abs(val - ref_features[key]) < 1e-4
 
 
