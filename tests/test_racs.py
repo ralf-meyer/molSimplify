@@ -1,73 +1,11 @@
 import pytest
 import pickle
 from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Classes.atom3D import atom3D
+from molSimplify.Classes.ligand import ligand
 from molSimplify.Informatics.RACassemble import create_OHE
 from molSimplify.Informatics.lacRACAssemble import get_descriptor_vector
+from molSimplify.Scripts.io import lig_load
 from pkg_resources import resource_filename, Requirement
-
-
-def test_Fe_CO_6():
-    mol = mol3D()
-    mol.addAtom(atom3D(Sym='Fe', xyz=[0., 0., 0.]))
-    r_FeC = 1.942
-    r_CO = 1.125
-    for axis in range(3):
-        for direction in [1., -1.]:
-            xyz_C = [0., 0., 0.]
-            xyz_C[axis] = direction * r_FeC
-            mol.addAtom(atom3D(Sym='C', xyz=xyz_C))
-            xyz_O = [0., 0., 0.]
-            xyz_O[axis] = direction * (r_FeC + r_CO)
-            mol.addAtom(atom3D(Sym='O', xyz=xyz_O))
-
-    depth = 3
-    properties = ['chi', 'Z', 'T', 'S', 'I']
-    start_scopes_product = [('f', 'all'), ('mc', 'all'), ('lc', 'ax'),
-                            ('lc', 'eq'), ('f', 'ax'), ('f', 'eq')]
-    start_scopes_difference = [('mc', 'all'), ('lc', 'ax'), ('lc', 'eq')]
-    misc_properties = ['dent', 'charge']
-    misc_scopes = ['ax', 'eq']
-
-    names, values = get_descriptor_vector(mol, depth=depth)
-    features = {name: val for name, val in zip(names, values)}
-
-    # Product: # start/scopes x # properties x (depth + 1)
-    # Difference: # start/scopes X # properties x (depth + 1)
-    # Misc: # misc_properties x # misc_scopes
-    assert len(features) == (len(start_scopes_product) * len(properties) * (depth + 1)
-                             + len(start_scopes_difference) * len(properties) * (depth + 1)
-                             + len(misc_properties) * len(misc_scopes))
-
-    # Product RACs
-    for start, scope in start_scopes_product:
-        for prop in properties:
-            for d in range(depth+1):
-                assert f'{start}-{prop}-{d}-{scope}' in features
-
-    # Difference RACs. Note the property 'I' and depth 0 are typically not used.
-    # See Section 2.2 in J. Phys. Chem. A ,2017, 121, 46, 8939-8954 for details.
-    for start, scope in start_scopes_difference:
-        for prop in properties:
-            for d in range(depth+1):
-                assert f'D_{start}-{prop}-{d}-{scope}' in features
-
-    # Misc:
-    for prop in misc_properties:
-        for scope in misc_scopes:
-            assert f'misc-{prop}-{scope}' in features
-
-    assert features == mol.get_features(depth=depth)
-
-    ref_path = resource_filename(
-        Requirement.parse('molSimplify'),
-        'tests/refs/racs/racs_Fe_carbonyl_6.pickle')
-    with open(ref_path, 'rb') as fin:
-        ref_features = pickle.load(fin)
-
-    assert features.keys() == ref_features.keys()
-    for key, val in features.items():
-        assert abs(val - ref_features[key]) < 1e-4
 
 
 @pytest.mark.parametrize('xyz_path, ref_path', [
@@ -94,8 +32,79 @@ def test_Mn_water2_ammonia_furan2_ammonia(xyz_path, ref_path):
 
     assert features.keys() == ref_features.keys()
     for key, val in features.items():
-        print(key, val, ref_features[key])
         assert abs(val - ref_features[key]) < 1e-4
+
+
+def test_six_pyridine_vs_three_bipy():
+    """Up to depth 2 the atom centered racs features for pyr_6 and bipy_3
+    should be the same"""
+    fe_pyr_6_path = resource_filename(
+        Requirement.parse('molSimplify'),
+        'tests/refs/racs/fe_pyr_6.xyz')
+    fe_bipy_3_path = resource_filename(
+        Requirement.parse('molSimplify'),
+        'tests/refs/racs/fe_bipy_3.xyz')
+    fe_pyr_6 = mol3D()
+    fe_pyr_6.readfromxyz(fe_pyr_6_path)
+    fe_bipy_3 = mol3D()
+    fe_bipy_3.readfromxyz(fe_bipy_3_path)
+
+    features_pyr = fe_pyr_6.get_features()
+    features_bipy = fe_bipy_3.get_features()
+
+    properties = ['chi', 'Z', 'T', 'S', 'I']
+    start_scopes = [('mc', 'all'), ('lc', 'ax'), ('lc', 'eq'),
+                    ('D_mc', 'all'), ('D_lc', 'ax'), ('D_lc', 'eq')]
+
+    for start, scope in start_scopes:
+        for depth in range(2):
+            for prop in properties:
+                key = f'{start}-{prop}-{depth}-{scope}'
+                assert features_pyr[key] == features_bipy[key]
+
+
+@pytest.mark.skip('Test fails because molSimplify averages the equatorial '
+                  'plane differently for bidentates')
+def test_pyr_4_furan_2_vs_bipy_2_bifuran():
+    fe_pyr_4_furan_2_path = resource_filename(
+        Requirement.parse('molSimplify'),
+        'tests/refs/racs/fe_pyr_4_furan_2.xyz')
+    fe_bipy_2_bifuran_path = resource_filename(
+        Requirement.parse('molSimplify'),
+        'tests/refs/racs/fe_bipy_2_bifuran.xyz')
+    fe_pyr_4_furan_2 = mol3D()
+    fe_pyr_4_furan_2.readfromxyz(fe_pyr_4_furan_2_path)
+    fe_bipy_2_bifuran = mol3D()
+    fe_bipy_2_bifuran.readfromxyz(fe_bipy_2_bifuran_path)
+
+    # Enforce the same graph orientation as in bidentates:
+    def get_ligand(lig_str):
+        lig_mol, _ = lig_load(lig_str)
+        lig = ligand(mol3D(), lig_mol.cat, lig_mol.denticity)
+        lig.mol = lig_mol
+        return lig
+    pyr = get_ligand('pyr')
+    furan = get_ligand('furan')
+    eq_ligand_list = [pyr, pyr, pyr, furan]
+    ax_ligand_list = [pyr, furan]
+    ligand_dict = {'ax_ligand_list': ax_ligand_list,
+                   'eq_ligand_list': eq_ligand_list,
+                   'ax_con_int_list': [h.mol.cat for h in ax_ligand_list],
+                   'eq_con_int_list': [h.mol.cat for h in eq_ligand_list]}
+    names, values = get_descriptor_vector(fe_pyr_4_furan_2, ligand_dict)
+    features_mono = dict(zip(names, values))
+    features_bi = fe_bipy_2_bifuran.get_features()
+
+    properties = ['Z', 'chi', 'T', 'I', 'S']
+    start_scopes = [('mc', 'all'), ('lc', 'ax'), ('lc', 'eq'),
+                    ('D_mc', 'all'), ('D_lc', 'ax'), ('D_lc', 'eq')]
+
+    for start, scope in start_scopes:
+        for depth in range(2):
+            for prop in properties:
+                key = f'{start}-{prop}-{depth}-{scope}'
+                print(key, features_mono[key], features_bi[key])
+                assert features_mono[key] == features_bi[key]
 
 
 def test_create_OHE():
