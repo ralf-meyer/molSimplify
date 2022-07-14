@@ -16,6 +16,8 @@ def try_float(obj):
         floating_point = float(obj)
     except ValueError:
         floating_point = obj
+    except TypeError:
+        floating_point = obj
     return floating_point
 
 

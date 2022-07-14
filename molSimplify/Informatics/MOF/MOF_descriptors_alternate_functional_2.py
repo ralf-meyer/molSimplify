@@ -124,10 +124,10 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                 """""""""
                 Generate all of the lc autocorrelations (from the connecting atoms)
                 """""""""
-                results_dictionary = generate_atomonly_autocorrelations(temp_mol, link_list, loud=False, depth=depth, oct=False, polarizability=False,Zeff=True)
+                results_dictionary = generate_atomonly_autocorrelations(temp_mol, link_list, loud=False, depth=depth, oct=False, polarizability=False,Gval=True)
                 descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'lc','all')
                 # print('1',len(descriptor_names),len(descriptors))
-                results_dictionary = generate_atomonly_deltametrics(temp_mol, link_list, loud=False, depth=depth, oct=False, polarizability=False,Zeff=True)
+                results_dictionary = generate_atomonly_deltametrics(temp_mol, link_list, loud=False, depth=depth, oct=False, polarizability=False,Gval=True)
                 descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'D_lc','all')
                 # print('2',len(descriptor_names),len(descriptors))
                 """""""""
@@ -149,10 +149,10 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
                 #print(functional_atoms)
 
                 if len(functional_atoms) > 0:
-                    results_dictionary = generate_atomonly_autocorrelations(temp_mol, functional_atoms , loud=False, depth=depth, oct=False, polarizability=False,Zeff=True)
+                    results_dictionary = generate_atomonly_autocorrelations(temp_mol, functional_atoms , loud=False, depth=depth, oct=False, polarizability=False,Gval=True)
                     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'func','all')
                     # print('3',len(descriptor_names),len(descriptors))
-                    results_dictionary = generate_atomonly_deltametrics(temp_mol, functional_atoms , loud=False, depth=depth, oct=False, polarizability=False,Zeff=True)
+                    results_dictionary = generate_atomonly_deltametrics(temp_mol, functional_atoms , loud=False, depth=depth, oct=False, polarizability=False,Gval=True)
                     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'D_func','all')
                     # print('4',len(descriptor_names),len(descriptors))
                 else:
@@ -187,14 +187,14 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name,cell,anchoring_
         """""""""
         Generate all of the SBU based RACs (full scope, mc)
         """""""""
-        results_dictionary = generate_full_complex_autocorrelations(SBU_mol,depth=depth,loud=False,flag_name=False,Zeff=True)
+        results_dictionary = generate_full_complex_autocorrelations(SBU_mol,depth=depth,loud=False,flag_name=False,Gval=True)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'f','all')
         # print('6',len(descriptor_names),len(descriptors))
         #### Now starts at every metal on the graph and autocorrelates
-        results_dictionary = generate_multimetal_autocorrelations(molcif,depth=depth,loud=False,Zeff=True)
+        results_dictionary = generate_multimetal_autocorrelations(molcif,depth=depth,loud=False,Gval=True)
         descriptor_names, descriptors =  append_descriptors(descriptor_names, descriptors, results_dictionary['colnames'],results_dictionary['results'],'mc','all')
         # print('7',len(descriptor_names),len(descriptors))
-        results_dictionary = generate_multimetal_deltametrics(molcif,depth=depth,loud=False,Zeff=True)
+        results_dictionary = generate_multimetal_deltametrics(molcif,depth=depth,loud=False,Gval=True)
         descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'D_mc','all')
         # print('8',len(descriptor_names),len(descriptors))
         descriptor_names += ['name']
@@ -237,7 +237,7 @@ def make_MOF_linker_RACs(linkerlist, linker_subgraphlist, molcif, depth, name, c
             linker_mol_fcoords_connected = XYZ_connected(cell, linker_mol_cart_coords, linker_mol_adj_mat)
             writeXYZandGraph(xyzname, linker_mol_atom_labels, cell, linker_mol_fcoords_connected, linker_mol_adj_mat)
         allowed_strings = ['electronegativity', 'nuclear_charge', 'ident', 'topology', 'size','effective_nuclear_charge']
-        labels_strings = ['chi', 'Z', 'I', 'T', 'S','Zeff']
+        labels_strings = ['chi', 'Z', 'I', 'T', 'S','Gval']
         colnames = []
         lig_full = list()
         for ii, properties in enumerate(allowed_strings):
