@@ -1105,7 +1105,8 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True, metal_ind=None
     return (autocorrelation_vector_derivative)
 
 
-def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False, use_dist=False, size_normalize=False, MRdiag_dict={}):
+def atom_only_deltametric(mol, prop, d, atomIdx, oct=True, modifier=False,
+                          use_dist=False, size_normalize=False, MRdiag_dict={}):
     """Calculate deltametric autocorrelation vectors from a given atom or list of atoms
     (e.g. up to depth 4 from the connecting atoms)
 
