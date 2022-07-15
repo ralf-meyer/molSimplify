@@ -8,9 +8,11 @@
 #
 #  Adapted from:
 #
-#  [1] J. M. Blaney and J. S. Dixon, "Distance Geometry in Molecular Modeling", in Reviews in Computational Chemistry, VCH (1994)
+#  [1] J. M. Blaney and J. S. Dixon, "Distance Geometry in Molecular Modeling",
+#      in Reviews in Computational Chemistry, VCH (1994)
 #
-#  [2] G. Crippen and T. F. Havel, "Distance Geometry and Molecular Conformation", in Chemometrics Research Studies Series, Wiley (1988)
+#  [2] G. Crippen and T. F. Havel, "Distance Geometry and Molecular Conformation",
+#      in Chemometrics Research Studies Series, Wiley (1988)
 
 import numpy as np
 import numpy
@@ -18,6 +20,7 @@ import openbabel
 from scipy import optimize
 from math import sqrt, cos
 
+from typing import Dict
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.globalvars import (vdwrad)
@@ -406,12 +409,12 @@ def DistErrGrad(x, *args):
             dij = distance(ri, rj)
             uij = UB[i][j]
             lij = LB[i][j]
-            g[3*i] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2 /
-                                                                    (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i]-x[3*j])  # xi
-            g[3*i+1] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2 /
-                                                                      (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+1]-x[3*j+1])  # yi
-            g[3*i+2] += (4*((dij/uij)**2-1)/(uij**2) - (8/lij**2)*(2*(lij**2 /
-                                                                      (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+2]-x[3*j+2])  # zi
+            g[3*i] += (4*((dij/uij)**2-1)/(uij**2)
+                       - (8/lij**2)*(2*(lij**2 / (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i]-x[3*j])  # xi
+            g[3*i+1] += (4*((dij/uij)**2-1)/(uij**2)
+                         - (8/lij**2)*(2*(lij**2 / (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+1]-x[3*j+1])  # yi
+            g[3*i+2] += (4*((dij/uij)**2-1)/(uij**2)
+                         - (8/lij**2)*(2*(lij**2 / (lij**2+dij**2))-1)/((1+(dij/lij)**2)**2))*(x[3*i+2]-x[3*j+2])  # zi
     return g
 
 
@@ -461,8 +464,10 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     metal_atom = OBMol.GetAtom(last_atom_index)
     OBMol.DeleteAtom(metal_atom)
 
-    # Second stage of cleaning removes the metal, but uses constraints on the bonding atoms to ensure a binding conformer is maintained
-    # This stage is critical for getting planar aromatic ligands like porphyrin and correct. Not really sure why though...
+    # Second stage of cleaning removes the metal, but uses constraints on the
+    # bonding atoms to ensure a binding conformer is maintained
+    # This stage is critical for getting planar aromatic ligands like
+    # porphyrin and correct. Not really sure why though...
     if ffclean:
         ff = openbabel.OBForceField.FindForceField('mmff94')
         constr = openbabel.OBFFConstraints()
@@ -482,7 +487,7 @@ def SaveConf(X, mol, ffclean=True, catoms=[]):
     return conf3D
 
 
-def findshape(args, master_ligand):
+def findshape(args, master_ligand) -> Dict:
     """Determines the relative positioning of different ligating atoms
 
     Parameters
@@ -495,40 +500,43 @@ def findshape(args, master_ligand):
     Returns
     -------
         angles_dict : dict
-            A dictionary of angles (in degrees)between catoms.
+            A dictionary of angles (in degrees) between catoms.
 
     """
     core = loadcoord(args.geometry)
 
     # load ligands and identify the denticity of each
     ligands = []
-    for counter, i in enumerate(args.lig):
-        ligands.append(lig_load(i)[0])
+    for lig in args.lig:
+        ligands.append(lig_load(lig)[0])
+    # TODO: Found this hardcoded index that will surely fail in certain cases
+    # RM 2022/07/15
     number_of_smiles_ligands = 0
-    for counter, lig in enumerate(ligands):
+    for i, lig in enumerate(ligands):
         if lig.ident == 'smi':
-            ligands[counter].denticity = len(
-                args.smicat[number_of_smiles_ligands])
+            ligands[i].denticity = len(args.smicat[number_of_smiles_ligands])
 
+    # Find the binding location of the master_ligand. Start with one since
+    # core[0] corresponds to the metal
     bind = 1
-    for counter, i in enumerate(ligands):
-        if i.name == master_ligand.name:
-            master_denticity = i.denticity
+    for i, lig in enumerate(ligands):
+        if lig.name == master_ligand.name:
+            master_denticity = lig.denticity
             break
         else:
-            bind += 1*int(args.ligocc[counter])*int(i.denticity)
-    binding_locations = (np.array(list(range(master_denticity))))+bind
+            bind += 1*int(args.ligocc[i])*int(lig.denticity)
 
     metal_coords = np.array(core[0])
     ligating_coords = []
-    for i in binding_locations:
-        ligating_coords.append(np.array(core[i]))
+    for i in range(master_denticity):
+        ligating_coords.append(np.array(core[i + bind]))
 
     angles_dict = dict()
     for i in range(len(ligating_coords)):
         for j in range(len(ligating_coords)):
             angles_dict[str(i)+'-'+str(j)] = inverseCosRule(ligating_coords[i],
-                                                            metal_coords, ligating_coords[j])
+                                                            metal_coords,
+                                                            ligating_coords[j])
     return angles_dict
 
 
@@ -542,7 +550,8 @@ def GetConf(mol, args, catoms=[]):
         args : Namespace
             Namespace argument from inparse.
         catoms : list, optional
-            List of connection atoms used to generate additional constraints if specified (see GetBoundsMatrices()). Default is empty.
+            List of connection atoms used to generate additional constraints if specified (see GetBoundsMatrices()).
+            Default is empty.
 
     Returns
     -------
@@ -582,13 +591,18 @@ def GetConf(mol, args, catoms=[]):
 # for testing
 #
 # n4py
-# molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True -geometry oct -rprompt True -ffoption A
+# molsimplify -core ru -lig 'n1ccccc1CN(Cc2ccccn2)C(c3ccccn3)c4ccccn4' water
+#             -ligocc 1 1 -smicat [1,15,22,28,8] -spin 1 -ligloc True
+#             -geometry oct -rprompt True -ffoption A
 # heptacoordinate water oxidation catalyst
-# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
+# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine
+#             -ligocc 1 1 2 -smicat [1,24,23,22] -spin 1 -ligloc True -geometry pbp -ffoption A
 # same water oxidation catalyst in a hexacoordinate binding pattern
-# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
+# molsimplify -core ru -lig 'n1c(C(=O)[O-])cccc1c2cccc(c3cccc(C(=O)[O-])n3)n2' water pyridine
+#             -ligocc 1 1 2 -smicat [1,24,23] -spin 1 -ligloc True -geometry oct -ffoption A
 # tetrahedral with 2 bidentates
-# molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1 -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
+# molsimplify -core fe -lig 'n1ccccc1c2ccccn2' 'CC(=O)C=C([O-])C' -ligocc 1 1
+#             -smicat [[1,12],[3,6]] -ligloc True -geometry thd -ffoption A -rprompt True
 # mol,emsg = lig_load('c1ccc(c(c1)C=NCCN=Cc2ccccc2[O-])[O-]')
 # mol,emsg = lig_load('N(C)1CCN(C)CCCN(C)CCN(C)CCC1')
 # catoms = [7,10,18,19]
