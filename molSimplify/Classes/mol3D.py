@@ -2554,7 +2554,9 @@ class mol3D:
             filename : string
                 String of path to XYZ file. Path may be local or global.
             ligand_unique_id : string
-                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph. For ligands, they don't have a natural name, so they are named with a UUID. Hard to attribute MR character to just atoms, so it is attributed ligands instead.
+                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph.
+                For ligands, they don't have a natural name, so they are named with a UUID. Hard to attribute MR character to
+                just atoms, so it is attributed ligands instead.
             read_final_optim_step : boolean
                 if there are multiple geometries in the xyz file
                 (after an optimization run) use only the last one
@@ -2580,7 +2582,7 @@ class mol3D:
             # If the split line has more than 4 elements, only elements 0 through 3 will be used.
             # this means that it should work with any XYZ file that also stores something like mulliken charge
             # Next, this looks for unique atom IDs in files
-            #print(line_split, 'linesplit')
+            # print(line_split, 'linesplit')
             if len(line_split) > 0:
                 current_atom_counter += 1
                 lm = re.search(r'\d+$', line_split[0])
@@ -2719,7 +2721,7 @@ class mol3D:
         self.graph = []
         s = xyzstring.split('\n')
         try:
-            s.remove('') 
+            s.remove('')
         except ValueError:
             pass
         s = [str(val) + '\n' for val in s]

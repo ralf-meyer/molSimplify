@@ -2179,8 +2179,7 @@ def mcomplex(args, ligs, ligoc, licores, globs):
         args.gui.iWtxt.setText('\nGenerating complex with core:'+args.core +
                                ' and ligands: ' + ' '.join(ligs)+'\n'+args.gui.iWtxt.toPlainText())
         args.gui.app.processEvents()
-    # import gui options
-    if args.gui:
+        # import gui options
         from Classes.mWidgets import mQDialogWarn
     # initialize variables
     emsg, complex3D = False, []
