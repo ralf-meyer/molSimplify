@@ -122,7 +122,7 @@ def test_mutating_atoms():
     ('trigonal_prismatic', 6, 'trigonal prismatic'),
     # ('pentagonal_bipyramidal', 7, 'pentagonal bipyramidal')
     ])
-def test_geometry_functions(name, coordination_number, geometry_str):
+def test_get_geometry_type(name, coordination_number, geometry_str):
     xyz_file = resource_filename(
         Requirement.parse("molSimplify"),
         f"tests/refs/geometry_type/{name}.xyz"
@@ -133,5 +133,23 @@ def test_geometry_functions(name, coordination_number, geometry_str):
     geo_report = mol.get_geometry_type(num_coord=coordination_number)
 
     assert geo_report['geometry'] == geometry_str
+    assert geo_report['allconnect'] is False
+    assert geo_report['aromatic'] is False
+
+
+def test_get_geometry_type_catoms_arr():
+    xyz_file = resource_filename(
+        Requirement.parse("molSimplify"),
+        "tests/refs/geometry_type/octahedral.xyz"
+    )
+    mol = mol3D()
+    mol.readfromxyz(xyz_file)
+
+    with pytest.raises(ValueError):
+        geo_report = mol.get_geometry_type(num_coord=6, catoms_arr=[1], debug=True)
+
+    geo_report = mol.get_geometry_type(num_coord=6, catoms_arr=[1, 4, 7, 10, 13, 16], debug=True)
+
+    assert geo_report['geometry'] == 'octahedral'
     assert geo_report['allconnect'] is False
     assert geo_report['aromatic'] is False

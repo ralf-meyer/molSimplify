@@ -5244,13 +5244,13 @@ class mol3D:
             raise NotImplementedError(
                 "Not implemented yet. Please at least provide the coordination number.")
 
+        if catoms_arr is not None and len(catoms_arr) != num_coord:
+            raise ValueError("num_coord and the length of catoms_arr do not match.")
+
         num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
         num_edge_lig, info_edge_lig = self.is_edge_compound()
 
         if num_coord not in [3, 4, 5, 6, 7]:
-            if (catoms_arr is not None) and (not len(catoms_arr) == num_coord):
-                raise ValueError(
-                    "num_coord and the length of catoms_arr do not match.")
             if num_sandwich_lig:
                 geometry = "sandwich"
             elif num_edge_lig:
@@ -5270,26 +5270,15 @@ class mol3D:
             }
             return results
 
-        if catoms_arr is not None:
-            if not len(catoms_arr) == num_coord:
-                raise ValueError(
-                    "num_coord and the length of catoms_arr do not match.")
-            possible_geometries = all_geometries[num_coord]
-            for geotype in possible_geometries:
-                dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                     catoms_arr=catoms_arr,
-                                                     debug=debug)
-                summary.update({geotype: dict_catoms_shape})
-        else:
-            possible_geometries = all_geometries[num_coord]
-            for geotype in possible_geometries:
-                dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                                   catoms_arr=None,
-                                                                   debug=debug)
-                if debug:
-                    print("Geocheck assigned catoms: ", catoms_assigned,
-                          [self.getAtom(ind).symbol() for ind in catoms_assigned])
-                summary.update({geotype: dict_catoms_shape})
+        possible_geometries = all_geometries[num_coord]
+        for geotype in possible_geometries:
+            dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                               catoms_arr=None,
+                                                               debug=debug)
+            if debug:
+                print("Geocheck assigned catoms: ", catoms_assigned,
+                      [self.getAtom(ind).symbol() for ind in catoms_assigned])
+            summary.update({geotype: dict_catoms_shape})
 
         angle_devi, geometry = 10000, None
         for geotype in summary:
