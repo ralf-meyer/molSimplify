@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.atom3D import atom3D
+from pkg_resources import resource_filename, Requirement
 
 
 def test_adding_and_deleting_atoms():
@@ -104,3 +105,33 @@ def test_mutating_atoms():
 
     mol.atoms[0].mutate('C')
     assert mol.findMetal() == []
+
+
+@pytest.mark.parametrize('name, coordination_number, geometry_str', [
+    ('trigonal_planar', 3, 'trigonal planar'),
+    ('t_shape', 3, 'T shape'),
+    ('trigonal_pyramidal', 3, 'trigonal pyramidal'),
+    ('tetrahedral', 4, 'tetrahedral'),
+    ('square_planar', 4, 'square planar'),
+    ('seesaw', 4, 'seesaw'),
+    ('trigonal_bipyramidal', 5, 'trigonal bipyramidal'),
+    ('square_pyramidal', 5, 'square pyramidal'),
+    # ('pentagonal_planar', 5, 'pentagonal planar'),
+    ('octahedral', 6, 'octahedral'),
+    # ('pentagonal_pyramidal', 6, 'pentagonal pyramidal'),
+    ('trigonal_prismatic', 6, 'trigonal prismatic'),
+    # ('pentagonal_bipyramidal', 7, 'pentagonal bipyramidal')
+    ])
+def test_geometry_functions(name, coordination_number, geometry_str):
+    xyz_file = resource_filename(
+        Requirement.parse("molSimplify"),
+        f"tests/refs/geometry_type/{name}.xyz"
+    )
+    mol = mol3D()
+    mol.readfromxyz(xyz_file)
+
+    geo_report = mol.get_geometry_type(num_coord=coordination_number)
+
+    assert geo_report['geometry'] == geometry_str
+    assert geo_report['allconnect'] is False
+    assert geo_report['aromatic'] is False

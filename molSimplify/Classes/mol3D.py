@@ -5229,8 +5229,7 @@ class mol3D:
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
-        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = False, False, False, False
-        info_edge_lig, num_edge_lig = False, False
+
         if len(self.graph):  # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
@@ -5239,61 +5238,60 @@ class mol3D:
                 # print("coord number:", num_coord)
             else:
                 raise ValueError('No metal centers exist in this complex.')
-        if num_coord is not False:
-            if num_coord not in [3, 4, 5, 6, 7]:
-                if (catoms_arr is not None) and (not len(catoms_arr) == num_coord):
-                    raise ValueError(
-                        "num_coord and the length of catoms_arr do not match.")
-                num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-                num_edge_lig, info_edge_lig = self.is_edge_compound()
-                if num_sandwich_lig:
-                    geometry = "sandwich"
-                elif num_edge_lig:
-                    geometry = "edge"
-                else:
-                    geometry = "unknown"
-                results = {
-                    "geometry": geometry,
-                    "angle_devi": False,
-                    "summary": {},
-                    "num_sandwich_lig": num_sandwich_lig,
-                    "info_sandwich_lig": info_sandwich_lig,
-                    "aromatic": aromatic,
-                    "allconnect": allconnect,
-                    "num_edge_lig": num_edge_lig,
-                    "info_edge_lig": info_edge_lig,
-                }
-                return results
-            else:
-                if catoms_arr is not None:
-                    if not len(catoms_arr) == num_coord:
-                        raise ValueError(
-                            "num_coord and the length of catoms_arr do not match.")
-                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-                    num_edge_lig, info_edge_lig = self.is_edge_compound()
-                    possible_geometries = all_geometries[num_coord]
-                    for geotype in possible_geometries:
-                        dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                             catoms_arr=catoms_arr,
-                                                             debug=debug)
-                        summary.update({geotype: dict_catoms_shape})
-                else:
-                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-                    num_edge_lig, info_edge_lig = self.is_edge_compound()
-                    possible_geometries = all_geometries[num_coord]
-                    for geotype in possible_geometries:
-                        dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                                           catoms_arr=None,
-                                                                           debug=debug)
-                        if debug:
-                            print("Geocheck assigned catoms: ", catoms_assigned, [
-                                  self.getAtom(ind).symbol() for ind in catoms_assigned])
-                        summary.update({geotype: dict_catoms_shape})
-        else:
+
+        if num_coord is False:
             # TODO: Implement the case where we don't know the coordination number.
-            raise KeyError(
+            raise NotImplementedError(
                 "Not implemented yet. Please at least provide the coordination number.")
-        angle_devi, geometry = 10000, False
+
+        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+        num_edge_lig, info_edge_lig = self.is_edge_compound()
+
+        if num_coord not in [3, 4, 5, 6, 7]:
+            if (catoms_arr is not None) and (not len(catoms_arr) == num_coord):
+                raise ValueError(
+                    "num_coord and the length of catoms_arr do not match.")
+            if num_sandwich_lig:
+                geometry = "sandwich"
+            elif num_edge_lig:
+                geometry = "edge"
+            else:
+                geometry = "unknown"
+            results = {
+                "geometry": geometry,
+                "angle_devi": False,
+                "summary": {},
+                "num_sandwich_lig": num_sandwich_lig,
+                "info_sandwich_lig": info_sandwich_lig,
+                "aromatic": aromatic,
+                "allconnect": allconnect,
+                "num_edge_lig": num_edge_lig,
+                "info_edge_lig": info_edge_lig,
+            }
+            return results
+
+        if catoms_arr is not None:
+            if not len(catoms_arr) == num_coord:
+                raise ValueError(
+                    "num_coord and the length of catoms_arr do not match.")
+            possible_geometries = all_geometries[num_coord]
+            for geotype in possible_geometries:
+                dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                     catoms_arr=catoms_arr,
+                                                     debug=debug)
+                summary.update({geotype: dict_catoms_shape})
+        else:
+            possible_geometries = all_geometries[num_coord]
+            for geotype in possible_geometries:
+                dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                                   catoms_arr=None,
+                                                                   debug=debug)
+                if debug:
+                    print("Geocheck assigned catoms: ", catoms_assigned,
+                          [self.getAtom(ind).symbol() for ind in catoms_assigned])
+                summary.update({geotype: dict_catoms_shape})
+
+        angle_devi, geometry = 10000, None
         for geotype in summary:
             if summary[geotype]["oct_angle_devi_max"] < angle_devi:
                 angle_devi = summary[geotype]["oct_angle_devi_max"]
