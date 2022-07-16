@@ -54,7 +54,8 @@ def startgen_pythonic(input_dict={'-core': 'fe', '-lig': 'cl,cl,cl,cl,cl,cl'},
             emsg : bool
                 Flag for error. If error, returns a string with error.
             this_diag : rundiag
-                Rundiag class instance that contains ANN attributes (this_diag.ANN_attributes) and a mol3D class instance (this_diag.mol).
+                Rundiag class instance that contains ANN attributes (this_diag.ANN_attributes)
+                and a mol3D class instance (this_diag.mol).
 
     """
     # from molSimplify.Scripts.generator import startgen_pythonic
@@ -98,7 +99,8 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     # homedir = os.path.expanduser("~")
     # configfile = False if not glob.glob(homedir+'/.molSimplify') else True
     # if not configfile:
-    #    print "It looks like the configuration file '~/.molSimplify' does not exist!Please follow the next steps to configure the file."
+    #    print("It looks like the configuration file '~/.molSimplify' does not exist!"
+    #          "Please follow the next steps to configure the file.")
     #    instdir = raw_input("Please select the full path of the top installation directory for the program: ")
     #    cdbdir = raw_input("Please specify the full path of the directory containing chemical databases:")
     #    mwfn = raw_input("Specify the full path to the Multiwfn executable (for post-processing):")
@@ -109,13 +111,13 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     #            f.write("CHEMDBDIR="+cdbdir+'\n')
     #        if len(mwfn) > 1 :
     #            f.write("MULTIWFN="+mwfn[0]+'\n')
-    ### end set-up configuration file ###
-    ############ GLOBALS DEFINITION ############
+    # ## end set-up configuration file ###
+    # ########### GLOBALS DEFINITION ############
     globs = globalvars()
     # installdir = globs.installdir
     rundir = globs.rundir
     PROGRAM = globs.PROGRAM
-    ###### END GLOBALS DEFINITION ##############
+    # ##### END GLOBALS DEFINITION ##############
     # correct installdir
     # if installdir[-1]!='/':
     #    installdir+='/'
@@ -149,9 +151,12 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
             args.substrate = [sub]
             args.tsgen = True
 
-    # if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate): # check input arguments
+    # if not args.postp and not args.dbsearch and not args.dbfinger and not args.drawmode
+    # and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate):
     # check input arguments
-    if not args.postp and not args.dbsearch and not args.dbfinger and not (args.slab_gen or args.place_on_slab) and not (args.chain) and not (args.correlate):
+    if (not args.postp and not args.dbsearch and not args.dbfinger
+            and not (args.slab_gen or args.place_on_slab)
+            and not (args.chain) and not (args.correlate)):
 
         # check input arguments
         print('Checking input...')
@@ -172,7 +177,7 @@ def startgen(argv, flag, gui, inputfile_str=None, write_files=True):
     if not os.path.isdir(rundir):
         if write_files:
             os.mkdir(rundir)
-    ################### START MAIN ####################
+    # ################## START MAIN ####################
     args0 = copy.deepcopy(args)  # save initial arguments
     # add gui flag
     args.gui = gui
