@@ -1093,13 +1093,12 @@ def metal_only_autocorrelation(mol, prop, d, oct=True, metal_ind=None,
             MC atom-only RACs vector
 
     """
-    autocorrelation_vector = np.zeros(d)
     try:
         if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
         autocorrelation_vector = func(mol, w, metal_ind, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
-    except:
+    except IndexError:
         print('Error, no metal found in mol object!')
         return False
     return (autocorrelation_vector)
@@ -1133,13 +1132,12 @@ def metal_only_autocorrelation_derivative(mol, prop, d, oct=True, metal_ind=None
             MC atom-only RAC derivatives vector (matrix)
 
     """
-    autocorrelation_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
         if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         autocorrelation_vector_derivative = func(mol, w, metal_ind, d, oct=oct)
-    except:
+    except IndexError:
         print('Error, no metal found in mol object!')
         return False
     return (autocorrelation_vector_derivative)
@@ -1252,13 +1250,12 @@ def metal_only_deltametric_derivative(mol, prop, d, oct=True, metal_ind=None,
             metal-centerted deltametric derivatives vector (matrix)
 
     """
-    deltametric_vector_derivative = np.zeros((d + 1, len(prop)))
     try:
         if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         deltametric_vector_derivative = func(mol, w, metal_ind, d, oct=oct)
-    except:
+    except IndexError:
         print('Error, no metal found in mol object!')
         return False
     return (deltametric_vector_derivative)
@@ -1297,13 +1294,12 @@ def metal_only_deltametric(mol, prop, d, oct=True, metal_ind=None,
             metal-centerted deltametric RAC vector
 
     """
-    deltametric_vector = np.zeros(d + 1)
     try:
         if not isinstance(metal_ind, int):
             metal_ind = mol.findMetal()[0]
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier, MRdiag_dict=MRdiag_dict)
         deltametric_vector = func(mol, w, metal_ind, d, oct=oct, use_dist=use_dist, size_normalize=size_normalize)
-    except:
+    except IndexError:
         print('Error, no metal found in mol object!')
         return False
     return (deltametric_vector)

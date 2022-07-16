@@ -235,17 +235,16 @@ def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
                            func=deltametric, modifier=False, allow_multi=False):
     deltametric_vector = np.zeros(d + 1)
     try:
-        deltametric_vector = np.zeros(d + 1)
         n_met = len(mol.findMetal())
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         if allow_multi:
             for metal_ind in mol.findMetal():
                 deltametric_vector += func(mol, w, metal_ind, d, oct=oct,
-                                       catoms=catoms)
+                                           catoms=catoms)
             deltametric_vector = np.divide(deltametric_vector, n_met)
         else:
             deltametric_vector = func(mol, w, metal_ind, d, oct=oct,
-                                  catoms=catoms)
+                                      catoms=catoms)
     except:
         print('Error, no metal found in mol object!')
         return False
