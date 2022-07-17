@@ -102,9 +102,10 @@ def atom_only_autocorrelation(mol, prop, d, atomIdx, oct=True):
         autocorrelation_vector += autocorrelation(mol, w, atomIdx, d, oct=oct)
     return (autocorrelation_vector)
 
-def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Gval = False, polarizability=False):
-    ## this function gets autocorrelations for a molecule starting
-    ## in one single atom only
+
+def generate_atomonly_autocorrelations(mol, atomIdx, loud, depth=4, oct=True, NumB=False, Gval=False, polarizability=False):
+    # # this function gets autocorrelations for a molecule starting
+    # # in one single atom only
     # Inputs:
     #       mol - mol3D class
     #       atomIdx - int, index of atom3D class
@@ -201,7 +202,7 @@ def deltametric_catoms(mol, prop_vec, orig, d, oct=True, catoms=None):
             # print('called in DAC')
             this_atoms_neighbors = mol.getBondedAtomsSmart(this_atom, oct=oct)
             # print('--1--:', this_atoms_neighbors)
-            if this_atom == orig and (not catoms == None):
+            if this_atom == orig and (catoms is not None):
                 this_atoms_neighbors = catoms
             # print('--2--:', this_atoms_neighbors)
             for bound_atoms in this_atoms_neighbors:
@@ -234,17 +235,16 @@ def metal_only_deltametric(mol, prop, d, oct=True, catoms=None,
                            func=deltametric, modifier=False, allow_multi=False):
     deltametric_vector = np.zeros(d + 1)
     try:
-        deltametric_vector = np.zeros(d + 1)
         n_met = len(mol.findMetal())
         w = construct_property_vector(mol, prop, oct=oct, modifier=modifier)
         if allow_multi:
             for metal_ind in mol.findMetal():
                 deltametric_vector += func(mol, w, metal_ind, d, oct=oct,
-                                       catoms=catoms)
+                                           catoms=catoms)
             deltametric_vector = np.divide(deltametric_vector, n_met)
         else:
             deltametric_vector = func(mol, w, metal_ind, d, oct=oct,
-                                  catoms=catoms)
+                                      catoms=catoms)
     except:
         print('Error, no metal found in mol object!')
         return False
@@ -294,7 +294,7 @@ def construct_property_vector(mol, prop, oct=True, modifier=False):
         at_keys = list(globs.amass().keys())
         for keys in at_keys:
             values = globs.amass()[keys][0]
-            prop_dict.update({keys: values}) 
+            prop_dict.update({keys: values})
         ####### 11/06/2019 -- Adjusted Gval RACs to not adjust on oxidation state. Confounded with O RACs. #####
         # # else:
         #     at_keys = globs.amass().keys()
@@ -749,7 +749,7 @@ def generate_atomonly_deltametrics(mol, atomIdx, loud, depth=4, oct=True, NumB=F
     labels_strings = ['chi', 'Z', 'I', 'T', 'S']
     if Gval:
         allowed_strings += ['group_number']
-        labels_strings += ['Gval'] 
+        labels_strings += ['Gval']
     if NumB:
         allowed_strings += ["num_bonds"]
         labels_strings += ["NumB"]

@@ -65,8 +65,9 @@ def invoke_ANNs_from_mol3d(mol: mol3D, oxidation_state: int,
     descriptor_names, descriptors = get_descriptor_vector(
         mol, ox_modifier=ox_modifier)
     # get one-hot-encoding (OHE)
-    descriptor_names, descriptors = create_OHE(
-        descriptor_names, descriptors, metal, oxidation_state)
+    ohe_names, ohe_values = create_OHE(metal, oxidation_state)
+    descriptor_names += ohe_names
+    descriptors += ohe_values
     # set exchange fraction
     descriptor_names += ['alpha']
     descriptors += [alpha]
@@ -537,8 +538,9 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
             this_complex, custom_ligand_dict, ox_modifier)
 
         # get one-hot-encoding (OHE)
-        descriptor_names, descriptors = create_OHE(
-            descriptor_names, descriptors, metal, oxidation_state)
+        ohe_names, ohe_values = create_OHE(metal, oxidation_state)
+        descriptor_names += ohe_names
+        descriptors += ohe_values
 
         # get alpha
         alpha = 0.2  # default for B3LYP

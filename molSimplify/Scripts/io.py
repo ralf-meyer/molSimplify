@@ -150,7 +150,8 @@ def getligs() -> str:
 
 # Get ligands cores
 #
-#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getligs() but returns the full dictionary
+#  This form of the function is used extensively in the GUI so it got it's own call.
+#  This is basically the same as getligs() but returns the full dictionary
 #  @param flip if we want to return flipped versions of bidentates
 #  @return Ligands dictionary
 
@@ -180,7 +181,8 @@ def getsimpleligs() -> str:
 
 # Get simple ligands cores
 #
-#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getsimpleligs() but returns the full dictionary
+#  This form of the function is used extensively in the GUI so it got it's own call.
+#  This is basically the same as getsimpleligs() but returns the full dictionary
 #  @return Simple ligands dictionary
 
 
@@ -230,7 +232,8 @@ def getbinds() -> str:
 
 # Get binding species cores
 #
-#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getbinds() but returns the full dictionary
+#  This form of the function is used extensively in the GUI so it got it's own call.
+#  This is basically the same as getbinds() but returns the full dictionary
 #  @return Binding species dictionary
 
 
@@ -259,7 +262,8 @@ def getcores():
 
 # Get core cores
 #
-#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getcores() but returns the full dictionary
+#  This form of the function is used extensively in the GUI so it got it's own call.
+#  This is basically the same as getcores() but returns the full dictionary
 #  @return Cores dictionary
 
 
@@ -288,7 +292,8 @@ def getsubstrates():
 
 # Get substrate cores
 #
-#  This form of the function is used extensively in the GUI so it got it's own call. This is basically the same as getsubstrates() but returns the full dictionary
+#  This form of the function is used extensively in the GUI so it got it's own call.
+#  This is basically the same as getsubstrates() but returns the full dictionary
 #  @return Substrates dictionary
 
 
@@ -535,9 +540,11 @@ def core_load(usercore: str, mcores: dict = None) -> Tuple[Union[mol3D, None], s
 
 # Load substrate and convert to mol3D
 #  @param usersubstrate Name of substrate
-#  @param subcores Substrates dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+#  @param subcores Substrates dictionary
+#       (reloads if not specified - default, useful when using an externally modified dictionary)
 #  @return mol3D of substrate, subscatom, error messages
-#  attributes of substrate: OBMol, denticity, ident (identity), charge, cat (connection atom index), and grps (substrate group)
+#  attributes of substrate: OBMol, denticity, ident (identity), charge,
+#                           cat (connection atom index), and grps (substrate group)
 
 
 def substr_load(usersubstrate: str,
@@ -641,9 +648,9 @@ def substr_load(usersubstrate: str,
                 usersubstrate, 'smistring', True)  # convert from smiles
             print('Substrate successfully interpreted as smiles')
         except IOError:
-            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % usersubstrate
-            emsg += "Furthermore, we couldn't find the substrate structure: '%s' in the substrates dictionary. Try again!\n" % usersubstrate
-            emsg += "\nAvailable substrates are: %s\n" % getsubstrates()
+            emsg = f"We tried converting the string '{usersubstrate}' to a molecule but it wasn't a valid SMILES string.\n"
+            emsg += f"Furthermore, we couldn't find the substrate structure: '{usersubstrate}' in the substrates dictionary. "
+            emsg += f"Try again!\n\nAvailable substrates are: {getsubstrates()}\n"
             print(emsg)
             return None, subcatoms, emsg
         sub.cat = [0]
@@ -660,7 +667,7 @@ def lig_load(userligand: str, licores: dict = None) -> Tuple[Any, str]:
         licores = getlicores()
         # @licores.pop("x", None)
     globs = globalvars()
-    ### get groups ###
+    # ## get groups ###
     groups = []
     for entry in licores:
         groups += licores[entry][3]
@@ -680,17 +687,18 @@ def lig_load(userligand: str, licores: dict = None) -> Tuple[Any, str]:
     # get similarity of userligand to ligands in dictionary, from the sequence point of view
     text_similarities = [difflib.SequenceMatcher(None, userligand, i).ratio() for i in list(licores.keys())]
     # check if ligand exists in dictionary
-    if userligand in list(licores.keys()) or max(text_similarities) > 0.6: # Two cases here
-        if userligand in list(licores.keys()): # Ligand is in the dictionary ligands.dict
+    if userligand in list(licores.keys()) or max(text_similarities) > 0.6:  # Two cases here
+        if userligand in list(licores.keys()):  # Ligand is in the dictionary ligands.dict
             print(('loading ligand from dictionary: ' + str(userligand)))
             dbentry = licores[userligand]
-        else: # max(text_similarities) > 0.6 --> It is likely the user made a typo in inputting a ligand that is in ligands.dict
+        else:
+            # max(text_similarities) > 0.6 --> It is likely the user made a typo in inputting a ligand that is in ligands.dict
             max_similarity = max(text_similarities)
             index_max = text_similarities.index(max_similarity)
             desired_ligand = list(licores.keys())[index_max]
             print(f'ligand was not in dictionary, but the sequence is very similar to a ligand that is: {str(desired_ligand)}')
             print(('loading ligand from dictionary: ' + str(desired_ligand)))
-            dbentry = licores[desired_ligand] # Loading the typo-d ligand
+            dbentry = licores[desired_ligand]  # Loading the typo-d ligand
         # load lig mol file (with hydrogens)
         if globs.custom_path:
             flig = globs.custom_path + "/Ligands/" + dbentry[0]
@@ -772,10 +780,10 @@ def lig_load(userligand: str, licores: dict = None) -> Tuple[Any, str]:
             lig.charge = lig.OBMol.GetTotalCharge()
             print('Ligand successfully interpreted as SMILES')
         except IOError:
-            emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userligand
-            emsg += "Furthermore, we couldn't find the ligand structure: '%s' in the ligands dictionary. Try again!\n" % userligand
-            emsg += "\nAvailable ligands are: %s\n" % getligs()
-            emsg += "\nAnd available groups are: %s\n" % getligroups(licores)
+            emsg = f"We tried converting the string '{userligand}' to a molecule but it wasn't a valid SMILES string.\n"
+            emsg += f"Furthermore, we couldn't find the ligand structure: '{userligand}' in the ligands dictionary. "
+            emsg += f"Try again!\n\nAvailable ligands are: {getligs()}\n"
+            emsg += f"\nAnd available groups are: {getligroups(licores)}\n"
             print(emsg)
             return False, emsg
         lig.ident = 'smi'
@@ -785,7 +793,8 @@ def lig_load(userligand: str, licores: dict = None) -> Tuple[Any, str]:
 
 # Load binding species and convert to mol3D
 #  @param userbind Name of binding species
-#  @param bindcores Binding species dictionary (reloads if not specified - default, useful when using an externally modified dictionary)
+#  @param bindcores Binding species dictionary
+#      (reloads if not specified - default, useful when using an externally modified dictionary)
 #  @return mol3D of binding species, error messages
 
 
@@ -847,7 +856,8 @@ def bind_load(userbind: str, bindcores: dict) -> Tuple[Union[mol3D, None], bool,
             bind.ident = 'smi'
         except IOError:
             emsg = "We tried converting the string '%s' to a molecule but it wasn't a valid SMILES string.\n" % userbind
-            emsg += "Furthermore, we couldn't find the binding species structure: '%s' in the binding species dictionary. Try again!\n" % userbind
+            emsg += "Furthermore, we couldn't find the binding species structure: "
+            emsg += "'%s' in the binding species dictionary. Try again!\n" % userbind
             print(emsg)
             return None, False, emsg
     return bind, bsmi, emsg
@@ -935,7 +945,8 @@ def plugin_defs() -> str:
 #  @return Complex name
 
 
-def name_complex(rootdir: str, core, geometry, ligs, ligoc, sernum, args, nconf=False, sanity=False, bind=False, bsmi=False) -> str:
+def name_complex(rootdir: str, core, geometry, ligs, ligoc, sernum,
+                 args, nconf=False, sanity=False, bind=False, bsmi=False) -> str:
     # new version of the above, designed to
     # produce more human and machine-readable formats
     if args.name:  # if set externerally
@@ -967,20 +978,20 @@ def name_complex(rootdir: str, core, geometry, ligs, ligoc, sernum, args, nconf=
         licores = getlicores()
         sminum = 0
         for i, lig in enumerate(ligs):
-            if lig not in licores: # indicative of a SMILES string, or a misspelled ligand
+            if lig not in licores:  # indicative of a SMILES string, or a misspelled ligand
                 # Checking if it is likely a misspelling
                 text_similarities = [difflib.SequenceMatcher(None, lig, i).ratio() for i in list(licores.keys())]
-                if max(text_similarities) > 0.6: # likely a misspelling of a ligand that is in ligands.dict
+                if max(text_similarities) > 0.6:  # likely a misspelling of a ligand that is in ligands.dict
                     max_similarity = max(text_similarities)
                     index_max = text_similarities.index(max_similarity)
                     desired_ligand = list(licores.keys())[index_max]
                     name += '_' + str(desired_ligand) + '_' + str(ligoc[i])
-                else: # SMILES string
+                else:  # SMILES string
                     lig = lig.split('\t')[0]
                     sminum += 1
                     name += '_smi' + str(int(sernum)+int(sminum)
                                          ) + '_' + str(ligoc[i])
-            else: # ligand is in ligands.dict
+            else:  # ligand is in ligands.dict
                 name += '_' + str(lig) + '_' + str(ligoc[i])
         name += "_s_"+str(spin)
         print([nconf, args.nconfs])
@@ -1006,7 +1017,9 @@ def name_complex(rootdir: str, core, geometry, ligs, ligoc, sernum, args, nconf=
 #  @return Complex name
 
 
-def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms, mlig, mligcatoms, sernum, args, nconf=False, sanity=False, bind=False, bsmi=False) -> str:
+def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms,
+                    mlig, mligcatoms, sernum, args, nconf=False, sanity=False,
+                    bind=False, bsmi=False) -> str:
     # new version of the above, designed to
     # produce more human and machine-readable formats
     if args.name:  # if set externerally

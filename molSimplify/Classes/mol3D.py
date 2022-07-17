@@ -16,6 +16,7 @@ import numpy as np
 import openbabel
 from typing import List
 from scipy.spatial import ConvexHull
+from molSimplify.utils.decorators import deprecated
 
 from molSimplify.Classes.atom3D import atom3D
 from molSimplify.Classes.globalvars import globalvars
@@ -312,6 +313,8 @@ class mol3D:
         if return_graph:
             return graph
 
+    @deprecated('Duplicate function will be removed in a future release. '
+                'Use findAtomsbySymbol instead.')
     def find_atom(self, sym="X"):
         """
         Find atoms with a specific symbol.
@@ -332,7 +335,7 @@ class mol3D:
                 inds.append(ii)
         return inds
 
-    def add_bond(self, idx1, idx2, bond_type):
+    def add_bond(self, idx1: int, idx2: int, bond_type: int) -> dict:
         """
         Add a bond of order bond_type between the atom at idx1 and the atom at idx2.
         Adjusts bo_dict and graph only, not BO_mat nor OBMol.
@@ -353,7 +356,7 @@ class mol3D:
         """
 
         if not (isinstance(idx1, int) and isinstance(idx2, int) and isinstance(bond_type, int)):
-            raise TypeError('Incorrect input!')  # Error handling. The user gave input of the wrong type to the add_bond function.
+            raise TypeError('Incorrect input!')  # Error handling. The user gave input of the wrong type.
 
         # Keys in bo_dict must be sorted tuples, where the first index is smaller than the second.
         if idx1 < idx2:
@@ -1168,7 +1171,7 @@ class mol3D:
                     "Si": 4, "P": 3, "S": 2, "Cl": 1,
                     "Ge": 4, "As": 3, "Se": 2, "Br": 1,
                     "Sn": 4, "Sb": 3, "Te": 2, "I": 1}
-        self.deleteatoms(self.find_atom("X"))
+        self.deleteatoms(self.findAtomsbySymbol("X"))
         self.convert2OBMol2()
         ringlist = self.OBMol.GetSSSR()
         ringinds = []
@@ -1261,15 +1264,15 @@ class mol3D:
 
         """
 
-        close_metal = False
+        close_metal = None
         mindist = 1000
-        for i in enumerate(self.findMetal()):
+        for i in self.findMetal():
             atom = self.getAtom(i)
             if distance(atom.coords(), atom0.coords()) < mindist:
                 mindist = distance(atom.coords(), atom0.coords())
                 close_metal = i
         # if no metal, find heaviest atom
-        if not close_metal:
+        if close_metal is None:
             maxaw = 0
             for i, atom in enumerate(self.atoms):
                 if atom.atno > maxaw:
@@ -2551,7 +2554,9 @@ class mol3D:
             filename : string
                 String of path to XYZ file. Path may be local or global.
             ligand_unique_id : string
-                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph. For ligands, they don't have a natural name, so they are named with a UUID. Hard to attribute MR character to just atoms, so it is attributed ligands instead.
+                Unique identifier for a ligand. In MR diagnostics, we abstract the atom based graph to a ligand based graph.
+                For ligands, they don't have a natural name, so they are named with a UUID. Hard to attribute MR character to
+                just atoms, so it is attributed ligands instead.
             read_final_optim_step : boolean
                 if there are multiple geometries in the xyz file
                 (after an optimization run) use only the last one
@@ -2577,7 +2582,7 @@ class mol3D:
             # If the split line has more than 4 elements, only elements 0 through 3 will be used.
             # this means that it should work with any XYZ file that also stores something like mulliken charge
             # Next, this looks for unique atom IDs in files
-            #print(line_split, 'linesplit')
+            # print(line_split, 'linesplit')
             if len(line_split) > 0:
                 current_atom_counter += 1
                 lm = re.search(r'\d+$', line_split[0])
@@ -2678,7 +2683,7 @@ class mol3D:
                 graph = np.zeros((self.natoms, self.natoms))
                 bo_graph = np.zeros((self.natoms, self.natoms))
                 bo_dict = dict()
-        X_inds = self.find_atom(trunc_sym)
+        X_inds = self.findAtomsbySymbol(trunc_sym)
         if isinstance(graph, np.ndarray):  # Enforce mol2 molecular graph if it exists
             self.graph = graph
             self.bo_graph = bo_graph
@@ -2716,7 +2721,7 @@ class mol3D:
         self.graph = []
         s = xyzstring.split('\n')
         try:
-            s.remove('') 
+            s.remove('')
         except ValueError:
             pass
         s = [str(val) + '\n' for val in s]
@@ -3232,7 +3237,9 @@ class mol3D:
         with open(fname + '.gxyz', 'w') as f:
             f.write(ss)
 
-    def writexyz(self, filename, symbsonly=False, ignoreX=False, ordering=False, writestring=False, withgraph=False, specialheader=False):
+    def writexyz(self, filename, symbsonly=False, ignoreX=False,
+                 ordering=False, writestring=False, withgraph=False,
+                 specialheader=False):
         """Write standard XYZ file.
 
         Parameters
@@ -3726,8 +3733,9 @@ class mol3D:
         #     dist_del_eq = -1
         dist_del_all = oct_dist[-1] - oct_dist[0]
         oct_dist_relative = [(np.linalg.norm(np.array(self.getAtom(ii).coords()) -
-                                             np.array(metal_coord)))/(self.globs.amass()[self.getAtom(ii).sym][2]
-                                                                      + self.globs.amass()[self.getAtom(self.findMetal()[0]).sym][2])
+                                             np.array(metal_coord)))
+                             / (self.globs.amass()[self.getAtom(ii).sym][2]
+                                + self.globs.amass()[self.getAtom(self.findMetal()[0]).sym][2])
                              for ii in oct_catoms]
         dict_catoms_shape = dict()
         dict_catoms_shape['oct_angle_devi_max'] = float(max(oct_angle_devi))
@@ -3751,13 +3759,15 @@ class mol3D:
             init_mol : mol3D
                 mol3D class instance of the initial geometry.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
-                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo.
+                Default is True.
             debug : bool, optional
                 Flag for extra printout. Default is False.
             depth : int, optional
@@ -3774,7 +3784,8 @@ class mol3D:
             liglist_init : list
                 List of lists containing all ligands from initial molecule.
             flag_match : bool
-                A flag about whether the ligands of initial and optimized mol are exactly the same. There is a one to one mapping.
+                A flag about whether the ligands of initial and optimized mol are exactly the same.
+                There is a one to one mapping.
 
         """
 
@@ -3896,7 +3907,8 @@ class mol3D:
             init_mol : mol3D
                 mol3D class instance of the initial geometry.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             flag_deleteH : bool, optional,
                 Flag to delete Hs in ligand comparison. Default is True.
             flag_loose : bool, optional
@@ -3904,7 +3916,8 @@ class mol3D:
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
-                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo.
+                Default is True.
             debug : bool, optional
                 Flag for extra printout. Default is False.
             depth : int, optional
@@ -4089,7 +4102,8 @@ class mol3D:
         Parameters
         ----------
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
 
         Returns
         -------
@@ -4223,13 +4237,15 @@ class mol3D:
             flag_catoms : bool, optional
                 Whether or not to return the catoms arr. Default as False.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             debug : bool, optional
                 Flag for extra printout. Default is False.
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
-                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo.
+                Default is True.
             BondedOct : bool, optional
                 Flag for bonding. Only used in Oct_inspection, not in geo_check. Default is False.
             skip : list, optional
@@ -4285,7 +4301,8 @@ class mol3D:
                                                                       )
                 if init_mol is not None:
                     init_mol.use_atom_specific_cutoffs = True
-                    if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                    if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol()
+                           for ii in range(min(self.natoms, init_mol.natoms))):
                         print(
                             "The ordering of atoms in the initial and final geometry is different.")
                         init_mol = mol3D()
@@ -4311,8 +4328,9 @@ class mol3D:
                 eq_dists.sort()
                 self.dict_catoms_shape['dist_del_eq'] = eq_dists[-1] - eq_dists[0]
                 eq_dists_relative = [(np.linalg.norm(np.array(self.getAtom(ii).coords()) -
-                                                     np.array(metal_coord)))/(self.globs.amass()[self.getAtom(ii).sym][2]
-                                                                              + self.globs.amass()[self.getAtom(self.findMetal()[0]).sym][2])
+                                                     np.array(metal_coord)))
+                                     / (self.globs.amass()[self.getAtom(ii).sym][2]
+                                        + self.globs.amass()[self.getAtom(self.findMetal()[0]).sym][2])
                                      for ii in eq_catoms]
                 self.dict_catoms_shape['dist_del_eq_relative'] = np.max(
                     eq_dists_relative) - np.min(eq_dists_relative)
@@ -4355,7 +4373,8 @@ class mol3D:
             flag_catoms : bool, optional
                 Whether or not to return the catoms arr. Default as False.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             debug : bool, optional
                 Flag for extra printout. Default is False.
             skip : list, optional
@@ -4403,7 +4422,8 @@ class mol3D:
                                                                       debug=debug)
                 if init_mol is not None:
                     init_mol.use_atom_specific_cutoffs = True
-                    if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                    if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol()
+                           for ii in range(min(self.natoms, init_mol.natoms))):
                         print(
                             "The ordering of atoms in the initial and final geometry is different.")
                         init_mol = mol3D()
@@ -4424,8 +4444,9 @@ class mol3D:
                 eq_dists.sort()
                 self.dict_catoms_shape['dist_del_eq'] = eq_dists[-1] - eq_dists[0]
                 eq_dists_relative = [(np.linalg.norm(np.array(self.getAtom(ii).coords()) -
-                                                     np.array(metal_coord)))/(self.globs.amass()[self.getAtom(ii).sym][2]
-                                                                              + self.globs.amass()[self.getAtom(self.findMetal()[0]).sym][2])
+                                                     np.array(metal_coord)))
+                                     / (self.globs.amass()[self.getAtom(ii).sym][2]
+                                        + self.globs.amass()[self.getAtom(self.findMetal()[0]).sym][2])
                                      for ii in eq_catoms]
                 self.dict_catoms_shape['dist_del_eq_relative'] = np.max(
                     eq_dists_relative) - np.min(eq_dists_relative)
@@ -4459,7 +4480,8 @@ class mol3D:
             init_mol : mol3D
                 mol3D class instance of the initial geometry.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             dict_check : dict, optional
                 The cutoffs of each geo_check metrics we have. Default is False
             std_not_use : list, optional
@@ -4469,7 +4491,8 @@ class mol3D:
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
-                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo.
+                Default is True.
             dict_check_loose: dict, optional
                 Dictionary of geo check metrics, if a dictionary other than the default one from globalvars is desired.
             BondedOct : bool, optional
@@ -4522,7 +4545,8 @@ class mol3D:
             self.geo_dict_initialization()
             if init_mol is not None:
                 init_mol.use_atom_specific_cutoffs = True
-                if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol()
+                       for ii in range(min(self.natoms, init_mol.natoms))):
                     raise ValueError(
                         "initial and current geometry does not match in atom ordering!")
                 dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
@@ -4567,7 +4591,8 @@ class mol3D:
             init_mol : mol3D
                 mol3D class instance of the initial geometry.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             num_coord : int, optional
                 The metal coordination number.
             dict_check : dict, optional
@@ -4579,7 +4604,8 @@ class mol3D:
             flag_loose : bool, optional
                 Flag for using loose cutoffs. Only used in Oct_inspection, not in geo_check. Default is False.
             flag_lbd : bool, optional
-                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo. Default is True.
+                Flag for using ligand breakdown on the optimized geometry. If False, assuming equivalent index to initial geo.
+                Default is True.
             dict_check_loose: dict, optional
                 Dictionary of geo check metrics, if a dictionary other than the default one from globalvars is desired.
             BondedOct : bool, optional
@@ -4632,7 +4658,8 @@ class mol3D:
             self.geo_dict_initialization()
             if init_mol is not None:
                 init_mol.use_atom_specific_cutoffs = True
-                if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol() for ii in range(min(self.natoms, init_mol.natoms))):
+                if any(self.getAtom(ii).symbol() != init_mol.getAtom(ii).symbol()
+                       for ii in range(min(self.natoms, init_mol.natoms))):
                     raise ValueError(
                         "initial and current geometry does not match in atom ordering!")
                 dict_lig_distort = self.ligand_comp_org(init_mol=init_mol,
@@ -5183,7 +5210,8 @@ class mol3D:
             flag_catoms : bool, optional
                 Whether or not to return the catoms arr. Default as False.
             catoms_arr : Nonetype, optional
-                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input. Default is Nonetype.
+                Uses the catoms of the mol3D by default. User and overwrite this connection atom array by explicit input.
+                Default is Nonetype.
             debug : bool, optional
                 Flag for extra printout. Default is False.
             skip : list, optional
@@ -5201,8 +5229,7 @@ class mol3D:
         all_geometries = globalvars().get_all_geometries()
         all_angle_refs = globalvars().get_all_angle_refs()
         summary = {}
-        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = False, False, False, False
-        info_edge_lig, num_edge_lig = False, False
+
         if len(self.graph):  # Find num_coord based on metal_cn if graph is assigned
             if len(self.findMetal()) > 1:
                 raise ValueError('Multimetal complexes are not yet handled.')
@@ -5211,61 +5238,49 @@ class mol3D:
                 # print("coord number:", num_coord)
             else:
                 raise ValueError('No metal centers exist in this complex.')
-        if num_coord is not False:
-            if num_coord not in [3, 4, 5, 6, 7]:
-                if (catoms_arr is not None) and (not len(catoms_arr) == num_coord):
-                    raise ValueError(
-                        "num_coord and the length of catoms_arr do not match.")
-                num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-                num_edge_lig, info_edge_lig = self.is_edge_compound()
-                if num_sandwich_lig:
-                    geometry = "sandwich"
-                elif num_edge_lig:
-                    geometry = "edge"
-                else:
-                    geometry = "unknown"
-                results = {
-                    "geometry": geometry,
-                    "angle_devi": False,
-                    "summary": {},
-                    "num_sandwich_lig": num_sandwich_lig,
-                    "info_sandwich_lig": info_sandwich_lig,
-                    "aromatic": aromatic,
-                    "allconnect": allconnect,
-                    "num_edge_lig": num_edge_lig,
-                    "info_edge_lig": info_edge_lig,
-                }
-                return results
-            else:
-                if catoms_arr is not None:
-                    if not len(catoms_arr) == num_coord:
-                        raise ValueError(
-                            "num_coord and the length of catoms_arr do not match.")
-                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-                    num_edge_lig, info_edge_lig = self.is_edge_compound()
-                    possible_geometries = all_geometries[num_coord]
-                    for geotype in possible_geometries:
-                        dict_catoms_shape, _ = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                             catoms_arr=catoms_arr,
-                                                             debug=debug)
-                        summary.update({geotype: dict_catoms_shape})
-                else:
-                    num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
-                    num_edge_lig, info_edge_lig = self.is_edge_compound()
-                    possible_geometries = all_geometries[num_coord]
-                    for geotype in possible_geometries:
-                        dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
-                                                                           catoms_arr=None,
-                                                                           debug=debug)
-                        if debug:
-                            print("Geocheck assigned catoms: ", catoms_assigned, [
-                                  self.getAtom(ind).symbol() for ind in catoms_assigned])
-                        summary.update({geotype: dict_catoms_shape})
-        else:
+
+        if num_coord is False:
             # TODO: Implement the case where we don't know the coordination number.
-            raise KeyError(
+            raise NotImplementedError(
                 "Not implemented yet. Please at least provide the coordination number.")
-        angle_devi, geometry = 10000, False
+
+        if catoms_arr is not None and len(catoms_arr) != num_coord:
+            raise ValueError("num_coord and the length of catoms_arr do not match.")
+
+        num_sandwich_lig, info_sandwich_lig, aromatic, allconnect = self.is_sandwich_compound()
+        num_edge_lig, info_edge_lig = self.is_edge_compound()
+
+        if num_coord not in [3, 4, 5, 6, 7]:
+            if num_sandwich_lig:
+                geometry = "sandwich"
+            elif num_edge_lig:
+                geometry = "edge"
+            else:
+                geometry = "unknown"
+            results = {
+                "geometry": geometry,
+                "angle_devi": False,
+                "summary": {},
+                "num_sandwich_lig": num_sandwich_lig,
+                "info_sandwich_lig": info_sandwich_lig,
+                "aromatic": aromatic,
+                "allconnect": allconnect,
+                "num_edge_lig": num_edge_lig,
+                "info_edge_lig": info_edge_lig,
+            }
+            return results
+
+        possible_geometries = all_geometries[num_coord]
+        for geotype in possible_geometries:
+            dict_catoms_shape, catoms_assigned = self.oct_comp(angle_ref=all_angle_refs[geotype],
+                                                               catoms_arr=None,
+                                                               debug=debug)
+            if debug:
+                print("Geocheck assigned catoms: ", catoms_assigned,
+                      [self.getAtom(ind).symbol() for ind in catoms_assigned])
+            summary.update({geotype: dict_catoms_shape})
+
+        angle_devi, geometry = 10000, None
         for geotype in summary:
             if summary[geotype]["oct_angle_devi_max"] < angle_devi:
                 angle_devi = summary[geotype]["oct_angle_devi_max"]
@@ -5335,8 +5350,9 @@ class mol3D:
             geo_type = self.get_geometry_type()
             print("geotype: ", geo_type)
         if force_generate or geo_type['geometry'] == 'octahedral':
-            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist, NumB=NumB, Gval=Gval,
-                                                size_normalize=size_normalize, alleq=alleq, MRdiag_dict=MRdiag_dict, depth=depth)
+            names, racs = get_descriptor_vector(self, lacRACs=lac, eq_sym=eq_sym, use_dist=use_dist,
+                                                NumB=NumB, Gval=Gval, size_normalize=size_normalize,
+                                                alleq=alleq, MRdiag_dict=MRdiag_dict, depth=depth)
             results = dict(zip(names, racs))
         else:
             print("Warning: Featurization not yet implemented for non-octahedral complexes. Return a empty dict.")
@@ -5367,6 +5383,7 @@ class mol3D:
             bls[m_id] = {"M-L bond lengths": ml_bls, "relative bond lengths": rel_bls}
         return bls
 
+    @deprecated('Using this function might lead to inconsistent behavior.')
     def setAtoms(self, atoms):
         """ Set atoms of a mol3D class to atoms.
 
