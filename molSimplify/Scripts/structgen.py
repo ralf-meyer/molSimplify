@@ -2482,8 +2482,8 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                         break
                     # get center of mass
                     ligc = mol3D()
-                    for i in range(0, 4):  # 5 is the non-planar atom
-                        ligc.addAtom(lig3D.getAtom(catoms[i]))
+                    for c_i in range(0, 4):  # 5 is the non-planar atom
+                        ligc.addAtom(lig3D.getAtom(catoms[c_i]))
                     # translate ligand to the middle of octahedral
                     lig3D.translate(vecdiff(mcoords, ligc.centersym()))
                     # get plane
@@ -2551,8 +2551,8 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                         break
                     # get center of mass
                     ligc = mol3D()
-                    for i in range(0, 6):
-                        ligc.addAtom(lig3D.getAtom(catoms[i]))
+                    for c_i in range(0, 6):
+                        ligc.addAtom(lig3D.getAtom(catoms[c_i]))
                     # translate metal to the middle of octahedral
                     core3D.translate(vecdiff(ligc.centersym(), mcoords))
                     bondl, exact_match = get_MLdist_database(
