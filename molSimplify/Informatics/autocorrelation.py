@@ -840,7 +840,8 @@ def find_ligand_autocorrelation_derivatives_oct(mol, prop, loud, depth, name=Fal
     # #             eq/ax_con_int_list list of list/tuple of int e.g,  [[1,2] [1,2]]
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list,
+         eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
             mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
@@ -852,7 +853,7 @@ def find_ligand_autocorrelation_derivatives_oct(mol, prop, loud, depth, name=Fal
     n_eq = len(eq_ligand_list)
     # get full ligand AC
     ax_ligand_ac_full_derivative = None
-    eq_ligand_ac_full_derivative = None
+    eq_ligand_eq_full_derivative = None
 
     # allocate the full jacobian matrix
     ax_full_j = np.zeros([depth + 1, mol.natoms])
@@ -912,7 +913,8 @@ def find_ligand_autocorrs_and_deltametrics_oct_dimers(mol, prop, loud, depth, na
     if not custom_ligand_dict:
         raise ValueError('No custom ligand dict provided!')
         # liglist, ligdents, ligcons = ligand_breakdown(mol)
-        # ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        # ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list,
+        # ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
         #    mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax1_ligand_list = custom_ligand_dict["ax1_ligand_list"]
@@ -978,7 +980,8 @@ def find_ligand_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True, c
     # # the axial an equatorial ligands
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list,
+         eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
             mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
@@ -1020,7 +1023,8 @@ def find_ligand_deltametric_derivatives_oct(mol, prop, loud, depth, name=False, 
     # # the axial an equatorial ligands
     if not custom_ligand_dict:
         liglist, ligdents, ligcons = ligand_breakdown(mol)
-        ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+        (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list,
+         eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
             mol, liglist, ligdents, ligcons, loud, name=False)
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
@@ -1059,7 +1063,8 @@ def find_mc_eq_ax_deltametrics_oct(mol, prop, loud, depth, name=False, oct=True,
     # For octahedral complexes only.
     # Calculate mc/ax, mc/eq deltametrics.
     liglist, ligdents, ligcons = ligand_breakdown(mol)
-    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+    (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list,
+     eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
         mol, liglist, ligdents, ligcons, loud, name=False)
     # shape reduce
     ax_con_list = [x[0] for x in ax_con_list]
@@ -1076,7 +1081,8 @@ def find_mc_eq_ax_autocorrelation_oct(mol, prop, loud, depth, name=False, oct=Tr
     # For octahedral complexes only.
     # Calculate mc/ax, mc/eq deltametrics.
     liglist, ligdents, ligcons = ligand_breakdown(mol)
-    ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list, eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list = ligand_assign(
+    (ax_ligand_list, eq_ligand_list, ax_natoms_list, eq_natoms_list, ax_con_int_list,
+     eq_con_int_list, ax_con_list, eq_con_list, built_ligand_list) = ligand_assign(
         mol, liglist, ligdents, ligcons, loud, name=False)
     # shape reduce
     ax_con_list = [x[0] for x in ax_con_list]
@@ -1446,7 +1452,6 @@ def generate_metal_autocorrelation_derivatives(mol, loud, depth=4, oct=True, fla
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
         metal_ac_der = metal_only_autocorrelation_derivative(mol, properties, depth, oct=oct, modifier=modifier)
-        this_colnames = []
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])
@@ -1649,7 +1654,6 @@ def generate_metal_deltametric_derivatives(mol, loud, depth=4, oct=True, flag_na
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
         metal_ac_der = metal_only_deltametric_derivative(mol, properties, depth, oct=oct, modifier=modifier)
-        this_colnames = []
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])
@@ -1784,11 +1788,9 @@ def generate_full_complex_autocorrelation_derivatives(mol, loud, depth=4, oct=Tr
         labels_strings += ["NumB"]
     for ii, properties in enumerate(allowed_strings):
         f_ac_der = full_autocorrelation_derivative(mol, properties, depth, oct=oct, modifier=modifier)
-        this_colnames = []
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])
-        # colnames.append(this_colnames)
         if result is None:
             result = f_ac_der
         else:
@@ -1852,7 +1854,6 @@ def generate_atomonly_autocorrelation_derivatives(mol, atomIdx, loud, depth=4, o
     # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac = atom_only_autocorrelation_derivative(mol, properties, depth, atomIdx, oct=oct)
-        this_colnames = []
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])
@@ -1916,7 +1917,6 @@ def generate_atomonly_deltametric_derivatives(mol, atomIdx, loud, depth=4, oct=T
     # print('The selected connection type is ' + str(mol.getAtom(atomIdx).symbol()))
     for ii, properties in enumerate(allowed_strings):
         atom_only_ac_der = atom_only_deltametric_derivative(mol, properties, depth, atomIdx, oct=oct)
-        this_colnames = []
         for i in range(0, depth + 1):
             colnames.append(['d' + labels_strings[ii] + '-' + str(i) + '/d' + labels_strings[ii] + str(j) for j in
                              range(0, mol.natoms)])

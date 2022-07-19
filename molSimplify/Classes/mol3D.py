@@ -2592,7 +2592,6 @@ class mol3D:
                         line_split[2]), float(line_split[3])])
                 elif lm is not None:
                     symb = re.sub(r'\d+', '', line_split[0])
-                    globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                                   name=line_split[0])
                 else:
@@ -2735,7 +2734,6 @@ class mol3D:
                     symb = re.sub(r'\d+', '', line_split[0])
                     # number = lm.group()
                     # print('sym and number ' +str(symb) + ' ' + str(number))
-                    globs = globalvars()
                     atom = atom3D(symb, [float(line_split[1]), float(line_split[2]), float(line_split[3])],
                                   name=line_split[0])
                 elif line_split[0] in list(amassdict.keys()):
@@ -4557,16 +4555,15 @@ class mol3D:
                                                         BondedOct=BondedOct,
                                                         angle_ref=angle_ref)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
-                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                              debug=debug)
+                _, catoms_arr = self.oct_comp(angle_ref, catoms_arr, debug=debug)
             else:
                 print("Warning: Potential issues about lig_mismatch.")
 
-            dict_angle_linear, dict_orientation = self.check_angle_linear(
-                catoms_arr=catoms_arr)
+            # Unsure if still needed. RM 22/07/19
+            _, _ = self.check_angle_linear(catoms_arr=catoms_arr)
             if debug:
                 self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic, ligsymmetry = self.get_symmetry_denticity()
+            eqsym, maxdent, _, _, _ = self.get_symmetry_denticity()
             if not maxdent > 1:
                 choice = 'mono'
             else:
@@ -4670,16 +4667,15 @@ class mol3D:
                                                         BondedOct=BondedOct,
                                                         angle_ref=angle_ref)
             if not dict_lig_distort['rmsd_max'] == 'lig_mismatch':
-                dict_catoms_shape, catoms_arr = self.oct_comp(angle_ref, catoms_arr,
-                                                              debug=debug)
+                _, catoms_arr = self.oct_comp(angle_ref, catoms_arr, debug=debug)
             else:
                 self.num_coord_metal = -1
                 print('!!!!!Should always match. WRONG!!!!!')
-            dict_angle_linear, dict_orientation = self.check_angle_linear(
-                catoms_arr=catoms_arr)
+            # Unsure if still needed. RM 22/07/19
+            _, _ = self.check_angle_linear(catoms_arr=catoms_arr)
             if debug:
                 self.print_geo_dict()
-            eqsym, maxdent, ligdents, homoleptic, ligsymmetry = self.get_symmetry_denticity()
+            eqsym, maxdent, _, _, _ = self.get_symmetry_denticity()
             if not maxdent > 1:
                 choice = 'mono'
             else:
@@ -4689,8 +4685,8 @@ class mol3D:
                 used_geo_cutoffs['dist_del_eq'] = used_geo_cutoffs['dist_del_all']
             flag_oct, flag_list, dict_oct_info = self.dict_check_processing(dict_check=used_geo_cutoffs,
                                                                             num_coord=num_coord, debug=debug)
-            flag_oct_loose, flag_list_loose, __ = self.dict_check_processing(dict_check=dict_check_loose[choice],
-                                                                             num_coord=num_coord, debug=debug)
+            flag_oct_loose, flag_list_loose, _ = self.dict_check_processing(dict_check=dict_check_loose[choice],
+                                                                            num_coord=num_coord, debug=debug)
         return flag_oct, flag_list, dict_oct_info, flag_oct_loose, flag_list_loose
 
     def get_fcs(self, strict_cutoff=False, catom_list=None):
