@@ -415,10 +415,10 @@ def append_descriptor_derivatives(descriptor_derivative_names, descriptor_deriva
             Derivatives of RACs w.r.t atomic props (matrix)
 
     """
-    try:
-        basestring
-    except NameError:
-        basestring = str
+    # try:
+    #     basestring
+    # except NameError:
+    #     basestring = str
 
     for names in mat_of_names:
         jnames = ["-".join([prefix, str(i), suffix]) for i in names]
@@ -1344,8 +1344,8 @@ def generate_all_ligand_misc(mol, loud, custom_ligand_dict=False, smiles_charge=
     else:
         ax_ligand_list = custom_ligand_dict["ax_ligand_list"]
         eq_ligand_list = custom_ligand_dict["eq_ligand_list"]
-        ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
-        eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
+        # ax_con_int_list = custom_ligand_dict["ax_con_int_list"]
+        # eq_con_int_list = custom_ligand_dict["eq_con_int_list"]
     # count ligands
     n_ax = len(ax_ligand_list)
     n_eq = len(eq_ligand_list)

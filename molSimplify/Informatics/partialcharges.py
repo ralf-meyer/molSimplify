@@ -10,7 +10,7 @@ def fpriority(mol):
     satno_list = []
     ref_list = []
     fd_list = []
-    fa_list = []
+    # fa_list = []
     idx_list = [0] * 6
     exit_signal = True
     # getting bond-order matrix
