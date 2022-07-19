@@ -790,13 +790,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
                     break
                 i += 1
         elif nsteps != 0:
-            try:
-                n = nsteps
-            except AssertionError:
-                # To whoever encounters this: Please replace AssertionError
-                # with whatever we are actually trying to except. Really
-                # do not know what could raise an Exception here. RM 2022/02/17
-                n = 100
+            n = nsteps
             if debug:
                 print(('running ' + str(n) + ' steps'))
             forcefield.ConjugateGradients(n)
