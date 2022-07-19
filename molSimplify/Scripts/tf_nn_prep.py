@@ -800,6 +800,7 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
             current_time = time.time()
             split_ANN_time = current_time - last_time
             last_time = current_time
+            print('split ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds')
         oxo_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("oxo", latent_oxo, debug)
         if debug:
             current_time = time.time()
@@ -814,10 +815,10 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
             'hat', descriptors, descriptor_names, debug)
         if debug:
             current_time = time.time()
-            split_ANN_time = current_time - last_time
+            hat_ANN_time = current_time - last_time
             last_time = current_time
             print(
-                ('HAT ANN took ' + "{0:.2f}".format(split_ANN_time) + ' seconds'))
+                ('HAT ANN took ' + "{0:.2f}".format(hat_ANN_time) + ' seconds'))
 
         hat_dist, avg_10_NN_dist, avg_traintrain = find_ANN_10_NN_normalized_latent_dist("hat", latent_hat, debug)
         if debug:
@@ -829,7 +830,7 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
         ANN_attributes.update({'hat': hat[0][0]})
         ANN_attributes.update({'hat_dist': hat_dist})
 
-        ########## for Oxo and HOMO optimization ##########
+        # ######### for Oxo and HOMO optimization ##########
         oxo20, latent_oxo20 = ANN_supervisor(
             'oxo20', descriptors, descriptor_names, debug)
         if debug:
@@ -970,9 +971,7 @@ def tf_ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
         K.clear_session()
 
     if catalysis:
-        current_time = time.time()
-        total_ANN_time = current_time - start_time
-        last_time = current_time
+        total_ANN_time = time.time() - start_time
         print(('Total Catalysis ML functions took ' +
                "{0:.2f}".format(total_ANN_time) + ' seconds'))
 
