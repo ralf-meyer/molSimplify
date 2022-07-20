@@ -288,7 +288,6 @@ def terapost(resfiles, folder, gui, flog):
     header += "\nFolder                                            Compound    Method  %HF  Restricted   Optim  Converged  NoSteps   Spin   S^2   Charge    Energy(au)   Time(s)\n"
     header += "------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"
     # loop over folders
-    resf = []
     text = []
     for numi, resf in enumerate(resfiles):
         resfp = os.path.relpath(resf, folder)
@@ -383,7 +382,6 @@ def gampost(resfiles, folder, gui, flog):
     header += "\nFolder                                            Method   %MGGA   %LDA  Optim  Converged  NoSteps   S-SQ   Spin   Charge    Energy(au)      Time(MIN)\n"
     header += "--------------------------------------------------------------------------------------------------------------------------------------------------------\n"
     # loop over folders
-    resf = []
     text = []
     flog.write(
         '################## Calculating results summary ##################\n\n')

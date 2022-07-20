@@ -10,8 +10,8 @@ def fpriority(mol):
     satno_list = []
     ref_list = []
     fd_list = []
-    fa_list = []
-    idx_list = [0] * 6
+    # fa_list = []
+    # idx_list = [0] * 6
     exit_signal = True
     # getting bond-order matrix
     mol.convert2OBMol()
@@ -277,7 +277,7 @@ def f_prop(mol, charge, bond=False):
     # fsym_list = fsym(mol)
     fva_list = fvalency(mol)
     fq_list = fcharge(mol, charge, bond)
-    sq_ave_list = scharge_ave(mol, charge, bond)
+    # sq_ave_list = scharge_ave(mol, charge, bond)
     # fd_list = fdistance(mol)
     idx_list = idx_list(fprio_list, fd_list)
     # rearranging

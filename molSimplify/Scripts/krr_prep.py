@@ -53,7 +53,6 @@ def feature_prep(mol, idx):
     satno_list = []
     ref_list = []
     fd_list = []
-    idx_list = [0] * 6
     exit_signal = True
     # getting bond-order matrix
     mol.convert2OBMol()
@@ -259,8 +258,6 @@ def krr_model_training(csvf, colnum_label, colnum_desc, alpha=1, gamma=1, thresh
     stat_names = ['mean_X_dict', 'std_X_dict', 'mean_y', 'std_y']
     stats = [mean_X_dict, std_X_dict, mean_y, std_y]
     stat_dict = dict(list(zip(stat_names, stats)))
-    X_norm = normalize(X, mean_X, std_X)
-    y_norm = normalize(y, mean_y, std_y)
     # split to train and test
     X_norm_train, X_norm_test, y_norm_train, y_norm_test = train_test_split(
         X_norm, y_norm, test_size=0.2, random_state=0)
@@ -746,9 +743,9 @@ def krr_model_predict(core3D, spin, mligcatom):
             mean_y2 = float(line[0])
             std_y2 = float(line[1])
     # x2 stats
-    f_stats = fpath + '/hat2_X_mean_std.csv'
-    with open(f_stats, 'r') as f:
-        fcsv = csv.reader(f)
+    # f_stats = fpath + '/hat2_X_mean_std.csv'
+    # with open(f_stats, 'r') as f:
+    #     fcsv = csv.reader(f)
     # for i, line in enumerate(fcsv):
     #     if i == 0:
     #         feature2_names = line

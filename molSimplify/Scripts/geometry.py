@@ -7,9 +7,6 @@
 #
 #  Department of Chemical Engineering, MIT
 
-from numpy import (arccos, cross, dot, pi, transpose,
-                   sin, cos, mat, array, arctan2, sqrt)
-from numpy.linalg import det, svd
 import numpy as np
 
 
@@ -30,7 +27,7 @@ def norm(u):
     d = 0.0
     for u0 in u:
         d += (u0 * u0)
-    d = sqrt(d)
+    d = np.sqrt(d)
     return d
 
 
@@ -74,7 +71,7 @@ def distance(r1, r2):
     dx = r1[0] - r2[0]
     dy = r1[1] - r2[1]
     dz = r1[2] - r2[2]
-    d = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+    d = np.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
     return d
 
 
@@ -138,7 +135,7 @@ def checkcolinear(r1, r2, r3):
     """
     dr1 = vecdiff(r2, r1)
     dr2 = vecdiff(r1, r3)
-    dd = cross(array(dr1), array(dr2))
+    dd = np.cross(np.array(dr1), np.array(dr2))
     if norm(dd) < 1.e-01:
         return True
     else:
@@ -168,8 +165,8 @@ def checkplanar(r1, r2, r3, r4):
     r31 = vecdiff(r3, r1)
     r21 = vecdiff(r2, r1)
     r43 = vecdiff(r4, r3)
-    cr0 = cross(array(r21), array(r43))
-    dd = dot(r31, cr0)
+    cr0 = np.cross(np.array(r21), np.array(r43))
+    dd = np.dot(r31, cr0)
     if abs(dd) < 1.e-1:
         return True
     else:
@@ -193,8 +190,8 @@ def vecangle(r1, r2):
 
     """
     if (norm(r2) * norm(r1) > 1e-16):
-        inner_prod = np.round(dot(r2, r1) / (norm(r2) * norm(r1)), 10)
-        theta = 180 * arccos(inner_prod) / pi
+        inner_prod = np.round(np.dot(r2, r1) / (norm(r2) * norm(r1)), 10)
+        theta = 180 * np.arccos(inner_prod) / np.pi
     else:
         theta = 0.0
     return theta
@@ -255,17 +252,17 @@ def rotation_params(r0, r1, r2):
     # print('r10 is ' +str(r10) )
     # print('r21 is ' +str(r21) )
     # angle between r10 and r21
-    # print('arg to arcos  is ' +str(dot(r21,r10)/(norm(r21)*norm(r10))) )
-    arg = dot(r21, r10) / (norm(r21) * norm(r10))
+    # print('arg to arcos  is ' +str(np.dot(r21,r10)/(norm(r21)*norm(r10))) )
+    arg = np.dot(r21, r10) / (norm(r21) * norm(r10))
     if (norm(r21) * norm(r10) > 1e-16):
         if arg < 0:
-            theta = 180 * arccos(max(-1, arg)) / pi
+            theta = 180 * np.arccos(max(-1, arg)) / np.pi
         else:
-            theta = 180 * arccos(min(1, arg)) / pi
+            theta = 180 * np.arccos(min(1, arg)) / np.pi
     else:
         theta = 0.0
     # get normal vector to plane r0 r1 r2
-    u = cross(r21, r10)
+    u = np.cross(r21, r10)
     # check for collinear case
     if norm(u) < 1e-16:
         # pick random perpendicular vector
@@ -351,7 +348,7 @@ def kabsch(mol0, mol1):
         P.append(atom0.coords())
         Q.append(atom1.coords())
     # Computation of the covariance matrix
-    C = dot(transpose(P), Q)
+    C = np.dot(np.transpose(P), Q)
     # Computation of the optimal rotation matrix
     # This can be done using singular value decomposition (SVD)
     # Getting the sign of the det(V)*(W) to decide
@@ -359,15 +356,15 @@ def kabsch(mol0, mol1):
     # right-handed coordinate system.
     # And finally calculating the optimal rotation matrix U
     # see http://en.wikipedia.org/wiki/Kabsch_algorithm
-    V, S, W = svd(C)
-    d = (det(V) * det(W)) < 0.0
+    V, S, W = np.linalg.svd(C)
+    d = (np.linalg.det(V) * np.linalg.det(W)) < 0.0
     # Create Rotation matrix U
     if d:
         S[-1] = -S[-1]
         V[:, -1] = -V[:, -1]
-    U = dot(V, W)
+    U = np.dot(V, W)
     # Rotate P
-    P = dot(P, U)
+    P = np.dot(P, U)
     # write back coordinates
     for i, atom in enumerate(mol0.getAtoms()):
         atom.setcoords(P[i])
@@ -448,24 +445,24 @@ def PointRotateAxis(u, rp, r, theta):
     # rotation matrix about arbitrary line through rp
     R = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     rn = [0, 0, 0]
-    R[0][0] = cos(theta) + u[0] ** 2 * (1 - cos(theta))
-    R[0][1] = u[0] * u[1] * (1 - cos(theta)) - u[2] * sin(theta)
-    R[0][2] = u[0] * u[2] * (1 - cos(theta)) + u[1] * sin(theta)
+    R[0][0] = np.cos(theta) + u[0] ** 2 * (1 - np.cos(theta))
+    R[0][1] = u[0] * u[1] * (1 - np.cos(theta)) - u[2] * np.sin(theta)
+    R[0][2] = u[0] * u[2] * (1 - np.cos(theta)) + u[1] * np.sin(theta)
     R[0][3] = (rp[0] * (u[1] ** 2 + u[2] ** 2) - u[0] *
-               (rp[1] * u[1] + rp[2] * u[2])) * (1 - cos(theta))
-    R[0][3] += (rp[1] * u[2] - rp[2] * u[1]) * sin(theta)
-    R[1][0] = u[1] * u[0] * (1 - cos(theta)) + u[2] * sin(theta)
-    R[1][1] = cos(theta) + u[1] ** 2 * (1 - cos(theta))
-    R[1][2] = u[1] * u[2] * (1 - cos(theta)) - u[0] * sin(theta)
+               (rp[1] * u[1] + rp[2] * u[2])) * (1 - np.cos(theta))
+    R[0][3] += (rp[1] * u[2] - rp[2] * u[1]) * np.sin(theta)
+    R[1][0] = u[1] * u[0] * (1 - np.cos(theta)) + u[2] * np.sin(theta)
+    R[1][1] = np.cos(theta) + u[1] ** 2 * (1 - np.cos(theta))
+    R[1][2] = u[1] * u[2] * (1 - np.cos(theta)) - u[0] * np.sin(theta)
     R[1][3] = (rp[1] * (u[0] ** 2 + u[2] ** 2) - u[1] *
-               (rp[0] * u[0] + rp[2] * u[2])) * (1 - cos(theta))
-    R[1][3] += (rp[2] * u[0] - rp[0] * u[2]) * sin(theta)
-    R[2][0] = u[2] * u[0] * (1 - cos(theta)) - u[1] * sin(theta)
-    R[2][1] = u[2] * u[1] * (1 - cos(theta)) + u[0] * sin(theta)
-    R[2][2] = cos(theta) + u[2] ** 2 * (1 - cos(theta))
+               (rp[0] * u[0] + rp[2] * u[2])) * (1 - np.cos(theta))
+    R[1][3] += (rp[2] * u[0] - rp[0] * u[2]) * np.sin(theta)
+    R[2][0] = u[2] * u[0] * (1 - np.cos(theta)) - u[1] * np.sin(theta)
+    R[2][1] = u[2] * u[1] * (1 - np.cos(theta)) + u[0] * np.sin(theta)
+    R[2][2] = np.cos(theta) + u[2] ** 2 * (1 - np.cos(theta))
     R[2][3] = (rp[2] * (u[0] ** 2 + u[1] ** 2) - u[2] *
-               (rp[0] * u[0] + rp[1] * u[1])) * (1 - cos(theta))
-    R[2][3] += (rp[0] * u[1] - rp[1] * u[0]) * sin(theta)
+               (rp[0] * u[0] + rp[1] * u[1])) * (1 - np.cos(theta))
+    R[2][3] += (rp[0] * u[1] - rp[1] * u[0]) * np.sin(theta)
     R[3][3] = 1
     # get new point
     rn[0] = R[0][0] * r[0] + R[0][1] * r[1] + R[0][2] * r[2] + R[0][3]
@@ -523,16 +520,16 @@ def PointTranslateSph(Rp, p0, D):
     # get initial spherical coords
     r0 = norm(ps)
     if (r0 < 1e-16):
-        phi0 = 0.5 * pi
+        phi0 = 0.5 * np.pi
         theta0 = 0
     else:
-        phi0 = arccos(ps[2] / r0)  # z/r
-        theta0 = arctan2(ps[1], ps[0])  # y/x
+        phi0 = np.arccos(ps[2] / r0)  # z/r
+        theta0 = np.arctan2(ps[1], ps[0])  # y/x
     # get new point
     p = [0, 0, 0]
-    p[0] = (D[0]) * sin(phi0 + D[2]) * cos(theta0 + D[1]) + Rp[0]
-    p[1] = (D[0]) * sin(phi0 + D[2]) * sin(theta0 + D[1]) + Rp[1]
-    p[2] = (D[0]) * cos(phi0 + D[2]) + Rp[2]
+    p[0] = (D[0]) * np.sin(phi0 + D[2]) * np.cos(theta0 + D[1]) + Rp[0]
+    p[1] = (D[0]) * np.sin(phi0 + D[2]) * np.sin(theta0 + D[1]) + Rp[1]
+    p[2] = (D[0]) * np.cos(phi0 + D[2]) + Rp[2]
     return p
 
 
@@ -562,16 +559,16 @@ def PointTranslateSphgivenphi(Rp, p0, D):
     # get initial spherical coords
     r0 = norm(ps)
     if (r0 < 1e-16):
-        phi0 = 0.5 * pi
+        phi0 = 0.5 * np.pi
         theta0 = 0
     else:
-        phi0 = arccos(ps[2] / r0)  # z/r
-        theta0 = arctan2(ps[1], ps[0])  # y/x
+        phi0 = np.arccos(ps[2] / r0)  # z/r
+        theta0 = np.arctan2(ps[1], ps[0])  # y/x
     # get new point
     p = [0, 0, 0]
-    p[0] = (D[0]) * sin(phi0 + D[1]) * cos(theta0) + Rp[0]
-    p[1] = (D[0]) * sin(phi0 + D[1]) * sin(theta0) + Rp[1]
-    p[2] = (D[0]) * cos(phi0 + D[1]) + Rp[2]
+    p[0] = (D[0]) * np.sin(phi0 + D[1]) * np.cos(theta0) + Rp[0]
+    p[1] = (D[0]) * np.sin(phi0 + D[1]) * np.sin(theta0) + Rp[1]
+    p[2] = (D[0]) * np.cos(phi0 + D[1]) + Rp[2]
     return p
 
 
@@ -605,19 +602,19 @@ def PointTranslateSphgivenr(Rp, p0, D, pref, r):
     # get initial spherical coords
     r0 = norm(ps)
     if (r0 < 1e-16):
-        phi0 = 0.5 * pi
+        phi0 = 0.5 * np.pi
         theta0 = 0
     else:
-        phi0 = arccos(ps[2] / r0)  # z/r
-        theta0 = arctan2(ps[1], ps[0])  # y/x
+        phi0 = np.arccos(ps[2] / r0)  # z/r
+        theta0 = np.arctan2(ps[1], ps[0])  # y/x
     # get new point
     p = [0, 0, 0]
     r0 = 0
     theta0 = 0
-    while abs(1 - r0 / r) > 0.01 and theta0 < 2 * pi:
-        p[0] = (D[0]) * sin(phi0 + D[1]) * cos(theta0) + Rp[0]
-        p[1] = (D[0]) * sin(phi0 + D[1]) * sin(theta0) + Rp[1]
-        p[2] = (D[0]) * cos(phi0 + D[1]) + Rp[2]
+    while abs(1 - r0 / r) > 0.01 and theta0 < 2 * np.pi:
+        p[0] = (D[0]) * np.sin(phi0 + D[1]) * np.cos(theta0) + Rp[0]
+        p[1] = (D[0]) * np.sin(phi0 + D[1]) * np.sin(theta0) + Rp[1]
+        p[2] = (D[0]) * np.cos(phi0 + D[1]) + Rp[2]
         r0 = distance(p, pref)
         theta0 += 0.01
     return p
@@ -649,16 +646,16 @@ def PointTranslatetoPSph(Rp, p0, D):
     # get current spherical coords
     r0 = norm(ps)
     if (r0 < 1e-16):
-        phi0 = 0.5 * pi
+        phi0 = 0.5 * np.pi
         theta0 = 0
     else:
-        phi0 = arccos(ps[2] / r0)  # z/r
-        theta0 = arctan2(ps[1], ps[0])  # y/x
+        phi0 = np.arccos(ps[2] / r0)  # z/r
+        theta0 = np.arctan2(ps[1], ps[0])  # y/x
     # get translation vector
     p = [0, 0, 0]
-    p[0] = D[0] * sin(phi0 + D[2]) * cos(theta0 + D[1])
-    p[1] = D[0] * sin(phi0 + D[2]) * sin(theta0 + D[1])
-    p[2] = D[0] * cos(phi0 + D[2])
+    p[0] = D[0] * np.sin(phi0 + D[2]) * np.cos(theta0 + D[1])
+    p[1] = D[0] * np.sin(phi0 + D[2]) * np.sin(theta0 + D[1])
+    p[2] = D[0] * np.cos(phi0 + D[2])
     return p
 
 
@@ -686,11 +683,11 @@ def PointRotateSph(Rp, p0, D):
     ps[1] = p0[1] - Rp[1]
     ps[2] = p0[2] - Rp[2]
     # build 3D rotation matrices about x,y,z axes
-    Mx = [[1, 0, 0], [0, cos(D[0]), -sin(D[0])], [0, sin(D[0]), cos(D[0])]]
-    My = [[cos(D[1]), 0, sin(D[1])], [0, 1, 0], [-sin(D[1]), 0, cos(D[1])]]
-    Mz = [[cos(D[2]), -sin(D[2]), 0], [sin(D[2]), cos(D[2]), 0], [0, 0, 1]]
+    Mx = [[1, 0, 0], [0, np.cos(D[0]), -np.sin(D[0])], [0, np.sin(D[0]), np.cos(D[0])]]
+    My = [[np.cos(D[1]), 0, np.sin(D[1])], [0, 1, 0], [-np.sin(D[1]), 0, np.cos(D[1])]]
+    Mz = [[np.cos(D[2]), -np.sin(D[2]), 0], [np.sin(D[2]), np.cos(D[2]), 0], [0, 0, 1]]
     # get full rotation matrix
-    M = array(mat(Mx) * mat(My) * mat(Mz))
+    M = np.array(np.mat(Mx) * np.mat(My) * np.mat(Mz))
     p = [0.0, 0.0, 0.0]
     # rotate atom and translate it back from origin
     p[0] = M[0][0] * ps[0] + M[0][1] * ps[1] + M[0][2] * ps[2] + Rp[0]
@@ -752,7 +749,7 @@ def rotate_around_axis(mol, Rp, u, theta):
 
     """
     un = norm(u)
-    theta = (theta / 180.0) * pi
+    theta = (theta / 180.0) * np.pi
     if (un > 1e-16):
         u[0] = u[0] / un
         u[1] = u[1] / un
@@ -922,8 +919,8 @@ def protate(mol, Rr, D):
     """
     # convert to rad
     D[0] = float(D[0])
-    D[1] = (float(D[1]) / 180.0) * pi
-    D[2] = (float(D[2]) / 180.0) * pi
+    D[1] = (float(D[1]) / 180.0) * np.pi
+    D[2] = (float(D[2]) / 180.0) * np.pi
     # rotate/translate about reference point
     # get center of mass
     pmc = mol.centermass()
@@ -958,8 +955,8 @@ def protateref(mol, Rr, Rref, D):
     # rotate/translate about reference point
     # convert to rad
     D[0] = float(D[0])
-    D[1] = (float(D[1]) / 180.0) * pi
-    D[2] = (float(D[2]) / 180.0) * pi
+    D[1] = (float(D[1]) / 180.0) * np.pi
+    D[2] = (float(D[2]) / 180.0) * np.pi
     # rotate/translate about reference point
     # get translation vector that corresponds to new coords
     Rt = PointTranslateSph(Rr, Rref, D)
@@ -986,9 +983,9 @@ def cmrotate(mol, D):
 
     """
     # convert to rad
-    D[0] = (float(D[0]) / 180.0) * pi
-    D[1] = (float(D[1]) / 180.0) * pi
-    D[2] = (float(D[2]) / 180.0) * pi
+    D[0] = (float(D[0]) / 180.0) * np.pi
+    D[1] = (float(D[1]) / 180.0) * np.pi
+    D[2] = (float(D[2]) / 180.0) * np.pi
     # perform rotation
     pmc = mol.centermass()
     for atom in mol.atoms:
@@ -1018,9 +1015,9 @@ def rotateRef(mol, Ref, D):
 
     """
     # convert to rad
-    D[0] = (float(D[0]) / 180.0) * pi
-    D[1] = (float(D[1]) / 180.0) * pi
-    D[2] = (float(D[2]) / 180.0) * pi
+    D[0] = (float(D[0]) / 180.0) * np.pi
+    D[1] = (float(D[1]) / 180.0) * np.pi
+    D[2] = (float(D[2]) / 180.0) * np.pi
     # perform rotation
     for atom in mol.atoms:
         # Get new point after rotation
@@ -1147,9 +1144,9 @@ def pmrotate(mol, Rp, D):
 
     """
     # convert to rad
-    D[0] = (float(D[0]) / 180.0) * pi
-    D[1] = (float(D[1]) / 180.0) * pi
-    D[2] = (float(D[2]) / 180.0) * pi
+    D[0] = (float(D[0]) / 180.0) * np.pi
+    D[1] = (float(D[1]) / 180.0) * np.pi
+    D[2] = (float(D[2]) / 180.0) * np.pi
     # perform rotation
     for atom in mol.atoms:
         # Get new point after rotation

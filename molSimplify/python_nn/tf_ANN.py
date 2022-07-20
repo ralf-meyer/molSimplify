@@ -164,12 +164,11 @@ def data_rescale(scaled_dat, train_mean, train_var, debug=False) -> np.ndarray:
 def data_normalize(data, train_mean, train_var, debug=False) -> np.ndarray:
     data = data.astype(float)  # Make sure the data is always in float form
     d = np.shape(train_mean)[0]
-    if debug:
-        print(('normalizing with number of dimensions = ' + str(d)))
-    ### double check the variance in the training data
+    # ## double check the variance in the training data
     delete_ind = list()
 
     if debug:
+        print(('normalizing with number of dimensions = ' + str(d)))
         print('shape of things in normalize:')
         print(('data.shape ' + str(data.shape)))
         print(('train_mean.shape ' + str(train_mean.shape)))

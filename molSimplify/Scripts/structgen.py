@@ -790,13 +790,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
                     break
                 i += 1
         elif nsteps != 0:
-            try:
-                n = nsteps
-            except AssertionError:
-                # To whoever encounters this: Please replace AssertionError
-                # with whatever we are actually trying to except. Really
-                # do not know what could raise an Exception here. RM 2022/02/17
-                n = 100
+            n = nsteps
             if debug:
                 print(('running ' + str(n) + ' steps'))
             forcefield.ConjugateGradients(n)
@@ -823,7 +817,7 @@ def openbabel_ffopt(ff, mol, connected, constopt, frozenats, frozenangles,
         # if len(connected) < 2:
         # mol.OBMol.localopt('mmff94',100) # add hydrogens and coordinates
         OBMol = mol.OBMol  # convert to OBMol
-        s = forcefield.Setup(OBMol, constr)
+        _ = forcefield.Setup(OBMol, constr)
         # force field optimize structure
         if OBMol.NumHvyAtoms() > 10:
             if debug:
@@ -1059,7 +1053,6 @@ def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBen
 
     """
     # rotate to align center of symmetry
-    globs = globalvars()
     r0 = corerefcoords
     r1 = lig3D.getAtom(atom0).coords()
     lig3Db = mol3D()
@@ -1086,6 +1079,7 @@ def align_lig_centersym(corerefcoords, lig3D, atom0, core3D, EnableAutoLinearBen
             # warning: skipping this part because
             # we no longer understand it
             if False:
+                globs = globalvars()
                 r1 = lig3D.getAtom(atom0).coords()
                 r2 = auxmol.getAtom(0).coords()
                 theta, u = rotation_params([1, 1, 1], r1, r2)
@@ -1345,9 +1339,9 @@ def rotate_catom_fix_Hs(lig3D, catoms, n, mcoords, core3D):
                     refpt = confrag3D.getAtomCoords(0)
                     u = vecdiff(refpt, anchor)
                     dtheta = 5
-                    objs = []
+                    # objs = []
                     objopt = 0
-                    localmaxs = []
+                    # localmaxs = []
                     thetas = list(range(0, 360, dtheta))
                     for theta in thetas:
                         confrag3Dtmp = rotate_around_axis(
@@ -2482,8 +2476,8 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                         break
                     # get center of mass
                     ligc = mol3D()
-                    for i in range(0, 4):  # 5 is the non-planar atom
-                        ligc.addAtom(lig3D.getAtom(catoms[i]))
+                    for c_i in range(0, 4):  # 5 is the non-planar atom
+                        ligc.addAtom(lig3D.getAtom(catoms[c_i]))
                     # translate ligand to the middle of octahedral
                     lig3D.translate(vecdiff(mcoords, ligc.centersym()))
                     # get plane
@@ -2551,8 +2545,8 @@ def mcomplex(args, ligs, ligoc, licores, globs):
                         break
                     # get center of mass
                     ligc = mol3D()
-                    for i in range(0, 6):
-                        ligc.addAtom(lig3D.getAtom(catoms[i]))
+                    for c_i in range(0, 6):
+                        ligc.addAtom(lig3D.getAtom(catoms[c_i]))
                     # translate metal to the middle of octahedral
                     core3D.translate(vecdiff(ligc.centersym(), mcoords))
                     bondl, exact_match = get_MLdist_database(

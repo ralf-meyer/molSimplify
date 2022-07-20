@@ -286,7 +286,7 @@ def ligand_comp_org(file_in, file_init_geo, catoms_arr, flag_deleteH=True, flag_
             if flag_deleteH:
                 tmp_mol.deleteHs()
                 tmp_org_mol.deleteHs()
-            mol0, U, d0, d1 = kabsch(tmp_org_mol, tmp_mol)
+            _ = kabsch(tmp_org_mol, tmp_mol)
             rmsd = tmp_mol.rmsd(tmp_org_mol)
             rmsd_arr.append(rmsd)
             atom_dist_max = tmp_mol.maxatomdist(tmp_org_mol)

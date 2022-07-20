@@ -1048,7 +1048,8 @@ def name_ts_complex(rootdir, core, geometry, ligs, ligoc, substrate, subcatoms,
         sminum = 0
         for i, lig in enumerate(ligs):
             if lig not in licores:
-                lig = lig.split('\t')[0]
+                # unused:
+                # lig = lig.split('\t')[0]
                 sminum += 1
                 name += '_smi' + str(int(sernum)+int(sminum)
                                      ) + '_' + str(ligoc[i])

@@ -433,7 +433,7 @@ def rmsd_reorder_rotate(p_atoms, q_atoms, p_coord, q_coord,
     if not reorder.lower() == "none":
         q_review = reorder_method(p_atoms, q_atoms, p_coord, q_coord)
         q_coord = q_coord[q_review]
-        q_atoms = q_atoms[q_review]
+        # q_atoms = q_atoms[q_review]
         # print("q_review", q_review)
 
     if rotation_method is None:
