@@ -356,7 +356,7 @@ def kabsch(mol0, mol1):
     # right-handed coordinate system.
     # And finally calculating the optimal rotation matrix U
     # see http://en.wikipedia.org/wiki/Kabsch_algorithm
-    V, S, W = np.linalg.svg(C)
+    V, S, W = np.linalg.svd(C)
     d = (np.linalg.det(V) * np.linalg.det(W)) < 0.0
     # Create Rotation matrix U
     if d:
