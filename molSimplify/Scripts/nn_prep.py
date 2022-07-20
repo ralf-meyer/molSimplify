@@ -76,7 +76,6 @@ def check_ligands(ligs, batlist, dents, tcats):
             # something unexpected happened!
             valid = False
         for i in range(0, n_ligs):
-            this_bat = batlist[i]
             this_lig = ligs[i]
             this_dent = dents[i]
             # mulitple points
@@ -234,8 +233,10 @@ def ANN_preproc(args, ligs: List[str], occs: List[int], dents: List[int],
             emsg.append("\n Oxidation state not available for this metal")
             ANN_reason = 'ox state not avail for metal'
     if valid:
-        high_spin, spin_ops = spin_classify(this_metal, spin, ox)
-        if not valid:
+        try:
+            high_spin, spin_ops = spin_classify(this_metal, spin, ox)
+        except KeyError:
+            valid = False
             emsg.append("\n this spin state not available for this metal")
             ANN_reason = 'spin state not availble for metal'
     if emsg:

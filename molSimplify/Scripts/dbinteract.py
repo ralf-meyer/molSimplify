@@ -567,10 +567,9 @@ def dbsearch(rundir, args, globs):
 
         print(('number of smiles strings BEFORE salt stripping: ' +
                mybash("cat " + outf + '| wc -l')))
-        flag = stripsalts(outf)
+        _ = stripsalts(outf)
         print(('number of smiles strings AFTER salt stripping: ' +
                mybash("cat " + outf + '| wc -l')))
-        # print('flag from salt stripping: ' + str(flag))
         print(('number of smiles strings BEFORE unique: ' +
                mybash("cat " + outf + '| wc -l')))
         cmd = obab + " -ismi " + outf + " -osmi -O " + outf + " --unique"
@@ -608,7 +607,7 @@ def dbsearch(rundir, args, globs):
     if args.dbsmarts or args.dbhuman:
         print(('number of smiles strings BEFORE SMARTS filter: ' +
                mybash("cat " + outf + '| wc -l')))
-        flag = matchsmarts(smistr, outf, catoms, args)
+        _ = matchsmarts(smistr, outf, catoms, args)
         print(('number of smiles strings AFTER SMARTS filter: ' +
                mybash("cat " + outf + '| wc -l')))
     if args.debug:

@@ -143,9 +143,7 @@ def tf_check_ligands(ligs: List[str], batslist: List[List[int]],
             # something unexpected happened!
             valid = False
         for i in range(0, n_ligs):
-            this_bat = batslist[i]
             this_lig = ligs[i]
-            this_dent = dents[i]
             # mulitple points
             if not (this_lig in unique_ligs):
                 unique_ligs.append(this_lig)
