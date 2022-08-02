@@ -327,6 +327,8 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath=False, graph_provided=F
         This output includes three csv files.
         This output also includes three folders called ligands, linkers, and sbus.
             These folders contain net and xyz files of the components of the MOF.
+        This output also includes a folder called logs.
+        This output also includes the xyz and net files for the cif being analyzed, written with the function writeXYZandGraph.
     xyzpath : str
         The path to where the xyz of the MOF structure will be written.
     graph_provided : bool

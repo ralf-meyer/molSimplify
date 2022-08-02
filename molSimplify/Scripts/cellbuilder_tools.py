@@ -112,7 +112,7 @@ def import_from_cif(fst, return_extra_cif_info=False):
     else:
         emsg.append("Error in reading of cif file by openbabel")
         exit_status = 1
-    with open(fst) as f:
+    with open(fst, errors='ignore') as f: # ignore takes care of unicode errors in some cifs
         lines = f.readlines()
         for line in lines:
             linesplit = line.split()

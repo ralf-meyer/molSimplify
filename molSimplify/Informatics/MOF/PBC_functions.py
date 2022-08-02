@@ -4,9 +4,11 @@ import networkx as nx
 from scipy.spatial import distance
 from scipy import sparse
 import copy
+import os
 from molSimplify.Informatics.MOF.atomic import organic, non_metals, noble_gases, metalloids, lanthanides, actinides, transition_metals
 from molSimplify.Informatics.MOF.atomic import alkali, alkaline_earth, main_group, metals
 from molSimplify.Informatics.MOF.atomic import METALS, MASS, COVALENT_RADII
+from molSimplify.Scripts.cellbuilder_tools import import_from_cif
 
 deg2rad = np.pi/180.0
 def readcif(name):
@@ -23,15 +25,14 @@ def readcif(name):
     cpar : numpy.ndarray
         The parameters (i.e. lattice constants) of the MOF cell. Specifically, A, B, C, alpha, beta, and gamma. Shape is (6,).
     atomtypes : list of str
-        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'.
+        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'. Length is the number of atoms.
     positions : numpy.ndarray
         The fractional positions of the atoms of the cif file. Shape is (number of atoms, 3).
 
     """
-    with open(name , 'r') as fi:
+    with open(name , 'r', errors='ignore') as fi: # ignore takes care of unicode errors in some cifs
         EIF = fi.readlines()
-        cond=True
-        cond2=False
+        cond=False
         atom_props_count=0
         atomlines=[]
         counter=0
@@ -68,26 +69,37 @@ def readcif(name):
                 temp = temp.replace('(','')
                 cell_gamma=float(temp)
                 cell_parameter_boundary[1]=counter+1
-            if cond2 and line_stripped.startswith("loop_"):
-                break
-            else:
-                if line_stripped.startswith("_atom") :
-                    atom_props_count+=1
-                    if line_stripped=="_atom_site_label":
-                        type_index=atom_props_count-1
-                    elif line_stripped=="_atom_site_fract_x":
-                        fracx_index=atom_props_count-1
-                    elif line_stripped=="_atom_site_fract_y":
-                        fracy_index=atom_props_count-1
-                    elif line_stripped=="_atom_site_fract_z":
-                        fracz_index=atom_props_count-1
-                    elif "charge" in line_stripped:
-                        charge_index=atom_props_count-1
-        
-                    cond2=True
-                elif cond2:
-                    if len(line_splitted)==atom_props_count:
-                        atomlines.append(line)
+            # if cond and line_stripped.startswith("loop_"):
+            #     break
+            # else:
+
+            if line_stripped.startswith("_atom") :
+
+                if line_stripped=="_atom_site_label" or line_stripped == '_atom_site_type_symbol':
+                    cond = True # We have entered the block with the desired atom information.
+                    # The reason for the or is that the order fo these lines can vary depending on cif
+                if line_stripped == '_atom_site_type_symbol':
+                    type_index=atom_props_count
+                elif line_stripped=="_atom_site_fract_x":
+                    fracx_index=atom_props_count
+                elif line_stripped=="_atom_site_fract_y":
+                    fracy_index=atom_props_count
+                elif line_stripped=="_atom_site_fract_z":
+                    fracz_index=atom_props_count
+                elif "charge" in line_stripped:
+                    charge_index=atom_props_count
+    
+                if cond:
+                    atom_props_count+=1 # Another atom property in the block we are interested in.
+
+            elif cond:
+
+                if len(line_splitted)==atom_props_count:
+                    atomlines.append(line)
+                elif line == '\n':
+                    continue # Allow for newlines between the _atom_ lines and the lines holding the atom information
+                else:
+                    break # Don't need to keep looking through the file, since we've seen all the desired information for all atoms. We left the block.
         
             counter+=1
         
@@ -101,7 +113,11 @@ def readcif(name):
                               float(ln[fracy_index].replace('(','').replace(')','')),
                               float(ln[fracz_index].replace('(','').replace(')',''))])
             ln[type_index] = ln[type_index].strip("_")
-            at_type=''.join([i for i in ln[type_index] if not i.isdigit()])
+            at_type = ln[type_index]
+            # for idx, char in enumerate(ln[type_index]): # Looking through the characters of the element symbol in order to remove any numbers
+            #     if char.isdigit(): # This means one of the characters in the atom type is a number.
+            #         at_type = ln[type_index][:idx] # Overwriting. Use the atom element symbol without numbers.
+            #         break # Get the characters up to the number, then stop
             atomtypes.append(at_type)
 
         cpar=np.array([cell_a,cell_b,cell_c,cell_alpha,cell_beta,cell_gamma])
@@ -285,7 +301,6 @@ def XYZ_connected(cell,cart_coords,adj_mat):
                 checked.append(j)
             # print(connected_components)
         counter+=1
-    print(fcoords.shape)
     return fcoords
 
 def writeXYZfcoords(filename,atoms,cell,fcoords):
@@ -327,7 +342,7 @@ def writeXYZandGraph(filename,atoms,cell,fcoords,molgraph):
     filename : str
         The path to where the xyz of the MOF structure will be written.
     atoms : list of str
-        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'.
+        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'. Length is the number of atoms.
     cell : numpy.ndarray
         The three Cartesian vectors representing the edges of the crystal cell. Shape is (3,3).
     fcoords : numpy.ndarray
@@ -467,25 +482,22 @@ def write2file(pt,fn,st):
 
 def write_cif(fname,cellprm,fcoords,atom_labels):
     """
-    TODO
+    Writes a cif file with the provided parameters.
 
     Parameters
     ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
+    fname : str
+        The path to the cif file to be written.
+    cellprm : numpy.ndarray
+        The parameters (i.e. lattice constants) of the MOF cell. Specifically, A, B, C, alpha, beta, and gamma. Shape is (6,).
+    fcoords : numpy.ndarray
+        The fractional positions of the atoms of the cif file. Shape is (number of atoms, 3).
+    atom_labels : list of str
+        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'. Length is the number of atoms.
 
     Returns
     -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
+    None
 
     """
     with open(fname,'w') as f_cif:
@@ -665,15 +677,9 @@ def frac_coord(coord,cell):
         TODO
     TODO : TODO
         TODO
-    TODO : TODO
-        TODO
 
     Returns
     -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
     TODO : TODO
         TODO
 
@@ -764,15 +770,23 @@ def compute_distance_matrix3(cell, cart_coords, num_cells = 1):
         The distance of each atom to each other atom. Shape is (number of atoms, number of atoms).
 
     """
-    pos = np.arange(-num_cells, num_cells+1, 1)
-    combos = np.array(np.meshgrid(pos, pos, pos)).T.reshape(-1,3)
-    shifts = np.sum(np.expand_dims(cell, axis=0)*np.expand_dims(combos, axis=-1), axis=1)
+    pos = np.arange(-num_cells, num_cells+1, 1) # [-1, 0, 1] if num_cells is 1
+    combos = np.array(np.meshgrid(pos, pos, pos)).T.reshape(-1,3) # The 27 combinations of -1, 0, 1 if num_cells is 1
+    shifts = np.sum(np.expand_dims(cell, axis=0)*np.expand_dims(combos, axis=-1), axis=1) # The possible shifts by the crystal cell vectors.
     # NxNxCells distance array
-    shifted = np.expand_dims(cart_coords, axis=1) + np.expand_dims(shifts, axis=0)
-    dist = np.expand_dims(np.expand_dims(cart_coords, axis=1), axis=1) - np.expand_dims(shifted,axis=0)
-    dist = np.sqrt(np.sum(np.square(dist), axis=-1))
-    # But we want only min
-    distance_matrix = np.min(dist, axis=-1)
+    shifted = np.expand_dims(cart_coords, axis=1) + np.expand_dims(shifts, axis=0) # The shifted Cartesian coordinates. Shape is (number of atoms, number of combinations in combos, 3)
+
+    # The distances between atoms, across different crystal cell shifts, for the three Cartesian dimensions.
+    dist = np.expand_dims(np.expand_dims(cart_coords, axis=1), axis=1) - np.expand_dims(shifted, axis=0) # Shape is (number of atoms, number of atoms, number of combinations in combos, 3)
+        # The shape of np.expand_dims(np.expand_dims(cart_coords, axis=1), axis=1) is (number of atoms, 1, 1, 3)
+        # The shape of np.expand_dims(shifted, axis=0) is (1, number of atoms, number of combinations in combos, 3)
+        # numpy subtraction expands out the axes of length one for the subtraction.
+
+    # The standard distance formula of square root of x^2 + y^2 + z^2
+    dist = np.sqrt(np.sum(np.square(dist), axis=-1)) # Shape is (number of atoms, number of atoms, number of combinations in combos)
+
+    # But we want only the minimum
+    distance_matrix = np.min(dist, axis=-1) # Consider the distance between two atoms at the crystal cell shift where they are closest.
     return distance_matrix
 
 
@@ -884,7 +898,7 @@ def compute_adj_matrix(distance_mat,allatomtypes):
     distance_mat : numpy.ndarray
         The distance of each atom to each other atom. Shape is (number of atoms, number of atoms).
     allatomtypes : list of str
-        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'.
+        The atom types of the cif file, indicated by periodic symbols like 'O' and 'Cu'. Length is the number of atoms.
 
     Returns
     -------
@@ -1043,3 +1057,138 @@ def include_extra_shells(SBUlists, subgraphlists, molcif, adjmat):
         subgraphs.append(adjmat[np.ix_(list(SBUset),list(SBUset))])
 
     return SBUs,subgraphs
+
+def disorder_detector(name):
+    """
+    Reads a cif file and returns information which atoms have fractional occupancy.
+
+    Parameters
+    ----------
+    name : str
+        The path of the cif file to be read.
+
+    Returns
+    -------
+    disordered_atom_indices : list of ints
+        The indices of atoms with fractional occupancies.
+    disordered_atom_types : list of str
+        The elemental symbols of atoms with fractional occupancies.
+
+    """
+    with open(name , 'r', errors='ignore') as fi: # ignore takes care of unicode errors in some cifs
+        EIF = fi.readlines()
+        cond=False
+        occupancy_index=False
+        atom_props_count=0
+        atomlines=[]
+        for line in EIF:
+            line_stripped=line.strip()
+            if (not line) or line_stripped.startswith("#"):
+                continue
+            line_splitted=line.split()
+            
+            if line_stripped.startswith("_atom") :
+
+                if line_stripped=="_atom_site_label" or line_stripped == '_atom_site_type_symbol':
+                    cond=True # We have entered the block with the desired atom information.
+                    # The reason for the or is that the order fo these lines can vary depending on cif
+                if line_stripped == '_atom_site_type_symbol':
+                    type_index=atom_props_count
+                elif line_stripped=="_atom_site_occupancy":
+                    occupancy_index=atom_props_count
+    
+                if cond:
+                    atom_props_count+=1 # Another atom property in the block we are interested in.
+
+            elif cond:
+                if len(line_splitted)==atom_props_count:
+                    atomlines.append(line)
+                else:
+                    break # Don't need to keep looking through the file, since we've seen all the desired information for all atoms. We left the block.
+
+                
+        disordered_atom_indices=[]
+        disordered_atom_types = []
+
+        if occupancy_index != False: # This means that occupancy information is available
+            for idx, at in enumerate(atomlines): # Go through the lines of the cif with atom specific information
+                ln=at.strip().split()
+
+                current_atom_occupancy = ln[occupancy_index].split('(')[0] # Excluding parentheses in order to convert to float.
+                current_atom_occupancy = float(current_atom_occupancy)
+
+                if current_atom_occupancy != 1: # Disordered atom
+
+                    disordered_atom_indices.append(idx)
+
+                    ln[type_index] = ln[type_index].strip("_")
+                    at_type = ln[type_index]
+                    disordered_atom_types.append(at_type)
+
+        return disordered_atom_indices, disordered_atom_types
+
+def solvent_removal(cif_path, new_cif_path):
+    """
+    It is recommended that get_primitive be run before this function is applied.
+    Reads a cif file, removes floating solvent, and writes the cif to the provided path.
+
+    Parameters
+    ----------
+    cit_path : str
+        The path of the cif file to be read.
+    new_cit_path : str
+        The path to which the modified cif file will be written.
+
+    Returns
+    -------
+    None
+
+    """
+
+    # Much of this code parallels that in the beginning of the MOF_descriptors.get_MOF_descriptors function
+
+    # Loading the cif and getting information about the crystal cell.
+    cpar, allatomtypes, fcoords = readcif(cif_path)
+    cell_v = mkcell(cpar)
+    cart_coords = fractional2cart(fcoords, cell_v)
+    name = os.path.basename(cif_path).strip(".cif")
+    if len(cart_coords) > 2000: # Don't deal with large cifs because of computational resources required for their treatment.
+        raise Exception("Too large cif file")
+
+    # Assuming that the cif does not have graph information of the structure.
+    distance_mat = compute_distance_matrix3(cell_v,cart_coords)
+    try:
+        adj_matrix=compute_adj_matrix(distance_mat,allatomtypes)
+    except NotImplementedError:
+        raise Exception("Failed due to atomic overlap")
+
+    # Getting the adjacency matrix (bond information).
+    adj_matrix = sparse.csr_matrix(adj_matrix)
+    molcif,_,_,_,_ = import_from_cif(cif_path, True) # molcif is a mol3D class of a single unit cell (or the cell of the cif file)
+    molcif.graph = adj_matrix.todense()
+
+    # Finding the connected components
+    n_components, labels_components = sparse.csgraph.connected_components(csgraph=adj_matrix, directed=False, return_labels=True)
+    metal_list = set([at for at in molcif.findMetal(transition_metals_only=False)]) # the atom indices of the metals
+    if not len(metal_list) > 0:
+        raise Exception("No metal in the structure.")
+
+    solvent_indices = [] # This list will be filled in with the indices of solvent atoms.
+
+    for comp in range(n_components):
+        inds_in_comp = [i for i in range(len(labels_components)) if labels_components[i]==comp]
+        if not set(inds_in_comp) & metal_list: # In the context of sets, & is the intersection. If the intersection is null, the (&) expression is False; the `not` would then make it True.
+            # If this if statement is entered, there is an entire connected component that has no metals in it. No connections to any metal. I.e. solvent.
+
+            solvent_indices.extend(inds_in_comp)
+
+    # Removing the atoms corresponding to the solvent.
+    number_of_atoms = len(allatomtypes)
+    nonsolvent_indices = [_i for _i in list(range(number_of_atoms)) if (_i not in solvent_indices)] # The indices we want to keep.
+    allatomtypes = [value for (_i, value) in enumerate(allatomtypes) if (_i in nonsolvent_indices)]
+    fcoords = fcoords[nonsolvent_indices]
+
+    # print(f'The solvent indices are {solvent_indices}')
+
+    # Writing the cif files
+    write_cif(new_cif_path,cpar,fcoords,allatomtypes)
