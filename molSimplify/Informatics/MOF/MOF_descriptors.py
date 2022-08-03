@@ -10,7 +10,7 @@ import pandas as pd
 from scipy.spatial import distance
 from scipy import sparse
 import itertools
-from molSimplify.Informatics.MOF.PBC_functions import * # writeXYZandGraph, compute_distance_matrix, compute_adj_matrix, readcif, mkcell, fractional2cart, compute_distance_matrix3, get_closed_subgraph, linker_length, ligand_detect, slice_mat, write2file, include_extra_shells
+from molSimplify.Informatics.MOF.PBC_functions import * # writeXYZandGraph, compute_adj_matrix, readcif, mkcell, fractional2cart, compute_distance_matrix3, get_closed_subgraph, linker_length, ligand_detect, slice_mat, write2file, include_extra_shells
 import re
 
 #### NOTE: In addition to molSimplify's dependencies, this portion requires
@@ -565,7 +565,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath=False, graph_provided=F
                 linker_adjmat = np.array(linker_subgraphlist[ii].todense())
                 pr_image_organic = ligand_detect(cell_v,linker_cart_coords,linker_adjmat,linkeranchors_list) # Periodic images for the organic component
                 sbu_temp = linkeranchors_atoms.copy()
-                sbu_temp.update({val for val in initial_SBU_list[list(sbu_connect_list)[0]]}) # Adding atoms. Not sure why the [0] is there? 
+                sbu_temp.update({val for val in initial_SBU_list[list(sbu_connect_list)[0]]}) # Adding atoms. Not sure why the [0] is there? TODO 
                 sbu_temp = list(sbu_temp)
                 sbu_cart_coords = np.array([
                     at.coords() for at in [molcif.getAtom(val) for val in sbu_temp]])

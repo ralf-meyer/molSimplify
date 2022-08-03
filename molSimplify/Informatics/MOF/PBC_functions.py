@@ -519,36 +519,6 @@ def write_cif(fname,cellprm,fcoords,atom_labels):
        f_cif.write("_atom_site_type_symbol\n")
        for i,atom in enumerate(atom_labels):
            f_cif.write("%-5s %8s %8s %8s %5s\n"%(atom,fcoords[i,0],fcoords[i,1],fcoords[i,2],"%s"%(atom)))
-    
-def min_img_distance(coords1, coords2, cell):
-    """
-    TODO
-
-    Parameters
-    ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    Returns
-    -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    """
-    invcell=np.linalg.inv(cell)
-    one = np.dot(coords1,invcell) % 1
-    two = np.dot(coords2,invcell) % 1
-    three = np.around(one - two)
-    four = np.dot(one - two - three, cell)
-    return np.linalg.norm(four)
 
 def cell_to_cellpar(cell, radians=False):
     """
@@ -636,120 +606,25 @@ def fractional2cart(fcoord, cell):
     """
     return np.dot(fcoord,cell)
 
-def min_img_distance2(coord1, coord2, cell):
-    """
-    TODO
-
-    Parameters
-    ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    Returns
-    -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    """
-    invcell=np.linalg.inv(cell)
-    supercells = np.array(list(itertools.product((-1, 0, 1), repeat=3)))
-    fcoords = np.dot(coord2,invcell) + supercells
-    coords = np.array([np.dot(j,cell) for j in fcoords])
-    dists = distance.cdist([coord1], coords)
-    return np.amin(dists)
-
-
-def frac_coord(coord,cell):
+def frac_coord(coord, cell):
     """
     Convert from Cartesian coordinates to fractional coordinates.
 
     Parameters
     ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
+    coord : numpy.ndarray
+        The Cartesian coordinates of the atoms of the cif file. Shape is (number of atoms, 3).
+    cell : The three Cartesian vectors representing the edges of the crystal cell.
+        Shape is (3,3).
 
     Returns
     -------
-    TODO : TODO
-        TODO
+    np.dot(coord,invcell) : numpy.ndarray
+        The fractional positions of the crystal atoms. Shape is (number of atoms, 3).
 
     """
     invcell=np.linalg.inv(cell)
     return np.dot(coord,invcell)
-
-def compute_distance_matrix(cell,cart_coords):
-    """
-    TODO
-
-    Parameters
-    ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    Returns
-    -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    """
-    distance_matrix=np.zeros([len(cart_coords),len(cart_coords)])
-    for i in range(len(cart_coords)):
-        for j in range(i+1,len(cart_coords)):
-            d=min_img_distance(cart_coords[i],cart_coords[j],cell)
-            distance_matrix[i,j]=d
-            distance_matrix[j,i]=d
-
-    return distance_matrix
-
-def compute_distance_matrix2(cell,cart_coords):
-    """
-    TODO
-
-    Parameters
-    ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    Returns
-    -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-
-    """
-    distance_matrix=np.zeros([len(cart_coords),len(cart_coords)])
-    for i in range(len(cart_coords)):
-        for j in range(i+1,len(cart_coords)):
-            d=min_img_distance2(cart_coords[i],cart_coords[j],cell)
-            distance_matrix[i,j]=d
-            distance_matrix[j,i]=d
-
-    return distance_matrix
 
 def compute_distance_matrix3(cell, cart_coords, num_cells = 1):
     """
@@ -1192,3 +1067,120 @@ def solvent_removal(cif_path, new_cif_path):
 
     # Writing the cif files
     write_cif(new_cif_path,cpar,fcoords,allatomtypes)
+
+
+
+
+
+
+##### Deprecated #####
+
+# The functions compute_distance_matrix, compute_distance_matrix2, and compute_distance_matrix3 all do the same thing.
+# However, compute_distance_matrix3 is significantly faster than compute_distance_matrix2, which in turn is faster than compute_distance_matrix.
+# This is due to the use of for loops in compute_distance_matrix and compute_distance_matrix2, versus the vectorized (pre-compiled C code) numpy functions in compute_distance_matrix3.
+
+def compute_distance_matrix(cell, cart_coords):
+    """
+    Computes the pairwise distances between all atom pairs in the crystal cell. First version of this function.
+
+    Parameters
+    ----------
+    cell : numpy.ndarray
+        The three Cartesian vectors representing the edges of the crystal cell. Shape is (3,3).
+    cart_coords : numpy.ndarray
+        The Cartesian coordinates of the crystal atoms. Shape is (number of atoms, 3).
+
+    Returns
+    -------
+    distance_matrix : numpy.ndarray
+        The distance of each atom to each other atom. Shape is (number of atoms, number of atoms).
+
+    """
+    distance_matrix=np.zeros([len(cart_coords),len(cart_coords)]) # This array will be filled in.
+    for i in range(len(cart_coords)): # Looping through all combinations of atoms.
+        for j in range(i+1,len(cart_coords)):
+            d=min_img_distance(cart_coords[i],cart_coords[j],cell)
+            distance_matrix[i,j]=d # Filling in the distance numpy array.
+            distance_matrix[j,i]=d
+
+    return distance_matrix
+
+def min_img_distance(coords1, coords2, cell):
+    """
+    Calculates the distance between two atoms specified by coords1 and coords2.
+    The minimum image distance is taken, meaning the shortest distance between the two atoms with consideration of the repeating periodic structure of the MOF.
+
+    Parameters
+    ----------
+    coords1 : numpy.ndarray
+        The Cartesian coordinates of the first atom under consideration. Shape is (3,).
+    coords2 : numpy.ndarray
+        The Cartesian coordinates of the second atom under consideration. Shape is (3,).
+    cell : numpy.ndarray
+        The three Cartesian vectors representing the edges of the crystal cell. Shape is (3,3).
+
+    Returns
+    -------
+    np.linalg.norm(four) : numpy.float64
+        The distance between the two atoms.
+
+    """
+    invcell=np.linalg.inv(cell) # The inverse cell parameters
+    one = np.dot(coords1,invcell) % 1 # Fractional coordinates. % is modulo.
+    two = np.dot(coords2,invcell) % 1 # Fractional coordinates.
+    three = np.around(one - two) # numpy array of three entries. Possible values of entries are -1, 0, and 1. Corresponds to the crystal cell shift that gets the two atoms the closest.
+    four = np.dot(one - two - three, cell) # Converting back to Cartesian coordinates from fractional.
+    return np.linalg.norm(four)
+
+def compute_distance_matrix2(cell, cart_coords):
+    """
+    Computes the pairwise distances between all atom pairs in the crystal cell. Second version of this function.
+
+    Parameters
+    ----------
+    cell : numpy.ndarray
+        The three Cartesian vectors representing the edges of the crystal cell. Shape is (3,3).
+    cart_coords : numpy.ndarray
+        The Cartesian coordinates of the crystal atoms. Shape is (number of atoms, 3).
+
+    Returns
+    -------
+    distance_matrix : numpy.ndarray
+        The distance of each atom to each other atom. Shape is (number of atoms, number of atoms).
+
+    """
+    distance_matrix=np.zeros([len(cart_coords),len(cart_coords)]) # This array will be filled in.
+    for i in range(len(cart_coords)): # Looping through all combinations of atoms.
+        for j in range(i+1,len(cart_coords)):
+            d=min_img_distance2(cart_coords[i],cart_coords[j],cell)
+            distance_matrix[i,j]=d # Filling in the distance numpy array.
+            distance_matrix[j,i]=d
+
+    return distance_matrix
+
+def min_img_distance2(coords1, coords2, cell):
+    """
+    Calculates the distance between two atoms specified by coords1 and coords2.
+    The minimum image distance is taken, meaning the shortest distance between the two atoms with consideration of the repeating periodic structure of the MOF.
+
+    Parameters
+    ----------
+    coords1 : numpy.ndarray
+        The Cartesian coordinates of the first atom under consideration. Shape is (3,).
+    coords2 : numpy.ndarray
+        The Cartesian coordinates of the second atom under consideration. Shape is (3,).
+    cell : numpy.ndarray
+        The three Cartesian vectors representing the edges of the crystal cell. Shape is (3,3).
+
+    Returns
+    -------
+    np.amin(dists) : numpy.float64
+        The distance between the two atoms.
+
+    """
+    invcell=np.linalg.inv(cell) # The inverse cell parameters
+    supercells = np.array(list(itertools.product((-1, 0, 1), repeat=3))) # 27 possible crystal cell shifts.
+    fcoords = np.dot(coords2,invcell) + supercells # Many different versions of coords2, shifted different linear combinations of the crystal cell vectors.
+    coords = np.array([np.dot(j,cell) for j in fcoords]) # Converting to Cartesian coordinates.
+    dists = distance.cdist([coords1], coords) # Euclidean distance
+    return np.amin(dists) # Take the minimum, corresponding to the distance between the two atoms at their closest, when considering the periodic structure of a MOF.
