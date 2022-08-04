@@ -4,10 +4,7 @@ import networkx as nx
 from scipy.spatial import distance
 from scipy import sparse
 import copy
-import os
-from molSimplify.Informatics.MOF.atomic import organic, non_metals, noble_gases, metalloids, lanthanides, actinides, transition_metals
-from molSimplify.Informatics.MOF.atomic import alkali, alkaline_earth, main_group, metals
-from molSimplify.Informatics.MOF.atomic import METALS, MASS, COVALENT_RADII
+from molSimplify.Informatics.MOF.atomic import lanthanides, alkali, metals, COVALENT_RADII
 from molSimplify.Scripts.cellbuilder_tools import import_from_cif
 
 deg2rad = np.pi/180.0
@@ -86,8 +83,8 @@ def readcif(name):
                     fracy_index=atom_props_count
                 elif line_stripped=="_atom_site_fract_z":
                     fracz_index=atom_props_count
-                elif "charge" in line_stripped:
-                    charge_index=atom_props_count
+                # elif "charge" in line_stripped:
+                #     charge_index=atom_props_count
     
                 if cond:
                     atom_props_count+=1 # Another atom property in the block we are interested in.
@@ -104,9 +101,7 @@ def readcif(name):
             counter+=1
         
         positions=[]
-        numbers=[]
         atomtypes=[]
-        atoms=[]
         for cn,at in enumerate(atomlines):
             ln=at.strip().split()
             positions.append([float(ln[fracx_index].replace('(','').replace(')','')),
@@ -143,7 +138,6 @@ def compute_image_flag(cell,fcoord1,fcoord2):
         The nearest cell shift of fcoord2 to fcoord1. Shape is (3,). Values will be -1, 0, or 1.
 
     """
-    invcell=np.linalg.inv(cell) # The matrix inverse.
     supercells = np.array(list(itertools.product((-1, 0, 1), repeat=3)))
     fcoords = fcoord2 + supercells # 27 versions of fcoord2, shifted some cells over in different directions
     coords = np.array([np.dot(j, cell) for j in fcoords]) # Cartesian coordinates
@@ -275,7 +269,6 @@ def XYZ_connected(cell,cart_coords,adj_mat):
     connected_components=[0] # This list will be grown to include all atoms that are part of the linker or sbu.
     checked=[] # Keeps tracked of the indices of atoms that have already been checked.
     counter=0
-    import networkx as nx
     from scipy import sparse
     n_components, labels_components = sparse.csgraph.connected_components(csgraph=adj_mat, directed=False, return_labels=True)
     # print(n_components,'comp',labels_components)
@@ -561,30 +554,29 @@ def cell_to_cellpar(cell, radians=False):
 
 def findPaths(G,u,n):
     """
-    TODO
+    Finds paths between atom u and atoms n bonds away.
 
     Parameters
     ----------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
+    G : networkx.classes.graph.Graph
+        networkx graph for the linker of interest.
+    u : int
+        The index of the anchor atom's index in the linker list of indices.
+    n : int
+        How many bonds away one functionalized atom should be from another.
 
     Returns
     -------
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
-    TODO : TODO
-        TODO
+    paths : list of list of int
+        Inner lists will be length four, if n is three. All inner lists start with u.
+        Note, may return [[u]] instead if n is zero. [[u]] is a list of list of int.
 
     """
     if n==0:
         return [[u]]
-    paths = [[u]+path for neighbor in G.neighbors(u) for path in findPaths(G,neighbor,n-1) if u not in path]
+    paths = [[u]+path for neighbor in G.neighbors(u) for path in findPaths(G,neighbor,n-1) if u not in path] # recursive
+        # if u not in path ensures no atom is used twice in a path.
+        # Example of paths: [[12, 3, 7, 6], [12, 3, 7, 14], [12, 4, 0, 14], [12, 4, 0, 15], [12, 4, 9, 5], [12, 4, 9, 11]]
     return paths
 
 def fractional2cart(fcoord, cell):
@@ -750,7 +742,6 @@ def make_supercell(cell,atoms,fcoords,exp_coeff):
         for j in range(exp_coeff[1]):
             for k in range(exp_coeff[2]):
                 for na,atom in enumerate(atoms):
-                    cpatom={}
                     fc=fcoords[na]
                     fx = fc[0]/exp_coeff[0] + float(i)/exp_coeff[0]
                     fy = fc[1]/exp_coeff[1] + float(j)/exp_coeff[1]
@@ -1026,7 +1017,6 @@ def solvent_removal(cif_path, new_cif_path):
     cpar, allatomtypes, fcoords = readcif(cif_path)
     cell_v = mkcell(cpar)
     cart_coords = fractional2cart(fcoords, cell_v)
-    name = os.path.basename(cif_path).strip(".cif")
     if len(cart_coords) > 2000: # Don't deal with large cifs because of computational resources required for their treatment.
         raise Exception("Too large cif file")
 

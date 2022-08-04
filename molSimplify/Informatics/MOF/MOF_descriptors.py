@@ -102,7 +102,6 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name, cell, anchorin
     lc_descriptor_list = []
     lc_names = []
     names = []
-    n_sbu = len(SBUlist)
     descriptor_names = []
     descriptors = []
     if sbupath:
@@ -258,8 +257,6 @@ def make_MOF_linker_RACs(linkerlist, linker_subgraphlist, molcif, depth, name, c
 
     #### This function makes full scope linker RACs for MOFs ####
     descriptor_list = []
-    nlink = len(linkerlist)
-    descriptor_names = []
     descriptors = []
     if linkerpath:
         linker_descriptor_path = os.path.dirname(linkerpath)
@@ -464,6 +461,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath=False, graph_provided=F
     """""""""
     step 1: metallic part
         removelist = metals (1) + atoms only connected to metals (2) + H connected to (1+2)
+            Actually, it looks like only (1) and (2). Not H connected to (1+2)
         SBUlist = removelist + 1st coordination shell of the metals
     removelist = set()
     Logs the atom types of the connecting atoms to the metal in logpath.
@@ -507,7 +505,6 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath=False, graph_provided=F
     connections_list = copy.deepcopy(linker_list)
     connections_subgraphlist = copy.deepcopy(linker_subgraphlist)
     linker_length_list = [len(linker_val) for linker_val in linker_list] # The number of atoms in each linker.
-    adjmat = adj_matrix.todense()
     """""""""
     find all anchoring atoms on linkers and ligands (lc identification)
     """""""""
@@ -528,7 +525,6 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath=False, graph_provided=F
     """""""""
     initial_SBU_list, initial_SBU_subgraphlist = get_closed_subgraph(removelist.copy(), linkers.copy(), adj_matrix)
     templist = linker_list.copy()
-    tempgraphlist = linker_subgraphlist.copy()
     long_ligands = False
     max_min_linker_length , min_max_linker_length = (0,100) # The maximum value of the minimum linker length, and the minimum value of the maximum linker length. Updated later.
     for ii, atoms_list in reversed(list(enumerate(linker_list))): # Loop over all linker subgraphs
