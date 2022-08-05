@@ -4,8 +4,13 @@ import networkx as nx
 from scipy.spatial import distance
 from scipy import sparse
 import copy
-from molSimplify.Informatics.MOF.atomic import lanthanides, alkali, metals, COVALENT_RADII
 from molSimplify.Scripts.cellbuilder_tools import import_from_cif
+from molSimplify.Informatics.MOF.atomic import (
+    COVALENT_RADII,
+    alkali, 
+    lanthanides, 
+    metals,     
+    )
 
 deg2rad = np.pi/180.0
 def readcif(name):

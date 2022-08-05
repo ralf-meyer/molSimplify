@@ -1,17 +1,36 @@
-from molSimplify.Scripts.cellbuilder_tools import * # import_from_cif
-from molSimplify.Classes.mol3D import mol3D
-from molSimplify.Informatics.autocorrelation import * # generate_atomonly_autocorrelations, generate_atomonly_deltametrics, generate_full_complex_autocorrelations, generate_multimetal_autocorrelations, full_autocorrelation
-from molSimplify.Informatics.misc_descriptors import *
-from molSimplify.Informatics.graph_analyze import *
-from molSimplify.Informatics.RACassemble import * # append_descriptors
 import os
+import re
+import copy
+from scipy import sparse
 import numpy as np
 import pandas as pd
-from scipy.spatial import distance
-from scipy import sparse
-import itertools
-from molSimplify.Informatics.MOF.PBC_functions import * # writeXYZandGraph, compute_adj_matrix, readcif, mkcell, fractional2cart, compute_distance_matrix3, get_closed_subgraph, linker_length, ligand_detect, slice_mat, write2file, include_extra_shells
-import re
+from molSimplify.Classes.mol3D import mol3D
+from molSimplify.Scripts.cellbuilder_tools import import_from_cif
+from molSimplify.Informatics.RACassemble import append_descriptors
+from molSimplify.Informatics.autocorrelation import (
+    generate_atomonly_autocorrelations, 
+    generate_atomonly_deltametrics, 
+    generate_full_complex_autocorrelations, 
+    generate_multimetal_autocorrelations, 
+    generate_multimetal_deltametrics,
+    full_autocorrelation, 
+    )
+from molSimplify.Informatics.MOF.PBC_functions import (
+    compute_adj_matrix, 
+    compute_distance_matrix3, 
+    fractional2cart, 
+    get_closed_subgraph, 
+    include_extra_shells, 
+    ligand_detect, 
+    linker_length, 
+    mkcell, 
+    readcif, 
+    slice_mat, 
+    write2file, 
+    writeXYZandGraph, 
+    XYZ_connected,
+    )
+
 
 #### NOTE: In addition to molSimplify's dependencies, this portion requires
 #### pymatgen to be installed. The RACs are intended to be computed
@@ -97,7 +116,6 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name, cell, anchorin
         The values of the RAC lc features.
 
     """
-
     descriptor_list = []
     lc_descriptor_list = []
     lc_names = []
@@ -114,7 +132,6 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name, cell, anchorin
             lc_descriptors = pd.read_csv(sbu_descriptor_path+'/lc_descriptors.csv')
         else:
             lc_descriptors = pd.DataFrame()
-
     """""""""
     Loop over all SBUs as identified by subgraphs. Then create the mol3Ds for each SBU.
     """""""""
@@ -170,11 +187,11 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name, cell, anchorin
                     descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],results_dictionary['results'],'D_func','all')
                     # print('4',len(descriptor_names),len(descriptors))
                 else: # There are no functional atoms.
-                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list([numpy.zeros(int(6*(depth + 1)))]),'func','all')
-                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list([numpy.zeros(int(6*(depth + 1)))]),'D_func','all')
+                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list([np.zeros(int(6*(depth + 1)))]),'func','all')
+                    descriptor_names, descriptors = append_descriptors(descriptor_names, descriptors,results_dictionary['colnames'],list([np.zeros(int(6*(depth + 1)))]),'D_func','all')
                     # print('5b',len(descriptor_names),len(descriptors))
                 for val in descriptors:
-                    if not (type(val) == float or isinstance(val, numpy.float64)):
+                    if not (type(val) == float or isinstance(val, np.float64)):
                         print('Mixed typing. Please convert to python float, and avoid np float')
                         raise AssertionError('Mixed typing creates issues. Please convert your typing.')
                 descriptor_names += ['name']
@@ -186,6 +203,7 @@ def make_MOF_SBU_RACs(SBUlist, SBU_subgraph, molcif, depth, name, cell, anchorin
                 lc_descriptor_list.append(descriptors)
                 if j == 0:
                     lc_names = descriptor_names
+        
         averaged_lc_descriptors = np.mean(np.array(lc_descriptor_list), axis=0)
         lc_descriptors.to_csv(sbu_descriptor_path+'/lc_descriptors.csv',index=False)
         descriptors = []
@@ -643,7 +661,7 @@ def get_MOF_descriptors(data, depth, path=False, xyzpath=False, graph_provided=F
     if len(linker_subgraphlist)>=1: # Featurize cases that did not fail.
         try:
         # if True:
-            descriptor_names, descriptors, lc_descriptor_names, lc_descriptors = make_MOF_SBU_RACs(SBU_list, SBU_subgraphlist, molcif, depth, name , cell_v,anc_atoms, sbupath, connections_list, connections_subgraphlist)
+            descriptor_names, descriptors, lc_descriptor_names, lc_descriptors = make_MOF_SBU_RACs(SBU_list, SBU_subgraphlist, molcif, depth, name , cell_v, anc_atoms, sbupath, connections_list, connections_subgraphlist)
             lig_descriptor_names, lig_descriptors = make_MOF_linker_RACs(linker_list, linker_subgraphlist, molcif, depth, name, cell_v, linkerpath)
             full_names = descriptor_names+lig_descriptor_names+lc_descriptor_names #+ ECFP_names
             full_descriptors = list(descriptors)+list(lig_descriptors)+list(lc_descriptors)
