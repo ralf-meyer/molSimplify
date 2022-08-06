@@ -762,7 +762,7 @@ def compute_adj_matrix(distance_mat,allatomtypes):
     Calculates what atoms are bonded to each other.
 
     Bonding is trickier in MOFs than in TM complexes due to metal-metal bonding, motivating the existence of this function
-    even though a similar one exists in  mol3D.
+    even though a similar one exists in mol3D.
 
     Parameters
     ----------
@@ -913,7 +913,7 @@ def include_extra_shells(SBUlists, subgraphlists, molcif, adjmat):
     SBUs : list of lists of numpy.int64
         The expanded atom indices of each SBU.
     subgraphs : list of scipy.sparse.csr.csr_matrix
-        The atom bonding information of the SBUs in the variable SBUs. Which atoms are bonded to which.
+        The atom bonding information of the SBUs in the variable `SBUs`. Which atoms are bonded to which.
 
     """
 
