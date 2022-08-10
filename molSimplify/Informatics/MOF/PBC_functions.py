@@ -931,7 +931,7 @@ def include_extra_shells(SBUlists, subgraphlists, molcif, adjmat):
 
 def disorder_detector(name):
     """
-    Reads a cif file and returns information which atoms have fractional occupancy.
+    Reads a cif file and returns information on which atoms have fractional occupancy.
 
     Parameters
     ----------
@@ -1023,7 +1023,7 @@ def solvent_removal(cif_path, new_cif_path):
     cell_v = mkcell(cpar)
     cart_coords = fractional2cart(fcoords, cell_v)
     if len(cart_coords) > 2000: # Don't deal with large cifs because of computational resources required for their treatment.
-        raise Exception("Too large cif file")
+        raise Exception("Too large of a cif file")
 
     # Assuming that the cif does not have graph information of the structure.
     distance_mat = compute_distance_matrix3(cell_v,cart_coords)
