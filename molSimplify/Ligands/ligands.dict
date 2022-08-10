@@ -1,5 +1,5 @@
 # ligand name, ligand structure file, abbreviation (unique), connection atoms, groups, force field (BA:always,B:before only,A:after only,N:no), formal charge
-# if connecting atoms 
+# if connecting atoms
 12crown4:12crown4.mol,12crown4,6 9 0 3,build tetradentate,N,0
 Hpyrrole:Hpyrrole.mol,Hpyrl,0,build organic,BA,-1
 N-quinolinylbutyramidate:N-quinolinylbutyramidate.xyz,n-qnbuam,9 2,build small,BA,-1
@@ -48,7 +48,7 @@ bromide:bromide.mol,brode,0,build functionalize small,N,-1
 c2:c2.mol,c2,0,build functionalize small,N,0
 caprolactone:caprolactone.mol,caprolactone,4,bulky mono,N,0
 carbonyl:carbonyl.mol,crbn,0,build small,N,0
-carboxyl:carboxyl.mol,crbx,1,functionalize small,N,0
+carboxyl:carboxyl.mol,crbx,1,functionalize small,N,-1
 cat:cat.mol,cat,0 7,bulkybi build,BA,-2
 chloride:chloride.mol,chlde,0,build functionalize small,N,-1
 chloropyridine:chloropyridine.mol,chloropyrdine,3,build organic,BA,0
@@ -183,7 +183,7 @@ ox:oxalate.mol,oxate,1 4,build bidentate,A,-2
 oxo:oxygen.mol,oxo,0,build small,N,-2
 pcy3:PCy3.mol,pcy3,0,build bulky big,BA,0
 pentacyanopentadienide:pentacyanocyclopentadienide.mol,pcyanopent,1,build bulky,A,-1
-pf3:phosphorustrifluoride.mol,pf3,1,build small,BA,0 
+pf3:phosphorustrifluoride.mol,pf3,1,build small,BA,0
 ph2-:ph2-.mol,ph2-,0,build functionalize small,N,-1
 ph3:ph3.mol,ph3,0,build functionalize small,N,0
 phen:phen.mol,phen,9 12,build bidentate,BA,0
