@@ -45,13 +45,15 @@ def test_ligands_dict(lig_name):
             if 'CHG' in line:
                 # Should be in the following format:
                 # "M  CHGnn8 aaa vvv\n"
-                # Where the number first number after 'CHG' states how
-                # many charge definitions follow.
+                # Where 'n' the number first number after 'CHG' states how
+                # many atom/charge pairs (8 characters each) follow.
                 n_charges = int(line[6:9])
+                # 9 characters including 'n' plus 1 for the newline '/n'
                 assert len(line) == 10 + n_charges * 8
                 sp = line.split()
-                assert charge == sum([int(s) for s in sp[4::2]])
-
+                # Recheck that the sum of all charges is the same as the
+                # charge listed in ligands.dict
+                assert sum([int(s) for s in sp[4::2]]) == charge
 
 def test_no_repeats():
     # This test ensures no key is used more than once in ligands.dict.
