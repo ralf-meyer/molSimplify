@@ -318,7 +318,9 @@ def dihedral(mol, idx1, idx2, idx3, idx4):
 
 
 def kabsch(mol0, mol1):
-    """Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm
+    """Aligns (translates and rotates) two molecules to minimize RMSD using the Kabsch algorithm. 
+    mol0 is translated and rotated. 
+    mol1 is translated.
 
         Parameters
         ----------
